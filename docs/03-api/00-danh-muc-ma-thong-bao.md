@@ -124,7 +124,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|---|---|
 | `MSG110` | 200 | `POST /api/meetings/{id}/transitions` | Start thành công | `Bắt đầu cuộc họp thành công.` | BE |
 | `MSG111` | 200 | `POST /api/meetings/{id}/transitions` | End thành công | `Kết thúc cuộc họp thành công.` | BE |
-| `MSG112` | 403 | `POST /api/meetings/{id}/transitions` | Start: caller đọc được nhưng không phải active current Chair | `Không thể bắt đầu cuộc họp này.` | BE |
+| `MSG112` | 403 | `POST /api/meetings/{id}/transitions` | Start: caller đọc được nhưng không phải active current Chair hoặc Secretary | `Không thể bắt đầu cuộc họp này.` | BE |
 | `MSG112` | 409 | `POST /api/meetings/{id}/transitions` | Start: sai trạng thái hoặc thiếu roster | `Không thể bắt đầu cuộc họp này.` | BE |
 | `MSG114` | 403 | `POST /api/meetings/{id}/transitions` | End: caller đọc được nhưng không phải active current Chair | `Không thể kết thúc cuộc họp này.` | BE |
 | `MSG114` | 409 | `POST /api/meetings/{id}/transitions` | End: sai trạng thái | `Không thể kết thúc cuộc họp này.` | BE |

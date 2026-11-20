@@ -13,7 +13,7 @@ import { workflowFailure, type WorkflowOutcome } from './workflowOutcome'
 const EARLY_START_MS = 15 * 60_000
 
 /**
- * The Chair's "Bắt đầu họp" / "Kết thúc họp" buttons, for the page header next to "Vào phòng họp".
+ * "Bắt đầu họp" (Chair or Secretary) / "Kết thúc họp" (Chair) buttons, for the page header next to "Vào phòng họp".
  * Starting on time is one click; starting well before the schedule, or without a Secretary (which
  * the server refuses), asks first. Ending always asks: it closes the room and cannot be undone.
  */
