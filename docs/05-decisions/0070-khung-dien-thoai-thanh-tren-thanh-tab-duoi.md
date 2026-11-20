@@ -27,9 +27,11 @@ ADR-0012 cho mọi màn đã đăng nhập một sidebar dọc màu xanh; dướ
    không cuộn, không kéo ngang được. Vì tài liệu không cuộn, thanh công cụ
    Safari không ẩn/hiện, không gì đổi cỡ khi đọc. Chạm nhanh hai lần không phóng to trang (`touch-action:
    manipulation`); vẫn phóng to bằng hai ngón được.
-3. **Lịch tuần trên điện thoại hiện một ngày**: một dải ngày trong tuần dính trên đầu (mỗi ngày kèm số cuộc họp),
-   lưới là một phần của trang, không cuộn ngang. Chạm một ngày hoặc vuốt ngang để đổi ngày; vuốt quá ngày cuối tuần
-   sang tuần sau. Nút “Vào phòng họp” nằm trên dòng giờ của ô để tên cuộc họp còn đọc được.
+3. **Lịch tuần trên điện thoại hiện một ngày**: thanh công cụ gọn hai dòng (nút + thay chữ “Tạo cuộc họp”) và một dải
+   ngày trong tuần (mỗi ngày kèm số cuộc họp) luôn ở trên khi mở lịch; khung một ngày bên dưới lấp phần màn còn lại, chỉ
+   cuộn dọc, mở ở giờ hiện tại hoặc cuộc họp đầu, chú thích màu ở cuối khung. Không có gì cuộn ngang. Chạm một ngày
+   hoặc vuốt ngang để đổi ngày; vuốt quá ngày cuối tuần sang tuần sau. Nút “Vào phòng họp” nằm trên dòng giờ của ô để
+   tên cuộc họp còn đọc được.
 4. **Vùng an toàn**: hai thanh tự đệm `env(safe-area-inset-*)`. `index.html` **chưa** bật `viewport-fit=cover`, vì
    phòng họp và trang đăng nhập khi xoay ngang sẽ nằm dưới tai thỏ; bật nó là việc của lượt sau, cùng với đệm cho các
    màn đó.

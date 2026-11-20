@@ -278,9 +278,15 @@ export function CalendarPage() {
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
           <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
-            <Link className="btn btn-primary btn-cta" to={createLink.to} state={createLink.state}>
+            <Link
+              className="btn btn-primary btn-cta cal-create"
+              to={createLink.to}
+              state={createLink.state}
+              aria-label="Tạo cuộc họp"
+            >
               <Icon name="plus" size={16} />
-              Tạo cuộc họp
+              {/* A phone keeps the toolbar to two rows: the "+" on the blue button carries it (global.css). */}
+              <span className="cal-create-label">Tạo cuộc họp</span>
             </Link>
           )}
         </div>
@@ -453,7 +459,8 @@ function WeekGrid({
     : Math.min(WORKDAY_START_HOUR * 60, firstStart ? minutesOfDay(firstStart) : Infinity)
   // A phone shows one day (Hải 20/11: seven 140px columns in a 280px frame scrolled sideways under the hour column,
   // which hid the start of each heading, and a sideways swipe dragged the grid onto blank space). It opens on the day
-  // the user picked, else today, else the week's first meeting; the strip above it and a swipe change the day.
+  // the user picked, else today, else the week's first meeting; the strip above it and a swipe change the day. The
+  // toolbar and the strip stay on screen; only the day's frame under them scrolls, and only up and down.
   const anchorDay = weekHasToday
     ? days.findIndex((d) => sameDay(d, now))
     : days.findIndex((d) => sameDay(d, firstStart ?? days[0]))
@@ -469,21 +476,18 @@ function WeekGrid({
     if (!el || schedule.kind === 'loading' || scrolledFor.current === weekKey) return
     scrolledFor.current = weekKey
     const target = anchorMinutes * (hourHeight / 60)
-    const main = el.closest('main')
-    if (phone && main) {
-      // A phone's grid is part of the page, which is the one thing that scrolls: move the page, under the day strip.
-      // Until the page has its height (the stylesheet can land after the first render) there is nothing to scroll.
-      const place = () => {
-        if (main.scrollHeight <= main.clientHeight + 1) return false
-        const strip = main.querySelector<HTMLElement>('.day-strip')?.offsetHeight ?? 0
-        const gridTop = el.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop
-        const room = main.clientHeight - strip
-        main.scrollTop = Math.max(0, gridTop + target - strip - (weekHasToday ? room / 3 : 16))
-        return true
-      }
+    // The frame scrolls on its own. Until it has its height (the stylesheet can land after the first render) there is
+    // nothing to scroll, so wait for it.
+    const place = () => {
+      if (el.scrollHeight <= el.clientHeight + 1) return false
+      const head = el.querySelector<HTMLElement>('.calendar-day')?.offsetHeight ?? 0
+      el.scrollTop = Math.max(0, target - (weekHasToday ? (el.clientHeight - head) / 3 : 16))
+      return true
+    }
+    if (phone) {
       if (place()) return
       const observer = new ResizeObserver(() => place() && observer.disconnect())
-      observer.observe(main)
+      observer.observe(el)
       return () => observer.disconnect()
     }
     const head = el.querySelector<HTMLElement>('.calendar-day')?.offsetHeight ?? 0
@@ -599,8 +603,10 @@ function WeekGrid({
               )
             })}
           </div>
+          {/* A phone's frame is short: the legend ends the day's scroll instead of taking a fixed band under it. */}
+          {phone && <Legend />}
         </div>
-        <Legend />
+        {!phone && <Legend />}
       </div>
     </>
   )
