@@ -2,16 +2,25 @@ import { useRef, useState, type DragEvent } from 'react'
 import { useUploads } from '../uploads/uploadsContext'
 import type { UploadRequest } from '../uploads/uploadStore'
 
-// BR-214, BR-319 — the server's DocumentFileRules. Checked here first: a body past the limit is cut
-// off while the browser is still sending, and the browser then sees a network error, not a code.
+// BR-214, BR-319 — the server's DocumentFileRules (meeting decision 19/11/2026: 10 MB a file, 10 files and
+// 100 MB an upload). Checked here first: a body past the limit is cut off while the browser is still sending,
+// and the browser then sees a network error, not a code.
 const MB = 1024 * 1024
-const MAX_FILE_BYTES = 50 * MB
+const MAX_FILE_BYTES = 10 * MB
 const MAX_FILES = 10
-const MAX_TOTAL_BYTES = 200 * MB
+const MAX_TOTAL_BYTES = 100 * MB
 
 /** MSG164 and MSG288's wording: the same situations, caught before sending. */
-export const INVALID_FILES = 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.'
-export const OVER_LIMIT = 'Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB.'
+export const INVALID_FILES = 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.'
+export const OVER_LIMIT = 'Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.'
+/** The dropzone's line: the limits, before anything is picked. */
+export const LIMITS_HINT = 'PDF, DOCX, mỗi tệp tối đa 10 MB, mỗi lần tối đa 10 tệp, 100 MB'
+
+/** A file left out of the pick, and why: the too-big ones are named apart from the wrong kind. */
+export interface RejectedFile {
+  name: string
+  tooBig: boolean
+}
 
 /** One picked file, for the request that sends it. */
 export interface PickedFile {
@@ -42,7 +51,7 @@ export function useFileUpload({
 }) {
   const uploads = useUploads()
   const [picked, setPicked] = useState<Picked[]>([])
-  const [rejected, setRejected] = useState<string[]>([])
+  const [rejected, setRejected] = useState<RejectedFile[]>([])
   const [dragging, setDragging] = useState(false)
   const nextKey = useRef(0)
 
@@ -54,11 +63,12 @@ export function useFileUpload({
   function add(files: FileList | null) {
     if (!files) return
     const ok: Picked[] = []
-    const bad: string[] = []
+    const bad: RejectedFile[] = []
     for (const file of Array.from(files)) {
       const name = file.name.toLowerCase()
       const pdf = name.endsWith('.pdf')
-      if ((!pdf && !name.endsWith('.docx')) || file.size === 0 || file.size > MAX_FILE_BYTES) bad.push(file.name)
+      if ((!pdf && !name.endsWith('.docx')) || file.size === 0) bad.push({ name: file.name, tooBig: false })
+      else if (file.size > MAX_FILE_BYTES) bad.push({ name: file.name, tooBig: true })
       else ok.push({ key: nextKey.current++, file, pdf })
     }
     setRejected(bad)

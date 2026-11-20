@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Web.Tests.Documents;
 using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
@@ -132,6 +133,12 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         var uploaded = body.GetProperty("documents")[0].GetProperty("id").GetGuid();
         Assert.Equal((400, "MSG164"), Pick(await Read(await chair.PostAsync($"{Documents(s, vote)}/upload",
             DocumentFixture.Form(("ảnh.png", SampleFiles.Png(), null))))));
+        var big = new byte[DocumentFileRules.MaxFileBytes + 1];
+        SampleFiles.Pdf().CopyTo(big, 0);
+        (status, code, body) = await Read(await chair.PostAsync($"{Documents(s, vote)}/upload",
+            DocumentFixture.Form(("lớn.pdf", big, "1"))));
+        Assert.Equal((400, "MSG164"), (status, code));
+        Assert.Equal("Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.", body.GetProperty("message").GetString());
         Assert.Equal((400, "MSG288"), Pick(await Read(await chair.PostAsync($"{Documents(s, vote)}/upload",
             DocumentFixture.Form(Enumerable.Range(0, 11).Select(i => ($"{i}.pdf", SampleFiles.Pdf($"{i}"), (string?)"1")).ToArray())))));
 

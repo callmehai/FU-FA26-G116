@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { routes } from '../../lib/routes'
+import { DocumentOverlayProvider } from '../documents/DocumentOverlay'
 import { NotificationsProvider } from '../notifications/NotificationsProvider'
 import { UploadsProvider } from '../uploads/UploadsProvider'
 import { useAuth } from './useAuth'
@@ -30,7 +31,10 @@ export function RequireAuth() {
   return (
     <NotificationsProvider key={user?.id}>
       <UploadsProvider>
-        <Outlet />
+        {/* A document opens over whichever page it was picked from, the call room included. */}
+        <DocumentOverlayProvider>
+          <Outlet />
+        </DocumentOverlayProvider>
       </UploadsProvider>
     </NotificationsProvider>
   )

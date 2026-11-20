@@ -13,7 +13,7 @@
 5. Reconnect phải join lại rồi GET; resync khi tab active và mỗi 30 giây khi panel hiển thị. Leave khi đổi meeting/unmount; không ngắt connection dùng chung của tính năng khác.
 6. Reorder gửi đúng Pending IDs và orderVersion GET gần nhất. Không renumber. Lịch dự kiến tính cộng dồn duration từ plannedStartTime, gap position không tạo nghỉ. Tổng duration vượt meeting chỉ cảnh báo.
 7. Presenter options chỉ internal participant active; tên tự nhập không phải Guest invitation xác minh. Document IDs là Document của model hiện tại; migration MeetingDocument sau này phải xử lý tương thích rõ ràng.
-8. Link tài liệu trong room mở tab mới, không rời cuộc gọi. Kiểm giao diện thật ở trang detail và panel 360px theo hai skill frontend trong `.claude/skills/`.
+8. Link tài liệu trong room mở khung xem phủ trên phòng, không rời cuộc gọi (ADR-0066; trước là tab mới). Kiểm giao diện thật ở trang detail và panel 360px theo hai skill frontend trong `.claude/skills/`.
 
 Ví dụ tạo:
 

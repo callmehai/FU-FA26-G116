@@ -42,6 +42,7 @@ const TUE = addDays(MON, 1)
 const WED = addDays(MON, 2)
 const THU = addDays(MON, 3)
 const FRI = addDays(MON, 4)
+const SUN = addDays(MON, 6)
 const dm = (day) => `${day.slice(8, 10)}/${day.slice(5, 7)}`
 const at = (day, hhmm) => `${day}T${hhmm}:00+07:00`
 
@@ -449,7 +450,7 @@ export default {
       steps: [
         `Chủ lịch thanhvien@ có 4 cuộc họp ${dm(TUE)}: Thường 09:00–10:00 (chờ duyệt), Nháp 10:30–11:30, Nội bộ 13:30–14:30, Mật 15:30–16:30`,
         `Chia sẻ Mốc 1 đến ${dm(WED)}`,
-        `chutoa@ mở Chia sẻ lịch → tab "Lịch được chia sẻ", tuần ${dm(MON)}`,
+        `chutoa@ mở Chia sẻ lịch → tab "Lịch được chia sẻ", tuần ${dm(MON)} – ${dm(SUN)} (đủ 7 ngày)`,
       ],
       expected: `Chip "Lê An · Họp Thường · đến ${dm(WED)}"; T3 ${dm(TUE)} chỉ có khối "bận 09:00–10:00"; không có khối 10:30, 13:30, 15:30; T5 ${dm(THU)}, T6 ${dm(FRI)} ghi "Chưa biết"; không có tên, địa điểm cuộc họp (BR-414, BR-415, BR-417, BR-420, BR-427); API không có trường cuộc họp; không cuộn ngang`,
       async run(qa) {
@@ -470,11 +471,13 @@ export default {
         qa.expect(row.days.find((d) => d.date === FRI)?.known).toBe(false)
 
         await qa.goto(`/calendar/sharing?tab=week&week=${TUE}`)
-        await qa.expect(qa.page.getByRole('heading', { name: new RegExp(`${dm(MON)} – ${dm(FRI)}`) })).toBeVisible()
+        // The shared week is the whole week, Monday to Sunday (Hải 19/11, PR #422).
+        await qa.expect(qa.page.getByRole('heading', { name: new RegExp(`${dm(MON)} – ${dm(SUN)}`) })).toBeVisible()
         const chip = qa.page.getByRole('group', { name: 'Người chia sẻ' }).getByRole('button', { name: new RegExp(name) })
         await qa.expect(chip).toContainText(`Họp Thường · đến ${dm(WED)}`)
         if (qa.device === 'phone') {
-          await qa.page.getByRole('radiogroup', { name: 'Ngày trong tuần' }).getByRole('radio', { name: `T3 ${TUE.slice(8, 10)}` }).check()
+          // Seven days across a phone leave room for the weekday only (PR #422); the date heads the grid under it.
+          await qa.page.getByRole('radiogroup', { name: 'Ngày trong tuần' }).getByRole('radio', { name: 'T3', exact: true }).check()
         }
         const column = qa.page.getByRole('group', { name: `T3 ${dm(TUE)}` })
         await qa.expect(column.getByRole('img', { name: `${name} bận 09:00–10:00` })).toBeVisible()
@@ -486,7 +489,7 @@ export default {
         await noMeetingContent(qa)
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
-        if (qa.device === 'phone') await qa.page.getByRole('radiogroup', { name: 'Ngày trong tuần' }).getByRole('radio', { name: `T5 ${THU.slice(8, 10)}` }).check()
+        if (qa.device === 'phone') await qa.page.getByRole('radiogroup', { name: 'Ngày trong tuần' }).getByRole('radio', { name: 'T5', exact: true }).check()
         await qa.expect(qa.page.getByText(new RegExp(`Chưa biết: .*${name}`)).first()).toBeVisible()
         await settled(qa)
         await qa.shot('ngay-ngoai-khoang-chua-biet', { fullPage: true })

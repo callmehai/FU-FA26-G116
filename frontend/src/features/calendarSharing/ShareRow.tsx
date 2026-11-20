@@ -27,8 +27,13 @@ function stateChip(share: Share, owed: boolean): { tone: BadgeTone; label: strin
 
 /**
  * One share in a list, seen from the caller's side (`as`): the other person, then one line of chips — state, level,
- * period — and, when something waits, what it is. Answering is in plain sight (Đồng ý / Từ chối); everything else sits
- * behind "…", so a row never carries four buttons as AI-eCabinet's does. The buttons follow `actions`, never the status.
+ * period and, when the viewer asked for a change, what they asked. Answering is in plain sight (Đồng ý / Từ chối);
+ * everything else sits behind "…", so a row never carries four buttons as AI-eCabinet's does. The buttons follow
+ * `actions`, never the status.
+ *
+ * Every row has the same shape (Khánh 19/11: "2 người layout khác nhau"): the actions sit at the right, level with the
+ * name, and the "…" place is kept on a row with nothing behind it, so Đồng ý and Từ chối line up from row to row; the
+ * chips run across the whole row under them, and the asked-for change is one more chip, not a line of its own.
  */
 export function ShareRow({
   share,
@@ -91,11 +96,9 @@ export function ShareRow({
             {LEVEL_LABEL[share.level]}
           </span>
           <span className="share-period">{periodText(share.startDate, share.endDate)}</span>
-        </div>
-        {change && (
-          <p className="share-row-note">
-            <Icon name="clock" size={14} />
-            <span>
+          {change && (
+            <span className="share-change">
+              <Icon name="clock" size={14} />
               {as === 'owner' ? 'Xin đổi' : 'Bạn xin đổi'}:{' '}
               {[
                 change.level !== share.level ? LEVEL_LABEL[change.level] : null,
@@ -104,8 +107,8 @@ export function ShareRow({
                 .filter(Boolean)
                 .join(', ')}
             </span>
-          </p>
-        )}
+          )}
+        </div>
         {share.senderDeactivated && share.status === 'Pending' && (
           <p className="share-row-note share-row-note-warn">
             <Icon name="alertCircle" size={14} />
@@ -114,30 +117,33 @@ export function ShareRow({
         )}
       </div>
 
-      {(owed || more.length > 0) && (
-        <div className="share-row-actions">
-          {has(share, 'decline') && (
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => onIntent({ kind: 'decline', share })}
-            >
-              Từ chối
-            </button>
-          )}
-          {has(share, 'accept') && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => onIntent({ kind: 'accept', share })}
-            >
-              <Icon name="check" size={16} />
-              Đồng ý
-            </button>
-          )}
-          {more.length > 0 && <MenuButton label="Thao tác khác" icon="moreVertical" items={more} iconOnly />}
-        </div>
-      )}
+      <div className="share-row-actions">
+        {has(share, 'decline') && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onIntent({ kind: 'decline', share })}
+          >
+            Từ chối
+          </button>
+        )}
+        {has(share, 'accept') && (
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => onIntent({ kind: 'accept', share })}
+          >
+            <Icon name="check" size={16} />
+            Đồng ý
+          </button>
+        )}
+        {more.length > 0 ? (
+          <MenuButton label="Thao tác khác" icon="moreVertical" items={more} iconOnly />
+        ) : (
+          // The "…" place, kept empty so the answer buttons stay where they are on every other row.
+          <span className="share-row-menu-slot" aria-hidden="true" />
+        )}
+      </div>
     </li>
   )
 }

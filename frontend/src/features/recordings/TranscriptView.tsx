@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { deleteRoomTake } from '../../api/recordings'
 import { editTranscriptSegment, getTranscript, getTranscriptText, retryTranscript } from '../../api/transcripts'
 import { Badge } from '../../components/Badge'
@@ -13,11 +13,12 @@ import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
 import { LineSpeakerPicker, SpeakerList } from './SpeakerList'
 import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
+import { SpokenWords } from './SpokenWords'
 
 /**
- * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a time jumps the
- * audio there and the segment being heard is highlighted, so the Secretary can check the text
- * against the voice and correct it in place.
+ * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a line jumps the
+ * audio there and the line being heard is highlighted, word by word when the worker timed its words,
+ * so the Secretary can check the text against the voice and correct it in place.
  *
  * The text is machine output and says so: the minutes the Secretary writes from it stay theirs.
  */
@@ -137,7 +138,14 @@ export function TranscriptView({
     }
   }
 
-  if (state.kind === 'loading') return <p className="transcript-status field-hint">Đang tải bản gỡ băng…</p>
+  if (state.kind === 'loading')
+    return (
+      <div className="transcript-skeleton" aria-busy="true" aria-label="Đang tải bản gỡ băng">
+        <span className="skeleton" />
+        <span className="skeleton" />
+        <span className="skeleton" />
+      </div>
+    )
   if (state.kind === 'error')
     return (
       <div className="transcript-status alert alert-error" role="alert">
@@ -209,7 +217,7 @@ export function TranscriptView({
       )}
       <div className="transcript-note">
         <Badge tone="outline">Máy nhận dạng</Badge>
-        <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
+        <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào một câu để nghe lại.</span>
         <span className="transcript-tools">
           {transcript.canExport && (
             <button
@@ -330,35 +338,31 @@ export function TranscriptView({
                       </button>
                   </div>
                 </div>
-                {run.map((segment, i) => (
-                  <SegmentRow
-                    key={segment.id}
-                    segment={segment}
-                    time={at(segment.startMs)}
-                    first={i === 0}
-                    active={segment.id === active}
-                    canEdit={transcript.canEdit}
-                    editing={editing === segment.id}
-                    onEdit={() => setEditing(segment.id)}
-                    onDone={(saved) => {
-                      setEditing(null)
-                      if (saved) void load()
-                    }}
-                    onSeek={() => onSeek(segment.startMs)}
-                    lineSpeaker={
-                      transcript.canEdit && i > 0 ? (
-                        <LineSpeakerPicker
-                          transcript={transcript}
-                          segment={segment}
-                          voice={speakerOf(segment).voice}
-                          time={at(segment.startMs)}
-                          onChanged={() => void load()}
-                          icon
-                        />
-                      ) : undefined
-                    }
-                  />
-                ))}
+                <RunParagraph
+                  run={run}
+                  at={at}
+                  activeId={active}
+                  currentMs={currentMs}
+                  playing={playing}
+                  canEdit={transcript.canEdit}
+                  editing={editing}
+                  onEdit={setEditing}
+                  onDone={(saved) => {
+                    setEditing(null)
+                    if (saved) void load()
+                  }}
+                  onSeek={onSeek}
+                  lineSpeaker={(segment) => (
+                    <LineSpeakerPicker
+                      transcript={transcript}
+                      segment={segment}
+                      voice={speakerOf(segment).voice}
+                      time={at(segment.startMs)}
+                      onChanged={() => void load()}
+                      icon
+                    />
+                  )}
+                />
               </li>
             )
           })}
@@ -408,11 +412,18 @@ function TakeLine({ takes, index, onDelete }: { takes: RecordingTake[]; index: n
   )
 }
 
-function SegmentRow({
-  segment,
-  time,
-  first,
-  active,
+/**
+ * A voice's run of lines read as one paragraph under its name and time (Hải, 19/11/2026), as the per-mic record does:
+ * each line is still its own — a click hears the recording from it, its time shows on hover or focus — and the tools at
+ * the paragraph's end act on the line last clicked or focused (the first one until then): the Secretary corrects its
+ * words, or moves it alone to another voice.
+ */
+function RunParagraph({
+  run,
+  at,
+  activeId,
+  currentMs,
+  playing,
   canEdit,
   editing,
   onEdit,
@@ -420,19 +431,102 @@ function SegmentRow({
   onSeek,
   lineSpeaker,
 }: {
-  segment: TranscriptSegment
-  /** How the segment's moment reads: the meeting's clock for the room mic, the file's offset for an upload. */
-  time: string
-  first: boolean
-  active: boolean
+  run: TranscriptSegment[]
+  /** How a moment reads: the meeting's clock for the room mic, the file's offset for an upload. */
+  at: (ms: number) => string
+  /** The line being heard. */
+  activeId: string | undefined
+  currentMs: number
+  playing: boolean
   canEdit: boolean
-  editing: boolean
-  onEdit: () => void
+  editing: string | null
+  onEdit: (segmentId: string) => void
   onDone: (saved: boolean) => void
-  onSeek: () => void
-  /** The person button that changes who said this one line (the Secretary, on a line under its run's name). */
-  lineSpeaker?: ReactNode
+  onSeek: (ms: number) => void
+  /** The person button that changes who said one line; the run's first line is changed from its name. */
+  lineSpeaker: (segment: TranscriptSegment) => ReactNode
 }) {
+  const [pickedId, setPickedId] = useState<string | null>(null)
+  const index = Math.max(0, run.findIndex((s) => s.id === pickedId))
+  const picked = run[index]
+  const several = run.length > 1
+  const which = several ? ` câu ${at(picked.startMs)}` : ''
+  const editingHere = run.some((s) => s.id === editing)
+  return (
+    <div className="tl-row tl-sentence">
+      <span className="tl-time" />
+      <span className="tl-rail" aria-hidden="true" />
+      <div className="tl-content">
+        <div className="tl-text tl-para">
+          {run.map((segment, i) => {
+            if (segment.id === editing) return <SegmentEditor key={segment.id} segment={segment} onDone={onDone} />
+            const time = at(segment.startMs)
+            const active = segment.id === activeId
+            return (
+              <Fragment key={segment.id}>
+                {i > 0 && ' '}
+                <span
+                  className={`tl-say is-playable${active ? ' is-active' : ''}${
+                    several && segment.id === picked.id ? ' is-picked' : ''
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Nghe từ ${time}: ${segment.text}`}
+                  data-tooltip={`Nghe từ ${time}`}
+                  onFocus={() => setPickedId(segment.id)}
+                  onClick={() => {
+                    setPickedId(segment.id)
+                    // Selecting words to copy them does not jump the audio.
+                    if (!window.getSelection()?.toString()) onSeek(segment.startMs)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onSeek(segment.startMs)
+                    }
+                  }}
+                >
+                  <SpokenWords
+                    text={segment.text}
+                    starts={segment.wordStartsMs}
+                    nowMs={active && playing ? currentMs : null}
+                  />
+                </span>
+                {segment.editedAt && (
+                  <span
+                    className="tl-edited"
+                    tabIndex={0}
+                    data-tooltip={`Sửa bởi ${segment.editedByName ?? 'Thư ký'} lúc ${formatDateTime(segment.editedAt)}`}
+                  >
+                    {' '}
+                    đã sửa
+                  </span>
+                )}
+              </Fragment>
+            )
+          })}
+        </div>
+        {canEdit && !editingHere && (
+          <span className="tl-tools">
+            {index > 0 && lineSpeaker(picked)}
+            <button
+              type="button"
+              className="tl-tool"
+              onClick={() => onEdit(picked.id)}
+              aria-label={`Sửa nội dung${which}`}
+              data-tooltip={`Sửa nội dung${which}`}
+            >
+              <Icon name="pencil" size={16} />
+            </button>
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** The Secretary corrects one line's words in place, as in AI-eCabinet: Enter saves, Esc leaves it as it was. */
+function SegmentEditor({ segment, onDone }: { segment: TranscriptSegment; onDone: (saved: boolean) => void }) {
   const toast = useToast()
   const [draft, setDraft] = useState(segment.text)
   const [saving, setSaving] = useState(false)
@@ -452,93 +546,46 @@ function SegmentRow({
   }
 
   return (
-    <div className={`tl-row tl-sentence${active ? ' is-active' : ''}`}>
-      {first ? (
-        <span className="tl-time" />
-      ) : (
-        <button type="button" className="tl-time tl-time-button" onClick={onSeek} aria-label={`Nghe từ ${time}`}>
-          {time}
-        </button>
+    <div className="transcript-editor">
+      <textarea
+        value={draft}
+        maxLength={8000}
+        rows={Math.min(8, Math.max(2, Math.ceil(draft.length / 90)))}
+        onChange={(e) => setDraft(e.target.value)}
+        // Shift+Enter breaks the line.
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onDone(false)
+          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault()
+            if (draft.trim() && !saving) void save()
+          }
+        }}
+        onFocus={(e) => e.currentTarget.setSelectionRange(draft.length, draft.length)}
+        aria-label="Nội dung đoạn"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={`edit-keys-${segment.id}`}
+        autoFocus
+      />
+      {error && (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
       )}
-      <span className="tl-rail" aria-hidden="true" />
-      <div className="tl-content">
-        {editing ? (
-          <div className="transcript-editor">
-            <textarea
-              value={draft}
-              maxLength={8000}
-              rows={Math.min(8, Math.max(2, Math.ceil(draft.length / 90)))}
-              onChange={(e) => setDraft(e.target.value)}
-              // As in AI-eCabinet: Enter saves, Shift+Enter breaks the line, Esc leaves it as it was.
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') onDone(false)
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault()
-                  if (draft.trim() && !saving) void save()
-                }
-              }}
-              onFocus={(e) => e.currentTarget.setSelectionRange(draft.length, draft.length)}
-              aria-label="Nội dung đoạn"
-              aria-invalid={error ? true : undefined}
-              aria-describedby={`edit-keys-${segment.id}`}
-              autoFocus
-            />
-            {error && (
-              <p className="field-error" role="alert">
-                {error}
-              </p>
-            )}
-            <div className="row-actions transcript-editor-actions">
-              <span id={`edit-keys-${segment.id}`} className="field-hint transcript-editor-keys">
-                Enter để lưu · Esc để huỷ
-              </span>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDone(false)} disabled={saving}>
-                Huỷ
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => void save()}
-                disabled={saving || !draft.trim()}
-              >
-                {saving ? 'Đang lưu…' : 'Lưu'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p
-            className={`tl-text${canEdit ? ' is-editable' : ''}`}
-            // A click on the words edits them, as in AI-eCabinet; selecting words to copy them does not.
-            onClick={canEdit ? () => !window.getSelection()?.toString() && onEdit() : undefined}
-            data-tooltip={canEdit ? 'Bấm để sửa' : undefined}
-          >
-            {segment.text}
-            {segment.editedAt && (
-              <span
-                className="tl-edited"
-                tabIndex={0}
-                data-tooltip={`Sửa bởi ${segment.editedByName ?? 'Thư ký'} lúc ${formatDateTime(segment.editedAt)}`}
-              >
-                {' '}
-                đã sửa
-              </span>
-            )}
-          </p>
-        )}
-        {canEdit && !editing && (
-          <span className="tl-tools">
-            {lineSpeaker}
-            <button
-              type="button"
-              className="tl-tool"
-              onClick={onEdit}
-              aria-label="Sửa nội dung"
-              data-tooltip="Sửa nội dung"
-            >
-              <Icon name="pencil" size={16} />
-            </button>
-          </span>
-        )}
+      <div className="row-actions transcript-editor-actions">
+        <span id={`edit-keys-${segment.id}`} className="field-hint transcript-editor-keys">
+          Enter để lưu · Esc để huỷ
+        </span>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDone(false)} disabled={saving}>
+          Huỷ
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={() => void save()}
+          disabled={saving || !draft.trim()}
+        >
+          {saving ? 'Đang lưu…' : 'Lưu'}
+        </button>
       </div>
     </div>
   )

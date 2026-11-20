@@ -1,5 +1,6 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { BlockedButton } from '../../components/BlockedButton'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { formatClock } from '../../lib/format'
@@ -116,14 +117,14 @@ export function OutlineSections({
                   <Icon name="undo" size={16} />
                   Hoàn tác
                 </button>
-                <button
-                  type="button"
+                <BlockedButton
                   className="btn btn-primary btn-lg"
-                  disabled={over.length > 0 || saving}
+                  disabled={saving}
+                  blocked={over.length > 0 && 'Rút gọn mục quá dài trước khi lưu'}
                   onClick={() => (reviewed ? setAsking('save') : void save())}
                 >
                   {saving ? 'Đang lưu…' : 'Lưu dự thảo'}
-                </button>
+                </BlockedButton>
               </div>
             </section>
           </div>,

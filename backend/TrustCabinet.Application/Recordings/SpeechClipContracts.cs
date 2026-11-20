@@ -18,13 +18,14 @@ public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFai
 /// One sentence as everyone in the meeting reads it. An excluded sentence still comes, so the line does not vanish
 /// without a trace, but only the Chair and the Secretary get its words. <c>Leak</c> says it was probably overheard.
 /// <c>HasAudio</c> says the caller may hear it (<see cref="ISpeechClipService.PlaybackAsync"/>); <c>Peaks</c> draws
-/// its waveform, one byte per 100 ms. <c>SpeakerId</c> is the member's user id, or for a guest (<c>SpeakerIsGuest</c>,
+/// its waveform, one byte per 100 ms. <c>WordStartsMs</c> is when each word of <c>Text</c> begins, in ms from the sentence's start
+/// (<see cref="TrustCabinet.Domain.Transcription.WordTimings"/>), null when unknown or the words were corrected. <c>SpeakerId</c> is the member's user id, or for a guest (<c>SpeakerIsGuest</c>,
 /// SCRUM-129) their invitation's id; a guest's <c>SpeakerName</c> is the name they gave, or the invited one.
 /// </summary>
 public sealed record SpeechClipView(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
     string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, bool CanDelete,
     bool Excluded = false, string? ExclusionReason = null, string? ExcludedByName = null, SpeechClipLeak? Leak = null,
-    bool HasAudio = false, byte[]? Peaks = null, bool SpeakerIsGuest = false);
+    bool HasAudio = false, byte[]? Peaks = null, bool SpeakerIsGuest = false, IReadOnlyList<long>? WordStartsMs = null);
 
 /// <summary>
 /// SpeechClipFold's verdict: the sentence, or the words <c>[from, to)</c> of it, probably are <c>SpeakerName</c>'s,

@@ -21,6 +21,13 @@ public class TranscriptSegment : Entity
     public string Text { get; set; } = string.Empty;
 
     /// <summary>
+    /// When each word of <see cref="Text"/> begins, in ms into the recording, as the speech worker measured it: the
+    /// transcript follows the voice word by word while it plays. Null for a line transcribed before the worker sent word
+    /// times, or whose words no longer match them; cleared when someone corrects the text.
+    /// </summary>
+    public long[]? WordStartsMs { get; set; }
+
+    /// <summary>
     /// What the diarizer called this voice — "Người nói 1", "Người nói 2". A label within this one
     /// recording and nothing more. A line is said by its voice only: the Secretary moves a line the diarizer gave the
     /// wrong voice to another voice of the recording (a new one for a person no voice is named as), as AI-eCabinet's

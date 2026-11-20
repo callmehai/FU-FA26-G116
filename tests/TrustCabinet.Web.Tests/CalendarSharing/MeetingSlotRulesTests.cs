@@ -107,12 +107,15 @@ public sealed class MeetingSlotRulesTests
 
     [Theory]
     [InlineData(new int[0])]
-    [InlineData(new[] { 6 })]
-    [InlineData(new[] { 7 })]
+    [InlineData(new[] { 8 })]
     [InlineData(new[] { 0 })]
     [InlineData(new[] { 1, 1 })]
-    public void Weekdays_are_Monday_to_Friday(int[] weekdays)
+    public void Weekdays_are_one_to_seven_without_repeats(int[] weekdays)
         => Assert.Equal(MeetingSlotRules.WeekdaysError, Errors(Input(weekdays: weekdays))["weekdays"]);
+
+    [Fact]
+    public void The_weekend_may_be_chosen()
+        => Assert.Equal([DayOfWeek.Saturday, DayOfWeek.Sunday], Valid(Input(weekdays: [7, 6])).Weekdays);
 
     [Fact]
     public void Weekdays_are_kept_in_week_order()
@@ -187,7 +190,7 @@ public sealed class MeetingSlotRulesTests
     [Fact]
     public void Every_broken_field_is_reported_at_once()
     {
-        var errors = Errors(new SlotSearchInput(null, null, 7, Wednesday.AddDays(-1), null, [6], "x", null, null, null, null,
+        var errors = Errors(new SlotSearchInput(null, null, 7, Wednesday.AddDays(-1), null, [8], "x", null, null, null, null,
             999, 1));
         Assert.Equal(["bufferMinutes", "durationMinutes", "fromDate", "stepMinutes", "userIds", "weekdays", "workStart"],
             errors.Keys.Order());

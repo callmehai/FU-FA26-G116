@@ -46,6 +46,14 @@ public interface ISpeechClipRepository
     Task<ClipRow?> FindRowByClientIdAsync(Guid meetingId, Guid? speakerId, Guid? guestInvitationId, Guid clientClipId,
         CancellationToken ct);
 
+    /// <summary>
+    /// The speaker's latest sentence in the meeting started after <paramref name="after"/> and before
+    /// <paramref name="before"/>, both excluded: a member's by <paramref name="speakerId"/>, otherwise a guest's by
+    /// <paramref name="guestInvitationId"/>. One query.
+    /// </summary>
+    Task<ClipRow?> FindLastRowStartedBetweenAsync(Guid meetingId, Guid? speakerId, Guid? guestInvitationId,
+        DateTimeOffset after, DateTimeOffset before, CancellationToken ct);
+
     /// <summary>The sentence, tracked; null when there is none. One query.</summary>
     Task<SpeechClip?> FindAsync(Guid clipId, CancellationToken ct);
 

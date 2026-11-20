@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { removeMeetingDocument, unlinkFromAgendaItem } from '../../api/documents'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -11,7 +10,8 @@ import { formatDateTime } from '../../lib/format'
 import type { DocumentsAgendaItem, DocumentsVote, MeetingDocument, MeetingDocumentList } from '../../types/document'
 import type { GuestMeeting } from '../../types/guest'
 import type { Meeting } from '../../types/meeting'
-import { useDocumentPath, useGuest } from '../guest/guestContext'
+import { useGuest } from '../guest/guestContext'
+import { DocumentLink } from './DocumentLink'
 import { AddDocumentsDialog } from './AddDocumentsDialog'
 import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
@@ -461,26 +461,20 @@ function DocumentRow({
   /** A vote's document: when the reader confirmed reading it, null while they still can. Absent otherwise. */
   read?: string | null
 }) {
-  const documentPath = useDocumentPath()
   const facts = documentFacts(doc)
   const room = row.variant === 'room'
   const added = `${doc.addedBy.fullName} thêm lúc ${formatDateTime(doc.addedAt)}`
 
   return (
     <li className="documents-row">
-      <Link
-        className="documents-row-link"
-        to={`${documentPath(row.meetingId, doc.id)}${room ? '?from=room' : ''}`}
-        data-tooltip={room ? 'Mở ở tab mới, bạn vẫn ở trong phòng' : added}
-        {...(room && { target: '_blank', rel: 'noopener' })}
-      >
+      {/* Opens over the page, the call room included: the call keeps running underneath (Hải 19/11/2026). */}
+      <DocumentLink className="documents-row-link" meetingId={row.meetingId} documentId={doc.id} tooltip={added}>
         <FileTypeTag pdf={isPdf(doc)} />
         <span className="documents-row-name">
           <strong>{doc.fileName}</strong>
           {facts && <small>{facts}</small>}
         </span>
-        {room && <Icon name="externalLink" size={16} />}
-      </Link>
+      </DocumentLink>
       {/* One block, so on a phone the actions move under the name together rather than one by one. */}
       <span className="documents-row-actions">
         {read !== undefined &&

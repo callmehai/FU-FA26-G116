@@ -8,6 +8,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
 import type { GuestInvitation, GuestSession } from '../../types/guest'
+import { DocumentOverlayProvider } from '../documents/DocumentOverlay'
 import { GuestContext, type GuestScope } from './guestContext'
 import { GuestProfileForm } from './GuestProfileForm'
 import { dropGuestSession, guestSessionExpired, readGuestEntry, updateGuestEntry } from './guestStore'
@@ -182,7 +183,9 @@ export function GuestPage() {
   if (scope) {
     return (
       <GuestContext value={scope}>
-        <Outlet context={{ signedOut: () => setGate({ kind: 'signedOut' }) } satisfies GuestOutletContext} />
+        <DocumentOverlayProvider>
+          <Outlet context={{ signedOut: () => setGate({ kind: 'signedOut' }) } satisfies GuestOutletContext} />
+        </DocumentOverlayProvider>
       </GuestContext>
     )
   }

@@ -33,14 +33,16 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     public bool IsConfigured => options.Value.IsConfigured;
 
     public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
-        CancellationToken ct)
+        CancellationToken ct, string? context = null)
     {
+        var ahead = string.IsNullOrWhiteSpace(context) ? "" : $"&context={Uri.EscapeDataString(context)}";
         using var response = await SendAsync(
-            $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}", audio, contentType, ct);
+            $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}{ahead}", audio, contentType, ct);
         var body = await ReadBodyAsync<TranscribeBody>(response, ct);
         return new(body.DurationMs, body.Language ?? "vi", body.AsrModel ?? "", body.EmbeddingModel ?? "",
-            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs))],
-            [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))]);
+            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs, s.WordStartsMs))],
+            [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))],
+            body.Context);
     }
 
     /// <summary>SCRUM-35 — the embedding of one enrolment sample, after the worker's quality checks.</summary>
@@ -115,8 +117,9 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
 
     private sealed record ErrorBody(string? Error);
     private sealed record EmbedBody(float[]? Embedding, string? Model, long SpeechMs);
-    private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text, double? LevelDbfs);
+    private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text, double? LevelDbfs,
+        long[]? WordStartsMs);
     private sealed record SpeakerBody(string? Label, long SpeechMs, float[]? Embedding);
     private sealed record TranscribeBody(long DurationMs, string? Language, string? AsrModel, string? EmbeddingModel,
-        SegmentBody[]? Segments, SpeakerBody[]? Speakers);
+        SegmentBody[]? Segments, SpeakerBody[]? Speakers, string? Context);
 }

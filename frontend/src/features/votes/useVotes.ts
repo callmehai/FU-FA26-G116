@@ -5,6 +5,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import type { VoteDetail, VoteList, VoteMutationResponse } from '../../types/vote'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
+import { VIEWER_CLOSED_EVENT } from '../documents/viewerOverlay'
 
 /** Events can be lost (no outbox), so a panel with an open vote re-reads on its own this often while visible. */
 const POLL_MS = 15_000
@@ -79,11 +80,14 @@ export function useVotes(meetingId: string) {
   useEffect(() => {
     const onFocus = () => void load()
     window.addEventListener('focus', onFocus)
+    // The viewer opened over the page closed: a read confirmed there unlocks "Gửi phiếu".
+    window.addEventListener(VIEWER_CLOSED_EVENT, onFocus)
     const timer = live
       ? window.setInterval(() => document.visibilityState === 'visible' && void load(), POLL_MS)
       : undefined
     return () => {
       window.removeEventListener('focus', onFocus)
+      window.removeEventListener(VIEWER_CLOSED_EVENT, onFocus)
       window.clearInterval(timer)
     }
   }, [live, load])

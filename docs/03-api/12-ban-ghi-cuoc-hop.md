@@ -244,10 +244,16 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
-      "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null }
+      "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,
+      "wordStartsMs": [0, 280, 600, 920, 1200] }
   ]
 }
 ```
+
+`wordStartsMs`: mốc bắt đầu (ms tính từ đầu bản ghi) của từng từ trong `text`, mỗi từ một mốc, do worker đo từ
+mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
+trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
+giờ chia đều thời lượng cho các từ để giả mốc.
 
 `speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
 thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
@@ -346,7 +352,7 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
       "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
       "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] },
-      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false }
+      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false, "wordStartsMs": [40, 200, 360, 560, 760] }
   ]
 }
 ```
@@ -360,6 +366,14 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
   ADR-0039, câu mà ổ đĩa không ghi được âm thanh, và câu đã bị loại khi người gọi không phải Chủ toạ hay Thư ký.
 - `peaks`: dạng sóng, base64, mỗi 100 ms một byte 0–255 (thang căn bậc hai của biên độ đỉnh). `null` khi âm thanh
   không phải WAV PCM 16-bit, hoặc như `hasAudio`.
+- `wordStartsMs`: mốc bắt đầu của từng từ trong `text`, tính bằng ms từ đầu âm thanh của câu, để FE tô theo từng từ
+  khi phát. `null` khi câu lưu trước khi worker trả mốc từ, khi Thư ký đã sửa chữ, và khi người gọi không nhận chữ
+  của câu (câu đã bị loại).
+
+Câu trình duyệt cắt ở chỗ ngắt hơi được chấm câu cùng câu trước của cùng người (kết thúc trong vòng 10 giây,
+chưa bị Thư ký sửa hay bị loại, không quá 60 từ): khi câu sau tới, dấu câu và chữ hoa của câu trước có thể đổi
+(ví dụ bỏ dấu chấm cuối khi câu sau nói tiếp), `updatedAt` của nó đổi theo nên `?since=` đọc lại được; chữ của nó
+không đổi.
 
 `retentionDays` là số ngày chữ và âm thanh của câu được giữ; màn chờ của phòng gọi nói con số này trước khi
 người dự vào phòng (đọc bằng `?since=<bây giờ>` để không kéo các câu). Xếp theo `startedAt`. `canCapture` là micro

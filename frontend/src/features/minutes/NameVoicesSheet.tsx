@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getRecordingPlayback, listRecordings } from '../../api/recordings'
 import { getTranscript } from '../../api/transcripts'
+import { BlockedButton } from '../../components/BlockedButton'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { errorMessage } from '../../lib/errors'
@@ -94,16 +95,10 @@ export function NameVoicesSheet({
             <button type="button" className="btn btn-outline btn-lg" onClick={onClose}>
               Để sau
             </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-lg"
-              disabled={!!canGenerate}
-              data-tooltip={canGenerate}
-              onClick={onGenerate}
-            >
+            <BlockedButton className="btn btn-primary btn-lg" blocked={canGenerate} onClick={onGenerate}>
               <Icon name={drafted ? 'refresh' : 'sparkles'} size={16} />
               {drafted ? 'Tạo lại dự thảo' : 'Tạo dự thảo'}
-            </button>
+            </BlockedButton>
           </div>
         </div>
       }
