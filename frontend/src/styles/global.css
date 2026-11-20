@@ -3319,6 +3319,7 @@ a.menu-item { text-decoration: none; }
 .vote-role-pick:has(input:checked) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand-ink); }
 .agenda-attach-trigger[aria-expanded='true'] { background: var(--surface-alt); }
 .agenda-room { overflow-y: auto; }
+.agenda-end-steps { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
 /* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */
 @container (min-width: 960px) {

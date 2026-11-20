@@ -343,6 +343,25 @@ function AgendaRow({
   })
   const { actions } = item
   const bodyId = `agenda-body-${item.id}`
+  // In the room an opened card reads top to bottom, so its step (Bắt đầu, Xong) comes last, after the conclusion;
+  // a closed card keeps it on its facts line (Hải 20/11/2026).
+  const stepsAtEnd = room && expanded && (actions.canSetCurrent || actions.canComplete)
+  const steps = (
+    <>
+      {actions.canSetCurrent && (
+        <button type="button" className="btn btn-outline btn-sm" onClick={onStart}>
+          <Icon name="play" size={16} />
+          Bắt đầu
+        </button>
+      )}
+      {actions.canComplete && (
+        <button type="button" className="btn btn-live btn-sm" onClick={onComplete}>
+          <Icon name="check" size={16} />
+          Xong
+        </button>
+      )}
+    </>
+  )
   const classes = ['agenda-item']
   if (item.status === 'InProgress') classes.push('agenda-item-current')
   if (expanded) classes.push('agenda-item-open')
@@ -387,18 +406,7 @@ function AgendaRow({
             {/* Two groups, one line on a wide panel. A narrow one (the call room, a phone) keeps the icons in the
                 card's top-right corner, beside the title, and the step under it with the facts (Khánh 19/11/2026). */}
             <span className="agenda-steps">
-              {actions.canSetCurrent && (
-                <button type="button" className="btn btn-outline btn-sm" onClick={onStart}>
-                  <Icon name="play" size={16} />
-                  Bắt đầu
-                </button>
-              )}
-              {actions.canComplete && (
-                <button type="button" className="btn btn-live btn-sm" onClick={onComplete}>
-                  <Icon name="check" size={16} />
-                  Xong
-                </button>
-              )}
+              {!stepsAtEnd && steps}
               {!room && !actions.canSetCurrent && !actions.canComplete && (
                 <span className="agenda-step-slot" aria-hidden="true" />
               )}
@@ -501,6 +509,7 @@ function AgendaRow({
             </div>
             {children}
           </div>
+          {stepsAtEnd && <div className="agenda-end-steps">{steps}</div>}
         </div>
       )}
     </li>
