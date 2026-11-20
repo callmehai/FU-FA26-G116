@@ -14,7 +14,8 @@ public enum RecordingSource
     CallRoom,
     /// <summary>
     /// A hybrid meeting heard as one track (ADR-0061): the room mic and every online mic laid on the real clock and mixed,
-    /// built by the server after the meeting ends. Only for listening and saving; its words are already in its sources.
+    /// built by the server after the meeting ends; an online meeting gets one from its mics alone (ADR-0069). Only for
+    /// listening and saving (as MP3); its words are already in its sources.
     /// </summary>
     Combined,
 }

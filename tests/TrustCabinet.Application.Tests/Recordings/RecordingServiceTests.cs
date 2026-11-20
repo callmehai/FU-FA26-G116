@@ -19,6 +19,7 @@ public sealed class RecordingServiceTests
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakeRecordingStorage _storage;
     private readonly FakeAuditService _audit = new();
+    private readonly FakeAudioTranscoder _transcoder = new();
     private readonly FakeSpeechChangePublisher _publisher;
     private readonly RecordingTestMeeting _meeting;
 
@@ -30,7 +31,7 @@ public sealed class RecordingServiceTests
     }
 
     private RecordingService Service() => new(_meetings, _recordings, _unitOfWork, _storage, new FakeRecordingSigner(), _audit,
-        _publisher, new FakeCombinedRecordings(), new FixedClock(Now), Options.Create(new RecordingOptions()),
+        _publisher, new FakeCombinedRecordings(), _transcoder, new FixedClock(Now), Options.Create(new RecordingOptions()),
         NullLogger<RecordingService>.Instance);
 
     private RecordingUpload Upload(bool consent = true)
@@ -53,6 +54,34 @@ public sealed class RecordingServiceTests
         Assert.Equal([AuditActions.RecordingUploaded], _audit.Actions);
         Assert.Equal(1, Assert.Single(_publisher.Published).CommitsBefore);
         Assert.Empty(_storage.Deleted);
+    }
+
+    private Recording Stored(string contentType)
+    {
+        var recording = new Recording
+        {
+            MeetingId = _meeting.Meeting.Id, Source = RecordingSource.Upload, Status = RecordingStatus.Available,
+            FileName = "hop", ContentType = contentType, StoragePath = _storage.Create(".bin"), CreatedById = _meeting.Secretary,
+        };
+        _recordings.Add(recording);
+        return recording;
+    }
+
+    [Fact]
+    public async Task A_download_that_cannot_be_made_mp3_is_refused_before_the_link_and_the_log()
+    {
+        // ADR-0069: no ffmpeg, so a WAV cannot leave as MP3: refused where the screen can say so, nothing logged.
+        _transcoder.Available = false;
+        var wav = Stored("audio/wav");
+        Assert.Equal(RecordingFailure.Mp3Unavailable, (await Service().DownloadAsync(wav.Id, _meeting.Secretary)).Failure);
+        Assert.Empty(_audit.Actions);
+
+        // A file already MP3 leaves as it is, so it needs no converter.
+        var checks = _transcoder.Checks;
+        var mp3 = Stored("audio/mpeg");
+        Assert.Equal(RecordingFailure.None, (await Service().DownloadAsync(mp3.Id, _meeting.Secretary)).Failure);
+        Assert.Equal(checks, _transcoder.Checks);
+        Assert.Equal([AuditActions.RecordingDownloaded], _audit.Actions);
     }
 
     [Fact]

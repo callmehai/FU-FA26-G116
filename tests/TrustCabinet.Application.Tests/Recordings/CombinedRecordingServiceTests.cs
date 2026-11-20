@@ -25,7 +25,7 @@ public sealed class CombinedRecordingServiceTests
     public CombinedRecordingServiceTests()
     {
         _publisher = new(_unitOfWork);
-        _recordings.CombinableMeetings.Add(_meetingId);
+        _recordings.CombinableMeetings.Add(new(_meetingId, MeetingMode.Hybrid));
         var roomPath = _storage.Create(".wav");
         _storage.Files[roomPath] = [.. CombinedRecordingRules.WavHeader(), .. new byte[RecordingRules.RoomBytesPerSecond]];
         _room = new Recording

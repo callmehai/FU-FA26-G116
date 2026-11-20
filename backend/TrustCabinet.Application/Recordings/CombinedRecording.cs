@@ -6,7 +6,8 @@ namespace TrustCabinet.Application.Recordings;
 /// <summary>
 /// ADR-0062 — a hybrid meeting heard as one track: the room mic's recording and each online attendee's sentences, laid
 /// on the real clock and summed. Two people speaking at once are heard at once; an online voice also comes back faintly
-/// through the room's speakers, a little late. Every source is 16 kHz mono 16-bit PCM, so mixing is adding samples.
+/// through the room's speakers, a little late. An online meeting (ADR-0069) is mixed the same way from its
+/// attendees' sentences alone. Every source is 16 kHz mono 16-bit PCM, so mixing is adding samples.
 /// </summary>
 public interface ICombinedRecordingService
 {

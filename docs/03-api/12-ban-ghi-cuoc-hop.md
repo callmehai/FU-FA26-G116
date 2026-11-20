@@ -183,36 +183,47 @@ Link sống `Recordings:PlaybackUrlMinutes` (mặc định 120 phút), ký HMAC-
 Không cần đăng nhập; trả tệp với `Range` (tua được), `Cache-Control: private, no-store`. Sai chữ ký,
 hết hạn, hoặc bản ghi đã xoá: `404` không body.
 
+Với link tải (`&download=1`) thì trả **MP3** ([ADR-0069](../05-decisions/0069-ban-ghi-tong-hop-hop-truc-tuyen-tai-mp3.md)):
+`Content-Type: audio/mpeg`, `Content-Disposition: attachment` với tên bản ghi đổi đuôi thành `.mp3`. Tệp đang lưu là MP3
+thì gửi nguyên (có `Range`); tệp khác được ffmpeg chuyển ngay khi gửi sang MP3 mono `Recordings:Mp3Kbps` kbit/s, không
+có `Content-Length` hay `Range`. ffmpeg không chạy được hoặc không ra byte nào: `503 MSG482`. Lỗi giữa chừng thì kết nối
+bị cắt (trình duyệt báo tải lỗi).
+
 ### `GET /api/recordings/{recordingId}/download`
 
-Chủ toạ hoặc Thư ký xin link lưu tệp gốc, cùng dạng với `/playback` nhưng link có `&download=1` và
-trả `Content-Disposition: attachment` với tên tệp gốc. Chữ ký của link tải **khác** link nghe (ký thêm
+Chủ toạ hoặc Thư ký xin link lưu bản ghi dạng MP3, cùng dạng với `/playback` nhưng link có `&download=1` và
+trả `Content-Disposition: attachment` với tên `<tên bản ghi>.mp3` (xem `/audio` ở trên). Server không có ffmpeg (hoặc ffmpeg
+thiếu bộ mã hoá MP3) thì từ chối ngay, `503 MSG482`, không ghi nhật ký; tệp đã là MP3 thì không cần ffmpeg. Chữ ký của link tải **khác** link nghe (ký thêm
 `.download`), nên thêm `&download=1` vào link nghe mà mọi người dự đều có chỉ nhận `404`. Ghi nhật ký
-`recording.downloaded` lúc phát link. Danh sách bản ghi có `canDownload` cho từng bản.
+`recording.downloaded` lúc phát link (`details.format = "mp3"`). Danh sách bản ghi có `canDownload` cho từng bản.
 
 ### `DELETE /api/recordings/{recordingId}`
 
 Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
 
-## Bản ghi tổng hợp của họp kết hợp ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5)
+## Bản ghi tổng hợp của họp kết hợp và họp trực tuyến ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5, [ADR-0069](../05-decisions/0069-ban-ghi-tong-hop-hop-truc-tuyen-tai-mp3.md))
 
 Họp kết hợp kết thúc rồi, server trộn bản ghi mic phòng và mọi câu theo micro của người trực tuyến (trừ câu đã loại khỏi
-biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Khoảng lặng dài hơn
+biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Họp trực tuyến cũng vậy,
+chỉ trộn các câu theo micro (không có mic phòng; bản ghi phòng cũ nếu có không được trộn vào). Khoảng lặng dài hơn
 2 giây giữa hai quãng có tiếng rút còn 2 giây; bản dài quá 12 giờ thì không dựng. Tệp nằm trong
 `GET …/recordings` với `source: "Combined"`, tên `ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav`, cùng mục đích, người tạo và thời
-hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi. `retainUntil` là ngày
+hạn lưu với bản ghi mic phòng (họp trực tuyến: đồng ý là thông báo ghi âm của phòng họp, tính từ giờ bắt đầu; mục đích
+`Lập biên bản cuộc họp`; người tạo là Thư ký, không có thì người tạo cuộc họp); nghe (`/playback`), tải MP3 (`/download`)
+và xoá (`DELETE`) như mọi bản ghi. `retainUntil` là ngày
 sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-347, tính từ lượt đầu), hoặc câu sớm nhất +
 `Recordings:RetentionDays` — bản tổng hợp không sống lâu hơn nguồn ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)).
 
-- Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng, không còn lượt mic phòng
-  đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
+- Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng (họp trực tuyến: ít nhất
+  một câu có tiếng), không còn lượt mic phòng đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
   tối đa 7 ngày).
 - Nguồn đổi về sau thì dựng lại tại chỗ (cùng `id`, tệp mới thay tệp cũ) và gửi `RecordingsChanged`. Thư ký đã xoá thì
   không dựng lại.
 - Tiếng đã xoá không còn trong bản tổng hợp ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): xoá bản ghi mic phòng (Thư ký xoá hay hết hạn)
   xoá luôn bản tổng hợp trong cùng transaction (audit `recording.erased`, lý do `source_erased`). Xoá một câu hay cắt một
   lượt ghi trong 8 ngày sau khi họp xong thì bản tổng hợp được trộn lại không có phần đó; quá 8 ngày thì bản tổng hợp bị
-  xoá (lý do `source_removed_after_window`). Bản tổng hợp chỉ còn một phía (mọi câu đã xoá hoặc đã loại) cũng bị xoá.
+  xoá (lý do `source_removed_after_window`). Bản tổng hợp không còn gì để trộn (họp kết hợp chỉ còn một phía, họp trực tuyến hết câu: mọi câu đã xoá hoặc đã loại)
+  cũng bị xoá.
 - Không có bản gỡ băng: `transcriptStatus` là `"None"`, `POST …/transcribe` trả `409 MSG479`.
 
 ## Cấu hình (`Recordings:*`)
@@ -225,6 +236,8 @@ sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-34
 | `PlaybackUrlMinutes` | `120` | |
 | `RoomPartBytes` | `320000` | Một phần mic phòng: 10 giây PCM 16 kHz |
 | `IdleTakeHours` | `12` | Lượt mic phòng không nhận phần nào lâu hơn thì server tự lưu |
+| `FfmpegPath` | `ffmpeg` (trên PATH) | ffmpeg chuyển bản ghi sang MP3 khi tải (ADR-0069); image cài sẵn |
+| `Mp3Kbps` | `64` | Bitrate MP3 mono khi tải, khoảng 29 MB mỗi giờ |
 
 ## Gỡ băng (SCRUM-31)
 

@@ -17,7 +17,8 @@ namespace TrustCabinet.Application.Recordings;
 /// </summary>
 public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings, IUnitOfWork unitOfWork,
     IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
-    ICombinedRecordingService combined, TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger)
+    ICombinedRecordingService combined, IAudioTranscoder transcoder, TimeProvider clock, IOptions<RecordingOptions> options,
+    ILogger<RecordingService> logger)
     : IRecordingService
 {
     public async Task<RecordingOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
@@ -139,9 +140,12 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             if (meeting is null) return new(failure);
             if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
             if (RecordingRules.Export(meeting, actorId) is not RecordingFailure.None and var refused) return new(refused);
+            // ADR-0069: saved as MP3. Refused here, where the screen can say why, rather than by a link that fails.
+            if (!RecordingRules.IsMp3(recording.ContentType) && !await transcoder.IsAvailableAsync(ct))
+                return new(RecordingFailure.Mp3Unavailable);
             // Logged when the link is handed out: the file itself is fetched by the browser without a token.
             await audit.RecordAsync(AuditActions.RecordingDownloaded, AuditActions.RecordingObjectType, recording.Id, actorId,
-                new { recording.MeetingId, recording.FileName, recording.ByteSize }, ct);
+                new { recording.MeetingId, recording.FileName, recording.ByteSize, format = "mp3" }, ct);
             return new(Data: signer.Sign(recordingId, clock.GetUtcNow(), download: true));
         }
         catch (PersistenceException ex)

@@ -27,6 +27,8 @@ public enum RecordingFailure
     /// know when it was said, so it could not sit in one timeline with the online attendees' sentences.
     /// </summary>
     HybridLiveOnly,
+    /// <summary>ADR-0069: a download is MP3, and the server cannot convert the file to it right now.</summary>
+    Mp3Unavailable,
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -78,6 +80,7 @@ public interface IRecordingService
     Task<RecordingOutcome> AddAsync(Guid meetingId, Guid actorId, RecordingUpload upload, CancellationToken ct = default);
     Task<RecordingOutcome> PlaybackAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     /// <summary>A signed link that saves the original file; the Chair or a Secretary, never for a Secret meeting.</summary>
+    /// <remarks>ADR-0069: the link saves the recording as MP3, converted on the way out when stored as anything else.</remarks>
     Task<RecordingOutcome> DownloadAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<StoredRecordingFile?> FindPlayableAsync(Guid recordingId, CancellationToken ct = default);
     Task<RecordingOutcome> EraseAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
@@ -121,10 +124,10 @@ public interface IRecordingRepository
     Task DeleteTranscriptAsync(Guid recordingId, CancellationToken ct);
 
     /// <summary>
-    /// The hybrid meetings, not secret, that ended between <paramref name="since"/> and <paramref name="settled"/>, oldest
+    /// The hybrid and online meetings (ADR-0069), not secret, that ended between <paramref name="since"/> and <paramref name="settled"/>, oldest
     /// end first: those whose combined recording may be due (ADR-0062). One query.
     /// </summary>
-    Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct);
+    Task<IReadOnlyList<CombinableMeeting>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct);
 
     /// <summary>Every recording of the meeting, erased ones included, untracked and unordered, without its maker or transcript. One query.</summary>
     Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct);
@@ -167,6 +170,29 @@ public interface IRecordingStorage
 public sealed record StoredAudioFile(string StoragePath, long ByteSize);
 
 /// <summary>Raised by <see cref="IRecordingStorage.SaveAsync"/> when the stream passes the size limit.</summary>
+/// <summary>
+/// ADR-0069 — a recording is downloaded as MP3, whatever it was stored as: a meeting's WAV is about ten times the size of
+/// the same speech in MP3. Converted while it is sent rather than kept twice, so no second copy of anyone's voice has to
+/// follow the first one's retention and erasure. Implemented in Infrastructure with ffmpeg.
+/// </summary>
+public interface IAudioTranscoder
+{
+    /// <summary>Whether a conversion can start at all (the converter is installed, runs and has an MP3 encoder).</summary>
+    Task<bool> IsAvailableAsync(CancellationToken ct);
+
+    /// <summary>
+    /// The MP3 of <paramref name="source"/>, produced as it is read; the returned stream owns <paramref name="source"/>,
+    /// and so does a failure. Throws <see cref="AudioTranscodeException"/> when the conversion cannot start or yields
+    /// nothing, before a byte is returned, so the caller can still answer with an error instead of a broken file.
+    /// </summary>
+    Task<Stream> OpenMp3Async(Stream source, CancellationToken ct);
+}
+
+public sealed class AudioTranscodeException(string message, Exception? inner = null) : Exception(message, inner);
+
+/// <summary>A meeting whose combined recording may be due (ADR-0062, ADR-0069), with what it is mixed from.</summary>
+public sealed record CombinableMeeting(Guid Id, MeetingMode Mode);
+
 public sealed class RecordingTooLargeException() : Exception("The recording exceeds the upload limit.");
 
 /// <summary>Signs and checks the short-lived URL an &lt;audio&gt; element plays from, since it cannot send a bearer token.</summary>
@@ -192,6 +218,16 @@ public static class RecordingRules
         ["audio/m4a"] = ".m4a", ["audio/aac"] = ".aac", ["audio/wav"] = ".wav", ["audio/x-wav"] = ".wav",
         ["audio/wave"] = ".wav", ["audio/webm"] = ".webm", ["audio/ogg"] = ".ogg", ["video/webm"] = ".webm",
     };
+
+    /// <summary>ADR-0069: a file stored as MP3 is downloaded as it is; any other is converted on the way out.</summary>
+    public static bool IsMp3(string contentType) => Extensions.TryGetValue(contentType, out var extension) && extension == ".mp3";
+
+    /// <summary>The name a download is saved under: the recording's own, ending in .mp3.</summary>
+    public static string Mp3FileName(string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName).Trim();
+        return $"{(stem.Length == 0 ? "ban-ghi" : stem)}.mp3";
+    }
 
     /// <summary>Recording happens during the sitting or is uploaded right after it — never before it starts.</summary>
     public static bool UploadAllowed(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;

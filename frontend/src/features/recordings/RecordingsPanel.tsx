@@ -37,8 +37,8 @@ const TRANSCRIPT_POLL_MS = 4000
 type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; data: RecordingList }
 
 /**
- * `existingOnly`: an online meeting has no room to record (ADR-0040) — show recordings made before, if any, and
- * nothing at all otherwise.
+ * `existingOnly`: an online meeting has no room to record (ADR-0040) — show what it has, its combined recording built
+ * after it ends from every mic (ADR-0069) or recordings made before, and nothing at all otherwise.
  */
 export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId: string; existingOnly?: boolean }) {
   const toast = useToast()
@@ -95,7 +95,7 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
   // Nothing to show is the likely answer there: no placeholder that would vanish once the list comes back empty.
-  if (existingOnly && (state.kind === 'loading' || data?.items.length === 0)) return null
+  if (existingOnly && (state.kind === 'loading' || (data?.items.every((r) => r.status === 'Deleted') ?? false))) return null
 
   // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
   const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
@@ -174,7 +174,12 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               recording.status === 'Pending' ? (
                 <OpenTakeRow key={recording.id} take={recording} />
               ) : (
-                <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
+                <RecordingRow
+                  key={recording.id}
+                  recording={recording}
+                  online={existingOnly}
+                  onErase={() => setErasing(recording)}
+                />
               ),
             )}
         </ul>
@@ -236,6 +241,12 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   )
 }
 
+/** The name the server saves a download under (ADR-0069): the recording's own, ending in .mp3. */
+function mp3Name(fileName: string) {
+  const stem = fileName.replace(/\.[^./\\]*$/, '').trim()
+  return `${stem || 'ban-ghi'}.mp3`
+}
+
 const SOURCE_LABEL: Record<RecordingSource, string> = {
   BrowserCapture: 'Mic phòng',
   Upload: 'Tải lên',
@@ -269,7 +280,15 @@ function OpenTakeRow({ take }: { take: Recording }) {
   )
 }
 
-function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
+function RecordingRow({
+  recording,
+  online,
+  onErase,
+}: {
+  recording: Recording
+  online: boolean
+  onErase: () => void
+}) {
   const deleted = recording.status === 'Deleted'
   // Open from the start: what the machine wrote down is what people come to the tab for.
   const [open, setOpen] = useState(!deleted)
@@ -338,12 +357,13 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   }, [open, deleted, recording.id, recording.byteSize])
 
   const toast = useToast()
-  // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
+  // A signed link followed by the browser itself: a recording can be hundreds of megabytes. Always saved as MP3
+  // (ADR-0069), converted on the server while it downloads.
   const download = async () => {
     try {
       const link = document.createElement('a')
       link.href = (await getRecordingDownload(recording.id)).url
-      link.download = recording.fileName
+      link.download = mp3Name(recording.fileName)
       document.body.append(link)
       link.click()
       link.remove()
@@ -402,8 +422,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
               type="button"
               className="btn btn-outline btn-icon btn-sm"
               onClick={() => void download()}
-              aria-label="Tải tệp ghi âm"
-              data-tooltip="Tải tệp ghi âm"
+              aria-label="Tải MP3"
+              data-tooltip="Tải MP3"
             >
               <Icon name="download" size={16} />
             </button>
@@ -479,7 +499,9 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           </div>
           {recording.source === 'Combined' ? (
             <p className="field-hint">
-              Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.
+              {online
+                ? 'Mic của từng người họp, ghép theo giờ thật để nghe lại.'
+                : 'Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.'}
             </p>
           ) : (
             <TranscriptView
