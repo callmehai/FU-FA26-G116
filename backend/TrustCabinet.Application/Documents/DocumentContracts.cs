@@ -242,7 +242,7 @@ public interface IStoredFileRepository
 }
 
 /// <summary>One unreferenced file past its grace period (BR-213).</summary>
-public sealed record StoredFileRef(Guid Id, string StorageKey);
+public sealed record StoredFileRef(Guid Id, string StorageKey, long ByteSize = 0);
 
 /// <summary>BR-213: deletes the object of every unreferenced stored file past its grace period, then stamps it.</summary>
 public interface IOrphanFilePurger

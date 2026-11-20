@@ -427,6 +427,10 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             return (audio, await clips.DeleteCreatedBeforeAsync(cutoff, token));
         }, TransactionMode.None, ct);
         foreach (var file in files) DeleteAudio(file);
+        // PO 19/11/2026: one row per run that removed something, with no actor — the retention period did it.
+        if (erased > 0)
+            await audit.RecordAsync(AuditActions.SpeechClipsExpired, AuditActions.SpeechClipObjectType, null, null,
+                new { rows = erased, files = files.Count, retentionDays = options.Value.RetentionDays, cutoff }, ct);
         return erased;
     }
 

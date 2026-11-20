@@ -80,7 +80,7 @@ public sealed class DataRetentionService(IRetentionRepository rows, IMeetingRepo
         {
             logger.LogInformation("Deleted {Count} orphaned audio files ({Bytes} bytes)", files, bytes);
             await audit.RecordAsync(AuditActions.RecordingOrphanFilesDeleted, AuditActions.RecordingStorageObjectType, null, null,
-                new { files, bytes, graceHours }, ct);
+                new { files, bytes, graceHours, cutoff }, ct);
         }
         return (files, bytes);
     }
@@ -137,24 +137,40 @@ public sealed class DataRetentionService(IRetentionRepository rows, IMeetingRepo
         return deleted;
     }
 
-    public Task<int> PruneNotificationsAsync(CancellationToken ct = default)
+    public async Task<int> PruneNotificationsAsync(CancellationToken ct = default)
     {
         var now = clock.GetUtcNow();
-        var read = now.AddDays(-options.Value.ReadNotificationDays);
-        var any = now.AddDays(-options.Value.NotificationDays);
-        return unitOfWork.ExecuteAsync(token => rows.DeleteNotificationsAsync(any, read, token), TransactionMode.None, ct);
+        var readCutoff = now.AddDays(-options.Value.ReadNotificationDays);
+        var cutoff = now.AddDays(-options.Value.NotificationDays);
+        var deleted = await unitOfWork.ExecuteAsync(token => rows.DeleteNotificationsAsync(cutoff, readCutoff, token),
+            TransactionMode.None, ct);
+        await RecordAsync(AuditActions.NotificationsPurged, AuditActions.NotificationObjectType, deleted,
+            new { rows = deleted, readCutoff, cutoff }, ct);
+        return deleted;
     }
 
-    public Task<int> PruneGuestChallengesAsync(CancellationToken ct = default)
+    public async Task<int> PruneGuestChallengesAsync(CancellationToken ct = default)
     {
         var cutoff = clock.GetUtcNow().AddDays(-options.Value.GuestChallengeDays);
-        return unitOfWork.ExecuteAsync(token => rows.DeleteGuestChallengesAsync(cutoff, token), TransactionMode.None, ct);
+        var deleted = await unitOfWork.ExecuteAsync(token => rows.DeleteGuestChallengesAsync(cutoff, token), TransactionMode.None, ct);
+        await RecordAsync(AuditActions.GuestCodesPurged, AuditActions.GuestVerificationCodeObjectType, deleted,
+            new { rows = deleted, cutoff }, ct);
+        return deleted;
     }
 
-    public Task<int> ScrubEmailBodiesAsync(CancellationToken ct = default)
+    public async Task<int> ScrubEmailBodiesAsync(CancellationToken ct = default)
     {
         var now = clock.GetUtcNow();
         var cutoff = now.AddDays(-options.Value.EmailBodyDays);
-        return unitOfWork.ExecuteAsync(token => rows.ScrubEmailBodiesAsync(cutoff, now, token), TransactionMode.None, ct);
+        var cleared = await unitOfWork.ExecuteAsync(token => rows.ScrubEmailBodiesAsync(cutoff, now, token), TransactionMode.None, ct);
+        await RecordAsync(AuditActions.EmailBodiesCleared, AuditActions.EmailObjectType, cleared, new { rows = cleared, cutoff }, ct);
+        return cleared;
     }
+
+    /// <summary>
+    /// PO 19/11/2026 — one audit row per rule and run, only when the rule removed something: an hourly job that finds
+    /// nothing must not fill the log. No actor (the system did it), no object id (a run removes many rows).
+    /// </summary>
+    private Task RecordAsync(string action, string objectType, int removed, object details, CancellationToken ct)
+        => removed > 0 ? audit.RecordAsync(action, objectType, null, null, details, ct) : Task.CompletedTask;
 }

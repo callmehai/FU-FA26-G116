@@ -1,9 +1,13 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Documents;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Infrastructure.Audit;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Persistence;
 
@@ -45,8 +49,19 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
         await db.SaveChangesAsync();
         foreach (var file in new[] { orphan, removedFromMeeting, inMeeting, inLibrary, recent })
             fixture.Storage.Objects[file.StorageKey] = [1];
+        var before = await AuditCount();
 
         Assert.Equal(2, await Purger(db).PurgeAsync(default));
+
+        // PO 19/11/2026: one summary row for the run, with no actor, the count and the bytes.
+        Assert.Equal(before + 1, await AuditCount());
+        var audit = await fixture.Db().AuditLog.AsNoTracking().Where(a => a.Action == AuditActions.DocumentOrphanFilesPurged)
+            .OrderByDescending(a => a.OccurredAt).FirstAsync();
+        Assert.Null(audit.ActorId);
+        Assert.Equal(AuditActions.StoredFileObjectType, audit.ObjectType);
+        var details = JsonDocument.Parse(audit.Details).RootElement;
+        Assert.Equal(2, details.GetProperty("files").GetInt32());
+        Assert.Equal(2, details.GetProperty("bytes").GetInt64());
 
         var rows = await fixture.Db().StoredFiles.AsNoTracking().ToDictionaryAsync(f => f.Id);
         // The row stays, stamped; only the object goes.
@@ -60,8 +75,9 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
             Assert.True(fixture.Storage.Objects.ContainsKey(kept.StorageKey));
         }
 
-        // Already purged files are not picked up again.
+        // Already purged files are not picked up again, and a run that purges nothing writes no row.
         Assert.Equal(0, await Purger(db).PurgeAsync(default));
+        Assert.Equal(before + 1, await AuditCount());
     }
 
     [Fact]
@@ -114,9 +130,16 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
     }
 
     private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db, int graceHours = 24) => new(
-        new StoredFileRepository(db), fixture.Storage, new EfUnitOfWork(db), new FixedClock(),
+        new StoredFileRepository(db), fixture.Storage, new EfUnitOfWork(db),
+        new AuditService(new AuditLogRepository(db), new EfUnitOfWork(db), new Users.FakeCallerContext()), new FixedClock(),
         Options.Create(new FileStorageOptions { OrphanGracePeriodHours = graceHours }),
         NullLogger<OrphanFilePurger>.Instance);
+
+    private async Task<int> AuditCount()
+    {
+        await using var db = fixture.Db();
+        return await db.AuditLog.CountAsync(a => a.Action == AuditActions.DocumentOrphanFilesPurged);
+    }
 
     private static StoredFile File(Guid uploader, DateTimeOffset uploadedAt)
     {

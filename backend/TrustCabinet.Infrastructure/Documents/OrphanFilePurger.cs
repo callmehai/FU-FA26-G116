@@ -3,7 +3,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Documents;
+using TrustCabinet.Domain.Audit;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -14,10 +16,11 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// a library row — so checking once before the delete is enough. An upload is the exception: it
 /// writes its rows before its objects (ADR-0024 §4) and they stay unreferenced until it commits, so
 /// only the grace period keeps them safe, and it is never under an hour. If the upload never
-/// commits, they are orphans like any other.
+/// commits, they are orphans like any other. A run that purged something leaves one audit row with the count and the
+/// bytes (PO 19/11/2026); a run that found nothing leaves none.
 /// </summary>
 public sealed class OrphanFilePurger(IStoredFileRepository files, IFileStorage storage, IUnitOfWork unitOfWork,
-    TimeProvider clock, IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
+    IAuditService audit, TimeProvider clock, IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
     : IOrphanFilePurger
 {
     private const int BatchSize = 100;
@@ -32,11 +35,12 @@ public sealed class OrphanFilePurger(IStoredFileRepository files, IFileStorage s
         // one failed delete per orphan per run, which is fine at this scale.
         var failed = new List<Guid>();
         var purged = 0;
+        long bytes = 0;
         while (true)
         {
             var orphans = await unitOfWork.ExecuteAsync(
                 token => files.ListOrphansAsync(cutoff, failed, BatchSize, token), TransactionMode.None, ct);
-            if (orphans.Count == 0) return purged;
+            if (orphans.Count == 0) break;
 
             foreach (var orphan in orphans)
             {
@@ -49,10 +53,16 @@ public sealed class OrphanFilePurger(IStoredFileRepository files, IFileStorage s
                     failed.Add(orphan.Id);
                     continue;
                 }
-                purged += await unitOfWork.ExecuteAsync(token => files.TryStampPurgedAsync(orphan.Id, now, token),
-                    TransactionMode.None, ct);
+                if (await unitOfWork.ExecuteAsync(token => files.TryStampPurgedAsync(orphan.Id, now, token),
+                    TransactionMode.None, ct) == 0) continue;
+                purged++;
+                bytes += orphan.ByteSize;
             }
         }
+        if (purged > 0)
+            await audit.RecordAsync(AuditActions.DocumentOrphanFilesPurged, AuditActions.StoredFileObjectType, null, null,
+                new { files = purged, bytes, cutoff }, ct);
+        return purged;
     }
 }
 
