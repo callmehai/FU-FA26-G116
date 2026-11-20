@@ -65,6 +65,10 @@ async function openMic(onBlock: (samples: Float32Array) => void, onEnded: () => 
     onBlock(samples)
   }
   context.createMediaStreamSource(stream).connect(tap)
+  // WebKit only runs the nodes that lead to the speakers: the tap goes on to them through a silent gain.
+  const silent = context.createGain()
+  silent.gain.value = 0
+  tap.connect(silent).connect(context.destination)
   stream.getAudioTracks()[0]?.addEventListener('ended', onEnded)
   void context.resume()
   return {
