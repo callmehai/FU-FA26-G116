@@ -32,9 +32,10 @@ ADR-0012 cho mọi màn đã đăng nhập một sidebar dọc màu xanh; dướ
    cuộn dọc, mở ở giờ hiện tại hoặc cuộc họp đầu, chú thích màu ở cuối khung. Không có gì cuộn ngang. Chạm một ngày
    hoặc vuốt ngang để đổi ngày; vuốt quá ngày cuối tuần sang tuần sau. Nút “Vào phòng họp” nằm trên dòng giờ của ô để
    tên cuộc họp còn đọc được.
-4. **Vùng an toàn**: hai thanh tự đệm `env(safe-area-inset-*)`. `index.html` **chưa** bật `viewport-fit=cover`, vì
-   phòng họp và trang đăng nhập khi xoay ngang sẽ nằm dưới tai thỏ; bật nó là việc của lượt sau, cùng với đệm cho các
-   màn đó.
+4. **Vùng an toàn**: `index.html` bật `viewport-fit=cover` (PO 21/11: thanh tab dưới nằm đè lên thanh vuốt về màn
+   hình chính của iPhone), nên `env(safe-area-inset-*)` có giá trị thật. Hai thanh tự đệm theo nó; phòng họp, trang
+   đăng nhập, trang Khách và khung rộng (điện thoại xoay ngang, quá 640px) cũng tự đệm để không nằm dưới tai thỏ hay
+   thanh vuốt.
 
 ## Hệ quả
 

@@ -521,7 +521,7 @@ input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--dan
   justify-content: center;
   gap: 18px;
   min-height: 100vh;
-  padding: 40px 16px;
+  padding: max(40px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   overflow: hidden;
 }
 
@@ -580,7 +580,8 @@ input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--dan
 }
 .otp + .field-error, .otp + .field-hint { text-align: center; }
 
-.guest-page { display: flex; flex-direction: column; min-height: 100vh; background: var(--paper); }
+.guest-page { display: flex; flex-direction: column; min-height: 100vh; background: var(--paper);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 .guest-bar {
   display: flex;
   align-items: center;
@@ -611,6 +612,8 @@ input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--dan
 /* ---------- Shell (ADR-0012) ----------
    One vertical sidebar and the content beside it; no app bar. The content column is the one
    scroll container, so a listing table can fill the remaining height with its own scroll. */
+/* viewport-fit=cover: a phone in landscape is wider than 640px and gets this shell; the notch side is padded. */
+.shell:not(.shell-phone) { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 /* 100dvh, not 100vh: on a phone 100vh counts the browser bar's space too, so the page was taller than the screen,
    scrolled, and resized as the bar came and went. */
 .shell { --sidebar-current: var(--sidebar-width); display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -1054,8 +1057,8 @@ a.menu-item { text-decoration: none; }
    Under 640px the 72px rail took a fifth of the screen: a top bar (brand, bell, account) and a bottom tab bar give
    the page the whole width. The shell is the visible height and only .content scrolls (Base and Shell above); here
    the document is also locked, so nothing can scroll it, drag it sideways or bounce it. The bars pad themselves by
-   the safe-area insets; those are 0 until index.html opts into viewport-fit=cover, which it does not yet, since the
-   call room and the sign-in page would then run under the notch in landscape (ADR-0070). */
+   the safe-area insets, which index.html turns on with viewport-fit=cover (Hải 21/11: the tab bar sat under the
+   iPhone's home bar); the pages outside the shell pad themselves below. */
 :root { --tabbar-height: 56px; }
 html:has(.shell-phone), body:has(.shell-phone) { overflow: hidden; }
 /* Quick taps on a button (the calendar's arrows) must not zoom the page; pinch zoom stays. */
@@ -3804,6 +3807,8 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 
 .room {
   height: 100dvh;
+  /* viewport-fit=cover: keep the controls off the home bar and, in landscape, the stage off the notch. */
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   display: flex;
   flex-direction: column;
   background: var(--stage-bg);
