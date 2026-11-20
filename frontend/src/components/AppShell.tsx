@@ -4,7 +4,7 @@ import { routes } from '../lib/routes'
 import { useAuth } from '../features/auth/useAuth'
 import { avatarColors, initials } from '../lib/avatar'
 import { NotificationBell } from '../features/notifications/NotificationBell'
-import { AppSidebar } from './AppSidebar'
+import { AppSidebar, PhoneTabBar } from './AppSidebar'
 import { BrandMark } from './BrandMark'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Icon } from './Icon'
@@ -17,6 +17,8 @@ const CreateMeetingHost = lazy(() =>
 /** Where the collapsed/expanded choice survives a reload. A per-browser convenience only. */
 const COLLAPSED_KEY = 'tc.sidebarCollapsed'
 const NARROW_QUERY = '(max-width: 720px)'
+/** A phone (ADR-0070): a top bar and a bottom tab bar instead of the rail, so the page gets the whole width. */
+const PHONE_QUERY = '(max-width: 640px)'
 
 /** One's own pages, in the account menu rather than the sidebar (as AI-eCabinet's avatar menu). */
 const PERSONAL = [
@@ -31,6 +33,11 @@ const PERSONAL = [
  * then the account and the notification bell at its foot — and the routed content beside it.
  * There is no app bar; the page's own header is the first thing in the content. The account menu holds
  * what is one's own, then sign-out, which asks first.
+ *
+ * On a phone the rail gives way to a top bar (brand, bell, account) and a bottom tab bar (ADR-0070). The shell is
+ * exactly the visible height (100dvh) and the content column stays the one scroll container, so the document itself
+ * never scrolls: Safari's toolbars then never collapse or expand under the finger, and nothing sized by the viewport
+ * changes while reading.
  */
 export function AppShell() {
   const { user, signOut } = useAuth()
@@ -39,6 +46,7 @@ export function AppShell() {
   // Below 720px there is no room for a 256px sidebar, whatever the user last chose.
   const narrow = useMediaQuery(NARROW_QUERY)
   const collapsed = collapsedByUser || narrow
+  const phone = useMediaQuery(PHONE_QUERY)
   const [confirmingSignOut, setConfirmingSignOut] = useState(false)
   const accountMenuRef = useRef<HTMLDetailsElement>(null)
   const { pathname } = useLocation()
@@ -91,6 +99,90 @@ export function AppShell() {
 
   const avatar = avatarColors(user.fullName)
 
+  const account = (
+    <details className="account" ref={accountMenuRef}>
+      <summary aria-label={`Tài khoản ${user.fullName}`} data-tooltip={collapsed ? user.fullName : undefined}>
+        <span className="avatar" style={{ backgroundColor: avatar.bg, color: avatar.fg }}>
+          {initials(user.fullName)}
+        </span>
+        <span className="sidebar-label account-summary">
+          <span className="account-summary-name">{user.fullName}</span>
+          <span className="account-summary-role">{user.roleName}</span>
+        </span>
+        {/* Says the row opens a menu (Hải 20/11: nobody saw the profile was clickable). */}
+        <span className="sidebar-label account-caret">
+          <Icon name="chevronsUpDown" size={14} />
+        </span>
+      </summary>
+      <div className="account-menu">
+        <div className="account-id">
+          <p className="account-name">{user.fullName}</p>
+          <p className="account-meta">{user.email}</p>
+          <p className="account-meta">{user.roleName}</p>
+        </div>
+        <hr />
+        {PERSONAL.map((page) => (
+          <NavLink key={page.to} to={page.to} className="menu-item">
+            <Icon name={page.icon} size={16} />
+            {page.label}
+          </NavLink>
+        ))}
+        <hr />
+        <button type="button" className="menu-item" onClick={askToSignOut}>
+          <Icon name="logOut" size={16} />
+          Đăng xuất
+        </button>
+      </div>
+    </details>
+  )
+
+  const content = (
+    <main className="content">
+      {/* A screen's chunk loads inside the shell, so the sidebar never blinks out on navigation. */}
+      <Suspense fallback={<p className="route-fallback">Đang tải…</p>}>
+        <Outlet />
+      </Suspense>
+      {/* The create dialog opens over whichever page carries `?create=` (AI-eCabinet's host). */}
+      {creating && (
+        <Suspense fallback={null}>
+          <CreateMeetingHost />
+        </Suspense>
+      )}
+    </main>
+  )
+
+  const signOutDialog = confirmingSignOut && (
+    <ConfirmDialog
+      title="Đăng xuất"
+      confirmLabel="Đăng xuất"
+      pendingLabel="Đang đăng xuất…"
+      onConfirm={confirmSignOut}
+      onClose={() => setConfirmingSignOut(false)}
+    >
+      Bạn có chắc muốn đăng xuất? Phiên đăng nhập trên thiết bị này sẽ kết thúc.
+    </ConfirmDialog>
+  )
+
+  if (phone) {
+    return (
+      <div className="shell shell-phone">
+        <header className="topbar">
+          <NavLink className="topbar-brand" to={routes.calendar} aria-label="TrustCabinet, Lịch làm việc">
+            <span className="sidebar-brand-disc">
+              <BrandMark size={26} />
+            </span>
+            <strong>TrustCabinet</strong>
+          </NavLink>
+          <NotificationBell />
+          {account}
+        </header>
+        {content}
+        <PhoneTabBar />
+        {signOutDialog}
+      </div>
+    )
+  }
+
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
       <aside className="sidebar">
@@ -122,72 +214,15 @@ export function AppShell() {
         <AppSidebar collapsed={collapsed} />
 
         <div className="sidebar-foot">
-          <details className="account" ref={accountMenuRef}>
-            <summary
-              aria-label={`Tài khoản ${user.fullName}`}
-              data-tooltip={collapsed ? user.fullName : undefined}
-            >
-              <span className="avatar" style={{ backgroundColor: avatar.bg, color: avatar.fg }}>
-                {initials(user.fullName)}
-              </span>
-              <span className="sidebar-label account-summary">
-                <span className="account-summary-name">{user.fullName}</span>
-                <span className="account-summary-role">{user.roleName}</span>
-              </span>
-              {/* Says the row opens a menu (Hải 20/11: nobody saw the profile was clickable). */}
-              <span className="sidebar-label account-caret">
-                <Icon name="chevronsUpDown" size={14} />
-              </span>
-            </summary>
-            <div className="account-menu">
-              <div className="account-id">
-                <p className="account-name">{user.fullName}</p>
-                <p className="account-meta">{user.email}</p>
-                <p className="account-meta">{user.roleName}</p>
-              </div>
-              <hr />
-              {PERSONAL.map((page) => (
-                <NavLink key={page.to} to={page.to} className="menu-item">
-                  <Icon name={page.icon} size={16} />
-                  {page.label}
-                </NavLink>
-              ))}
-              <hr />
-              <button type="button" className="menu-item" onClick={askToSignOut}>
-                <Icon name="logOut" size={16} />
-                Đăng xuất
-              </button>
-            </div>
-          </details>
+          {account}
 
           <NotificationBell />
         </div>
       </aside>
 
-      <main className="content">
-        {/* A screen's chunk loads inside the shell, so the sidebar never blinks out on navigation. */}
-        <Suspense fallback={<p className="route-fallback">Đang tải…</p>}>
-          <Outlet />
-        </Suspense>
-        {/* The create dialog opens over whichever page carries `?create=` (AI-eCabinet's host). */}
-        {creating && (
-          <Suspense fallback={null}>
-            <CreateMeetingHost />
-          </Suspense>
-        )}
-      </main>
+      {content}
 
-      {confirmingSignOut && (
-        <ConfirmDialog
-          title="Đăng xuất"
-          confirmLabel="Đăng xuất"
-          pendingLabel="Đang đăng xuất…"
-          onConfirm={confirmSignOut}
-          onClose={() => setConfirmingSignOut(false)}
-        >
-          Bạn có chắc muốn đăng xuất? Phiên đăng nhập trên thiết bị này sẽ kết thúc.
-        </ConfirmDialog>
-      )}
+      {signOutDialog}
     </div>
   )
 }

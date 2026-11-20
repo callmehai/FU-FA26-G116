@@ -130,7 +130,9 @@ global.json                  pins .NET SDK 10.0.401
 ```
 
 Every signed-in screen sits in one shell with one vertical blue sidebar — no app bar, no workspace
-switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
+switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. On a phone (≤ 640px) a top bar
+and a bottom tab bar replace the sidebar, and only the content column scrolls
+([ADR-0070](docs/05-decisions/0070-khung-dien-thoai-thanh-tren-thanh-tab-duoi.md)). See
 [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
 [ADR-0043](docs/05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) for the components taken
 from AI-eCabinet inside it (control sizes, the pinging calls to act, the listing layout, the
