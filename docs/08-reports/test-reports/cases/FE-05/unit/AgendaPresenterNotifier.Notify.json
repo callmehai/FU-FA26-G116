@@ -22,10 +22,7 @@
             "Agenda item \"Q3 review\" has presenter P; P is an active current participant; no notification with the key exists."
           ],
           "return": "Completes; one in-app notification is saved.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -37,10 +34,7 @@
             "Same assignment as before; a notification with key \"agenda-presenter:E1:P\" already exists."
           ],
           "return": "Completes; nothing is added (idempotent).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -52,10 +46,7 @@
             "Presenter P was removed from the roster after the change."
           ],
           "return": "Completes; nothing is added.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -67,10 +58,7 @@
             "Presenter P's account is deactivated."
           ],
           "return": "Completes; nothing is added.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -82,10 +70,7 @@
             "Meeting M no longer exists."
           ],
           "return": "Completes; nothing is written.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -97,10 +82,7 @@
             "Agenda item was deleted before the notifier ran."
           ],
           "return": "Completes; nothing is written.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -112,10 +94,7 @@
             "The item's presenter was changed to Q after the assignment to P was made."
           ],
           "return": "Completes; nothing is added (the assignment is stale).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -127,10 +106,7 @@
             "The item's presenter was cleared."
           ],
           "return": "Completes; nothing is added.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -142,10 +118,7 @@
             "Assignment names neither an internal presenter nor a Guest."
           ],
           "return": "Completes; nothing is added.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -158,10 +131,7 @@
             "Guest link provider is available and returns a ready link."
           ],
           "return": "Completes; one email is queued.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -173,10 +143,7 @@
             "Item presenter is Guest G; link provider returns a link that is not ready (e.g. invitation already used)."
           ],
           "return": "Completes; one email is queued without the verification link line.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -188,10 +155,7 @@
             "Item presenter is Guest G; no link provider is registered."
           ],
           "return": "Completes; one email is queued without a link.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -203,10 +167,7 @@
             "Guest invitation G was revoked."
           ],
           "return": "Completes; no email is queued.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -218,10 +179,7 @@
             "An email with key \"agenda-presenter:E1:G\" already exists."
           ],
           "return": "Completes; no second email.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         }
       ]
     }

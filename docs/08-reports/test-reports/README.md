@@ -60,13 +60,16 @@ Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feat
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
 Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
+5.1 mô tả code nhánh `app` (kiến trúc bốn project, ADR-0065), không phải cây làm việc hiện tại:
+`cases/functions.json` (`source.ref`) ghim SHA commit cố định của `app` mà UTC được viết theo;
+đổi ref khi rebase sang commit `app` mới và chạy `relink` để ghim lại `file:line`.
 
 ```powershell
 python scripts/test_reports/unit_cases.py check            # kiểm tra
 python scripts/test_reports/unit_cases.py relink           # ghim lại file/line sau khi refactor dời code (check báo dòng thật khi lệch)
 python scripts/test_reports/unit_cases.py sync-back        # gom kết quả Round/Test date/Tester đã chạy thật từ workbook cũ vào JSON (theo mã UTC)
 python scripts/test_reports/unit_cases.py build            # dry-run: kiểm tra rồi in diff workbook cũ so với JSON (không ghi file)
-python scripts/test_reports/unit_cases.py build --overwrite  # sao lưu bản cũ thành .bak-YYYYMMDD-HHMM rồi sinh lại workbook (đóng Excel trước)
+python scripts/test_reports/unit_cases.py build --overwrite  # sao lưu bản cũ thành .bak-YYYYMMDD-HHMMSS rồi sinh lại workbook (đóng Excel trước)
 ```
 
 Quy trình bắt buộc khi sinh lại workbook: chạy `build` (dry-run) → trình diff cho người dùng → chờ OK → chạy `sync-back` (nếu workbook cũ có kết quả) → chạy `build --overwrite`.

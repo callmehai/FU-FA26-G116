@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "refreshToken: \"T1\".",
@@ -16,12 +15,9 @@
             "The account role currently holds capabilities [MeetingCreator, UserManager]."
           ],
           "return": "SignInResult Success with a new access token carrying the current capabilities [MeetingCreator, UserManager] and a new refresh token T2; T1 is spent (consumed) and T2 is stored for the account.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "refreshToken: \"T1\".",
@@ -32,12 +28,9 @@
             "An administrator removed a capability from the role after the last sign-in."
           ],
           "return": "SignInResult Success whose new access token carries only the capabilities the role holds now (re-read, not copied from the old token).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "refreshToken: \"\".",
@@ -47,12 +40,9 @@
             "No repository or token store is touched for a blank token."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "refreshToken: \"   \".",
@@ -62,12 +52,9 @@
             "No repository or token store is touched for a whitespace token."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "refreshToken: \"unknown-token\".",
@@ -77,12 +64,9 @@
             "Token store has no live record of the presented token (unknown, expired or already spent)."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the token is still presented for consumption so a replay of a spent token is detected by the store.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "refreshToken: \"T-orphan\".",
@@ -92,12 +76,9 @@
             "Token store maps the token to an account id that no longer exists in the account store."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the token is consumed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "refreshToken: \"T1\".",
@@ -108,12 +89,9 @@
             "The account holds a second live refresh token T9."
           ],
           "return": "SignInResult Failure(AccountDeactivated) (MSG02); every refresh token of the account (T1, T9) is revoked and no token is issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "refreshToken: \"T1\" (concurrent duplicate request).",
@@ -124,8 +102,6 @@
             "Account is active."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01): the consume does not return the account id, so no new token is issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ],

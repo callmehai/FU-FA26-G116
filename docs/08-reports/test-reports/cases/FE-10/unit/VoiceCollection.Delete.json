@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Saved: sample removed; audit row records the deletion with the meeting scope.",
           "type": "Normal",
-          "note": "UC-86d · BR-452 · MSG474",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86d · BR-452 · MSG474"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86d · BR-452 · BR-448",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86d · BR-452 · BR-448"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86d · BR-450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86d · BR-450"
         }
       ]
     }

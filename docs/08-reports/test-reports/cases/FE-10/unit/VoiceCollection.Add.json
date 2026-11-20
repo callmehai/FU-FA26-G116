@@ -23,10 +23,7 @@
           "exception": "N/A",
           "log": "Saved: encrypted sample always with its recording; notification \"Thư ký đã thu giọng mẫu của bạn\" to the person; audit row records the collection with the meeting scope.",
           "type": "Normal",
-          "note": "UC-86b · BR-452 · BR-453 · MSG473 · Pending: needs the live speech worker to embed a clear voice sample.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-452 · BR-453 · MSG473 · Pending: needs the live speech worker to embed a clear voice sample."
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-450"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-449 · MSG475",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-449 · MSG475"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-449 · MSG475",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-449 · MSG475"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-448 · MSG476",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-448 · MSG476"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-451 · MSG477",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-451 · MSG477"
         },
         {
           "id": "UTC007",
@@ -113,10 +95,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-452",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-452"
         },
         {
           "id": "UTC008",
@@ -129,10 +108,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-363 · MSG309 · Pending: needs the live speech worker to judge speech length.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · BR-363 · MSG309 · Pending: needs the live speech worker to judge speech length."
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "N/A",
           "log": "Warning logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-86b · MSG312 · Pending: needs a live speech worker in a down state.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86b · MSG312 · Pending: needs a live speech worker in a down state."
         }
       ]
     }

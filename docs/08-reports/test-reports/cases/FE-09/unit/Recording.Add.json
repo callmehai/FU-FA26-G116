@@ -24,10 +24,7 @@
           "exception": "N/A",
           "log": "Audit RecordingUploaded (meeting, file name, size, source, purpose, retainUntil); RecordingsChanged published to the meeting; the stored file is kept.",
           "type": "Normal",
-          "note": "UC-44c · BR-343 · BR-347 · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · BR-347 · MSG290"
         },
         {
           "id": "UTC002",
@@ -39,10 +36,7 @@
           "exception": "N/A",
           "log": "Audit RecordingUploaded; RecordingsChanged published.",
           "type": "Boundary",
-          "note": "UC-44c · BR-342 · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-342 · MSG290"
         },
         {
           "id": "UTC003",
@@ -56,10 +50,7 @@
           "exception": "N/A",
           "log": "Audit RecordingUploaded with the default purpose.",
           "type": "Boundary",
-          "note": "UC-44c · BR-343 · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG290"
         },
         {
           "id": "UTC004",
@@ -73,10 +64,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44c · BR-343 · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG290"
         },
         {
           "id": "UTC005",
@@ -90,10 +78,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44c · BR-343 · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG290"
         },
         {
           "id": "UTC006",
@@ -107,10 +92,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted; no audit row.",
           "type": "Boundary",
-          "note": "UC-44c · BR-343 · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG291"
         },
         {
           "id": "UTC007",
@@ -124,10 +106,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-343 · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG291"
         },
         {
           "id": "UTC008",
@@ -141,10 +120,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Boundary",
-          "note": "UC-44c · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG291"
         },
         {
           "id": "UTC009",
@@ -158,10 +134,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44c · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG290"
         },
         {
           "id": "UTC010",
@@ -175,10 +148,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Boundary",
-          "note": "UC-44c · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG291"
         },
         {
           "id": "UTC011",
@@ -192,10 +162,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Boundary",
-          "note": "UC-44c · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG291"
         },
         {
           "id": "UTC012",
@@ -209,10 +176,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Boundary",
-          "note": "UC-44c · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG291"
         },
         {
           "id": "UTC013",
@@ -224,10 +188,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c"
         },
         {
           "id": "UTC014",
@@ -239,10 +200,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c"
         },
         {
           "id": "UTC015",
@@ -254,10 +212,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-350"
         },
         {
           "id": "UTC016",
@@ -269,10 +224,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-341 · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-341 · MSG295"
         },
         {
           "id": "UTC017",
@@ -284,10 +236,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-340 · MSG358",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-340 · MSG358"
         },
         {
           "id": "UTC018",
@@ -299,10 +248,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-340 · MSG478",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-340 · MSG478"
         },
         {
           "id": "UTC019",
@@ -314,10 +260,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-342 · MSG294",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-342 · MSG294"
         },
         {
           "id": "UTC020",
@@ -329,10 +272,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-342 · MSG294",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-342 · MSG294"
         },
         {
           "id": "UTC021",
@@ -346,10 +286,7 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-343 · MSG291",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · BR-343 · MSG291"
         },
         {
           "id": "UTC022",
@@ -364,10 +301,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log; the stored file is deleted so no voice stays on disk.",
           "type": "Abnormal",
-          "note": "UC-44c · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG298"
         },
         {
           "id": "UTC023",
@@ -382,10 +316,7 @@
           "exception": "N/A",
           "log": "Warning log 'Could not publish recordings change'.",
           "type": "Boundary",
-          "note": "UC-44c · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG290"
         },
         {
           "id": "UTC024",
@@ -400,10 +331,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44c · MSG290",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44c · MSG290"
         }
       ]
     }

@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC007",
@@ -111,10 +93,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC008",
@@ -126,10 +105,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC009",
@@ -141,10 +117,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Materialized and points at the existing email id; no new email is added.",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC010",
@@ -156,10 +129,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed; no email.",
           "type": "Abnormal",
-          "note": "BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-300"
         },
         {
           "id": "UTC011",
@@ -171,10 +141,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed.",
           "type": "Abnormal",
-          "note": "BR-299 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-299 · BR-300"
         },
         {
           "id": "UTC012",
@@ -186,10 +153,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed.",
           "type": "Abnormal",
-          "note": "BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-76"
         },
         {
           "id": "UTC013",
@@ -201,10 +165,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed.",
           "type": "Abnormal",
-          "note": "BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-300"
         },
         {
           "id": "UTC014",
@@ -216,10 +177,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-75 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-75 · BR-300"
         },
         {
           "id": "UTC015",
@@ -231,10 +189,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-28 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-28 · BR-300"
         },
         {
           "id": "UTC016",
@@ -246,10 +201,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed: a withdrawal is only worth sending if the invitation went out.",
           "type": "Abnormal",
-          "note": "UC-28 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-28 · BR-300"
         },
         {
           "id": "UTC017",
@@ -261,10 +213,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-28 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-28 · BR-300"
         },
         {
           "id": "UTC018",
@@ -276,10 +225,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-28 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-28 · BR-300"
         },
         {
           "id": "UTC019",
@@ -291,10 +237,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed.",
           "type": "Abnormal",
-          "note": "UC-75 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-75 · BR-300"
         },
         {
           "id": "UTC020",
@@ -307,10 +250,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Materialized, EmailMessageId set, LastError empty, NextAttemptAt cleared.",
           "type": "Normal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC021",
@@ -322,10 +262,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-15 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-15 · BR-76"
         },
         {
           "id": "UTC022",
@@ -337,10 +274,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-15 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-15 · BR-76"
         },
         {
           "id": "UTC023",
@@ -352,10 +286,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-92",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-92"
         },
         {
           "id": "UTC024",
@@ -367,10 +298,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-75 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-75 · BR-300"
         },
         {
           "id": "UTC025",
@@ -382,10 +310,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-28 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-28 · BR-300"
         },
         {
           "id": "UTC026",
@@ -397,10 +322,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC027",
@@ -412,10 +334,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC028",
@@ -427,10 +346,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC029",
@@ -442,10 +358,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes BlockedDependency with NextAttemptAt now + 1 minute; no lock on the meeting is taken.",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC030",
@@ -457,10 +370,7 @@
           "exception": "N/A",
           "log": "NextAttemptAt is now + 5 minutes, + 30 minutes and + 360 minutes; 360 minutes also for any higher count.",
           "type": "Boundary",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC031",
@@ -472,10 +382,7 @@
           "exception": "N/A",
           "log": "The dispatch is Suppressed instead of waiting.",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC032",
@@ -487,10 +394,7 @@
           "exception": "N/A",
           "log": "The dispatch is Suppressed.",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC033",
@@ -502,10 +406,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC034",
@@ -517,10 +418,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes BlockedDependency, NextAttemptAt now + 1 minute, DependencyAttemptCount incremented, LastError \"Unavailable\".",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC035",
@@ -532,10 +430,7 @@
           "exception": "N/A",
           "log": "The dispatch becomes Suppressed with LastError \"Invalid\".",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC036",
@@ -547,10 +442,7 @@
           "exception": "A JsonException is raised inside, caught by the processor and recorded as a failed attempt.",
           "log": "RecordFailedAttempt with the failure type \"JsonException\"; a warning is logged with the type only, never the URL.",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC037",
@@ -562,10 +454,7 @@
           "exception": "N/A",
           "log": "Failed attempt recorded as above.",
           "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-300"
         },
         {
           "id": "UTC038",
@@ -577,10 +466,7 @@
           "exception": "Unsupported invitation payload version, handled as a failed attempt.",
           "log": "RecordFailedAttempt(MaxAttempts 8, failure type JsonException); the transaction is discarded and nothing is queued.",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC039",
@@ -592,10 +478,7 @@
           "exception": "Missing invitation payload, handled as a failed attempt.",
           "log": "Failed attempt recorded.",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC040",
@@ -607,10 +490,7 @@
           "exception": "N/A",
           "log": "RetryAt is 03:00Z + 240 s (60 s x 2^2).",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC041",
@@ -622,10 +502,7 @@
           "exception": "N/A",
           "log": "RetryAt is 03:15:00Z: 60 s x 16 = 960 s is capped at 900 s.",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         },
         {
           "id": "UTC042",
@@ -637,10 +514,7 @@
           "exception": "The cancellation is not swallowed; no failed attempt is recorded.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-20 · BR-300"
         }
       ]
     }

@@ -22,10 +22,7 @@
             "An agenda item is InProgress, started 2026-12-01T09:00:00Z."
           ],
           "return": "AgendaChange {ChangeType: \"MeetingEnded\"; AgendaItemId: that item; Title: the item title; OccurredAt: 10:30:00Z; new EventId}.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -37,10 +34,7 @@
             "Meeting has items that are all Pending or Done; none InProgress."
           ],
           "return": "null; nothing changes.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -52,10 +46,7 @@
             "Meeting has no agenda items."
           ],
           "return": "null.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -67,10 +58,7 @@
             "An item is InProgress, started 2026-12-01T09:00:00Z."
           ],
           "return": "AgendaChange \"MeetingEnded\"; item Done with ActualEndedAt equal to its start.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "InvalidAgendaExecutionException: The current agenda item has no valid start time or the end precedes its start.",
@@ -82,10 +70,7 @@
             "An item is InProgress, started 2026-12-01T09:00:00Z."
           ],
           "return": "No value is returned.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "InvalidAgendaExecutionException: The current agenda item has no valid start time or the end precedes its start.",
@@ -97,10 +82,7 @@
             "An item is InProgress but ActualStartedAt is empty (inconsistent data)."
           ],
           "return": "No value is returned.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "InvalidOperationException: Locking the meeting requires the caller's meeting transaction.",
@@ -112,10 +94,7 @@
             "Called with no surrounding meeting transaction."
           ],
           "return": "No value is returned; the meeting cannot be locked.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

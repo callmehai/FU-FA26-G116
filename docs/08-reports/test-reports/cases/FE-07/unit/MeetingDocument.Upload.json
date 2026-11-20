@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "StoredFile row saved and object written under stored-files/<id>; library folder \"Họp HĐQT – 15/12/2026\" created for the Chair; Document and MeetingDocument rows committed in one transaction.",
           "type": "Normal",
-          "note": "UC-33a · BR-192 · BR-226 · MSG161",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-192 · BR-226 · MSG161"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "Two StoredFile rows, two Document rows in the existing folder, two MeetingDocument rows.",
           "type": "Normal",
-          "note": "UC-33a · BR-229",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-229"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "New Folder row named \"<title> – dd/MM/yyyy\" with MeetingId set.",
           "type": "Normal",
-          "note": "UC-33a · BR-228",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-228"
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "Written objects deleted and StoredFile rows stamped purged (released).",
           "type": "Abnormal",
-          "note": "UC-33a · BR-195 · MSG172",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-195 · MSG172"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-299 · MSG349",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-299 · MSG349"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-184 · MSG162",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-184 · MSG162"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-33a · MSG174",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · MSG174"
         },
         {
           "id": "UTC008",
@@ -127,10 +106,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · BR-319",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-319"
         },
         {
           "id": "UTC009",
@@ -142,10 +118,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · MSG346",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · MSG346"
         },
         {
           "id": "UTC010",
@@ -157,10 +130,7 @@
           "exception": "N/A",
           "log": "Error log \"Failed to record uploaded files\"",
           "type": "Abnormal",
-          "note": "UC-33a · MSG166",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · MSG166"
         },
         {
           "id": "UTC011",
@@ -172,10 +142,7 @@
           "exception": "N/A",
           "log": "First object deleted; both StoredFile rows stamped purged.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-286 · MSG166",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-286 · MSG166"
         },
         {
           "id": "UTC012",
@@ -187,10 +154,7 @@
           "exception": "N/A",
           "log": "Object deleted and StoredFile row stamped purged.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-286 · MSG166",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-286 · MSG166"
         },
         {
           "id": "UTC013",
@@ -202,10 +166,7 @@
           "exception": "OperationCanceledException",
           "log": "Written objects deleted; information log that the upload was abandoned.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-286",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33a · BR-286"
         }
       ]
     }

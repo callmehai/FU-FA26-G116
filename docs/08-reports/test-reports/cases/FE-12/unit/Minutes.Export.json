@@ -9,7 +9,7 @@
       "method": "MinutesService.ExportAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 140,
+      "line": 142,
       "cases": [
         {
           "id": "UTC001",
@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-412",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · BR-412"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-412",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · BR-412"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-412",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · BR-412"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58"
         },
         {
           "id": "UTC006",
@@ -101,10 +86,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58 · BR-412",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · BR-412"
         },
         {
           "id": "UTC007",
@@ -117,10 +99,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58 · BR-188 · MSG405",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · BR-188 · MSG405"
         },
         {
           "id": "UTC008",
@@ -133,10 +112,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-58",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58"
         },
         {
           "id": "UTC009",
@@ -150,10 +126,7 @@
           "exception": "N/A",
           "log": "Error logged with the minutes id.",
           "type": "Abnormal",
-          "note": "UC-58 · MSG403",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-58 · MSG403"
         }
       ]
     }

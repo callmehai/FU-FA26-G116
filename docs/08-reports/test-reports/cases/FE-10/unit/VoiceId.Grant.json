@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Saved: consent row with notice 1.3 and its purpose; audit row records the grant.",
           "type": "Normal",
-          "note": "UC-81b · BR-361 · BR-362 · MSG305",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-361 · BR-362 · MSG305"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "Saved: consent notice renewed; audit row records the renewal with the old and new versions.",
           "type": "Normal",
-          "note": "UC-81b · BR-362 · MSG305",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-362 · MSG305"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-81b · BR-362 · MSG305",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-362 · MSG305"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81b · BR-362 · MSG313",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-362 · MSG313"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-81b · BR-362 · MSG313",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-362 · MSG313"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "Saved: one consent row; audit row records the grant.",
           "type": "Normal",
-          "note": "UC-81b · BR-362 · MSG305",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81b · BR-362 · MSG305"
         }
       ]
     }

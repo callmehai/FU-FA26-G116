@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Folder row deleted.",
           "type": "Normal",
-          "note": "UC-72d · BR-223 · MSG197",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · BR-223 · MSG197"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72d · BR-242 · MSG175",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · BR-242 · MSG175"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72d · BR-223 · MSG196",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · BR-223 · MSG196"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72d · BR-223 · MSG196",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · BR-223 · MSG196"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "Folder row deleted.",
           "type": "Boundary",
-          "note": "UC-72d · BR-228 · MSG197",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · BR-228 · MSG197"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "Error log \"Failed to delete a folder\".",
           "type": "Abnormal",
-          "note": "UC-72d · MSG198",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-72d · MSG198"
         }
       ]
     }

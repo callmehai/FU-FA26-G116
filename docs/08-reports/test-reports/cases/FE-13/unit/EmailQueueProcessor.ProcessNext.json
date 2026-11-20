@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "The message is claimed: status Processing, AttemptCount 1, a lease token, lease expiry 2026-11-18T03:02:00Z. Then it is marked Sent with provider id re_123 and sent time 03:00Z. An information line is logged.",
           "type": "Normal",
-          "note": "BR-38 · BR-76 · Pending: needs a real email provider; the Sent id comes from the provider.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real email provider; the Sent id comes from the provider."
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "The message returns to Queued with NextAttemptAt 03:01:00Z (60 s x 1), the error \"TimeoutException: ...\" stored and the failure time recorded. A warning is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider timeout to observe retry scheduling.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider timeout to observe retry scheduling."
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "NextAttemptAt is 03:04:00Z: the delay doubles with each attempt (60 s x 4 on attempt 3).",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the doubled backoff.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the doubled backoff."
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "NextAttemptAt is 04:04:00Z (60 s x 64 = 3840 s). One attempt below the maximum still retries.",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the backoff near the attempt limit.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the backoff near the attempt limit."
         },
         {
           "id": "UTC006",
@@ -101,10 +86,7 @@
           "exception": "N/A",
           "log": "The message is marked Failed with the error text and no NextAttemptAt. An error line is logged.",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe permanent failure at the limit.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe permanent failure at the limit."
         },
         {
           "id": "UTC007",
@@ -117,10 +99,7 @@
           "exception": "N/A",
           "log": "The message is marked Failed on its first attempt; an error line is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real permanent provider refusal.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real permanent provider refusal."
         },
         {
           "id": "UTC008",
@@ -133,10 +112,7 @@
           "exception": "N/A",
           "log": "The delay stops doubling at 1024 times the base: NextAttemptAt is 03:00Z + 61440 s (60 s x 1024).",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the capped backoff.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the capped backoff."
         },
         {
           "id": "UTC009",
@@ -148,10 +124,7 @@
           "exception": "N/A",
           "log": "The message is marked Failed at once with the error \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains).\" and no retry; an information line is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         },
         {
           "id": "UTC010",
@@ -163,10 +136,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         },
         {
           "id": "UTC011",
@@ -179,10 +149,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider; an address without @ is handed to it.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider; an address without @ is handed to it."
         },
         {
           "id": "UTC012",
@@ -194,10 +161,7 @@
           "exception": "N/A",
           "log": "The message returns to Queued with NextAttemptAt 03:01:00Z and an error naming the cancellation.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real slow provider to observe the per-attempt timeout.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real slow provider to observe the per-attempt timeout."
         },
         {
           "id": "UTC013",
@@ -209,10 +173,7 @@
           "exception": "OperationCanceledException is rethrown to the worker.",
           "log": "The message is left Processing with its lease, so the attempt can be recovered later; nothing is marked failed or sent.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real store honoring host cancellation mid-claim.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real store honoring host cancellation mid-claim."
         },
         {
           "id": "UTC014",
@@ -224,10 +185,7 @@
           "exception": "N/A",
           "log": "Marking Sent updates 0 rows; a warning about the lost lease is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a lost processing lease.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a lost processing lease."
         },
         {
           "id": "UTC015",
@@ -239,10 +197,7 @@
           "exception": "N/A",
           "log": "Marking the attempt failed updates 0 rows; a warning is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider failure plus a lost processing lease.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider failure plus a lost processing lease."
         },
         {
           "id": "UTC016",
@@ -254,10 +209,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         },
         {
           "id": "UTC017",
@@ -269,10 +221,7 @@
           "exception": "The database error escapes to the worker; it is not recorded as a send failure because the provider may already have delivered the message.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a real store failure on finalize.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a real store failure on finalize."
         },
         {
           "id": "UTC018",
@@ -284,10 +233,7 @@
           "exception": "N/A",
           "log": "The stored error text is cut to 2000 characters.",
           "type": "Boundary",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider error text to verify truncation.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error text to verify truncation."
         },
         {
           "id": "UTC019",
@@ -300,10 +246,7 @@
           "exception": "N/A",
           "log": "Before the claim, rows that reached MaxAttempts are marked Failed; nothing is sent.",
           "type": "Boundary",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         },
         {
           "id": "UTC020",
@@ -315,10 +258,7 @@
           "exception": "N/A",
           "log": "Only the 02:50Z email is claimed and sent; the other two are untouched.",
           "type": "Normal",
-          "note": "BR-38 · BR-76 · Pending: needs a real provider to send the oldest due email.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76 · Pending: needs a real provider to send the oldest due email."
         },
         {
           "id": "UTC021",
@@ -330,10 +270,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-38 · BR-76"
         }
       ],
       "layer": "Application"

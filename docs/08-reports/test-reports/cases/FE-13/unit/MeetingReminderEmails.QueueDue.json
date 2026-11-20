@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "Two EmailMessage rows queued, subject \"Cuộc họp sắp bắt đầu: Họp giao ban\", deduplication key \"email-starting-soon:<meetingId>:<start unix seconds>:<participant id>\"; the text names the start time, place and the link https://tc.example.vn/mgmt/meetings/<meetingId>; the HTML shows the role (Chủ toạ / Thành viên), the chair and the organizer contact \"An (an@example.vn)\"; one commit.",
           "type": "Normal",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC008",
@@ -127,10 +106,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC009",
@@ -142,10 +118,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC010",
@@ -157,10 +130,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-15 · BR-303 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-15 · BR-303 · BR-76"
         },
         {
           "id": "UTC011",
@@ -172,10 +142,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC012",
@@ -187,10 +154,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-303"
         },
         {
           "id": "UTC013",
@@ -202,10 +166,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-303"
         },
         {
           "id": "UTC014",
@@ -217,10 +178,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-303"
         },
         {
           "id": "UTC015",
@@ -232,10 +190,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-303"
         },
         {
           "id": "UTC016",
@@ -247,10 +202,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04 · BR-303"
         },
         {
           "id": "UTC017",
@@ -262,10 +214,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC018",
@@ -277,10 +226,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC019",
@@ -292,10 +238,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC020",
@@ -307,10 +250,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         },
         {
           "id": "UTC021",
@@ -322,10 +262,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "BR-303"
         }
       ]
     }

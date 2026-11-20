@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Each notification: type MeetingStarted, title \"Cuộc họp đã bắt đầu\", body \"Cuộc họp “Họp giao ban” đã bắt đầu.\", target Meeting M1, origin history H1, key \"meeting-started:H1:<user id>\", created at 02:00Z.",
           "type": "Normal",
-          "note": "UC-21 · BR-164 · BR-322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-21 · BR-164 · BR-322"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-21 · BR-164 · BR-322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-21 · BR-164 · BR-322"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-21 · BR-164 · BR-322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-21 · BR-164 · BR-322"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-21 · BR-164 · BR-322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-21 · BR-164 · BR-322"
         }
       ]
     }

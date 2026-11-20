@@ -888,7 +888,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Participants/ParticipantService.cs",
-          "line": 346,
+          "line": 348,
           "method": "ParticipantService.MutateAsync",
           "layer": "Application"
         }
@@ -1816,7 +1816,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 105,
+          "line": 108,
           "method": "SummaryService.EditAsync",
           "layer": "Application"
         }
@@ -1832,7 +1832,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 141,
+          "line": 144,
           "method": "SummaryService.ReviewAsync",
           "layer": "Application"
         }
@@ -1848,7 +1848,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 167,
+          "line": 170,
           "method": "SummaryService.ProcessNextAsync",
           "layer": "Application"
         }
@@ -1992,7 +1992,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 96,
+          "line": 98,
           "method": "MinutesService.SaveAsync",
           "layer": "Application"
         }
@@ -2008,7 +2008,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 192,
+          "line": 194,
           "method": "MinutesService.SubmitAsync",
           "layer": "Application"
         }
@@ -2024,7 +2024,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 211,
+          "line": 213,
           "method": "MinutesService.ApproveAsync",
           "layer": "Application"
         }
@@ -2040,7 +2040,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 251,
+          "line": 253,
           "method": "MinutesService.ReturnAsync",
           "layer": "Application"
         }
@@ -2056,7 +2056,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 272,
+          "line": 274,
           "method": "MinutesService.CorrectAsync",
           "layer": "Application"
         }
@@ -2072,7 +2072,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 140,
+          "line": 142,
           "method": "MinutesService.ExportAsync",
           "layer": "Application"
         }
@@ -2088,7 +2088,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 170,
+          "line": 172,
           "method": "MinutesService.GetRevisionAsync",
           "layer": "Application"
         }
@@ -4026,10 +4026,22 @@
       "class": "HtmlElement",
       "method": "HtmlElement.Attribute",
       "reason": "Covered indirectly via MinutesHtml.Sanitize; BỎ: Infra parse attribute (BR-385), helper cấp 2 của Sanitize; gộp vào Sanitize rồi gộp tiếp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/SearchText.cs",
+      "class": "SearchText",
+      "method": "SearchText.Fold",
+      "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure fold helper (lowercase, strip marks, đ/Đ to d), no MSGnn, no state; no dedicated sheet."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/SearchText.cs",
+      "class": "SearchText",
+      "method": "SearchText.Contains",
+      "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure contains check over Fold (null-safe), no MSGnn; no dedicated sheet."
     }
   ],
   "source": {
     "note": "The four-project backend (ADR-0065); read with git show, never from the working tree.",
-    "ref": "origin/app"
+    "ref": "7286680a22cd04c31687735c9b87fde348b235cf"
   }
 }

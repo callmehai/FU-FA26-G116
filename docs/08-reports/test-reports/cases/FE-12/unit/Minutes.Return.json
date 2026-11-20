@@ -9,7 +9,7 @@
       "method": "MinutesService.ReturnAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 251,
+      "line": 253,
       "cases": [
         {
           "id": "UTC001",
@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary (\"Chủ toạ đã trả lại biên bản cuộc họp \"…\" Xem lý do trên tab Biên bản.\").",
           "type": "Normal",
-          "note": "UC-65 · BR-406 · BR-407 · MSG430",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-406 · BR-407 · MSG430"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · BR-406 · MSG428",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-406 · MSG428"
         },
         {
           "id": "UTC004",
@@ -70,10 +61,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · MSG429",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · MSG429"
         },
         {
           "id": "UTC005",
@@ -86,10 +74,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · BR-407 · MSG431",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-407 · MSG431"
         },
         {
           "id": "UTC006",
@@ -102,10 +87,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-65 · BR-407 · MSG431",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-407 · MSG431"
         },
         {
           "id": "UTC007",
@@ -118,10 +100,7 @@
           "exception": "N/A",
           "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary.",
           "type": "Boundary",
-          "note": "UC-65 · BR-407 · MSG430",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-407 · MSG430"
         },
         {
           "id": "UTC008",
@@ -134,10 +113,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · BR-389 · MSG401",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · BR-389 · MSG401"
         },
         {
           "id": "UTC009",
@@ -150,10 +126,7 @@
           "exception": "N/A",
           "log": "Error logged with the action and minutes id.",
           "type": "Abnormal",
-          "note": "UC-65 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-65 · MSG404"
         }
       ]
     }

@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · UC-04",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · UC-04"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "Closing {Room} again: {Identity} joined after it closed.",
           "type": "Normal",
-          "note": "UC-37 · BR-143",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · BR-143"
         },
         {
           "id": "UTC004",
@@ -70,10 +61,7 @@
           "exception": "N/A",
           "log": "Removing {Identity} from {Room}: room access ended.",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-38 · UC-79 · BR-337",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-38 · UC-79 · BR-337"
         },
         {
           "id": "UTC006",
@@ -100,10 +85,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC007",
@@ -115,10 +97,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-39c · BR-326",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39c · BR-326"
         },
         {
           "id": "UTC008",
@@ -130,10 +109,7 @@
           "exception": "N/A",
           "log": "Ignoring webhook {Event} for room {Room}.",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         }
       ]
     }

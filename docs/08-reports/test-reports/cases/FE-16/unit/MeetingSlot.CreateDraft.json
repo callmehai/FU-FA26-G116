@@ -23,10 +23,7 @@
           "exception": "N/A",
           "log": "Draft meeting, its status history row and staged invitations saved; no duplicate-time check is made.",
           "type": "Normal",
-          "note": "UC-85b · UC-14 · BR-429 · MSG29",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · UC-14 · BR-429 · MSG29"
         },
         {
           "id": "UTC002",
@@ -40,10 +37,7 @@
           "exception": "N/A",
           "log": "Draft meeting, its status history row and staged invitations saved.",
           "type": "Normal",
-          "note": "UC-85b · BR-428 · MSG29",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-428 · MSG29"
         },
         {
           "id": "UTC003",
@@ -56,10 +50,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-430 · MSG448",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-430 · MSG448"
         },
         {
           "id": "UTC004",
@@ -72,10 +63,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG277",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG277"
         },
         {
           "id": "UTC005",
@@ -88,10 +76,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG31"
         },
         {
           "id": "UTC006",
@@ -104,10 +89,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG31"
         },
         {
           "id": "UTC007",
@@ -120,10 +102,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG31"
         },
         {
           "id": "UTC008",
@@ -136,10 +115,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG31"
         },
         {
           "id": "UTC009",
@@ -152,10 +128,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-422 · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-422 · MSG31"
         },
         {
           "id": "UTC010",
@@ -169,10 +142,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-428 · MSG446",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-428 · MSG446"
         },
         {
           "id": "UTC011",
@@ -186,10 +156,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-415 · BR-428 · MSG446",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-415 · BR-428 · MSG446"
         },
         {
           "id": "UTC012",
@@ -203,10 +170,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · UC-14 · MSG277",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · UC-14 · MSG277"
         },
         {
           "id": "UTC013",
@@ -220,10 +184,7 @@
           "exception": "N/A",
           "log": "Error logged with the actor id.",
           "type": "Abnormal",
-          "note": "UC-85b · MSG35",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG35"
         },
         {
           "id": "UTC014",
@@ -237,10 +198,7 @@
           "exception": "N/A",
           "log": "Error logged with the actor id.",
           "type": "Abnormal",
-          "note": "UC-85b · MSG453",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG453"
         },
         {
           "id": "UTC015",
@@ -253,10 +211,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85b · BR-421",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · BR-421"
         },
         {
           "id": "UTC016",
@@ -269,10 +224,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85b · MSG31",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-85b · MSG31"
         }
       ]
     }

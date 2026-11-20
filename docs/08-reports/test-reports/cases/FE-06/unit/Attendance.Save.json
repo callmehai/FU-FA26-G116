@@ -21,10 +21,7 @@
             "Actor is S."
           ],
           "return": "Result Saved: changedCount 1; one entry for A with attendance \"Present\", a new version token, recorder S and recorded time; 200 / MSG147.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -37,10 +34,7 @@
             "Actor is S."
           ],
           "return": "Result Saved: changedCount 2; A is Absent, G is Present; 200 / MSG147.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -53,10 +47,7 @@
             "A is already Present at version 1."
           ],
           "return": "Result Saved: changedCount 0; the entry for A with unchanged version token; 200 / MSG147 (valid no-op).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -69,10 +60,7 @@
             "A is Present at version 1."
           ],
           "return": "Result Saved: changedCount 1; A is now Absent at version 2.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -85,10 +73,7 @@
             "Only one of the two people is submitted."
           ],
           "return": "Result Saved: changedCount 1; G stays unmarked; partial roster is allowed.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -101,10 +86,7 @@
             "Request ends up with a Guest id that is not a current invitation (revoked)."
           ],
           "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -117,10 +99,7 @@
             "A was removed from the roster (AssignmentStatus Removed) after the client loaded."
           ],
           "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -133,10 +112,7 @@
             "Another save has already moved A to version 1."
           ],
           "return": "Failure Stale; 409 / MSG151; the client must reload.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -149,10 +125,7 @@
             "Entry id does not exist in this meeting."
           ],
           "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -165,10 +138,7 @@
             "Actor is S."
           ],
           "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -181,10 +151,7 @@
             "Actor is S."
           ],
           "return": "Failure Invalid; 400 / MSG148 (only Present or Absent may be saved).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -197,10 +164,7 @@
             "Actor is S."
           ],
           "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -213,10 +177,7 @@
             "Actor is S."
           ],
           "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -229,10 +190,7 @@
             "Request body was not application/json."
           ],
           "return": "Failure UnsupportedMedia; 415 / MSG34.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -245,10 +203,7 @@
             "Request body exceeded 64 KiB."
           ],
           "return": "Failure TooLarge; 413 / MSG87.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -261,10 +216,7 @@
             "Request body was not valid JSON for the attendance form."
           ],
           "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -277,10 +229,7 @@
             "Actor is its active Secretary."
           ],
           "return": "Failure Locked; 409 / MSG149.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -292,10 +241,7 @@
             "Meeting in status Ended; actor is its active Secretary."
           ],
           "return": "Failure Locked; 409 / MSG149.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -308,10 +254,7 @@
             "Actor is the Chair (not Secretary)."
           ],
           "return": "Failure Forbidden; 403, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -324,10 +267,7 @@
             "Actor is a plain Member who can read the running meeting."
           ],
           "return": "Failure Forbidden; 403.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -340,10 +280,7 @@
             "Actor is the meeting organizer who has no roster seat."
           ],
           "return": "Failure Forbidden; 403.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -356,10 +293,7 @@
             "Actor's account is deactivated."
           ],
           "return": "Failure Forbidden; 403.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -372,10 +306,7 @@
             "Actor is a verified Guest session of this meeting."
           ],
           "return": "Failure Forbidden; 403; a Guest cannot record attendance.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -388,10 +319,7 @@
             "Guest session belongs to another meeting."
           ],
           "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -403,10 +331,7 @@
             "Meeting is not visible to the actor (user is neither organizer, approver nor on the roster)."
           ],
           "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -418,10 +343,7 @@
             "Meeting id does not exist."
           ],
           "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -434,10 +356,7 @@
             "The database fails while committing the save."
           ],
           "return": "Failure SaveFailed; 503 / MSG150; the client must reload before retrying.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -450,10 +369,7 @@
             "A's attendance version is already at the maximum value of 64-bit integers."
           ],
           "return": "Failure SaveFailed; 503 / MSG150 (the version increment overflows).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -466,10 +382,7 @@
             "The realtime publisher throws after the commit."
           ],
           "return": "Result Saved: changedCount 1; 200 / MSG147; the failed push does not turn the save into an error.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         }
       ],
       "layer": "Application"

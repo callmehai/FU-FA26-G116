@@ -12,7 +12,6 @@
       "line": 30,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "meetingId: Published meeting; userId: active Member.",
@@ -23,12 +22,9 @@
             "Meeting is Published and the user is an active Member."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "meetingId: meeting; userId: deactivated Chair.",
@@ -39,12 +35,9 @@
             "User is the Chair of the meeting."
           ],
           "return": "false; the readability lookup is not reached.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "meetingId: Draft meeting; userId: active Member.",
@@ -55,12 +48,9 @@
             "Meeting is Draft and the user is only a Member (not readable)."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "meetingId: unknown id; userId: active user.",
@@ -71,12 +61,9 @@
             "No meeting exists with the given id."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "meetingId: meeting Cancelled from Published; userId: active Member.",
@@ -87,8 +74,6 @@
             "Meeting was Cancelled after being Published; user is a current Member."
           ],
           "return": "true; the invitees may still open a called-off meeting.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ]

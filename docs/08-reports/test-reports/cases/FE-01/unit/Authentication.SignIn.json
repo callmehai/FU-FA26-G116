@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "email: \"organizer@example.com\"; password: \"<correct password>\".",
@@ -16,12 +15,9 @@
             "Password hasher verifies the stored hash for the supplied password."
           ],
           "return": "SignInResult Success with the user, capabilities [MeetingCreator], an access token, a refresh token (stored for the user) and access-token expiry = now + configured lifetime.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "email: \"nobody@example.com\"; password: \"<any password>\".",
@@ -31,12 +27,9 @@
             "No account exists for nobody@example.com."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the password is still verified against a dummy hash so timing does not reveal the missing account.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\".",
@@ -46,12 +39,9 @@
             "Active account organizer@example.com exists."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); no token issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "email: \"former@example.com\"; password: \"<correct password>\".",
@@ -61,12 +51,9 @@
             "Account former@example.com exists and is deactivated."
           ],
           "return": "SignInResult Failure(AccountDeactivated) (MSG02); no token issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "email: \"former@example.com\"; password: \"<wrong password>\".",
@@ -76,12 +63,9 @@
             "Account former@example.com exists and is deactivated."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01): the password is checked before the account status, so the caller cannot learn the account is deactivated.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "email: \"\"; password: \"<any password>\".",
@@ -91,12 +75,9 @@
             "No repository access is needed for a blank email."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the account store is not read and nothing is recorded.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "email: \"organizer@example.com\"; password: \"   \" (whitespace only).",
@@ -106,12 +87,9 @@
             "No repository access is needed for a blank password."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the account store is not read and nothing is recorded.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "email: \"  organizer@example.com  \" (surrounding spaces); password: \"<correct password>\".",
@@ -121,12 +99,9 @@
             "Active account organizer@example.com exists."
           ],
           "return": "SignInResult Success: the email is trimmed before the lookup, so the account is found.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "email: \"viewer@example.com\"; password: \"<correct password>\".",
@@ -136,8 +111,6 @@
             "Active account exists whose role holds no capabilities (BR-04)."
           ],
           "return": "SignInResult Success with an empty capability list and a token pair; a role without capabilities is not refused.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ],

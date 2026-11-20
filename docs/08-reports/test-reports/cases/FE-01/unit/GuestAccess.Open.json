@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "invitationId: I1; linkToken: <valid link token of I1>.",
@@ -16,12 +15,9 @@
             "Its meeting \"Họp giao ban\" is Published, planned 09:00-10:00."
           ],
           "return": "GuestAccessResult success with GuestInvitationView { invitationId I1, meeting { id, title \"Họp giao ban\", status \"Published\", planned start/end }, maskedEmail \"ng***@example.com\" }.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -31,12 +27,9 @@
             "Invitation whose meeting is InProgress and not revoked."
           ],
           "return": "GuestAccessResult success; meeting.status = \"InProgress\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\".",
@@ -46,12 +39,9 @@
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); the invitation store is not read.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: null.",
@@ -61,12 +51,9 @@
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -76,12 +63,9 @@
             "Invitation I1 was revoked by the Secretary."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371): the reason is not revealed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -91,12 +75,9 @@
             "Invitation I1 is not revoked but its meeting is Ended."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371): an invitation stops working when the meeting is no longer Published or InProgress.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "invitationId: <random Guid>; linkToken: <token computed for that Guid>.",
@@ -106,12 +87,9 @@
             "No invitation with the supplied id exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -121,12 +99,9 @@
             "The invitation store fails with a persistence error while reading."
           ],
           "return": "GuestAccessResult Failure(Unavailable) (MSG374).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -136,12 +111,9 @@
             "Invitation for the email abc@example.com (at-sign at index 3) is open."
           ],
           "return": "maskedEmail = \"a***@example.com\" (one leading character when the local part is 3 characters or fewer).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -151,8 +123,6 @@
             "Invitation for the email abcd@example.com (at-sign at index 4) is open."
           ],
           "return": "maskedEmail = \"ab***@example.com\" (two leading characters from a 4-character local part).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ],

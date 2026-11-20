@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "Meeting status: Draft; actor: organizer; command: SubmitForApproval with AssignedApproverId of an eligible approver.",
@@ -17,12 +16,9 @@
             "Approver is active, holds MeetingApprover and differs from the organizer."
           ],
           "return": "Success(WaitingApproval); AssignedApproverId set; MSG78.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "Meeting status: Rejected; actor: organizer; command: SubmitForApproval.",
@@ -33,12 +29,9 @@
             "A new eligible approver is chosen."
           ],
           "return": "Success(WaitingApproval); MSG78.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "command: SubmitForApproval without an approver id.",
@@ -48,12 +41,9 @@
             "Meeting is Draft."
           ],
           "return": "Failure InvalidRequest; MSG80; nothing read.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "command: SubmitForApproval with a Reason.",
@@ -63,12 +53,9 @@
             "Meeting is Draft."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "command: SubmitForApproval with AssignedApproverId = Guid.Empty.",
@@ -78,12 +65,9 @@
             "Meeting is Draft."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "command: Start (or End).",
@@ -93,12 +77,9 @@
             "Any meeting."
           ],
           "return": "Failure InvalidRequest; MSG80; Start and End belong to the lifecycle service.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "command: Action value outside the enumeration.",
@@ -108,12 +89,9 @@
             "Any meeting."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "actor: organizer; command: SubmitForApproval with a valid approver.",
@@ -123,12 +101,9 @@
             "Draft meeting with an empty stored title."
           ],
           "return": "Failure SubmissionNotReady with errors { title }; MSG81; status stays Draft.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "command: SubmitForApproval with AssignedApproverId = organizer id.",
@@ -138,12 +113,9 @@
             "Approver is the organizer."
           ],
           "return": "Failure InvalidApprover; MSG82.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "command: SubmitForApproval with that approver.",
@@ -153,12 +125,9 @@
             "Approver is deactivated or lacks MeetingApprover."
           ],
           "return": "Failure InvalidApprover; MSG82; status stays Draft; no history row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "actor: organizer; command: SubmitForApproval.",
@@ -168,12 +137,9 @@
             "Meeting is Approved."
           ],
           "return": "Failure StatusConflict; MSG41.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "command: SubmitForApproval.",
@@ -183,12 +149,9 @@
             "Actor is a Chair, not the creator."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "command: SubmitForApproval.",
@@ -198,12 +161,9 @@
             "Actor is the creator but lost MeetingCreator."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "Meeting status: WaitingApproval; actor: assigned approver; command: Approve.",
@@ -214,12 +174,9 @@
             "Actor holds MeetingApprover and is not the organizer."
           ],
           "return": "Success(Approved); MSG43.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "command: Reject with reason \"  Thiếu tài liệu  \".",
@@ -229,12 +186,9 @@
             "Meeting is WaitingApproval with the actor as assigned approver."
           ],
           "return": "Success(Rejected); MSG44; the reason is trimmed to \"Thiếu tài liệu\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC016",
           "inputs": "command: Reject with reason \"   \".",
@@ -244,12 +198,9 @@
             "Meeting is WaitingApproval with the actor as assigned approver."
           ],
           "return": "Failure RejectionReasonRequired; MSG83; the reason is trimmed first; nothing is written.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC017",
           "inputs": "command: Reject with a reason of exactly 1000 characters.",
@@ -259,12 +210,9 @@
             "Meeting is WaitingApproval with the actor as assigned approver."
           ],
           "return": "Success(Rejected); MSG44.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC018",
           "inputs": "command: Reject with a reason of 1001 characters after trimming.",
@@ -274,12 +222,9 @@
             "Meeting is WaitingApproval with the actor as assigned approver."
           ],
           "return": "Failure RejectionReasonTooLong; MSG84; nothing is written.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC019",
           "inputs": "command: Approve with Reason \"ok\".",
@@ -289,12 +234,9 @@
             "Approve command carries a Reason."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC020",
           "inputs": "command: Reject with a reason and an approver id.",
@@ -304,12 +246,9 @@
             "Reject command carries an AssignedApproverId."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC021",
           "inputs": "command: Approve.",
@@ -319,12 +258,9 @@
             "Meeting is WaitingApproval with the actor as assigned approver but without MeetingApprover."
           ],
           "return": "Failure Forbidden; MSG85; status stays WaitingApproval; no history row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC022",
           "inputs": "command: Approve; actor: organizer.",
@@ -334,12 +270,9 @@
             "Actor is a user other than the assigned approver but can read the meeting (the organizer)."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC023",
           "inputs": "command: Approve; actor: that user.",
@@ -349,12 +282,9 @@
             "The assigned approver is also the organizer (legacy data)."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC024",
           "inputs": "actor: assigned approver; command: Approve.",
@@ -364,12 +294,9 @@
             "Meeting is already Approved."
           ],
           "return": "Failure StatusConflict; MSG132.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC025",
           "inputs": "actor: assigned approver; command: Reject with reason.",
@@ -379,12 +306,9 @@
             "Meeting is Rejected."
           ],
           "return": "Failure StatusConflict; MSG132.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC026",
           "inputs": "command: ReturnToDraft; actor: organizer.",
@@ -394,12 +318,9 @@
             "Meeting is Rejected; organizer holds MeetingCreator."
           ],
           "return": "Success(Draft); AssignedApproverId cleared; MSG79.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC027",
           "inputs": "command: ReturnToDraft; actor: organizer.",
@@ -409,12 +330,9 @@
             "Meeting is WaitingApproval and its assigned approver has been deactivated."
           ],
           "return": "Success(Draft); AssignedApproverId cleared; MSG79.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC028",
           "inputs": "command: ReturnToDraft; actor: organizer.",
@@ -424,12 +342,9 @@
             "Meeting is WaitingApproval and the assigned approver is still active with MeetingApprover."
           ],
           "return": "Failure StatusConflict; MSG133; the approval cycle continues.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC029",
           "inputs": "command: ReturnToDraft; actor: organizer.",
@@ -439,12 +354,9 @@
             "Meeting is WaitingApproval and the approver is the organizer (invalid legacy assignment)."
           ],
           "return": "Success(Draft); MSG79.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC030",
           "inputs": "command: ReturnToDraft; actor: organizer.",
@@ -454,12 +366,9 @@
             "Meeting is Approved."
           ],
           "return": "Failure StatusConflict; MSG133.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC031",
           "inputs": "command: Publish; actor: organizer.",
@@ -470,12 +379,9 @@
             "Roster has exactly one active Chair, one active Secretary and two Members."
           ],
           "return": "Success(Published); MSG45.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC032",
           "inputs": "Meeting status: Approved; actor: organizer; command: Publish.",
@@ -486,12 +392,9 @@
             "Roster has one active chair and no active secretary."
           ],
           "return": "Failure PublicationRosterNotReady; MSG137; status stays Approved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC033",
           "inputs": "command: Publish.",
@@ -501,12 +404,9 @@
             "Roster has no active Chair (the Chair account is deactivated)."
           ],
           "return": "Failure PublicationRosterNotReady; MSG137.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC034",
           "inputs": "command: Publish.",
@@ -516,12 +416,9 @@
             "Roster has two active Chairs."
           ],
           "return": "Failure PublicationRosterNotReady; MSG137.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC035",
           "inputs": "command: Publish; actor: organizer.",
@@ -531,12 +428,9 @@
             "Meeting is Approved but the organizer lost MeetingCreator."
           ],
           "return": "Failure PublisherLostCapability (403); MSG46.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC036",
           "inputs": "command: Publish; actor: Secretary.",
@@ -546,12 +440,9 @@
             "Actor reads the meeting but is not the organizer."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC037",
           "inputs": "command: Publish; actor: organizer.",
@@ -561,12 +452,9 @@
             "Meeting is Draft."
           ],
           "return": "Failure StatusConflict; MSG46.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC038",
           "inputs": "command: Publish; actor: organizer.",
@@ -576,12 +464,9 @@
             "Meeting is already Published."
           ],
           "return": "Failure StatusConflict; MSG46.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC039",
           "inputs": "command: Cancel with reason \"  Hoãn do bão  \".",
@@ -591,12 +476,9 @@
             "Meeting is Published; organizer holds MeetingCreator."
           ],
           "return": "Success(Cancelled); MSG261; reason trimmed to \"Hoãn do bão\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC040",
           "inputs": "command: Cancel with reason \"Không cần nữa\".",
@@ -606,12 +488,9 @@
             "Meeting is WaitingApproval with an assigned approver."
           ],
           "return": "Success(Cancelled); MSG261.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC041",
           "inputs": "command: Cancel with a reason.",
@@ -621,12 +500,9 @@
             "Meeting is Draft."
           ],
           "return": "Success(Cancelled); MSG261.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC042",
           "inputs": "command: Cancel with a reason.",
@@ -636,12 +512,9 @@
             "Meeting is Approved."
           ],
           "return": "Success(Cancelled); MSG261.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC043",
           "inputs": "command: Cancel with a reason.",
@@ -651,12 +524,9 @@
             "Meeting is Rejected."
           ],
           "return": "Success(Cancelled); MSG261.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC044",
           "inputs": "command: Cancel with reason \"   \".",
@@ -666,12 +536,9 @@
             "Cancel command with a blank reason."
           ],
           "return": "Failure CancellationReasonRequired; MSG262.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC045",
           "inputs": "reason: 1000 characters.",
@@ -681,12 +548,9 @@
             "Cancel command with exactly 1000 characters of reason."
           ],
           "return": "Success(Cancelled); MSG261.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC046",
           "inputs": "reason: 1001 characters.",
@@ -696,12 +560,9 @@
             "Cancel command with a reason of 1001 characters."
           ],
           "return": "Failure CancellationReasonTooLong; MSG345.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC047",
           "inputs": "command: Cancel with a reason; actor: organizer.",
@@ -711,12 +572,9 @@
             "Meeting is InProgress."
           ],
           "return": "Failure StatusConflict; MSG263.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC048",
           "inputs": "command: Cancel with a reason.",
@@ -726,12 +584,9 @@
             "Meeting is Ended."
           ],
           "return": "Failure StatusConflict; MSG263.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC049",
           "inputs": "command: Cancel with a reason.",
@@ -741,12 +596,9 @@
             "Meeting is already Cancelled."
           ],
           "return": "Failure StatusConflict; MSG263.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC050",
           "inputs": "command: Cancel with a reason; actor: Chair.",
@@ -756,12 +608,9 @@
             "Actor can read the meeting but is not the organizer."
           ],
           "return": "Failure Forbidden; MSG85.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC051",
           "inputs": "command: TransferOrganizer with OrganizerId = new organizer.",
@@ -773,12 +622,9 @@
             "New organizer is active, holds MeetingCreator and is neither the old organizer nor the approver."
           ],
           "return": "Success; no meeting contents returned, only the history record; MSG89.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC052",
           "inputs": "command: TransferOrganizer; actor: ordinary organizer.",
@@ -788,12 +634,9 @@
             "Actor does not hold AdminUsers."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC053",
           "inputs": "actor: admin; meeting: unknown.",
@@ -803,12 +646,9 @@
             "Meeting does not exist."
           ],
           "return": "Failure NotFound.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC054",
           "inputs": "command: TransferOrganizer with OrganizerId null.",
@@ -818,12 +658,9 @@
             "Transfer command without an organizer id."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC055",
           "inputs": "command: TransferOrganizer with Reason \"x\".",
@@ -833,12 +670,9 @@
             "Transfer command carrying a Reason."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC056",
           "inputs": "command: TransferOrganizer.",
@@ -848,12 +682,9 @@
             "Meeting is Published, not Approved."
           ],
           "return": "Failure StatusConflict; MSG135.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC057",
           "inputs": "command: TransferOrganizer.",
@@ -863,12 +694,9 @@
             "Current organizer account is still active."
           ],
           "return": "Failure StatusConflict; MSG135.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC058",
           "inputs": "OrganizerId = CreatedById.",
@@ -878,12 +706,9 @@
             "New organizer is the old organizer."
           ],
           "return": "Failure InvalidOrganizer; MSG134.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC059",
           "inputs": "OrganizerId = AssignedApproverId.",
@@ -893,12 +718,9 @@
             "New organizer is the assigned approver."
           ],
           "return": "Failure InvalidOrganizer; MSG134.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC060",
           "inputs": "OrganizerId = such a user.",
@@ -908,12 +730,9 @@
             "New organizer lacks MeetingCreator or is deactivated."
           ],
           "return": "Failure InvalidOrganizer; MSG134.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC061",
           "inputs": "command: Approve; id: unknown.",
@@ -923,12 +742,9 @@
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC062",
           "inputs": "command: Publish; actor: stranger.",
@@ -938,12 +754,9 @@
             "Actor has no read access to the meeting."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "PersistenceException is caught inside the service.",
           "id": "UTC063",
           "inputs": "command: Approve on a valid meeting.",
@@ -953,12 +766,9 @@
             "The store fails while saving."
           ],
           "return": "Failure SaveFailed (500); MSG88.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "PersistenceException is caught inside the service.",
           "id": "UTC064",
           "inputs": "command: SubmitForApproval.",
@@ -968,12 +778,9 @@
             "The store fails while saving a submission."
           ],
           "return": "Failure SaveFailed (500); MSG42.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "PersistenceException is caught inside the service.",
           "id": "UTC065",
           "inputs": "command: Publish.",
@@ -983,12 +790,9 @@
             "The store fails while saving a publication."
           ],
           "return": "Failure SaveFailed (500); MSG47.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "PersistenceException is caught inside the service.",
           "id": "UTC066",
           "inputs": "command: Cancel.",
@@ -998,8 +802,6 @@
             "The store fails while saving a cancellation."
           ],
           "return": "Failure SaveFailed (500); MSG264.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ],

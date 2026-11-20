@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "id: that role.",
@@ -16,12 +15,9 @@
             "Custom role \"Thư ký phó\" with capabilities [MeetingCreator]; no account holds it, active or deactivated."
           ],
           "return": "RoleResult Success (MSG23); the role and its capability grants are removed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "id: <random Guid with no role>.",
@@ -31,12 +27,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Failure(NotFound) (HTTP 404, no message code).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "id: that role.",
@@ -47,12 +40,9 @@
             "Built-in role \"Thành viên\"."
           ],
           "return": "RoleResult Failure(BuiltInRole) (MSG24); the role stays.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "id: that role.",
@@ -63,12 +53,9 @@
             "Custom role held by 2 active accounts."
           ],
           "return": "RoleResult InUse with userCount 2 (MSG25); nothing deleted.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "id: that role.",
@@ -79,12 +66,9 @@
             "Custom role held by exactly 1 account, which is deactivated."
           ],
           "return": "RoleResult InUse with userCount 1 (MSG25): deactivated accounts still count.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "id: that role.",
@@ -95,12 +79,9 @@
             "The role has no holder when counted, but an account is assigned to it before the delete executes (the foreign key refuses the delete)."
           ],
           "return": "RoleResult InUse (MSG25) with the fresh count, at least 1; no audit row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "id: unused custom role.",
@@ -111,12 +92,9 @@
             "The database fails while deleting (connection lost or timeout)."
           ],
           "return": "RoleResult Failure(SaveFailed) (MSG28); the role and its grants remain.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "id: that role.",
@@ -127,8 +105,6 @@
             "Custom role with no capabilities and no holders."
           ],
           "return": "RoleResult Success (MSG23); audit details list capabilities as an empty array.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ],

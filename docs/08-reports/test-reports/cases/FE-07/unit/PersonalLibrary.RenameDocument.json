@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Document FileName and UpdatedAt changed and saved; meeting copies keep their own name.",
           "type": "Normal",
-          "note": "UC-71b · BR-276 · MSG183",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · BR-276 · MSG183"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG183"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG183"
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · BR-242 · MSG175",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · BR-242 · MSG175"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC008",
@@ -127,10 +106,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC009",
@@ -142,10 +118,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC010",
@@ -157,10 +130,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-71b · MSG183",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG183"
         },
         {
           "id": "UTC011",
@@ -172,10 +142,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG183"
         },
         {
           "id": "UTC012",
@@ -187,10 +154,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC013",
@@ -202,10 +166,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG347"
         },
         {
           "id": "UTC014",
@@ -217,10 +178,7 @@
           "exception": "N/A",
           "log": "Error log \"Failed to rename a document\".",
           "type": "Abnormal",
-          "note": "UC-71b · MSG184",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-71b · MSG184"
         }
       ]
     }

@@ -24,7 +24,7 @@ Usage (from the repository root):
 The workbook is output: never edit it in Excel, edit the JSON and build again.
 JSON is the source of truth and the template is the frame: build always regenerates from the
 template, never patches cells into an old workbook. `build` without flags writes nothing; only
-`build --overwrite` writes, after copying the old file to `<name>.bak-<YYYYMMDD-HHMM>.xlsx`.
+`build --overwrite` writes, after copying the old file to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`.
 `sync-back` only fills Round/Test date/Tester cells that are non-empty and not Pending;
 description/procedure/expected and every other standard field are never overwritten from Excel.
 """
@@ -811,7 +811,7 @@ def _cell_text(value):
 
 
 def _backup(target):
-    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
     bak = target.with_name(f'{target.stem}.bak-{stamp}.xlsx')
     shutil.copy2(target, bak)
     print(f'backup -> {bak.relative_to(ROOT)}')
@@ -981,7 +981,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('command', choices=('scaffold', 'check', 'relink', 'inventory', 'md', 'sync-back', 'build'))
     parser.add_argument('--overwrite', action='store_true',
-                        help='build only: back the old workbook up to <name>.bak-<YYYYMMDD-HHMM>.xlsx and write it (default is a dry-run diff)')
+                        help='build only: back the old workbook up to <name>.bak-<YYYYMMDD-HHMMSS>.xlsx and write it (default is a dry-run diff)')
     args = parser.parse_args()
     return {'scaffold': cmd_scaffold, 'check': cmd_check, 'relink': cmd_relink, 'inventory': cmd_inventory,
             'md': cmd_md, 'sync-back': cmd_sync_back, 'build': cmd_build}[args.command](args) or 0

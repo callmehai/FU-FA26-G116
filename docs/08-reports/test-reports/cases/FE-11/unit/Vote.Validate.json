@@ -14,10 +14,7 @@
             "Draft input with two distinct options and at least one eligible role."
           ],
           "return": "No errors; roles parsed as [Chair, Member].",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -29,10 +26,7 @@
             "Draft input with a blank title."
           ],
           "return": "errors[title] = [\"Nội dung biểu quyết phải có từ 1 đến 300 ký tự.\"].",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -44,10 +38,7 @@
             "Draft input with a description over the limit."
           ],
           "return": "errors[description] = [\"Mô tả không quá 4000 ký tự.\"].",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -59,10 +50,7 @@
             "Draft input with two options that differ only by case."
           ],
           "return": "errors[options] = [\"Cần ít nhất 2 phương án khác nhau, mỗi phương án từ 1 đến 200 ký tự.\"].",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -74,10 +62,7 @@
             "Draft input without an anonymity choice."
           ],
           "return": "errors[isAnonymous] = [\"Chọn biểu quyết công khai hoặc kín.\"].",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -89,10 +74,7 @@
             "Draft input with no eligible roles."
           ],
           "return": "errors[eligibleRoles] = [\"Chọn ít nhất một vai trò được bỏ phiếu trong Chủ toạ, Thư ký, Thành viên, Khách mời.\"].",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "id": "UTC007",
@@ -104,10 +86,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-53 · MSG209",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-53 · MSG209"
         },
         {
           "id": "UTC008",
@@ -119,10 +98,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-53 · MSG209",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-53 · MSG209"
         },
         {
           "id": "UTC009",
@@ -134,10 +110,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-53 · MSG209",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-53 · MSG209"
         }
       ],
       "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",

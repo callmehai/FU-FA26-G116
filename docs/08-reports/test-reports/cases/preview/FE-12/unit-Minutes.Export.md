@@ -6,7 +6,7 @@ Precondition: Minutes with revisions.
 
 ## MinutesService.ExportAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:140`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:142`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

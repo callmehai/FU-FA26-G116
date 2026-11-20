@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "id: target; isActive: false.",
@@ -16,12 +15,9 @@
             "Two active administrators exist; target is an active non-administrator with an enrolled Voice ID and Effective calendar shares."
           ],
           "return": "UserResult Success (MSG11) with IsActive false; the row is kept; every refresh token and reset link of the account are revoked after the commit.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "id: target; isActive: false.",
@@ -32,12 +28,9 @@
             "Target is an active account without an enrolled Voice ID."
           ],
           "return": "UserResult Success (MSG11); no Voice ID log entry because nothing was enrolled.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "id: target; isActive: true.",
@@ -48,12 +41,9 @@
             "Target is a deactivated account."
           ],
           "return": "UserResult Success (MSG11) with IsActive true; no session is revoked, Voice ID is not restored and no share restarts.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "id: <random Guid with no account>; isActive: false.",
@@ -63,12 +53,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "UserResult Failure(NotFound) (HTTP 404, no message code).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "id: the actor's own id; isActive: false.",
@@ -78,12 +65,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the administrator stays active.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "id: target; isActive: true.",
@@ -94,12 +78,9 @@
             "Target is already active."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): a repeated request is refused so the audit log does not record the same change twice.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "id: target; isActive: false.",
@@ -110,12 +91,9 @@
             "Target is already deactivated."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); no second audit row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "id: target (sole active administrator); isActive: false.",
@@ -126,12 +104,9 @@
             "The target is the only active holder of AdminUsers (the actor acts with a still-valid token of an account that is no longer counted)."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the target stays active.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "id: B; isActive: false (requested with A's still-valid access token).",
@@ -142,12 +117,9 @@
             "Exactly two active administrators A and B; A has already been deactivated by B."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): the last-administrator rule blocks mutual deactivation.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "id: target administrator; isActive: false.",
@@ -158,12 +130,9 @@
             "Two active administrators; the target is one of them."
           ],
           "return": "UserResult Success (MSG11): another active administrator remains.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "id: target; isActive: true.",
@@ -174,12 +143,9 @@
             "Target is an inactive account holding the AdminUsers role; the only active administrator is the actor."
           ],
           "return": "UserResult Success (MSG11): reactivation is never blocked by the last-administrator rule.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "id: active target; isActive: false.",
@@ -190,8 +156,6 @@
             "Ending the sessions fails (Redis unavailable) after the commit."
           ],
           "return": "UserResult Success (MSG11): the failure is logged, not raised.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ],

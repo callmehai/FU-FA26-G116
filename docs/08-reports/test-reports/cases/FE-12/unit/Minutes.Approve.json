@@ -9,7 +9,7 @@
       "method": "MinutesService.ApproveAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 211,
+      "line": 213,
       "cases": [
         {
           "id": "UTC001",
@@ -23,10 +23,7 @@
           "exception": "N/A",
           "log": "Saved: status, approver and issue times; audit row for the issue (actor = the Chair, details carry meeting, revision and replaced-revision ids); notification \"Biên bản đã ban hành\" to every reader except the Chair (\"Biên bản cuộc họp \"…\" đã được ban hành.\"); issue emails queued for the same readers.",
           "type": "Normal",
-          "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427"
         },
         {
           "id": "UTC002",
@@ -39,10 +36,7 @@
           "exception": "N/A",
           "log": "Saved: the correction Issued, the earlier revision Superseded; audit row; notifications and emails carry \"Bản đính chính biên bản cuộc họp \"…\" đã được ban hành.\"",
           "type": "Normal",
-          "note": "UC-64 · UC-83 · BR-409 · MSG427",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · UC-83 · BR-409 · MSG427"
         },
         {
           "id": "UTC003",
@@ -55,10 +49,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64"
         },
         {
           "id": "UTC004",
@@ -71,10 +62,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-406 · MSG428",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · BR-406 · MSG428"
         },
         {
           "id": "UTC005",
@@ -87,10 +75,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · MSG429",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · MSG429"
         },
         {
           "id": "UTC006",
@@ -103,10 +88,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-389 · MSG401",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · BR-389 · MSG401"
         },
         {
           "id": "UTC007",
@@ -119,10 +101,7 @@
           "exception": "N/A",
           "log": "Error logged with the action and minutes id.",
           "type": "Abnormal",
-          "note": "UC-64 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-64 · MSG404"
         }
       ]
     }

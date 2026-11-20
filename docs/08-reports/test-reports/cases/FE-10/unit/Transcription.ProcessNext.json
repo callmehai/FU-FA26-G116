@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: segments and voices replaced; audit rows for machine-named voices; listeners notified of the finished transcript.",
           "type": "Normal",
-          "note": "UC-45c · BR-366 · BR-369 · Pending: needs the live speech worker; transcript content comes from the worker.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c · BR-366 · BR-369 · Pending: needs the live speech worker; transcript content comes from the worker."
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-45c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c · Deviation: real run leaves the transcript Processing with an empty error (0 saves, warning logged) — an erased recording is discarded without marking Failed.",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c · Deviation: real run leaves the transcript Processing with an empty error (0 saves, warning logged) — an erased recording is discarded without marking Failed."
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "Error logged with the transcript id; staged changes discarded.",
           "type": "Abnormal",
-          "note": "UC-45c · Pending: needs the live speech worker plus a real store failure while writing the result.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c · Pending: needs the live speech worker plus a real store failure while writing the result."
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "Saved: empty segments and voices; listeners notified of the finished transcript.",
           "type": "Boundary",
-          "note": "UC-45c · BR-369 · Pending: needs the live speech worker; the empty output comes from the worker.",
-          "round1": "Pending",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c · BR-369 · Pending: needs the live speech worker; the empty output comes from the worker."
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "The storage failure is not caught here; the caller answers it.",
           "log": "No log line here; the failure reaches the caller as is.",
           "type": "Abnormal",
-          "note": "UC-45c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45c"
         }
       ]
     }

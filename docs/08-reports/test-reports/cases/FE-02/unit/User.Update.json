@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "id: that account; FullName: \"Lê Văn Anh\"; Email: \"a@x.vn\" (unchanged); RoleId: \"Thành viên\" (unchanged).",
@@ -16,12 +15,9 @@
             "Active account \"Lê Văn A\" <a@x.vn> with role \"Thành viên\"."
           ],
           "return": "UserResult Success (MSG10) with FullName \"Lê Văn Anh\"; no session is ended and nobody is notified.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "id: <random Guid with no account>; valid request.",
@@ -31,12 +27,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "UserResult Failure(NotFound) (HTTP 404, no message code); nothing saved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "FullName: \"\"; Email: \"a@x.vn\"; RoleId valid.",
@@ -47,12 +40,9 @@
             "Account exists."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; the account is unchanged.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "FullName: 201 characters; other fields valid.",
@@ -63,12 +53,9 @@
             "Account exists."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "FullName: 200 characters; other fields valid.",
@@ -79,12 +66,9 @@
             "Account exists."
           ],
           "return": "UserResult Success (MSG10).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "Email: \"khong-hop-le\"; other fields valid.",
@@ -95,12 +79,9 @@
             "Account exists."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "Email: 257 characters; other fields valid.",
@@ -111,12 +92,9 @@
             "Account exists."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "RoleId: unknown Guid; other fields valid.",
@@ -128,12 +106,9 @@
             "No role has the submitted id."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[roleId] = \"Vai trò không tồn tại.\"; the previous role is kept.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "id: account a@x.vn; Email: \"b@x.vn\".",
@@ -144,12 +119,9 @@
             "Another account already uses b@x.vn."
           ],
           "return": "UserResult Failure(DuplicateEmail) (MSG08); the account is unchanged.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "Email: \"A@x.vn\" (own email, different case).",
@@ -160,12 +132,9 @@
             "Account a@x.vn exists."
           ],
           "return": "UserResult Success (MSG10): keeping your own email is not a duplicate.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "Email: \"c@x.vn\".",
@@ -176,12 +145,9 @@
             "Email is free when checked, but a concurrent request takes it before this save."
           ],
           "return": "UserResult Failure(DuplicateEmail) (MSG08); the unsaved changes are discarded and no audit row is written.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "RoleId: \"Thành viên\".",
@@ -193,12 +159,9 @@
             "Target role \"Thành viên\" does not hold AdminUsers."
           ],
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the account keeps its role.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "id: the first administrator; RoleId: \"Thành viên\".",
@@ -210,12 +173,9 @@
             "Target role \"Thành viên\" does not hold AdminUsers."
           ],
           "return": "UserResult Success (MSG10); the role changes and the account is told (capability change published); the session stays.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "RoleId: \"Trợ lý\".",
@@ -227,12 +187,9 @@
             "Target role \"Trợ lý\" also holds AdminUsers."
           ],
           "return": "UserResult Success (MSG10): the new role keeps AdminUsers, so nobody loses the capability.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "FullName changed; Email and RoleId unchanged.",
@@ -243,12 +200,9 @@
             "The target is the only active administrator."
           ],
           "return": "UserResult Success (MSG10): the last-administrator rule is checked only when the role moves.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC016",
           "inputs": "RoleId: \"Thành viên\".",
@@ -260,12 +214,9 @@
             "No active administrator remains."
           ],
           "return": "UserResult Success (MSG10): an inactive account administers nothing, so changing its role cannot remove the last administrator; nobody is notified.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC017",
           "inputs": "Email: \"moi@x.vn\" (changed); other fields unchanged.",
@@ -276,12 +227,9 @@
             "Active non-administrator account."
           ],
           "return": "UserResult Success (MSG10); every refresh token and any open password-reset link of the account are revoked after the commit; no role-change notice is sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC018",
           "inputs": "Email: \"moi@x.vn\"; RoleId: another role.",
@@ -292,12 +240,9 @@
             "Active account; role and email both change."
           ],
           "return": "UserResult Success (MSG10); sessions are ended because of the email change and no capability notice is sent (the session does not survive).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC019",
           "inputs": "Email: \"A@x.vn\" (only the letter case differs from the stored a@x.vn).",
@@ -308,12 +253,9 @@
             "Active account."
           ],
           "return": "UserResult Success (MSG10); the email counts as changed (ordinal compare), so sessions are ended.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC020",
           "inputs": "Email: \"moi@x.vn\".",
@@ -324,12 +266,9 @@
             "Ending the sessions fails (Redis unavailable) after the commit."
           ],
           "return": "UserResult Success (MSG10): the failure is logged, not raised; the session lapses with the access token.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC021",
           "inputs": "RoleId: role without MeetingCreator.",
@@ -340,8 +279,6 @@
             "Active account whose new role lacks MeetingCreator and who views calendar shares."
           ],
           "return": "UserResult Success (MSG10); the Effective shares the person views are stopped (reason ViewerLostMeetingCreator).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         }
       ],

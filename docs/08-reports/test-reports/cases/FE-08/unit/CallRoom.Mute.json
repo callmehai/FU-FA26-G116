@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-41",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-41",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG123",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG123"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41"
         },
         {
           "id": "UTC005",
@@ -84,10 +72,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG117",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG117"
         },
         {
           "id": "UTC006",
@@ -99,10 +84,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG117",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG117"
         },
         {
           "id": "UTC007",
@@ -115,10 +97,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG281",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG281"
         },
         {
           "id": "UTC008",
@@ -131,10 +110,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG282",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG282"
         },
         {
           "id": "UTC009",
@@ -147,10 +123,7 @@
           "exception": "N/A",
           "log": "Could not mute {Identity} in meeting {MeetingId}.",
           "type": "Abnormal",
-          "note": "UC-41 · MSG124",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG124"
         },
         {
           "id": "UTC010",
@@ -163,10 +136,7 @@
           "exception": "N/A",
           "log": "Could not read call room access for meeting {MeetingId}.",
           "type": "Abnormal",
-          "note": "UC-41 · MSG284",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-41 · MSG284"
         }
       ]
     }

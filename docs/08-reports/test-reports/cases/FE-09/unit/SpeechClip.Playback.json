@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b · BR-350"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-46c · BR-357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b · BR-350"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b · BR-350"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b · BR-350"
         },
         {
           "id": "UTC007",
@@ -111,10 +93,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b"
         },
         {
           "id": "UTC008",
@@ -126,10 +105,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to sign playback for speech clip'.",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · MSG297",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43b · BR-350 · MSG297"
         }
       ]
     }

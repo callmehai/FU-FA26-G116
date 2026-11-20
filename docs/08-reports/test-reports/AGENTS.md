@@ -166,7 +166,7 @@ does everything mechanical; nobody opens the workbooks to edit them:
 | `md` | writes `cases/preview/FE-xx/{ui,api}.md` |
 | `sync-back` | reads the two old workbooks in the repo (if present) and merges executed Round 1/2/3, Test date and Tester cells back into the JSON, matched by case id (`<CODE>_FTnn` in the UI book, `<CODE>_API_ITnn` in the API book). Only non-empty, non-Pending cells are merged; description/procedure/expected and every other standard field are never overwritten from Excel. Prints per-sheet merged counts; exits 0 when an old workbook is missing |
 | `build` | dry-run: runs `check` first (an error stops everything), then prints the diff between the old workbooks and the JSON — cover version old→new, added/removed sheets, per-sheet case counts old→new (by case id), totals. Writes nothing |
-| `build --overwrite` | backs each old workbook up to `<name>.bak-<YYYYMMDD-HHMM>.xlsx` in the same directory, then `check` + `md` + Report 5.2.2 as before (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README). Close the workbooks in Excel first |
+| `build --overwrite` | backs each old workbook up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx` in the same directory, then `check` + `md` + Report 5.2.2 as before (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README). Close the workbooks in Excel first |
 
 Never copy the course's sample workbooks (`docs/08-reports/sample/`, gitignored) into the repo; the
 template is derived from our own Report 5.2.
@@ -273,7 +273,7 @@ add `"directTests": ["TestMethodOne", …]` to that method in `functions.json`. 
 verifies each name exists under `tests/`; methods without the key keep the pipeline independent
 of `tests/`. The key never reaches the workbook — `Note` stays `Automated:`-free.
 
-[`scripts/test_reports/unit_cases.py`](../../../../scripts/test_reports/unit_cases.py)
+[`scripts/test_reports/unit_cases.py`](../../../scripts/test_reports/unit_cases.py)
 does everything mechanical; nobody opens the workbook to edit it:
 
 | Command | What it does |
@@ -284,7 +284,7 @@ does everything mechanical; nobody opens the workbook to edit it:
 | `md` | writes `cases/preview/FE-xx/unit-<sheet>.md` |
 | `sync-back` | reads the old workbook in the repo (if present) and merges executed Round 1/2/3, Test date and Tester cells back into the JSON, matched by case id (`UTCnnn`). Only non-empty, non-Pending cells are merged; description/procedure/inputs/expected and every other standard field are never overwritten from Excel. Prints per-sheet merged counts; exits 0 when the old workbook is missing |
 | `build` | dry-run: runs `check` first (an error stops everything), then prints the diff between the old workbook and the JSON — cover version old→new, added/removed sheets, per-sheet UTC counts old→new (by case id), totals. Writes nothing |
-| `build --overwrite` | backs the old workbook up to `<name>.bak-<YYYYMMDD-HHMM>.xlsx` in the same directory, then `check` + `md` + `Report5.1_Unit_Test.xlsx` as before. Close the workbook in Excel first |
+| `build --overwrite` | backs the old workbook up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx` in the same directory, then `check` + `md` + `Report5.1_Unit_Test.xlsx` as before. Close the workbook in Excel first |
 
 Template formula fixes (kept in both the template and the generated sheets): Test Cases D3/D4
 `#REF!` now point at `Cover!B4`/`Cover!B5`; the Type counts use `$E12` consistently (the
@@ -300,7 +300,7 @@ rebuild follows this order: (1) run `build` with no flags (dry-run: `check` firs
 old-vs-JSON diff) and show the diff to the user; (2) wait for an explicit OK — writing over
 the old file without it is forbidden; (3) if the old workbook may hold executed results, run
 `sync-back` first so real Round/Test date/Tester values land in the JSON; (4) run
-`build --overwrite` (backs the old file up to `<name>.bak-<YYYYMMDD-HHMM>.xlsx`, then
+`build --overwrite` (backs the old file up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`, then
 regenerates from the template); (5) report the numbers — check errors/todos, what sync-back
 merged, the dry-run diff summary, the backup name, and the new workbook's sheet/case counts.
 `sync-back` is per-book for 5.2/5.2.2 (matched by `<CODE>_FTnn` / `<CODE>_API_ITnn`) and per

@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Saved: audit row records the play with the owner and the meeting.",
           "type": "Normal",
-          "note": "UC-86c · BR-452 · BR-453",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86c · BR-452 · BR-453"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86c · BR-452",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86c · BR-452"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86c · BR-450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-86c · BR-450"
         }
       ]
     }

@@ -12,7 +12,6 @@
       "line": 34,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "Meeting: Draft; userId: creator.",
@@ -22,12 +21,9 @@
             "Meeting in Draft created by the user."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "userId: assigned approver.",
@@ -37,12 +33,9 @@
             "Meeting in WaitingApproval with an assigned approver."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "userId: that approver.",
@@ -52,12 +45,9 @@
             "Meeting in Draft with an assigned approver left from an earlier cycle."
           ],
           "return": "false; the approver reads only once the meeting is past Draft.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "userId: Chair.",
@@ -67,12 +57,9 @@
             "Draft meeting; user is the current Chair."
           ],
           "return": "true; a Chair reads at any status.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "userId: Secretary.",
@@ -82,12 +69,9 @@
             "Approved meeting; user is the current Secretary."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "userId: Member.",
@@ -97,12 +81,9 @@
             "Approved meeting; user is only a Member."
           ],
           "return": "false; a Member reads only from Published.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "userId: Member.",
@@ -112,12 +93,9 @@
             "Published meeting; user is a Member."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "userId: Member.",
@@ -127,12 +105,9 @@
             "InProgress meeting; user is a Member."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "userId: Member.",
@@ -142,12 +117,9 @@
             "Ended meeting; user is a Member."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "userId: Member; CancelledFromStatus: Published.",
@@ -157,12 +129,9 @@
             "Cancelled meeting that was Published before it was cancelled; user is a Member."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "userId: Member; CancelledFromStatus: Approved.",
@@ -172,12 +141,9 @@
             "Cancelled meeting that was Approved before it was cancelled; user is a Member."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "userId: the delegating Member.",
@@ -187,12 +153,9 @@
             "Published meeting; the Member answered Delegated and was handed over to another user."
           ],
           "return": "false; a delegated row is not a current participant.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "userId: guest row user.",
@@ -202,12 +165,9 @@
             "Published meeting; the user holds an external Guest role row."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "userId: replaced Member.",
@@ -217,12 +177,9 @@
             "Published meeting; the Member row was replaced (assignment status not Current)."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "userId: stranger.",
@@ -232,8 +189,6 @@
             "Published meeting; user has no relationship to it."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ]

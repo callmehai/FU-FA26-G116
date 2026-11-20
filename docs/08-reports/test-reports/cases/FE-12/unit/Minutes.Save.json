@@ -9,7 +9,7 @@
       "method": "MinutesService.SaveAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 96,
+      "line": 98,
       "cases": [
         {
           "id": "UTC001",
@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: content and UpdatedAt on the Draft revision.",
           "type": "Normal",
-          "note": "UC-60 · MSG396",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG396"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Saved: content and UpdatedAt on the Rejected revision.",
           "type": "Normal",
-          "note": "UC-60 · BR-407 · MSG396",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · BR-407 · MSG396"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60"
         },
         {
           "id": "UTC006",
@@ -101,10 +86,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · MSG397",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG397"
         },
         {
           "id": "UTC007",
@@ -117,10 +99,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · MSG400",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG400"
         },
         {
           "id": "UTC008",
@@ -128,14 +107,11 @@
             "Draft revision; actor is the current Secretary; the caller read it at T."
           ],
           "inputs": "minutesId: the Draft revision; content: \"<p>   </p><hr>\" (no text after filtering); loadedAt: T.",
-          "return": "Failure Invalid; 400 MSG402; errors[content] = [\"Nhập nội dung biên bản, tối đa 300.000 ký tự.\"]; nothing saved.",
+          "return": "Failure Invalid; 400 MSG402; errors[content] holds the limit message for the 300000-character limit (formatted with N0 in the process culture); nothing saved.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · MSG402 · Deviation: Deviation: failure=Invalid (Invalid holds, MSG402 holds, nothing saved), but errors.content is 'Nhập nội dung biên bản, tối đa 300,000 ký tự.' not the UTC-quoted 'Nhập nội dung biên bản, tối đa 300.000 ký tự.': the code formats the limit with N0 in the process culture, so a non-Vietnamese server locale renders '300,000'.",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale."
         },
         {
           "id": "UTC009",
@@ -143,14 +119,11 @@
             "Draft revision; actor is the current Secretary; the caller read it at T."
           ],
           "inputs": "minutesId: the Draft revision; content: 300.001 characters with text; loadedAt: T.",
-          "return": "Failure Invalid; 400 MSG402; errors[content] = [\"Nhập nội dung biên bản, tối đa 300.000 ký tự.\"]; nothing saved.",
+          "return": "Failure Invalid; 400 MSG402; errors[content] holds the limit message for the 300000-character limit (formatted with N0 in the process culture); nothing saved.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-60 · MSG402 · Deviation: Deviation: failure=Invalid (Invalid holds, MSG402 holds, nothing saved), but errors.content is 'Nhập nội dung biên bản, tối đa 300,000 ký tự.' not the UTC-quoted '…tối đa 300.000 ký tự.': N0 formatting follows the process culture.",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale."
         },
         {
           "id": "UTC010",
@@ -162,10 +135,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-60 · MSG402",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG402"
         },
         {
           "id": "UTC011",
@@ -177,10 +147,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · BR-389 · MSG401",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · BR-389 · MSG401"
         },
         {
           "id": "UTC012",
@@ -193,10 +160,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · BR-389 · MSG401",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · BR-389 · MSG401"
         },
         {
           "id": "UTC013",
@@ -208,10 +172,7 @@
           "exception": "N/A",
           "log": "Saved: content and UpdatedAt on the Draft revision.",
           "type": "Boundary",
-          "note": "UC-60 · MSG396",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG396"
         },
         {
           "id": "UTC014",
@@ -224,10 +185,7 @@
           "exception": "N/A",
           "log": "Error logged with the minutes id.",
           "type": "Abnormal",
-          "note": "UC-60 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-60 · MSG404"
         }
       ]
     }

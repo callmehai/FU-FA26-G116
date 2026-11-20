@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Audit row RecordingDownloaded for the recording with meetingId, file name and byte size, actor = the Chair.",
           "type": "Normal",
-          "note": "UC-43c · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-351"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Audit row RecordingDownloaded written.",
           "type": "Normal",
-          "note": "UC-43c · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-351"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-351 · MSG355"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG356",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-351 · MSG356"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43c · BR-351 · MSG355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-351 · MSG355"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c"
         },
         {
           "id": "UTC007",
@@ -113,10 +95,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c"
         },
         {
           "id": "UTC008",
@@ -128,10 +107,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43c · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-350"
         },
         {
           "id": "UTC009",
@@ -143,10 +119,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43c · BR-348",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-348"
         },
         {
           "id": "UTC010",
@@ -158,10 +131,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c"
         },
         {
           "id": "UTC011",
@@ -173,10 +143,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43c · BR-458",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · BR-458"
         },
         {
           "id": "UTC012",
@@ -188,10 +155,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to sign a download'.",
           "type": "Abnormal",
-          "note": "UC-43c · MSG297",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43c · MSG297"
         }
       ]
     }

@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · Deviation: Deviation: provider room deleted and session ended, but the service publishes no room-closed notice to anyone (nothing in this path notifies the people in the room; only a speaking Left change is published when raised hands were closed).",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · Deviation: provider room deleted and session ended, but the service publishes no room-closed notice to anyone (nothing in this path notifies the people in the room; only a speaking Left change is published when raised hands were closed)."
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Removing {Identity} from {Room}: no longer allowed in.",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC006",
@@ -100,10 +85,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         }
       ]
     }

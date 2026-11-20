@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "M1 stamped RemovedAt 2026-11-18T03:00Z, RemovedById Chair, UpdatedAt set; its agenda-item links deleted; the row and its comments kept as history.",
           "type": "Normal",
-          "note": "UC-33c · BR-197 · BR-281 · MSG167",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-197 · BR-281 · MSG167"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-211 · MSG170",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-211 · MSG170"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-211 · MSG170",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-211 · MSG170"
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-184 · MSG169",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-184 · MSG169"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-195 · MSG248",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-195 · MSG248"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-299 · MSG349",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-299 · MSG349"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · MSG174",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · MSG174"
         },
         {
           "id": "UTC008",
@@ -127,10 +106,7 @@
           "exception": "N/A",
           "log": "Error log \"Failed to remove a document from meeting\".",
           "type": "Abnormal",
-          "note": "UC-33c · MSG171",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · MSG171"
         },
         {
           "id": "UTC009",
@@ -142,10 +118,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33c · BR-197 · MSG167",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-33c · BR-197 · MSG167"
         }
       ]
     }

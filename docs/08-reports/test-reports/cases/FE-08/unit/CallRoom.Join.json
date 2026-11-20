@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · UC-04",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · UC-04"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-04"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG280",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · MSG280"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG117",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · MSG117"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG281",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · MSG281"
         },
         {
           "id": "UTC008",
@@ -130,10 +109,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG380",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · UC-04 · MSG380"
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG380",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · UC-04 · MSG380"
         },
         {
           "id": "UTC010",
@@ -161,10 +134,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC011",
@@ -177,10 +147,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         },
         {
           "id": "UTC012",
@@ -193,10 +160,7 @@
           "exception": "N/A",
           "log": "Could not read call room access for meeting {MeetingId}.",
           "type": "Abnormal",
-          "note": "UC-37 · MSG118",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · MSG118"
         },
         {
           "id": "UTC013",
@@ -209,10 +173,7 @@
           "exception": "N/A",
           "log": "Could not record the admission of guest session {SessionId}.",
           "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG118",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37 · UC-04 · MSG118"
         },
         {
           "id": "UTC014",
@@ -224,10 +185,7 @@
           "exception": "ArgumentException: a caller is a user or a guest.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-37"
         }
       ]
     }

@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -17,12 +16,9 @@
             "Email transport accepts the message."
           ],
           "return": "GuestAccessResult success with GuestCodeSent { expiresInSeconds: 900, resendAfterSeconds: 60 } (MSG375); one challenge row saved with a 6-digit code stored only as a hash, expiring in 15 minutes; the code is sent to guest.a@example.com.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\".",
@@ -32,12 +28,9 @@
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no code is created or sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -47,12 +40,9 @@
             "Invitation I1 is revoked, or its meeting is Ended."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no code is created or sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -62,12 +52,9 @@
             "The last code of I1 was created 20 seconds ago; resend interval is 60 seconds."
           ],
           "return": "GuestAccessResult Failure(TooSoon) with retryAfterSeconds 40 (MSG373); no new code, nothing sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -77,12 +64,9 @@
             "The last code of I1 was created exactly 60 seconds ago."
           ],
           "return": "GuestAccessResult success (MSG375): the wait has just elapsed, so a new code is created and sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -92,12 +76,9 @@
             "The last code of I1 was created 59 seconds ago."
           ],
           "return": "GuestAccessResult Failure(TooSoon) with retryAfterSeconds 1 (MSG373).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -107,12 +88,9 @@
             "20 codes were created for I1 in the last 24 hours (the oldest 23 hours ago); the newest was 2 minutes ago."
           ],
           "return": "GuestAccessResult Failure(DailyLimit) (MSG379) with retryAfterSeconds = 3600 (until the oldest counted code is 24 hours old); nothing sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -122,12 +100,9 @@
             "19 codes were created for I1 in the last 24 hours; the newest was 2 minutes ago."
           ],
           "return": "GuestAccessResult success (MSG375): the 20th code of the day is still allowed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -137,12 +112,9 @@
             "20 codes in the last 24 hours and the newest was 10 seconds ago."
           ],
           "return": "GuestAccessResult Failure(TooSoon) (MSG373): the resend wait is checked before the daily cap.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -152,12 +124,9 @@
             "I1 has 3 challenge rows older than 24 hours and none newer."
           ],
           "return": "GuestAccessResult success (MSG375); the 3 expired challenge rows are deleted before the new one is added.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -167,12 +136,9 @@
             "Email transport reports the message was not delivered."
           ],
           "return": "GuestAccessResult Failure(Unavailable) (MSG374); the new challenge row is removed again so the guest may retry at once and the previous code stays usable.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "OperationCanceledException",
           "id": "UTC012",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -182,12 +148,9 @@
             "The client disconnects while the email is being sent."
           ],
           "return": "The cancellation propagates to the caller; the new challenge row is removed even after cancellation.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
@@ -197,8 +160,6 @@
             "Saving the challenge fails with a persistence error."
           ],
           "return": "GuestAccessResult Failure(Unavailable) (MSG374); nothing is sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ],

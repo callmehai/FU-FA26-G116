@@ -21,10 +21,7 @@
             "Title has surrounding spaces."
           ],
           "return": "{Title: \"Opening\"; Description: \"Notes\"}.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -36,10 +33,7 @@
             "Title is null and description is null."
           ],
           "return": "{Title: \"\"; Description: \"\"}.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -51,10 +45,7 @@
             "Title is only spaces."
           ],
           "return": "Title \"\" (later rejected by validation).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -66,10 +57,7 @@
             "Description keeps its own spacing."
           ],
           "return": "Description is left as \"  line  \" (not trimmed).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -81,10 +69,7 @@
             "Other fields are untouched."
           ],
           "return": "Title \"A\"; PresenterId P and DocumentIds [D1] unchanged.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         }
       ]
     }

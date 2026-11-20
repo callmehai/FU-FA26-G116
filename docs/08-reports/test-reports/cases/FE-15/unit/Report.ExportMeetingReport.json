@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70b · BR-437 · BR-438",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b · BR-437 · BR-438"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70b AF-1 · BR-438",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b AF-1 · BR-438"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-70b · BR-433 · BR-438",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b · BR-433 · BR-438"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70b EX-1 · BR-433 · MSG463",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b EX-1 · BR-433 · MSG463"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the database error as cause.",
           "type": "Abnormal",
-          "note": "UC-70b EX-2 · MSG465",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b EX-2 · MSG465"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the build error as cause.",
           "type": "Abnormal",
-          "note": "UC-70b EX-2 · MSG465",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b EX-2 · MSG465"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the audit error as cause.",
           "type": "Abnormal",
-          "note": "UC-70b EX-2 · BR-438 · MSG465",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b EX-2 · BR-438 · MSG465"
         },
         {
           "id": "UTC008",
@@ -130,10 +109,7 @@
           "exception": "The cancellation escapes to the caller; it is not converted into ExportFailed.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70b"
         }
       ]
     }

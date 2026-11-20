@@ -14,10 +14,7 @@
             "A closed vote with 3 ballots and 1 ballot for the option."
           ],
           "return": "33.33.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -29,10 +26,7 @@
             "A vote with no ballots yet."
           ],
           "return": "null; no percentage is shown.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -44,10 +38,7 @@
             "A vote where every ballot chose the option."
           ],
           "return": "100.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -59,10 +50,7 @@
             "A vote with 6 ballots and 1 ballot for the option."
           ],
           "return": "16.67; rounded away from zero to 2 decimals.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         }
       ],
       "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",

@@ -22,10 +22,7 @@
             "Meeting has no agenda items."
           ],
           "return": "Success; 201 / MSG60; new item id returned.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -38,10 +35,7 @@
             "Items at positions 1, 2, 5 exist."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -54,10 +48,7 @@
             "Item 1 is InProgress."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -69,10 +60,7 @@
             "Meeting in status WaitingApproval; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -84,10 +72,7 @@
             "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -99,10 +84,7 @@
             "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -114,10 +96,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -130,10 +109,7 @@
             "Guest invitation G is current."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -146,10 +122,7 @@
             "Documents D1 and D2 belong to the meeting."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -161,10 +134,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -176,10 +146,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -191,10 +158,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on title; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -206,10 +170,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Success; 201 / MSG60.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -221,10 +182,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on title; 400 / MSG66.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -236,10 +194,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on description; 400 / MSG66.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -251,10 +206,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -267,10 +219,7 @@
             "User U is not on the roster."
           ],
           "return": "Failure Invalid on presenterId (\"must be an active internal member of the meeting\"); 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -283,10 +232,7 @@
             "Member M's account is deactivated."
           ],
           "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -299,10 +245,7 @@
             "Guest invitation G is revoked."
           ],
           "return": "Failure Invalid on presenterGuestInvitationId (\"guest no longer in the meeting\"); 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -315,10 +258,7 @@
             "Document X belongs to another meeting."
           ],
           "return": "Failure Invalid on documentIds; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -330,10 +270,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on documentIds; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -344,11 +281,8 @@
           "preconditions": [
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
-          "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -361,10 +295,7 @@
             "Actor is the organizer without a roster seat."
           ],
           "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -376,10 +307,7 @@
             "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Locked; 409 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -391,10 +319,7 @@
             "Meeting in status Cancelled; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Locked; 409 / MSG67.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -406,10 +331,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure UnsupportedMedia; 415 / MSG34; errors {body}.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -421,10 +343,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure TooLarge; 413 / MSG87.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -436,10 +355,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Inactive; 403, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -451,10 +367,7 @@
             "Meeting id does not exist."
           ],
           "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -467,10 +380,7 @@
             "Actor is an active user unrelated to the meeting."
           ],
           "return": "Failure NotFound; 404 (existence is hidden).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -483,10 +393,7 @@
             "An existing item already holds position 2147483647."
           ],
           "return": "Failure SaveFailed; 503 / MSG68.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -498,10 +405,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure SaveFailed; 503 / MSG68.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

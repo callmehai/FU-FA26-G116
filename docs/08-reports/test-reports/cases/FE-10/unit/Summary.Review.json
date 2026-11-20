@@ -9,7 +9,7 @@
       "method": "SummaryService.ReviewAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 141,
+      "line": 144,
       "cases": [
         {
           "id": "UTC001",
@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Saved: reviewer and review time on the draft.",
           "type": "Normal",
-          "note": "UC-50 · BR-374 · MSG391",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-50 · BR-374 · MSG391"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-50 · MSG390",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-50 · MSG390"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-50 · MSG387",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-50 · MSG387"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-50 · BR-374 · MSG385",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-50 · BR-374 · MSG385"
         }
       ]
     }

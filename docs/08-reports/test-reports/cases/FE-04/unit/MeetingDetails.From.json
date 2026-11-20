@@ -12,7 +12,6 @@
       "line": 54,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "meeting: Draft, AssignedApproverId set; actorId: creator.",
@@ -22,12 +21,9 @@
             "Draft meeting with a stale AssignedApproverId."
           ],
           "return": "Details with AssignedApproverId null (hidden before submission).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "meeting: WaitingApproval; actorId: creator.",
@@ -37,12 +33,9 @@
             "WaitingApproval meeting with an approver."
           ],
           "return": "Details expose AssignedApproverId.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "actorId: Member.",
@@ -52,12 +45,9 @@
             "Published meeting with a Chair, two Secretaries named \"Bình\" and \"An\", and the actor is a Member who has not answered."
           ],
           "return": "Chair set; Secretaries ordered by name (An, Bình); MyMeetingRole \"Member\"; MyResponse null; CanRespond true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "actorId: Chair.",
@@ -67,12 +57,9 @@
             "Actor is the Chair of a Published meeting."
           ],
           "return": "MyMeetingRole \"Chair\"; MyResponse null; CanRespond false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "actorId: Member with response Accepted.",
@@ -82,12 +69,9 @@
             "Actor is a Member who accepted."
           ],
           "return": "MyResponse \"Accepted\"; CanRespond false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "actorId: the creator who is not on the roster.",
@@ -97,12 +81,9 @@
             "Actor has no participant row."
           ],
           "return": "MyMeetingRole, MyResponse null; CanRespond false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "actorId: null.",
@@ -112,12 +93,9 @@
             "No actor supplied."
           ],
           "return": "MyMeetingRole, MyResponse null; CanRespond false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "actorId: delegating Member (Delegated).",
@@ -127,12 +105,9 @@
             "The actor Member row is delegated."
           ],
           "return": "MyMeetingRole null; the row is not current.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "meeting: Cancelled; CancelledAt set; CancelledBy \"Lan\"; reason \"Hoãn\".",
@@ -142,12 +117,9 @@
             "Meeting is Cancelled with a stored cancellation time and canceller."
           ],
           "return": "Cancellation { time, CancelledById, CancelledByName \"Lan\", Reason \"Hoãn\" }.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "CancelledById: null; CancelledBy: null.",
@@ -157,12 +129,9 @@
             "Meeting was cancelled by the system after the 24-hour rule."
           ],
           "return": "Cancellation.CancelledByName is \"Hệ thống\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "CancelledAt: null.",
@@ -172,12 +141,9 @@
             "Meeting is Cancelled but has no cancellation time recorded."
           ],
           "return": "Cancellation null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "Status: Published; CancelledAt set.",
@@ -187,12 +153,9 @@
             "Meeting is not Cancelled but has an old CancelledAt value."
           ],
           "return": "Cancellation null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "two Chair rows, one not Current.",
@@ -202,8 +165,6 @@
             "Meeting has an inactive Chair row (replaced) next to the current Chair."
           ],
           "return": "Chair is the current one only.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ]

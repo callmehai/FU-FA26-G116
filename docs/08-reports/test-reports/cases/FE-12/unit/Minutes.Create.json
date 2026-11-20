@@ -23,10 +23,7 @@
           "exception": "N/A",
           "log": "Saved: minutes row (Draft, revision 1) with template content, BuiltFromDraftAt and creation time.",
           "type": "Normal",
-          "note": "UC-59 · MSG395",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG395"
         },
         {
           "id": "UTC002",
@@ -39,10 +36,7 @@
           "exception": "N/A",
           "log": "Saved: content, BuiltFromDraftAt and UpdatedAt replaced on the existing revision.",
           "type": "Normal",
-          "note": "UC-59 · MSG395",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG395"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG397",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG397"
         },
         {
           "id": "UTC006",
@@ -101,10 +86,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG398",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG398"
         },
         {
           "id": "UTC007",
@@ -117,10 +99,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG399",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG399"
         },
         {
           "id": "UTC008",
@@ -133,10 +112,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG400",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG400"
         },
         {
           "id": "UTC009",
@@ -149,10 +125,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · UC-83 · BR-413 · MSG456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · UC-83 · BR-413 · MSG456"
         },
         {
           "id": "UTC010",
@@ -165,10 +138,7 @@
           "exception": "N/A",
           "log": "Warning logged: concurrent creation for the meeting; the existing draft stands.",
           "type": "Abnormal",
-          "note": "UC-59 · MSG399",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG399"
         },
         {
           "id": "UTC011",
@@ -181,10 +151,7 @@
           "exception": "N/A",
           "log": "Error logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-59 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-59 · MSG404"
         }
       ]
     }

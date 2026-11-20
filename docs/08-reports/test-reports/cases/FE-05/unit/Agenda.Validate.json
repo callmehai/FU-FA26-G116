@@ -20,10 +20,7 @@
             "Title and description in range, no presenter, no documents."
           ],
           "return": "No errors.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -35,10 +32,7 @@
             "Title is empty."
           ],
           "return": "Errors: title only.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -50,10 +44,7 @@
             "Title is null."
           ],
           "return": "Errors: title only.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -65,10 +56,7 @@
             "Title is exactly 300 characters."
           ],
           "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -80,10 +68,7 @@
             "Title is 301 characters."
           ],
           "return": "Errors: title only.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -95,10 +80,7 @@
             "Title is one character."
           ],
           "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -110,10 +92,7 @@
             "Description is exactly 4000 characters."
           ],
           "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -125,10 +104,7 @@
             "Description is 4001 characters."
           ],
           "return": "Errors: description only.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -140,10 +116,7 @@
             "Description is not given."
           ],
           "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -155,10 +128,7 @@
             "Internal presenter only."
           ],
           "return": "No errors.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -170,10 +140,7 @@
             "Guest presenter only."
           ],
           "return": "No errors.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -185,10 +152,7 @@
             "Both an internal and a Guest presenter are given."
           ],
           "return": "Errors: presenterId only.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -200,10 +164,7 @@
             "Presenter id is the empty GUID."
           ],
           "return": "Errors: presenterId only.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -215,10 +176,7 @@
             "Guest invitation id is the empty GUID."
           ],
           "return": "Errors: presenterId only.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -230,10 +188,7 @@
             "Document list has two different ids."
           ],
           "return": "No errors.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -245,10 +200,7 @@
             "Document list is empty."
           ],
           "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -260,10 +212,7 @@
             "Document list has the same id twice."
           ],
           "return": "Errors: documentIds only.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -275,10 +224,7 @@
             "Document list contains the empty GUID."
           ],
           "return": "Errors: documentIds only.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -290,10 +236,7 @@
             "Several fields are wrong at once."
           ],
           "return": "Errors for title, description, presenterId and documentIds together.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         }
       ],
       "layer": "Domain"

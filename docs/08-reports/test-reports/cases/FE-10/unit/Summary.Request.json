@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: Queued draft row with requester and request time.",
           "type": "Normal",
-          "note": "UC-47 · BR-374 · BR-375 · MSG384",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · BR-374 · BR-375 · MSG384"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Saved: draft row back to Queued with the new requester and time.",
           "type": "Normal",
-          "note": "UC-47 · BR-376 · MSG384",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · BR-376 · MSG384"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-374 · MSG385",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · BR-374 · MSG385"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-375 · MSG386",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · BR-375 · MSG386"
         },
         {
           "id": "UTC005",
@@ -84,10 +72,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · MSG387",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · MSG387"
         },
         {
           "id": "UTC006",
@@ -100,10 +85,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-381 · MSG394",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · BR-381 · MSG394"
         },
         {
           "id": "UTC007",
@@ -115,10 +97,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47"
         },
         {
           "id": "UTC008",
@@ -130,10 +109,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47"
         },
         {
           "id": "UTC009",
@@ -146,10 +122,7 @@
           "exception": "N/A",
           "log": "Saved: one Queued draft row; warning logged with the meeting id for the concurrent request.",
           "type": "Abnormal",
-          "note": "UC-47 · MSG387",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · MSG387"
         },
         {
           "id": "UTC010",
@@ -162,10 +135,7 @@
           "exception": "N/A",
           "log": "Error logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-47 · MSG393",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-47 · MSG393"
         }
       ]
     }

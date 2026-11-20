@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: assigned user, assigner and time; audit row records the naming and whether it accepts the machine suggestion.",
           "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · BR-368 · MSG316"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "Saved: assigned user and guest cleared; audit row records the clearing.",
           "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · BR-368 · MSG316"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "Saved: assigned guest, assigner and time; audit row records the naming.",
           "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · BR-368 · MSG316"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · BR-368 · MSG317",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · BR-368 · MSG317"
         },
         {
           "id": "UTC006",
@@ -99,10 +84,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · BR-368 · MSG317",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · BR-368 · MSG317"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46b · MSG295"
         }
       ]
     }

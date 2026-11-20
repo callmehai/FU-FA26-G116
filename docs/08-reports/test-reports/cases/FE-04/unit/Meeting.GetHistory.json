@@ -12,7 +12,6 @@
       "line": 739,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "id: meeting; actorId: creator; page: 1; pageSize: 20.",
@@ -22,12 +21,9 @@
             "Meeting created by the actor with 3 history rows."
           ],
           "return": "Success with 3 items, page 1, page size 20, total 3; every field of each row visible including rejection reason and organizer hand-over ids.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "page: 0; pageSize: 20.",
@@ -37,12 +33,9 @@
             "Page is 0."
           ],
           "return": "Failure InvalidRequest; MSG86; the meeting is not read.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "page: 1; pageSize: 0.",
@@ -52,12 +45,9 @@
             "Page size is 0."
           ],
           "return": "Failure InvalidRequest; MSG86.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "page: 1; pageSize: 101.",
@@ -67,12 +57,9 @@
             "Page size is 101."
           ],
           "return": "Failure InvalidRequest; MSG86.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "page: 1; pageSize: 100.",
@@ -82,12 +69,9 @@
             "Page size is exactly 100."
           ],
           "return": "Success.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "id: unknown.",
@@ -97,12 +81,9 @@
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "actorId: stranger.",
@@ -112,12 +93,9 @@
             "Actor has no relation to the meeting."
           ],
           "return": "Failure NotFound.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "page: 50; pageSize: 20.",
@@ -127,12 +105,9 @@
             "Requested page lies beyond the available rows (3 rows exist)."
           ],
           "return": "Success with an empty item list, page 50, page size 20, total 3.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "actorId: approver.",
@@ -142,12 +117,9 @@
             "Actor is the assigned approver of a WaitingApproval meeting."
           ],
           "return": "Success with the full history, organizer ids included.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "actorId: Chair.",
@@ -157,12 +129,9 @@
             "Actor is the Chair; rows include a Reject with reason and a TransferOrganizer."
           ],
           "return": "Success; the rejection reason is visible; PreviousOrganizerId and NewOrganizerId are null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "actorId: Member.",
@@ -172,12 +141,9 @@
             "Actor is a Member of a Published meeting; rows include a Reject with reason."
           ],
           "return": "Success; rejection reason is null on every row; organizer ids are null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "PersistenceException is caught inside the service.",
           "id": "UTC012",
           "inputs": "actorId: creator.",
@@ -187,8 +153,6 @@
             "The store fails while reading."
           ],
           "return": "Failure ReadFailed; MSG136.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ]

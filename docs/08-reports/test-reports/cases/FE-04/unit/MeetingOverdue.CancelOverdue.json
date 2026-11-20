@@ -12,7 +12,6 @@
       "line": 60,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "AutoCancelAfterHours: 24.",
@@ -22,12 +21,9 @@
             "No meeting is overdue."
           ],
           "return": "Returns 0.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "AutoCancelAfterHours: 24.",
@@ -37,12 +33,9 @@
             "A Draft meeting whose planned start was 30 hours ago."
           ],
           "return": "Returns 1; status Cancelled, CancelledById null, CancelledAt = now, CancelledFromStatus Draft; reason \"Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.\"",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "AutoCancelAfterHours: 24.",
@@ -52,12 +45,9 @@
             "A Published meeting planned to start 25 hours ago."
           ],
           "return": "Returns 1; CancelledFromStatus Published.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "PlannedStartTime = now-24h.",
@@ -67,12 +57,9 @@
             "Planned start exactly 24 hours ago."
           ],
           "return": "Returns 1 (start is not later than now minus the delay).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "PlannedStartTime = now-23h59m.",
@@ -82,12 +69,9 @@
             "Planned start 23 hours 59 minutes ago."
           ],
           "return": "Returns 0; the meeting is not touched.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "status InProgress on the re-check.",
@@ -97,12 +81,9 @@
             "Meeting has moved to InProgress between the listing and the locked re-check."
           ],
           "return": "Not cancelled; not counted.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "PlannedStartTime later than now-24h on re-check.",
@@ -112,12 +93,9 @@
             "Organizer rescheduled the meeting to a later start between the listing and the re-check."
           ],
           "return": "Not cancelled; not counted.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "meeting missing.",
@@ -127,12 +105,9 @@
             "Meeting no longer exists on the re-check."
           ],
           "return": "Not counted.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "three meetings.",
@@ -142,12 +117,9 @@
             "Statuses WaitingApproval, Rejected and Approved, each 30 hours past planned start."
           ],
           "return": "Returns 3; each records its own previous status as CancelledFromStatus.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "two overdue meetings; first save fails.",
@@ -157,12 +129,9 @@
             "Saving one of two overdue meetings fails."
           ],
           "return": "Returns 1; the failed meeting is left for the next sweep and the tracker is discarded.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "60 overdue meetings.",
@@ -172,12 +141,9 @@
             "More than 50 overdue meetings."
           ],
           "return": "At most 50 per sweep.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "AutoCancelAfterHours: 12.",
@@ -187,8 +153,6 @@
             "Configured AutoCancelAfterHours is 12."
           ],
           "return": "Cutoff now-12h and reason text says 12 giờ.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ]

@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "refreshToken: \"T1\".",
@@ -15,12 +14,9 @@
             "Refresh token T1 is stored for account organizer@example.com."
           ],
           "return": "Completes without error; T1 is revoked, so no new access token can be issued with it (an access token already issued stays valid until expiry).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "refreshToken: \"dead-token\".",
@@ -30,12 +26,9 @@
             "Token store has no live record of the token (already revoked, expired or never issued)."
           ],
           "return": "Completes without error and without a failure result; sign-out is treated as successful.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "refreshToken: \"\".",
@@ -45,12 +38,9 @@
             "No token store call is needed for a blank token."
           ],
           "return": "Completes without error; the token store is not called.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "refreshToken: \"   \".",
@@ -60,12 +50,9 @@
             "No token store call is needed for a whitespace token."
           ],
           "return": "Completes without error; the token store is not called.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "refreshToken: \"T1\".",
@@ -75,8 +62,6 @@
             "Account has two sessions with refresh tokens T1 and T2."
           ],
           "return": "Only T1 is revoked; T2 stays usable for the other session.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         }
       ],

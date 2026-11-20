@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: audit row records the export with the segment count.",
           "type": "Normal",
-          "note": "UC-45b · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "Saved: audit row records the export with the segment count.",
           "type": "Normal",
-          "note": "UC-45b · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351"
         },
         {
           "id": "UTC003",
@@ -52,10 +46,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351 · MSG355"
         },
         {
           "id": "UTC004",
@@ -67,10 +58,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG356",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351 · MSG356"
         },
         {
           "id": "UTC005",
@@ -82,10 +70,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · MSG357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · MSG357"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "N/A",
           "log": "Saved: audit row records the export with segment count 0.",
           "type": "Boundary",
-          "note": "UC-45b · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b"
         },
         {
           "id": "UTC008",
@@ -128,10 +107,7 @@
           "exception": "PersistenceException is caught inside the service.",
           "log": "Error logged with the recording id.",
           "type": "Abnormal",
-          "note": "UC-45b · MSG299",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · MSG299"
         }
       ]
     }

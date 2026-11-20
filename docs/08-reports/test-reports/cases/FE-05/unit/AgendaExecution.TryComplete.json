@@ -21,10 +21,7 @@
             "Item is InProgress, started at 09:00."
           ],
           "return": "true; item Status Done, ActualEndedAt and UpdatedAt 10:00:00Z.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -36,10 +33,7 @@
             "Item ends exactly when it started."
           ],
           "return": "true; ActualEndedAt equals ActualStartedAt.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -51,10 +45,7 @@
             "End is one microsecond before the start."
           ],
           "return": "false; item unchanged.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -66,10 +57,7 @@
             "End precedes the start."
           ],
           "return": "false; item stays InProgress, ActualEndedAt unchanged.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -81,10 +69,7 @@
             "Item is still Pending."
           ],
           "return": "false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -96,10 +81,7 @@
             "Item is already Done."
           ],
           "return": "false; ActualEndedAt unchanged.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -111,10 +93,7 @@
             "Item is InProgress but has no start time."
           ],
           "return": "false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -126,10 +105,7 @@
             "End time carries a +07:00 offset with sub-microsecond ticks."
           ],
           "return": "true; ActualEndedAt 2026-12-01T03:00:00.123456Z (UTC, truncated to microseconds).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         }
       ]
     }

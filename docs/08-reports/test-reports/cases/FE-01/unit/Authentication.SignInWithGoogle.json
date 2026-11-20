@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "idToken: \"not-a-google-token\".",
@@ -15,12 +14,9 @@
             "Google token verifier rejects the token (absent, malformed, expired, wrong audience, bad signature or unverified email)."
           ],
           "return": "GoogleSignInResult Failure(InvalidGoogleToken) (MSG03); no account lookup is made.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "idToken: \"\".",
@@ -30,12 +26,9 @@
             "Google token verifier receives an empty token and returns no identity."
           ],
           "return": "GoogleSignInResult Failure(InvalidGoogleToken) (MSG03).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "idToken: \"<valid token>\".",
@@ -46,12 +39,9 @@
             "Active account already linked to subject g-100."
           ],
           "return": "GoogleSignInResult Success with the user, capabilities of the role, access token, refresh token (stored) and expiry.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "idToken: \"<valid token>\".",
@@ -62,12 +52,9 @@
             "Active account staff@example.com created by an administrator, not yet linked to any Google subject."
           ],
           "return": "GoogleSignInResult Success; the account is linked to subject g-200 and the token pair is issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "idToken: \"<valid token>\".",
@@ -78,12 +65,9 @@
             "Account former@example.com is deactivated and was never linked to a Google subject."
           ],
           "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); the subject is not linked and no token is issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "idToken: \"<valid token>\".",
@@ -94,12 +78,9 @@
             "No internal account has that subject or email."
           ],
           "return": "GoogleSignInResult Failure(NotLinked) (MSG05); no account is created.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "idToken: \"<valid token>\".",
@@ -110,12 +91,9 @@
             "Account organizer@example.com is already linked to a different subject g-100."
           ],
           "return": "GoogleSignInResult Failure(NotLinked) (MSG05): the caller is not the owner of that account, and the account is not re-linked.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "idToken: \"<valid token>\".",
@@ -126,12 +104,9 @@
             "Account linked to subject g-100 is deactivated."
           ],
           "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); no token issued.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "idToken: \"<valid token>\".",
@@ -142,8 +117,6 @@
             "The account role holds no capabilities (BR-04)."
           ],
           "return": "GoogleSignInResult Success with an empty capability list and a token pair.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ],

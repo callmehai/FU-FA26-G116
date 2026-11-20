@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Notification CalendarShareDeclined queued for Binh; audit calendar_share.declined.",
           "type": "Normal",
-          "note": "UC-84c · MSG437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG437"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Notification CalendarShareDeclined queued for An; audit calendar_share.declined.",
           "type": "Normal",
-          "note": "UC-84c · MSG437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG437"
         },
         {
           "id": "UTC003",
@@ -55,10 +49,7 @@
           "exception": "N/A",
           "log": "Share closed; notification queued; audit calendar_share.declined.",
           "type": "Boundary",
-          "note": "UC-84c · MSG437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG437"
         },
         {
           "id": "UTC004",
@@ -71,10 +62,7 @@
           "exception": "N/A",
           "log": "Notification CalendarShareChangeDeclined queued for Binh; audit calendar_share.change_declined with the declined Level and end date.",
           "type": "Normal",
-          "note": "UC-84c · MSG452",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG452"
         },
         {
           "id": "UTC005",
@@ -87,10 +75,7 @@
           "exception": "N/A",
           "log": "Pending change cleared; notification queued for Binh; audit calendar_share.change_declined.",
           "type": "Boundary",
-          "note": "UC-84c · BR-431 · MSG452",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · BR-431 · MSG452"
         },
         {
           "id": "UTC006",
@@ -103,10 +88,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c · MSG450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG450"
         },
         {
           "id": "UTC007",
@@ -119,10 +101,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c · MSG450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG450"
         },
         {
           "id": "UTC008",
@@ -135,10 +114,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c"
         },
         {
           "id": "UTC009",
@@ -151,10 +127,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c"
         },
         {
           "id": "UTC010",
@@ -167,10 +140,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c"
         },
         {
           "id": "UTC011",
@@ -182,10 +152,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c"
         },
         {
           "id": "UTC012",
@@ -198,10 +165,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c · BR-425 · MSG450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · BR-425 · MSG450"
         },
         {
           "id": "UTC013",
@@ -214,10 +178,7 @@
           "exception": "N/A",
           "log": "Share status Stopped; two notifications CalendarShareStopped; audit calendar_share.stopped (reason viewerLostMeetingCreator).",
           "type": "Abnormal",
-          "note": "UC-84c · BR-424 · MSG450",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · BR-424 · MSG450"
         },
         {
           "id": "UTC014",
@@ -231,10 +192,7 @@
           "exception": "N/A",
           "log": "Unit of work changes discarded; error logged.",
           "type": "Abnormal",
-          "note": "UC-84c · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-84c · MSG447"
         }
       ]
     }

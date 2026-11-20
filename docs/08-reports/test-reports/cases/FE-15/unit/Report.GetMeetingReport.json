@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a AF-2 · BR-437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a AF-2 · BR-437"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-432 · BR-437",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a · BR-432 · BR-437"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-434",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a · BR-434"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-433",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a · BR-433"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70a EX-1 · BR-433 · MSG463",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a EX-1 · BR-433 · MSG463"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "Error: \"Could not read the meeting report 2026-01–2026-12\" with the database error as cause.",
           "type": "Abnormal",
-          "note": "UC-70a EX-2 · MSG464",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a EX-2 · MSG464"
         },
         {
           "id": "UTC008",
@@ -129,10 +108,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-70a · BR-435 · BR-436",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a · BR-435 · BR-436"
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "The cancellation escapes to the caller; it is not converted into ReadFailed.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70a",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-70a"
         }
       ]
     }

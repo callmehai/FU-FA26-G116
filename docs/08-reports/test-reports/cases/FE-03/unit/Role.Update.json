@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "id: that role; Name: \"Thư ký chính\"; Description: \"Phụ trách biên bản\".",
@@ -16,12 +15,9 @@
             "Custom role \"Thư ký phó\" held by 3 accounts."
           ],
           "return": "RoleResult Success (MSG22) with the new name and description and userCount 3; capabilities and sessions are untouched.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "id: <random Guid with no role>; valid request.",
@@ -31,12 +27,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Failure(NotFound) (HTTP 404, no message code).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "id: that role; Name: \"Quản trị cấp cao\".",
@@ -47,12 +40,9 @@
             "Built-in role \"Quản trị viên\"."
           ],
           "return": "RoleResult Failure(BuiltInRole) (MSG24); the role is unchanged.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "id: built-in role; Name: \"\".",
@@ -63,12 +53,9 @@
             "Built-in role and a blank name submitted."
           ],
           "return": "RoleResult Failure(BuiltInRole) (MSG24): the built-in check comes before field validation.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "Name: \"\"; Description: null.",
@@ -79,12 +66,9 @@
             "Custom role exists."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "Name: 65 characters.",
@@ -95,12 +79,9 @@
             "Custom role exists."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được vượt quá 64 ký tự.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "Name: 64 characters.",
@@ -111,12 +92,9 @@
             "Custom role exists."
           ],
           "return": "RoleResult Success (MSG22).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "Name valid; Description: 257 characters.",
@@ -127,12 +105,9 @@
             "Custom role exists."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[description] = \"Mô tả không được vượt quá 256 ký tự.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "Name: \"Thư ký phó\"; Description: \"Hỗ trợ\" (identical).",
@@ -143,12 +118,9 @@
             "Custom role \"Thư ký phó\" with description \"Hỗ trợ\"."
           ],
           "return": "RoleResult Success (MSG22) with the current data; nothing is written and no audit row is added.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "Name: \"THƯ KÝ PHÓ\" (only the letter case changes).",
@@ -159,12 +131,9 @@
             "Custom role \"Thư ký phó\"."
           ],
           "return": "RoleResult Success (MSG22): re-casing the role's own name is a change, not a duplicate.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "Name: \"Thư ký phó\"; Description: \"   \" (blank).",
@@ -175,12 +144,9 @@
             "Custom role \"Thư ký phó\" with description \"Hỗ trợ\"."
           ],
           "return": "RoleResult Success (MSG22); the description is cleared to null and the change is audited.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "id: custom role; Name: \"thành viên\".",
@@ -191,12 +157,9 @@
             "Another role \"Thành viên\" exists."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21); the role keeps its name.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "Valid rename.",
@@ -207,12 +170,9 @@
             "The name is free when checked, but a concurrent request takes it before the save."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21); no audit row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "Valid rename.",
@@ -223,12 +183,9 @@
             "The role is deleted by another administrator between reading and saving."
           ],
           "return": "RoleResult Failure(NotFound) (HTTP 404): the save matches no row; the client refreshes its list.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "Valid rename.",
@@ -239,8 +196,6 @@
             "The database refuses the save (connection lost or timeout)."
           ],
           "return": "RoleResult Failure(SaveFailed) (MSG27); the role keeps its previous data.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ],

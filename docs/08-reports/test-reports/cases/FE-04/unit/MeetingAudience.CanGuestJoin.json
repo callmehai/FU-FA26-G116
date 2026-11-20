@@ -12,7 +12,6 @@
       "line": 35,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "guest: session of this meeting; meetingId: the Published meeting.",
@@ -23,12 +22,9 @@
             "Meeting is Published."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "guest: valid session; meetingId: InProgress meeting.",
@@ -38,12 +34,9 @@
             "Meeting is InProgress; guest session valid and readable."
           ],
           "return": "true.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "guest: session with SessionId = empty Guid; meetingId: any meeting.",
@@ -53,12 +46,9 @@
             "Guest session has an empty SessionId (invalid)."
           ],
           "return": "false; the meeting is not loaded.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "guest: session of meeting A; meetingId: meeting B.",
@@ -68,12 +58,9 @@
             "Guest session belongs to another meeting."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "guest: valid session of this meeting; meetingId: the meeting.",
@@ -83,12 +70,9 @@
             "Guest invitation was revoked so the agenda guest-access check fails."
           ],
           "return": "false; the meeting is not loaded.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "guest: valid session; meetingId: deleted meeting id.",
@@ -99,12 +83,9 @@
             "Meeting no longer exists."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "guest: valid session; meetingId: Ended meeting.",
@@ -115,12 +96,9 @@
             "Meeting is Ended."
           ],
           "return": "false; only Published and InProgress meetings are open to guests.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "guest: valid session; meetingId: Draft meeting.",
@@ -131,8 +109,6 @@
             "Meeting is Draft."
           ],
           "return": "false.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ]

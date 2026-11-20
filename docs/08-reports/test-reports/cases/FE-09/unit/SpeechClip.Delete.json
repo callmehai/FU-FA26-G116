@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipDeleted (sentence, meeting, speaker, byOwner true); a ClipDeleted change is published.",
           "type": "Normal",
-          "note": "UC-80 · BR-355 · MSG322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-80 · BR-355 · MSG322"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipDeleted (byOwner false); a ClipDeleted change is published.",
           "type": "Normal",
-          "note": "UC-46d · BR-355 · MSG322",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46d · BR-355 · MSG322"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46d · BR-355 · MSG323",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46d · BR-355 · MSG323"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46d · BR-355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46d · BR-355"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46d · BR-355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46d · BR-355"
         },
         {
           "id": "UTC006",
@@ -97,10 +82,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to delete speech clip'.",
           "type": "Abnormal",
-          "note": "UC-80 · BR-355 · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-80 · BR-355 · MSG304"
         }
       ]
     }

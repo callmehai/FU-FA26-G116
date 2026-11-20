@@ -24,7 +24,7 @@ Report 5.2 is not rebuilt by default: the workbook in use is version 1.1 kept ce
 The workbooks are output: never edit them in Excel, edit the JSON and build again.
 JSON is the source of truth and the template is the frame: build always regenerates from the
 template, never patches cells into an old workbook. `build` without flags writes nothing; only
-`build --overwrite` writes, after copying each old file to `<name>.bak-<YYYYMMDD-HHMM>.xlsx`.
+`build --overwrite` writes, after copying each old file to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`.
 `sync-back` only fills Round/Test date/Tester cells that are non-empty and not Pending, matched
 by case id (`<CODE>_FTnn` in the UI book, `<CODE>_API_ITnn` in the API book); description,
 procedure, expected and every other standard field are never overwritten from Excel.
@@ -460,7 +460,7 @@ def _cell_text(value):
 
 
 def _backup(target):
-    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
     bak = target.with_name(f'{target.stem}.bak-{stamp}.xlsx')
     shutil.copy2(target, bak)
     print(f'backup -> {bak.relative_to(ROOT)}')
@@ -648,7 +648,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('command', choices=('routes', 'scaffold', 'check', 'md', 'sync-back', 'build'))
     parser.add_argument('--overwrite', action='store_true',
-                        help='build only: back the old workbooks up to <name>.bak-<YYYYMMDD-HHMM>.xlsx and write them (default is a dry-run diff)')
+                        help='build only: back the old workbooks up to <name>.bak-<YYYYMMDD-HHMMSS>.xlsx and write them (default is a dry-run diff)')
     parser.add_argument('--with-ui', action='store_true',
                         help='build: also rebuild Report 5.2 from FE-xx/ui.json, replacing the v1.2 workbook')
     args = parser.parse_args()

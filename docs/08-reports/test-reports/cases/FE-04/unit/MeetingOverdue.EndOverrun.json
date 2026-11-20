@@ -12,7 +12,6 @@
       "line": 48,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "AutoEndAfterHours: 24.",
@@ -22,12 +21,9 @@
             "No meeting is overrun."
           ],
           "return": "Returns 0; the lifecycle service is not called.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "AutoEndAfterHours: 24.",
@@ -37,12 +33,9 @@
             "Three overrun meetings; each end succeeds."
           ],
           "return": "Returns 3.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "AutoEndAfterHours: 24.",
@@ -52,12 +45,9 @@
             "Three overrun meetings; one has been ended by the Chair before the sweep reaches it."
           ],
           "return": "Returns 2 (the skipped one is not counted).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "AutoEndAfterHours: 48.",
@@ -67,12 +57,9 @@
             "Configured AutoEndAfterHours is 48."
           ],
           "return": "Cutoff is now-48h and the reason text says 48 giờ.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "60 overrun meetings.",
@@ -82,8 +69,6 @@
             "More than 50 meetings are overrun."
           ],
           "return": "Only the first 50 (by planned end) are handled in one sweep; returns at most 50.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         }
       ]

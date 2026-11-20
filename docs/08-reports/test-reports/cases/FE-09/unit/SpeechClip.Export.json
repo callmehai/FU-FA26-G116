@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipsExported (meeting, sentence count).",
           "type": "Normal",
-          "note": "UC-45b · BR-351 · BR-358",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351 · BR-358"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG355",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351 · MSG355"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG356",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351 · MSG356"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipsExported with sentence count 0.",
           "type": "Boundary",
-          "note": "UC-45b · BR-351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · BR-351"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b"
         },
         {
           "id": "UTC007",
@@ -112,10 +94,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to export the speech clips'.",
           "type": "Abnormal",
-          "note": "UC-45b · MSG299",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-45b · MSG299"
         }
       ]
     }

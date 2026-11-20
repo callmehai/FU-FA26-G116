@@ -22,10 +22,7 @@
             "Item I \"Old\" Pending."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -38,10 +35,7 @@
             "Item I is InProgress."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -54,10 +48,7 @@
             "Item I is Done."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -70,10 +61,7 @@
             "Item I \"Same\" with description \"d\", no presenter, no documents."
           ],
           "return": "Success; 200 / MSG61; item id returned.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -86,10 +74,7 @@
             "Item I has description \"a\"."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -102,10 +87,7 @@
             "Item I has no presenter."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -118,10 +100,7 @@
             "Item I has presenter M."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -134,10 +113,7 @@
             "Item I has presenter M."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -150,10 +126,7 @@
             "Item I has legacy free-text presenter name \"Old Name\"."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -166,10 +139,7 @@
             "Item I linked to D1."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -182,10 +152,7 @@
             "Item I linked to D1; D2 also belongs to the meeting."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -198,10 +165,7 @@
             "Item I linked to D1."
           ],
           "return": "Success; 200 / MSG61.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -213,10 +177,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -229,10 +190,7 @@
             "Item belongs to another meeting."
           ],
           "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -245,10 +203,7 @@
             "Item I exists."
           ],
           "return": "Failure Invalid on title; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -261,10 +216,7 @@
             "Item I exists."
           ],
           "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -277,10 +229,7 @@
             "Item I exists."
           ],
           "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -293,10 +242,7 @@
             "Item I exists."
           ],
           "return": "Failure Invalid on documentIds; 400 / MSG66.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -308,11 +254,8 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Item I exists."
           ],
-          "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -325,10 +268,7 @@
             "Item I exists."
           ],
           "return": "Failure Locked; 409 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -341,10 +281,7 @@
             "Item I exists."
           ],
           "return": "Failure SaveFailed; 503 / MSG69.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -357,10 +294,7 @@
             "Item I exists."
           ],
           "return": "Failure Inactive; 403, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

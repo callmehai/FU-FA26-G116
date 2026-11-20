@@ -5,7 +5,6 @@
     {
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "Name: \"Thư ký phó\"; Description: \"Hỗ trợ thư ký\"; Capabilities: [\"MeetingCreator\", \"MinutesEditor\"].",
@@ -16,12 +15,9 @@
             "No role is named \"Thư ký phó\"."
           ],
           "return": "RoleResult Success (MSG19): custom role (not built-in) with 0 holders and capabilities MeetingCreator and MinutesEditor.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "Name: \"Thư ký phó\"; Description: null; Capabilities: [].",
@@ -32,12 +28,9 @@
             "No role is named \"Thư ký phó\"."
           ],
           "return": "RoleResult Success (MSG19): a role with no capabilities is allowed; description stored as null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "Name: \"  Thư   ký  phó  \" (extra spaces); Description: \"   \" (blank).",
@@ -47,12 +40,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19): the name is saved as \"Thư ký phó\" (trimmed, whitespace collapsed) and the blank description as null.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "Name: \"\"; Description: null; Capabilities: [].",
@@ -62,12 +52,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\"; nothing saved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "Name: \"     \" (spaces only).",
@@ -77,12 +64,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "Name: 64 characters.",
@@ -92,12 +76,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19): 64 characters is the maximum.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "Name: 65 characters.",
@@ -107,12 +88,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được vượt quá 64 ký tự.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "Name: 60 Vietnamese letters typed as base letters plus combining marks (decomposed Unicode), more than 64 code points raw but 60 characters once composed.",
@@ -122,12 +100,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19): the name is normalised to composed form before the 64-character limit is applied, and saved composed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "Name valid; Description: 256 characters.",
@@ -137,12 +112,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "Name valid; Description: 257 characters.",
@@ -152,12 +124,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[description] = \"Mô tả không được vượt quá 256 ký tự.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "Name valid; Capabilities: [\"MeetingCreator\", \"KhongTonTai\"].",
@@ -167,12 +136,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[capabilities] = \"Quyền không hợp lệ: KhongTonTai.\"; nothing saved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "Name valid; Capabilities: [\"1\", \"99\"] (numbers instead of names).",
@@ -182,12 +148,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[capabilities] listing \"1, 99\": numeric strings are not accepted as capabilities.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "Name valid; Capabilities: [null].",
@@ -197,12 +160,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[capabilities] = \"Quyền không hợp lệ: null.\".",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "Name valid; Capabilities: [\"meetingcreator\", \"MeetingCreator\"] (different case, repeated).",
@@ -212,12 +172,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19): names match case-insensitively and the repeated capability is stored once.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "Name: \"\"; Description: 257 characters; Capabilities: [\"Sai\"].",
@@ -227,12 +184,9 @@
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors for name, description and capabilities at once.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC016",
           "inputs": "Name: \"THƯ KÝ PHÓ\".",
@@ -243,12 +197,9 @@
             "A custom role \"Thư ký phó\" exists."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21): names are unique regardless of case; nothing saved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC017",
           "inputs": "Name: \"quản trị viên\".",
@@ -259,12 +210,9 @@
             "A built-in role \"Quản trị viên\" exists."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21): a new role cannot take a built-in role name.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC018",
           "inputs": "Name: \"Thư ký phó\".",
@@ -275,12 +223,9 @@
             "The name is free when checked, but a concurrent request inserts the same name before this save."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21): the unique index violation is answered like the duplicate check; no audit row.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC019",
           "inputs": "Valid request.",
@@ -291,8 +236,6 @@
             "The database refuses the save (connection lost or timeout)."
           ],
           "return": "RoleResult Failure(SaveFailed) (MSG26); no role is created and no audit row is written.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ],

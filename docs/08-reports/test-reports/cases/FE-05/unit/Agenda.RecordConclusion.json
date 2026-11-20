@@ -22,10 +22,7 @@
             "Item I is InProgress; no minutes exist."
           ],
           "return": "Success; 200 / MSG271.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -38,10 +35,7 @@
             "Item I is Done."
           ],
           "return": "Success; 200 / MSG271.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -54,10 +48,7 @@
             "Item I is Done; minutes not yet created."
           ],
           "return": "Success; 200 / MSG271.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -70,10 +61,7 @@
             "Item I is InProgress."
           ],
           "return": "Success; 200 / MSG271.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -86,10 +74,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -102,10 +87,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -118,10 +100,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -134,10 +113,7 @@
             "Item I is Done; minutes exist for the meeting."
           ],
           "return": "Failure Locked; 409 / MSG273.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -150,10 +126,7 @@
             "Item I is Pending."
           ],
           "return": "Failure Locked; 409 / MSG273.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -166,10 +139,7 @@
             "Item I is InProgress (inconsistent)."
           ],
           "return": "Failure Locked; 409 / MSG273.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -182,10 +152,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure Forbidden; 403 / MSG273.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -197,10 +164,7 @@
             "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure NotFound; 404 / MSG174.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -212,10 +176,7 @@
             "Meeting not readable by the actor."
           ],
           "return": "Failure NotFound; 404 / MSG174.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -228,10 +189,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure UnsupportedMedia; 415 / MSG34.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -244,10 +202,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure SaveFailed; 503 / MSG274.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -259,10 +214,7 @@
             "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Inactive; 403, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

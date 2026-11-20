@@ -22,10 +22,7 @@
             "Item I is Pending."
           ],
           "return": "Success; 200 / MSG62.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -38,10 +35,7 @@
             "Item I is Pending."
           ],
           "return": "Success; 200 / MSG62.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -54,10 +48,7 @@
             "Item I is InProgress."
           ],
           "return": "Failure DeleteLocked; 409 / MSG142.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -70,10 +61,7 @@
             "Item I is Done."
           ],
           "return": "Failure DeleteLocked; 409 / MSG142.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -85,10 +73,7 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -100,11 +85,8 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Item I is Pending."
           ],
-          "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -117,10 +99,7 @@
             "Item I is Pending."
           ],
           "return": "Failure Locked; 409 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -133,10 +112,7 @@
             "Item I is Pending."
           ],
           "return": "Failure SaveFailed; 503 / MSG70.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

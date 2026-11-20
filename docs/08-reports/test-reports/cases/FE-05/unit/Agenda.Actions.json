@@ -21,10 +21,7 @@
             "Running meeting; Chair; item Pending; no item in progress."
           ],
           "return": "CanEdit true; CanEditPlanningFields true; CanDelete true; CanSetCurrent true; CanComplete false; CanRecordConclusion false; CanLinkDocuments true.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -36,10 +33,7 @@
             "Running meeting; Chair; another item is already in progress."
           ],
           "return": "CanSetCurrent false; CanEdit true; CanDelete true.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -51,10 +45,7 @@
             "Running meeting; Chair; the item is in progress."
           ],
           "return": "CanComplete true; CanDelete false; CanSetCurrent false; CanRecordConclusion true; CanEdit true.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -66,10 +57,7 @@
             "Running meeting; Secretary; item Pending."
           ],
           "return": "CanEdit true; CanDelete true; CanSetCurrent false; CanComplete false; CanLinkDocuments true (execution actions are for the Chair only).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -81,10 +69,7 @@
             "Published meeting; Chair; item Pending."
           ],
           "return": "CanEdit true; CanDelete true; CanSetCurrent false; CanComplete false (meeting not running).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -96,10 +81,7 @@
             "Plain Member views the agenda."
           ],
           "return": "All seven actions false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -111,10 +93,7 @@
             "Ended meeting; Chair; item Done; no minutes."
           ],
           "return": "CanEdit false; CanDelete false; CanSetCurrent false; CanComplete false; CanRecordConclusion true; CanLinkDocuments false (meeting ended).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -126,10 +105,7 @@
             "Ended meeting with minutes issued."
           ],
           "return": "CanRecordConclusion false; all others false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }

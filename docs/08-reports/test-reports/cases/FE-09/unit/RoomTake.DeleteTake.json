@@ -23,10 +23,7 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeDeleted with take 2, its start time, 5,000 ms, 1 line removed, total 18,000 ms; the previous file is deleted after commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC002",
@@ -39,10 +36,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC003",
@@ -55,10 +49,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC004",
@@ -70,10 +61,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC005",
@@ -85,10 +73,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC006",
@@ -100,10 +85,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC007",
@@ -115,10 +97,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC008",
@@ -130,10 +109,7 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeDeleted with 0 lines.",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366"
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG366"
         },
         {
           "id": "UTC010",
@@ -160,10 +133,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG367",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG367"
         },
         {
           "id": "UTC011",
@@ -176,10 +146,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC012",
@@ -192,10 +159,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC013",
@@ -208,10 +172,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC014",
@@ -223,10 +184,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC015",
@@ -238,10 +196,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · BR-348",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · BR-348"
         },
         {
           "id": "UTC016",
@@ -253,10 +208,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC017",
@@ -268,10 +220,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC018",
@@ -283,10 +232,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC019",
@@ -298,10 +244,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · BR-350"
         },
         {
           "id": "UTC020",
@@ -314,10 +257,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG295"
         },
         {
           "id": "UTC021",
@@ -330,10 +270,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349"
         },
         {
           "id": "UTC022",
@@ -347,10 +284,7 @@
           "exception": "PersistenceException or IOException caught; logged.",
           "log": "Error log 'Failed to erase take'; cut file removed.",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-44d · BR-341 · BR-349 · MSG298"
         }
       ]
     }

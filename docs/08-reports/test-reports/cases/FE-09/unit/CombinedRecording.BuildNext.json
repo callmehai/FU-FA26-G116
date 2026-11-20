@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC002",
@@ -39,10 +36,7 @@
           "exception": "N/A",
           "log": "Saved recording row; Information log 'Built the combined recording' with 1 room take, 3 online sentences; a RecordingsChanged event is published to the meeting.",
           "type": "Normal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC003",
@@ -54,10 +48,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC004",
@@ -69,10 +60,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC005",
@@ -84,10 +72,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456 · BR-357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456 · BR-357"
         },
         {
           "id": "UTC006",
@@ -99,10 +84,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "Combined recording row saved; RecordingsChanged published.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC008",
@@ -129,10 +108,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · UC-44e · BR-456 · BR-457"
         },
         {
           "id": "UTC009",
@@ -145,10 +121,7 @@
           "exception": "N/A",
           "log": "Old audio file removed from storage; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · UC-44e · BR-456 · BR-457"
         },
         {
           "id": "UTC010",
@@ -160,10 +133,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · UC-44e · BR-456 · BR-457"
         },
         {
           "id": "UTC011",
@@ -175,10 +145,7 @@
           "exception": "N/A",
           "log": "New mixed file removed from storage.",
           "type": "Abnormal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · UC-44e · BR-456 · BR-457"
         },
         {
           "id": "UTC012",
@@ -190,10 +157,7 @@
           "exception": "InvalidOperationException 'The combined recording would last ... ms, past the limit.' raised inside the build and caught; logged as an error.",
           "log": "Error log 'Could not build the combined recording of meeting'; the meeting is remembered as failed at its current change time.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC013",
@@ -205,10 +169,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC014",
@@ -220,10 +181,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC015",
@@ -235,10 +193,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC016",
@@ -250,10 +205,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC017",
@@ -265,10 +217,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC018",
@@ -280,10 +229,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC019",
@@ -295,10 +241,7 @@
           "exception": "IOException caught; logged as an error.",
           "log": "Temporary file removed; error log written.",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC020",
@@ -310,10 +253,7 @@
           "exception": "PersistenceException caught; logged with its inner exception.",
           "log": "Mixed file removed from storage.",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC021",
@@ -325,10 +265,7 @@
           "exception": "OperationCanceledException propagates to the caller.",
           "log": "Partly written file removed.",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC022",
@@ -340,10 +277,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC023",
@@ -355,10 +289,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         },
         {
           "id": "UTC024",
@@ -370,10 +301,7 @@
           "exception": "N/A",
           "log": "Warning log 'Could not publish recordings change'.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-43a · BR-456"
         }
       ]
     }

@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Saved: samples and suggestions erased, consent closed; audit row records the withdrawal with the erased counts.",
           "type": "Normal",
-          "note": "UC-81f · BR-365 · BR-454 · MSG306",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81f · BR-365 · BR-454 · MSG306"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-81f · MSG306",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81f · MSG306"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "PersistenceException is caught inside the service.",
           "log": "Error logged with the user id.",
           "type": "Abnormal",
-          "note": "UC-81f · MSG315",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-81f · MSG315"
         }
       ]
     }

@@ -6,7 +6,7 @@ Precondition: Summary draft exists.
 
 ## SummaryService.ReviewAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:141`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:144`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

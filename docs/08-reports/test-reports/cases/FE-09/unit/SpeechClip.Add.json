@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-39a · BR-352 · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · BR-352 · MSG318"
         },
         {
           "id": "UTC002",
@@ -37,10 +34,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-39a",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · MSG319",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG319"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-39a · MSG319",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG319"
         },
         {
           "id": "UTC006",
@@ -99,10 +84,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Boundary",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC007",
@@ -114,10 +96,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-39a · MSG319",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG319"
         },
         {
           "id": "UTC008",
@@ -129,10 +108,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-39a · MSG319",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG319"
         },
         {
           "id": "UTC009",
@@ -144,10 +120,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · BR-354 · MSG320",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · BR-354 · MSG320"
         },
         {
           "id": "UTC010",
@@ -160,10 +133,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG312"
         },
         {
           "id": "UTC011",
@@ -176,10 +146,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG312"
         },
         {
           "id": "UTC012",
@@ -192,10 +159,7 @@
           "exception": "SpeechEngineException caught; logged.",
           "log": "Warning log 'The speech worker could not transcribe a clip'.",
           "type": "Abnormal",
-          "note": "UC-39a · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG312"
         },
         {
           "id": "UTC013",
@@ -208,10 +172,7 @@
           "exception": "N/A",
           "log": "Error log 'Could not store the audio of a speech clip'.",
           "type": "Normal",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC014",
@@ -224,10 +185,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC015",
@@ -240,10 +198,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Boundary",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC016",
@@ -256,10 +211,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Boundary",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC017",
@@ -272,10 +224,7 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-39a · BR-354 · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · BR-354 · MSG318"
         },
         {
           "id": "UTC018",
@@ -287,10 +236,7 @@
           "exception": "UniqueConflictException caught; the staged change is discarded.",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · MSG318",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG318"
         },
         {
           "id": "UTC019",
@@ -303,10 +249,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to store a speech clip'.",
           "type": "Abnormal",
-          "note": "UC-39a · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG304"
         },
         {
           "id": "UTC020",
@@ -316,12 +259,9 @@
           "inputs": "meetingId; actorId: a participant; upload: valid.",
           "return": "SaveFailed (503, MSG304); nothing is transcribed.",
           "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to read speech clips'.",
+          "log": "Error log 'Failed to check speech capture for {MeetingId}'.",
           "type": "Abnormal",
-          "note": "UC-39a · MSG304 · Deviation: real error log is 'Failed to check speech capture for {MeetingId}', not 'Failed to read speech clips'.",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-39a · MSG304"
         }
       ]
     }

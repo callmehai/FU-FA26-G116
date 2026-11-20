@@ -22,10 +22,7 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG302"
         },
         {
           "id": "UTC002",
@@ -38,10 +35,7 @@
           "exception": "N/A",
           "log": "Saved: editor and edit time refreshed.",
           "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG302"
         },
         {
           "id": "UTC003",
@@ -53,10 +47,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG303"
         },
         {
           "id": "UTC004",
@@ -68,10 +59,7 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG302",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG302"
         },
         {
           "id": "UTC005",
@@ -83,10 +71,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG303",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG303"
         },
         {
           "id": "UTC006",
@@ -98,10 +83,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · BR-359 · MSG295"
         },
         {
           "id": "UTC007",
@@ -113,10 +95,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a"
         },
         {
           "id": "UTC008",
@@ -128,10 +107,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a"
         },
         {
           "id": "UTC009",
@@ -144,10 +120,7 @@
           "exception": "PersistenceException is caught inside the service.",
           "log": "Error logged with the segment id.",
           "type": "Abnormal",
-          "note": "UC-46a · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46a · MSG304"
         }
       ]
     }

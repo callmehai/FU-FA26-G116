@@ -12,7 +12,6 @@
       "line": 33,
       "cases": [
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "command: Start; actor: the Chair.",
@@ -23,12 +22,9 @@
             "Two other Members are invited."
           ],
           "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "command: End; actor: the Chair.",
@@ -39,12 +35,9 @@
             "Meeting mode is Online."
           ],
           "return": "Success(Ended); ActualEndedAt = now; MSG111.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Normal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "command: End; actor: the Chair.",
@@ -54,12 +47,9 @@
             "Meeting is InProgress, mode InPerson."
           ],
           "return": "Success(Ended); MSG111.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "command: End; actor: the Chair.",
@@ -69,12 +59,9 @@
             "Meeting is InProgress, mode Hybrid."
           ],
           "return": "Success(Ended); MSG111.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "command: Approve; actor: Chair.",
@@ -84,12 +71,9 @@
             "Command carries an approval action."
           ],
           "return": "Failure InvalidRequest; MSG80; nothing changed.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "command: Start with Reason \"x\".",
@@ -99,12 +83,9 @@
             "Start command carries a reason."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC007",
           "inputs": "command: Start with AssignedApproverId set.",
@@ -114,12 +95,9 @@
             "Start command carries an approver id or an organizer id."
           ],
           "return": "Failure InvalidRequest; MSG80.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC008",
           "inputs": "meetingId: unknown.",
@@ -129,12 +107,9 @@
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC009",
           "inputs": "actor: stranger.",
@@ -144,12 +119,9 @@
             "Actor has no read access to the meeting."
           ],
           "return": "Failure NotFound (404).",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC010",
           "inputs": "command: Start; actor: Secretary.",
@@ -159,12 +131,9 @@
             "Actor reads the meeting as Secretary."
           ],
           "return": "Failure Forbidden (403); MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC011",
           "inputs": "command: End; actor: deactivated Chair.",
@@ -174,12 +143,9 @@
             "Actor is the Chair on the roster but the Chair account is deactivated."
           ],
           "return": "Failure Forbidden (403); MSG114.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC012",
           "inputs": "command: Start; actor: creator.",
@@ -189,12 +155,9 @@
             "Actor is the meeting creator, not on the roster as Chair."
           ],
           "return": "Failure Forbidden; MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC013",
           "inputs": "command: Start; actor: Chair.",
@@ -204,12 +167,9 @@
             "Meeting is Approved (not yet Published)."
           ],
           "return": "Failure StatusConflict (409); MSG112; nothing saved.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC014",
           "inputs": "command: Start; actor: Chair.",
@@ -219,12 +179,9 @@
             "Meeting is already InProgress."
           ],
           "return": "Failure StatusConflict; MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC015",
           "inputs": "command: Start; actor: Chair.",
@@ -234,12 +191,9 @@
             "Published meeting with no active Secretary."
           ],
           "return": "Failure StatusConflict; MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC016",
           "inputs": "command: Start; actor: Chair.",
@@ -249,12 +203,9 @@
             "Published meeting with two active Chairs (actor is one of them)."
           ],
           "return": "Failure StatusConflict; MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC017",
           "inputs": "command: Start; actor: Chair.",
@@ -264,12 +215,9 @@
             "Published meeting where the only Secretary is deactivated."
           ],
           "return": "Failure StatusConflict; MSG112.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC018",
           "inputs": "command: End; actor: Chair.",
@@ -279,12 +227,9 @@
             "Meeting is Published."
           ],
           "return": "Failure StatusConflict; MSG114.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC019",
           "inputs": "command: End; actor: Chair.",
@@ -294,12 +239,9 @@
             "Meeting is InProgress but has no Secretary."
           ],
           "return": "Success(Ended); the roster is not checked when ending.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC020",
           "inputs": "command: Start; actor: Chair.",
@@ -309,12 +251,9 @@
             "The store fails while saving the start."
           ],
           "return": "Failure SaveFailed (500); MSG115; no notification is sent.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC021",
           "inputs": "command: End; actor: Chair.",
@@ -324,12 +263,9 @@
             "The store fails while saving the end."
           ],
           "return": "Failure SaveFailed; MSG116; no post-commit effect runs.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC022",
           "inputs": "command: End; actor: Chair.",
@@ -339,12 +275,9 @@
             "Ending finds the agenda in a state that cannot be closed."
           ],
           "return": "Failure SaveFailed; MSG116.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC023",
           "inputs": "command: End; actor: Chair.",
@@ -354,12 +287,9 @@
             "Meeting ended but the agenda event publication fails."
           ],
           "return": "Success(Ended); MSG111; the failure does not change the result.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "N/A",
           "id": "UTC024",
           "inputs": "command: Start; actor: Chair.",
@@ -369,12 +299,9 @@
             "Start commits but the notification insert fails."
           ],
           "return": "Success(InProgress); MSG110.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-18",
           "exception": "OperationCanceledException is propagated.",
           "id": "UTC025",
           "inputs": "cancellation token cancelled.",
@@ -384,8 +311,6 @@
             "The caller cancels the request."
           ],
           "return": "No result; the cancellation is rethrown.",
-          "round1": "Passed",
-          "tester1": "KhanhPG",
           "type": "Abnormal"
         }
       ]

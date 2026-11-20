@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipExcluded (sentence, meeting, speaker, reason); a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG351"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "Audit SpeechClipRestored; a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG352",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG352"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG351",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG351"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG353",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG353"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG354",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG354"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357"
         },
         {
           "id": "UTC007",
@@ -111,10 +93,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357"
         },
         {
           "id": "UTC008",
@@ -127,10 +106,7 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to change the exclusion of speech clip'.",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "note": "UC-46c · BR-357 · MSG304"
         }
       ]
     }

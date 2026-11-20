@@ -6,7 +6,7 @@ Precondition: Minutes with revisions.
 
 ## MinutesService.GetRevisionAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:170`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:172`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

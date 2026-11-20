@@ -21,10 +21,7 @@
           "exception": "N/A",
           "log": "Two StoredFile rows, two objects written, two Document rows with OwnerId U1 and FolderId F1, in one transaction; library locked for the owner.",
           "type": "Normal",
-          "note": "UC-36 · BR-229 · MSG177",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · BR-229 · MSG177"
         },
         {
           "id": "UTC002",
@@ -36,10 +33,7 @@
           "exception": "N/A",
           "log": "Document row with FolderId null.",
           "type": "Normal",
-          "note": "UC-36 · MSG177",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · MSG177"
         },
         {
           "id": "UTC003",
@@ -51,10 +45,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-36 · BR-229",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · BR-229"
         },
         {
           "id": "UTC004",
@@ -66,10 +57,7 @@
           "exception": "N/A",
           "log": "Objects released; StoredFile rows stamped purged.",
           "type": "Abnormal",
-          "note": "UC-36 · MSG179",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · MSG179"
         },
         {
           "id": "UTC005",
@@ -81,10 +69,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-36 · ADR-0034",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · ADR-0034"
         },
         {
           "id": "UTC006",
@@ -96,10 +81,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-36 · MSG346",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · MSG346"
         },
         {
           "id": "UTC007",
@@ -111,10 +93,7 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-36 · BR-286 · MSG178",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · BR-286 · MSG178"
         },
         {
           "id": "UTC008",
@@ -126,10 +105,7 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-36 · MSG178",
-          "round1": "Passed",
-          "date1": "2026-11-19",
-          "tester1": "KhanhPG"
+          "note": "UC-36 · MSG178"
         }
       ]
     }

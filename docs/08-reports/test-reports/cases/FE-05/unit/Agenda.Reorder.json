@@ -22,10 +22,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Success; 200 / MSG63.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Normal"
         },
         {
           "exception": "N/A",
@@ -39,10 +36,7 @@
             "P1 is InProgress."
           ],
           "return": "Success; 200 / MSG63.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -55,10 +49,7 @@
             "Items P1 (position 1) and P3 (position 4) with a gap."
           ],
           "return": "Success; 200 / MSG63.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -71,10 +62,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Success; 200 / MSG63.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -88,10 +76,7 @@
             "Another user has since started P1."
           ],
           "return": "Failure StaleOrder; 409 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -104,10 +89,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -120,10 +102,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -136,10 +115,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -152,10 +128,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -168,10 +141,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -184,10 +154,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -200,10 +167,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -216,10 +180,7 @@
             "Only one item P1."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143 (nothing to reorder).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -232,10 +193,7 @@
             "No items."
           ],
           "return": "Failure InvalidOrder; 400 / MSG143.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Boundary"
         },
         {
           "exception": "N/A",
@@ -247,11 +205,8 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
-          "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Failed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -264,10 +219,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure Locked; 409 / MSG67.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         },
         {
           "exception": "N/A",
@@ -280,10 +232,7 @@
             "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
           ],
           "return": "Failure SaveFailed; 503 / MSG71.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-18",
-          "tester1": "KhanhPG"
+          "type": "Abnormal"
         }
       ]
     }
