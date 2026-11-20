@@ -1,15 +1,20 @@
 /**
- * The call room's short cues, as Google Meet plays them: someone joined, someone started presenting (Hải 20/11). They
+ * The call room's short cues, as Google Meet plays them: someone joined, someone started presenting (Hải 20/11), a chat
+ * message arrived while the chat is closed (team meeting 19/11). They
  * are synthesised with Web Audio rather than shipped as files, so nothing new has to be allowed by the server's
  * Content-Security-Policy, and they play on the speaker the user picked in the room.
  */
 
-export type RoomCue = 'join' | 'share'
+export type RoomCue = 'join' | 'share' | 'chat'
 
-/** Notes per cue, in Hz: two rising notes for a newcomer, one lower falling pair for a screen being shared. */
+/**
+ * Notes per cue, in Hz: two rising notes for a newcomer, one lower falling pair for a screen being shared, and a single
+ * high note for a chat message — the lightest of the three, since messages come far more often.
+ */
 const NOTES: Record<RoomCue, readonly number[]> = {
   join: [659.25, 987.77],
   share: [783.99, 587.33],
+  chat: [1046.5],
 }
 
 const NOTE_SECONDS = 0.16
