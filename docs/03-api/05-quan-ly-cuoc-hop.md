@@ -209,7 +209,14 @@ một history `Reschedule` (`Published → Published`) và một notification `M
 participant active, chưa Delegated, trừ chính người dời lịch (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
+Sửa hoặc dời lịch thành công phát `meetingChanged` trên `/hubs/meetings` (xem dưới).
+
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
+
+**Realtime.** Mỗi transition thành công (kể cả Start, End, TransferOrganizer), mỗi `PUT` thành công, việc hệ thống tự
+huỷ (BR-301) và tự kết thúc (ADR-0062) đều phát `meetingChanged` `{ eventId, meetingId, occurredAt }` sau commit, cho
+người đang đọc được cuộc họp và cả người gắn với cuộc họp vừa mất quyền đọc mà đã join từ trước. Trang chi tiết đọc
+lại cuộc họp và lịch sử; người mất quyền nhận `404`. Chi tiết: [25](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md).
 
 Các endpoint SCRUM-19 trong mục này là contract đã chốt để triển khai và bàn giao kiểm thử; chúng
 không tự khẳng định code đã được merge hay đạt Backend Ready.

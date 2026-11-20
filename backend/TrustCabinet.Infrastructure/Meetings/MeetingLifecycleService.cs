@@ -27,7 +27,8 @@ public sealed class MeetingLifecycleService(
     INotificationService notifications,
     ICallRoomService rooms,
     TimeProvider clock,
-    ILogger<MeetingLifecycleService> logger) : IMeetingLifecycleService
+    ILogger<MeetingLifecycleService> logger,
+    IMeetingChangePublisher? changes = null) : IMeetingLifecycleService
 {
     public async Task<MeetingWorkflowResult> TransitionAsync(
         Guid meetingId, MeetingTransitionCommand command, Guid actorId, CancellationToken ct = default)
@@ -155,6 +156,8 @@ public sealed class MeetingLifecycleService(
 
         logger.LogInformation("Ended meeting {MeetingId} left running past its planned end.", meetingId);
         await AfterEndAsync(meetingId, historyId, end!);
+        // The Chair's End is published by the transition endpoint; the system's has no request to do it.
+        if (changes is not null) await changes.MeetingChangedAsync(meetingId);
         return true;
     }
 

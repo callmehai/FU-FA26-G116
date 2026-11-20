@@ -20,8 +20,17 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// revision (UC-83). Until a revision is issued it is the Chair's and the Secretary's alone (BR-386, BR-412).
 /// </summary>
 public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository meetings, TimeProvider clock,
-    ILogger<MinutesService> logger, IOptions<EmailDeliveryOptions> email) : IMinutesService
+    ILogger<MinutesService> logger, IOptions<EmailDeliveryOptions> email, IMeetingChangePublisher? changes = null)
+    : IMinutesService
 {
+    /// <summary>The other officer's open Biên bản tab, and every reader's once a revision is issued, re-reads (minutesChanged).
+    /// Called after the commit; the publisher logs its own failures.</summary>
+    private async Task<MinutesOutcome> AnnounceAsync(Guid meetingId, MinutesOutcome outcome)
+    {
+        if (outcome.Failure == MinutesFailure.None && changes is not null) await changes.MinutesChangedAsync(meetingId);
+        return outcome;
+    }
+
     private static readonly TimeZoneInfo Hanoi = SummaryWriter.FindHanoi();
 
     public async Task<MinutesOutcome> GetAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
@@ -45,7 +54,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
         {
             // The meeting row is locked as a note save locks it (SCRUM-30): a note saved before is in these minutes, one
             // saved after is refused (BR-396).
-            return await meetings.InTransactionAsync<MinutesOutcome>(async token =>
+            return await AnnounceAsync(meetingId, await meetings.InTransactionAsync<MinutesOutcome>(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token, forUpdate: true);
                 if (meeting is null) return new(failure);
@@ -73,7 +82,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 current.UpdatedAt = now;
                 await db.SaveChangesAsync(token);
                 return new(Data: await StateAsync(meeting, actorId, token));
-            }, ct);
+            }, ct));
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
@@ -123,7 +132,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                     && m.UpdatedAt >= from && m.UpdatedAt <= to)
                 .ExecuteUpdateAsync(m => m.SetProperty(x => x.Content, html).SetProperty(x => x.UpdatedAt, now), ct);
             if (saved == 0) return new(MinutesFailure.Stale);
-            return new(Data: await StateAsync(meeting, actorId, ct));
+            return await AnnounceAsync(row.MeetingId, new(Data: await StateAsync(meeting, actorId, ct)));
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
@@ -291,7 +300,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             var meetingId = await db.MeetingMinutes.AsNoTracking().Where(m => m.Id == minutesId)
                 .Select(m => (Guid?)m.MeetingId).FirstOrDefaultAsync(ct);
             if (meetingId is null) return new(MinutesFailure.NotFound);
-            return await meetings.InTransactionAsync<MinutesOutcome>(async token =>
+            return await AnnounceAsync(meetingId.Value, await meetings.InTransactionAsync<MinutesOutcome>(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId.Value, actorId, token, forUpdate: true);
                 if (meeting is null) return new(failure);
@@ -303,7 +312,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 if (result != MinutesFailure.None) return new(result);
                 await db.SaveChangesAsync(token);
                 return new(Data: await StateAsync(meeting, actorId, token));
-            }, ct);
+            }, ct));
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {

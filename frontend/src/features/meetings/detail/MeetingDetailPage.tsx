@@ -97,8 +97,11 @@ const showsNotes = (meeting: { myMeetingRole: string | null; status: string }) =
 /** Marks a navigation that only switched the tab (see `setTab`). */
 const TAB_SWITCH = 'tabSwitch'
 
-/** The hub event that tells an open page the meeting was ended (SCRUM-69). */
-const MEETING_ENDED = ['meetingEnded'] as const
+/**
+ * The hub events that tell an open page someone else moved the meeting: ended (SCRUM-69), or any other workflow step,
+ * edit or reschedule (`meetingChanged`).
+ */
+const MEETING_CHANGED = ['meetingEnded', 'meetingChanged'] as const
 
 /** The approval workflow ends at publishing; after that the bar has nothing left to say. */
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
@@ -261,13 +264,14 @@ function MeetingDetail({
 
   const { reload: reloadHistory, append: appendHistory } = history
 
-  // Someone else ending the meeting arrives on the hub; starting it publishes nothing there, so the
-  // notification it sends to everyone but the Chair is the signal. Either way, re-read the page.
+  // Someone else approving, cancelling, starting, ending, editing or rescheduling the meeting arrives on the hub; a
+  // notification about it is a second signal. Either way, re-read the header and the history. A reader who lost
+  // access is told too: the re-read answers 404 and the page shows NotFound.
   const reloadAll = useCallback(() => {
     void reload()
     void reloadHistory()
   }, [reload, reloadHistory])
-  useMeetingEvents(meeting.id, reloadAll, MEETING_ENDED)
+  useMeetingEvents(meeting.id, reloadAll, MEETING_CHANGED)
   const { lastArrival } = useNotifications()
   const seenArrival = useRef(lastArrival)
   useEffect(() => {

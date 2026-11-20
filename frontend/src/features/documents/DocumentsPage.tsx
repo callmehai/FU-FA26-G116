@@ -31,6 +31,7 @@ import { LibraryUploadDialog, MoveDialog, NameDialog } from './LibraryDialogs'
 import { childrenOf, LIBRARY_ROOT, placeName, subtreeOf, trailOf } from './libraryTree'
 import { opensInPlace, useOpenDocument } from './viewerOverlay'
 import { matchesSearch } from '../../lib/search'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 
 type TypeFilter = '' | 'pdf' | 'docx'
 
@@ -133,6 +134,8 @@ export function DocumentsPage() {
   // A queued file ended, from this page or a meeting's (which also lands in the library, BR-192): the place
   // and the space used are read again.
   useUploadsSettled('*', reload)
+  // A change from another tab or device shows on coming back to this one; never under an open dialog.
+  useRefetchOnFocus(() => setAttempt((n) => n + 1), { enabled: dialog === null })
 
   const folders = view?.folders ?? []
   const trail = trailOf(folders, folderId)

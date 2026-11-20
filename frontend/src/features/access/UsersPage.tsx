@@ -22,6 +22,7 @@ import { useAuth } from '../auth/useAuth'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 import { latestSearchParams } from '../../lib/latestSearchParams'
 import { normalizeSearch } from '../../lib/search'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 
 type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -126,6 +127,8 @@ export function UsersPage() {
     // Let load own the request and defer its state updates past the effect's synchronous phase.
     void Promise.resolve().then(load)
   }, [load])
+  // Another administrator's change shows on coming back to the tab; never under an open dialog.
+  useRefetchOnFocus(() => void load(), { enabled: !formTarget && !statusTarget && !resetTarget })
 
   async function openUserForm(target: UserFormTarget) {
     try {

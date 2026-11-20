@@ -135,6 +135,7 @@ public static class MeetingEndpoints
         ClaimsPrincipal principal,
         IMeetingService service,
         IMeetingLifecycleService lifecycle,
+        IMeetingChangePublisher changes,
         CancellationToken ct)
     {
         var actorId = CapabilityGate.CurrentUserId(principal);
@@ -184,6 +185,8 @@ public static class MeetingEndpoints
         var result = command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
             ? await lifecycle.TransitionAsync(id, command, actorId.Value, ct)
             : await service.TransitionAsync(id, command, actorId.Value, ct);
+        // Every reader's open page re-reads its header, status and history (and the one who lost access sees it go).
+        if (result.Outcome == MeetingWorkflowOutcome.Success) await changes.MeetingChangedAsync(id, ct);
         return result.Outcome switch
         {
             MeetingWorkflowOutcome.Success when command.Action == MeetingTransitionAction.TransferOrganizer
@@ -526,6 +529,7 @@ public static class MeetingEndpoints
         HttpRequest request,
         ClaimsPrincipal principal,
         IMeetingService service,
+        IMeetingChangePublisher changes,
         IOptions<HttpJsonOptions> jsonOptions,
         CancellationToken ct)
     {
@@ -574,6 +578,7 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
+        if (result.Outcome == MeetingOutcome.Success) await changes.MeetingChangedAsync(id, ct);
         return result.Outcome switch
         {
             MeetingOutcome.Success when result.Rescheduled => Results.Ok(new MeetingMutationResponse(
