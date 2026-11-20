@@ -1,0 +1,15 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.Fold",
+  "description": "Microphone-bleed fold: leaked speech sentences are attributed to the louder speaker.",
+  "precondition": "Speech clips with words, timings and peak levels; shared fold cases available.",
+  "methods": [
+    {
+      "method": "SpeechClipFold.Fold",
+      "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
+      "line": 46,
+      "cases": []
+    }
+  ]
+}

@@ -134,6 +134,10 @@ export function AppShell() {
                 <span className="account-summary-name">{user.fullName}</span>
                 <span className="account-summary-role">{user.roleName}</span>
               </span>
+              {/* Says the row opens a menu (Hải 20/11: nobody saw the profile was clickable). */}
+              <span className="sidebar-label account-caret">
+                <Icon name="chevronsUpDown" size={14} />
+              </span>
             </summary>
             <div className="account-menu">
               <div className="account-id">

@@ -1,0 +1,15 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "Meeting.Lifecycle",
+  "description": "Meeting start and end: chair-only transitions with roster checks and fan-out on end.",
+  "precondition": "Published meeting with one chair and at least one secretary for Start; InProgress meeting for End.",
+  "methods": [
+    {
+      "method": "MeetingLifecycleService.TransitionAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingLifecycleService.cs",
+      "line": 32,
+      "cases": []
+    }
+  ]
+}

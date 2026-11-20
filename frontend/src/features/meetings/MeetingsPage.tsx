@@ -85,7 +85,7 @@ function emptyKind(s: ListState) {
   const rest = !s.q.trim() && !s.status && !s.sensitivity
   return {
     filtered: hasFilters(s),
-    // The list as it opens: today's meetings, which some days is none.
+    // The "Họp hôm nay" card on its own: today's meetings, which some days is none.
     onlyToday: s.when === 'today' && rest && !s.scope,
     // "Cần xử lý" on its own: nothing waits on the caller.
     onlyTodo: s.scope === 'todo' && rest && !s.when,

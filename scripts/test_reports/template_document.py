@@ -10,6 +10,9 @@ from PIL import Image,ImageDraw,ImageFont,ImageChops
 W='http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 R='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 N={'w':W,'r':R}
+# The course template's footer names its sample project; the footer is rewritten to TrustCabinet, so the
+# name has to be matched here. It never reaches a generated report.
+TEMPLATE_PROJECT='ACCE'
 
 def serialize(root):return E.tostring(root,xml_declaration=True,encoding='UTF-8',standalone=True)
 def text_set(element,text):
@@ -65,7 +68,7 @@ def make_document(reference,destination,tests,manual,meta,build):
     sections=root.findall('.//w:sectPr',N)
     inventory={k:dict(size=len(v),sha256=hashlib.sha256(v).hexdigest(),role='editable' if k in {'word/document.xml','word/_rels/document.xml.rels','word/settings.xml','word/footer1.xml','docProps/core.xml','docProps/app.xml'} or k.startswith('word/media/') and k!='word/media/image7.png' else 'preserve-only') for k,v in parts.items()}
     (build/'reference-package.json').write_text(json.dumps(inventory,indent=2),encoding='utf-8')
-    contract.write_text('# TrustCabinet Report 5 template contract\n\nReference: '+str(reference.resolve())+'\nSHA-256: '+hashlib.sha256(reference.read_bytes()).hexdigest()+'\n\nThe reference is retained unchanged. Output: '+str(Path(destination).resolve())+'\n\n## Page system and typography\nPreserve every sectPr, styles.xml, numbering.xml, fontTable.xml, theme, header/footer and drawing anchor byte-for-byte. Source section geometry:\n'+ '\n'.join('```xml\n'+E.tostring(s).decode()+'\n```' for s in sections)+'\n\n## Slots and flow\nKeep cover/logo, Table of Contents, I Record of Changes, II Testing Documentation, scope, feature subsections, nonfunctional criteria, four test levels, constraints, strategy tables, tool/environment/milestone sections, case figures and result figures in their original order. Replace body paragraphs by their zero-based body w:p indices, preserving paragraph/run properties. Replace change-log cells and strategy-table text in place. Clone the source two-column strategy table only to fill the three originally empty tool/environment/milestone sections. Replace nine ACCE screenshots with TrustCabinet figures, keeping image relationships and drawing geometry. Preserve image7.png (university logo). Update external links to the six verified files in the user-selected folder. No prior project identities, feedback or results may remain. Set updateFields for Word refresh.\n\n## Preservation gates\nCompare against reference-package.json; only listed editable parts and new cloned body content may differ. All source styles, table grids, sections, header/footer, logo and relationships except hyperlink targets remain unchanged. Verify all pages through Word PDF rendering.\n',encoding='utf-8')
+    contract.write_text('# TrustCabinet Report 5 template contract\n\nReference: '+str(reference.resolve())+'\nSHA-256: '+hashlib.sha256(reference.read_bytes()).hexdigest()+'\n\nThe reference is retained unchanged. Output: '+str(Path(destination).resolve())+'\n\n## Page system and typography\nPreserve every sectPr, styles.xml, numbering.xml, fontTable.xml, theme, header/footer and drawing anchor byte-for-byte. Source section geometry:\n'+ '\n'.join('```xml\n'+E.tostring(s).decode()+'\n```' for s in sections)+'\n\n## Slots and flow\nKeep cover/logo, Table of Contents, I Record of Changes, II Testing Documentation, scope, feature subsections, nonfunctional criteria, four test levels, constraints, strategy tables, tool/environment/milestone sections, case figures and result figures in their original order. Replace body paragraphs by their zero-based body w:p indices, preserving paragraph/run properties. Replace change-log cells and strategy-table text in place. Clone the source two-column strategy table only to fill the three originally empty tool/environment/milestone sections. Replace the nine sample-project screenshots with TrustCabinet figures, keeping image relationships and drawing geometry. Preserve image7.png (university logo). Update external links to the six verified files in the user-selected folder. No prior project identities, feedback or results may remain. Set updateFields for Word refresh.\n\n## Preservation gates\nCompare against reference-package.json; only listed editable parts and new cloned body content may differ. All source styles, table grids, sections, header/footer, logo and relationships except hyperlink targets remain unchanged. Verify all pages through Word PDF rendering.\n',encoding='utf-8')
     contract.write_text(contract.read_text(encoding='utf-8').replace('Clone the source two-column strategy table only to fill the three originally empty tool/environment/milestone sections.','Fill the existing tool/environment/milestone tables inside their content controls; preserve all nine original tables.').replace('header/footer and drawing anchor byte-for-byte','header, footer geometry and drawing anchors; only the project name in footer text is edited').replace('new cloned body content','the explicitly listed content slots'),encoding='utf-8')
     replacements={
         11:'Report 5 – Software Test Documentation',20:'– Hanoi, '+meta['date']+' –',
@@ -168,7 +171,7 @@ def make_document(reference,destination,tests,manual,meta,build):
     settings=E.fromstring(parts['word/settings.xml']);uf=settings.find('w:updateFields',N)
     if uf is None:uf=E.SubElement(settings,'{'+W+'}updateFields')
     uf.set('{'+W+'}val','true')
-    # Preserve all image slots and source bounds. Use output workbook captures, not ACCE evidence.
+    # Preserve all image slots and source bounds. Use output workbook captures, not the sample project's evidence.
     # Crop the whitespace of native PDF captures before fitting them to the original
     # drawing slots. This is rendering, not a redesign of the source image geometry.
     for f in (build/'previews').glob('*.png'):
@@ -190,7 +193,7 @@ def make_document(reference,destination,tests,manual,meta,build):
     parts['word/document.xml']=serialize(root);parts['word/_rels/document.xml.rels']=serialize(rel);parts['word/settings.xml']=serialize(settings)
     footer=E.fromstring(parts['word/footer1.xml'])
     for item in footer.findall('.//w:t',N):
-        if item.text:item.text=item.text.replace('ACCE','TrustCabinet')
+        if item.text:item.text=item.text.replace(TEMPLATE_PROJECT,'TrustCabinet')
     parts['word/footer1.xml']=serialize(footer)
     for key in ('docProps/core.xml','docProps/app.xml'):
         if key in parts:

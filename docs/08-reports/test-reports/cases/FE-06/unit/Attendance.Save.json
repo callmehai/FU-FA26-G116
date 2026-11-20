@@ -1,0 +1,15 @@
+{
+  "feature": "FE-06",
+  "module": "PART",
+  "sheet": "Attendance.Save",
+  "description": "Attendance save: secretary-only write with optimistic concurrency and totals on read.",
+  "precondition": "InProgress meeting; actor is an active secretary; current version token known.",
+  "methods": [
+    {
+      "method": "AttendanceService.SaveAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Attendance/AttendanceService.cs",
+      "line": 67,
+      "cases": []
+    }
+  ]
+}

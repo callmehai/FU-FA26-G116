@@ -1,0 +1,1652 @@
+{
+  "feature": "FE-12",
+  "code": "MIN",
+  "sheet": "Minutes",
+  "precondition": "Test build of backend + frontend; Chair, Secretary, Member, Organizer, Outsider and Admin accounts supplied by QA lead; a meeting in the needed status with its minutes in the needed state; controlled inboxes for issue emails; Postman or curl.",
+  "groups": [
+    {
+      "title": "POST /api/meetings/{meetingId}/minutes",
+      "uc": [
+        "UC-59"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT01",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes builds the first draft from the meeting records.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes",
+            "   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "   Body: { \"rebuild\": false }",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 201 Created.",
+            "Body: { \"code\": \"MSG395\", \"message\": \"Đã tạo bản nháp biên bản.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }; \"canManage\": true, \"canSubmit\": true, \"canApprove\": false.",
+            "\"minutes\": { \"id\", \"revisionNumber\": 1, \"status\": \"Draft\", \"createdBy\": { \"id\": <Secretary> }, \"builtFromDraftAt\": null, \"supersedesId\": null, \"updatedAt\", ... }.",
+            "\"content\" is sanitized HTML holding \"<h1>BIÊN BẢN</h1>\", the start time in Hanoi time, the place, \"Thành phần tham dự\", the Chair and the Secretary names, one heading per agenda item, the recorded conclusions and the closed vote result, with \"……\" where the Secretary must write.",
+            "Step 3 returns the same draft; \"history\" has one line { \"revisionNumber\": 1, \"status\": \"Draft\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress, has two agenda items (one with a recorded conclusion) and one closed vote; no AI draft and no minutes yet."
+          ],
+          "note": "UC-59 | BR-384 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting)"
+        },
+        {
+          "id": "MIN_API_IT02",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes fills sections I–III from the AI draft, reviewed or not.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/summary and wait until GET .../summary shows \"status\": \"Ready\" (do not review it).",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": false }."
+          ],
+          "expected": [
+            "HTTP 201, code \"MSG395\".",
+            "\"content\" holds the AI objectives, the \"1. <agenda item>\" discussion parts, \"<h3>1. Kết luận của chủ trì</h3>\" and \"<h3>2. Nhiệm vụ, sản phẩm và thời hạn</h3>\" with the vote result line.",
+            "\"minutes.builtFromDraftAt\" equals \"draftChangedAt\" in the same body.",
+            "A Member sending GET .../minutes gets \"draftChangedAt\": null and \"minutes\": null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the AI machine is configured on the build; no minutes yet."
+          ],
+          "note": "UC-59 AF-4 | BR-382 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)"
+        },
+        {
+          "id": "MIN_API_IT03",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses a second build without \"rebuild\".",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": false }.",
+            "Send POST /api/meetings/{meetingId}/minutes with no body.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "Steps 2 and 3: HTTP 409 Conflict, body { \"code\": \"MSG399\", \"message\": \"Cuộc họp đã có bản nháp biên bản.\" }.",
+            "Step 4: \"content\" is still \"<p>Bản Thư ký đã sửa.</p>\"; nothing was rebuilt."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
+          ],
+          "note": "UC-59 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft)"
+        },
+        {
+          "id": "MIN_API_IT04",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes with \"rebuild\": true replaces the draft in place.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 201, code \"MSG395\".",
+            "\"minutes.id\" is the same id as before; \"content\" again starts from the template (\"<h1>BIÊN BẢN</h1>\"), the hand edit \"Bản Thư ký đã sửa.\" is gone.",
+            "\"minutes.updatedAt\" is the time of the rebuild; \"history\" still has one line."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
+          ],
+          "note": "UC-59 AF-2 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft)"
+        },
+        {
+          "id": "MIN_API_IT05",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes rebuilds a returned revision and keeps it returned.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }."
+          ],
+          "expected": [
+            "HTTP 201, code \"MSG395\".",
+            "\"minutes.status\" stays \"Rejected\"; \"rejectionReason\" is still the Chair's reason; \"content\" is rebuilt from the template."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Chair returned the minutes with reason \"Bổ sung kết luận mục 2.\" (UC-65)."
+          ],
+          "note": "UC-59 | BR-407 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT06",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes answers 403 MSG397 to a participant who is neither Chair nor Secretary.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": false }."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden, body { \"code\": \"MSG397\", \"message\": \"Chỉ Chủ toạ hoặc Thư ký được soạn biên bản.\" }.",
+            "No minutes row is created: the Secretary's GET .../minutes still returns \"minutes\": null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has no minutes."
+          ],
+          "note": "UC-59 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404) | Deviation: docs/03-api/17-du-thao-bien-ban.md and the MSG397 catalogue row say a non-officer gets 404 while the minutes are a draft; the code answers 403 MSG397 on POST .../minutes in every state (as UC-59 EX-1 says)."
+        },
+        {
+          "id": "MIN_API_IT07",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes answers 404 to a user who may not read the meeting.",
+          "procedure": [
+            "Sign in as the Outsider (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with no message code.",
+            "The existing draft is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-59 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+        },
+        {
+          "id": "MIN_API_IT08",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes without a token answers 401.",
+          "procedure": [
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": false } and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "No minutes are created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An InProgress meeting with no minutes."
+          ],
+          "note": "UC-59 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+        },
+        {
+          "id": "MIN_API_IT09",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses a meeting that has not started or was cancelled.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{draftMeetingId}/minutes with Body: { \"rebuild\": false }.",
+            "Repeat for the Published meeting and the Cancelled meeting."
+          ],
+          "expected": [
+            "Each call: HTTP 409 Conflict, body { \"code\": \"MSG398\", \"message\": \"Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.\" }.",
+            "No minutes row exists for any of the three meetings."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Three meetings where the Secretary is the current Secretary: one Draft, one Published, one Cancelled."
+          ],
+          "note": "UC-59 EX-2 | BR-387 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_are_built_only_once_the_meeting_has_started)"
+        },
+        {
+          "id": "MIN_API_IT10",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses to build over minutes sent for approval or issued.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }.",
+            "Send it again with Body: { \"rebuild\": false }.",
+            "Repeat steps 2–3 on the meeting whose minutes are Issued."
+          ],
+          "expected": [
+            "Every call: HTTP 409 Conflict, body { \"code\": \"MSG400\", \"message\": \"Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa.\" }.",
+            "The content of both minutes is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One Ended meeting whose minutes are WaitingApproval and one whose minutes are Issued; the Secretary is their current Secretary."
+          ],
+          "note": "UC-59 EX-4 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+        },
+        {
+          "id": "MIN_API_IT11",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses to rebuild a correction from the template.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }.",
+            "Send it again with Body: { \"rebuild\": false }."
+          ],
+          "expected": [
+            "Step 2: HTTP 409 Conflict, body { \"code\": \"MSG456\", \"message\": \"Bản đính chính không tạo lại từ mẫu được, hãy sửa trực tiếp.\" }.",
+            "Step 3: HTTP 409, code \"MSG399\" (the correction already exists).",
+            "The correction keeps the issued text it was copied from."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes were issued and a correction (revision 2, Draft) was created (UC-83)."
+          ],
+          "note": "UC-59 EX-7 | BR-413 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT12",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes answers MSG404 when the draft cannot be saved.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send POST /api/meetings/{meetingId}/minutes with Body: { \"rebuild\": true }.",
+            "Ask QA lead to start the database again and send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" } (never MSG399).",
+            "Step 4: the earlier draft is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-59 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/minutes",
+      "uc": [
+        "UC-58"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT13",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes returns an empty state before any minutes exist.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"minutes\": null, \"canManage\": true, \"draftChangedAt\": null, \"history\": [], \"canSubmit\": true, \"canApprove\": false }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress; no AI draft and no minutes."
+          ],
+          "note": "UC-58 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting)"
+        },
+        {
+          "id": "MIN_API_IT14",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes tells each caller which officer they are.",
+          "procedure": [
+            "Sign in as the Secretary, the Chair and the Member in turn (POST /api/auth/login).",
+            "With each token send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "All three: HTTP 200.",
+            "Secretary: \"canSubmit\": true, \"canApprove\": false. Chair: \"canSubmit\": false, \"canApprove\": true. Member: both false.",
+            "Secretary and Chair: \"canManage\": true and the Draft in \"minutes\"; Member: \"canManage\": false."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and has draft minutes."
+          ],
+          "note": "UC-58 | BR-404 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT15",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes hides a draft from a participant who is not an officer.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 200 with \"minutes\": null, \"canManage\": false, \"history\": [], \"draftChangedAt\": null.",
+            "The raw body contains no \"BIÊN BẢN\" text."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and the Secretary has built draft minutes."
+          ],
+          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+        },
+        {
+          "id": "MIN_API_IT16",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes shows the issued minutes to every reader without the officers' working facts.",
+          "procedure": [
+            "Sign in as the Member, then as the Organizer (POST /api/auth/login).",
+            "With each token send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 200 with \"canManage\": false and \"minutes.status\": \"Issued\".",
+            "\"history\": [ { \"revisionNumber\": 1, \"status\": \"Issued\", \"issuedAt\" } ].",
+            "\"minutes.approvedBy.id\" is the Chair; \"submittedBy\", \"submittedAt\", \"returnedBy\", \"returnedAt\", \"rejectionReason\" and \"builtFromDraftAt\" are null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes were submitted by the Secretary and issued by the Chair. The Organizer is not on the roster."
+          ],
+          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT17",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes hides a correction in progress from readers.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes.",
+            "Sign in as the Chair and send the same request."
+          ],
+          "expected": [
+            "Member: \"minutes\" is revision 1 (\"status\": \"Issued\"); \"history\" lists only \"1:Issued\".",
+            "Chair: \"minutes\" is revision 2 (\"status\": \"Draft\", \"supersedesId\": <revision 1>); \"history\" lists revision 2 (Draft) then revision 1 (Issued)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes were issued and the Chair created a correction that is not issued yet."
+          ],
+          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT18",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes answers 404 to a user who may not read the meeting.",
+          "procedure": [
+            "Sign in as the Outsider (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with no message code; nothing about the minutes is disclosed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes are issued."
+          ],
+          "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT19",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes without a token answers 401.",
+          "procedure": [
+            "Send GET /api/meetings/{meetingId}/minutes with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any meeting id."
+          ],
+          "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+        },
+        {
+          "id": "MIN_API_IT20",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes refuses a deactivated account and a Guest token.",
+          "procedure": [
+            "Send GET /api/meetings/{meetingId}/minutes with the access token of a participant the Admin has since deactivated.",
+            "Send the same request with a Guest access token for this meeting (UC-04)."
+          ],
+          "expected": [
+            "Both: HTTP 403 Forbidden with no body; no minutes are returned."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes are issued.",
+            "An access token issued to a Member before the Admin deactivated the account (UC-06c); a Guest invited to the meeting with a verified Guest token."
+          ],
+          "note": "UC-58 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT21",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes answers MSG403 when the minutes cannot be read.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error, body { \"code\": \"MSG403\", \"message\": \"Không tải được biên bản.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting has draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+        },
+        {
+          "id": "MIN_API_IT22",
+          "description": "Verify GET /api/meetings/{meetingId}/minutes turns minutes stored as line-marked text into HTML.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 200; \"content\" is HTML: it starts with \"<table data-layout=\\\"frame\\\">\" (the two-column heading) and holds \"<h1>BIÊN BẢN</h1><p><strong>Địa điểm:</strong> Phòng họp số 1.</p>\".",
+            "No \"@@\", \"# \" or \"**\" marker is left in the content."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "QA lead stored draft minutes in the old line-marked format (\"@@ **THƯ KÝ** | **CHỦ TỌA**\", \"# BIÊN BẢN\", \"**Địa điểm:** Phòng họp số 1.\") as minutes saved before 05/11/2026 were."
+          ],
+          "note": "UC-58 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_row_of_line_text_reads_back_as_html_and_exports)"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/minutes/{minutesId}",
+      "uc": [
+        "UC-58"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT23",
+          "description": "Verify GET /api/minutes/{minutesId} opens a superseded revision from the history.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes and take the id of the \"Superseded\" line in \"history\".",
+            "Send GET /api/minutes/{supersededId}."
+          ],
+          "expected": [
+            "Step 2: \"history\" lists revision 2 (\"Issued\") then revision 1 (\"Superseded\").",
+            "Step 3: HTTP 200, same shape as GET .../minutes; \"minutes.id\" is revision 1, \"status\": \"Superseded\", \"content\" is the text issued first."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes were issued, then a correction was issued (revision 2)."
+          ],
+          "note": "UC-58 AF-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT24",
+          "description": "Verify GET /api/minutes/{minutesId} lets the Chair and the Secretary open any revision.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{correctionId} for the correction that is still a Draft.",
+            "Send GET /api/minutes/{issuedId}."
+          ],
+          "expected": [
+            "Both: HTTP 200 with that revision in \"minutes\" and every revision in \"history\".",
+            "Step 2 shows \"status\": \"Draft\", \"revisionNumber\": 2; step 3 shows \"status\": \"Issued\", \"revisionNumber\": 1."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes are issued and a correction is being written."
+          ],
+          "note": "UC-58 | BR-386 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT25",
+          "description": "Verify GET /api/minutes/{minutesId} answers 404 to a reader asking for a revision that is not issued.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{minutesId} for the revision waiting for approval.",
+            "Send GET /api/minutes/{correctionId} for a correction still in Draft on the second meeting."
+          ],
+          "expected": [
+            "Both: HTTP 404 Not Found with no message code; the reader learns nothing about the revision."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "One Ended meeting whose minutes are WaitingApproval; a second Ended meeting with issued minutes and a correction in Draft; the Member is on both."
+          ],
+          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT26",
+          "description": "Verify GET /api/minutes/{minutesId} answers 404 for an outsider or an unknown id.",
+          "procedure": [
+            "Sign in as the Outsider (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{issuedId}.",
+            "Sign in as the Secretary and send GET /api/minutes/{randomGuid}."
+          ],
+          "expected": [
+            "Both: HTTP 404 Not Found with no message code."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes are issued."
+          ],
+          "note": "UC-58 EX-3 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT27",
+          "description": "Verify GET /api/minutes/{minutesId} without a token answers 401.",
+          "procedure": [
+            "Send GET /api/minutes/{minutesId} with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-58 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT28",
+          "description": "Verify GET /api/minutes/{minutesId} answers MSG403 when the revision cannot be read.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send GET /api/minutes/{minutesId}."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error, body { \"code\": \"MSG403\", \"message\": \"Không tải được biên bản.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting has draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-58 EX-1 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "PUT /api/minutes/{minutesId}",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT29",
+          "description": "Verify PUT /api/minutes/{minutesId} saves the draft when the copy read is current.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/minutes and keep \"minutes.id\" and \"minutes.updatedAt\".",
+            "Send PUT /api/minutes/{minutesId}",
+            "   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "   Body: { \"content\": \"<p>Bản của Chủ trì.</p>\\r\\n<p>Dòng hai.</p>\", \"updatedAt\": \"<updatedAt from step 2>\" }",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG396\", \"message\": \"Đã lưu biên bản.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }.",
+            "\"minutes.content\" is the stored, normalized text \"<p>Bản của Chủ trì.</p><p>Dòng hai.</p>\"; \"minutes.updatedAt\" is the save time.",
+            "\"minutes.builtFromDraftAt\" is unchanged by the save.",
+            "Step 4 returns the saved text."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text; The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)"
+        },
+        {
+          "id": "MIN_API_IT30",
+          "description": "Verify PUT /api/minutes/{minutesId} keeps only the allowed HTML.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with \"updatedAt\" from the last read and \"content\": \"<h1 onclick=\\\"alert(1)\\\">BIÊN BẢN</h1><script>alert(document.cookie)</script><p style=\\\"text-align: center; position: fixed\\\"><b>Đậm</b> <a href=\\\"javascript:alert(1)\\\">link</a><span style=\\\"color: rgb(192, 0, 0)\\\">đỏ</span><img src=x onerror=alert(1)></p><iframe src=\\\"https://x\\\"></iframe><table data-layout=\\\"frame\\\"><tbody><tr><td colwidth=\\\"250\\\" class=\\\"x\\\"><p>ký</p></td></tr></tbody></table>\".",
+            "Send GET /api/meetings/{meetingId}/minutes."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG396\".",
+            "\"content\" is exactly \"<h1>BIÊN BẢN</h1><p style=\\\"text-align: center\\\"><strong>Đậm</strong> link<span style=\\\"color: #c00000\\\">đỏ</span></p><table data-layout=\\\"frame\\\"><tbody><tr><td colwidth=\\\"250\\\"><p>ký</p></td></tr></tbody></table>\".",
+            "script, img, iframe, onclick, href, class and position are gone; the same text is returned by step 3."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 | BR-385 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Saved_html_is_kept_to_the_allow_list)"
+        },
+        {
+          "id": "MIN_API_IT31",
+          "description": "Verify PUT /api/minutes/{minutesId} refuses a save based on an old copy.",
+          "procedure": [
+            "Sign in as the Secretary and the Chair; both read GET /api/meetings/{meetingId}/minutes and keep the same \"updatedAt\".",
+            "As the Chair send PUT /api/minutes/{minutesId} with that \"updatedAt\" and \"content\": \"<p>Bản của Chủ trì.</p>\".",
+            "As the Secretary send PUT /api/minutes/{minutesId} with the same old \"updatedAt\" and \"content\": \"Bản của Thư ký.\".",
+            "As the Secretary send it again with no \"updatedAt\".",
+            "As the Secretary read GET .../minutes again and save with the new \"updatedAt\"."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG396\".",
+            "Steps 3 and 4: HTTP 409 Conflict, body { \"code\": \"MSG401\", \"message\": \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" }; the stored text is still the Chair's.",
+            "Step 5: HTTP 200, code \"MSG396\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text)"
+        },
+        {
+          "id": "MIN_API_IT32",
+          "description": "Verify PUT /api/minutes/{minutesId} lets only one of two simultaneous saves of the same copy through.",
+          "procedure": [
+            "Sign in as the Secretary and the Chair; both read the same \"updatedAt\".",
+            "Send both PUT /api/minutes/{minutesId} requests at the same moment (Postman Runner or two curl calls in parallel) with that \"updatedAt\"."
+          ],
+          "expected": [
+            "One answers HTTP 200 \"MSG396\", the other HTTP 409 \"MSG401\"; never two 200s.",
+            "The stored content is the text of the request that answered 200.",
+            "The requests may be handled in any order: the case passes whichever one wins."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Two_saves_from_the_same_load_cannot_both_succeed)"
+        },
+        {
+          "id": "MIN_API_IT33",
+          "description": "Verify PUT /api/minutes/{minutesId} refuses empty content.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with the current \"updatedAt\" and \"content\": \"   \".",
+            "Repeat with \"content\": null, with \"<p></p><p> </p><p><br></p><hr><hr data-page-break=\\\"true\\\">\", and with \"<script>alert('biên bản')</script><img src=x onerror=alert(1)>\"."
+          ],
+          "expected": [
+            "Each call: HTTP 400 Bad Request, body { \"code\": \"MSG402\", \"message\": \"Nội dung biên bản không hợp lệ.\", \"errors\": { \"content\": [ ... ] } }.",
+            "The stored content is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+        },
+        {
+          "id": "MIN_API_IT34",
+          "description": "Verify PUT /api/minutes/{minutesId} refuses content over 300,000 characters, as sent or as stored.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with the current \"updatedAt\" and \"content\" = 300,001 letters \"a\".",
+            "Send it with \"content\" = \"<p>\" + 299,993 \"&\" characters + \"</p>\" (within the limit as sent, longer once each \"&\" is stored as \"&amp;\")."
+          ],
+          "expected": [
+            "Both: HTTP 400 Bad Request, code \"MSG402\".",
+            "The stored content is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+        },
+        {
+          "id": "MIN_API_IT35",
+          "description": "Verify PUT /api/minutes/{minutesId} refuses tags nested deeper than 64 levels.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with the current \"updatedAt\" and \"content\" = 2,000 repetitions of \"<ul><li>\" followed by \"sâu\"."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG402\"; the server answers at once and keeps running.",
+            "The stored content is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+        },
+        {
+          "id": "MIN_API_IT36",
+          "description": "Verify PUT /api/minutes/{minutesId} refuses minutes sent for approval or issued.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with the last \"updatedAt\" and \"content\": \"<p>Sửa sau khi gửi.</p>\" on the WaitingApproval minutes.",
+            "Repeat on the Issued minutes."
+          ],
+          "expected": [
+            "Both: HTTP 409 Conflict, body { \"code\": \"MSG400\", \"message\": \"Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa.\" }.",
+            "The content of both is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One Ended meeting whose minutes are WaitingApproval and one whose minutes are Issued; the Secretary is their current Secretary."
+          ],
+          "note": "UC-60 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+        },
+        {
+          "id": "MIN_API_IT37",
+          "description": "Verify PUT /api/minutes/{minutesId} saves a returned revision and keeps it returned.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{minutesId} with the current \"updatedAt\" and \"content\": \"<p>Đã bổ sung kết luận.</p>\"."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG396\".",
+            "\"minutes.status\" stays \"Rejected\" and the text is saved."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Chair returned the minutes with a reason."
+          ],
+          "note": "UC-60 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT38",
+          "description": "Verify PUT /api/minutes/{minutesId} answers 403 MSG397 to a reader of issued minutes.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{issuedId} with Body: { \"content\": \"x\", \"updatedAt\": \"<updatedAt>\" }."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden, body { \"code\": \"MSG397\", \"message\": \"Chỉ Chủ toạ hoặc Thư ký được soạn biên bản.\" }.",
+            "The issued text is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes are issued."
+          ],
+          "note": "UC-60 EX-4 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+        },
+        {
+          "id": "MIN_API_IT39",
+          "description": "Verify PUT /api/minutes/{minutesId} answers 404 for a draft the caller may not read.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/minutes/{draftId} with Body: { \"content\": \"x\", \"updatedAt\": \"<updatedAt>\" }.",
+            "Sign in as the Outsider and send the same request."
+          ],
+          "expected": [
+            "Both: HTTP 404 Not Found with no message code.",
+            "The draft content is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-60 EX-4 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+        },
+        {
+          "id": "MIN_API_IT40",
+          "description": "Verify PUT /api/minutes/{minutesId} without a token answers 401.",
+          "procedure": [
+            "Send PUT /api/minutes/{minutesId} with Body: { \"content\": \"x\", \"updatedAt\": null } and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+        },
+        {
+          "id": "MIN_API_IT41",
+          "description": "Verify PUT /api/minutes/{minutesId} answers MSG404 when the change cannot be saved.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send PUT /api/minutes/{minutesId} with the current \"updatedAt\" and \"content\": \"<p>Không lưu được.</p>\".",
+            "Ask QA lead to start the database and read GET .../minutes."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" }.",
+            "Step 4: the content is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-60 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/minutes/{minutesId}/export",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT42",
+          "description": "Verify GET /api/minutes/{minutesId}/export returns the draft as a Word file by default.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{minutesId}/export with no \"format\".",
+            "Open the saved file in Word."
+          ],
+          "expected": [
+            "HTTP 200 OK; Content-Type \"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"; file name \"Biên bản - Họp giao ban tháng 11.docx\"; header Cache-Control \"private, no-store\".",
+            "The document holds \"BIÊN BẢN\" and the meeting title, with no \"**\" marker."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress (Normal sensitivity) and has draft minutes."
+          ],
+          "note": "UC-60 AF-1 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_word_file_of_the_draft)"
+        },
+        {
+          "id": "MIN_API_IT43",
+          "description": "Verify GET /api/minutes/{minutesId}/export?format=pdf returns an A4 PDF in the bundled font.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{minutesId}/export?format=pdf.",
+            "Open the file in a PDF reader and look at Document Properties > Fonts."
+          ],
+          "expected": [
+            "HTTP 200; Content-Type \"application/pdf\"; file name \"Biên bản - Họp giao ban tháng 11.pdf\"; Cache-Control \"private, no-store\".",
+            "Pages are A4; the text holds \"CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\", \"BIÊN BẢN\", the Chair and the Secretary names, every Vietnamese letter drawn correctly.",
+            "Every font is Liberation Serif (regular and bold)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress (Normal sensitivity) and has draft minutes."
+          ],
+          "note": "UC-60 AF-2 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_pdf_of_the_draft_in_its_own_font)"
+        },
+        {
+          "id": "MIN_API_IT44",
+          "description": "Verify GET /api/minutes/{minutesId}/export refuses a format other than docx or pdf.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{minutesId}/export?format=xlsx, then ?format=html.",
+            "Send ?format=docx, then ?format=PDF."
+          ],
+          "expected": [
+            "Step 2: HTTP 400 Bad Request, body { \"code\": \"MSG406\", \"message\": \"Chỉ tải biên bản dạng Word (docx) hoặc PDF.\" }; no file.",
+            "Step 3: both HTTP 200 (the format name is not case-sensitive)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting has draft minutes."
+          ],
+          "note": "UC-60 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (An_unknown_export_format_is_refused)"
+        },
+        {
+          "id": "MIN_API_IT45",
+          "description": "Verify GET /api/minutes/{minutesId}/export refuses the minutes of a Secret meeting to everyone.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{minutesId}/export, then ?format=pdf.",
+            "Sign in as the Member and send GET /api/minutes/{issuedId}/export for the issued minutes of the second meeting.",
+            "Send GET /api/meetings/{meetingId}/minutes as the Member."
+          ],
+          "expected": [
+            "Steps 2 and 3: HTTP 403 Forbidden, body { \"code\": \"MSG405\", \"message\": \"Biên bản của cuộc họp Mật không được tải về.\" }; no file.",
+            "Step 4: HTTP 200 with the issued minutes: they are read on screen only."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secret meeting with draft minutes, and a Secret Ended meeting with issued minutes; the Secretary and the Member are on both."
+          ],
+          "note": "UC-60 EX-6 | UC-58 EX-4 | BR-390 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_secret_meeting_minutes_are_not_exported); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Issued_minutes_of_a_secret_meeting_are_read_on_screen_only)"
+        },
+        {
+          "id": "MIN_API_IT46",
+          "description": "Verify GET /api/minutes/{minutesId}/export lets every reader download issued and superseded minutes.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{issuedId}/export and GET /api/minutes/{issuedId}/export?format=pdf.",
+            "Send GET /api/minutes/{supersededId}/export."
+          ],
+          "expected": [
+            "Every call: HTTP 200 with the file; the Word file starts with \"PK\" (a valid .docx)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended (Normal); its minutes were issued and later corrected, so revision 1 is Superseded and revision 2 Issued."
+          ],
+          "note": "UC-58 AF-3 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT47",
+          "description": "Verify GET /api/minutes/{minutesId}/export answers 404 for a draft, an outsider or an unknown id.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{draftId}/export and ?format=pdf.",
+            "Sign in as the Outsider and send the same two requests.",
+            "Sign in as the Secretary and send GET /api/minutes/{randomGuid}/export."
+          ],
+          "expected": [
+            "Every call: HTTP 404 Not Found with no message code and no file."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-58 EX-2 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+        },
+        {
+          "id": "MIN_API_IT48",
+          "description": "Verify GET /api/minutes/{minutesId}/export without a token answers 401.",
+          "procedure": [
+            "Send GET /api/minutes/{minutesId}/export with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized; no file."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+        },
+        {
+          "id": "MIN_API_IT49",
+          "description": "Verify GET /api/minutes/{minutesId}/export answers MSG403 when the minutes cannot be read.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send GET /api/minutes/{minutesId}/export, then ?format=pdf."
+          ],
+          "expected": [
+            "Both: HTTP 500 Internal Server Error, body { \"code\": \"MSG403\", \"message\": \"Không tải được biên bản.\" }; no file."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting has draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/submit",
+      "uc": [
+        "UC-61"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT50",
+          "description": "Verify POST /api/minutes/{minutesId}/submit sends the draft to the Chair.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/submit",
+            "   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "   Body: { \"updatedAt\": \"<minutes.updatedAt>\" }",
+            "Sign in as the Chair and send GET /api/notifications."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG424\", \"message\": \"Đã gửi biên bản cho Chủ toạ duyệt.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }.",
+            "\"minutes.status\": \"WaitingApproval\", \"submittedBy.id\" is the Secretary, \"submittedAt\" is the time of the call.",
+            "Step 3: the Chair has one notification of type \"MinutesWaitingApproval\", title \"Biên bản chờ duyệt\", body \"Thư ký đã gửi biên bản cuộc họp “Họp giao ban tháng 11” để Chủ toạ duyệt.\", targetType \"Meeting\". Nobody else is notified.",
+            "The Member's GET .../minutes still returns \"minutes\": null and \"history\": []."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\"."
+          ],
+          "note": "UC-61 | BR-404 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT51",
+          "description": "Verify POST /api/minutes/{minutesId}/submit sends returned minutes again.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Save a correction with PUT /api/minutes/{minutesId} and keep the new \"updatedAt\".",
+            "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": \"<from step 2>\" }."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG424\"; \"status\" goes from \"Rejected\" to \"WaitingApproval\".",
+            "The Chair receives a new \"Biên bản chờ duyệt\" notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Chair returned the minutes with reason \"Bổ sung kết luận mục 2.\"."
+          ],
+          "note": "UC-61 AF-2 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT52",
+          "description": "Verify POST /api/minutes/{minutesId}/submit answers 403 MSG425 to the Chair.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": \"<minutes.updatedAt>\" }."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden, body { \"code\": \"MSG425\", \"message\": \"Chỉ Thư ký được gửi duyệt biên bản.\" }.",
+            "The minutes stay \"Draft\"; no notification is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-61 EX-1 | BR-404 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+        },
+        {
+          "id": "MIN_API_IT53",
+          "description": "Verify POST /api/minutes/{minutesId}/submit answers 404 to anyone who is not an officer, and for an unknown id.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": \"<minutes.updatedAt>\" }.",
+            "Repeat as the Outsider.",
+            "As the Secretary send POST /api/minutes/{randomGuid}/submit."
+          ],
+          "expected": [
+            "Every call: HTTP 404 Not Found with no message code.",
+            "The minutes stay \"Draft\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-61 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+        },
+        {
+          "id": "MIN_API_IT54",
+          "description": "Verify POST /api/minutes/{minutesId}/submit refuses while the meeting is still in progress.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": \"<minutes.updatedAt>\" }."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG426\", \"message\": \"Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.\" }.",
+            "The minutes stay \"Draft\"; the meeting stays InProgress."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is InProgress and has draft minutes."
+          ],
+          "note": "UC-61 EX-2 | BR-405 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+        },
+        {
+          "id": "MIN_API_IT55",
+          "description": "Verify POST /api/minutes/{minutesId}/submit refuses an old copy of the minutes.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Keep \"updatedAt\", then save the minutes once with PUT /api/minutes/{minutesId} (HTTP 200).",
+            "Send POST /api/minutes/{minutesId}/submit with the \"updatedAt\" kept before the save.",
+            "Send it with Body: { } (no \"updatedAt\")."
+          ],
+          "expected": [
+            "Steps 3 and 4: HTTP 409 Conflict, body { \"code\": \"MSG401\", \"message\": \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" }.",
+            "The minutes stay \"Draft\"; no notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\"."
+          ],
+          "note": "UC-61 EX-4 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+        },
+        {
+          "id": "MIN_API_IT56",
+          "description": "Verify POST /api/minutes/{minutesId}/submit refuses minutes already sent for approval.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/submit with the current \"updatedAt\" of the WaitingApproval minutes."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG400\", \"message\": \"Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa.\" }.",
+            "The Chair receives no second notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and the minutes are WaitingApproval."
+          ],
+          "note": "UC-61 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT57",
+          "description": "Verify POST /api/minutes/{minutesId}/submit changes nothing when the state cannot be saved.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send POST /api/minutes/{minutesId}/submit with the current \"updatedAt\".",
+            "Ask QA lead to start the database; read GET .../minutes as the Secretary and GET /api/notifications as the Chair."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" }.",
+            "Step 4: the minutes are still \"Draft\" and the Chair has no \"Biên bản chờ duyệt\" notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\".",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-61 EX-5 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+        },
+        {
+          "id": "MIN_API_IT58",
+          "description": "Verify POST /api/minutes/{minutesId}/submit without a token answers 401.",
+          "procedure": [
+            "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": null } and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-61 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/approve",
+      "uc": [
+        "UC-64"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT59",
+          "description": "Verify POST /api/minutes/{minutesId}/approve issues the minutes and records the issue.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/approve",
+            "   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "   Body: { \"updatedAt\": \"<minutes.updatedAt>\" }",
+            "As the Admin, open the audit log (GET /api/audit-log) filtered on the minutes."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG427\", \"message\": \"Đã duyệt và ban hành biên bản.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }.",
+            "\"minutes.status\": \"Issued\", \"approvedBy.id\" is the Chair, \"approvedAt\" and \"issuedAt\" are the time of the call.",
+            "The meeting stays \"Ended\" (GET /api/meetings/{meetingId}).",
+            "Step 3: one \"minutes.issued\" entry (\"Ban hành biên bản\") by the Chair, object type \"MeetingMinutes\", details { \"meetingId\", \"revisionNumber\": 1, \"supersedesId\": null }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
+            "Admin account supplied by QA lead."
+          ],
+          "note": "UC-64 | BR-408 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT60",
+          "description": "Verify POST /api/minutes/{minutesId}/approve tells every reader of the meeting in the app and by email.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/approve with the current \"updatedAt\".",
+            "Check GET /api/notifications for the Secretary, the Member, the Organizer, the Chair and the Outsider.",
+            "Check the controlled inboxes."
+          ],
+          "expected": [
+            "The Secretary, the Member and the Organizer each get one \"MinutesIssued\" notification titled \"Biên bản đã ban hành\", body \"Biên bản cuộc họp “Họp giao ban tháng 11” đã được ban hành.\"; the Chair and the Outsider get none.",
+            "The same three people get an email with subject \"Biên bản cuộc họp đã ban hành: Họp giao ban tháng 11\" and a \"Xem biên bản\" button to /mgmt/meetings/{meetingId}?tab=minutes; the email mentions \"Trên trang biên bản có thể tải bản Word hoặc PDF.\".",
+            "No Guest of the meeting is notified or emailed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
+            "The Organizer is not on the roster; a Guest is invited. Every internal account uses a controlled inbox."
+          ],
+          "note": "UC-64 | BR-411 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+        },
+        {
+          "id": "MIN_API_IT61",
+          "description": "Verify POST /api/minutes/{minutesId}/approve on a correction supersedes the revision it corrects.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{correctionId}/approve with the current \"updatedAt\".",
+            "Send GET /api/meetings/{meetingId}/minutes as the Member; check the Member's notifications and inbox."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG427\"; revision 2 is \"Issued\".",
+            "Revision 1 is now \"Superseded\" with its text unchanged; the Member's \"history\" reads revision 2 \"Issued\", revision 1 \"Superseded\".",
+            "Notification body \"Bản đính chính biên bản cuộc họp “Họp giao ban tháng 11” đã được ban hành.\"; email subject starts with \"Bản đính chính biên bản đã ban hành:\" and shows \"Đính chính lần 1\".",
+            "A second \"minutes.issued\" audit entry has \"revisionNumber\": 2 and \"supersedesId\" = revision 1."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes were issued, a correction (revision 2) was edited and submitted by the Secretary."
+          ],
+          "note": "UC-64 AF-1 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT62",
+          "description": "Verify POST /api/minutes/{minutesId}/approve answers 403 MSG428 to the Secretary and 404 to a Member.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/approve with the current \"updatedAt\".",
+            "Sign in as the Member and send the same request."
+          ],
+          "expected": [
+            "Step 2: HTTP 403 Forbidden, body { \"code\": \"MSG428\", \"message\": \"Chỉ Chủ toạ được duyệt hoặc trả lại biên bản.\" }.",
+            "Step 3: HTTP 404 Not Found with no message code.",
+            "The minutes stay \"WaitingApproval\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-64 EX-1 | UC-64 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT63",
+          "description": "Verify POST /api/minutes/{minutesId}/approve refuses minutes that are not waiting for approval.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{draftId}/approve with its current \"updatedAt\" (a Draft).",
+            "Approve a WaitingApproval revision (HTTP 200), then send the same approve again."
+          ],
+          "expected": [
+            "Steps 2 and 3 (second call): HTTP 409 Conflict, body { \"code\": \"MSG429\", \"message\": \"Biên bản không ở trạng thái chờ duyệt.\" }.",
+            "No second audit entry or notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "One Ended meeting with Draft minutes and one with WaitingApproval minutes; the Chair chairs both."
+          ],
+          "note": "UC-64 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT64",
+          "description": "Verify POST /api/minutes/{minutesId}/approve refuses an old copy of the minutes.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/approve with the \"updatedAt\" the minutes had before they were submitted."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG401\", \"message\": \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" }.",
+            "The minutes stay \"WaitingApproval\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-64 EX-3 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT65",
+          "description": "Verify POST /api/minutes/{minutesId}/approve issues nothing when the state cannot be saved.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send POST /api/minutes/{minutesId}/approve with the current \"updatedAt\".",
+            "Ask QA lead to start the database; read GET .../minutes, the audit log and the Member's notifications."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" }.",
+            "Step 4: the minutes are still \"WaitingApproval\"; no \"minutes.issued\" audit entry, no notification, no email."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-64 EX-4 | BR-446 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT66",
+          "description": "Verify POST /api/minutes/{minutesId}/approve without a token answers 401.",
+          "procedure": [
+            "Send POST /api/minutes/{minutesId}/approve with Body: { \"updatedAt\": null } and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-64 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/reject",
+      "uc": [
+        "UC-65"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT67",
+          "description": "Verify POST /api/minutes/{minutesId}/reject returns the minutes to the Secretary with the reason.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject",
+            "   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "   Body: { \"reason\": \"  Bổ sung kết luận mục 2.  \", \"updatedAt\": \"<minutes.updatedAt>\" }",
+            "Check GET /api/notifications for the Secretary and the Member."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG430\", \"message\": \"Đã trả lại biên bản cho Thư ký.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }.",
+            "\"minutes.status\": \"Rejected\", \"rejectionReason\": \"Bổ sung kết luận mục 2.\" (trimmed), \"returnedBy.id\" is the Chair, \"returnedAt\" set.",
+            "The Secretary gets one \"MinutesReturned\" notification, title \"Biên bản bị trả lại\", body \"Chủ toạ đã trả lại biên bản cuộc họp “Họp giao ban tháng 11”. Xem lý do trên tab Biên bản.\"; nobody gets \"MinutesIssued\".",
+            "The Member's GET .../minutes still returns \"minutes\": null; the Secretary's shows the reason."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-65 | BR-407 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT68",
+          "description": "Verify POST /api/minutes/{minutesId}/reject refuses an empty reason.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with Body: { \"reason\": \"   \", \"updatedAt\": \"<minutes.updatedAt>\" }.",
+            "Send it with \"reason\": null."
+          ],
+          "expected": [
+            "Both: HTTP 400 Bad Request, body { \"code\": \"MSG431\", \"message\": \"Nhập lý do trả lại, tối đa 2.000 ký tự.\" }.",
+            "The minutes stay \"WaitingApproval\"; no notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT69",
+          "description": "Verify POST /api/minutes/{minutesId}/reject takes a reason of 2,000 characters and refuses 2,001.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with a \"reason\" of 2,001 letters \"x\" and the current \"updatedAt\".",
+            "Send it with a \"reason\" of exactly 2,000 letters \"x\"."
+          ],
+          "expected": [
+            "Step 2: HTTP 400 Bad Request, code \"MSG431\"; nothing changes.",
+            "Step 3: HTTP 200, code \"MSG430\"; \"rejectionReason\" holds the 2,000 characters."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting) (2,001); 2,000 manual"
+        },
+        {
+          "id": "MIN_API_IT70",
+          "description": "Verify POST /api/minutes/{minutesId}/reject answers 403 MSG428 to the Secretary and 404 to a Member.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with Body: { \"reason\": \"Tự trả lại.\", \"updatedAt\": \"<minutes.updatedAt>\" }.",
+            "Sign in as the Member and send Body: { \"reason\": \"Không đồng ý.\", \"updatedAt\": \"<minutes.updatedAt>\" }."
+          ],
+          "expected": [
+            "Step 2: HTTP 403 Forbidden, body { \"code\": \"MSG428\", \"message\": \"Chỉ Chủ toạ được duyệt hoặc trả lại biên bản.\" }.",
+            "Step 3: HTTP 404 Not Found with no message code.",
+            "The minutes stay \"WaitingApproval\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-65 EX-1 | UC-65 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT71",
+          "description": "Verify POST /api/minutes/{minutesId}/reject refuses minutes that are not waiting for approval.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with Body: { \"reason\": \"Bổ sung kết luận.\", \"updatedAt\": \"<minutes.updatedAt>\" } on a Draft."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG429\", \"message\": \"Biên bản không ở trạng thái chờ duyệt.\" }.",
+            "The minutes stay \"Draft\"; the Secretary gets no notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes are a Draft that was never submitted."
+          ],
+          "note": "UC-65 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT72",
+          "description": "Verify POST /api/minutes/{minutesId}/reject refuses an old copy of the minutes.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with \"reason\": \"Bổ sung kết luận.\" and the \"updatedAt\" the minutes had before they were submitted."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG401\", \"message\": \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" }.",
+            "The minutes stay \"WaitingApproval\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
+          ],
+          "note": "UC-65 EX-6 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+        },
+        {
+          "id": "MIN_API_IT73",
+          "description": "Verify POST /api/minutes/{minutesId}/reject keeps only the reason of the latest return.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{minutesId}/reject with \"reason\": \"Lần hai: sửa tên dự án.\" and the current \"updatedAt\".",
+            "Send GET /api/meetings/{meetingId}/minutes as the Secretary."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG430\".",
+            "Step 3: \"rejectionReason\" is \"Lần hai: sửa tên dự án.\"; the first reason is gone."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the minutes were returned once with \"Bổ sung kết luận mục 2.\", then corrected and submitted again."
+          ],
+          "note": "UC-65 | BR-407 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT74",
+          "description": "Verify POST /api/minutes/{minutesId}/reject changes nothing when the state cannot be saved.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send POST /api/minutes/{minutesId}/reject with \"reason\": \"Bổ sung kết luận.\" and the current \"updatedAt\".",
+            "Ask QA lead to start the database; read GET .../minutes and the Secretary's notifications."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" }.",
+            "Step 4: the minutes are still \"WaitingApproval\"; the Secretary has no \"Biên bản bị trả lại\" notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-65 EX-4 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT75",
+          "description": "Verify POST /api/minutes/{minutesId}/reject without a token answers 401.",
+          "procedure": [
+            "Send POST /api/minutes/{minutesId}/reject with Body: { \"reason\": \"x\", \"updatedAt\": null } and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-65 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/corrections",
+      "uc": [
+        "UC-83"
+      ],
+      "cases": [
+        {
+          "id": "MIN_API_IT76",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections creates a draft revision from the issued text.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{issuedId}/corrections with Authorization: Bearer <accessToken> and no body.",
+            "Check GET /api/notifications for the Secretary and the Member."
+          ],
+          "expected": [
+            "HTTP 201 Created, body { \"code\": \"MSG432\", \"message\": \"Đã tạo bản đính chính.\", \"minutes\", \"canManage\", \"draftChangedAt\", \"history\", \"canSubmit\", \"canApprove\" }.",
+            "\"minutes\": { \"revisionNumber\": 2, \"status\": \"Draft\", \"supersedesId\": <revision 1>, \"content\" = the issued content }.",
+            "\"history\" lists revision 2 \"Draft\" then revision 1 \"Issued\".",
+            "No new notification for anyone (only when the correction is issued)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes (revision 1) are Issued."
+          ],
+          "note": "UC-83 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT77",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections keeps the issued revision what readers see.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{issuedId}/corrections.",
+            "As the Member send GET /api/meetings/{meetingId}/minutes, GET /api/minutes/{correctionId} and GET /api/minutes/{correctionId}/export.",
+            "As the Secretary send PUT /api/minutes/{issuedId} with \"content\": \"<p>Sửa bản cũ.</p>\" and its \"updatedAt\"."
+          ],
+          "expected": [
+            "Step 3: the Member still reads revision 1 (\"history\" only \"1:Issued\"); the two requests on the correction answer 404 with no message code.",
+            "Step 4: HTTP 409, code \"MSG400\"; the issued text never changes."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes (revision 1) are Issued."
+          ],
+          "note": "UC-83 | BR-409 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT78",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections answers 403 MSG397 to a reader of the issued minutes.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{issuedId}/corrections."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden, body { \"code\": \"MSG397\", \"message\": \"Chỉ Chủ toạ hoặc Thư ký được soạn biên bản.\" }.",
+            "No revision is created (\"history\" unchanged)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes (revision 1) are Issued."
+          ],
+          "note": "UC-83 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT79",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections answers 404 to a reader asking on a revision they may not see.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{correctionId}/corrections on the correction still in Draft.",
+            "Sign in as the Outsider and send POST /api/minutes/{issuedId}/corrections."
+          ],
+          "expected": [
+            "Both: HTTP 404 Not Found with no message code."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes are issued and a correction is in Draft."
+          ],
+          "note": "UC-83 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT80",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections allows one correction at a time.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{issuedId}/corrections while the Chair's correction is still in Draft."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG434\", \"message\": \"Biên bản đang có một bản đính chính chưa ban hành.\" }.",
+            "No third revision is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes are issued and the Chair has just created a correction (revision 2, Draft)."
+          ],
+          "note": "UC-83 EX-3 | BR-410 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT81",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections refuses a revision that is not the issued one.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/minutes/{correctionId}/corrections on the Draft correction.",
+            "After the correction is issued, send POST /api/minutes/{revision1Id}/corrections on the now Superseded revision 1."
+          ],
+          "expected": [
+            "Both: HTTP 409 Conflict, body { \"code\": \"MSG433\", \"message\": \"Chỉ đính chính được biên bản đã ban hành.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended; its minutes are issued and a correction is in Draft (later issued for step 3)."
+          ],
+          "note": "UC-83 EX-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+        },
+        {
+          "id": "MIN_API_IT82",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections creates nothing when the revision cannot be saved.",
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database.",
+            "Send POST /api/minutes/{issuedId}/corrections.",
+            "Ask QA lead to start the database and read GET .../minutes."
+          ],
+          "expected": [
+            "Step 3: HTTP 503 Service Unavailable, body { \"code\": \"MSG404\", \"message\": \"Không lưu được biên bản. Vui lòng thử lại.\" }.",
+            "Step 4: \"history\" still has only revision 1."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
+            "The meeting is Ended and its minutes (revision 1) are Issued.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-83 EX-4 | Manual only"
+        },
+        {
+          "id": "MIN_API_IT83",
+          "description": "Verify POST /api/minutes/{minutesId}/corrections without a token answers 401.",
+          "procedure": [
+            "Send POST /api/minutes/{minutesId}/corrections with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any minutes id."
+          ],
+          "note": "UC-83 | Manual only"
+        }
+      ]
+    }
+  ]
+}

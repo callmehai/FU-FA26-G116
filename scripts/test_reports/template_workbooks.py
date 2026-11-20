@@ -256,7 +256,7 @@ class Template:
                     draw.text((80,y+180),'No responses collected',font=font,fill=(100,100,100))
                     draw.text((80,y+260),'Results will appear after a recorded UAT session.',font=font,fill=(100,100,100))
                 buffer=io.BytesIO();image.save(buffer,format='JPEG',quality=90);parts[f'xl/media/image{index}.jpg']=buffer.getvalue()
-        # UAT feedback screenshots are replaced in-place; they never carry ACCE results.
+        # UAT feedback screenshots are replaced in-place; they never carry the sample project's results.
         if images:
             for key,value in images.items():parts[key]=value
         parts['xl/workbook.xml']=xml(wb);parts['xl/_rels/workbook.xml.rels']=xml(relroot)
