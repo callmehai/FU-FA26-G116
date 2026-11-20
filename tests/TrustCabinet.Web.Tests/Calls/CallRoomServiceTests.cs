@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Infrastructure.Calls;
 
 namespace TrustCabinet.Web.Tests.Calls;
@@ -18,7 +19,21 @@ public sealed class CallRoomServiceTests
 
     private readonly Users.FakeAuditService _audit = new();
 
-    private CallRoomService Service => new(_calls, _liveKit, Options.Create(_options), _audit, NullLogger<CallRoomService>.Instance);
+    private readonly SpeakingChanges _speaking = new();
+
+    private CallRoomService Service => new(_calls, _liveKit, Options.Create(_options), _audit, NullLogger<CallRoomService>.Instance,
+        speaking: _speaking);
+
+    private sealed class SpeakingChanges : ISpeakingChangePublisher
+    {
+        public List<SpeakingChange> Sent { get; } = [];
+
+        public Task PublishAsync(SpeakingChange change, SpeakingViewer? invited, CancellationToken ct)
+        {
+            Sent.Add(change);
+            return Task.CompletedTask;
+        }
+    }
 
     private string Room => CallRoomNames.ForMeeting(_meetingId);
 
@@ -218,6 +233,36 @@ public sealed class CallRoomServiceTests
         Assert.Contains(Room, _liveKit.Deleted);
         Assert.Equal(CallStatus.Ended, Assert.Single(_calls.Sessions).Status);
         Assert.NotNull(Assert.Single(_calls.Stints).LeftAt);
+    }
+
+    // SCRUM-213: closing the room with a hand still up tells the Phát biểu panels (BR-337), on every path that closes it.
+    [Fact]
+    public async Task Reconcile_closing_the_room_of_an_ended_meeting_tells_the_speaking_queue()
+    {
+        _calls.Invite(_meetingId, _member);
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+        _calls.MeetingStatusOverride[_meetingId] = MeetingStatus.Ended;
+        _calls.HandsClosedOnEnd = 1;
+
+        await Service.ReconcileAsync();
+
+        var change = Assert.Single(_speaking.Sent);
+        Assert.Equal(("Left", _meetingId), (change.ChangeType, change.MeetingId));
+    }
+
+    [Fact]
+    public async Task Closing_the_room_after_the_meeting_ends_tells_the_speaking_queue_only_when_a_hand_was_up()
+    {
+        _calls.Invite(_meetingId, _member);
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+        await Service.CloseMeetingRoomAsync(_meetingId);
+        Assert.Empty(_speaking.Sent);
+
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+        _calls.HandsClosedOnEnd = 2;
+        await Service.CloseMeetingRoomAsync(_meetingId);
+
+        Assert.Equal("Left", Assert.Single(_speaking.Sent).ChangeType);
     }
 
     [Fact]

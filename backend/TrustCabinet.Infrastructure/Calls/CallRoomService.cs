@@ -46,7 +46,7 @@ public sealed class CallRoomService(
         // ends when the provider confirms closure, not at the earlier business transition time.
         var closedAt = UtcNow;
         var session = await calls.FindActiveRoomSessionAsync(meetingId, ct);
-        if (session is not null) await calls.EndSessionAsync(session.Id, closedAt, ct);
+        if (session is not null) await SpeakingLeftAsync(meetingId, await calls.EndSessionAsync(session.Id, closedAt, ct));
     }
 
     public async Task<CallResult<CallRoomView>> GetRoomAsync(Guid meetingId, CallCaller caller, CancellationToken ct = default)
@@ -235,7 +235,7 @@ public sealed class CallRoomService(
                     {
                         logger.LogInformation("Closing {Room} again: {Identity} joined after it closed", webhook.RoomName, joiner.Identity);
                         await liveKit.DeleteRoomAsync(webhook.RoomName!, ct);
-                        await calls.EndSessionAsync(session.Id, UtcNow, ct);
+                        await SpeakingLeftAsync(meetingId, await calls.EndSessionAsync(session.Id, UtcNow, ct));
                     }
                     else if (access is null && options.Value.EnforceRoster)
                     {
@@ -326,7 +326,7 @@ public sealed class CallRoomService(
             && (session.MeetingStatus != MeetingStatus.InProgress || session.MeetingMode == MeetingMode.InPerson))
         {
             await liveKit.DeleteRoomAsync(room, ct);
-            await calls.EndSessionAsync(session.SessionId, UtcNow, ct);
+            await SpeakingLeftAsync(meetingId, await calls.EndSessionAsync(session.SessionId, UtcNow, ct));
             return;
         }
 
