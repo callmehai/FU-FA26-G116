@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Recordings;
@@ -13,7 +14,9 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// ADR-0062 — after a hybrid meeting ends, the server lays its room recording and every online attendee's sentences on
 /// the real clock and mixes them into one WAV, listed with the meeting's recordings as "Bản ghi tổng hợp". Built once the
 /// sources settle (no take open, nothing new for a minute), and built again whenever one of them changes later: a late
-/// sentence, one taken out of the record, a take cut. A Secretary who erases it is not overridden.
+/// sentence, one taken out of the record, a take cut. A Secretary who erases it is not overridden. Audio removed from a
+/// source never outlives it here (ADR-0067): erasing the room recording erases this one, and a sentence deleted or a take
+/// cut past the rebuild window, or a mix left with only one source, erases it too.
 ///
 /// Each stretch of sound keeps the real clock; silence between stretches is cut to two seconds (<see cref="CombinedTrack"/>),
 /// and a track past twelve hours is not built.
@@ -22,7 +25,8 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// block needs it, and a sentence (a minute at most) is loaded when the block reaches it and dropped once passed.
 /// </summary>
 public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordingStorage storage, ISpeechChangePublisher publisher,
-    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<CombinedRecordingService> logger) : ICombinedRecordingService
+    IAuditService audit, TimeProvider clock, IOptions<RecordingOptions> options, ILogger<CombinedRecordingService> logger)
+    : ICombinedRecordingService
 {
     private const int BlockSamples = CombinedRecordingRules.SampleRate * 10;
 
@@ -31,12 +35,14 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
 
     private sealed record RoomPart(DateTimeOffset StartedAt, long DurationMs, string StoragePath, long OffsetMs);
 
-    private sealed record Clip(DateTimeOffset StartedAt, long DurationMs, string AudioPath);
+    private sealed record Clip(DateTimeOffset StartedAt, long DurationMs, string AudioPath, DateTimeOffset CreatedAt);
 
     /// <param name="Changed">The last change to any source. The combined row's UpdatedAt holds the one it was built from,
     /// not when it was built: a source that changes while it is being mixed is then still newer, and gets its rebuild.</param>
+    /// <param name="RetainUntil">When its earliest source goes (BR-347: the room's, counted from its first take; or a
+    /// sentence's, if one came first), so the mix never keeps a voice longer than the source it was taken from.</param>
     private sealed record Plan(Guid MeetingId, Guid? ExistingId, DateTimeOffset Changed, IReadOnlyList<RoomPart> Room,
-        IReadOnlyList<Clip> Clips, Recording Template);
+        IReadOnlyList<Clip> Clips, Recording Template, DateTimeOffset RetainUntil);
 
     public async Task<bool> BuildNextAsync(CancellationToken ct = default)
     {
@@ -81,10 +87,15 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         var clips = await db.SpeechClips.AsNoTracking()
             .Where(c => c.MeetingId == meetingId && c.AudioPath != null && c.ExcludedAt == null && c.DurationMs > 0)
             .OrderBy(c => c.StartedAt)
-            .Select(c => new Clip(c.StartedAt, c.DurationMs, c.AudioPath!))
+            .Select(c => new Clip(c.StartedAt, c.DurationMs, c.AudioPath!, c.CreatedAt))
             .ToListAsync(ct);
-        // Only a meeting heard both in the room and online: either alone already plays as one track.
-        if (rooms.Count == 0 || clips.Count == 0) return null;
+        // Only a meeting heard both in the room and online: either alone already plays as one track. A mix built before
+        // one side went (every sentence deleted or taken out, the room erased) would keep that audio: it goes too.
+        if (rooms.Count == 0 || clips.Count == 0)
+        {
+            if (existing is { Status: RecordingStatus.Available }) await EraseStaleAsync(existing.Id, ct);
+            return null;
+        }
 
         var clipChanged = await db.SpeechClips.Where(c => c.MeetingId == meetingId).MaxAsync(c => (DateTimeOffset?)c.UpdatedAt, ct);
         var roomChanged = recordings.Where(r => r.Source != RecordingSource.Combined).Max(r => r.UpdatedAt);
@@ -95,7 +106,10 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         var room = rooms.SelectMany(r => r.Takes!.Select(t => new RoomPart(t.StartedAt, t.DurationMs, r.StoragePath, t.OffsetMs)))
             .Where(p => p.DurationMs > 0).OrderBy(p => p.StartedAt).ToList();
         if (room.Count == 0) return null;
-        return new(meetingId, existing?.Id, changed, room, clips, rooms[0]);
+        var days = options.Value.RetentionDays;
+        var fallback = clock.GetUtcNow().AddDays(days);
+        var retainUntil = rooms.Select(r => r.RetainUntil ?? fallback).Append(clips.Min(c => c.CreatedAt).AddDays(days)).Min();
+        return new(meetingId, existing?.Id, changed, room, clips, rooms[0], retainUntil);
     }
 
     private async Task BuildAsync(Plan plan, CancellationToken ct)
@@ -145,6 +159,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
                     row.ByteSize = byteSize;
                     row.DurationMs = durationMs;
                     row.Status = RecordingStatus.Available;
+                    row.RetainUntil = plan.RetainUntil;
                     row.UpdatedAt = plan.Changed;
                 }
                 else
@@ -155,7 +170,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
                         FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
                         ByteSize = byteSize, DurationMs = durationMs,
                         ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
-                        RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
+                        RetainUntil = plan.RetainUntil, CreatedById = plan.Template.CreatedById,
                         CreatedAt = now, UpdatedAt = plan.Changed,
                     });
                 }
@@ -179,6 +194,77 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         logger.LogInformation("Built the combined recording of meeting {MeetingId}: {Room} room takes, {Clips} online sentences, {Ms} ms",
             plan.MeetingId, plan.Room.Count, plan.Clips.Count, durationMs);
         await PublishAsync(plan.MeetingId, ct);
+    }
+
+    public async Task<string?> SourceRemovedAsync(Guid meetingId, bool rebuild, Guid? actorId, CancellationToken ct = default)
+    {
+        if (db.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("A source of the combined recording is removed inside the caller's transaction.");
+        var id = await db.Recordings.AsNoTracking()
+            .Where(r => r.MeetingId == meetingId && r.Source == RecordingSource.Combined && r.Status == RecordingStatus.Available)
+            .Select(r => (Guid?)r.Id).FirstOrDefaultAsync(ct);
+        if (id is null) return null;
+        var row = await LockAsync(id.Value, ct);
+        if (row is not { Status: RecordingStatus.Available }) return null;
+        if (rebuild)
+        {
+            var endedAt = await db.Meetings.AsNoTracking().Where(m => m.Id == meetingId).Select(m => m.ActualEndedAt)
+                .SingleOrDefaultAsync(ct);
+            if (endedAt is { } ended && ended > clock.GetUtcNow() - CombinedRecordingRules.Window)
+            {
+                // Older than any source: the next sweep mixes it again without the audio that went.
+                row.UpdatedAt = DateTimeOffset.UnixEpoch;
+                return null;
+            }
+        }
+        return await MarkErasedAsync(row, actorId, rebuild ? "source_removed_after_window" : "source_erased", ct);
+    }
+
+    /// <summary>A mix left with nothing to mix from one side: erased in a transaction of its own, file after commit.</summary>
+    private async Task EraseStaleAsync(Guid id, CancellationToken ct)
+    {
+        var path = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            var row = await LockAsync(id, ct);
+            if (row is not { Status: RecordingStatus.Available }) return null;
+            var erased = await MarkErasedAsync(row, null, "source_erased", ct);
+            await transaction.CommitAsync(ct);
+            return erased;
+        });
+        db.ChangeTracker.Clear();
+        if (path is null) return;
+        DeleteQuietly(path);
+        await PublishAsync(await db.Recordings.AsNoTracking().Where(r => r.Id == id).Select(r => r.MeetingId).SingleAsync(ct), ct);
+    }
+
+    private async Task<Recording?> LockAsync(Guid id, CancellationToken ct)
+    {
+        await db.Recordings.FromSqlInterpolated($"SELECT * FROM recordings WHERE id = {id} FOR UPDATE").AsNoTracking().ToListAsync(ct);
+        return await db.Recordings.SingleOrDefaultAsync(r => r.Id == id, ct);
+    }
+
+    /// <summary>As <c>RecordingService</c> erases one: the row stays as evidence, the bytes go after the commit.</summary>
+    private async Task<string> MarkErasedAsync(Recording row, Guid? actorId, string reason, CancellationToken ct)
+    {
+        var now = clock.GetUtcNow();
+        row.Status = RecordingStatus.Deleted;
+        row.DeletedAt = now;
+        row.UpdatedAt = now;
+        await audit.RecordAsync(AuditActions.RecordingErased, AuditActions.RecordingObjectType, row.Id, actorId,
+            new { row.MeetingId, row.FileName, reason }, ct);
+        await db.SaveChangesAsync(ct);
+        return row.StoragePath;
+    }
+
+    private void DeleteQuietly(string path)
+    {
+        try { storage.Delete(path); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The retention job's orphan sweep deletes it later: no row points at it any more.
+            logger.LogError(ex, "Could not delete combined recording file {Path}", path);
+        }
     }
 
     private async Task MixAsync(Plan plan, string path, long total, Func<DateTimeOffset, long> sample, CancellationToken ct)

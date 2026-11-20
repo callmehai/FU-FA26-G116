@@ -33,6 +33,10 @@ trả `404`, không tiết lộ dòng dữ liệu có tồn tại. URL meeting h
 `/mgmt/meetings/{id}`; `GET /api/meetings/{id}` đã được triển khai và tự kiểm tra quyền.
 Thông báo chưa có đích hợp lệ cũng trả `404` ở endpoint `target`.
 
+**Thời hạn giữ** ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): job `DataRetentionWorker` xoá thông báo đã đọc và tạo quá
+`Retention:ReadNotificationDays` ngày (mặc định 90), và mọi thông báo tạo quá `Retention:NotificationDays` ngày (mặc định 180),
+dù chưa đọc. Thông báo đã xoá không còn trong danh sách lẫn số chưa đọc; `GET /{id}/target` của nó trả `404`.
+
 ## Ghi chú đối chiếu UC Description và sequence diagram
 
 Phần này ghi lại chênh lệch giữa `UC list.docx` do BA cung cấp, bốn sequence

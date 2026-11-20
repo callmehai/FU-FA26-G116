@@ -13,6 +13,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Domain.Votes;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Endpoints;
@@ -56,7 +57,20 @@ public sealed class MeetingEndpointsTests : IDisposable
                 services.AddSingleton<IMeetingRepository>(Meetings);
                 services.RemoveAll<IMeetingService>();
                 services.AddScoped<IMeetingService, MeetingService>();
+                // The fake repository has no transaction for the cancel's draft deletion to join; this repository's
+                // meetings have no votes anyway (the deletion is tested against PostgreSQL in MeetingLifecycleTests).
+                services.RemoveAll<IVoteMeetingEnd>();
+                services.AddSingleton<IVoteMeetingEnd>(new NoVoteDrafts());
             });
+        }
+
+        private sealed class NoVoteDrafts : IVoteMeetingEnd
+        {
+            public Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid? endedById, DateTimeOffset endedAt,
+                CancellationToken ct = default) => Task.FromResult<IReadOnlyList<VoteChange>>([]);
+
+            public Task<IReadOnlyList<VoteChange>> DeleteDraftsOnCancelAsync(Guid meetingId, Guid? cancelledById, DateTimeOffset at,
+                CancellationToken ct = default) => Task.FromResult<IReadOnlyList<VoteChange>>([]);
         }
 
         internal HttpClient ClientFor(User user, params Capability[] capabilities)

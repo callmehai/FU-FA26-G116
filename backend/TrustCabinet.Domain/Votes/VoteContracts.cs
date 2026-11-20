@@ -114,6 +114,14 @@ public interface IVoteMeetingEnd
     /// <param name="endedById">The Chair who ended it; null when the system ended a meeting left running (ADR-0062).</param>
     Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid? endedById, DateTimeOffset endedAt,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// The same for a cancelled meeting (ADR-0067): it never starts, so its drafts can never be opened either. Called by
+    /// the organizer's cancel, the system's (BR-301) and the retention job for drafts left before this existed.
+    /// </summary>
+    /// <param name="cancelledById">The organizer who cancelled it; null when the system did.</param>
+    Task<IReadOnlyList<VoteChange>> DeleteDraftsOnCancelAsync(Guid meetingId, Guid? cancelledById, DateTimeOffset at,
+        CancellationToken ct = default);
 }
 
 public interface IVoteService
