@@ -14,6 +14,7 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { formatBytes, isPdf, saveBlob } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
 import { childrenOf, trailOf } from './libraryTree'
+import { opensInPlace, useOpenDocument } from './viewerOverlay'
 
 const COLUMN_COUNT = 5
 
@@ -28,6 +29,7 @@ export function UserLibraryPage() {
   const [params] = useSearchParams()
   const folderId = params.get('folder') || null
   const navigate = useNavigate()
+  const openDocument = useOpenDocument()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const [owner, setOwner] = useState<UserAccount | null>(null)
@@ -207,16 +209,29 @@ export function UserLibraryPage() {
                   })}
                   {rows.documents.map((doc) => {
                     const open = routes.userLibraryDocument(userId, doc.id, folderId)
+                    const view = () =>
+                      openDocument
+                        ? openDocument({ kind: 'library', documentId: doc.id, folderId, userId })
+                        : navigate(open)
                     const facts = [doc.pageCount && `${doc.pageCount} trang`, formatBytes(doc.byteSize)]
                       .filter(Boolean)
                       .join(', ')
                     return (
-                      <tr key={doc.id} className="row-link" onClick={() => navigate(open)}>
+                      <tr key={doc.id} className="row-link" onClick={view}>
                         <td className="cell-title">
                           <span className="library-name">
                             <FileTypeTag pdf={isPdf(doc)} size={28} />
                             <span className="library-name-col">
-                              <Link to={open} onClick={(e) => e.stopPropagation()} className="library-name-text">
+                              <Link
+                                to={open}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (!opensInPlace(e)) return
+                                  e.preventDefault()
+                                  view()
+                                }}
+                                className="library-name-text"
+                              >
                                 {doc.fileName}
                               </Link>
                               <span className="cell-sub library-sub">{facts}</span>

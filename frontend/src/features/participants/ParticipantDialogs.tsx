@@ -8,6 +8,7 @@ import {
   listParticipants,
 } from '../../api/participants'
 import { ApiError } from '../../api/client'
+import { BlockedButton } from '../../components/BlockedButton'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
@@ -159,10 +160,15 @@ export function AddParticipantsDialog({
           <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
-          <button type="button" className="btn btn-primary" onClick={submit} disabled={pending || selected.size === 0}>
+          <BlockedButton
+            className="btn btn-primary"
+            onClick={submit}
+            disabled={pending}
+            blocked={selected.size === 0 && 'Chọn người cần thêm'}
+          >
             <Icon name="userPlus" size={16} />
             {pending ? 'Đang thêm…' : selected.size > 0 ? `Thêm ${selected.size} người` : 'Thêm'}
-          </button>
+          </BlockedButton>
         </>
       }
     >
@@ -423,15 +429,20 @@ export function ChangeRoleDialog({
           <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
-          <button
-            type="button"
+          <BlockedButton
             className="btn btn-primary"
             onClick={() => (promote ? setConfirmChair(true) : void submit())}
-            disabled={pending || role === row.role || (promote && !handOver && !chair)}
+            // Still looking for the current Chair (undefined) is a moment's wait, not a reason.
+            disabled={pending || (promote && !handOver && chair === undefined)}
+            blocked={
+              role === row.role
+                ? 'Chọn vai trò khác'
+                : promote && !handOver && chair === null && 'Không tìm thấy Chủ toạ hiện tại'
+            }
           >
             <Icon name="check" size={16} />
             {pending ? 'Đang lưu…' : promote ? 'Giao Chủ toạ' : 'Lưu'}
-          </button>
+          </BlockedButton>
         </>
       }
     >

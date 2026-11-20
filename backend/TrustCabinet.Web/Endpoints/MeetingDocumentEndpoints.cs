@@ -49,6 +49,9 @@ public static class MeetingDocumentEndpoints
     /// <summary>MSG346, for the library upload as well (ADR-0034).</summary>
     internal const string StorageFullMessage =
         "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
+    /// <summary>MSG164 and MSG288, for the vote and library uploads as well (BR-214, BR-319).</summary>
+    internal const string InvalidFilesMessage = "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.";
+    internal const string SubmissionTooLargeMessage = "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.";
     private const string Msg349MeetingCancelled = "MSG349";
     private const string Msg382FileMissing = "MSG382";
 
@@ -59,7 +62,7 @@ public static class MeetingDocumentEndpoints
         message = "Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.",
     }, statusCode: StatusCodes.Status410Gone);
 
-    /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
+    /// <summary>The 100 MB of files plus room for the multipart framing and the page counts.</summary>
     private const long MaxRequestBytes = DocumentFileRules.MaxTotalBytes + 1024 * 1024;
 
     /// <summary>Room for well over 10 files and the page counts older clients still send, so a few extra
@@ -224,7 +227,7 @@ public static class MeetingDocumentEndpoints
     {
         var actor = CapabilityGate.GatedUserId(context.User);
 
-        // Before the body: someone who may not upload should not get to stream 200 MB to disk first.
+        // Before the body: someone who may not upload should not get to stream 100 MB to disk first.
         var access = await service.CheckUploadAsync(meetingId, actor, ct);
         if (access.Failure != DocumentUploadFailure.None) return Map(access, meetingId);
 
@@ -292,7 +295,7 @@ public static class MeetingDocumentEndpoints
                 Errors: new Dictionary<string, string[]> { ["files"] = ["Yêu cầu phải gửi tệp dạng multipart/form-data."] });
         if (request.ContentLength > MaxRequestBytes) return new(DocumentUploadFailure.TooMany);
 
-        // Kestrel stops at 30 MB by default; uploads alone need 200 MB.
+        // Kestrel stops at 30 MB by default; an upload may be 100 MB.
         if (context.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } size)
             size.MaxRequestBodySize = MaxRequestBytes;
 
@@ -424,8 +427,8 @@ public static class MeetingDocumentEndpoints
             DocumentUploadFailure.Forbidden => (403, codes.Forbidden, codes.ForbiddenMessage),
             DocumentUploadFailure.Ended => (409, codes.Ended, codes.EndedMessage),
             DocumentUploadFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
-            DocumentUploadFailure.Invalid => (400, Msg164InvalidFiles, "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB."),
-            DocumentUploadFailure.TooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
+            DocumentUploadFailure.Invalid => (400, Msg164InvalidFiles, InvalidFilesMessage),
+            DocumentUploadFailure.TooMany => (400, Msg288SubmissionTooLarge, SubmissionTooLargeMessage),
             // The system's storage limit (ADR-0034).
             DocumentUploadFailure.StorageFull => (409, Msg346StorageFull, StorageFullMessage),
             DocumentUploadFailure.LibraryUnavailable => (400, Msg249LibrarySelectionInvalid,

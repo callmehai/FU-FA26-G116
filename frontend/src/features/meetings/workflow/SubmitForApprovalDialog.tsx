@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { transitionMeeting } from '../../../api/meetings'
+import { BlockedButton } from '../../../components/BlockedButton'
 import { Dialog } from '../../../components/Dialog'
 import { Select, type SelectOption } from '../../../components/Select'
 import { errorMessage, isApiError } from '../../../lib/errors'
@@ -101,10 +102,15 @@ export function SubmitForApprovalDialog({
           <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
-          <button type="button" className="btn btn-primary" onClick={submit} disabled={pending || noneEligible}>
+          <BlockedButton
+            className="btn btn-primary"
+            onClick={submit}
+            disabled={pending}
+            blocked={noneEligible && 'Chưa có người duyệt nào để chọn'}
+          >
             <Icon name="send" size={16} />
             {pending ? 'Đang gửi…' : meeting.status === 'Rejected' ? 'Gửi duyệt lại' : 'Gửi duyệt'}
-          </button>
+          </BlockedButton>
         </>
       }
     >

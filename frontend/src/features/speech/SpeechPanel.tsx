@@ -32,8 +32,48 @@ export function SpeechPanel({
           </button>
         </div>
       )}
-      {!list && !error && <p className="field-hint">Đang tải…</p>}
+      {/* First load: the card's outline where the record will be, as the other tabs load (Khánh, 19/11/2026). An
+          in-person meeting has no per-mic record unless one is found, so it shows nothing until then. */}
+      {speech.loading && perMic && <TimelineSkeleton />}
       {list && (perMic || clips.length > 0) && <SpeechTimeline speech={speech} userId={userId} startedAt={startedAt} />}
     </div>
+  )
+}
+
+/** The per-mic record's card while it loads: its heading, the player and a few lines, sized like the real ones. */
+function TimelineSkeleton() {
+  return (
+    <section className="tl-card tl-skeleton" aria-busy="true" aria-label="Đang tải bản ghi">
+      <div className="tl-head">
+        <span className="skeleton tl-skeleton-title" />
+      </div>
+      <div className="tl-player">
+        <span className="tl-skeleton-player" />
+      </div>
+      <ol className="tl-list">
+        {[0, 1, 2].map((i) => (
+          <li key={i} className="tl-group">
+            <div className="tl-row tl-row-head">
+              <span className="tl-time">
+                <span className="skeleton tl-skeleton-time" />
+              </span>
+              <span className="tl-rail" aria-hidden="true">
+                <span className="tl-dot" />
+              </span>
+              <div className="tl-head-row">
+                <span className="skeleton tl-skeleton-name" />
+              </div>
+            </div>
+            <div className="tl-row">
+              <span className="tl-time" />
+              <span className="tl-rail" aria-hidden="true" />
+              <div className="tl-content">
+                <span className="skeleton tl-skeleton-text" />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   )
 }

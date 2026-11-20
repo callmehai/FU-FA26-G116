@@ -24,6 +24,8 @@ log = logging.getLogger(__name__)
 
 MAX_BODY_BYTES = 512 * 1024 * 1024
 MAX_SPEAKERS = 20
+# The previous sentence read ahead of a per-mic one: a few dozen words (pipeline.MAX_CONTEXT_WORDS).
+MAX_CONTEXT_CHARS = 2000
 BLOCK = 1 << 20
 
 
@@ -31,7 +33,7 @@ class Engine(Protocol):
     model_ids: dict[str, str]
 
     def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
-                        profile: str = "room") -> dict: ...
+                        profile: str = "room", context: str | None = None) -> dict: ...
 
     def embed_file(self, path: str) -> tuple[bool, dict]: ...
 
@@ -67,6 +69,14 @@ def parse_transcribe_query(query: str) -> tuple[bool, int | None, str]:
     if profile not in pipeline.PROFILES:
         raise Rejected(400, "invalid_parameter")
     return diarize_value in ("true", "1"), speakers, profile
+
+
+def parse_context(query: str) -> str | None:
+    """`context`: what the same speaker said just before (optional, at most MAX_CONTEXT_CHARS characters)."""
+    value = parse_qs(query, keep_blank_values=True).get("context", [""])[0].strip()
+    if len(value) > MAX_CONTEXT_CHARS:
+        raise Rejected(400, "invalid_parameter")
+    return value or None
 
 
 def authorised(header: str | None, api_key: str | None) -> bool:
@@ -122,8 +132,9 @@ class Handler(BaseHTTPRequestHandler):
                 raise Rejected(401, "unauthorized", close=True)
             if url.path == "/v1/transcribe":
                 diarize, speakers, profile = parse_transcribe_query(url.query)
+                context = parse_context(url.query)
                 body_path = self._receive_body()
-                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile))
+                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile, context))
             else:
                 if url.query:
                     raise Rejected(400, "invalid_parameter", close=True)

@@ -2475,6 +2475,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.PrimitiveCollection<long[]>("WordStartsMs")
+                        .HasColumnType("bigint[]")
+                        .HasColumnName("word_starts_ms");
+
                     b.HasKey("Id")
                         .HasName("pk_transcript_segments");
 

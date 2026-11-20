@@ -141,7 +141,7 @@ public static class VoteEndpoints
         CancellationToken ct)
     {
         var actor = Actor(context, identities);
-        // Before the body: someone who may not attach should not get to stream 200 MB to disk first.
+        // Before the body: someone who may not attach should not get to stream 100 MB to disk first.
         var access = await service.CheckAttachUploadAsync(meetingId, voteId, actor, ct);
         if (access.Failure != VoteFailure.None) return Map(access, meetingId, VoteOperation.AttachUpload);
 
@@ -288,8 +288,8 @@ public static class VoteEndpoints
                 VoteFailure.DocumentNotInMeeting => (404, Msg170NotInMeeting, "Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu."),
                 VoteFailure.DocumentAlreadyAttached => (409, Msg266AlreadyAttached, "Một hoặc nhiều tài liệu đã chọn đã được gắn vào biểu quyết."),
                 VoteFailure.DocumentNotAttached => (404, Msg269NotAttached, "Tài liệu này không còn gắn với biểu quyết. Hãy tải lại danh sách."),
-                VoteFailure.FilesInvalid => (400, Msg164InvalidFiles, "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB."),
-                VoteFailure.FilesTooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
+                VoteFailure.FilesInvalid => (400, Msg164InvalidFiles, MeetingDocumentEndpoints.InvalidFilesMessage),
+                VoteFailure.FilesTooMany => (400, Msg288SubmissionTooLarge, MeetingDocumentEndpoints.SubmissionTooLargeMessage),
                 VoteFailure.StorageFull => (409, Msg346StorageFull, MeetingDocumentEndpoints.StorageFullMessage),
                 VoteFailure.LibraryUnavailable => (400, Msg249LibrarySelectionInvalid, "Hãy chọn một hoặc nhiều tài liệu còn trong kho của bạn."),
                 _ => opening ? (503, Msg221OpenFailed, "Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại.") : operation switch

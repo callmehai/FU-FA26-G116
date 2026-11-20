@@ -74,6 +74,15 @@ meetings run in the in-app call room (README: *Gọi nhóm theo phòng họp*).
   non-editable status is hidden. When the reason is worth knowing (e.g. deleting a role that is
   still assigned), keep the control and let the dialog say why and disable its confirm button
   (`ConfirmDialog`'s `blocker`).
+- **A control disabled for a reason says the reason** — use `components/BlockedButton.tsx`
+  (`blocked="Mở khi cuộc họp kết thúc"`), never a native `disabled` plus `data-tooltip`: a native
+  disabled button takes no keyboard focus and no tap, so its reason only ever reached a mouse.
+  `BlockedButton` is `aria-disabled`, looks disabled, does nothing, and shows the reason on hover,
+  on focus and at once on a press (a touch screen). Native `disabled` stays for the moment a request
+  is in flight ("Đang lưu…"), which needs no reason. A step that is not open yet in the meeting's
+  life is a **locked tab** in the meeting page, as in AI-eCabinet: dimmed with a lock, still in the
+  bar, its reason on hover, focus and tap, and a `?tab=` link to it opens Thông tin chung —
+  Bản ghi until the meeting starts, Biên bản until it ends.
 
 ## 4. Lists
 

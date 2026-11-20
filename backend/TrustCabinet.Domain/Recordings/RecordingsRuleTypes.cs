@@ -21,6 +21,24 @@ public static class SpeechClipRules
         ["audio/wav"] = ".wav", ["audio/x-wav"] = ".wav", ["audio/wave"] = ".wav", ["audio/webm"] = ".webm", ["audio/ogg"] = ".ogg",
     };
 
+    /// <summary>
+    /// A sentence that starts within this of the same speaker's previous one ending is punctuated with that one read
+    /// ahead of it: the browser cuts a sentence at a breath, and each half came out closed with a full stop. The same
+    /// gap joins one person's sentences into one paragraph on screen.
+    /// </summary>
+    public static readonly TimeSpan ContextGap = TimeSpan.FromSeconds(10);
+
+    /// <summary>The longest previous sentence read ahead of the next one, in words (the worker's own limit).</summary>
+    public const int MaxContextWords = 60;
+
+    /// <summary>The same words, whatever their case and punctuation: a sentence only re-punctuated.</summary>
+    public static bool SameWords(string a, string b)
+    {
+        static IEnumerable<string> Words(string text) => text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => w.Trim('.', ',', ':', '?', '!', '…').ToLowerInvariant()).Where(w => w.Length > 0);
+        return Words(a).SequenceEqual(Words(b));
+    }
+
     /// <summary>A browser's clock may be off; further than this and the sentence's time is the server's.</summary>
     public static readonly TimeSpan ClockTolerance = TimeSpan.FromMinutes(2);
 

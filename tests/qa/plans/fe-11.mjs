@@ -1043,7 +1043,7 @@ export default {
         'chutoa@ bấm kẹp giấy trên thẻ nháp → "Chọn từ tài liệu cuộc họp", tích tệp, "Gắn 1 tài liệu"; API gắn lại tệp đó',
         'chutoa@ mở biểu quyết; thanhvien@ mở tab, chọn phương án',
         'API thanhvien@: bỏ phiếu; xác nhận đọc với lastPageReached false',
-        'thanhvien@ bấm tài liệu, trong trình xem bấm "Xác nhận đã đọc", quay lại tab, gửi phiếu',
+        'thanhvien@ bấm tài liệu, trong trình xem phủ trên tab bấm "Xác nhận đã đọc", đóng trình xem, gửi phiếu',
       ],
       expected:
         'Toast "Gắn tài liệu vào biểu quyết thành công.", thẻ có kẹp giấy 1; gắn lại 409 MSG266. Thành viên: tài liệu "Chưa đọc", "Gửi phiếu" khoá dù đã chọn, gợi ý "Mở từng tài liệu, đọc tới trang cuối rồi xác nhận."; API bỏ phiếu 409 MSG252 kèm documents; lastPageReached false 400 MSG254. Sau xác nhận: "Đã đọc", gửi được, toast "Đã ghi nhận phiếu của bạn."',
@@ -1103,7 +1103,10 @@ export default {
           await qa.shot('trinh-xem-xac-nhan')
           await confirm.click()
           await qa.expect(toast(qa, 'Đã xác nhận đọc tài liệu.')).toBeVisible()
-          await openVotesTab(qa, m)
+          // ADR-0066: the viewer is a layer over the votes tab (a reload keeps it open); closing it re-reads the panel.
+          const viewer = qa.page.getByRole('dialog', { name: 'Xem tài liệu' })
+          await viewer.getByRole('button', { name: 'Đóng', exact: true }).click()
+          await qa.expect(viewer).toHaveCount(0)
           const back = card(qa, v)
           await qa.expect(back.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Đã đọc')
           await back.getByRole('radio', { name: 'Đồng ý', exact: true }).check()

@@ -96,6 +96,11 @@ public sealed class FakeSpeechClipRepository : ISpeechClipRepository
         => Task.FromResult(Rows.SingleOrDefault(r => r.SpeakerId == (speakerId ?? guestInvitationId)
             && ClientIds.GetValueOrDefault(r.Id) == clientClipId));
 
+    public Task<ClipRow?> FindLastRowStartedBetweenAsync(Guid meetingId, Guid? speakerId, Guid? guestInvitationId,
+        DateTimeOffset after, DateTimeOffset before, CancellationToken ct)
+        => Task.FromResult(Rows.Where(r => r.SpeakerId == (speakerId ?? guestInvitationId) && r.StartedAt > after && r.StartedAt < before)
+            .MaxBy(r => r.StartedAt));
+
     public Task<SpeechClip?> FindAsync(Guid clipId, CancellationToken ct) => Task.FromResult(Clips.SingleOrDefault(c => c.Id == clipId));
 
     public Task<bool> IsGuestSessionAdmittedAsync(Guid sessionId, Guid invitationId, Guid meetingId, DateTimeOffset now,
@@ -229,9 +234,16 @@ public sealed class FakeSpeechEngine : ISpeechEngine
     public Exception? Fail { get; set; }
     public bool IsConfigured => true;
 
-    public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct)
-        => Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
+    /// <summary>The previous sentence each call was given to read ahead, in order.</summary>
+    public List<string?> Contexts { get; } = [];
+
+    public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
+        string? context = null)
+    {
+        Contexts.Add(context);
+        return Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
             : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
+    }
 }
 
 /// <summary>

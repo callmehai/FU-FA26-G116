@@ -12,6 +12,11 @@ export interface TranscriptSegment {
   speakerLabel: string
   editedAt: string | null
   editedByName: string | null
+  /**
+   * When each word of `text` begins, in ms into the recording, as the speech worker measured it: the line follows the
+   * voice word by word while it plays. Null for a line transcribed before word times were kept, or corrected since.
+   */
+  wordStartsMs?: number[] | null
 }
 
 /** SCRUM-35 — one voice of the recording: the machine's suggestion and the Secretary's decision. */

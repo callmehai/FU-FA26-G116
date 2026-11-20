@@ -55,7 +55,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                     transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                     [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
-                        s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
+                        s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName,
+                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null)))],
                     [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                         canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
@@ -170,6 +171,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 if (segment.Text != trimmed)
                     await audit.RecordAsync(AuditActions.TranscriptSegmentEdited, AuditActions.RecordingObjectType, recording.Id,
                         actorId, new { recording.MeetingId, segmentId, segment.Position }, token);
+                // The machine's word times belonged to the words it wrote, not to the corrected ones.
+                if (segment.Text != trimmed) segment.WordStartsMs = null;
                 segment.Text = trimmed;
                 segment.EditedById = actorId;
                 segment.EditedAt = now;
@@ -411,6 +414,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     {
                         TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
                         Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
+                        WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(s.Text, s.WordStartsMs),
                         SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
                     };
                 }));

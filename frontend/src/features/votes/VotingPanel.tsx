@@ -1,5 +1,4 @@
 import { useCallback, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { castBallot, closeVote, deleteVote, detachVoteDocument, openVote, recordVoteConclusion } from '../../api/votes'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -17,9 +16,9 @@ import {
   type VoteSummary,
 } from '../../types/vote'
 import type { Meeting } from '../../types/meeting'
-import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
+import { DocumentLink } from '../documents/DocumentLink'
 import { isPdf } from '../documents/documentFile'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { everyDocument, useMeetingDocuments } from '../documents/useMeetingDocuments'
@@ -165,7 +164,6 @@ export function VotingPanel({
             <VoteCard
               key={vote.id}
               meetingId={meetingId}
-              room={room}
               vote={vote}
               stamp={data.serverTime}
               expanded={isOpen(vote)}
@@ -326,7 +324,6 @@ export function VotingPanel({
 
 function VoteCard({
   meetingId,
-  room,
   vote,
   stamp,
   expanded,
@@ -341,7 +338,6 @@ function VoteCard({
   onDetach,
 }: {
   meetingId: string
-  room: boolean
   vote: VoteSummary
   /** The list's `serverTime`: the detail re-reads whenever the list did. */
   stamp: string
@@ -374,41 +370,47 @@ function VoteCard({
 
         {(actions.canOpen || actions.canEdit || actions.canDelete || actions.canClose || onAttach) && (
           <div className="row-actions vote-actions">
-            {actions.canOpen && (
-              <button type="button" className="btn btn-primary btn-sm" onClick={onOpen}>
-                <Icon name="play" size={16} />
-                Mở
-              </button>
-            )}
-            {actions.canClose && (
-              <button type="button" className="btn btn-outline btn-sm" onClick={onClose}>
-                <Icon name="stop" size={16} />
-                Đóng phiếu
-              </button>
-            )}
-            {onAttach && <AttachMenu title={vote.title} onPick={onAttach} />}
-            {actions.canEdit && (
-              <button
-                type="button"
-                className="icon-button icon-button-sm"
-                onClick={onEdit}
-                aria-label={`Sửa: ${vote.title}`}
-                data-tooltip="Sửa"
-              >
-                <Icon name="pencil" size={16} />
-              </button>
-            )}
-            {actions.canDelete && (
-              <button
-                type="button"
-                className="icon-button icon-button-sm icon-button-danger"
-                onClick={onDelete}
-                aria-label={`Xoá: ${vote.title}`}
-                data-tooltip="Xoá"
-              >
-                <Icon name="trash" size={16} />
-              </button>
-            )}
+            {/* As on an agenda item: the icons stay in the card's top-right corner, the step goes under the title
+                with the facts on a narrow panel (Khánh 19/11/2026). */}
+            <span className="vote-steps">
+              {actions.canOpen && (
+                <button type="button" className="btn btn-primary btn-sm" onClick={onOpen}>
+                  <Icon name="play" size={16} />
+                  Mở
+                </button>
+              )}
+              {actions.canClose && (
+                <button type="button" className="btn btn-outline btn-sm" onClick={onClose}>
+                  <Icon name="stop" size={16} />
+                  Đóng phiếu
+                </button>
+              )}
+            </span>
+            <span className="vote-tools">
+              {onAttach && <AttachMenu title={vote.title} onPick={onAttach} />}
+              {actions.canEdit && (
+                <button
+                  type="button"
+                  className="icon-button icon-button-sm"
+                  onClick={onEdit}
+                  aria-label={`Sửa: ${vote.title}`}
+                  data-tooltip="Sửa"
+                >
+                  <Icon name="pencil" size={16} />
+                </button>
+              )}
+              {actions.canDelete && (
+                <button
+                  type="button"
+                  className="icon-button icon-button-sm icon-button-danger"
+                  onClick={onDelete}
+                  aria-label={`Xoá: ${vote.title}`}
+                  data-tooltip="Xoá"
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              )}
+            </span>
           </div>
         )}
 
@@ -452,7 +454,6 @@ function VoteCard({
         <VoteBody
           id={bodyId}
           meetingId={meetingId}
-          room={room}
           vote={vote}
           stamp={stamp}
           onCast={onCast}
@@ -484,7 +485,6 @@ function Turnout({ cast, eligible, label }: { cast: number; eligible: number; la
 function VoteBody({
   id,
   meetingId,
-  room,
   vote,
   stamp,
   onCast,
@@ -493,7 +493,6 @@ function VoteBody({
 }: {
   id: string
   meetingId: string
-  room: boolean
   vote: VoteSummary
   stamp: string
   onCast: (optionId: string) => Promise<boolean>
@@ -546,7 +545,6 @@ function VoteBody({
       {detail.documents.length > 0 && (
         <VoteDocuments
           meetingId={meetingId}
-          room={room}
           detail={detail}
           // Only while the documents may still change: a draft the caller manages (BR-288).
           onDetach={detail.actions.canAttachDocuments ? onDetach : undefined}
@@ -591,38 +589,29 @@ function Times({ detail }: { detail: VoteDetail }) {
 }
 
 /**
- * The vote's documents, each opening the viewer (a new tab in the room, so the call keeps running).
+ * The vote's documents, each opening the viewer over the page (in the room too: the call keeps running).
  * A voter must have confirmed reading each one before the ballot is accepted (MSG252, UC-74): one not
  * read yet opens with `read=1`, and the viewer offers the confirmation once its last page is reached.
- * The panel re-reads when the window regains focus, so coming back unlocks "Gửi phiếu".
+ * The panel re-reads when the viewer closes, so coming back unlocks "Gửi phiếu".
  */
 function VoteDocuments({
   meetingId,
-  room,
   detail,
   onDetach,
 }: {
   meetingId: string
-  room: boolean
   detail: VoteDetail
   onDetach?: (doc: VoteDocument) => void
 }) {
-  const documentPath = useDocumentPath()
   const voter = detail.status === 'Open' && detail.isEligible && !detail.hasVoted
-  const linkTo = (id: string, read: boolean) => {
-    const query = new URLSearchParams({ back: 'votes' })
-    if (room) query.set('from', 'room')
-    if (read) query.set('read', '1')
-    return `${documentPath(meetingId, id)}?${query}`
-  }
   return (
     <ul className="agenda-doc-list vote-docs">
       {detail.documents.map((doc) => (
         <li key={doc.id}>
-          <Link to={linkTo(doc.id, voter && !doc.readConfirmedAt)} {...(room && { target: '_blank', rel: 'noopener' })}>
+          <DocumentLink meetingId={meetingId} documentId={doc.id} back="votes" read={voter && !doc.readConfirmedAt}>
             <FileTypeTag pdf={isPdf(doc)} size={20} />
             <span>{doc.fileName}</span>
-          </Link>
+          </DocumentLink>
           {voter && (
             <span className={doc.readConfirmedAt ? 'vote-read' : 'vote-read vote-unread'}>
               {doc.readConfirmedAt ? 'Đã đọc' : 'Chưa đọc'}
@@ -783,8 +772,11 @@ function Result({ detail }: { detail: VoteDetail }) {
       </ul>
       {result.voters && (
         <details className="vote-voters">
-          <summary>
+          {/* A button, not a line of blue text: people did not see it opened anything (Khánh 19/11/2026). */}
+          <summary className="btn btn-outline btn-sm vote-voters-toggle">
+            <Icon name="users" size={16} />
             Phiếu từng người ({result.voters.filter((v) => v.optionId).length}/{result.voters.length})
+            <Icon name="chevronDown" size={16} />
           </summary>
           <ul>
             {result.voters.map((voter) => (
@@ -904,7 +896,8 @@ export function VoteStatusChip({ vote }: { vote: Pick<VoteSummary, 'status'> }) 
   if (vote.status === 'Draft') {
     return (
       <span className="status status-slate vote-status" tabIndex={0} data-tooltip="Chỉ Chủ toạ và Thư ký thấy">
-        <Icon name="pencil" size={14} />
+        {/* Not the pencil: that is the card's edit button, and two pencils read as two ways to edit (Khánh 19/11/2026). */}
+        <Icon name="draft" size={14} />
         Nháp
       </span>
     )

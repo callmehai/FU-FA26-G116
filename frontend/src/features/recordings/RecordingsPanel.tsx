@@ -94,7 +94,8 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
 
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
-  if (existingOnly && data?.items.length === 0) return null
+  // Nothing to show is the likely answer there: no placeholder that would vanish once the list comes back empty.
+  if (existingOnly && (state.kind === 'loading' || data?.items.length === 0)) return null
 
   // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
   const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
@@ -290,6 +291,23 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   const [speed, setSpeed] = useState(storedSpeed)
   const [volume, setVolume] = useState(1)
   const [muted, setMuted] = useState(false)
+  // The element reports its time four times a second at best; the transcript marks the word being said, so while it
+  // plays the position is read ten times a second.
+  useEffect(() => {
+    if (!playing) return
+    let frame = 0
+    let shownAt = 0
+    const tick = (now: number) => {
+      const element = audio.current
+      if (element && now - shownAt >= 100) {
+        shownAt = now
+        setCurrentMs(element.currentTime * 1000)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [playing])
   const seek = (ms: number) => {
     const element = audio.current
     if (!element) return

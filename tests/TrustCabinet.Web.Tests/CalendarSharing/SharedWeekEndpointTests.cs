@@ -78,17 +78,20 @@ public sealed class SharedWeekEndpointTests(CalendarSharingFixture f) : IClassFi
 
         var week = JsonDocument.Parse(raw).RootElement;
         Assert.Equal(Day(Monday), week.GetProperty("weekStart").GetString());
-        Assert.Equal(Day(Monday.AddDays(4)), week.GetProperty("weekEnd").GetString());
+        // The whole week and the whole day (Hải 19/11/2026): Monday to Sunday, 00:00–24:00.
+        Assert.Equal(Day(Monday.AddDays(6)), week.GetProperty("weekEnd").GetString());
+        Assert.Equal("00:00", week.GetProperty("dayStart").GetString());
+        Assert.Equal("24:00", week.GetProperty("dayEnd").GetString());
         var people = week.GetProperty("people").EnumerateArray()
             .ToDictionary(x => x.GetProperty("owner").GetProperty("id").GetGuid());
         Assert.Equal(3, people.Count);
 
-        // Owner, Level 1: Normal only, merged, clipped to 08:00, declined/Draft/Internal/Secret left out.
+        // Owner, Level 1: Normal only, merged, the hour before 08:00 kept, declined/Draft/Internal/Secret left out.
         var owner = people[p.Owner];
         Assert.Equal("Effective", owner.GetProperty("status").GetString());
         var days = owner.GetProperty("days").EnumerateArray().ToList();
-        Assert.Equal(5, days.Count);
-        Assert.Equal([(At(Monday, 8), At(Monday, 8, 30)), (At(Monday, 9), At(Monday, 11))], Busy(days[0]));
+        Assert.Equal(7, days.Count);
+        Assert.Equal([(At(Monday, 7), At(Monday, 8, 30)), (At(Monday, 9), At(Monday, 11))], Busy(days[0]));
         Assert.Equal(TimeSpan.FromHours(7), Busy(days[0])[0].Start.Offset);
         Assert.True(days[1].GetProperty("known").GetBoolean());
         Assert.Empty(Busy(days[1]));
@@ -104,6 +107,44 @@ public sealed class SharedWeekEndpointTests(CalendarSharingFixture f) : IClassFi
         var locked = people[p.Locked];
         Assert.Equal("Stopped", locked.GetProperty("status").GetString());
         Assert.Equal(0, locked.GetProperty("days").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task Evenings_weekends_and_meetings_past_midnight_are_busy_too()
+    {
+        var p = await f.Seed();
+        await f.AddShare(p.Owner, p.Organizer, start: Monday, end: Monday.AddDays(6));
+        await Meeting(p.Admin, p.Owner, Monday.AddDays(2), (18, 30), (20, 0));   // Wednesday evening
+        await Meeting(p.Admin, p.Owner, Monday.AddDays(5), (9, 0), (10, 30));    // Saturday
+        await Meeting(p.Admin, p.Owner, Monday.AddDays(6), (6, 0), (7, 0));      // Sunday, early
+        // Thursday 22:00 to Friday 01:00: cut at midnight, shown on both days.
+        await using (var db = f.Db())
+        {
+            var meeting = new Meeting
+            {
+                Title = "Họp giao ban", Location = "Phòng 301", CreatedById = p.Admin, Status = MeetingStatus.Published,
+                Sensitivity = Sensitivity.Normal, Mode = MeetingMode.InPerson,
+                PlannedStartTime = At(Monday.AddDays(3), 22).ToUniversalTime(),
+                PlannedEndTime = At(Monday.AddDays(4), 1).ToUniversalTime(),
+            };
+            db.Meetings.Add(meeting);
+            db.MeetingParticipants.Add(new MeetingParticipant
+            {
+                MeetingId = meeting.Id, UserId = p.Owner, Role = MeetingRole.Member, Response = InvitationResponse.Pending,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var organizer = f.Client(p.Organizer);
+        var week = await organizer.GetFromJsonAsync<JsonElement>($"/api/calendar/shared-week?week={Day(Monday)}");
+        var days = week.GetProperty("people")[0].GetProperty("days").EnumerateArray().ToList();
+        Assert.Equal(7, days.Count);
+        Assert.Equal(Day(Monday.AddDays(6)), days[6].GetProperty("date").GetString());
+        Assert.Equal([(At(Monday.AddDays(2), 18, 30), At(Monday.AddDays(2), 20))], Busy(days[2]));
+        Assert.Equal([(At(Monday.AddDays(3), 22), At(Monday.AddDays(4), 0))], Busy(days[3]));
+        Assert.Equal([(At(Monday.AddDays(4), 0), At(Monday.AddDays(4), 1))], Busy(days[4]));
+        Assert.Equal([(At(Monday.AddDays(5), 9), At(Monday.AddDays(5), 10, 30))], Busy(days[5]));
+        Assert.Equal([(At(Monday.AddDays(6), 6), At(Monday.AddDays(6), 7))], Busy(days[6]));
     }
 
     [Fact]

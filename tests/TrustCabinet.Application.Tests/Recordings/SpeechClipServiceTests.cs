@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Tests.Fakes;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -21,7 +22,9 @@ public sealed class SpeechClipServiceTests
 
     public SpeechClipServiceTests() => _publisher = new(_unitOfWork);
 
-    private SpeechClipService Service() => new(_meetings, _clips, _unitOfWork, new FakeSpeechEngine(), new SpeechClipGate(),
+    private readonly FakeSpeechEngine _engine = new();
+
+    private SpeechClipService Service() => new(_meetings, _clips, _unitOfWork, _engine, new SpeechClipGate(),
         _publisher, new FakeAuditService(), new FixedClock(Now), Options.Create(new RecordingOptions()), _storage,
         new FakeRecordingSigner(), NullLogger<SpeechClipService>.Instance);
 
@@ -75,6 +78,49 @@ public sealed class SpeechClipServiceTests
         Assert.Single(_storage.Deleted);
         Assert.Empty(_storage.Files);
         Assert.Empty(_publisher.Published);
+    }
+
+    [Fact]
+    public async Task The_speakers_previous_sentence_is_read_ahead_and_saved_punctuated_again_with_the_new_one()
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        var previous = Previous(meeting, "Kế hoạch này.", edited: false);
+        _engine.Result = new SpeechTranscription(1000, "vi", "test", "test",
+            [new SpeechSegment(0, 1000, null, "cần thêm thời gian.")], [], Context: "Kế hoạch này");
+
+        var outcome = await Add(meeting, Upload());
+
+        Assert.Equal(SpeechClipFailure.None, outcome.Failure);
+        Assert.Equal("Kế hoạch này.", Assert.Single(_engine.Contexts));
+        Assert.Equal(("Kế hoạch này", Now), (previous.Text, previous.UpdatedAt));
+        Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
+    }
+
+    [Fact]
+    public async Task A_previous_sentence_the_secretary_corrected_is_neither_read_ahead_nor_changed()
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        var previous = Previous(meeting, "Kế hoạch này.", edited: true);
+
+        await Add(meeting, Upload());
+
+        Assert.Null(Assert.Single(_engine.Contexts));
+        Assert.Equal("Kế hoạch này.", previous.Text);
+    }
+
+    /// <summary>The member's sentence that ended a second before <see cref="Upload"/>'s began, as a row and tracked.</summary>
+    private SpeechClip Previous(RecordingTestMeeting meeting, string text, bool edited)
+    {
+        var started = Now.AddSeconds(-5);
+        var clip = new SpeechClip
+        {
+            MeetingId = meeting.Meeting.Id, SpeakerId = meeting.Member, StartedAt = started, DurationMs = 2000, Text = text,
+            CreatedAt = started, UpdatedAt = started, EditedAt = edited ? started : null,
+        };
+        _clips.Clips.Add(clip);
+        _clips.Rows.Add(new ClipRow(clip.Id, meeting.Member, "Thành viên", started, 2000, text, started, clip.EditedAt, null, [],
+            null, null, null, false, null, false));
+        return clip;
     }
 
     [Fact]

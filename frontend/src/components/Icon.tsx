@@ -291,6 +291,8 @@ const ICONS = {
   cellsMerge: TableCellsMerge,
   cellsSplit: TableCellsSplit,
   tableFrame: SquareDashed,
+  /** A draft (a vote not yet opened): dashed like its card, never the edit pencil. */
+  draft: SquareDashed,
   clearFormat: RemoveFormatting,
   replace: Replace,
   replaceAll: ReplaceAll,

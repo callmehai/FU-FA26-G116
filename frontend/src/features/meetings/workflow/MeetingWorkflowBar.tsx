@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { transitionMeeting } from '../../../api/meetings'
+import { BlockedButton } from '../../../components/BlockedButton'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Icon, type IconName } from '../../../components/Icon'
 import { formatDateTime } from '../../../lib/format'
@@ -176,16 +177,14 @@ function organizerView(
           </>
         ),
         actions: (
-          <button
-            type="button"
+          <BlockedButton
             className="btn btn-primary btn-cta"
             onClick={() => open('submit')}
-            disabled={!canSubmit}
-            data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
+            blocked={!canSubmit && 'Hoàn thiện thông tin trước khi gửi duyệt'}
           >
             <Icon name="send" size={16} />
             Gửi duyệt
-          </button>
+          </BlockedButton>
         ),
       }
     }
@@ -242,16 +241,14 @@ function organizerView(
           </>
         ),
         actions: (
-          <button
-            type="button"
+          <BlockedButton
             className="btn btn-primary btn-cta"
             onClick={() => open('submit')}
-            disabled={!canSubmit}
-            data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
+            blocked={!canSubmit && 'Hoàn thiện thông tin trước khi gửi duyệt'}
           >
             <Icon name="send" size={16} />
             Gửi duyệt lại
-          </button>
+          </BlockedButton>
         ),
       }
     }

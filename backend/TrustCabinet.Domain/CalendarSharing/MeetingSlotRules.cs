@@ -39,7 +39,7 @@ public static class MeetingSlotRules
     public const string DurationTooLongError = "Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa.";
     public const string FromDateError = "Ngày bắt đầu từ hôm nay đến tối đa 365 ngày sau.";
     public const string ToDateError = "Khoảng ngày tối đa 31 ngày, ngày kết thúc không trước ngày bắt đầu.";
-    public const string WeekdaysError = "Chọn ít nhất một ngày từ thứ Hai đến thứ Sáu.";
+    public const string WeekdaysError = "Chọn ít nhất một ngày trong tuần.";
     public const string WorkHoursError = "Giờ làm việc không hợp lệ.";
     public const string LunchError = "Giờ nghỉ trưa phải nằm trong giờ làm việc.";
     public const string BufferError = "Cách cuộc họp khác từ 0 đến 4 giờ, bội số của 5 phút.";
@@ -72,8 +72,10 @@ public static class MeetingSlotRules
         var to = input.ToDate ?? (fromOk ? DefaultToDate(from) : from);
         if (to < from || CalendarShareRules.Length(from, to) > MaxRangeDays) fieldErrors["toDate"] = ToDateError;
 
+        // 1 = Monday … 7 = Sunday. The weekend may be chosen (Hải 19/11/2026: the shared calendar shows the whole week, so
+        // the search may reach it too); the default stays Monday to Friday.
         var weekdays = input.Weekdays ?? [1, 2, 3, 4, 5];
-        if (weekdays.Count == 0 || weekdays.Distinct().Count() != weekdays.Count || weekdays.Any(d => d is < 1 or > 5))
+        if (weekdays.Count == 0 || weekdays.Distinct().Count() != weekdays.Count || weekdays.Any(d => d is < 1 or > 7))
             fieldErrors["weekdays"] = WeekdaysError;
 
         var workStartOk = TryParseClock(input.WorkStart, DefaultWorkStart, out var workStart);

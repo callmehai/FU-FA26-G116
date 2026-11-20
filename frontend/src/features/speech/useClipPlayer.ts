@@ -10,7 +10,9 @@ import { rememberSpeed, storedSpeed } from '../recordings/playerSpeed'
  * eCab mixes sentences said at the same time; one audio element plays one at a time, so here they follow each other
  * and nothing anyone said is lost. A sentence another mic heard louder (wholly someone else's) is that person's
  * sentence again and is left out of the track. Each sentence's audio is fetched on demand through its signed link;
- * one out of the record, or left out, plays alone from its own ▶ and never runs on into the track.
+ * one out of the record, or left out, plays alone from its own ▶ and never runs on into the track. So does any sentence
+ * played with `alone` (the record filtered to one speaker): it stops at its end instead of running on into someone
+ * else's.
  */
 
 /** Where one sentence sits on the spoken track, in ms. */
@@ -28,13 +30,15 @@ export interface ClipPlayer {
   playing: boolean
   /** The sentence being heard. */
   currentId: string | null
+  /** How far into the sentence being heard playback is, in ms: for the word being said. */
+  offsetMs: number
   error: string | null
   /** Loudness over the whole track in `buckets` steps, 0–1, for the waveform. */
   waveform: number[]
   toggle: () => void
   seek: (ms: number) => void
-  /** From this sentence on; one out of the record plays alone. */
-  playFrom: (clip: SpeechClip) => void
+  /** From this sentence on; one out of the record plays alone, and with `alone` any sentence does. */
+  playFrom: (clip: SpeechClip, options?: { alone?: boolean }) => void
   speed: number
   setSpeed: (speed: number) => void
   volume: number
@@ -67,12 +71,14 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
 
   const audio = useRef<HTMLAudioElement | null>(null)
   const links = useRef(new Map<string, { url: string; until: number }>())
-  // What is loaded into the element: a place on the track, or a sentence out of the record played alone.
-  const loaded = useRef<{ clip: SpeechClip; at: number | null } | null>(null)
+  // What is loaded into the element: a place on the track, or a sentence out of the record played alone. `alone`: it
+  // stops at its own end even though it has a place on the track.
+  const loaded = useRef<{ clip: SpeechClip; at: number | null; alone: boolean } | null>(null)
   const request = useRef(0)
   const [positionMs, setPositionMs] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [currentId, setCurrentId] = useState<string | null>(null)
+  const [offsetMs, setOffsetMs] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [speed, setSpeedState] = useState(storedSpeed)
   const [volume, setVolumeState] = useState(1)
@@ -106,16 +112,17 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
 
   /** Plays `clip` from `offset` ms into it; `at` is its place on the track, null when it plays alone. */
   const start = useCallback(
-    async (clip: SpeechClip, at: number | null, offset: number) => {
+    async (clip: SpeechClip, at: number | null, offset: number, alone = false) => {
       const mine = ++request.current
       const el = element()
       setError(null)
       setCurrentId(clip.id)
+      setOffsetMs(Math.max(0, offset))
       try {
         const url = await link(clip.id)
         if (mine !== request.current) return
         if (loaded.current?.clip.id !== clip.id || el.src !== new URL(url, location.href).href) el.src = url
-        loaded.current = { clip, at }
+        loaded.current = { clip, at, alone: alone || at === null }
         el.playbackRate = settings.current.speed
         el.volume = settings.current.volume
         el.muted = settings.current.muted
@@ -179,11 +186,11 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
   }, [currentId, element, placeAt, playing, positionMs, start, totalMs])
 
   const playFrom = useCallback(
-    (clip: SpeechClip) => {
+    (clip: SpeechClip, options?: { alone?: boolean }) => {
       const at = placeOf.get(clip.id)
       if (at !== undefined) {
         setPositionMs(at)
-        void start(clip, at, 0)
+        void start(clip, at, 0, options?.alone)
       } else if (clip.hasAudio) void start(clip, null, 0)
     },
     [placeOf, start],
@@ -197,9 +204,10 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
     // Ten steps a second move the playhead smoothly enough without redrawing a long record every frame.
     const tick = (now: number) => {
       const current = loaded.current
-      if (current?.at != null && now - shownAt >= 100) {
+      if (current && now - shownAt >= 100) {
         shownAt = now
-        setPositionMs(current.at + el.currentTime * 1000)
+        setOffsetMs(el.currentTime * 1000)
+        if (current.at != null) setPositionMs(current.at + el.currentTime * 1000)
       }
       frame = requestAnimationFrame(tick)
     }
@@ -212,7 +220,7 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
       cancelAnimationFrame(frame)
       const current = loaded.current
       const list = placesRef.current
-      const index = current?.at != null ? list.findIndex((p) => p.clip.id === current.clip.id) : -1
+      const index = current?.at != null && !current.alone ? list.findIndex((p) => p.clip.id === current.clip.id) : -1
       const next = index >= 0 ? list[index + 1] : undefined
       if (next) {
         setPositionMs(next.at)
@@ -222,6 +230,7 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
         if (after) void link(after.clip.id).catch(() => undefined)
       } else {
         setPlaying(false)
+        if (current) setOffsetMs(current.clip.durationMs)
         if (current?.at != null) setPositionMs(current.at + current.clip.durationMs)
       }
     }
@@ -267,6 +276,7 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
     positionMs: Math.min(positionMs, totalMs),
     playing,
     currentId,
+    offsetMs,
     error,
     waveform,
     toggle,
