@@ -16,14 +16,16 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v12
+## Bản hiện có — v13
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v12/](figma-v12/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v12. |
+| HTML | [TrustCabinet-wireframe-v13.html](TrustCabinet-wireframe-v13.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v13/](figma-v13/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v13. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
+
+Bản v12 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html), [figma-v12/](figma-v12/).
 
 Bản đen trắng rút gọn (1 sơ đồ luồng, 20 màn chính) nằm ở [lofi/](lofi/README.md), có quy trình riêng
 và không theo các bước dưới đây.
@@ -101,7 +103,7 @@ Ví dụ nâng từ v5 lên v6:
 | `<script>` đầu | Builder: hàm nhỏ trả về chuỗi HTML (`B`, `C`, `F`, `T`, `DL`, `SH`, `SPR`…) |
 | Dữ liệu mẫu | `M`, `MS` (cuộc họp mẫu), `WHO` (người mẫu), `DTABS` (tab trang chi tiết), `VOTE`, `ROLES`… |
 | `const LUONG = [...]` | Luồng cuộc họp S01–S17. Mỗi bước có `frames`, mỗi frame có `fig: 'x.y'`: số màn trong Figma |
-| `const GROUPS = [...]` | 16 nhóm FE-01 → FE-16. Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
+| `const GROUPS = [...]` | 15 nhóm FE-01 → FE-16 (trừ FE-14 Tổng quan cá nhân: UC-69 đã bỏ 15/11/2026). Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
 | Cuối script | Render bảng màn, nút **Kích thước thật** |
 
 Một màn được khai báo theo một trong hai cách:
