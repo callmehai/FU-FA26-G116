@@ -29,12 +29,25 @@ export function isPlainClick(event: MouseEvent) {
 }
 
 /**
+ * The app installed on the home screen (PWA) runs in one window: a second "tab" opens outside it (iOS hands it to
+ * Safari) and the room left behind keeps the camera on, so a later join fails (Hải, 20/11). There, the room and the
+ * meeting page share the one window, as a browser that blocks tabs already does.
+ */
+export function isInstalledApp(): boolean {
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  )
+}
+
+/**
  * Brings forward the tab named for `path`, loading `path` into it only when it shows something else — a live call is
- * never reloaded — or opening a new tab when there is none. False when the browser refused to open one.
+ * never reloaded — or opening a new tab when there is none. False when the browser refused to open one, or in the installed app.
  */
 export function showInTab(path: string): boolean {
   const name = tabName(path)
   if (window.name === name) return true
+  if (isInstalledApp()) return false
   const tab = window.open('', name)
   if (!tab) return false
   const target = new URL(path, window.location.origin)
@@ -54,7 +67,7 @@ export function showInTab(path: string): boolean {
  * the app and so may close itself. False when it may not; the caller then shows the meeting page here.
  */
 export function returnToMeetingTab(path: string): boolean {
-  if (!window.opener) return false
+  if (!window.opener || isInstalledApp()) return false
   if (!showInTab(path)) return false
   window.close()
   return window.closed

@@ -65,7 +65,7 @@ import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useGuest, useMeetingHome } from '../../guest/guestContext'
-import { showInTab } from '../meetingTabs'
+import { isInstalledApp, showInTab } from '../meetingTabs'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
@@ -366,7 +366,7 @@ function RoomLayout({
           type="button"
           className="room-back"
           aria-label="Trang cuộc họp"
-          data-tooltip="Mở trang cuộc họp, vẫn ở trong phòng"
+          data-tooltip={isInstalledApp() ? 'Rời phòng, về trang cuộc họp' : 'Mở trang cuộc họp, vẫn ở trong phòng'}
           onClick={() => {
             if (!showInTab(home)) setConfirmingLeave(true)
           }}
