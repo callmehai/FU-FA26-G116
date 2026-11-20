@@ -3397,6 +3397,11 @@ a.menu-item { text-decoration: none; }
   position: absolute;
   width: 1px;
   height: 1px;
+  min-width: 0;
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
@@ -4905,9 +4910,26 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
 .dropzone span { font-size: 13px; }
 .dropzone:hover, .dropzone.is-dragging { border-color: var(--brand); background: var(--brand-wash); }
 .dropzone:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* The input fills the zone, invisible: a tap anywhere opens the picker, and it keeps the focus. */
-.dropzone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
-.upload-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+/*
+ * The input is visually hidden but keeps the focus; the label around it opens the picker on a tap anywhere. It no
+ * longer covers the zone: Chrome hung its native "Không có tệp nào được chọn" tooltip over the list (Hải 20/11).
+ */
+.dropzone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  opacity: 0;
+}
+/* minmax(0, 1fr): a long file name ellipsises instead of widening the column past the dialog. */
+.upload-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .upload-row {
   display: flex;
   align-items: center;
@@ -4920,7 +4942,7 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
 .upload-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .upload-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .upload-row-name small { color: var(--label-ink); font-size: 13px; }
-.upload-body { display: grid; gap: 12px; }
+.upload-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .add-docs-item { margin: 0; color: var(--muted-ink); overflow-wrap: anywhere; }
 
 /* Browsing the library inside a dialog (adding to a meeting, "Chuyển đến…"): a trail over one folder's rows. */
