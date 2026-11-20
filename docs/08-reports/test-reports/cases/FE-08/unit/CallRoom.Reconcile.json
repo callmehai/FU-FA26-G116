@@ -1,0 +1,111 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.Reconcile",
+  "description": "Room provider webhook handling, reconciliation and access enforcement.",
+  "precondition": "Room provider events as input.",
+  "methods": [
+    {
+      "method": "CallRoomService.ReconcileAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 294,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting with an active session whose status left InProgress (the sitting ended).",
+            "LiveKit is configured and the provider room still exists."
+          ],
+          "inputs": "No caller arguments (cancellation token only); seeded: the active session and the provider room.",
+          "return": "The provider room is deleted and the session ended; every person in it receives the room-closed notice.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37 · Deviation: Deviation: provider room deleted and session ended, but the service publishes no room-closed notice to anyone (nothing in this path notifies the people in the room; only a speaking Left change is published when raised hands were closed).",
+          "round1": "Failed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting InProgress with an active session; roster enforcement is on.",
+            "A person with no current access is still connected to the room."
+          ],
+          "inputs": "No caller arguments (cancellation token only); seeded: the session, the allowed-user list and the connected people.",
+          "return": "That person is taken out of the room; everyone still allowed keeps their recorded visits untouched.",
+          "exception": "N/A",
+          "log": "Removing {Identity} from {Room}: no longer allowed in.",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting InProgress; the provider room has allowed members connected but the database knows no session (every join notice was lost)."
+          ],
+          "inputs": "No caller arguments (cancellation token only); seeded: the provider room with two allowed members, no session.",
+          "return": "One active session is created from the earliest join, and the present members get their visits recorded.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting InProgress; roster enforcement is on.",
+            "A provider room exists for the meeting but nobody allowed is in it and no session is known."
+          ],
+          "inputs": "No caller arguments (cancellation token only); seeded: the orphan provider room.",
+          "return": "The orphan room is deleted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Roster enforcement is off (synthetic connections under check).",
+            "A provider room holds only synthetic people and no session is known."
+          ],
+          "inputs": "No caller arguments (cancellation token only); seeded: the provider room with synthetic connections.",
+          "return": "The room is kept; with enforcement off the synthetic people are exactly what is being checked.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "LiveKit is not configured."
+          ],
+          "inputs": "No caller arguments (cancellation token only).",
+          "return": "Returns at once; the provider is never called.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

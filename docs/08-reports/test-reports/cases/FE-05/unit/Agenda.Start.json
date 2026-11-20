@@ -1,0 +1,190 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Start",
+  "description": "Starting an agenda item: the chair runs a pending item when no other item runs.",
+  "precondition": "Meeting in a planning or running status; actor with the needed role.",
+  "methods": [
+    {
+      "method": "AgendaService.StartAsync",
+      "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+      "line": 111,
+      "layer": "Application",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "I.Status InProgress; ActualStartedAt and UpdatedAt set to the current time; change \"Started\" published.",
+          "note": "UC-24 · BR-69 · BR-70 · BR-72 · MSG64",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending; no item is InProgress."
+          ],
+          "return": "Success; 200 / MSG64.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "actor: Chair C; itemId: item 3 (not the next in order).",
+          "log": "Any Pending item may be started regardless of position.",
+          "note": "UC-24 · BR-70 · MSG64",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Items 1 (Done), 2 (Pending), 3 (Pending)."
+          ],
+          "return": "Success; 200 / MSG64.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "Nothing changed.",
+          "note": "UC-24 · BR-71 · MSG72",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item J is already InProgress; item I is Pending."
+          ],
+          "return": "Failure AlreadyCurrent; 409 / MSG72.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-24 · BR-70 · MSG73",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure CannotStart; 409 / MSG73.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-24 · BR-70 · MSG73",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done."
+          ],
+          "return": "Failure CannotStart; 409 / MSG73.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actor: Secretary S; itemId: Pending item.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69 · MSG73",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure Forbidden; 403 / MSG73 (only the Chair starts an item).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "actor: Member M.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69 · MSG73",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure Forbidden; 403 / MSG73.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69 · MSG73",
+          "preconditions": [
+            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure Locked; 409 / MSG73 (meeting not running).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69 · MSG73",
+          "preconditions": [
+            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure Locked; 409 / MSG73.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "actor: Chair C; itemId: unknown.",
+          "log": "N/A",
+          "note": "UC-24",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "actor: Chair C; the database fails while saving.",
+          "log": "N/A",
+          "note": "UC-24 · MSG75",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG75.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

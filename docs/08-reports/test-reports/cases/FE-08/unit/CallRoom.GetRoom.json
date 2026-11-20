@@ -1,0 +1,95 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.GetRoom",
+  "description": "Room state read and closing the room at the end of a meeting.",
+  "precondition": "Meeting with a room.",
+  "methods": [
+    {
+      "method": "CallRoomService.GetRoomAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 65,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is a current participant with role Member.",
+            "LiveKit is configured and reports two people in the room."
+          ],
+          "inputs": "meetingId: the meeting; caller: the participant.",
+          "return": "Success with the room view: myRole Member, status Open, available true, participantCount 2, retentionDays from configuration.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting Published with mode Online; caller is a current participant."
+          ],
+          "inputs": "meetingId: the meeting; caller: the participant.",
+          "return": "Success with the room view: status NotStarted, participantCount null; the provider is not asked while the room is not open.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is a current participant.",
+            "LiveKit is configured but the participant count cannot be read."
+          ],
+          "inputs": "meetingId: the meeting; caller: the participant.",
+          "return": "Success with the room view: status Open, participantCount null; the count is a nicety on the waiting screen and never fails the page.",
+          "exception": "N/A",
+          "log": "Could not count participants of meeting {MeetingId}.",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Caller cannot read the meeting (stranger, or meeting does not exist)."
+          ],
+          "inputs": "meetingId: that meeting; caller: the stranger.",
+          "return": "NotFound; existence stays hidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is a current participant.",
+            "The access read fails in storage."
+          ],
+          "inputs": "meetingId: the meeting; caller: the participant.",
+          "return": "ReadFailed; 500 \"Không thể tải trạng thái phòng họp. Vui lòng thử lại.\" (MSG283).",
+          "exception": "N/A",
+          "log": "Could not read call room access for meeting {MeetingId}.",
+          "type": "Abnormal",
+          "note": "UC-37 · MSG283",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

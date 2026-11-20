@@ -1,0 +1,92 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Normalize",
+  "description": "Input normalization: trimming the title and defaulting the description.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaRules.Normalize",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 26,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "input {Title: \"  Opening  \"; Description: \"Notes\"}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Title has surrounding spaces."
+          ],
+          "return": "{Title: \"Opening\"; Description: \"Notes\"}.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "input {Title: null; Description: null}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Title is null and description is null."
+          ],
+          "return": "{Title: \"\"; Description: \"\"}.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "input {Title: \"   \"}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Title is only spaces."
+          ],
+          "return": "Title \"\" (later rejected by validation).",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "input {Title: \"A\"; Description: \"  line  \"}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Description keeps its own spacing."
+          ],
+          "return": "Description is left as \"  line  \" (not trimmed).",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "input {Title: \" A \"; PresenterId: P; DocumentIds: [D1]}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Other fields are untouched."
+          ],
+          "return": "Title \"A\"; PresenterId P and DocumentIds [D1] unchanged.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

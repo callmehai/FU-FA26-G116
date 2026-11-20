@@ -1,0 +1,342 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "EmailQueueProcessor.ProcessNext",
+  "description": "Email queue worker: claim the oldest message, send it, retry with backoff or fail permanently.",
+  "precondition": "Queued email rows with attempts below the maximum; provider reachable.",
+  "methods": [
+    {
+      "method": "EmailQueueProcessor.ProcessNextAsync",
+      "file": "backend/TrustCabinet.Application/Email/EmailQueueProcessor.cs",
+      "line": 33,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "No email in the queue.",
+            "Defaults: MaxAttempts 8, RetryDelaySeconds 60, ProcessingLeaseSeconds 120."
+          ],
+          "inputs": "No input; clock 2026-11-18T03:00Z.",
+          "return": "NoWork, AttemptCount 0. The provider is not called.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 0, ToAddress an@example.vn.",
+            "The provider accepts the message and returns id \"re_123\"."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "Sent, AttemptCount 1.",
+          "exception": "N/A",
+          "log": "The message is claimed: status Processing, AttemptCount 1, a lease token, lease expiry 2026-11-18T03:02:00Z. Then it is marked Sent with provider id re_123 and sent time 03:00Z. An information line is logged.",
+          "type": "Normal",
+          "note": "BR-38 · BR-76 · Pending: needs a real email provider; the Sent id comes from the provider.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 0.",
+            "The provider throws a timeout error."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled, AttemptCount 1.",
+          "exception": "N/A",
+          "log": "The message returns to Queued with NextAttemptAt 03:01:00Z (60 s x 1), the error \"TimeoutException: ...\" stored and the failure time recorded. A warning is logged.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider timeout to observe retry scheduling.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 2 before the claim (so 3 after it).",
+            "The provider throws an error."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled, AttemptCount 3.",
+          "exception": "N/A",
+          "log": "NextAttemptAt is 03:04:00Z: the delay doubles with each attempt (60 s x 4 on attempt 3).",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the doubled backoff.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 6 before the claim (7 after it); MaxAttempts 8.",
+            "The provider throws an error."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled, AttemptCount 7.",
+          "exception": "N/A",
+          "log": "NextAttemptAt is 04:04:00Z (60 s x 64 = 3840 s). One attempt below the maximum still retries.",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the backoff near the attempt limit.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 7 before the claim (8 after it); MaxAttempts 8.",
+            "The provider throws an error."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "PermanentlyFailed, AttemptCount 8.",
+          "exception": "N/A",
+          "log": "The message is marked Failed with the error text and no NextAttemptAt. An error line is logged.",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe permanent failure at the limit.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 0.",
+            "The provider refuses the message for good (a permanent failure)."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "PermanentlyFailed, AttemptCount 1: no retry is scheduled although attempts remain.",
+          "exception": "N/A",
+          "log": "The message is marked Failed on its first attempt; an error line is logged.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real permanent provider refusal.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, AttemptCount 11 before the claim; MaxAttempts configured as 20.",
+            "The provider throws an error."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled, AttemptCount 12.",
+          "exception": "N/A",
+          "log": "The delay stops doubling at 1024 times the base: NextAttemptAt is 03:00Z + 61440 s (60 s x 1024).",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error to observe the capped backoff.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, ToAddress demo@demo.invalid; the domain demo.invalid is in Email:UndeliverableDomains."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "PermanentlyFailed, AttemptCount 1. The provider is not called.",
+          "exception": "N/A",
+          "log": "The message is marked Failed at once with the error \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains).\" and no retry; an information line is logged.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, ToAddress demo@DEMO.invalid. (upper case, trailing dot); the blocked domain is demo.invalid."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "PermanentlyFailed: the domain match ignores case and a trailing dot.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, ToAddress \"no-at-sign\" (no @).",
+            "The undeliverable list is not empty."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "Sent: an address without @ is not treated as undeliverable and is handed to the provider.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider; an address without @ is handed to it.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The provider call is slower than SendAttemptTimeoutSeconds (60 s); the worker was not asked to stop."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled, AttemptCount 1: the per-attempt timeout is counted as a failed attempt.",
+          "exception": "N/A",
+          "log": "The message returns to Queued with NextAttemptAt 03:01:00Z and an error naming the cancellation.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real slow provider to observe the per-attempt timeout.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The host is shutting down while the provider call is running."
+          ],
+          "inputs": "Cancellation token already cancelled by the host.",
+          "return": "No result.",
+          "exception": "OperationCanceledException is rethrown to the worker.",
+          "log": "The message is left Processing with its lease, so the attempt can be recovered later; nothing is marked failed or sent.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real store honoring host cancellation mid-claim.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The provider accepts the message, but the lease row no longer belongs to this worker (another worker reclaimed it)."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "LeaseLost, AttemptCount 1.",
+          "exception": "N/A",
+          "log": "Marking Sent updates 0 rows; a warning about the lost lease is logged.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a lost processing lease.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The provider throws, and the lease is no longer owned by this worker."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "LeaseLost, AttemptCount 1.",
+          "exception": "N/A",
+          "log": "Marking the attempt failed updates 0 rows; a warning is logged.",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider failure plus a lost processing lease.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, Undeliverable recipient domain, and the lease is no longer owned by this worker."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "LeaseLost, AttemptCount 1.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The provider accepts the message, then the database fails while saving the Sent state."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "No result.",
+          "exception": "The database error escapes to the worker; it is not recorded as a send failure because the provider may already have delivered the message.",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider accept plus a real store failure on finalize.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "A Queued email is due: NextAttemptAt in the past, The provider throws an error whose message is 5000 characters long."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "RetryScheduled.",
+          "exception": "N/A",
+          "log": "The stored error text is cut to 2000 characters.",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider error text to verify truncation.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "A Queued email with AttemptCount 8 (the maximum) is still waiting.",
+            "No other due email."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "NoWork.",
+          "exception": "N/A",
+          "log": "Before the claim, rows that reached MaxAttempts are marked Failed; nothing is sent.",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Two Queued emails: one due 02:50Z, another due 02:55Z; one more with NextAttemptAt 04:00Z (not due)."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "Sent, AttemptCount 1 for the oldest due email only.",
+          "exception": "N/A",
+          "log": "Only the 02:50Z email is claimed and sent; the other two are untouched.",
+          "type": "Normal",
+          "note": "BR-38 · BR-76 · Pending: needs a real provider to send the oldest due email.",
+          "round1": "Pending",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "The only Queued email has NextAttemptAt 03:01Z (in the future)."
+          ],
+          "inputs": "Clock 2026-11-18T03:00Z.",
+          "return": "NoWork.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-38 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ],
+      "layer": "Application"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.HasRole",
+  "description": "Role rule: whether the actor holds a role as a current participant.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaRules.HasRole",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 18,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meeting; actor; role: Chair; participant {MeetingId: meeting; UserId: actor; Chair; Current; active}.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69",
+          "preconditions": [
+            "Actor is the active current Chair."
+          ],
+          "return": "true.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "role asked: Chair; actor's participant role: Secretary.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69",
+          "preconditions": [
+            "Actor holds a different role."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "role: Chair; participant Chair with User.IsActive: false.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "return": "false.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "participant {MeetingId: other meeting; UserId: actor; Chair}.",
+          "log": "N/A",
+          "note": "UC-24 · BR-64",
+          "preconditions": [
+            "Participant row belongs to another meeting."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "no participant with UserId: actor.",
+          "log": "N/A",
+          "note": "UC-24 · BR-69",
+          "preconditions": [
+            "Actor not on the roster."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

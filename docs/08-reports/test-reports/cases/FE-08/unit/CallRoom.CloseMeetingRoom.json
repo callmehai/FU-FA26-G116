@@ -1,0 +1,64 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.CloseMeetingRoom",
+  "description": "Room state read and closing the room at the end of a meeting.",
+  "precondition": "Meeting with a room.",
+  "methods": [
+    {
+      "method": "CallRoomService.CloseMeetingRoomAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 51,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Online meeting just ended; its room session is still open.",
+            "LiveKit is configured."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "The provider room \"meeting-{id}\" is deleted; the open session is ended at the time the provider confirms closure (never earlier than any recorded join or leave). Open visits are closed with it.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Online meeting just ended.",
+            "LiveKit is not configured."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "Returns at once; nothing is deleted and no session is touched.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Online meeting just ended; the provider room exists but the database never heard anyone in (no active session)."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "The provider room \"meeting-{id}\" is still deleted; with no session there is nothing to end and no session is created.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

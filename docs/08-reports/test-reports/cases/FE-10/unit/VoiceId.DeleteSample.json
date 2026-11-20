@@ -1,0 +1,78 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceId.DeleteSample",
+  "description": "Voice samples: add under consent, delete, read audio.",
+  "precondition": "User with consent; speech worker replaced.",
+  "methods": [
+    {
+      "method": "VoiceIdService.DeleteSampleAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+      "line": 181,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "User keeps an own sample."
+          ],
+          "inputs": "actorId: the sample owner; sampleId: an own sample.",
+          "return": "Success with the profile without that sample (MSG311 \"Đã xoá giọng mẫu.\").",
+          "exception": "N/A",
+          "log": "Saved: sample removed; audit row records the deletion.",
+          "type": "Normal",
+          "note": "UC-81e · MSG311",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A secretary recorded a sample for the user.",
+            "The user reads it on their own voice page."
+          ],
+          "inputs": "actorId: the sample owner; sampleId: a secretary-recorded sample.",
+          "return": "Success (MSG311); samples a secretary took are the person own too, and theirs to delete.",
+          "exception": "N/A",
+          "log": "Saved: sample removed; audit row records the deletion with the meeting scope.",
+          "type": "Normal",
+          "note": "UC-81e · BR-452 · MSG311",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The sample belongs to another person."
+          ],
+          "inputs": "actorId: a user; sampleId: another person sample.",
+          "return": "Failure NotFound; someone else sample is answered exactly like one that does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81e",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No sample exists for the id."
+          ],
+          "inputs": "actorId: a user; sampleId: an unknown id.",
+          "return": "Failure NotFound; nothing is deleted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81e",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

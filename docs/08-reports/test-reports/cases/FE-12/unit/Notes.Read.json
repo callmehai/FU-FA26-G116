@@ -1,0 +1,167 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Notes.Read",
+  "description": "Notes folded into the minutes template: discussion per agenda item and reading the meeting notes in order.",
+  "precondition": "Minutes records with agenda and notes.",
+  "methods": [
+    {
+      "method": "Notes.Read",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesTemplate.cs",
+      "line": 148,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Records with no notes (null)."
+          ],
+          "inputs": "records.Notes: null.",
+          "return": "Empty discussion for every item, no conclusions, no tasks.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Notes: item 2 \"Chốt giá\" is listed before the meeting-wide note \"Mở đầu\".",
+          "return": "Meeting-wide note comes first, then items in agenda order; item 2 keeps its line under item 2.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note on item 1: \"Kết luận: Duyệt\".",
+          "return": "Conclusions: \"- Báo cáo: Duyệt\"; nothing is left in the item's discussion.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Meeting-wide note: \"Nhiệm vụ: Gửi biên bản\".",
+          "return": "Tasks: \"- Gửi biên bản\" (no item prefix).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note on item 1: \"KẾT LUẬN : Duyệt\" (upper case, space before the colon).",
+          "return": "Recognised as a conclusion: \"- Báo cáo: Duyệt\".",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note on item 1: \"Kết luận:\" with nothing after the colon.",
+          "return": "Not a conclusion; the line \"Kết luận:\" stays in item 1's discussion.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note on item 1: \"Ý kiến: Đồng ý\".",
+          "return": "Opinion mark is only a mark: the whole line \"Ý kiến: Đồng ý\" stays in the discussion.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note on an agenda item that is no longer in the agenda.",
+          "return": "The stray note is skipped.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note body \"a\\r\\n\\n  b  \\n\" on item 1.",
+          "return": "Lines \"a\" and \"b\" kept; blank lines and carriage returns dropped.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
+          ],
+          "inputs": "Note line \"## Tiêu đề\" and \"@@ x | y\".",
+          "return": "Marks removed: \"Tiêu đề\" and \"x | y\" are plain lines; nothing can turn into a heading or a signature block.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.GetRevision",
+  "description": "Minutes export and revision reading.",
+  "precondition": "Minutes with revisions.",
+  "methods": [
+    {
+      "method": "MinutesService.GetRevisionAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 170,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Revision 1 Superseded and revision 2 Issued.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: revision 1; actor: the current Secretary.",
+          "return": "State with revision 1 selected (content, submitter, returner and reason visible); history lists both revisions, newest first.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-58 · BR-386 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Revision 1 Superseded and revision 2 Issued.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: revision 2; actor: the Member.",
+          "return": "State with revision 2 selected; submitter, returner and reason are null for a reader; history lists only Issued and Superseded revisions.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-58 · BR-386 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Draft correction (revision 2) exists besides Issued revision 1.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: revision 2 (Draft); actor: the Member.",
+          "return": "Failure NotFound; 404 with no message code; the unissued correction stays hidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No revision has the given id.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: unknown; actor: the current Secretary.",
+          "return": "Failure NotFound; 404 with no message code.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Issued revision.",
+            "Actor is the current Secretary.",
+            "The database fails while reading."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Secretary.",
+          "return": "Failure ReadFailed; 500 MSG403.",
+          "exception": "N/A",
+          "log": "Error logged with the minutes id.",
+          "type": "Abnormal",
+          "note": "UC-58 · MSG403",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

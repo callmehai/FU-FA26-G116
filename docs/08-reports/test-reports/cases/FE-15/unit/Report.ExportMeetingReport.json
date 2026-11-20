@@ -1,0 +1,141 @@
+{
+  "feature": "FE-15",
+  "module": "RPT",
+  "sheet": "Report.ExportMeetingReport",
+  "description": "Meeting report export: format and permission.",
+  "precondition": "Meetings in a period.",
+  "methods": [
+    {
+      "method": "ReportService.ExportMeetingReportAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Reports/ReportService.cs",
+      "line": 35,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "The reader may read meetings in January to December 2026."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\".",
+          "return": "A file named \"bao-cao-cuoc-hop_2026-01_2026-12.xlsx\" with content type \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\", holding the figures computed again at export time; the file carries only counts, rates and averages, never a meeting id, title, participant or content. An audit row (event report.exported, objectType \"Report\", no object id) records the actor, the period and the time.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-70b · BR-437 · BR-438",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The reader may read no meeting in the period."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-03\".",
+          "return": "A file is still built with zero counts and no averages, and the export is recorded in the audit log.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-70b AF-1 · BR-438",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The period is a single month."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-11\"; to: \"2026-11\".",
+          "return": "A file named \"bao-cao-cuoc-hop_2026-11_2026-11.xlsx\" for that month, and the export is recorded in the audit log.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-70b · BR-433 · BR-438",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "The start month is after the end month."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-12\"; to: \"2026-01\".",
+          "return": "InvalidPeriod; no file is built and nothing is recorded. The endpoint answers 400 MSG463: \"Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.\"",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-70b EX-1 · BR-433 · MSG463",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The period is valid.",
+            "The database fails while reading the figures."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\".",
+          "return": "ExportFailed; no file is returned. The endpoint answers 500 MSG465: \"Không xuất được báo cáo. Vui lòng thử lại.\"",
+          "exception": "N/A",
+          "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the database error as cause.",
+          "type": "Abnormal",
+          "note": "UC-70b EX-2 · MSG465",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The period is valid and the figures are read.",
+            "Building the Excel file fails."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\".",
+          "return": "ExportFailed; no file is returned and no export is recorded. The endpoint answers 500 MSG465: \"Không xuất được báo cáo. Vui lòng thử lại.\"",
+          "exception": "N/A",
+          "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the build error as cause.",
+          "type": "Abnormal",
+          "note": "UC-70b EX-2 · MSG465",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "The period is valid and the file is built.",
+            "Writing the audit row fails."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\".",
+          "return": "ExportFailed; no file is returned even though the figures were computed. The endpoint answers 500 MSG465: \"Không xuất được báo cáo. Vui lòng thử lại.\"",
+          "exception": "N/A",
+          "log": "Error: \"Could not export the meeting report 2026-01–2026-12\" with the audit error as cause.",
+          "type": "Abnormal",
+          "note": "UC-70b EX-2 · BR-438 · MSG465",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The period is valid.",
+            "The caller stops waiting while the export is running."
+          ],
+          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\"; cancellation requested.",
+          "return": "N/A; no file is returned and no export is recorded.",
+          "exception": "The cancellation escapes to the caller; it is not converted into ExportFailed.",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-70b",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

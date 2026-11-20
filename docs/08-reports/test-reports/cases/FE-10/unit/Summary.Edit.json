@@ -1,0 +1,122 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Summary.Edit",
+  "description": "Editing and reviewing a summary draft.",
+  "precondition": "Summary draft exists.",
+  "methods": [
+    {
+      "method": "SummaryService.EditAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+      "line": 105,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A Ready draft exists; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: three corrected sections.",
+          "return": "Success with the fresh state (MSG388 \"Đã lưu dự thảo.\"); the corrected text is stored and the review is cleared, so others stop seeing the draft until it is reviewed again.",
+          "exception": "N/A",
+          "log": "Saved: corrected content with editor and edit time; review cleared.",
+          "type": "Normal",
+          "note": "UC-49 · BR-377 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "No draft exists yet; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting without a draft; actorId: its current chair; edit: three sections.",
+          "return": "Failure NotDrafted (MSG390 \"Chưa có dự thảo để sửa hoặc duyệt.\"); nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-49 · MSG390",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A draft is Running on the worker; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting with a Running draft; actorId: its current chair; edit: three sections.",
+          "return": "Failure Busy (MSG387 \"AI đang viết dự thảo, vui lòng chờ.\"); the edit waits, otherwise the new draft would replace it unannounced.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-49 · MSG387",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A Ready draft exists; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: blank objectives with valid discussion and conclusions.",
+          "return": "Failure Invalid (MSG389 \"Nội dung dự thảo không hợp lệ.\"); errors[objectives] = [\"Nhập nội dung, tối đa 2.000 ký tự.\"]; nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-49 · MSG389",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A Ready draft exists; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: sections at exactly 2.000, 12.000 and 8.000 characters.",
+          "return": "Success (MSG388); sections at the limits are accepted.",
+          "exception": "N/A",
+          "log": "Saved: corrected content with editor and edit time; review cleared.",
+          "type": "Boundary",
+          "note": "UC-49 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "A Ready draft exists; actor is the current chair."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: conclusions of 8.001 characters.",
+          "return": "Failure Invalid (MSG389); errors[conclusions] = [\"Nhập nội dung, tối đa 8.000 ký tự.\"]; nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-49 · MSG389",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "A Ready draft exists; actor takes part but is neither chair nor secretary."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: an ordinary member; edit: three sections.",
+          "return": "Failure Forbidden (MSG385 \"Chỉ Chủ toạ hoặc Thư ký được tạo, sửa và duyệt dự thảo.\"); nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-49 · BR-374 · MSG385",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

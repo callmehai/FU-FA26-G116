@@ -1,0 +1,213 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "MeetingDocument.Upload",
+  "description": "Uploading a document to a meeting: pre-check, quota and persistence.",
+  "precondition": "Meeting in a document-preparation status; file storage replaced by a recorder.",
+  "methods": [
+    {
+      "method": "MeetingDocumentService.UploadAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "line": 158,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting \"Họp HĐQT\" planned 2026-12-15 (Vietnam time), Published; actor is Chair with no upload folder yet.",
+            "Storage has room; storage recorder accepts writes."
+          ],
+          "inputs": "files: one validated PDF \"Bao-cao.pdf\", 2 MB, 12 pages.",
+          "return": "Outcome with no failure and one document (name \"Bao-cao.pdf\", application/pdf, 2,097,152 bytes, 12 pages); endpoint answers MSG161.",
+          "exception": "N/A",
+          "log": "StoredFile row saved and object written under stored-files/<id>; library folder \"Họp HĐQT – 15/12/2026\" created for the Chair; Document and MeetingDocument rows committed in one transaction.",
+          "type": "Normal",
+          "note": "UC-33a · BR-192 · BR-226 · MSG161",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Chair already has the meeting upload folder."
+          ],
+          "inputs": "files: two files both named \"Phu-luc.pdf\" with identical bytes.",
+          "return": "No failure; two documents are returned (same name or bytes is still two documents).",
+          "exception": "N/A",
+          "log": "Two StoredFile rows, two Document rows in the existing folder, two MeetingDocument rows.",
+          "type": "Normal",
+          "note": "UC-33a · BR-229",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The Chair deleted the upload folder earlier."
+          ],
+          "inputs": "files: one validated DOCX.",
+          "return": "No failure; a new upload folder is created at the library root.",
+          "exception": "N/A",
+          "log": "New Folder row named \"<title> – dd/MM/yyyy\" with MeetingId set.",
+          "type": "Normal",
+          "note": "UC-33a · BR-228",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting Ended while the files were uploading (re-checked under the meeting lock)."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure Ended (HTTP 409, MSG172); no document is added.",
+          "exception": "N/A",
+          "log": "Written objects deleted and StoredFile rows stamped purged (released).",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-195 · MSG172",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting Cancelled by the time of the lock."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure Cancelled (HTTP 409, MSG349).",
+          "exception": "N/A",
+          "log": "Objects released.",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-299 · MSG349",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Actor lost the Secretary role while uploading."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure Forbidden (HTTP 403, MSG162).",
+          "exception": "N/A",
+          "log": "Objects released.",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-184 · MSG162",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting does not exist (deleted) at lock time."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure NotFound (HTTP 404, MSG174).",
+          "exception": "N/A",
+          "log": "Objects released.",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG174",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Storage used is 100 MB; limit is 100 MB + 1 MB (stored files total)."
+          ],
+          "inputs": "files: one file of 1 MB.",
+          "return": "No failure; used plus new equals the limit exactly and is accepted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-319",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Storage used is 100 MB; limit is 100 MB + 1 MB - 1 byte."
+          ],
+          "inputs": "files: one file of 1 MB.",
+          "return": "Failure StorageFull (HTTP 409, MSG346); nothing is stored.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · MSG346",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "The database fails while the StoredFile rows are reserved."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure StoreFailed (HTTP 503, MSG166).",
+          "exception": "N/A",
+          "log": "Error log \"Failed to record uploaded files\"",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG166",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Storage fails while writing the second of two objects."
+          ],
+          "inputs": "files: two validated PDFs.",
+          "return": "Failure StoreFailed (HTTP 503, MSG166); no document is added.",
+          "exception": "N/A",
+          "log": "First object deleted; both StoredFile rows stamped purged.",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-286 · MSG166",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "The final commit fails with a database error after objects were written."
+          ],
+          "inputs": "files: one validated PDF.",
+          "return": "Failure StoreFailed (HTTP 503, MSG166).",
+          "exception": "N/A",
+          "log": "Object deleted and StoredFile row stamped purged.",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-286 · MSG166",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "The client abandons the request while objects are being written."
+          ],
+          "inputs": "files: one validated PDF; the cancellation token is cancelled.",
+          "return": "No result.",
+          "exception": "OperationCanceledException",
+          "log": "Written objects deleted; information log that the upload was abandoned.",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-286",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

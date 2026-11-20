@@ -1,0 +1,257 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "Meeting.Update",
+  "description": "Meeting update: validation, reschedule rules and invitation staging.",
+  "precondition": "Meeting in an editable status; organizer actor.",
+  "methods": [
+    {
+      "method": "MeetingService.UpdateAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+      "line": 207,
+      "cases": [
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "input: new title \"Họp mới\", same times.",
+          "log": "Saved: Meeting row with new title and UpdatedAt; no history row.",
+          "note": "UC-15 · BR-27 · BR-28 · MSG30",
+          "preconditions": [
+            "Draft meeting owned by the actor."
+          ],
+          "return": "Success; title updated, status still Draft; Rescheduled false; MSG30.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "input equals stored.",
+          "log": "N/A",
+          "note": "UC-15 · BR-27 · BR-28 · MSG30",
+          "preconditions": [
+            "Draft meeting; input identical to the stored values."
+          ],
+          "return": "Success; nothing is saved; MSG30.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "input: start yesterday, end later.",
+          "log": "Saved: Meeting row.",
+          "note": "UC-15 · BR-27 · BR-75 · MSG30",
+          "preconditions": [
+            "Draft meeting whose planned start is already in the past."
+          ],
+          "return": "Success; the past start is not checked when editing a Draft.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "input: new description.",
+          "log": "Saved: Meeting row.",
+          "note": "UC-15 · BR-27 · BR-28 · MSG30",
+          "preconditions": [
+            "Rejected meeting."
+          ],
+          "return": "Success; status remains Rejected; MSG30.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "id: unknown.",
+          "log": "N/A",
+          "note": "UC-15 · BR-29",
+          "preconditions": [
+            "Meeting does not exist or is not owned by the actor."
+          ],
+          "return": "Failure NotFound (404); the input factory is not called.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "input: any.",
+          "log": "N/A",
+          "note": "UC-15 · BR-34 · MSG33",
+          "preconditions": [
+            "Meeting is WaitingApproval."
+          ],
+          "return": "Failure NotEditable; MSG33; the input is not read or validated.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "input: any.",
+          "log": "N/A",
+          "note": "UC-15 · BR-299 · MSG33",
+          "preconditions": [
+            "Meeting is Cancelled."
+          ],
+          "return": "Failure NotEditable; MSG33.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "input: title \"\".",
+          "log": "N/A",
+          "note": "UC-15 · BR-24 · MSG31",
+          "preconditions": [
+            "Draft meeting; title blank."
+          ],
+          "return": "Invalid; errors { title }; MSG31; nothing saved.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "input: same title, mode, sensitivity, description; start +1 day, end +1 day.",
+          "log": "Saved: Meeting; history row Reschedule (Published to Published) by the organizer; invitation emails staged with previous times; notification \"Cuộc họp đã dời lịch\" for every current invitee except the organizer.",
+          "note": "UC-15 · BR-27 · BR-75 · BR-76 · BR-158 · MSG138",
+          "preconditions": [
+            "Published meeting; the planned start moves to a later time."
+          ],
+          "return": "Success with Rescheduled true; MSG138; status stays Published.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "input: location \"Phòng 502\" instead of \"Phòng 301\".",
+          "log": "Saved: Reschedule history row; invitee notifications and emails staged.",
+          "note": "UC-15 · BR-76 · BR-158 · MSG138",
+          "preconditions": [
+            "Published meeting; only the location changes."
+          ],
+          "return": "Success with Rescheduled true; MSG138.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "input: start = now.",
+          "log": "N/A",
+          "note": "UC-15 · BR-75 · MSG31",
+          "preconditions": [
+            "Published meeting; the new start is not after now."
+          ],
+          "return": "Invalid; errors { plannedStartTime }; MSG31.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "input: title differs.",
+          "log": "N/A",
+          "note": "UC-15 · BR-158 · MSG31",
+          "preconditions": [
+            "Published meeting; the title is changed."
+          ],
+          "return": "Invalid; errors { title: \"Cuộc họp đã công bố, chỉ được dời thời gian, địa điểm và link họp.\" }; MSG31.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "input: different mode, sensitivity, description.",
+          "log": "N/A",
+          "note": "UC-15 · BR-158 · MSG31",
+          "preconditions": [
+            "Published meeting; mode, sensitivity and description are all changed."
+          ],
+          "return": "Invalid; errors for mode, sensitivity and description with the same lock message; MSG31.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "input identical.",
+          "log": "N/A",
+          "note": "UC-15 · BR-76 · MSG30",
+          "preconditions": [
+            "Published meeting; the input equals the stored data."
+          ],
+          "return": "Success; Rescheduled false; no history row, no notification; MSG30.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "mode Online; times unchanged.",
+          "log": "N/A",
+          "note": "UC-15 · BR-76 · MSG30",
+          "preconditions": [
+            "Published online meeting; the stored location is the legacy text \"Trực tuyến\" and the form sends an empty location."
+          ],
+          "return": "Success; Rescheduled false; nothing is saved or notified, because location is ignored for Online meetings.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC016",
+          "inputs": "valid input on a Draft.",
+          "log": "Error logged with meeting and actor ids; transaction rolled back.",
+          "note": "UC-15 · MSG36",
+          "preconditions": [
+            "The store fails while saving."
+          ],
+          "return": "Failure SaveFailed; MSG36; the error is logged.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

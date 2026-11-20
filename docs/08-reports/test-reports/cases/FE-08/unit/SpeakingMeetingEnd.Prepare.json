@@ -1,0 +1,65 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "SpeakingMeetingEnd.Prepare",
+  "description": "Ending a meeting closes open speaking requests.",
+  "precondition": "Meeting with open requests.",
+  "methods": [
+    {
+      "method": "SpeakingMeetingEnd.PrepareAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingService.cs",
+      "line": 265,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting with one Queued, one Invited and one Speaking request.",
+            "Caller holds the meeting transaction and lock."
+          ],
+          "inputs": "meetingId: the meeting; endedAt: 2026-11-10T09:00:00Z.",
+          "return": "The Speaking turn becomes Finished and the other two become Cancelled, all with EndedAt = endedAt; the ending itself publishes no speaking change (readers reload on the meeting-ended notice).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting with no open requests (only Finished and Cancelled ones).",
+            "Caller holds the meeting transaction and lock."
+          ],
+          "inputs": "meetingId: the meeting; endedAt: any.",
+          "return": "Nothing is closed and no row changes.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting with an open request raised under a guest invitation.",
+            "Caller holds the meeting transaction and lock."
+          ],
+          "inputs": "meetingId: the meeting; endedAt: 2026-11-10T09:00:00Z.",
+          "return": "The guest request is closed like any member request (Cancelled while Queued or Invited, Finished while Speaking).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

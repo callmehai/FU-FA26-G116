@@ -1,0 +1,183 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.Edit",
+  "description": "Editing, deleting and excluding a speech clip.",
+  "precondition": "Existing clips.",
+  "methods": [
+    {
+      "method": "SpeechClipService.EditAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 195,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "An existing sentence in a meeting whose Secretary is the actor (active user)."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text: corrected wording.",
+          "return": "Success (200, MSG302); the text, EditedBy and EditedAt are updated.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipEdited (sentence, meeting, speaker).",
+          "type": "Normal",
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text: the current text unchanged.",
+          "return": "Success (200, MSG302); nothing is changed and no audit row is written.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "An existing sentence; the actor is an active Member (not the Secretary)."
+          ],
+          "inputs": "clipId; actorId: the Member; text: corrected wording.",
+          "return": "Forbidden (403, MSG295).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46a · BR-359 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text of exactly 1 character.",
+          "return": "Success (200, MSG302).",
+          "exception": "N/A",
+          "log": "Audit SpeechClipEdited.",
+          "type": "Boundary",
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text of exactly 8,000 characters.",
+          "return": "Success (200, MSG302).",
+          "exception": "N/A",
+          "log": "Audit SpeechClipEdited.",
+          "type": "Boundary",
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text of 8,001 characters.",
+          "return": "Invalid (400, MSG303) with an error on text: “Nội dung từ 1 đến 8000 ký tự.”.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-46a · BR-359 · MSG303",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text of blanks only.",
+          "return": "Invalid (400, MSG303); blanks are trimmed to empty.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-46a · BR-359 · MSG303",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "No sentence with this id."
+          ],
+          "inputs": "clipId: a random id; actorId: a Secretary.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46a · BR-359",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "The actor is not on the roster of the sentence's meeting."
+          ],
+          "inputs": "clipId; actorId: an outsider.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46a · BR-359",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "clipId; actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46a · BR-359",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "An existing sentence; the actor is its meeting's Secretary.",
+            "The database fails while saving."
+          ],
+          "inputs": "clipId; actorId: the Secretary; text: corrected wording.",
+          "return": "SaveFailed (503, MSG304).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to edit speech clip'.",
+          "type": "Abnormal",
+          "note": "UC-46a · BR-359 · MSG304",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Return",
+  "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+  "precondition": "Minutes in the needed status; approver and secretary actors.",
+  "methods": [
+    {
+      "method": "MinutesService.ReturnAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 251,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Revision WaitingApproval with UpdatedAt T; the caller read it at T."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận của mục 2.\"; loadedAt: T.",
+          "return": "Status Rejected with the reason, ReturnedBy = the Chair and ReturnedAt = now; 200 MSG430.",
+          "exception": "N/A",
+          "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary (\"Chủ toạ đã trả lại biên bản cuộc họp \"…\" Xem lý do trên tab Biên bản.\").",
+          "type": "Normal",
+          "note": "UC-65 · BR-406 · BR-407 · MSG430",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Revision WaitingApproval.",
+            "Actor reads no meeting."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the stranger; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
+          "return": "Failure NotFound; 404 with no message code; status unchanged and nobody notified.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-65",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision WaitingApproval with UpdatedAt T."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Secretary; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
+          "return": "Failure NotChair; 403 MSG428; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-65 · BR-406 · MSG428",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Revision still Draft."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
+          "return": "Failure NotWaiting; 409 MSG429; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-65 · MSG429",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Revision WaitingApproval with UpdatedAt T."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"   \" (only spaces); loadedAt: T.",
+          "return": "Failure ReasonInvalid; 400 MSG431; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-65 · BR-407 · MSG431",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Revision WaitingApproval with UpdatedAt T."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: 2.001 characters; loadedAt: T.",
+          "return": "Failure ReasonInvalid; 400 MSG431; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-65 · BR-407 · MSG431",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Revision WaitingApproval with UpdatedAt T; the caller read it at T."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: exactly 2.000 characters; loadedAt: T.",
+          "return": "Status Rejected with the 2.000-character reason; 200 MSG430; exactly 2.000 characters pass.",
+          "exception": "N/A",
+          "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary.",
+          "type": "Boundary",
+          "note": "UC-65 · BR-407 · MSG430",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "WaitingApproval revision read at T, then saved by someone else."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
+          "return": "Failure Stale; 409 MSG401; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-65 · BR-389 · MSG401",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair; WaitingApproval revision read at T.",
+            "The database fails while saving the transition."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
+          "return": "Failure SaveFailed; 503 MSG404; status unchanged and nobody notified.",
+          "exception": "N/A",
+          "log": "Error logged with the action and minutes id.",
+          "type": "Abnormal",
+          "note": "UC-65 · MSG404",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

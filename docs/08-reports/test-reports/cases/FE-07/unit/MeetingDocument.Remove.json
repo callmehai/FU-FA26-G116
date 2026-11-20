@@ -1,0 +1,153 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "MeetingDocument.Remove",
+  "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+  "precondition": "Meeting with documents; personal library documents.",
+  "methods": [
+    {
+      "method": "MeetingDocumentService.RemoveAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "line": 177,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting Published; actor is Chair; MeetingDocument M1 in the meeting with a link to agenda item 2.",
+            "Clock: 2026-11-18T03:00Z."
+          ],
+          "inputs": "meetingDocumentId: M1; actorId: Chair.",
+          "return": "No failure; endpoint answers MSG167.",
+          "exception": "N/A",
+          "log": "M1 stamped RemovedAt 2026-11-18T03:00Z, RemovedById Chair, UpdatedAt set; its agenda-item links deleted; the row and its comments kept as history.",
+          "type": "Normal",
+          "note": "UC-33c · BR-197 · BR-281 · MSG167",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "M1 already removed."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · BR-211 · MSG170",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "M9 belongs to another meeting."
+          ],
+          "inputs": "meetingDocumentId: M9.",
+          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · BR-211 · MSG170",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Actor is a Member."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure Forbidden (HTTP 403, MSG169).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · BR-184 · MSG169",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting Ended."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure Ended (HTTP 409, MSG248).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · BR-195 · MSG248",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting Cancelled."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure Cancelled (HTTP 409, MSG349).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · BR-299 · MSG349",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting not readable by the actor."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure NotFound (HTTP 404, MSG174).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33c · MSG174",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Database error on save."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure StoreFailed (HTTP 503, MSG171); the document stays in the meeting.",
+          "exception": "N/A",
+          "log": "Error log \"Failed to remove a document from meeting\".",
+          "type": "Abnormal",
+          "note": "UC-33c · MSG171",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "M1 is a document with no agenda-item link."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "No failure; removed with no link rows to delete.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33c · BR-197 · MSG167",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

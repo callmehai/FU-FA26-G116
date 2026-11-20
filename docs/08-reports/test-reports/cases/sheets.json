@@ -1,0 +1,547 @@
+{
+  "project": "TrustCabinet",
+  "projectCode": "SEP490-G116",
+  "books": {
+    "ui": {
+      "file": "Report5.2_Integration_Test.xlsx",
+      "title": "INTEGRATION TEST DOCUMENT",
+      "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
+      "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. FE-14 Dashboard has no sheet: UC-69 is a placeholder and nothing of it is implemented."
+    },
+    "api": {
+      "file": "Report5.2.2_Integration_Test_API_Test.xlsx",
+      "title": "API TEST",
+      "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
+      "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One group per endpoint. FE-14 Dashboard has no sheet: UC-69 is a placeholder and has no endpoint."
+    }
+  },
+  "cover": {
+    "creator": "TrustCabinet Team",
+    "version": "2.0",
+    "issueDate": "2026-11-13",
+    "changes": [
+      { "date": "2026-10-23", "version": "1.0", "item": "", "type": "A", "description": "Generated integration test file", "reference": "" },
+      { "date": "2026-11-13", "version": "2.0", "item": "All sheets", "type": "M", "description": "Rewritten by feature (FE-01 to FE-16): business test cases, one sheet per feature, from cases/*.json", "reference": "docs/08-reports/test-reports/AGENTS.md" }
+    ]
+  },
+  "excludedRoutes": {
+    "GET /api/health": "Not a feature: a precondition of every case (backend is running).",
+    "GET /{*path}": "SPA fallback, not an API."
+  },
+  "sheets": [
+    {
+      "feature": "FE-01", "code": "AUTH", "sheet": "Authentication",
+      "function": "Authentication & Account Security",
+      "ucs": ["UC-01", "UC-02", "UC-03", "UC-04"],
+      "ui": {
+        "requirement": "Sign-in with password and Google, session restore, sign-out and Guest access through an invitation link, exercised through the browser against the real backend.",
+        "groups": [
+          { "title": "Password Sign-in", "uc": ["UC-01"] },
+          { "title": "Google Sign-in", "uc": ["UC-02"] },
+          { "title": "Session Restore", "uc": ["UC-01"] },
+          { "title": "Sign-out", "uc": ["UC-03"] },
+          { "title": "Guest Invitation Access", "uc": ["UC-04"] }
+        ]
+      },
+      "api": {
+        "requirement": "Sign-in, token refresh, sign-out, current user, and the Guest verification and session endpoints.",
+        "groups": [
+          { "title": "POST /api/auth/login", "uc": ["UC-01"] },
+          { "title": "POST /api/auth/google", "uc": ["UC-02"] },
+          { "title": "POST /api/auth/refresh", "uc": ["UC-01"] },
+          { "title": "POST /api/auth/logout", "uc": ["UC-03"] },
+          { "title": "GET /api/auth/me", "uc": ["UC-01"] },
+          { "title": "POST /api/guest-access/invitations/{invitationId}", "uc": ["UC-04"] },
+          { "title": "POST /api/guest-access/invitations/{invitationId}/code", "uc": ["UC-04"] },
+          { "title": "POST /api/guest-access/invitations/{invitationId}/verify", "uc": ["UC-04"] },
+          { "title": "GET /api/guest-access/session", "uc": ["UC-04"] },
+          { "title": "PUT /api/guest-access/session/profile", "uc": ["UC-04"] },
+          { "title": "DELETE /api/guest-access/session", "uc": ["UC-04"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-02", "code": "USER", "sheet": "User Management",
+      "function": "User & Profile Management",
+      "ucs": ["UC-05", "UC-06", "UC-07", "UC-08", "UC-09"],
+      "notImplemented": { "UC-09": "No unlock function: there is no account lock besides the sign-in rate limit, which expires by itself." },
+      "ui": {
+        "requirement": "Administration of user accounts: list and search, create, update, deactivate and reactivate, role assignment and password reset by email link.",
+        "groups": [
+          { "title": "User List & Search", "uc": ["UC-05"] },
+          { "title": "Create User", "uc": ["UC-06a"] },
+          { "title": "Update User", "uc": ["UC-06b"] },
+          { "title": "Deactivate & Reactivate User", "uc": ["UC-06c"] },
+          { "title": "Assign Role", "uc": ["UC-08"] },
+          { "title": "Password Reset", "uc": ["UC-07"] }
+        ]
+      },
+      "api": {
+        "requirement": "User account endpoints for the System Admin and the public password-reset completion.",
+        "groups": [
+          { "title": "GET /api/users", "uc": ["UC-05"] },
+          { "title": "GET /api/users/{id}", "uc": ["UC-05"] },
+          { "title": "POST /api/users", "uc": ["UC-06a"] },
+          { "title": "PUT /api/users/{id}", "uc": ["UC-06b", "UC-08"] },
+          { "title": "PUT /api/users/{id}/status", "uc": ["UC-06c"] },
+          { "title": "POST /api/users/{id}/password-reset", "uc": ["UC-07"] },
+          { "title": "POST /api/auth/password-reset", "uc": ["UC-07"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-03", "code": "RBAC", "sheet": "Access Control",
+      "function": "Role-Based Access Control",
+      "ucs": ["UC-10", "UC-11", "UC-12", "UC-13"],
+      "ui": {
+        "requirement": "Role and permission matrix, role management, audit log, and the capability gate on screens and endpoints.",
+        "groups": [
+          { "title": "Role & Permission Matrix", "uc": ["UC-10", "UC-11"] },
+          { "title": "Manage Roles", "uc": ["UC-12"] },
+          { "title": "Audit Log", "uc": ["UC-13"] },
+          { "title": "Capability-gated Screens", "uc": ["UC-10"] }
+        ]
+      },
+      "api": {
+        "requirement": "Role, capability matrix and audit log endpoints, and the 401/403/404 rules they enforce.",
+        "groups": [
+          { "title": "GET /api/roles", "uc": ["UC-10"] },
+          { "title": "POST /api/roles", "uc": ["UC-12a"] },
+          { "title": "PUT /api/roles/{id}", "uc": ["UC-12b"] },
+          { "title": "DELETE /api/roles/{id}", "uc": ["UC-12c"] },
+          { "title": "GET /api/roles/capabilities", "uc": ["UC-10"] },
+          { "title": "PUT /api/roles/capabilities", "uc": ["UC-11"] },
+          { "title": "GET /api/audit-log", "uc": ["UC-13"] },
+          { "title": "GET /api/audit-log/event-types", "uc": ["UC-13"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-04", "code": "MEET", "sheet": "Meeting Management",
+      "function": "Meeting Management",
+      "ucs": ["UC-14", "UC-15", "UC-16", "UC-17", "UC-18", "UC-19", "UC-20", "UC-21", "UC-22", "UC-75"],
+      "ui": {
+        "requirement": "Meeting lifecycle through the screens: create, edit and reschedule, list and detail, submit, approve or reject, publish, start, end and cancel.",
+        "groups": [
+          { "title": "Create Meeting", "uc": ["UC-14"] },
+          { "title": "Update & Reschedule Meeting", "uc": ["UC-15"] },
+          { "title": "Meeting List", "uc": ["UC-17"] },
+          { "title": "Meeting Details & History", "uc": ["UC-16"] },
+          { "title": "Submit for Approval", "uc": ["UC-18"] },
+          { "title": "Approve & Reject Meeting", "uc": ["UC-19"] },
+          { "title": "Publish Meeting", "uc": ["UC-20"] },
+          { "title": "Start & End Meeting", "uc": ["UC-21", "UC-22"] },
+          { "title": "Cancel Meeting", "uc": ["UC-75"] }
+        ]
+      },
+      "api": {
+        "requirement": "Meeting create, update, list, detail, readiness, status transitions and status history.",
+        "groups": [
+          { "title": "POST /api/meetings", "uc": ["UC-14"] },
+          { "title": "PUT /api/meetings/{id}", "uc": ["UC-15"] },
+          { "title": "GET /api/meetings", "uc": ["UC-17"] },
+          { "title": "GET /api/meetings/{id}", "uc": ["UC-16"] },
+          { "title": "GET /api/meetings/approvers", "uc": ["UC-14", "UC-18"] },
+          { "title": "GET /api/meetings/{id}/submission-readiness", "uc": ["UC-18"] },
+          { "title": "POST /api/meetings/{id}/transitions", "uc": ["UC-18", "UC-19", "UC-20", "UC-21", "UC-22", "UC-75"] },
+          { "title": "GET /api/meetings/{id}/history", "uc": ["UC-16"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-05", "code": "AGENDA", "sheet": "Agenda",
+      "function": "Agenda Management",
+      "ucs": ["UC-23", "UC-24", "UC-25", "UC-26", "UC-77"],
+      "ui": {
+        "requirement": "Agenda tab: view, add, edit, delete and reorder items, set the current item, complete an item and record its conclusion.",
+        "groups": [
+          { "title": "View Agenda", "uc": ["UC-26"] },
+          { "title": "Manage Agenda Items", "uc": ["UC-23a", "UC-23b", "UC-23c"] },
+          { "title": "Reorder Agenda Items", "uc": ["UC-23d"] },
+          { "title": "Set Current Item", "uc": ["UC-24"] },
+          { "title": "Complete Item", "uc": ["UC-25"] },
+          { "title": "Record Item Conclusion", "uc": ["UC-77"] }
+        ]
+      },
+      "api": {
+        "requirement": "Agenda item endpoints and their state rules.",
+        "groups": [
+          { "title": "GET /api/meetings/{meetingId}/agenda", "uc": ["UC-26"] },
+          { "title": "GET /api/meetings/{meetingId}/agenda/editor-options", "uc": ["UC-23"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda", "uc": ["UC-23a"] },
+          { "title": "PUT /api/meetings/{meetingId}/agenda/{itemId}", "uc": ["UC-23b"] },
+          { "title": "DELETE /api/meetings/{meetingId}/agenda/{itemId}", "uc": ["UC-23c"] },
+          { "title": "PUT /api/meetings/{meetingId}/agenda/order", "uc": ["UC-23d"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda/{itemId}/current", "uc": ["UC-24"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda/{itemId}/complete", "uc": ["UC-25"] },
+          { "title": "PUT /api/meetings/{meetingId}/agenda/{itemId}/conclusion", "uc": ["UC-77"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-06", "code": "PART", "sheet": "Participants",
+      "function": "Meeting Participant Management",
+      "ucs": ["UC-27", "UC-28", "UC-29", "UC-30", "UC-31", "UC-73"],
+      "ui": {
+        "requirement": "Participants tab: view, add internal people, invite and revoke Guests, change roles and rights, respond to the invitation, response status, attendance and chair handover.",
+        "groups": [
+          { "title": "View Participants", "uc": ["UC-27"] },
+          { "title": "Add Internal Participants", "uc": ["UC-28a"] },
+          { "title": "Invite Guest", "uc": ["UC-28a"] },
+          { "title": "Change Role & Rights", "uc": ["UC-28b"] },
+          { "title": "Remove Participant & Revoke Guest", "uc": ["UC-28c"] },
+          { "title": "Respond to Invitation", "uc": ["UC-29"] },
+          { "title": "Response Status", "uc": ["UC-30"] },
+          { "title": "Record Attendance", "uc": ["UC-31"] },
+          { "title": "Hand Over Chair", "uc": ["UC-73"] }
+        ]
+      },
+      "api": {
+        "requirement": "Participant, Guest invitation, invitation response, attendance and chair handover endpoints.",
+        "groups": [
+          { "title": "GET /api/meetings/participant-options", "uc": ["UC-14", "UC-28a"] },
+          { "title": "GET /api/meetings/{meetingId}/participant-context", "uc": ["UC-27"] },
+          { "title": "GET /api/meetings/{meetingId}/participants", "uc": ["UC-27", "UC-30"] },
+          { "title": "GET /api/meetings/{meetingId}/participants/editor-options", "uc": ["UC-28a"] },
+          { "title": "POST /api/meetings/{meetingId}/participants", "uc": ["UC-28a"] },
+          { "title": "PUT /api/meetings/{meetingId}/participants/assignments", "uc": ["UC-28b"] },
+          { "title": "DELETE /api/meetings/{meetingId}/participants/{targetId}", "uc": ["UC-28c"] },
+          { "title": "POST /api/meetings/{meetingId}/guest-invitations", "uc": ["UC-28a"] },
+          { "title": "DELETE /api/meetings/{meetingId}/guest-invitations/{targetId}", "uc": ["UC-28c"] },
+          { "title": "GET /api/meetings/{meetingId}/invitation-response", "uc": ["UC-29"] },
+          { "title": "PUT /api/meetings/{meetingId}/invitation-response", "uc": ["UC-29"] },
+          { "title": "GET /api/meetings/{meetingId}/attendance", "uc": ["UC-31"] },
+          { "title": "POST /api/meetings/{meetingId}/attendance", "uc": ["UC-31"] },
+          { "title": "GET /api/meetings/{meetingId}/participants/chair-handover-candidates", "uc": ["UC-73"] },
+          { "title": "POST /api/meetings/{meetingId}/participants/chair-handover", "uc": ["UC-73"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-07", "code": "DOC", "sheet": "Documents",
+      "function": "Personal Document Library & Meeting Documents",
+      "ucs": ["UC-32", "UC-33", "UC-34", "UC-34b", "UC-35", "UC-36", "UC-71", "UC-72", "UC-74"],
+      "ui": {
+        "requirement": "Personal library (upload, rename, move, delete, folders), the Admin view of a locked account's library, meeting documents (add, remove, link to agenda items, view, download), comments and read confirmation.",
+        "groups": [
+          { "title": "Personal Library", "uc": ["UC-34"] },
+          { "title": "Upload to Library", "uc": ["UC-36"] },
+          { "title": "Manage Personal Documents", "uc": ["UC-71"] },
+          { "title": "Manage Library Folders", "uc": ["UC-72"] },
+          { "title": "Locked Account's Library", "uc": ["UC-34b"] },
+          { "title": "Meeting Documents", "uc": ["UC-32a"] },
+          { "title": "Add & Remove Meeting Documents", "uc": ["UC-33a", "UC-33c"] },
+          { "title": "Link Documents to Agenda Items", "uc": ["UC-33b", "UC-33d"] },
+          { "title": "View & Download Document", "uc": ["UC-32c"] },
+          { "title": "Document Comments", "uc": ["UC-35"] },
+          { "title": "Confirm Document Read", "uc": ["UC-74"] }
+        ]
+      },
+      "api": {
+        "requirement": "Personal library, folder, meeting document, agenda link, comment and read confirmation endpoints.",
+        "groups": [
+          { "title": "GET /api/documents", "uc": ["UC-34"] },
+          { "title": "POST /api/documents/upload", "uc": ["UC-36"] },
+          { "title": "GET /api/documents/{documentId}/content", "uc": ["UC-34"] },
+          { "title": "PUT /api/documents/{documentId}/name", "uc": ["UC-71b"] },
+          { "title": "PUT /api/documents/{documentId}/folder", "uc": ["UC-71c"] },
+          { "title": "DELETE /api/documents/{documentId}", "uc": ["UC-71a"] },
+          { "title": "POST /api/folders", "uc": ["UC-72a"] },
+          { "title": "PUT /api/folders/{folderId}/name", "uc": ["UC-72b"] },
+          { "title": "PUT /api/folders/{folderId}/parent", "uc": ["UC-72c"] },
+          { "title": "DELETE /api/folders/{folderId}", "uc": ["UC-72d"] },
+          { "title": "GET /api/users/{userId}/library", "uc": ["UC-34b"] },
+          { "title": "GET /api/users/{userId}/library/documents/{documentId}/content", "uc": ["UC-34b"] },
+          { "title": "GET /api/meetings/{meetingId}/documents", "uc": ["UC-32a"] },
+          { "title": "POST /api/meetings/{meetingId}/documents", "uc": ["UC-33a"] },
+          { "title": "POST /api/meetings/{meetingId}/documents/upload", "uc": ["UC-33a"] },
+          { "title": "GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content", "uc": ["UC-32c"] },
+          { "title": "DELETE /api/meetings/{meetingId}/documents/{meetingDocumentId}", "uc": ["UC-33c"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents", "uc": ["UC-33b"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/from-library", "uc": ["UC-33b"] },
+          { "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/upload", "uc": ["UC-33b"] },
+          { "title": "DELETE /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/{meetingDocumentId}", "uc": ["UC-33d"] },
+          { "title": "GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/comments", "uc": ["UC-35"] },
+          { "title": "POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/comments", "uc": ["UC-35"] },
+          { "title": "POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation", "uc": ["UC-74"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-08", "code": "ROOM", "sheet": "Online Room",
+      "function": "Online Meeting Room Management",
+      "ucs": ["UC-37", "UC-38", "UC-39", "UC-40", "UC-41", "UC-42", "UC-78", "UC-79", "UC-82"],
+      "ui": {
+        "requirement": "Online room over LiveKit for internal users and Guests: join and leave, devices, participants, moderation, chat, floating window, requests to speak and the Secretary's meeting notes.",
+        "groups": [
+          { "title": "Join Meeting Room", "uc": ["UC-37"] },
+          { "title": "Leave Meeting Room", "uc": ["UC-38"] },
+          { "title": "Microphone, Camera & Screen Share", "uc": ["UC-39a", "UC-39b", "UC-39c"] },
+          { "title": "Choose Devices", "uc": ["UC-39d"] },
+          { "title": "People in the Room", "uc": ["UC-40"] },
+          { "title": "Mute a Participant", "uc": ["UC-41"] },
+          { "title": "In-room Chat", "uc": ["UC-42"] },
+          { "title": "Floating Window", "uc": ["UC-78"] },
+          { "title": "Register to Speak", "uc": ["UC-79"] },
+          { "title": "Meeting Notes", "uc": ["UC-82"] }
+        ]
+      },
+      "api": {
+        "requirement": "Call room, LiveKit webhook, requests to speak and meeting notes endpoints.",
+        "groups": [
+          { "title": "GET /api/meetings/{id}/call", "uc": ["UC-37"] },
+          { "title": "POST /api/meetings/{id}/call/join", "uc": ["UC-37"] },
+          { "title": "POST /api/meetings/{id}/call/participants/{identity}/mute", "uc": ["UC-41"] },
+          { "title": "POST /api/livekit/webhook", "uc": ["UC-37", "UC-38"] },
+          { "title": "GET /api/meetings/{meetingId}/speaking-requests", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests", "uc": ["UC-79"] },
+          { "title": "DELETE /api/meetings/{meetingId}/speaking-requests/{requestId}", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/invite", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/start", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/finish", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/decline", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-up", "uc": ["UC-79"] },
+          { "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-down", "uc": ["UC-79"] },
+          { "title": "GET /api/meetings/{meetingId}/notes", "uc": ["UC-82"] },
+          { "title": "PUT /api/meetings/{meetingId}/notes", "uc": ["UC-82"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-09", "code": "REC", "sheet": "Recording",
+      "function": "Meeting Recording",
+      "ucs": ["UC-43", "UC-44", "UC-80"],
+      "ui": {
+        "requirement": "Recordings tab and the room: room-mic takes, per-person microphone clips, uploaded audio, playback, download, deleting takes and recordings, and managing one's own recorded speech.",
+        "groups": [
+          { "title": "Recording List & Playback", "uc": ["UC-43a", "UC-43b"] },
+          { "title": "Download Recording", "uc": ["UC-43c"] },
+          { "title": "Record Room Microphone", "uc": ["UC-44a", "UC-44b"] },
+          { "title": "Upload Audio File", "uc": ["UC-44c"] },
+          { "title": "Delete Take & Recording", "uc": ["UC-44d", "UC-44e"] },
+          { "title": "Personal Microphone Clips", "uc": ["UC-80"] },
+          { "title": "My Recorded Speech", "uc": ["UC-80"] }
+        ]
+      },
+      "api": {
+        "requirement": "Recording, take, upload part, playback, download and speech clip endpoints.",
+        "groups": [
+          { "title": "GET /api/meetings/{meetingId}/recordings", "uc": ["UC-43a"] },
+          { "title": "POST /api/meetings/{meetingId}/recordings", "uc": ["UC-44c"] },
+          { "title": "PUT /api/recordings/{recordingId}/parts/{part}", "uc": ["UC-44c"] },
+          { "title": "POST /api/recordings/{recordingId}/complete", "uc": ["UC-44c"] },
+          { "title": "POST /api/meetings/{meetingId}/recordings/takes", "uc": ["UC-44b"] },
+          { "title": "DELETE /api/recordings/{recordingId}/takes/{take}", "uc": ["UC-44d"] },
+          { "title": "DELETE /api/recordings/{recordingId}", "uc": ["UC-44e"] },
+          { "title": "GET /api/recordings/{recordingId}/playback", "uc": ["UC-43b"] },
+          { "title": "GET /api/recordings/{recordingId}/audio", "uc": ["UC-43b"] },
+          { "title": "GET /api/recordings/{recordingId}/download", "uc": ["UC-43c"] },
+          { "title": "GET /api/meetings/{meetingId}/speech-clips", "uc": ["UC-43a", "UC-80"] },
+          { "title": "PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}", "uc": ["UC-80"] },
+          { "title": "GET /api/speech-clips/{clipId}/playback", "uc": ["UC-43b"] },
+          { "title": "GET /api/speech-clips/{clipId}/audio", "uc": ["UC-43b"] },
+          { "title": "PUT /api/speech-clips/{clipId}/exclusion", "uc": ["UC-80", "UC-46c"] },
+          { "title": "DELETE /api/speech-clips/{clipId}", "uc": ["UC-80", "UC-46d"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-10", "code": "TRANS", "sheet": "Transcription & Summary",
+      "function": "Transcription, Speaker Identification & Meeting Summary",
+      "ucs": ["UC-45", "UC-46", "UC-47", "UC-48", "UC-49", "UC-50", "UC-81"],
+      "notImplemented": { "UC-51": "Publish Meeting Summary is a placeholder." },
+      "ui": {
+        "requirement": "Transcript view, edit and speaker attribution, the AI summary draft (generate, view, edit, approve), Voice ID with consent, voice samples collected by the Secretary, and the AI settings screen.",
+        "groups": [
+          { "title": "View & Export Transcript", "uc": ["UC-45a", "UC-45b"] },
+          { "title": "Re-run Transcription", "uc": ["UC-45c"] },
+          { "title": "Edit Transcript & Speakers", "uc": ["UC-46a", "UC-46b"] },
+          { "title": "Exclude & Delete Sentences", "uc": ["UC-46c", "UC-46d"] },
+          { "title": "Generate Summary", "uc": ["UC-47"] },
+          { "title": "View, Edit & Approve Summary", "uc": ["UC-48", "UC-49", "UC-50"] },
+          { "title": "My Voice ID", "uc": ["UC-81"] },
+          { "title": "Collect Voice Samples", "uc": ["UC-81c"] },
+          { "title": "AI Settings", "uc": ["UC-47"] }
+        ]
+      },
+      "api": {
+        "requirement": "Transcription, transcript editing, speaker attribution, summary, Voice ID, voice collection and AI settings endpoints.",
+        "groups": [
+          { "title": "POST /api/recordings/{recordingId}/transcribe", "uc": ["UC-45c"] },
+          { "title": "GET /api/recordings/{recordingId}/transcript", "uc": ["UC-45a"] },
+          { "title": "GET /api/recordings/{recordingId}/transcript.txt", "uc": ["UC-45b"] },
+          { "title": "GET /api/meetings/{meetingId}/speech-clips.txt", "uc": ["UC-45b"] },
+          { "title": "PUT /api/transcript-segments/{segmentId}", "uc": ["UC-46a"] },
+          { "title": "PUT /api/speech-clips/{clipId}/text", "uc": ["UC-46a"] },
+          { "title": "PUT /api/transcript-segments/{segmentId}/speaker", "uc": ["UC-46b"] },
+          { "title": "PUT /api/recordings/{recordingId}/speakers/{label}", "uc": ["UC-46b"] },
+          { "title": "POST /api/meetings/{meetingId}/summary", "uc": ["UC-47"] },
+          { "title": "GET /api/meetings/{meetingId}/summary", "uc": ["UC-48"] },
+          { "title": "PUT /api/meetings/{meetingId}/summary", "uc": ["UC-49"] },
+          { "title": "POST /api/meetings/{meetingId}/summary/review", "uc": ["UC-50"] },
+          { "title": "GET /api/me/voice", "uc": ["UC-81a"] },
+          { "title": "POST /api/me/voice/consent", "uc": ["UC-81b"] },
+          { "title": "DELETE /api/me/voice/consent", "uc": ["UC-81f"] },
+          { "title": "POST /api/me/voice/samples", "uc": ["UC-81c"] },
+          { "title": "GET /api/me/voice/samples/{sampleId}/audio", "uc": ["UC-81d"] },
+          { "title": "DELETE /api/me/voice/samples/{sampleId}", "uc": ["UC-81e"] },
+          { "title": "GET /api/meetings/{meetingId}/voice-collection", "uc": ["UC-81c"] },
+          { "title": "POST /api/meetings/{meetingId}/voice-collection/{userId}/samples", "uc": ["UC-81c"] },
+          { "title": "GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio", "uc": ["UC-81d"] },
+          { "title": "DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}", "uc": ["UC-81e"] },
+          { "title": "GET /api/admin/ai", "uc": ["UC-47"] },
+          { "title": "PUT /api/admin/ai", "uc": ["UC-47"] },
+          { "title": "POST /api/admin/ai/test", "uc": ["UC-47"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-11", "code": "VOTE", "sheet": "Voting",
+      "function": "Voting Management",
+      "ucs": ["UC-52", "UC-53", "UC-54", "UC-55", "UC-56", "UC-57", "UC-76"],
+      "ui": {
+        "requirement": "Votes tab: list and results, create and configure drafts, vote documents, open, cast (internal and Guest), close and record the conclusion.",
+        "groups": [
+          { "title": "Vote List & Results", "uc": ["UC-52"] },
+          { "title": "Create & Configure Vote", "uc": ["UC-53"] },
+          { "title": "Vote Documents", "uc": ["UC-76"] },
+          { "title": "Open Vote", "uc": ["UC-54"] },
+          { "title": "Cast Vote", "uc": ["UC-55"] },
+          { "title": "Close Vote", "uc": ["UC-56"] },
+          { "title": "Record Vote Conclusion", "uc": ["UC-57"] }
+        ]
+      },
+      "api": {
+        "requirement": "Vote, ballot, vote document and conclusion endpoints and their state rules.",
+        "groups": [
+          { "title": "GET /api/meetings/{meetingId}/votes", "uc": ["UC-52a"] },
+          { "title": "GET /api/meetings/{meetingId}/votes/{voteId}", "uc": ["UC-52b"] },
+          { "title": "POST /api/meetings/{meetingId}/votes", "uc": ["UC-53"] },
+          { "title": "PUT /api/meetings/{meetingId}/votes/{voteId}", "uc": ["UC-53"] },
+          { "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}", "uc": ["UC-53"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents", "uc": ["UC-76a"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library", "uc": ["UC-76a"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload", "uc": ["UC-76a"] },
+          { "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId}", "uc": ["UC-76b"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/open", "uc": ["UC-54"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/ballots", "uc": ["UC-55"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/close", "uc": ["UC-56"] },
+          { "title": "POST /api/meetings/{meetingId}/votes/{voteId}/conclusion", "uc": ["UC-57"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-12", "code": "MIN", "sheet": "Minutes",
+      "function": "Meeting Minutes & Approval",
+      "ucs": ["UC-58", "UC-59", "UC-60", "UC-61", "UC-64", "UC-65", "UC-83"],
+      "notImplemented": { "UC-62": "Sign Meeting Minutes is a placeholder (SCRUM-37).", "UC-63": "Signature status is a placeholder (SCRUM-37)." },
+      "ui": {
+        "requirement": "Minutes tab: generate the draft from the fixed template, view, edit with preview, export to Word, submit, approve and issue, return for revision, and correct issued minutes.",
+        "groups": [
+          { "title": "Generate Draft Minutes", "uc": ["UC-59"] },
+          { "title": "View Minutes", "uc": ["UC-58"] },
+          { "title": "Edit Minutes", "uc": ["UC-60"] },
+          { "title": "Export to Word", "uc": ["UC-60"] },
+          { "title": "Submit Minutes", "uc": ["UC-61"] },
+          { "title": "Approve & Issue Minutes", "uc": ["UC-64"] },
+          { "title": "Return Minutes", "uc": ["UC-65"] },
+          { "title": "Correct Issued Minutes", "uc": ["UC-83"] }
+        ]
+      },
+      "api": {
+        "requirement": "Minutes generation, read, edit, export and approval workflow endpoints.",
+        "groups": [
+          { "title": "POST /api/meetings/{meetingId}/minutes", "uc": ["UC-59"] },
+          { "title": "GET /api/meetings/{meetingId}/minutes", "uc": ["UC-58"] },
+          { "title": "GET /api/minutes/{minutesId}", "uc": ["UC-58"] },
+          { "title": "PUT /api/minutes/{minutesId}", "uc": ["UC-60"] },
+          { "title": "GET /api/minutes/{minutesId}/export", "uc": ["UC-60"] },
+          { "title": "POST /api/minutes/{minutesId}/submit", "uc": ["UC-61"] },
+          { "title": "POST /api/minutes/{minutesId}/approve", "uc": ["UC-64"] },
+          { "title": "POST /api/minutes/{minutesId}/reject", "uc": ["UC-65"] },
+          { "title": "POST /api/minutes/{minutesId}/corrections", "uc": ["UC-83"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-13", "code": "NOTI", "sheet": "Notifications",
+      "function": "Email & In-App Notification",
+      "ucs": ["UC-66", "UC-67", "UC-68"],
+      "ui": {
+        "requirement": "Notification bell and panel, mark as read, open the target, real-time delivery, and the emails the workflow sends.",
+        "groups": [
+          { "title": "Notification Panel", "uc": ["UC-66"] },
+          { "title": "Mark as Read", "uc": ["UC-67a", "UC-67b"] },
+          { "title": "Open Notification Target", "uc": ["UC-68"] },
+          { "title": "Real-time Delivery", "uc": ["UC-66"] },
+          { "title": "Invitation & Workflow Emails", "uc": ["UC-20"] }
+        ]
+      },
+      "api": {
+        "requirement": "Notification list, unread count, read state and target endpoints, and the email delivery webhook.",
+        "groups": [
+          { "title": "GET /api/notifications", "uc": ["UC-66"] },
+          { "title": "GET /api/notifications/unread-count", "uc": ["UC-66"] },
+          { "title": "POST /api/notifications/{id}/read", "uc": ["UC-67a"] },
+          { "title": "POST /api/notifications/read-all", "uc": ["UC-67b"] },
+          { "title": "GET /api/notifications/{id}/target", "uc": ["UC-68"] },
+          { "title": "POST /api/email/resend/webhook", "uc": ["UC-20"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-15", "code": "RPT", "sheet": "Reporting",
+      "function": "Reporting & Statistics",
+      "ucs": ["UC-70"],
+      "ui": {
+        "requirement": "Meeting report: choose the period, read the figures and export.",
+        "groups": [
+          { "title": "View Report", "uc": ["UC-70a"] },
+          { "title": "Export Report", "uc": ["UC-70b"] }
+        ]
+      },
+      "api": {
+        "requirement": "Meeting report and export endpoints.",
+        "groups": [
+          { "title": "GET /api/reports/meetings", "uc": ["UC-70a"] },
+          { "title": "GET /api/reports/meetings/export", "uc": ["UC-70b"] }
+        ]
+      }
+    },
+    {
+      "feature": "FE-16", "code": "CAL", "sheet": "Calendar",
+      "function": "Working Calendar & Meeting Time Search",
+      "ucs": ["UC-17", "UC-84", "UC-85"],
+      "ui": {
+        "requirement": "Working calendar, calendar sharing (request, share, respond, change, withdraw, end), the shared week and finding a meeting time.",
+        "groups": [
+          { "title": "Working Calendar", "uc": ["UC-17"] },
+          { "title": "Request & Share Calendar", "uc": ["UC-84a", "UC-84b"] },
+          { "title": "Respond to Calendar Share", "uc": ["UC-84c"] },
+          { "title": "Calendar Share List", "uc": ["UC-84f"] },
+          { "title": "Change, Withdraw & End Share", "uc": ["UC-84d", "UC-84e"] },
+          { "title": "Shared Week", "uc": ["UC-85c"] },
+          { "title": "Find Meeting Time", "uc": ["UC-85a"] },
+          { "title": "Create Draft from Time Slot", "uc": ["UC-85b"] }
+        ]
+      },
+      "api": {
+        "requirement": "Calendar sharing, shared week, meeting time search and draft-from-slot endpoints.",
+        "groups": [
+          { "title": "GET /api/calendar/shares", "uc": ["UC-84f"] },
+          { "title": "GET /api/calendar/share-candidates", "uc": ["UC-84a"] },
+          { "title": "POST /api/calendar/shares", "uc": ["UC-84a"] },
+          { "title": "POST /api/calendar/shares/direct", "uc": ["UC-84b"] },
+          { "title": "POST /api/calendar/shares/{id}/accept", "uc": ["UC-84c"] },
+          { "title": "POST /api/calendar/shares/{id}/decline", "uc": ["UC-84c"] },
+          { "title": "PATCH /api/calendar/shares/{id}", "uc": ["UC-84d"] },
+          { "title": "POST /api/calendar/shares/{id}/withdraw", "uc": ["UC-84e"] },
+          { "title": "POST /api/calendar/shares/{id}/end", "uc": ["UC-84e"] },
+          { "title": "GET /api/calendar/shared-week", "uc": ["UC-85c"] },
+          { "title": "POST /api/calendar/slots", "uc": ["UC-85a"] },
+          { "title": "POST /api/calendar/slots/draft", "uc": ["UC-85b"] }
+        ]
+      }
+    }
+  ]
+}

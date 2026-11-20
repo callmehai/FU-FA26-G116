@@ -1,0 +1,77 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Notification.PendingPush",
+  "description": "Pending push selection and marking pushed.",
+  "precondition": "Notifications with push state.",
+  "methods": [
+    {
+      "method": "NotificationService.PendingPushAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 166,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Five notifications with no push time; the oldest were created 02:00Z, 02:01Z ..."
+          ],
+          "inputs": "limit 3.",
+          "return": "The three oldest unpushed notifications, oldest first.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-66",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Two unpushed and four already pushed notifications."
+          ],
+          "inputs": "limit 10.",
+          "return": "The two unpushed ones.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-66",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Every notification was pushed."
+          ],
+          "inputs": "limit 10.",
+          "return": "Empty list.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-66",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Three unpushed notifications."
+          ],
+          "inputs": "limit 3.",
+          "return": "All three (limit equals the number available).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-66",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Submit",
+  "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+  "precondition": "Minutes in the needed status; approver and secretary actors.",
+  "methods": [
+    {
+      "method": "MinutesService.SubmitAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 192,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Draft revision with UpdatedAt T; the caller read it at T."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary; loadedAt: T.",
+          "return": "Status WaitingApproval with SubmittedBy = the Secretary and SubmittedAt = now; 200 MSG424.",
+          "exception": "N/A",
+          "log": "Saved: status, submitter and times on the revision; notification \"Biên bản chờ duyệt\" to the current Chair (\"Thư ký đã gửi biên bản cuộc họp \"…\" để Chủ toạ duyệt.\").",
+          "type": "Normal",
+          "note": "UC-61 · BR-404 · MSG424",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Draft revision exists.",
+            "Actor reads no meeting (not organizer, approver or participant)."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the stranger; loadedAt: T.",
+          "return": "Failure NotFound; 404 with no message code; status unchanged and nobody notified.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "inputs": "minutesId: a Draft revision; actor: deactivated Secretary; loadedAt: T.",
+          "return": "Failure Inactive; 403 with no message code; status unchanged and nobody notified.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Ended meeting; actor is the current Chair.",
+            "Draft revision with UpdatedAt T."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Chair; loadedAt: T.",
+          "return": "Failure NotSecretary; 403 MSG425; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61 · BR-404 · MSG425",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting still InProgress; actor is the current Secretary.",
+            "Draft revision with UpdatedAt T."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary; loadedAt: T.",
+          "return": "Failure MeetingNotEnded; 409 MSG426; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61 · BR-405 · MSG426",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision already WaitingApproval."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Secretary; loadedAt: T.",
+          "return": "Failure Locked; 409 MSG400; a sent revision is not sent again.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61 · MSG400",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Draft revision read at T, then saved by someone else."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary; loadedAt: T.",
+          "return": "Failure Stale; 409 MSG401; status unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-61 · BR-389 · MSG401",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary; Draft revision read at T.",
+            "The database fails while saving the transition."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary; loadedAt: T.",
+          "return": "Failure SaveFailed; 503 MSG404; status unchanged and nobody notified.",
+          "exception": "N/A",
+          "log": "Error logged with the action and minutes id.",
+          "type": "Abnormal",
+          "note": "UC-61 · MSG404",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

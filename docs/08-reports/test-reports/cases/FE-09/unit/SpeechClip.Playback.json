@@ -1,0 +1,137 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.Playback",
+  "description": "Speech-clip retention erasure and playback.",
+  "precondition": "Clips with ages.",
+  "methods": [
+    {
+      "method": "SpeechClipService.PlaybackAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 422,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "An existing sentence with audio in a meeting the actor (active Member) may read."
+          ],
+          "inputs": "clipId; actorId: the Member.",
+          "return": "Success with a signed playback link for the sentence.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "An excluded sentence with audio; the actor is the meeting's Chair."
+          ],
+          "inputs": "clipId: the excluded sentence; actorId: the Chair.",
+          "return": "Success with a signed playback link; the Chair still hears a sentence taken out of the record.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-46c · BR-357",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "An excluded sentence with audio; the actor is an active Member (not Chair or Secretary)."
+          ],
+          "inputs": "clipId: the excluded sentence; actorId: the Member.",
+          "return": "NotFound; to everyone else an excluded sentence does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46c · BR-357",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No sentence with this id."
+          ],
+          "inputs": "clipId: a random id; actorId: a Member.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The actor is not on the roster of the sentence's meeting."
+          ],
+          "inputs": "clipId; actorId: an outsider.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "clipId; actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "An existing sentence stored without audio (disk was full)."
+          ],
+          "inputs": "clipId: the sentence without audio; actorId: a Member.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "An existing sentence with audio; the database fails while reading."
+          ],
+          "inputs": "clipId; actorId: a Member.",
+          "return": "ReadFailed (500, MSG297).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to sign playback for speech clip'.",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350 · MSG297",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

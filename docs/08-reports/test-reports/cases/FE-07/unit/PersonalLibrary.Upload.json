@@ -1,0 +1,137 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "PersonalLibrary.Upload",
+  "description": "Personal library documents: upload with quota, rename, move, delete.",
+  "precondition": "Owner with folders; file storage recorder.",
+  "methods": [
+    {
+      "method": "PersonalLibraryService.UploadAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "line": 187,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Owner U1 with folder F1; storage has room."
+          ],
+          "inputs": "folderId: F1; files: \"Bao-cao.pdf\" (2 MB, 12 pages) and \"Nghi-quyet.docx\" (40 KB).",
+          "return": "Value: two LibraryDocument rows (names, content types, sizes, page count 12 and null, FolderId F1, MeetingCount 0); endpoint answers MSG177 with addedCount 2.",
+          "exception": "N/A",
+          "log": "Two StoredFile rows, two objects written, two Document rows with OwnerId U1 and FolderId F1, in one transaction; library locked for the owner.",
+          "type": "Normal",
+          "note": "UC-36 · BR-229 · MSG177",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Owner U1."
+          ],
+          "inputs": "folderId: null; files: one PDF.",
+          "return": "Value: one document at the library root.",
+          "exception": "N/A",
+          "log": "Document row with FolderId null.",
+          "type": "Normal",
+          "note": "UC-36 · MSG177",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Owner uploads a file with the same name and bytes twice."
+          ],
+          "inputs": "files: two files named \"a.pdf\" with identical bytes.",
+          "return": "Two documents with different IDs.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-36 · BR-229",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Folder F9 was deleted while the files were uploading."
+          ],
+          "inputs": "folderId: F9; files: one PDF.",
+          "return": "Failure DestinationNotFound (HTTP 404, MSG179).",
+          "exception": "N/A",
+          "log": "Objects released; StoredFile rows stamped purged.",
+          "type": "Abnormal",
+          "note": "UC-36 · MSG179",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Storage used 10 MB, limit 11 MB."
+          ],
+          "inputs": "files: one 1 MB file.",
+          "return": "Value returned; exactly at the limit.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-36 · ADR-0034",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Storage used 10 MB, limit 11 MB."
+          ],
+          "inputs": "files: one file of 1 MB + 1 byte.",
+          "return": "Failure StorageFull (HTTP 409, MSG346).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-36 · MSG346",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Storage write fails."
+          ],
+          "inputs": "files: one PDF.",
+          "return": "Failure SaveFailed (HTTP 503, MSG178).",
+          "exception": "N/A",
+          "log": "Objects released.",
+          "type": "Abnormal",
+          "note": "UC-36 · BR-286 · MSG178",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Database error on commit."
+          ],
+          "inputs": "files: one PDF.",
+          "return": "Failure SaveFailed (HTTP 503, MSG178).",
+          "exception": "N/A",
+          "log": "Objects released.",
+          "type": "Abnormal",
+          "note": "UC-36 · MSG178",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

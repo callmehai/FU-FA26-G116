@@ -1,0 +1,1590 @@
+{
+  "feature": "FE-06",
+  "code": "PART",
+  "sheet": "Participants",
+  "precondition": "Test build of frontend + backend; Admin, Organizer, Chair, Secretary and Member accounts supplied by QA lead; a meeting in the needed status with the needed roster; a Guest invitation with a controlled inbox where a case needs it. Chrome and a second browser for the two-user cases.",
+  "groups": [
+    {
+      "title": "View Participants",
+      "uc": [
+        "UC-27"
+      ],
+      "cases": [
+        {
+          "description": "Member reads the roster of a Published meeting but has no management controls.",
+          "procedure": [
+            "Sign in as the Member and go to /mgmt/meetings.",
+            "Open the meeting from /mgmt/meetings and click the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "Backend answers the roster and context reads with 200; the table shows columns \"Thành phần\" and \"Vai trò\", one row per current participant (avatar, name, email, role chip \"Chủ toạ\" / \"Thư ký\" / \"Thành viên\").",
+            "The Member's own row carries \"(Tôi)\".",
+            "No \"Thao tác\" column and no \"Mời khách ngoài hệ thống\" or \"Thêm người dự họp\" button."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · BR-176 · Manual only",
+          "id": "PART_FT01"
+        },
+        {
+          "description": "Chair and Secretary see the invite and add buttons and the \"Thao tác\" column while the roster is editable.",
+          "procedure": [
+            "Sign in as the Secretary and go to /mgmt/meetings.",
+            "Open the meeting from /mgmt/meetings and click the tab \"Thành phần tham dự\".",
+            "Hover each icon button in the toolbar."
+          ],
+          "expected": [
+            "The toolbar shows two icon buttons with tooltips \"Mời khách ngoài hệ thống (qua email)\" and \"Thêm người dự họp\"; the table has a \"Thao tác\" column with \"Đổi vai trò\" and \"Gỡ khỏi cuộc họp\" icons on every row except the Chair's.",
+            "Repeating as the Chair gives the same controls."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · BR-79 · Manual only",
+          "id": "PART_FT02"
+        },
+        {
+          "description": "Roster controls disappear while the meeting waits for approval and after it ended.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of a WaitingApproval meeting.",
+            "Repeat on an Ended meeting."
+          ],
+          "expected": [
+            "The roster is listed for reading, but the toolbar buttons and the \"Thao tác\" column are not shown (BR-80)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A WaitingApproval meeting and an Ended meeting, each with the Secretary on the roster."
+          ],
+          "note": "UC-27 · BR-80 · Manual only",
+          "id": "PART_FT03"
+        },
+        {
+          "description": "Searching the roster filters rows by name or email.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\" of a meeting with at least 5 participants.",
+            "Type part of a name into \"Tìm theo tên hoặc email\".",
+            "Clear the box, then type part of an email."
+          ],
+          "expected": [
+            "After a short pause the table shows only matching rows and the page count follows the match count.",
+            "The search box accepts at most 200 characters."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT04"
+        },
+        {
+          "description": "A search with no match shows an empty state with a reset button.",
+          "procedure": [
+            "Open the tab \"Thành phần tham dự\" as the Member.",
+            "Type \"zzzzzz\" into \"Tìm theo tên hoặc email\".",
+            "Click \"Xoá tìm kiếm\"."
+          ],
+          "expected": [
+            "The table shows \"Không có thành phần nào khớp “zzzzzz”.\" with a button \"Xoá tìm kiếm\".",
+            "After the click the box is empty and the full roster is back on page 1."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT05"
+        },
+        {
+          "description": "The roster pages with the 20 / 50 / 100 page-size choices.",
+          "procedure": [
+            "Open the tab \"Thành phần tham dự\" as the Secretary of a meeting with more than 20 participants.",
+            "Go to page 2 with the pager.",
+            "Change the page size to 50."
+          ],
+          "expected": [
+            "Page 1 shows 20 rows sorted by name ignoring case; page 2 shows the next rows; with page size 50 the page returns to 1 and shows up to 50 rows.",
+            "The pager label counts \"thành phần\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (more than 20 participants)."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT06"
+        },
+        {
+          "description": "A deactivated participant stays on the roster marked \"Đã vô hiệu hoá\".",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The deactivated person's row is dimmed and shows the chip \"Đã vô hiệu hoá\" beside the role."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Member account deactivated by the admin."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT07"
+        },
+        {
+          "description": "A Guest sees names and roles but only their own email.",
+          "procedure": [
+            "Open the Guest invitation link (/guest/{invitationId}#token=…) and complete the one-time-code check.",
+            "Click the tab \"Thành phần tham dự\".",
+            "Type part of a Member's email into the search box."
+          ],
+          "expected": [
+            "The search box placeholder reads \"Tìm theo tên\"; every row except the Guest's own shows no email line, and the Guest's own row carries \"(Tôi)\" and the chip \"Khách\" as role.",
+            "Searching by a Member's email finds nobody.",
+            "No \"Thao tác\" column and no toolbar buttons."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, plus a Guest with a verified session.",
+            "A controlled inbox for the Guest invitation."
+          ],
+          "note": "UC-27 · BR-176 · Manual only",
+          "id": "PART_FT08"
+        },
+        {
+          "description": "A Member cannot open the roster of a Draft meeting, and the screen does not reveal it exists.",
+          "procedure": [
+            "Sign in as the Member and open /mgmt/meetings/{draftMeetingId} directly."
+          ],
+          "expected": [
+            "Backend answers 404; the app renders the same not-found screen as for an unknown meeting address.",
+            "No roster is shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Draft meeting on which the Member is a participant."
+          ],
+          "note": "UC-27 · BR-121 · Manual only",
+          "id": "PART_FT09"
+        },
+        {
+          "description": "The roster of an unrelated meeting is not shown to someone outside it.",
+          "procedure": [
+            "Sign in as an account that is neither participant, Organizer nor approver.",
+            "Open /mgmt/meetings/{meetingId} of a Published meeting."
+          ],
+          "expected": [
+            "Backend answers 404; the not-found screen appears and no participant data reaches the browser."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · BR-121 · Manual only",
+          "id": "PART_FT10"
+        },
+        {
+          "description": "The roster updates live when someone else changes it.",
+          "procedure": [
+            "In browser A sign in as the Member and open the tab \"Thành phần tham dự\".",
+            "In browser B sign in as the Secretary and add a person (\"Thêm người dự họp\").",
+            "Look at browser A without reloading."
+          ],
+          "expected": [
+            "Browser A shows the new row within moments, without a page reload (roster-changed event on /hubs/meetings)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one account not yet on the roster."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT11"
+        },
+        {
+          "description": "A participant removed while viewing loses the roster.",
+          "procedure": [
+            "In browser A sign in as the Member and keep the tab \"Thành phần tham dự\" open.",
+            "In browser B as the Secretary remove that Member.",
+            "Look at browser A."
+          ],
+          "expected": [
+            "Browser A shows \"Bạn không còn xem được thành phần của cuộc họp này.\" instead of the table (the reload answers 404)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · UC-28c · Manual only",
+          "id": "PART_FT12"
+        },
+        {
+          "description": "A failed roster read shows an error with a retry button.",
+          "procedure": [
+            "Sign in as the Secretary and open the meeting detail page.",
+            "Stop the backend, then click the tab \"Thành phần tham dự\" (or reload it).",
+            "Start the backend again and click \"Thử lại\"."
+          ],
+          "expected": [
+            "An alert shows the error message with a button \"Thử lại\" (for a refused read the backend code is 500/MSG95: \"Không tải được danh sách thành phần hoặc phản hồi lời mời.\").",
+            "After \"Thử lại\" the roster loads."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · MSG95 · Manual only",
+          "id": "PART_FT13"
+        },
+        {
+          "description": "The roster stays readable on a phone.",
+          "procedure": [
+            "Resize the browser to 390px wide (touch).",
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The page does not scroll sideways; each row shows name, email, role and response chips in one cell; the action icons stay reachable at 40px touch size."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-27 · Manual only",
+          "id": "PART_FT14"
+        }
+      ]
+    },
+    {
+      "title": "Add Internal Participants",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": [
+        {
+          "description": "Secretary adds two accounts as Members to a Draft meeting.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of the Draft meeting.",
+            "Click the \"Thêm người dự họp\" icon button.",
+            "In the dialog \"Thêm thành phần tham dự\" tick two people in the list \"Người dự họp\".",
+            "Leave the role \"Thành viên\" and click \"Thêm 2 người\"."
+          ],
+          "expected": [
+            "Backend answers 201/MSG96; a toast \"Thêm thành phần tham dự thành công.\" appears and the dialog closes.",
+            "Both people appear as rows with the chip \"Thành viên\" and no answer chip.",
+            "After reloading the page both are still listed."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, two accounts not yet on the roster."
+          ],
+          "note": "UC-28a · BR-88 · MSG96 · Manual only",
+          "id": "PART_FT15"
+        },
+        {
+          "description": "The dialog offers only the roles Thư ký and Thành viên.",
+          "procedure": [
+            "Sign in as the Chair and open the dialog \"Thêm thành phần tham dự\".",
+            "Look at the group \"Vai trò\".",
+            "Tick one person, choose \"Thư ký\" and click \"Thêm 1 người\"."
+          ],
+          "expected": [
+            "Only \"Thành viên\" (selected) and \"Thư ký\" are offered, each with a description line; there is no \"Chủ toạ\" choice.",
+            "The new person appears with the chip \"Thư ký\" and the toast \"Thêm thành phần tham dự thành công.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, one account not yet on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT16"
+        },
+        {
+          "description": "The add button stays disabled until someone is ticked.",
+          "procedure": [
+            "Open the dialog \"Thêm thành phần tham dự\" as the Secretary.",
+            "Look at the footer button, then tick one person and untick them."
+          ],
+          "expected": [
+            "The footer button reads \"Thêm\" and is disabled with nobody ticked; ticking changes it to \"Thêm 1 người\" and enables it."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT17"
+        },
+        {
+          "description": "The people list excludes everyone already on the roster and searches by name or email.",
+          "procedure": [
+            "Open the dialog as the Secretary.",
+            "Type a current Member's name into \"Tìm theo tên hoặc email\".",
+            "Type \"zzzzzz\"."
+          ],
+          "expected": [
+            "The list never contains someone already on the roster, so the current Member is not found: \"Không có ai khớp, hoặc người đó đã có trong danh sách.\".",
+            "When nobody is left to add and the box is empty the list says \"Mọi người đều đã có trong danh sách.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · BR-82 · Manual only",
+          "id": "PART_FT18"
+        },
+        {
+          "description": "A long people list shows a hint to narrow the search.",
+          "procedure": [
+            "Open the dialog as the Secretary on a system with more than 20 addable accounts."
+          ],
+          "expected": [
+            "The list shows 20 people and the hint \"Đang hiện 20 trong N người. Gõ tên cụ thể hơn để tìm người khác.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster.",
+            "More than 20 active accounts not on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT19"
+        },
+        {
+          "description": "Cancelling the add dialog changes nothing.",
+          "procedure": [
+            "Open the dialog as the Secretary, tick a person and click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes with no request; the roster is unchanged and no toast appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT20"
+        },
+        {
+          "description": "An account deactivated after the list loaded is refused inside the dialog.",
+          "procedure": [
+            "Sign in as the Secretary, open the dialog and tick a person.",
+            "As the admin, deactivate that person's account.",
+            "Click \"Thêm 1 người\"."
+          ],
+          "expected": [
+            "Backend answers 400/MSG97 with errors.userIds; the dialog stays open and shows \"Người được chọn không tồn tại hoặc đã ngừng hoạt động.\".",
+            "Nobody is added."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster.",
+            "Admin account supplied by QA lead."
+          ],
+          "note": "UC-28a · MSG97 · Manual only",
+          "id": "PART_FT21"
+        },
+        {
+          "description": "Adding to a meeting that locked meanwhile closes the dialog with the reason.",
+          "procedure": [
+            "In browser A sign in as the Secretary, open the dialog and tick a person.",
+            "In browser B as the Organizer send the meeting for approval.",
+            "In browser A click \"Thêm 1 người\"."
+          ],
+          "expected": [
+            "Backend answers 409/MSG98; browser A shows the toast \"Không thể sửa thành phần ở trạng thái hiện tại của cuộc họp.\" and closes the dialog.",
+            "The roster reloads without the toolbar buttons and nobody is added."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, ready for approval submission."
+          ],
+          "note": "UC-28a · BR-80 · MSG98 · Manual only",
+          "id": "PART_FT22"
+        },
+        {
+          "description": "Adding after losing the Secretary role is refused.",
+          "procedure": [
+            "In browser A sign in as the Secretary, open the dialog and tick a person.",
+            "In browser B as the Chair change the Secretary to \"Thành viên\" (the meeting is in preparation).",
+            "In browser A click \"Thêm 1 người\"."
+          ],
+          "expected": [
+            "Backend answers 403/MSG85; browser A shows the toast \"Bạn không có quyền thực hiện thao tác này.\" and closes the dialog.",
+            "After the reload the toolbar buttons are gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · BR-79 · MSG85 · Manual only",
+          "id": "PART_FT23"
+        },
+        {
+          "description": "A person added to a Published meeting is told and can open it.",
+          "procedure": [
+            "In browser A as the Secretary add a person to a Published meeting.",
+            "In browser B sign in as that person and click the notification bell.",
+            "Open the notification."
+          ],
+          "expected": [
+            "Browser B shows a new notification about the invitation to the meeting; opening it leads to the meeting detail, and its tab \"Thành phần tham dự\" lists the new person."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one account not on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT24"
+        }
+      ]
+    },
+    {
+      "title": "Invite Guest",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": [
+        {
+          "description": "Secretary invites a Guest by name and email.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of the meeting.",
+            "Click the \"Mời khách ngoài hệ thống\" icon button.",
+            "Type \"Trần Khách\" into \"Tên khách\" and \"guest@example.test\" into \"Email\".",
+            "Click \"Mời\"."
+          ],
+          "expected": [
+            "Backend answers 201/MSG96; a toast \"Đã mời khách. Thư mời sẽ được gửi tới email của khách.\" appears and the dialog closes.",
+            "A row \"Trần Khách\" with the chip \"Khách\" is listed, without a role to change.",
+            "On a Published meeting the invitation email reaches the controlled inbox."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster.",
+            "A controlled inbox for guest@example.test."
+          ],
+          "note": "UC-28a · BR-88 · MSG96 · Manual only",
+          "id": "PART_FT25"
+        },
+        {
+          "description": "Empty name or a malformed email is refused before anything is sent.",
+          "procedure": [
+            "Open the dialog \"Mời khách ngoài hệ thống\" as the Secretary.",
+            "Click \"Mời\" with both fields empty.",
+            "Type \"abc\" into \"Email\" and click \"Mời\" again."
+          ],
+          "expected": [
+            "Under \"Tên khách\" the text \"Nhập tên khách.\" and under \"Email\" the text \"Nhập email hợp lệ.\" appear; no request is sent.",
+            "The dialog stays open."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT26"
+        },
+        {
+          "description": "An email already on the roster is refused under the field.",
+          "procedure": [
+            "Open the dialog as the Secretary.",
+            "Type a name and the email of a current Member, then click \"Mời\"."
+          ],
+          "expected": [
+            "Backend answers 400/MSG97 with errors.email; under \"Email\" the text \"Email đã có trong danh sách thành phần hiện tại.\" appears and the dialog stays open.",
+            "No Guest is created."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · BR-82 · MSG97 · Manual only",
+          "id": "PART_FT27"
+        },
+        {
+          "description": "Inviting into a Secret meeting warns before the invitation goes out.",
+          "procedure": [
+            "Sign in as the Secretary of a meeting whose sensitivity is \"Mật\".",
+            "Click the \"Mời khách ngoài hệ thống\" icon button."
+          ],
+          "expected": [
+            "The dialog shows the note \"Cuộc họp Mật: khách dự họp như Thành viên và đọc được tài liệu cuộc họp.\" above the fields, and \"Mời\" sends at once, without an extra confirmation (BR-182)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Draft meeting of sensitivity \"Mật\" with the Secretary on its roster."
+          ],
+          "note": "UC-28a · BR-182 · Manual only",
+          "id": "PART_FT28"
+        },
+        {
+          "description": "Closing the dialog with typed text asks before discarding it.",
+          "procedure": [
+            "Open the dialog as the Secretary and type a name.",
+            "Click \"Huỷ\".",
+            "In the confirmation \"Bỏ lời mời đang soạn?\" click \"Tiếp tục sửa\".",
+            "Click \"Huỷ\" again and then \"Bỏ lời mời\"."
+          ],
+          "expected": [
+            "The confirmation says \"Tên và email bạn vừa nhập sẽ không được lưu.\"; \"Tiếp tục sửa\" returns to the form with the text kept.",
+            "After \"Bỏ lời mời\" the dialog closes and no Guest is created."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT29"
+        },
+        {
+          "description": "Closing an empty dialog needs no confirmation.",
+          "procedure": [
+            "Open the dialog as the Secretary and click \"Huỷ\" without typing."
+          ],
+          "expected": [
+            "The dialog closes at once; no confirmation and no request."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · Manual only",
+          "id": "PART_FT30"
+        },
+        {
+          "description": "A Member cannot invite a Guest.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The button \"Mời khách ngoài hệ thống\" is not shown; a direct POST by the Member would answer 403/MSG85."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28a · BR-79 · MSG85 · Manual only",
+          "id": "PART_FT31"
+        },
+        {
+          "description": "The invited Guest opens the invitation and sees the meeting.",
+          "procedure": [
+            "Open the invitation link from the Guest email in a private window.",
+            "Complete the one-time-code check and enter a display name if asked."
+          ],
+          "expected": [
+            "The Guest page shows the meeting with tabs \"Nội dung cuộc họp\", \"Tài liệu\", \"Biểu quyết\" and \"Thành phần tham dự\"; the Guest sees no internal menu.",
+            "The Secretary's roster now shows the Guest under the display name the Guest declared."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, with a Guest invited.",
+            "A controlled inbox for the Guest."
+          ],
+          "note": "UC-28a · UC-04 · BR-181 · Manual only",
+          "id": "PART_FT32"
+        }
+      ]
+    },
+    {
+      "title": "Change Role & Rights",
+      "uc": [
+        "UC-28b"
+      ],
+      "cases": [
+        {
+          "description": "Secretary changes a Member into a Secretary.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\".",
+            "Click the \"Đổi vai trò\" pencil on a Member's row.",
+            "In the dialog \"Đổi vai trò\" select \"Thư ký\" and click \"Lưu\"."
+          ],
+          "expected": [
+            "The dialog shows the person and the roles \"Thư ký\" and \"Thành viên\" with a description under each; \"Lưu\" is disabled until the role differs.",
+            "Backend answers 200/MSG100; the toast \"Cập nhật vai trò cuộc họp thành công.\" appears and the row's chip becomes \"Thư ký\".",
+            "After reload the role persists."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · BR-79 · MSG100 · Manual only",
+          "id": "PART_FT33"
+        },
+        {
+          "description": "Secretary changes a Secretary back into a Member while another Secretary remains.",
+          "procedure": [
+            "Sign in as the Secretary and click the pencil on the other Secretary's row.",
+            "Select \"Thành viên\" and click \"Lưu\"."
+          ],
+          "expected": [
+            "Backend answers 200/MSG100; toast \"Cập nhật vai trò cuộc họp thành công.\" and the chip becomes \"Thành viên\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster and a second Secretary."
+          ],
+          "note": "UC-28b · BR-122 · MSG100 · Manual only",
+          "id": "PART_FT34"
+        },
+        {
+          "description": "Before publication the Secretary makes a Member the Chair.",
+          "procedure": [
+            "Sign in as the Secretary and click the pencil on a Member's row.",
+            "Select \"Chủ toạ\"; read its description line.",
+            "Click \"Giao Chủ toạ\".",
+            "In the confirmation \"Giao Chủ toạ cho <name>?\" click \"Giao Chủ toạ\"."
+          ],
+          "expected": [
+            "The line under \"Chủ toạ\" ends with \"<current Chair name> sẽ thành Thành viên.\".",
+            "The confirmation says \"<current Chair name> sẽ thành Thành viên và không còn điều hành cuộc họp.\".",
+            "Backend answers 200/MSG100 with the confirmed swap; toast \"Cập nhật vai trò cuộc họp thành công.\"; the old Chair is \"Thành viên\", the person is \"Chủ toạ\", and the roster still has one Chair."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · BR-294 · MSG100 · Manual only",
+          "id": "PART_FT35"
+        },
+        {
+          "description": "The Chair row has no change or remove buttons.",
+          "procedure": [
+            "Sign in as the Secretary and look at the row of the Chair in the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The Chair row shows no \"Đổi vai trò\" and no remove icon: the chair moves only by making someone else Chair."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · BR-126 · Manual only",
+          "id": "PART_FT36"
+        },
+        {
+          "description": "After publication a Secretary cannot take the Chair from an active Chair.",
+          "procedure": [
+            "Sign in as the Secretary and click the pencil on a Member's row."
+          ],
+          "expected": [
+            "The dialog offers only \"Thư ký\" and \"Thành viên\"; there is no \"Chủ toạ\" choice (BR-126)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (Chair account active)."
+          ],
+          "note": "UC-28b · BR-126 · Manual only",
+          "id": "PART_FT37"
+        },
+        {
+          "description": "The Chair choice is not offered for a deactivated person.",
+          "procedure": [
+            "Sign in as the Secretary of a Draft meeting and click the pencil on the row of a deactivated Member."
+          ],
+          "expected": [
+            "The dialog does not list \"Chủ toạ\" for that row."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, one Member account deactivated."
+          ],
+          "note": "UC-28b · Manual only",
+          "id": "PART_FT38"
+        },
+        {
+          "description": "A Guest row can be withdrawn but has no role to change.",
+          "procedure": [
+            "Sign in as the Secretary and look at the actions on a Guest row."
+          ],
+          "expected": [
+            "The Guest row shows only the \"Thu hồi lời mời\" icon; there is no \"Đổi vai trò\" pencil."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, one Guest invited."
+          ],
+          "note": "UC-28b · Manual only",
+          "id": "PART_FT39"
+        },
+        {
+          "description": "Demoting the last Secretary of a Published meeting is refused inside the dialog.",
+          "procedure": [
+            "Sign in as the Chair and click the pencil on the only Secretary's row.",
+            "Select \"Thành viên\" and click \"Lưu\"."
+          ],
+          "expected": [
+            "Backend answers 409/MSG109; the dialog stays open and shows \"Cuộc họp phải giữ Chủ toạ và Thư ký theo quy định. Hãy phân công người thay thế.\".",
+            "The role is unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (a single Secretary)."
+          ],
+          "note": "UC-28b · BR-122 · MSG109 · Manual only",
+          "id": "PART_FT40"
+        },
+        {
+          "description": "A role change on a meeting that locked meanwhile closes the dialog with the reason.",
+          "procedure": [
+            "In browser A sign in as the Secretary and open the pencil dialog on a Member.",
+            "In browser B as the Organizer send the meeting for approval.",
+            "In browser A select \"Thư ký\" and click \"Lưu\"."
+          ],
+          "expected": [
+            "Backend answers 409/MSG98; toast \"Không thể sửa thành phần ở trạng thái hiện tại của cuộc họp.\" and the dialog closes; the roster reloads without management controls."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster, ready for approval submission."
+          ],
+          "note": "UC-28b · BR-80 · MSG98 · Manual only",
+          "id": "PART_FT41"
+        },
+        {
+          "description": "Cancelling the role dialog changes nothing.",
+          "procedure": [
+            "Open the pencil dialog on a Member, select \"Thư ký\" and click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes with no request; the row still shows \"Thành viên\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · Manual only",
+          "id": "PART_FT42"
+        },
+        {
+          "description": "A Member cannot change roles.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "No pencil buttons are shown; a direct PUT by the Member would answer 403/MSG85."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · BR-79 · MSG85 · Manual only",
+          "id": "PART_FT43"
+        },
+        {
+          "description": "The promoted person is told of the new role and sees it live.",
+          "procedure": [
+            "In browser A as the Secretary of a Published meeting change a Member into \"Thư ký\".",
+            "In browser B, signed in as that Member with the roster open, look at the roster and the notification bell."
+          ],
+          "expected": [
+            "Browser B's roster updates without reload; the bell has a notification \"Cuộc họp “<title>”: bạn đã được giao làm Thư ký.\".",
+            "The person's invitation answer and attendance are untouched."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28b · Manual only",
+          "id": "PART_FT44"
+        }
+      ]
+    },
+    {
+      "title": "Remove Participant & Revoke Guest",
+      "uc": [
+        "UC-28c"
+      ],
+      "cases": [
+        {
+          "description": "Secretary removes a Member after confirming.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\".",
+            "Click the trash icon \"Gỡ <name>\" on a Member's row.",
+            "In the confirmation \"Gỡ khỏi cuộc họp?\" read the text and click \"Gỡ khỏi cuộc họp\"."
+          ],
+          "expected": [
+            "The confirmation says \"<name> không còn xem được cuộc họp này. Nếu cuộc họp đã công bố, họ nhận thông báo đã được gỡ.\".",
+            "Backend answers 200/MSG103; toast \"Gỡ thành phần tham dự thành công.\" and the row disappears; after reload it is still gone.",
+            "The removed person gets 404 when opening the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · MSG103 · Manual only",
+          "id": "PART_FT45"
+        },
+        {
+          "description": "Backing out of the remove confirmation keeps the person.",
+          "procedure": [
+            "Click the trash icon on a Member's row and click \"Huỷ\" in the confirmation."
+          ],
+          "expected": [
+            "The confirmation closes with no request; the row is still listed."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · Manual only",
+          "id": "PART_FT46"
+        },
+        {
+          "description": "Secretary revokes a Guest invitation.",
+          "procedure": [
+            "Click the trash icon \"Thu hồi lời mời của <name>\" on the Guest's row.",
+            "In the confirmation \"Thu hồi lời mời khách?\" read the text and click \"Thu hồi lời mời\".",
+            "In the Guest's browser reload the Guest page."
+          ],
+          "expected": [
+            "The confirmation says \"<name> không còn vào được cuộc họp bằng lời mời đã nhận.\".",
+            "Backend answers 200/MSG103; toast \"Đã thu hồi lời mời khách.\" and the row disappears.",
+            "The Guest's session no longer opens the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Guest with a verified session."
+          ],
+          "note": "UC-28c · BR-181 · MSG103 · Manual only",
+          "id": "PART_FT47"
+        },
+        {
+          "description": "A person removing themselves is warned they will lose the meeting.",
+          "procedure": [
+            "Sign in as the Secretary (with another Secretary on the meeting) and click the trash icon on your own row."
+          ],
+          "expected": [
+            "The confirmation says \"Bạn sẽ không còn xem được cuộc họp này.\"; after \"Gỡ khỏi cuộc họp\" the toast \"Gỡ thành phần tham dự thành công.\" appears and the roster reloads for a person with no access (the not-found message \"Bạn không còn xem được thành phần của cuộc họp này.\")."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster and a second Secretary."
+          ],
+          "note": "UC-28c · Manual only",
+          "id": "PART_FT48"
+        },
+        {
+          "description": "The Chair cannot be removed.",
+          "procedure": [
+            "Sign in as the Secretary and look at the row of the Chair."
+          ],
+          "expected": [
+            "There is no remove icon on the Chair's row."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · BR-126 · Manual only",
+          "id": "PART_FT49"
+        },
+        {
+          "description": "Removing the last Secretary of a Published meeting is refused inside the confirmation.",
+          "procedure": [
+            "Sign in as the Chair and click the trash icon on the only Secretary's row.",
+            "Click \"Gỡ khỏi cuộc họp\"."
+          ],
+          "expected": [
+            "Backend answers 409/MSG109; the confirmation stays open and shows \"Cuộc họp phải giữ Chủ toạ và Thư ký theo quy định. Hãy phân công người thay thế.\".",
+            "The Secretary stays on the roster."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (a single Secretary)."
+          ],
+          "note": "UC-28c · BR-122 · MSG109 · Manual only",
+          "id": "PART_FT50"
+        },
+        {
+          "description": "Removing someone already removed elsewhere closes the dialog and refreshes the roster.",
+          "procedure": [
+            "In browser A as the Secretary open the remove confirmation for a Member.",
+            "In browser B as the Chair remove the same Member.",
+            "In browser A click \"Gỡ khỏi cuộc họp\"."
+          ],
+          "expected": [
+            "Backend answers 404; browser A closes the confirmation, shows the error toast and reloads the roster without that Member."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · Manual only",
+          "id": "PART_FT51"
+        },
+        {
+          "description": "A removed Presenter and a removed speaker no longer appear in the meeting content.",
+          "procedure": [
+            "As the Secretary remove a Member who is Presenter of an agenda item.",
+            "Open the tab \"Nội dung cuộc họp\"."
+          ],
+          "expected": [
+            "The agenda item no longer names the removed Member as Presenter."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one agenda item with a Member as Presenter."
+          ],
+          "note": "UC-28c · BR-337 · Manual only",
+          "id": "PART_FT52"
+        },
+        {
+          "description": "The removed person is notified and loses access immediately.",
+          "procedure": [
+            "In browser B sign in as the Member and keep the meeting open.",
+            "In browser A as the Secretary remove that Member.",
+            "In browser B click the notification bell and reload the meeting page."
+          ],
+          "expected": [
+            "Browser B has a notification that they were removed from the meeting; reloading the meeting answers 404."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · Manual only",
+          "id": "PART_FT53"
+        },
+        {
+          "description": "A Member cannot remove anyone.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "No trash icons are shown; a direct DELETE by the Member would answer 403/MSG85."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-28c · BR-79 · MSG85 · Manual only",
+          "id": "PART_FT54"
+        }
+      ]
+    },
+    {
+      "title": "Respond to Invitation",
+      "uc": [
+        "UC-29"
+      ],
+      "cases": [
+        {
+          "description": "Member accepts the invitation from the meeting page.",
+          "procedure": [
+            "Sign in as the Member and open the Published meeting from /mgmt/meetings.",
+            "In the bar \"Bạn có tham dự cuộc họp này?\" click \"Tham dự\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "Backend answers 200/MSG105; the toast \"Đã ghi nhận phản hồi lời mời.\" appears and the bar disappears.",
+            "The tab \"Thành phần tham dự\" shows the chip \"Đã xác nhận tham dự\" beside the Member's name, also to other readers.",
+            "After reload the bar stays gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · BR-105 · MSG105 · Manual only",
+          "id": "PART_FT55"
+        },
+        {
+          "description": "Member declines after confirming; the meeting leaves their calendar but stays readable.",
+          "procedure": [
+            "Open the Published meeting as the Member and click \"Không tham dự\".",
+            "In the confirmation \"Không tham dự cuộc họp?\" read the text and click \"Không tham dự\".",
+            "Go to /calendar.",
+            "Open the meeting from /mgmt/meetings."
+          ],
+          "expected": [
+            "The confirmation says \"Bạn chỉ trả lời được một lần, sau đó không đổi được. Cuộc họp sẽ không còn hiện trên lịch của bạn.\".",
+            "Backend answers 200/MSG105; the toast reads \"Đã ghi nhận phản hồi lời mời. Cuộc họp không còn hiện trên lịch của bạn.\" and the roster shows the chip \"Không tham dự\".",
+            "The meeting is gone from /calendar, but the meeting list still opens it with its documents and the online room (BR-321)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · BR-105 · BR-321 · MSG105 · Manual only",
+          "id": "PART_FT56"
+        },
+        {
+          "description": "Choosing \"Quay lại\" in the decline confirmation records nothing.",
+          "procedure": [
+            "Click \"Không tham dự\" and then \"Quay lại\" in the confirmation."
+          ],
+          "expected": [
+            "The confirmation closes; no request is sent and the bar \"Bạn có tham dự cuộc họp này?\" is still shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · Manual only",
+          "id": "PART_FT57"
+        },
+        {
+          "description": "The Chair is never asked.",
+          "procedure": [
+            "Sign in as the Chair and open the Published meeting."
+          ],
+          "expected": [
+            "The bar \"Bạn có tham dự cuộc họp này?\" is not shown (the backend context answers canRespond false)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-29 · BR-105 · Manual only",
+          "id": "PART_FT58"
+        },
+        {
+          "description": "The question is not asked on a Draft meeting or while the meeting is running.",
+          "procedure": [
+            "Sign in as the Member and open a meeting that is InProgress."
+          ],
+          "expected": [
+            "The bar is not shown while the meeting is InProgress (attendance answers the question then); on a Draft meeting the Member cannot open the meeting at all."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · Manual only",
+          "id": "PART_FT59"
+        },
+        {
+          "description": "An answer given in another tab cannot be changed.",
+          "procedure": [
+            "Open the Published meeting as the Member in tab 1 and in tab 2.",
+            "In tab 2 click \"Tham dự\".",
+            "In tab 1 click \"Không tham dự\" and confirm."
+          ],
+          "expected": [
+            "Backend answers 409/MSG285; tab 1 shows the toast \"Bạn đã trả lời lời mời này. Câu trả lời không đổi được.\" and re-reads the meeting: the bar disappears and the stored answer stays \"Tham dự\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · BR-106 · MSG285 · Manual only",
+          "id": "PART_FT60"
+        },
+        {
+          "description": "Answering after the meeting ended is refused.",
+          "procedure": [
+            "Open the Published meeting as the Member.",
+            "In another browser the Chair ends the meeting.",
+            "Click \"Tham dự\" in the first browser."
+          ],
+          "expected": [
+            "Backend answers 409/MSG107; the toast \"Lời mời này không còn cho phép phản hồi.\" appears and the bar disappears after the re-read."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, startable by the Chair."
+          ],
+          "note": "UC-29 · BR-106 · MSG107 · Manual only",
+          "id": "PART_FT61"
+        },
+        {
+          "description": "The invitation can also be answered from the calendar list.",
+          "procedure": [
+            "Sign in as the Member and go to /calendar; switch to the list view.",
+            "On the card of the meeting click \"Tham dự\" next to \"Xác nhận tham dự?\"."
+          ],
+          "expected": [
+            "The toast \"Đã ghi nhận phản hồi lời mời.\" appears; the buttons leave and the card shows the chip \"Đã xác nhận tham dự\".",
+            "Opening the meeting detail shows no question bar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · MSG105 · Manual only",
+          "id": "PART_FT62"
+        },
+        {
+          "description": "A Guest answers once from the Guest page.",
+          "procedure": [
+            "Open the Guest invitation link and complete the one-time-code check.",
+            "In the bar \"Bạn có tham dự cuộc họp này?\" click \"Không tham dự\".",
+            "In the confirmation read the text and click \"Không tham dự\"."
+          ],
+          "expected": [
+            "The confirmation says \"Bạn chỉ trả lời được một lần, sau đó không đổi được.\" (no calendar sentence).",
+            "Backend answers 200/MSG105 and the toast \"Đã ghi nhận phản hồi lời mời.\" appears; the Guest's row shows the chip \"Không tham dự\" and the bar is gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, plus a Guest with a verified session."
+          ],
+          "note": "UC-29 · BR-181 · MSG105 · Manual only",
+          "id": "PART_FT63"
+        },
+        {
+          "description": "The Secretary sees an answer appear on the open roster.",
+          "procedure": [
+            "In browser A sign in as the Secretary with the tab \"Thành phần tham dự\" open.",
+            "In browser B as the Member click \"Tham dự\"."
+          ],
+          "expected": [
+            "Browser A shows the chip \"Đã xác nhận tham dự\" beside the Member within moments, without reload."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
+          ],
+          "note": "UC-29 · UC-30 · Manual only",
+          "id": "PART_FT64"
+        }
+      ]
+    },
+    {
+      "title": "Response Status",
+      "uc": [
+        "UC-30"
+      ],
+      "cases": [
+        {
+          "description": "The roster labels each answer and shows nothing for unanswered invitations.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "A person who accepted has the chip \"Đã xác nhận tham dự\"; one who declined has \"Không tham dự\"; unanswered people have no response chip.",
+            "There are no Pending/Accepted/Declined counters anywhere in the tab."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster: one Member accepted, one declined, one has not answered."
+          ],
+          "note": "UC-30 · BR-115 · BR-321 · Manual only",
+          "id": "PART_FT65"
+        },
+        {
+          "description": "The Chair's row never shows a response chip.",
+          "procedure": [
+            "Sign in as the Secretary and look at the Chair's row."
+          ],
+          "expected": [
+            "The Chair's row shows only the role chip \"Chủ toạ\" and no response chip, even if that person answered earlier as a Member (BR-115)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Chair declined while still a Member before becoming Chair."
+          ],
+          "note": "UC-30 · BR-115 · Manual only",
+          "id": "PART_FT66"
+        },
+        {
+          "description": "A Guest's answer shows on their row to every reader.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The Guest row carries the role chip \"Khách\" and the chip with the Guest's answer."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Guest who accepted."
+          ],
+          "note": "UC-30 · BR-176 · Manual only",
+          "id": "PART_FT67"
+        },
+        {
+          "description": "A re-invited person starts again with no chip.",
+          "procedure": [
+            "As the Secretary remove a Member who had accepted, then add the same account again.",
+            "Look at the roster."
+          ],
+          "expected": [
+            "The new row has no response chip (a fresh invitation does not inherit the old answer)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Member who accepted."
+          ],
+          "note": "UC-30 · BR-88 · Manual only",
+          "id": "PART_FT68"
+        },
+        {
+          "description": "The response chip is shown to a Guest viewer too.",
+          "procedure": [
+            "Open the Guest page and click the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The chips for answered participants are shown; other people's emails are not."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Member who accepted, plus a Guest with a verified session."
+          ],
+          "note": "UC-30 · BR-176 · Manual only",
+          "id": "PART_FT69"
+        }
+      ]
+    },
+    {
+      "title": "Record Attendance",
+      "uc": [
+        "UC-31"
+      ],
+      "cases": [
+        {
+          "description": "The attendance column is absent before the meeting starts.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of a Published meeting."
+          ],
+          "expected": [
+            "The table has only \"Thành phần\", \"Vai trò\" and \"Thao tác\"; the backend attendance list is not requested."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-31 · Manual only",
+          "id": "PART_FT70"
+        },
+        {
+          "description": "Secretary marks a Member as present.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of the InProgress meeting.",
+            "In the column \"Điểm danh\" click the dashed picker \"Điểm danh\" on a Member's row.",
+            "Choose \"Có mặt\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "Backend answers 200/MSG147; the toast \"Lưu điểm danh thành công.\" appears and the picker now reads \"Có mặt\".",
+            "Hovering shows \"<Secretary name> điểm danh lúc <HH:mm dd/MM/yyyy>\".",
+            "After reload the value persists."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-31 · BR-170 · MSG147 · Manual only",
+          "id": "PART_FT71"
+        },
+        {
+          "description": "Secretary marks a Member as absent and later corrects it.",
+          "procedure": [
+            "Choose \"Vắng\" in the picker of a Member.",
+            "Open the picker again and choose \"Có mặt\"."
+          ],
+          "expected": [
+            "Each choice saves at once (toast \"Lưu điểm danh thành công.\") and the picker shows \"Vắng\" then \"Có mặt\"; there is no Save button."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-31 · BR-170 · MSG147 · Manual only",
+          "id": "PART_FT72"
+        },
+        {
+          "description": "Everyone else reads attendance without a picker.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The column \"Điểm danh\" shows a dot with \"Có mặt\" or \"Vắng\" for marked people and \"Chưa điểm danh\" for the rest (not \"Vắng\"); no picker is shown.",
+            "The Chair sees the same read-only view."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster: one person marked present, one absent, one unmarked."
+          ],
+          "note": "UC-31 · BR-170 · Manual only",
+          "id": "PART_FT73"
+        },
+        {
+          "description": "Accepting the invitation or joining the room does not mark anyone present.",
+          "procedure": [
+            "As the Member click \"Tham dự\" if asked, then join the online room.",
+            "In another browser as the Secretary open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "The Member's row still shows \"Chưa điểm danh\" until the Secretary picks a value."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster with its online room open."
+          ],
+          "note": "UC-31 · BR-170 · Manual only",
+          "id": "PART_FT74"
+        },
+        {
+          "description": "Two Secretaries marking the same person: the later one is told to re-check.",
+          "procedure": [
+            "In browsers A and B sign in as two different Secretaries on the open tab.",
+            "In A choose \"Có mặt\" for a Member.",
+            "In B (before it refreshed) choose \"Vắng\" for the same Member."
+          ],
+          "expected": [
+            "Backend answers 409/MSG151 to B; the toast \"Thành phần hoặc dữ liệu điểm danh đã thay đổi. Vui lòng tải lại và kiểm tra trước khi lưu.\" appears and B re-reads and shows \"Có mặt\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster and a second Secretary."
+          ],
+          "note": "UC-31 · BR-172 · MSG151 · Manual only",
+          "id": "PART_FT75"
+        },
+        {
+          "description": "Marking after the meeting ended is refused.",
+          "procedure": [
+            "In browser A as the Secretary keep the roster open.",
+            "In browser B the Chair ends the meeting.",
+            "In browser A choose \"Có mặt\" for a Member."
+          ],
+          "expected": [
+            "Backend answers 409/MSG149; the toast \"Chỉ được điểm danh khi cuộc họp đang diễn ra.\" appears and after the re-read the pickers become read-only."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-31 · BR-170 · MSG149 · Manual only",
+          "id": "PART_FT76"
+        },
+        {
+          "description": "A person who lost the Secretary role is told on the next attempt.",
+          "procedure": [
+            "In browser A as the Secretary keep the roster open.",
+            "In browser B as the Chair change that Secretary into \"Thành viên\" (another Secretary remains).",
+            "In browser A choose \"Có mặt\" for a Member."
+          ],
+          "expected": [
+            "Backend answers 403; the toast \"Bạn không còn quyền điểm danh cuộc họp này.\" appears and, after the re-read, A shows read-only attendance."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster and a second Secretary."
+          ],
+          "note": "UC-31 · BR-170 · Manual only",
+          "id": "PART_FT77"
+        },
+        {
+          "description": "Attendance can be recorded from the online room.",
+          "procedure": [
+            "As the Secretary join the online room of the InProgress meeting.",
+            "Open the room icon \"Điểm danh\".",
+            "In the panel titled \"Điểm danh\" choose \"Có mặt\" for a Member.",
+            "Open the tab \"Thành phần tham dự\" in the meeting page."
+          ],
+          "expected": [
+            "The panel lists people with name and role, a picker each; choosing saves with the toast \"Lưu điểm danh thành công.\".",
+            "The meeting tab shows the same value."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster with its online room open."
+          ],
+          "note": "UC-31 · Manual only",
+          "id": "PART_FT78"
+        },
+        {
+          "description": "Readers see a new attendance value without reloading.",
+          "procedure": [
+            "In browser A as the Member keep the roster open.",
+            "In browser B as the Secretary choose \"Có mặt\" for the Member."
+          ],
+          "expected": [
+            "Browser A shows \"Có mặt\" for that row within moments."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-31 · Manual only",
+          "id": "PART_FT79"
+        },
+        {
+          "description": "Attendance stays visible, read-only, after the meeting ended.",
+          "procedure": [
+            "Sign in as the Secretary and open the tab \"Thành phần tham dự\" of an Ended meeting."
+          ],
+          "expected": [
+            "The column \"Điểm danh\" is shown with the recorded values as read-only dots; no picker."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Ended with its Chair, a Secretary and several Members on the roster with attendance recorded."
+          ],
+          "note": "UC-31 · Manual only",
+          "id": "PART_FT80"
+        },
+        {
+          "description": "Values recorded before Present and Absent existed are shown but not written.",
+          "procedure": [
+            "Sign in as the Member and open the tab \"Thành phần tham dự\" of a meeting with an old Excused value."
+          ],
+          "expected": [
+            "The row shows \"Vắng có phép\" (or \"Ủy quyền\" for the other old value) in the attendance column."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Ended with its Chair, a Secretary and several Members on the roster where one row holds an old \"Excused\" value prepared in the database."
+          ],
+          "note": "UC-31 · Manual only",
+          "id": "PART_FT81"
+        }
+      ]
+    },
+    {
+      "title": "Hand Over Chair",
+      "uc": [
+        "UC-73"
+      ],
+      "cases": [
+        {
+          "description": "The Chair of a Published meeting hands the Chair to a Member.",
+          "procedure": [
+            "Sign in as the Chair and open the tab \"Thành phần tham dự\" of the Published meeting.",
+            "Click the \"Đổi vai trò\" pencil on a Member's row.",
+            "Select \"Chủ toạ\" and read its description line.",
+            "Click \"Giao Chủ toạ\".",
+            "In the confirmation \"Giao Chủ toạ cho <name>?\" read the text and click \"Giao Chủ toạ\"."
+          ],
+          "expected": [
+            "The line under \"Chủ toạ\" ends with \"Bạn sẽ thành Thành viên.\", and the confirmation says \"Bạn sẽ thành Thành viên và không còn điều hành cuộc họp.\".",
+            "Backend answers 200/MSG257; the toast \"Giao vai trò Chủ toạ thành công.\" appears.",
+            "The roster shows the person as \"Chủ toạ\" and the caller as \"Thành viên\"; the caller no longer has the toolbar buttons or row actions; exactly one Chair remains."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · BR-126 · BR-295 · MSG257 · Manual only",
+          "id": "PART_FT82"
+        },
+        {
+          "description": "The hand-over works while the meeting is running.",
+          "procedure": [
+            "Sign in as the Chair of the InProgress meeting and hand the Chair over as in the previous case."
+          ],
+          "expected": [
+            "Backend answers 200/MSG257 with the toast \"Giao vai trò Chủ toạ thành công.\"; the new Chair appears on the roster."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · BR-126 · MSG257 · Manual only",
+          "id": "PART_FT83"
+        },
+        {
+          "description": "A Secretary cannot be handed the Chair.",
+          "procedure": [
+            "Sign in as the Chair of a Published meeting and click the pencil on the Secretary's row."
+          ],
+          "expected": [
+            "The dialog offers only \"Thư ký\" and \"Thành viên\"; \"Chủ toạ\" is not offered (BR-295)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · BR-295 · Manual only",
+          "id": "PART_FT84"
+        },
+        {
+          "description": "Backing out of the hand-over confirmation changes nothing.",
+          "procedure": [
+            "Select \"Chủ toạ\" on a Member's row, click \"Giao Chủ toạ\", then click \"Huỷ\" in the confirmation."
+          ],
+          "expected": [
+            "The confirmation closes; no request is sent and the caller is still Chair."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · Manual only",
+          "id": "PART_FT85"
+        },
+        {
+          "description": "The new Chair is told and can manage the meeting.",
+          "procedure": [
+            "In browser A as the Chair hand the Chair to a Member.",
+            "In browser B sign in as that Member and click the notification bell, then open the tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "Browser B shows the notification \"Cuộc họp “<title>”: bạn đã được giao làm Chủ toạ.\"; the roster lists the Member as \"Chủ toạ\" and offers the toolbar buttons; the old Chair gets no notification about their own action."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · Manual only",
+          "id": "PART_FT86"
+        },
+        {
+          "description": "A hand-over by someone who is no longer Chair is refused and the roster refreshes.",
+          "procedure": [
+            "In browsers A and B sign in as the Chair; in both open the pencil dialog on a Member and select \"Chủ toạ\".",
+            "In B complete the hand-over.",
+            "In A click \"Giao Chủ toạ\" and confirm."
+          ],
+          "expected": [
+            "Backend answers 409/MSG260 to A; the toast \"Bạn không còn quyền giao vai trò Chủ toạ cho cuộc họp này.\" appears, the dialog closes and the roster reloads without Chair controls."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (the same Chair signed in twice)."
+          ],
+          "note": "UC-73 · MSG260 · Manual only",
+          "id": "PART_FT87"
+        },
+        {
+          "description": "A recipient who became Secretary meanwhile is refused inside the dialog.",
+          "procedure": [
+            "In browser A as the Chair open the pencil dialog on a Member and select \"Chủ toạ\".",
+            "In browser B as the Secretary make that Member a Secretary.",
+            "In A click \"Giao Chủ toạ\" and confirm."
+          ],
+          "expected": [
+            "Backend answers 400/MSG259; the dialog shows \"Người nhận vai trò Chủ toạ phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký.\" and the Chair stays Chair."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster."
+          ],
+          "note": "UC-73 · BR-295 · MSG259 · Manual only",
+          "id": "PART_FT88"
+        },
+        {
+          "description": "A Secretary replaces a Chair whose account was locked.",
+          "procedure": [
+            "Sign in as the Secretary of a Published meeting whose Chair account is deactivated.",
+            "Click the pencil on a Member's row and select \"Chủ toạ\".",
+            "Click \"Giao Chủ toạ\" and confirm \"Giao Chủ toạ cho <name>?\"."
+          ],
+          "expected": [
+            "The line under \"Chủ toạ\" ends with \"<old Chair name> sẽ thành Thành viên.\" and the confirmation says \"<old Chair name> sẽ thành Thành viên và không còn điều hành cuộc họp.\".",
+            "Backend answers 200/MSG100; the toast \"Cập nhật vai trò cuộc họp thành công.\" appears; the Member is Chair and the old Chair, still deactivated, is a Member."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (Chair account deactivated by the admin)."
+          ],
+          "note": "UC-28b · UC-73 · BR-126 · MSG100 · Manual only",
+          "id": "PART_FT89"
+        },
+        {
+          "description": "A Member or Secretary cannot start a hand-over while the Chair is active.",
+          "procedure": [
+            "Sign in as the Secretary of a Published meeting and open the pencil dialog on a Member."
+          ],
+          "expected": [
+            "The dialog has no \"Chủ toạ\" choice (the context answers canReplaceChair false); a Member sees no pencil at all."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A meeting in Published with its Chair, a Secretary and several Members on the roster (Chair account active)."
+          ],
+          "note": "UC-73 · BR-126 · Manual only",
+          "id": "PART_FT90"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.EnforceRoomAccess",
+  "description": "Room provider webhook handling, reconciliation and access enforcement.",
+  "precondition": "Room provider events as input.",
+  "methods": [
+    {
+      "method": "CallRoomService.EnforceRoomAccessAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 319,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting with an active room session; LiveKit is configured.",
+            "A participant was just removed from the roster (or a guest invitation just revoked)."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "That meeting's room is reconciled at once: whoever lost access is taken out now instead of at the next 30-second run.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting with no active room session (a Published meeting, or an empty room).",
+            "LiveKit is configured."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "Nothing happens; with nobody known to be in the room the provider is not called.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting with an active room session.",
+            "LiveKit is not configured."
+          ],
+          "inputs": "meetingId: the meeting.",
+          "return": "Returns at once; the provider is never called.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

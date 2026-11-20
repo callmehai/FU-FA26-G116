@@ -1,0 +1,92 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Notes.Discussion",
+  "description": "Notes folded into the minutes template: discussion per agenda item and reading the meeting notes in order.",
+  "precondition": "Minutes records with agenda and notes.",
+  "methods": [
+    {
+      "method": "Notes.Discussion",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesTemplate.cs",
+      "line": 145,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Notes with a meeting-wide note \"Mở đầu\"."
+          ],
+          "inputs": "itemId: null.",
+          "return": "[\"Mở đầu\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Item 1 has two unmarked lines."
+          ],
+          "inputs": "itemId: item 1.",
+          "return": "The two lines in note order.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Item has only a marked line (\"Kết luận: Duyệt\")."
+          ],
+          "inputs": "itemId: that item.",
+          "return": "Empty list; the line moved to section III.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Id of an item without notes or not in the agenda."
+          ],
+          "inputs": "itemId: an unknown id.",
+          "return": "Empty list.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "No meeting-wide note."
+          ],
+          "inputs": "itemId: null.",
+          "return": "Empty list.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-59 · UC-82",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

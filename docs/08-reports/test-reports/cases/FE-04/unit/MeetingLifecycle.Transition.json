@@ -1,0 +1,394 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "MeetingLifecycle.Transition",
+  "description": "Meeting start and end: chair-only transitions with roster checks and fan-out on end.",
+  "precondition": "Published meeting with one chair and at least one secretary for Start; InProgress meeting for End.",
+  "methods": [
+    {
+      "method": "MeetingLifecycleService.TransitionAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs",
+      "line": 33,
+      "cases": [
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "command: Start; actor: the Chair.",
+          "log": "Saved: status InProgress, history row Start (Published to InProgress) with the Chair as actor; after commit \"meeting started\" notification queued for the two Members and the Secretary but not for the Chair.",
+          "note": "UC-21 · BR-127 · BR-130 · BR-131 · BR-164 · MSG110",
+          "preconditions": [
+            "Meeting is Published with exactly one active Chair (the actor) and one active Secretary.",
+            "Two other Members are invited."
+          ],
+          "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "command: End; actor: the Chair.",
+          "log": "Saved: status Ended, history row End (InProgress to Ended); draft votes deleted; open speaking requests closed; after commit: agenda event \"MeetingEnded\" published, draft-deletion events sent to Chair and Secretary only, LiveKit room closed.",
+          "note": "UC-22 · BR-130 · BR-132 · BR-143 · MSG111",
+          "preconditions": [
+            "Meeting is InProgress; actor is the active Chair.",
+            "Meeting mode is Online."
+          ],
+          "return": "Success(Ended); ActualEndedAt = now; MSG111.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "command: End; actor: the Chair.",
+          "log": "Same saved changes; no room closure because an in-person meeting has no online room.",
+          "note": "UC-22 · BR-130 · BR-132 · MSG111",
+          "preconditions": [
+            "Meeting is InProgress, mode InPerson."
+          ],
+          "return": "Success(Ended); MSG111.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "command: End; actor: the Chair.",
+          "log": "Room closure is requested after commit.",
+          "note": "UC-22 · BR-130 · BR-132 · BR-143 · MSG111",
+          "preconditions": [
+            "Meeting is InProgress, mode Hybrid."
+          ],
+          "return": "Success(Ended); MSG111.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "command: Approve; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · MSG80",
+          "preconditions": [
+            "Command carries an approval action."
+          ],
+          "return": "Failure InvalidRequest; MSG80; nothing changed.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "command: Start with Reason \"x\".",
+          "log": "N/A",
+          "note": "UC-21 · MSG80",
+          "preconditions": [
+            "Start command carries a reason."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "command: Start with AssignedApproverId set.",
+          "log": "N/A",
+          "note": "UC-21 · MSG80",
+          "preconditions": [
+            "Start command carries an approver id or an organizer id."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "meetingId: unknown.",
+          "log": "N/A",
+          "note": "UC-21 · BR-127 · BR-130 · BR-131",
+          "preconditions": [
+            "Meeting does not exist."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "actor: stranger.",
+          "log": "N/A",
+          "note": "UC-21 · BR-29",
+          "preconditions": [
+            "Actor has no read access to the meeting."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "command: Start; actor: Secretary.",
+          "log": "N/A",
+          "note": "UC-21 · BR-130 · MSG112",
+          "preconditions": [
+            "Actor reads the meeting as Secretary."
+          ],
+          "return": "Failure Forbidden (403); MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "command: End; actor: deactivated Chair.",
+          "log": "N/A",
+          "note": "UC-22 · BR-130 · MSG114",
+          "preconditions": [
+            "Actor is the Chair on the roster but the Chair account is deactivated."
+          ],
+          "return": "Failure Forbidden (403); MSG114.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "command: Start; actor: creator.",
+          "log": "N/A",
+          "note": "UC-21 · BR-130 · MSG112",
+          "preconditions": [
+            "Actor is the meeting creator, not on the roster as Chair."
+          ],
+          "return": "Failure Forbidden; MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · BR-131 · MSG112",
+          "preconditions": [
+            "Meeting is Approved (not yet Published)."
+          ],
+          "return": "Failure StatusConflict (409); MSG112; nothing saved.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · BR-131 · MSG112",
+          "preconditions": [
+            "Meeting is already InProgress."
+          ],
+          "return": "Failure StatusConflict; MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · BR-127 · MSG112",
+          "preconditions": [
+            "Published meeting with no active Secretary."
+          ],
+          "return": "Failure StatusConflict; MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · BR-127 · MSG112",
+          "preconditions": [
+            "Published meeting with two active Chairs (actor is one of them)."
+          ],
+          "return": "Failure StatusConflict; MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC017",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-21 · BR-127 · MSG112",
+          "preconditions": [
+            "Published meeting where the only Secretary is deactivated."
+          ],
+          "return": "Failure StatusConflict; MSG112.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC018",
+          "inputs": "command: End; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-22 · BR-132 · MSG114",
+          "preconditions": [
+            "Meeting is Published."
+          ],
+          "return": "Failure StatusConflict; MSG114.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC019",
+          "inputs": "command: End; actor: Chair.",
+          "log": "Same saved changes as a normal end.",
+          "note": "UC-22 · BR-130 · BR-132 · MSG111",
+          "preconditions": [
+            "Meeting is InProgress but has no Secretary."
+          ],
+          "return": "Success(Ended); the roster is not checked when ending.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC020",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "Error logged with the action and meeting id; transaction rolled back.",
+          "note": "UC-21 · MSG115",
+          "preconditions": [
+            "The store fails while saving the start."
+          ],
+          "return": "Failure SaveFailed (500); MSG115; no notification is sent.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC021",
+          "inputs": "command: End; actor: Chair.",
+          "log": "Error logged; transaction rolled back.",
+          "note": "UC-22 · MSG116",
+          "preconditions": [
+            "The store fails while saving the end."
+          ],
+          "return": "Failure SaveFailed; MSG116; no post-commit effect runs.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC022",
+          "inputs": "command: End; actor: Chair.",
+          "log": "Error logged; transaction rolled back.",
+          "note": "UC-22 · MSG116",
+          "preconditions": [
+            "Ending finds the agenda in a state that cannot be closed."
+          ],
+          "return": "Failure SaveFailed; MSG116.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC023",
+          "inputs": "command: End; actor: Chair.",
+          "log": "Warning logged for the failed post-commit effect; the other effects still run.",
+          "note": "UC-22 · BR-130 · BR-132 · MSG111",
+          "preconditions": [
+            "Meeting ended but the agenda event publication fails."
+          ],
+          "return": "Success(Ended); MSG111; the failure does not change the result.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC024",
+          "inputs": "command: Start; actor: Chair.",
+          "log": "Warning logged; the meeting stays InProgress.",
+          "note": "UC-21 · BR-127 · BR-130 · BR-131 · BR-164 · MSG110",
+          "preconditions": [
+            "Start commits but the notification insert fails."
+          ],
+          "return": "Success(InProgress); MSG110.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "OperationCanceledException is propagated.",
+          "id": "UTC025",
+          "inputs": "cancellation token cancelled.",
+          "log": "N/A",
+          "note": "UC-21 · BR-127 · BR-130 · BR-131",
+          "preconditions": [
+            "The caller cancels the request."
+          ],
+          "return": "No result; the cancellation is rethrown.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

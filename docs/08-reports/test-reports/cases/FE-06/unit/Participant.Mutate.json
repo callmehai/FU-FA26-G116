@@ -1,0 +1,1419 @@
+{
+  "feature": "FE-06",
+  "module": "PART",
+  "sheet": "Participant.Mutate",
+  "description": "Roster changes: add, change role, remove, respond, guests, with chair/secretary invariants.",
+  "precondition": "Meeting with a roster; organizer or manager actor.",
+  "methods": [
+    {
+      "method": "ParticipantService.MutateAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Participants/ParticipantService.cs",
+      "line": 346,
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "operation: AddGuest; actor: guest session whose meeting id differs.",
+          "log": "N/A",
+          "note": "UC-28a · BR-181",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is Guest session of another meeting."
+          ],
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "operation: Respond; actor: guest session of a revoked invitation; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-157",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Guest invitation of this meeting is revoked."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "operation: AddInternal; actor: Secretary S (inactive).",
+          "log": "N/A",
+          "note": "UC-28a · BR-79",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor's account is deactivated."
+          ],
+          "return": "Failure Inactive; 403, empty body.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "operation: AddInternal; meetingId: unknown GUID; actor: any active user.",
+          "log": "N/A",
+          "note": "UC-28a · BR-29",
+          "preconditions": [
+            "Meeting id does not exist."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "operation: RemoveInternal; actor: unrelated user.",
+          "log": "N/A",
+          "note": "UC-28c · BR-29",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is an active user with no relation to the meeting."
+          ],
+          "return": "Failure NotFound; 404 (existence is hidden).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "operation: AddInternal; actor: Member A.",
+          "log": "N/A",
+          "note": "UC-28a · BR-79 · MSG85",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Forbidden; 403 / MSG85.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "operation: AddInternal; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-28a · BR-79 · MSG85",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is the meeting organizer without a roster seat."
+          ],
+          "return": "Failure Forbidden; 403 / MSG85.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "operation: ChangeAssignments; actor: guest session of this meeting.",
+          "log": "N/A",
+          "note": "UC-28b · BR-181 · MSG85",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is a verified Guest."
+          ],
+          "return": "Failure Forbidden; 403 / MSG85.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "operation: AddInternal; actor: Secretary S.",
+          "log": "N/A",
+          "note": "UC-28a · BR-79 · BR-80 · MSG98",
+          "preconditions": [
+            "Meeting in status WaitingApproval with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Locked; 409 / MSG98.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "operation: RemoveInternal; actor: Chair C.",
+          "log": "N/A",
+          "note": "UC-28c · BR-80 · MSG98",
+          "preconditions": [
+            "Meeting in status Ended with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Locked; 409 / MSG98.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "operation: ChangeAssignments; actor: Secretary S; no revision given (null).",
+          "log": "N/A",
+          "note": "UC-28b · MSG276",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRequest; 400 / MSG276.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "operation: AddInternal; actor: S; revision: \"4\" (older than current 5).",
+          "log": "N/A",
+          "note": "UC-28a · MSG275",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Stale; 409 / MSG275; revision in the body stays \"5\".",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "operation: AddInternal; actor: S; input.ParseFailure: UnsupportedMedia.",
+          "log": "N/A",
+          "note": "UC-28a · MSG34",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure UnsupportedMedia; 415 / MSG34.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "operation: AddInternal; actor: S; input.ParseFailure: TooLarge.",
+          "log": "N/A",
+          "note": "UC-28a · MSG87",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure TooLarge; 413 / MSG87.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "operation: AddInternal; actor: Secretary S; revision: \"5\"; userIds: [U1, U2] (two active users not on the roster); role: \"Member\".",
+          "log": "Two participants (Pending response) added; ParticipantsRevision 5 to 6; audit MeetingParticipants(AddInternal) with before/after; no invitation staged because the meeting is not published; participants-changed event published to readers.",
+          "note": "UC-28a · BR-168 · BR-88 · MSG96",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96; createdIds holds two new participant ids; revision \"6\".",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "operation: AddInternal; actor: Chair C; revision: \"5\"; userIds: [U1]; role: \"Member\".",
+          "log": "Participant added; invitation and in-app notice staged for U1 (actor is not U1); audit row; participants-changed event.",
+          "note": "UC-28a · BR-90 · BR-42 · MSG96",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC017",
+          "inputs": "operation: AddInternal; userIds: 100 distinct active users; role: \"Member\".",
+          "log": "N/A",
+          "note": "UC-28a · BR-168 · MSG96",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96 with 100 ids.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC018",
+          "inputs": "operation: AddInternal; userIds: 101 distinct users.",
+          "log": "N/A",
+          "note": "UC-28a · BR-168 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC019",
+          "inputs": "operation: AddInternal; userIds: [] .",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC020",
+          "inputs": "operation: AddInternal; userIds: [U1, U1].",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC021",
+          "inputs": "operation: AddInternal; userIds: [empty GUID].",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC022",
+          "inputs": "operation: AddInternal; userIds: [U1]; role: \"Owner\".",
+          "log": "N/A",
+          "note": "UC-28a · BR-85 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on role; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC023",
+          "inputs": "operation: AddInternal; userIds: [U1]; role: \"Guest\".",
+          "log": "N/A",
+          "note": "UC-28a · BR-150 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on role; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC024",
+          "inputs": "operation: AddInternal; userIds: [U1, U2]; role: \"Member\".",
+          "log": "Roster unchanged.",
+          "note": "UC-28a · BR-81 · BR-168 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "U1 is deactivated."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97; nobody in the batch is added.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC025",
+          "inputs": "operation: AddInternal; userIds: [unknown GUID].",
+          "log": "N/A",
+          "note": "UC-28a · BR-81 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC026",
+          "inputs": "operation: AddInternal; userIds: [A] (A is already a current participant).",
+          "log": "N/A",
+          "note": "UC-28a · BR-82 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC027",
+          "inputs": "operation: AddInternal; userIds: [U1].",
+          "log": "N/A",
+          "note": "UC-28a · BR-151 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "An active Guest invitation exists for U1's email."
+          ],
+          "return": "Failure Invalid on userIds; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC028",
+          "inputs": "operation: AddInternal; userIds: [U1]; role: \"Chair\" (a Chair already exists).",
+          "log": "N/A",
+          "note": "UC-28a · BR-123 · MSG109",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure RequiredRoles; 409 / MSG109.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC029",
+          "inputs": "operation: AddInternal; userIds: [U1]; role: \"Member\".",
+          "log": "N/A",
+          "note": "UC-28a · BR-82 · MSG96",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Removed participant U1 (AssignmentStatus Removed) exists."
+          ],
+          "return": "Success Created; 201 / MSG96; a removed person can be added again.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC030",
+          "inputs": "operation: AddGuest; actor: Secretary S; revision: \"5\"; invitedName: \"Tran Van Khach\"; email: \"khach@example.com\".",
+          "log": "Guest invitation created with the meeting's sensitivity; invitation email staged (meeting Published); audit MeetingParticipants(AddGuest); participants-changed event.",
+          "note": "UC-28a · BR-84 · BR-91 · BR-149 · MSG96",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96; createdIds holds the new invitation id.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC031",
+          "inputs": "operation: AddGuest; invitedName: \"  Khach  \"; email: \"  khach@example.com \".",
+          "log": "No invitation staged in Draft.",
+          "note": "UC-28a · MSG96",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96; name and email stored trimmed.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC032",
+          "inputs": "operation: AddGuest; invitedName: 200 characters; email: 256 characters in a valid form.",
+          "log": "N/A",
+          "note": "UC-28a · MSG96",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC033",
+          "inputs": "operation: AddGuest; invitedName: 201 characters.",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on invitedName; 400 / MSG97.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC034",
+          "inputs": "operation: AddGuest; invitedName: \"   \" (blank).",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on invitedName; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC035",
+          "inputs": "operation: AddGuest; email: 257 characters.",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on email; 400 / MSG97.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC036",
+          "inputs": "operation: AddGuest; email: \"not-an-email\".",
+          "log": "N/A",
+          "note": "UC-28a · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on email; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC037",
+          "inputs": "operation: AddGuest; email: \"khach@example.com\".",
+          "log": "N/A",
+          "note": "UC-28a · BR-149 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "An active Guest invitation exists for khach@example.com."
+          ],
+          "return": "Failure Invalid on email; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC038",
+          "inputs": "operation: AddGuest; email: the email of current participant A.",
+          "log": "N/A",
+          "note": "UC-28a · BR-151 · MSG97",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on email; 400 / MSG97.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC039",
+          "inputs": "operation: AddGuest; email: that email.",
+          "log": "The earlier voter place moves to the new invitation id; no voter is added; eligible count unchanged.",
+          "note": "UC-28a · BR-190 · MSG96",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "An Open vote exists; the same email was on its voter list through a revoked invitation and has not voted."
+          ],
+          "return": "Success Created; 201 / MSG96.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC040",
+          "inputs": "operation: ChangeAssignments; actor: Secretary S; revision: \"5\"; changes: [{A, \"Secretary\"}].",
+          "log": "A.Role Secretary; audit MeetingParticipants(ChangeAssignments); no notice staged in Draft.",
+          "note": "UC-28b · BR-85 · BR-96 · MSG100",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success RoleChanged; 200 / MSG100; revision \"6\".",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC041",
+          "inputs": "operation: ChangeAssignments; actor: Chair C; changes: [{A, \"Secretary\"}].",
+          "log": "Role-change notice staged for A; audit row; participants-changed event.",
+          "note": "UC-28b · BR-92 · MSG100",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success RoleChanged; 200 / MSG100.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC042",
+          "inputs": "operation: ChangeAssignments; changes: [{A, \"Member\"}] (A is already Member).",
+          "log": "No audit row and no event.",
+          "note": "UC-28b · MSG154",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success NoChanges; 200 / MSG154; revision stays \"5\".",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC043",
+          "inputs": "operation: ChangeAssignments; changes: [].",
+          "log": "N/A",
+          "note": "UC-28b · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC044",
+          "inputs": "operation: ChangeAssignments; changes: 101 entries.",
+          "log": "N/A",
+          "note": "UC-28b · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC045",
+          "inputs": "operation: ChangeAssignments; changes: [{A, \"Member\"}, {A, \"Secretary\"}] (same participant twice).",
+          "log": "N/A",
+          "note": "UC-28b · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC046",
+          "inputs": "operation: ChangeAssignments; changes: [{A, \"Boss\"}].",
+          "log": "N/A",
+          "note": "UC-28b · BR-85 · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC047",
+          "inputs": "operation: ChangeAssignments; changes: [{unknown participant id, \"Member\"}].",
+          "log": "N/A",
+          "note": "UC-28b",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC048",
+          "inputs": "operation: ChangeAssignments; changes: [{C, \"Member\"}, {A, \"Chair\"}], chairReplacement confirmed.",
+          "log": "N/A",
+          "note": "UC-28b · UC-73 · BR-126 · MSG256",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is Secretary S and Chair C is active."
+          ],
+          "return": "Failure ChairHandoverDenied; 409 / MSG256.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC049",
+          "inputs": "operation: ChangeAssignments; actor: Secretary S; changes: [{C, \"Member\"}, {A, \"Chair\"}]; chairReplacement {C to A, confirmed}.",
+          "log": "Both roles change in one save; notices staged for both; audit row.",
+          "note": "UC-28b · BR-126 · BR-169 · MSG100",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Chair C's account is deactivated."
+          ],
+          "return": "Success RoleChanged; 200 / MSG100; A becomes Chair and C Member.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC050",
+          "inputs": "operation: ChangeAssignments; actor: Secretary S; changes: [{C, \"Member\"}, {A, \"Chair\"}]; chairReplacement: null.",
+          "log": "N/A",
+          "note": "UC-28b · BR-169 · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101 (replacement not confirmed).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC051",
+          "inputs": "operation: ChangeAssignments; changes: [{C, \"Member\"}, {A, \"Chair\"}]; chairReplacement {C to A, confirmed}.",
+          "log": "N/A",
+          "note": "UC-28b · BR-169 · MSG100",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success RoleChanged; 200 / MSG100.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC052",
+          "inputs": "operation: ChangeAssignments; changes: [{A, \"Member\"}]; chairReplacement {C to A, confirmed} while no Chair is replaced.",
+          "log": "N/A",
+          "note": "UC-28b · BR-169 · MSG101",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC053",
+          "inputs": "operation: ChangeAssignments; changes: [{S, \"Member\"}] (the only Secretary becomes Member).",
+          "log": "N/A",
+          "note": "UC-28b · BR-122 · MSG109",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure RequiredRoles; 409 / MSG109.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC054",
+          "inputs": "operation: ChangeAssignments; changes: [{C, \"Member\"}] (no Chair left).",
+          "log": "N/A",
+          "note": "UC-28b · BR-123 · MSG109",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure RequiredRoles; 409 / MSG109.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC055",
+          "inputs": "operation: ChangeAssignments; actor: Chair C; changes: [{A, \"Secretary\"}].",
+          "log": "N/A",
+          "note": "UC-28b · MSG101",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A's account is deactivated."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101 (a deactivated person cannot change role).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC056",
+          "inputs": "operation: HandOverChair; actor: Chair C; revision: \"5\"; newChairParticipantId: A's participant id; confirmed: true.",
+          "log": "Both roles changed in one save; notice staged for A only (not for the actor); audit MeetingParticipants(HandOverChair); event published.",
+          "note": "UC-73 · BR-126 · BR-169 · MSG257",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success ChairHandedOver; 200 / MSG257; A is Chair, C is Member.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC057",
+          "inputs": "operation: HandOverChair; actor: Chair C; newChairParticipantId: A's id; confirmed: false.",
+          "log": "N/A",
+          "note": "UC-73 · MSG101",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC058",
+          "inputs": "operation: HandOverChair; newChairParticipantId: empty GUID; confirmed: true.",
+          "log": "N/A",
+          "note": "UC-73 · MSG101",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidRole; 400 / MSG101.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC059",
+          "inputs": "operation: HandOverChair; newChairParticipantId: Secretary S's id; confirmed: true.",
+          "log": "N/A",
+          "note": "UC-73 · MSG259",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidChairRecipient; 400 / MSG259 (only a Member may receive).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC060",
+          "inputs": "operation: HandOverChair; newChairParticipantId: the actor's own id.",
+          "log": "N/A",
+          "note": "UC-73 · MSG259",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure InvalidChairRecipient; 400 / MSG259.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC061",
+          "inputs": "operation: HandOverChair; newChairParticipantId: A's id.",
+          "log": "N/A",
+          "note": "UC-73 · MSG259",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A's account is deactivated."
+          ],
+          "return": "Failure InvalidChairRecipient; 400 / MSG259.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC062",
+          "inputs": "operation: HandOverChair; actor: Chair C.",
+          "log": "N/A",
+          "note": "UC-73 · MSG260",
+          "preconditions": [
+            "Meeting in status Approved with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure CannotHandOverChair; 409 / MSG260 (not yet published).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC063",
+          "inputs": "operation: HandOverChair; actor: Secretary S.",
+          "log": "N/A",
+          "note": "UC-73 · MSG260",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure CannotHandOverChair; 409 / MSG260.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC064",
+          "inputs": "operation: HandOverChair; actor: a Guest session.",
+          "log": "N/A",
+          "note": "UC-73 · MSG85",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Forbidden; 403 / MSG85.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC065",
+          "inputs": "operation: RemoveInternal; actor: Chair C; revision: \"5\"; targetId: A's participant id.",
+          "log": "A.AssignmentStatus Removed with RemovedAt/RemovedById; presenter on A's agenda items cleared (agenda change PresenterCleared published); A's open speaking requests closed; removal notice staged; audit MeetingParticipants(RemoveInternal); access-change event so A is disconnected if no other access remains; participants-changed event.",
+          "note": "UC-28c · BR-93 · BR-97 · BR-102 · BR-337 · MSG103",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A has an agenda item as presenter and a queued request to speak."
+          ],
+          "return": "Success Removed; 200 / MSG103; revision \"6\".",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC066",
+          "inputs": "operation: RemoveInternal; targetId: A's id.",
+          "log": "No notice staged in Draft; audit row.",
+          "note": "UC-28c · MSG103",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Removed; 200 / MSG103.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC067",
+          "inputs": "operation: RemoveInternal; targetId: unknown id.",
+          "log": "N/A",
+          "note": "UC-28c",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC068",
+          "inputs": "operation: RemoveInternal; targetId: A's id.",
+          "log": "N/A",
+          "note": "UC-28c",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A was already removed."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC069",
+          "inputs": "operation: RemoveInternal; targetId: Secretary S's id (the only Secretary).",
+          "log": "N/A",
+          "note": "UC-28c · BR-122 · MSG109",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure RequiredRoles; 409 / MSG109.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC070",
+          "inputs": "operation: RemoveInternal; targetId: Chair C's id.",
+          "log": "N/A",
+          "note": "UC-28c · BR-123 · MSG109",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure RequiredRoles; 409 / MSG109 (a meeting must keep exactly one Chair).",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC071",
+          "inputs": "operation: RemoveInternal; targetId: A's id; A still holds another Current assignment.",
+          "log": "N/A",
+          "note": "UC-28c · BR-337 · MSG103",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A also has a second Current participant row (another assignment) in the same meeting."
+          ],
+          "return": "Success Removed; 200 / MSG103; the raised hand of A is kept.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC072",
+          "inputs": "operation: RevokeGuest; actor: Secretary S; revision: \"5\"; targetId: G.",
+          "log": "G.RevokedAt and RevokedById set; presenter of G's agenda items cleared; G's speaking requests closed; notice email staged; audit MeetingParticipants(RevokeGuest); access-change event for the Guest.",
+          "note": "UC-28c · BR-93 · BR-100 · BR-157 · MSG103",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Guest invitation G exists and presents an agenda item."
+          ],
+          "return": "Success Removed; 200 / MSG103 (\"Đã thu hồi lời mời khách.\").",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC073",
+          "inputs": "operation: RevokeGuest; targetId: unknown id.",
+          "log": "N/A",
+          "note": "UC-28c",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC074",
+          "inputs": "operation: Respond; actor: Member A; response: \"Accepted\" (no revision needed).",
+          "log": "A.Response Accepted with RespondedAt; audit MeetingParticipants(Respond); participants-changed event; roster revision unchanged.",
+          "note": "UC-29 · BR-105 · BR-115 · MSG105",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Responded; 200 / MSG105; data {kind: Internal, response: Accepted, respondedAt: now, canRespond: false}; no revision.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC075",
+          "inputs": "operation: Respond; actor: Member A; response: \"Declined\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG105",
+          "preconditions": [
+            "Meeting in status InProgress with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Responded; 200 / MSG105.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC076",
+          "inputs": "operation: Respond; actor: A; response: \"Accepted\".",
+          "log": "No audit row and no event.",
+          "note": "UC-29 · BR-115 · MSG154",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A already accepted."
+          ],
+          "return": "Success NoChanges; 200 / MSG154; the stored answer is returned.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC077",
+          "inputs": "operation: Respond; actor: A; response: \"Declined\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-115 · MSG285",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "A already accepted."
+          ],
+          "return": "Failure ResponseFinal; 409 / MSG285.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC078",
+          "inputs": "operation: Respond; actor: Chair C; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG286",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure ChairCannotRespond; 409 / MSG286.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC079",
+          "inputs": "operation: Respond; actor: A; response: \"Maybe\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG106",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on response; 400 / MSG106.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC080",
+          "inputs": "operation: Respond; actor: A; response: \"Pending\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG106",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on response; 400 / MSG106.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC081",
+          "inputs": "operation: Respond; actor: A; response: null.",
+          "log": "N/A",
+          "note": "UC-29 · MSG106",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure Invalid on response; 400 / MSG106.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC082",
+          "inputs": "operation: Respond; actor: A; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG107 · Deviation: a Member cannot read an Approved meeting that is not yet published, so the call answers NotFound (404, existence hidden) before the response gate; CannotRespond applies once the meeting is readable (for example Published or Ended).",
+          "preconditions": [
+            "Meeting in status Approved with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure CannotRespond; 409 / MSG107.",
+          "type": "Abnormal",
+          "round1": "Failed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC083",
+          "inputs": "operation: Respond; actor: A; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-105 · MSG107",
+          "preconditions": [
+            "Meeting in status Ended with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure CannotRespond; 409 / MSG107.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC084",
+          "inputs": "operation: Respond; actor: organizer; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-29",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Actor is the organizer who has no roster seat."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC085",
+          "inputs": "operation: Respond; actor: guest session G; response: \"Declined\".",
+          "log": "G.Response Declined with time; audit row with the guest identity.",
+          "note": "UC-29 · BR-105 · BR-181 · MSG105",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Verified Guest G has not answered."
+          ],
+          "return": "Success Responded; 200 / MSG105; data kind Guest.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC086",
+          "inputs": "operation: Respond; actor: guest G; response: \"Declined\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-115 · MSG154",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Guest G already declined."
+          ],
+          "return": "Success NoChanges; 200 / MSG154.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC087",
+          "inputs": "operation: Respond; actor: guest G; response: \"Accepted\".",
+          "log": "N/A",
+          "note": "UC-29 · BR-115 · MSG285",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current).",
+            "Guest G already declined."
+          ],
+          "return": "Failure ResponseFinal; 409 / MSG285.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC088",
+          "inputs": "operation: AddInternal; the database fails while saving.",
+          "log": "Changes discarded; error logged; no events.",
+          "note": "UC-28a · MSG99",
+          "preconditions": [
+            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG99.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC089",
+          "inputs": "operation: ChangeAssignments; the database fails while saving.",
+          "log": "Changes discarded.",
+          "note": "UC-28b · MSG102",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG102.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC090",
+          "inputs": "operation: RemoveInternal; the database fails while saving.",
+          "log": "Changes discarded.",
+          "note": "UC-28c · MSG104",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG104.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC091",
+          "inputs": "operation: Respond; the database fails while saving.",
+          "log": "Changes discarded.",
+          "note": "UC-29 · MSG108",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG108.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC092",
+          "inputs": "operation: AddInternal; the realtime publisher throws after the commit.",
+          "log": "Roster saved; warning logged for the failed event.",
+          "note": "UC-28a · BR-94 · MSG96",
+          "preconditions": [
+            "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
+          ],
+          "return": "Success Created; 201 / MSG96; the failed push does not change the result.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

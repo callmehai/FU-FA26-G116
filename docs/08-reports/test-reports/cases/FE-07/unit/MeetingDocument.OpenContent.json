@@ -1,0 +1,332 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "MeetingDocument.OpenContent",
+  "description": "Opening document content: who may read a meeting or library file.",
+  "precondition": "Documents with sensitivity and readers seeded.",
+  "methods": [
+    {
+      "method": "MeetingDocumentService.OpenContentAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "line": 47,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting Published (Normal sensitivity); reader is a Member; M1 is a PDF in the meeting; the file exists in storage."
+          ],
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Content stream, file name, content type and size of M1; no audit row.",
+          "exception": "N/A",
+          "log": "None.",
+          "type": "Normal",
+          "note": "UC-32b · BR-183 · BR-216",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Same meeting; reader is a Member."
+          ],
+          "inputs": "meetingDocumentId: M1; download: true.",
+          "return": "Content returned (download allowed for a non-Secret meeting).",
+          "exception": "N/A",
+          "log": "None.",
+          "type": "Normal",
+          "note": "UC-32b · BR-188",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting is Secret; reader is a Member; viewing."
+          ],
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Content returned.",
+          "exception": "N/A",
+          "log": "Audit \"document.viewed\" on MeetingDocument M1 by the reader with details meetingId, fileName, sensitivity Secret.",
+          "type": "Normal",
+          "note": "UC-32b · BR-188 · BR-318",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting is Secret."
+          ],
+          "inputs": "meetingDocumentId: M1; download: true.",
+          "return": "Failure DownloadForbidden (HTTP 403, MSG159); the file is not opened.",
+          "exception": "N/A",
+          "log": "No audit row.",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-188 · MSG159",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting is Secret; reader is a guest with a current session."
+          ],
+          "inputs": "reader: Guest; download: false.",
+          "return": "Content returned.",
+          "exception": "N/A",
+          "log": "Audit \"document.viewed\" with details including guestInvitationId.",
+          "type": "Normal",
+          "note": "UC-32b · BR-181 · BR-318",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Reader cannot read the meeting (not creator/participant)."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting does not exist."
+          ],
+          "inputs": "meetingId: unknown.",
+          "return": "Failure NotFound (HTTP 404, MSG156), same answer as unreadable.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "M1 was removed from the meeting."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-211 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "M2 belongs to another meeting."
+          ],
+          "inputs": "meetingDocumentId: M2.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-211 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "M3 is attached only to a draft vote; reader is a Member."
+          ],
+          "inputs": "meetingDocumentId: M3.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-253 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Same draft-vote document; reader is the Chair."
+          ],
+          "inputs": "meetingDocumentId: M3.",
+          "return": "Content returned; managers see draft-vote documents.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-32b · BR-253",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Guest whose session is invalid (signed out or expired)."
+          ],
+          "inputs": "reader: Guest with IsValid = false.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-04 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Guest session belongs to another meeting."
+          ],
+          "inputs": "reader: Guest of meeting X; meetingId: Y.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-04 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Guest session valid but the meeting is Ended."
+          ],
+          "inputs": "reader: Guest.",
+          "return": "Failure NotFound (HTTP 404, MSG156); guests lose the meeting once it is no longer Published or InProgress.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-04 · BR-181 · MSG156",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Stored object is gone for good (storage reports file not found)."
+          ],
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Failure FileMissing (HTTP 410, MSG382).",
+          "exception": "N/A",
+          "log": "Error log \"Failed to open stored object\".",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG382",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "Storage is down or not configured; viewing."
+          ],
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Failure ReadFailed (HTTP 503, MSG158).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG158",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "Storage is down; downloading."
+          ],
+          "inputs": "meetingDocumentId: M1; download: true.",
+          "return": "Failure ReadFailed (HTTP 503, MSG160).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG160",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "Database error while looking up the document."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure ReadFailed (HTTP 503, MSG158).",
+          "exception": "N/A",
+          "log": "Error log \"Failed to look up document\".",
+          "type": "Abnormal",
+          "note": "UC-32b · MSG158",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "Meeting is Secret; the audit write fails with a database error."
+          ],
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Failure ReadFailed (HTTP 503, MSG158); no content is returned and the opened stream is disposed.",
+          "exception": "N/A",
+          "log": "No audit row saved.",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-318 · MSG158",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Meeting is Secret; the audit call throws a non-database exception."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "No result; the opened stream is disposed first.",
+          "exception": "The original exception is rethrown.",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b · BR-318",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "Storage open is cancelled by the caller."
+          ],
+          "inputs": "ct cancelled.",
+          "return": "No result.",
+          "exception": "OperationCanceledException",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-32b",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

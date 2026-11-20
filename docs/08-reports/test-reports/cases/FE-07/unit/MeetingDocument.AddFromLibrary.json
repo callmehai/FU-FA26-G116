@@ -1,0 +1,212 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "MeetingDocument.AddFromLibrary",
+  "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+  "precondition": "Meeting with documents; personal library documents.",
+  "methods": [
+    {
+      "method": "MeetingDocumentService.AddFromLibraryAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "line": 172,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting Published; actor is Chair; two library documents owned by the Chair, files not yet in the meeting."
+          ],
+          "inputs": "documentIds: [D1, D2].",
+          "return": "No failure; two UploadedMeetingDocument rows; endpoint answers MSG161.",
+          "exception": "N/A",
+          "log": "Two MeetingDocument rows added pointing at the same stored files (no bytes copied); one save.",
+          "type": "Normal",
+          "note": "UC-33a · BR-209 · MSG161",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Same meeting."
+          ],
+          "inputs": "documentIds: [D1, D1].",
+          "return": "No failure; one document added; duplicate IDs are collapsed.",
+          "exception": "N/A",
+          "log": "One MeetingDocument row.",
+          "type": "Boundary",
+          "note": "UC-33a · BR-209",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Same meeting."
+          ],
+          "inputs": "documentIds: [] (nothing chosen).",
+          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG249",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "D2 belongs to another user."
+          ],
+          "inputs": "documentIds: [D1, D2].",
+          "return": "Failure LibraryUnavailable (HTTP 400, MSG249); D1 is not added either.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-209 · MSG249",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "D1 was deleted from the library."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-209 · MSG249",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The meeting already holds the file of D1 as a general document."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure AlreadyInMeeting (HTTP 409, MSG165).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-193 · MSG165",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Chair earlier removed the file of D1 from the meeting."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "No failure; a new MeetingDocument row is created and the old comments do not come back.",
+          "exception": "N/A",
+          "log": "New MeetingDocument row (old removed row kept as history).",
+          "type": "Boundary",
+          "note": "UC-33a · BR-212 · BR-284",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Actor is a Member of the meeting."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure Forbidden (HTTP 403, MSG162).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-184 · MSG162",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Meeting Ended."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure Ended (HTTP 409, MSG172).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-195 · MSG172",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Meeting Cancelled."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure Cancelled (HTTP 409, MSG349).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-299 · MSG349",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Meeting not found or not readable by the actor."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure NotFound (HTTP 404, MSG174).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG174",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Actor deactivated."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure Inactive; the endpoint answers 403 with no message code.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Database error on save."
+          ],
+          "inputs": "documentIds: [D1].",
+          "return": "Failure StoreFailed (HTTP 503, MSG166).",
+          "exception": "N/A",
+          "log": "Error log \"Failed to add library documents to meeting\".",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG166",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceId.Grant",
+  "description": "Voice ID consent: grant and withdraw, with erasure on withdrawal.",
+  "precondition": "User with and without consent.",
+  "methods": [
+    {
+      "method": "VoiceIdService.GrantAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+      "line": 35,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "User has no active consent."
+          ],
+          "inputs": "actorId: a user without consent; noticeVersion: \"1.3\".",
+          "return": "Success with the voice profile showing the new consent (MSG305 \"Đã bật nhận diện giọng nói cho tài khoản của bạn.\").",
+          "exception": "N/A",
+          "log": "Saved: consent row with notice 1.3 and its purpose; audit row records the grant.",
+          "type": "Normal",
+          "note": "UC-81b · BR-361 · BR-362 · MSG305",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "User consented to notice \"1.2\" and keeps voice samples."
+          ],
+          "inputs": "actorId: a user consented to \"1.2\"; noticeVersion: \"1.3\".",
+          "return": "Success (MSG305); the consent is renewed in place to 1.3 and the samples stay.",
+          "exception": "N/A",
+          "log": "Saved: consent notice renewed; audit row records the renewal with the old and new versions.",
+          "type": "Normal",
+          "note": "UC-81b · BR-362 · MSG305",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "User already consented to notice \"1.3\"."
+          ],
+          "inputs": "actorId: a user consented to \"1.3\"; noticeVersion: \"1.3\".",
+          "return": "Success with the same profile (MSG305); agreeing again creates no new row.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-81b · BR-362 · MSG305",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Current notice is \"1.3\"."
+          ],
+          "inputs": "actorId: a user; noticeVersion: \"1.2\".",
+          "return": "Failure Invalid (MSG313); errors[noticeVersion] = [\"Nội dung thông báo đã thay đổi. Hãy tải lại trang và đọc lại trước khi đồng ý.\"]; nothing is stored.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81b · BR-362 · MSG313",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "User sends no notice version."
+          ],
+          "inputs": "actorId: a user; noticeVersion: blank.",
+          "return": "Failure Invalid (MSG313); consent is to the words the person actually read, so a missing version is refused.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-81b · BR-362 · MSG313",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "User has no active consent; the agree button is pressed twice at once."
+          ],
+          "inputs": "actorId: a user without consent; noticeVersion: \"1.3\" sent twice at the same time.",
+          "return": "Success (MSG305); one row wins and the other answer reads the same, so the person is agreed either way.",
+          "exception": "N/A",
+          "log": "Saved: one consent row; audit row records the grant.",
+          "type": "Normal",
+          "note": "UC-81b · BR-362 · MSG305",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "Meeting.CheckUpdate",
+  "description": "Update pre-check: editable statuses and organizer ownership before editing.",
+  "precondition": "Meeting in a known status; organizer actor.",
+  "methods": [
+    {
+      "method": "MeetingService.CheckUpdateAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+      "line": 180,
+      "cases": [
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "id: meeting; actorId: organizer.",
+          "log": "N/A",
+          "note": "UC-15 · BR-27 · BR-28",
+          "preconditions": [
+            "Meeting is Draft and owned by the actor."
+          ],
+          "return": "Success with the meeting details.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "status: Rejected.",
+          "log": "N/A",
+          "note": "UC-15 · BR-27 · BR-28",
+          "preconditions": [
+            "Meeting is Rejected."
+          ],
+          "return": "Success.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "status: Published.",
+          "log": "N/A",
+          "note": "UC-15 · BR-158",
+          "preconditions": [
+            "Meeting is Published."
+          ],
+          "return": "Success (it may be rescheduled).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "status: WaitingApproval.",
+          "log": "N/A",
+          "note": "UC-15 · BR-34 · MSG33",
+          "preconditions": [
+            "Meeting is WaitingApproval."
+          ],
+          "return": "Failure NotEditable; MSG33.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "each status.",
+          "log": "N/A",
+          "note": "UC-15 · BR-299 · MSG33",
+          "preconditions": [
+            "Meeting is Approved, InProgress, Ended or Cancelled."
+          ],
+          "return": "Failure NotEditable; MSG33.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actorId: not the creator.",
+          "log": "N/A",
+          "note": "UC-15 · BR-29",
+          "preconditions": [
+            "Meeting is owned by someone else or does not exist."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC007",
+          "inputs": "actorId: organizer.",
+          "log": "Error logged with the meeting and actor ids.",
+          "note": "UC-15 · MSG37",
+          "preconditions": [
+            "The store fails while reading."
+          ],
+          "return": "Failure ReadFailed; MSG37.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

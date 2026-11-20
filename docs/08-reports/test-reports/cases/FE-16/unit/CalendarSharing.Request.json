@@ -1,0 +1,412 @@
+{
+  "feature": "FE-16",
+  "module": "CAL",
+  "sheet": "CalendarSharing.Request",
+  "description": "Requesting and directly sharing a calendar: validation, duplicates, notification.",
+  "precondition": "Two active users.",
+  "methods": [
+    {
+      "method": "CalendarSharingService.RequestAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+      "line": 85,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "No share exists between Binh and An."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: 2026-11-18; end: 2026-12-18.",
+          "return": "Share created in status Pending, InitiatedBy Viewer, owner Binh, viewer An; Success Requested (MSG435); share view returned.",
+          "exception": "N/A",
+          "log": "Share saved; notification CalendarShareRequested queued for Binh (\"Yêu cầu xem lịch\"); audit action calendar_share.requested by An with owner, viewer, level and dates.",
+          "type": "Normal",
+          "note": "UC-84a · BR-423 · BR-431 · MSG435",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "No share exists."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level2\"; start: 2026-11-18; end: 2027-11-17.",
+          "return": "Success Requested (MSG435); Level2, exactly 365 days.",
+          "exception": "N/A",
+          "log": "Share saved; notification queued for Binh; audit calendar_share.requested.",
+          "type": "Boundary",
+          "note": "UC-84a · BR-414 · BR-431 · MSG435",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is not in the user list (unknown actor)."
+          ],
+          "inputs": "actor: an unknown id; ownerId: Binh.",
+          "return": "Failure NotOrganizer (MSG448); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active user without the Meeting Organizer right (MeetingCreator)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure NotOrganizer (MSG448); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is a deactivated Meeting Organizer."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure NotOrganizer (MSG448); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: null.",
+          "return": "Failure NotFound (404, no code); nothing disclosed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-430",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: An (the actor).",
+          "return": "Failure NotFound (404); a user cannot ask to see their own calendar.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-423",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: an id that does not exist.",
+          "return": "Failure NotFound (404).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "Binh's account is deactivated."
+          ],
+          "inputs": "actor: An; ownerId: Binh.",
+          "return": "Failure NotFound (404); looks the same as an unknown account.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "A Pending share Binh -> An already exists."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure AlreadyShared (MSG449); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-423 · MSG449",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "An Effective share Binh -> An already exists."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure AlreadyShared (MSG449).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-423 · MSG449",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "A Declined share Binh -> An exists (closed)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Success Requested (MSG435); closed shares do not block a new one.",
+          "exception": "N/A",
+          "log": "New share saved; notification queued for Binh; audit calendar_share.requested.",
+          "type": "Boundary",
+          "note": "UC-84a · BR-423 · MSG435",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "An Effective share Binh -> An exists with end date 2026-11-17 (lapsed, still holds the pair's place)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "The old share is closed as Ended by nobody and the new request succeeds: Success Requested (MSG435).",
+          "exception": "N/A",
+          "log": "Old share status Ended with ClosedAt now and no notification; audit calendar_share.closed_after_end_date (Was Effective); new share saved, notification to Binh, audit calendar_share.requested.",
+          "type": "Boundary",
+          "note": "UC-84a · BR-423 · BR-425 · MSG435",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "Another share exists in the other direction (An -> Binh)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Success Requested (MSG435); each direction counts separately.",
+          "exception": "N/A",
+          "log": "Share saved; notification queued for Binh; audit calendar_share.requested.",
+          "type": "Boundary",
+          "note": "UC-84a · BR-423 · MSG435",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: null; start: 2026-11-18; end: 2026-12-18.",
+          "return": "Failure InvalidValues (MSG443).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-414 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"level1\"; dates valid.",
+          "return": "Failure InvalidValues (MSG443); level must be exactly Level1 or Level2.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-414 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: null; end: 2026-12-18.",
+          "return": "Failure InvalidValues (MSG443).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-431 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: 2026-11-18; end: null.",
+          "return": "Failure InvalidValues (MSG443).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-431 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: 2026-11-17; end: 2026-12-18.",
+          "return": "Failure InvalidValues (MSG443); the start is in the past.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-431 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: 2026-11-18; end: 2027-11-18.",
+          "return": "Failure InvalidValues (MSG443); 366 days.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-84a · BR-431 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: \"Level1\"; start: 2026-12-18; end: 2026-12-17.",
+          "return": "Failure InvalidValues (MSG443); the end is before the start.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-431 · MSG443",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "Pending share Binh -> An exists and also has invalid values in the request."
+          ],
+          "inputs": "actor: An; ownerId: Binh; level: null.",
+          "return": "Failure AlreadyShared (MSG449); the pair is checked before the values.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-84a · BR-423 · MSG449",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC023",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "Two requests for the same pair arrive at the same moment; the second hits the unique index."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure AlreadyShared (MSG449); changes discarded.",
+          "exception": "N/A",
+          "log": "Unit of work changes discarded; conflict logged as information.",
+          "type": "Abnormal",
+          "note": "UC-84a · BR-423 · MSG449",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC024",
+          "preconditions": [
+            "Today is 2026-11-18 in Vietnam.",
+            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
+            "The database fails while saving."
+          ],
+          "inputs": "actor: An; ownerId: Binh; valid values.",
+          "return": "Failure SaveFailed (MSG447); no share, notification or audit row is kept.",
+          "exception": "N/A",
+          "log": "Unit of work changes discarded; error logged.",
+          "type": "Abnormal",
+          "note": "UC-84a · MSG447",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

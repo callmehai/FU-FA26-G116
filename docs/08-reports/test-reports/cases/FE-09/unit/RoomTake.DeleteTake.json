@@ -1,0 +1,358 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "RoomTake.DeleteTake",
+  "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+  "precondition": "Meeting in progress; storage recorder.",
+  "methods": [
+    {
+      "method": "RoomTakeService.DeleteTakeAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+      "line": 263,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary.",
+            "Transcript Completed: line A 1,000-4,000 ms (speaker S1); line B 11,000-14,000 ms (S2, only voice in take 2); line C 16,000-20,000 ms (S1)."
+          ],
+          "inputs": "recordingId; take 2; actor: the Secretary.",
+          "return": "Success (200, MSG366): 160,000 bytes cut out from byte 320,044; file 576,044 bytes, DurationMs 18,000; takes become take 1 (0, 10,000) and former take 3 now at offset 10,000 ms. Line B is removed, line C moves to 11,000-15,000 ms, speaker S2 is removed, S1's speech time is recomputed.",
+          "exception": "N/A",
+          "log": "Audit RecordingTakeDeleted with take 2, its start time, 5,000 ms, 1 line removed, total 18,000 ms; the previous file is deleted after commit; RecordingsChanged published.",
+          "type": "Normal",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary."
+          ],
+          "inputs": "take 3 (the last); actor: the Secretary.",
+          "return": "Success: from = 44 + 15,000 x 32 = 480,044; the cut runs to the end of the file (256,000 bytes); the file is 480,044 bytes, 15,000 ms; two takes left.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary."
+          ],
+          "inputs": "take 1; actor: the Secretary.",
+          "return": "Success: cut starts at byte 44 for 320,000 bytes; take 2 moves to offset 0 and take 3 to offset 5,000 ms.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Transcript Completed; a line runs from 8,000 to 12,000 ms and take 2 covers 10,000-15,000 ms."
+          ],
+          "inputs": "take 2.",
+          "return": "The line's end moves back to 10,000 ms, where the take began.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Transcript Completed; a line runs from 8,000 to 18,000 ms across the whole take 2 (10,000-15,000 ms)."
+          ],
+          "inputs": "take 2.",
+          "return": "The line stays and its end becomes 13,000 ms (shortened by 5,000 ms).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Transcript Completed; a line starts at exactly 15,000 ms, the end of take 2."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is kept and moves up to start at 10,000 ms.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Transcript Completed; a line starts at exactly 10,000 ms, the start of take 2."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is removed with the take.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Transcript in status Processing."
+          ],
+          "inputs": "take 2.",
+          "return": "Success; no line is removed, the transcript is reset to Pending with progress 0 so it is made again from the shorter file.",
+          "exception": "N/A",
+          "log": "Audit RecordingTakeDeleted with 0 lines.",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "The recording has no transcript row."
+          ],
+          "inputs": "take 2.",
+          "return": "Success; audit shows 0 lines removed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "The recording has one take only."
+          ],
+          "inputs": "take 1.",
+          "return": "LastTake (409, MSG367); the Secretary erases the whole recording instead.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349 · MSG367",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary."
+          ],
+          "inputs": "take 0.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary."
+          ],
+          "inputs": "take 4 (one past the last).",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary."
+          ],
+          "inputs": "take -1.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "No recording with this id."
+          ],
+          "inputs": "recordingId: random.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "The recording is Deleted."
+          ],
+          "inputs": "take 1.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349 · BR-348",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "The recording is Pending (a take streaming)."
+          ],
+          "inputs": "take 1.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "The recording is an uploaded file without takes."
+          ],
+          "inputs": "take 1.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "take 2.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "The actor is not on the roster."
+          ],
+          "inputs": "take 2.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349 · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is the Chair."
+          ],
+          "inputs": "take 2.",
+          "return": "Forbidden (403, MSG295).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is the Chair and asks for take 9, which does not exist."
+          ],
+          "inputs": "take 9.",
+          "return": "NotFound; the take number is checked before the role.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44d · BR-341 · BR-349",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
+            "The actor is its current Secretary.",
+            "The database fails while saving."
+          ],
+          "inputs": "take 2.",
+          "return": "SaveFailed (503, MSG298); the cut copy is deleted and the original file is kept.",
+          "exception": "PersistenceException or IOException caught; logged.",
+          "log": "Error log 'Failed to erase take'; cut file removed.",
+          "type": "Abnormal",
+          "note": "UC-44d · BR-341 · BR-349 · MSG298",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

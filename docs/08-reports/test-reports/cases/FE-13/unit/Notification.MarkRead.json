@@ -1,0 +1,77 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Notification.MarkRead",
+  "description": "Marking notifications read and resolving a notification target.",
+  "precondition": "Notifications of two users.",
+  "methods": [
+    {
+      "method": "NotificationService.MarkReadAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 56,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Notification N1 belongs to user U1 and is unread."
+          ],
+          "inputs": "userId U1; notificationId N1; clock 2026-11-18T03:00Z.",
+          "return": "The notification, now with ReadAt 03:00Z.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-67a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Notification N2 belongs to user U2."
+          ],
+          "inputs": "userId U1; notificationId N2.",
+          "return": "null; N2 is unchanged (another user's notification is not visible).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-67a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "No notification with this id."
+          ],
+          "inputs": "userId U1; notificationId random.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-67a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Notification N1 is already read at 02:00Z."
+          ],
+          "inputs": "userId U1; notificationId N1; clock 03:00Z.",
+          "return": "The notification; ReadAt stays 02:00Z.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-67a",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Export",
+  "description": "Minutes export and revision reading.",
+  "precondition": "Minutes with revisions.",
+  "methods": [
+    {
+      "method": "MinutesService.ExportAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 140,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Issued revision of meeting \"Họp quý 3\".",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Secretary; format: Docx.",
+          "return": "File \"Biên bản - Họp quý 3.docx\" (Word content type) built from the shown HTML; no message code.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Issued revision of meeting \"Họp quý 3\".",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the Member; format: Docx.",
+          "return": "File \"Biên bản - Họp quý 3.docx\" (Word content type); a reader downloads what they may read.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Issued revision of meeting \"Họp quý 3\".",
+            "Actor is the current Chair."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Chair; format: Pdf.",
+          "return": "File \"Biên bản - Họp quý 3.pdf\" (application/pdf) built from the same HTML; no message code.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "inputs": "minutesId: an Issued revision; actor: deactivated Secretary; format: Docx.",
+          "return": "Failure Inactive; 403 with no message code; no file.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "No revision has the given id.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: unknown; actor: the current Secretary; format: Docx.",
+          "return": "Failure NotFound; 404 with no message code; no file.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Draft revision exists.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the Member; format: Docx.",
+          "return": "Failure NotFound; 404 with no message code; a revision waiting to be approved is not there for anyone else.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Issued revision of a Secret meeting.",
+            "Actor is the current Chair."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Chair; format: Docx.",
+          "return": "Failure SecretMeeting; 403 MSG405; no file. Secret minutes stay on screen only.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-58 · BR-188 · MSG405",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Issued revision of a meeting whose title makes the file name longer than 120 characters.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Secretary; format: Docx.",
+          "return": "File name cut to the first 120 characters of \"Biên bản - <title>\" plus \".docx\"; content unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Issued revision.",
+            "Actor is the current Secretary.",
+            "The database fails while reading."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Secretary; format: Docx.",
+          "return": "Failure ReadFailed; 500 MSG403; no file.",
+          "exception": "N/A",
+          "log": "Error logged with the minutes id.",
+          "type": "Abnormal",
+          "note": "UC-58 · MSG403",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

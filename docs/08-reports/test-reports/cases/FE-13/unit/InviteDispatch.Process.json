@@ -1,0 +1,648 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "InviteDispatch.Process",
+  "description": "Invitation dispatch worker: pick the next staged event and send.",
+  "precondition": "Staged invitation events.",
+  "methods": [
+    {
+      "method": "MeetingInvitationDispatchProcessor.ProcessAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationDispatchProcessor.cs",
+      "line": 37,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Email delivery is disabled."
+          ],
+          "inputs": "id: any dispatch id.",
+          "return": "0; nothing is read.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "No dispatch with this id."
+          ],
+          "inputs": "id: unknown.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A dispatch already Materialized."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "0; unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A dispatch already Suppressed."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "0; unchanged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A Pending dispatch whose NextAttemptAt is 03:10Z; the clock is 03:00Z."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "0; unchanged, it is not due.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "A Pending dispatch whose NextAttemptAt equals the clock, 03:00Z."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "1 (an email is queued): a dispatch due exactly now is processed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Another worker holds the lock on the dispatch."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "0; the transaction ends without committing.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The dispatch was settled by another worker between the first read and the lock."
+          ],
+          "inputs": "id of that dispatch.",
+          "return": "0; no commit.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "An email with the same deduplication key already exists."
+          ],
+          "inputs": "id of a Pending dispatch.",
+          "return": "0 emails queued.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Materialized and points at the existing email id; no new email is added.",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "An Invitation dispatch for a participant who is no longer active on the roster."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed; no email.",
+          "type": "Abnormal",
+          "note": "BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "An Invitation dispatch for a meeting that is now Cancelled."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed.",
+          "type": "Abnormal",
+          "note": "BR-299 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "A Rescheduled dispatch for a meeting that is now Ended."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed.",
+          "type": "Abnormal",
+          "note": "BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "A Cancelled dispatch for a person who is no longer on the roster."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed.",
+          "type": "Abnormal",
+          "note": "BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "A Cancelled dispatch for a current participant; the meeting is Cancelled."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1: the cancellation notice still goes to everyone on the roster.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-75 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "A Removed dispatch for a person already off the roster; the meeting is Ended; the invitation email was sent."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1: a withdrawal is not moot because the person left.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-28 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "A Removed dispatch; the invitation was never turned into an email and no email with the initial key exists."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed: a withdrawal is only worth sending if the invitation went out.",
+          "type": "Abnormal",
+          "note": "UC-28 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "A Removed dispatch; the invitation dispatch is Materialized."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-28 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "A Removed dispatch; no materialized invitation dispatch, but an email with the participant's initial delivery key exists (sent before dispatch rows existed)."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-28 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "A Cancelled dispatch for a Guest; the Guest's invitation was never emailed."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed.",
+          "type": "Abnormal",
+          "note": "UC-75 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "An Invitation dispatch for an internal participant on a Published meeting.",
+            "Participant Bình, role Member; application base URL https://tc.example.vn/."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email queued: subject \"Lời mời tham dự cuộc họp: <title>\"; text body with greeting, start, end, \"Vai trò: Thành viên\", place and \"Xem cuộc họp: https://tc.example.vn/mgmt/meetings/<meetingId>\"; the organizer's name and email as contact; an HTML body from the invitation template; a METHOD:REQUEST calendar attachment.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Materialized, EmailMessageId set, LastError empty, NextAttemptAt cleared.",
+          "type": "Normal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "A Rescheduled dispatch whose payload holds the previous start 09:00."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email: the body has a \"Thời gian cũ\" line before the new start; no calendar attachment.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-15 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "A Rescheduled dispatch staged before the previous time was recorded (PreviousStartsAt null)."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email: no \"Thời gian cũ\" line.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-15 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC023",
+          "preconditions": [
+            "A RoleChanged dispatch for Bình, new role Secretary."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email with \"Vai trò: Thư ký\"; no calendar attachment.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "BR-92",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC024",
+          "preconditions": [
+            "A Cancelled dispatch for an internal participant, reason \"Hoãn do lịch bận\"."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email: subject \"Cuộc họp đã bị huỷ: <title>\"; body has the planned time and \"Lý do huỷ: Hoãn do lịch bận\" and no meeting link; the HTML has no button; the calendar attachment is METHOD:CANCEL.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-75 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC025",
+          "preconditions": [
+            "A Removed dispatch for Bình (invitation was sent)."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email: subject \"Lời mời tham dự đã được thu hồi: <title>\"; body has no times and no link; no calendar attachment.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-28 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC026",
+          "preconditions": [
+            "An Invitation dispatch for a Guest; the link provider is available and prepares the verification link https://tc.example.vn/guest/verify?t=abc."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1 email: body without a place, with \"Xác minh email để truy cập cuộc họp: https://tc.example.vn/guest/verify?t=abc\"; the contact is the organizer's name only, with no staff email; calendar attachment with an empty description and location.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC027",
+          "preconditions": [
+            "A meeting title containing a line break and 320 characters."
+          ],
+          "inputs": "id of an Invitation dispatch.",
+          "return": "1 email: subject has the line break replaced by a space and is cut to 300 characters.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC028",
+          "preconditions": [
+            "The subject's 300th character would split an emoji (a surrogate pair at positions 299 and 300)."
+          ],
+          "inputs": "id of an Invitation dispatch.",
+          "return": "1 email: the subject is cut to 299 characters so the pair is not split.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC029",
+          "preconditions": [
+            "A Guest dispatch (not a withdrawal); the link provider reports itself unavailable; the Guest invitation is active; the meeting is open; DependencyAttemptCount 0."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes BlockedDependency with NextAttemptAt now + 1 minute; no lock on the meeting is taken.",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC030",
+          "preconditions": [
+            "Same, DependencyAttemptCount 1, 2, 3."
+          ],
+          "inputs": "id of the dispatch, three times.",
+          "return": "0 each time.",
+          "exception": "N/A",
+          "log": "NextAttemptAt is now + 5 minutes, + 30 minutes and + 360 minutes; 360 minutes also for any higher count.",
+          "type": "Boundary",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC031",
+          "preconditions": [
+            "A Guest dispatch; link provider unavailable; the Guest invitation was revoked."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch is Suppressed instead of waiting.",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC032",
+          "preconditions": [
+            "A Guest dispatch; link provider unavailable; the meeting is closed (Ended or Cancelled)."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch is Suppressed.",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC033",
+          "preconditions": [
+            "A Guest Removed dispatch; link provider unavailable."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "1: a withdrawal needs no link, so the availability probe is skipped.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC034",
+          "preconditions": [
+            "The link provider is available but its preparation returns Unavailable."
+          ],
+          "inputs": "id of a Guest Invitation dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes BlockedDependency, NextAttemptAt now + 1 minute, DependencyAttemptCount incremented, LastError \"Unavailable\".",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC035",
+          "preconditions": [
+            "The link provider returns Invalid for the Guest invitation."
+          ],
+          "inputs": "id of a Guest Invitation dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "The dispatch becomes Suppressed with LastError \"Invalid\".",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC036",
+          "preconditions": [
+            "The link provider returns a URL on another origin, https://evil.example/verify."
+          ],
+          "inputs": "id of a Guest Invitation dispatch; configured base https://tc.example.vn.",
+          "return": "0: the dispatch is not turned into an email.",
+          "exception": "A JsonException is raised inside, caught by the processor and recorded as a failed attempt.",
+          "log": "RecordFailedAttempt with the failure type \"JsonException\"; a warning is logged with the type only, never the URL.",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC037",
+          "preconditions": [
+            "The link provider returns a non-web URL, ftp://tc.example.vn/verify."
+          ],
+          "inputs": "id of a Guest Invitation dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "Failed attempt recorded as above.",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC038",
+          "preconditions": [
+            "The dispatch's payload version is 2."
+          ],
+          "inputs": "id of a Pending dispatch.",
+          "return": "0.",
+          "exception": "Unsupported invitation payload version, handled as a failed attempt.",
+          "log": "RecordFailedAttempt(MaxAttempts 8, failure type JsonException); the transaction is discarded and nothing is queued.",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC039",
+          "preconditions": [
+            "The dispatch's payload is the JSON text null."
+          ],
+          "inputs": "id of a Pending dispatch.",
+          "return": "0.",
+          "exception": "Missing invitation payload, handled as a failed attempt.",
+          "log": "Failed attempt recorded.",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC040",
+          "preconditions": [
+            "A dispatch that failed twice before (AttemptCount 2); the next failure occurs at 03:00Z."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "RetryAt is 03:00Z + 240 s (60 s x 2^2).",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC041",
+          "preconditions": [
+            "A dispatch with AttemptCount 4; failure at 03:00Z."
+          ],
+          "inputs": "id of the dispatch.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "RetryAt is 03:15:00Z: 60 s x 16 = 960 s is capped at 900 s.",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC042",
+          "preconditions": [
+            "The host cancels the work while a dispatch is being processed."
+          ],
+          "inputs": "Cancellation token cancelled.",
+          "return": "No result.",
+          "exception": "The cancellation is not swallowed; no failed attempt is recorded.",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

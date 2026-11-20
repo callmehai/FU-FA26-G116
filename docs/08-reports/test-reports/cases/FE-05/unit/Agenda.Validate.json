@@ -1,0 +1,302 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Validate",
+  "description": "Agenda item validation: title, description, presenter and document links.",
+  "precondition": "Meeting exists; presenter is a participant of the meeting.",
+  "methods": [
+    {
+      "method": "AgendaRules.Validate",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 32,
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "input {Title: \"Budget review\"; Description: \"Q3\"; PresenterId: null; PresenterGuestInvitationId: null; DocumentIds: null}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Title and description in range, no presenter, no documents."
+          ],
+          "return": "No errors.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "input {Title: \"\"}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Title is empty."
+          ],
+          "return": "Errors: title only.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "input {Title: null}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Title is null."
+          ],
+          "return": "Errors: title only.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "input {Title: 300 characters}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Title is exactly 300 characters."
+          ],
+          "return": "No errors.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "input {Title: 301 characters}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Title is 301 characters."
+          ],
+          "return": "Errors: title only.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "input {Title: \"A\"}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Title is one character."
+          ],
+          "return": "No errors.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "input {Title: \"A\"; Description: 4000 characters}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Description is exactly 4000 characters."
+          ],
+          "return": "No errors.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "input {Title: \"A\"; Description: 4001 characters}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Description is 4001 characters."
+          ],
+          "return": "Errors: description only.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "input {Title: \"A\"; Description: null}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Description is not given."
+          ],
+          "return": "No errors.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "input {Title: \"A\"; PresenterId: a user id}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Internal presenter only."
+          ],
+          "return": "No errors.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "input {Title: \"A\"; PresenterGuestInvitationId: an invitation id}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Guest presenter only."
+          ],
+          "return": "No errors.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "input {Title: \"A\"; PresenterId: a user id; PresenterGuestInvitationId: an invitation id}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Both an internal and a Guest presenter are given."
+          ],
+          "return": "Errors: presenterId only.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "input {Title: \"A\"; PresenterId: 00000000-0000-0000-0000-000000000000}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Presenter id is the empty GUID."
+          ],
+          "return": "Errors: presenterId only.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "input {Title: \"A\"; PresenterGuestInvitationId: 00000000-0000-0000-0000-000000000000}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Guest invitation id is the empty GUID."
+          ],
+          "return": "Errors: presenterId only.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "input {Title: \"A\"; DocumentIds: [D1, D2]}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-278",
+          "preconditions": [
+            "Document list has two different ids."
+          ],
+          "return": "No errors.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "input {Title: \"A\"; DocumentIds: []}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-278",
+          "preconditions": [
+            "Document list is empty."
+          ],
+          "return": "No errors.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC017",
+          "inputs": "input {Title: \"A\"; DocumentIds: [D1, D1]}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-278 · MSG66",
+          "preconditions": [
+            "Document list has the same id twice."
+          ],
+          "return": "Errors: documentIds only.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC018",
+          "inputs": "input {Title: \"A\"; DocumentIds: [00000000-0000-0000-0000-000000000000]}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-278 · MSG66",
+          "preconditions": [
+            "Document list contains the empty GUID."
+          ],
+          "return": "Errors: documentIds only.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC019",
+          "inputs": "input {Title: \"\"; Description: 4001 characters; PresenterId: empty GUID; DocumentIds: [D1, D1]}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66 · MSG66",
+          "preconditions": [
+            "Several fields are wrong at once."
+          ],
+          "return": "Errors for title, description, presenterId and documentIds together.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ],
+      "layer": "Domain"
+    }
+  ]
+}

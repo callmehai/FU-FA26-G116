@@ -1,0 +1,62 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "InviteEvents.StagePublish",
+  "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+  "precondition": "Meeting with participants and guests.",
+  "methods": [
+    {
+      "method": "MeetingInvitationEvents.StagePublicationInvitationsAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "line": 27,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A meeting with 2 active participants (Chair An, Member Bình), 1 inactive user, and 1 active Guest invitation."
+          ],
+          "inputs": "meeting; now 2026-11-18T03:00Z.",
+          "return": "No result. Three dispatch rows are staged: one Invitation per active participant and one for the Guest.",
+          "exception": "N/A",
+          "log": "Each dispatch has the participant's initial delivery key (or the Guest's) as its deduplication key. No in-app notification is staged.",
+          "type": "Normal",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A meeting whose roster has the same user twice (two rows) and a participant who delegated their seat."
+          ],
+          "inputs": "meeting; now 2026-11-18T03:00Z.",
+          "return": "One dispatch for that user; the delegated seat gets none.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A meeting with no active participants and no Guest invitations."
+          ],
+          "inputs": "meeting.",
+          "return": "Nothing is staged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

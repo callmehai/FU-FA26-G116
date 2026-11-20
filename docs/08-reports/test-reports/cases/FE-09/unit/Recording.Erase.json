@@ -1,0 +1,182 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "Recording.Erase",
+  "description": "Recording erasure on request and when retention expires.",
+  "precondition": "Recordings with ages; clock replaced.",
+  "methods": [
+    {
+      "method": "RecordingService.EraseAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "line": 160,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Available recording with transcript and file, in a meeting where the actor is the current Secretary."
+          ],
+          "inputs": "recordingId; actorId: the Secretary.",
+          "return": "Success (200, MSG296) with the recording id: status Deleted, DeletedAt = now, UpdatedAt = now; the transcript with its segments is removed.",
+          "exception": "N/A",
+          "log": "Audit RecordingErased (meeting, file name, reason 'request', actor = the Secretary); the audio file is deleted after the commit; RecordingsChanged published.",
+          "type": "Normal",
+          "note": "UC-44e · BR-348 · BR-341 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Recording already Deleted."
+          ],
+          "inputs": "recordingId; actorId: the Secretary.",
+          "return": "Success (200, MSG296) with the same recording id; nothing is changed.",
+          "exception": "N/A",
+          "log": "No new audit row, no file deletion, no event.",
+          "type": "Boundary",
+          "note": "UC-44e · BR-348 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Recording in an Ended meeting."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "Success; erasing is allowed at any meeting status.",
+          "exception": "N/A",
+          "log": "Audit RecordingErased; file deleted.",
+          "type": "Boundary",
+          "note": "UC-44e · BR-348 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Combined recording of a hybrid meeting, Available."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "Success; status Deleted, so the combined recording is not built again.",
+          "exception": "N/A",
+          "log": "Audit RecordingErased.",
+          "type": "Normal",
+          "note": "UC-44e · BR-348 · BR-457 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "No recording with this id."
+          ],
+          "inputs": "recordingId: a random id.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "The actor is not on the roster."
+          ],
+          "inputs": "actorId: the creator, not a participant.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348 · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The actor is the Chair, not the Secretary."
+          ],
+          "inputs": "actorId: the Chair.",
+          "return": "Forbidden (403, MSG295).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348 · BR-341 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "A room-mic take still streaming: status Pending."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "TakeOpen (409, MSG364); the take is not touched.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348 · MSG364",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Recording whose file cannot be deleted from the disk (access denied)."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "Success (200, MSG296); the row stays Deleted.",
+          "exception": "N/A",
+          "log": "Error log 'Could not delete recording file'; audit RecordingErased written.",
+          "type": "Boundary",
+          "note": "UC-44e · BR-348 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "The database fails while saving."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "SaveFailed (503, MSG298); the file is not deleted.",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to erase recording'.",
+          "type": "Abnormal",
+          "note": "UC-44e · BR-348 · MSG298",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

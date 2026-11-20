@@ -1,0 +1,77 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.CurrentParticipant",
+  "description": "Current-participant rule: roster membership that is still current.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaRules.CurrentParticipant",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 16,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "participant {Current; Member; User.IsActive: true}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Current participant with an active account."
+          ],
+          "return": "true.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "participant {Current; Member; User.IsActive: false}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-66",
+          "preconditions": [
+            "Participant account deactivated."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "participant {AssignmentStatus: Removed; User.IsActive: true}.",
+          "log": "N/A",
+          "note": "UC-28c · BR-66",
+          "preconditions": [
+            "Participant removed from the roster."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "participant {Role: Guest; Current; active}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-150",
+          "preconditions": [
+            "Guest-role row."
+          ],
+          "return": "false.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

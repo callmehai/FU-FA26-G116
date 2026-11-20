@@ -1,0 +1,107 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "PersonalLibrary.DeleteFolder",
+  "description": "Personal library folders: create, rename, move, delete with name and cycle rules.",
+  "precondition": "Owner with a folder tree.",
+  "methods": [
+    {
+      "method": "PersonalLibraryService.DeleteFolderAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "line": 156,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Folder F1 is empty (no subfolder, no document)."
+          ],
+          "inputs": "folderId: F1.",
+          "return": "None; endpoint answers MSG197.",
+          "exception": "N/A",
+          "log": "Folder row deleted.",
+          "type": "Normal",
+          "note": "UC-72d · BR-223 · MSG197",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "F9 missing or another user's."
+          ],
+          "inputs": "folderId: F9.",
+          "return": "NotFound (HTTP 404, MSG175).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72d · BR-242 · MSG175",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "F1 has a subfolder."
+          ],
+          "inputs": "folderId: F1.",
+          "return": "NotEmpty (HTTP 409, MSG196); nothing deleted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72d · BR-223 · MSG196",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "F1 holds one document."
+          ],
+          "inputs": "folderId: F1.",
+          "return": "NotEmpty (HTTP 409, MSG196).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72d · BR-223 · MSG196",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "F2 is the upload folder of a meeting and is empty."
+          ],
+          "inputs": "folderId: F2.",
+          "return": "None; the next upload to that meeting creates a new upload folder.",
+          "exception": "N/A",
+          "log": "Folder row deleted.",
+          "type": "Boundary",
+          "note": "UC-72d · BR-228 · MSG197",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Database error (for example a foreign-key restriction)."
+          ],
+          "inputs": "folderId: F1.",
+          "return": "SaveFailed (HTTP 503, MSG198); the folder stays.",
+          "exception": "N/A",
+          "log": "Error log \"Failed to delete a folder\".",
+          "type": "Abnormal",
+          "note": "UC-72d · MSG198",
+          "round1": "Passed",
+          "date1": "2026-11-19",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

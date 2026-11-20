@@ -1,0 +1,411 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "Recording.Add",
+  "description": "Recording upload: permission, meeting status, validation and storage.",
+  "precondition": "Meeting with participants; file storage recorder.",
+  "methods": [
+    {
+      "method": "RecordingService.AddAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "line": 61,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'.",
+            "Retention is 180 days; the clock reads 2026-11-14 10:00 UTC."
+          ],
+          "inputs": "upload: file 'hop.mp3', audio/mpeg, 5,000,000 bytes, source Upload, consent confirmed, purpose '  Họp HĐQT  ', duration 3,600,000 ms.",
+          "return": "Success with the new recording id (201, MSG290): status Available, consent time 2026-11-14 10:00 UTC, purpose 'Họp HĐQT' (trimmed), RetainUntil 2027-05-13 10:00 UTC, maker = the Secretary, an empty transcript in status Pending is created for the worker.",
+          "exception": "N/A",
+          "log": "Audit RecordingUploaded (meeting, file name, size, source, purpose, retainUntil); RecordingsChanged published to the meeting; the stored file is kept.",
+          "type": "Normal",
+          "note": "UC-44c · BR-343 · BR-347 · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "InPerson meeting in status Ended; the actor is its Secretary."
+          ],
+          "inputs": "A valid upload with durationMs null.",
+          "return": "Success (201, MSG290); DurationMs stored as 0.",
+          "exception": "N/A",
+          "log": "Audit RecordingUploaded; RecordingsChanged published.",
+          "type": "Boundary",
+          "note": "UC-44c · BR-342 · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentPurpose null.",
+          "return": "Success; the purpose stored is 'Lập biên bản cuộc họp'.",
+          "exception": "N/A",
+          "log": "Audit RecordingUploaded with the default purpose.",
+          "type": "Boundary",
+          "note": "UC-44c · BR-343 · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentPurpose '   ' (blanks).",
+          "return": "Success; the default purpose 'Lập biên bản cuộc họp' is stored.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44c · BR-343 · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentPurpose of exactly 1,000 characters.",
+          "return": "Success; the purpose is stored in full.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44c · BR-343 · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentPurpose of 1,001 characters.",
+          "return": "Invalid (400, MSG291) with an error on consentPurpose; nothing is saved.",
+          "exception": "N/A",
+          "log": "The stored file is deleted; no audit row.",
+          "type": "Boundary",
+          "note": "UC-44c · BR-343 · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentConfirmed false.",
+          "return": "Invalid (400, MSG291) with an error on consentConfirmed.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-343 · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: file name '' (empty).",
+          "return": "Invalid (400, MSG291) with an error on file.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Boundary",
+          "note": "UC-44c · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: file name of 300 characters.",
+          "return": "Success; the name is kept.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44c · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: file name of 301 characters.",
+          "return": "Invalid (400, MSG291) with an error on file.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Boundary",
+          "note": "UC-44c · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: byteSize 0.",
+          "return": "Invalid (400, MSG291): 'Tệp ghi âm rỗng.'",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Boundary",
+          "note": "UC-44c · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: durationMs -1.",
+          "return": "Invalid (400, MSG291) with an error on durationMs.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Boundary",
+          "note": "UC-44c · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "A valid upload.",
+          "return": "Inactive (403); nothing saved.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "No such meeting."
+          ],
+          "inputs": "meetingId: a random id.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "The actor is not on the roster (creator only)."
+          ],
+          "inputs": "A valid upload.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "The actor is the Chair, not the Secretary."
+          ],
+          "inputs": "A valid upload.",
+          "return": "Forbidden (403, MSG295).",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-341 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "Online meeting; the actor is the Secretary."
+          ],
+          "inputs": "A valid upload.",
+          "return": "NoRoom (409, MSG358).",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-340 · MSG358",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "Hybrid meeting; the actor is the Secretary."
+          ],
+          "inputs": "A valid upload.",
+          "return": "HybridLiveOnly (409, MSG478).",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-340 · MSG478",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "InPerson meeting in status Published; the actor is the Secretary."
+          ],
+          "inputs": "A valid upload.",
+          "return": "Locked (409, MSG294).",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-342 · MSG294",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "InPerson meeting in status Draft; the actor is the Secretary."
+          ],
+          "inputs": "A valid upload.",
+          "return": "Locked (409, MSG294).",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-342 · MSG294",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'."
+          ],
+          "inputs": "upload: consentConfirmed false, purpose 1,001 characters, byteSize 0, durationMs -5.",
+          "return": "Invalid (400, MSG291) with errors on consentConfirmed, consentPurpose, file and durationMs.",
+          "exception": "N/A",
+          "log": "The stored file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44c · BR-343 · MSG291",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'.",
+            "The database rejects the save."
+          ],
+          "inputs": "A valid upload.",
+          "return": "SaveFailed (503, MSG298).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log; the stored file is deleted so no voice stays on disk.",
+          "type": "Abnormal",
+          "note": "UC-44c · MSG298",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC023",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'.",
+            "The change-event publisher throws."
+          ],
+          "inputs": "A valid upload.",
+          "return": "Success (201, MSG290); the recording stays saved.",
+          "exception": "N/A",
+          "log": "Warning log 'Could not publish recordings change'.",
+          "type": "Boundary",
+          "note": "UC-44c · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC024",
+          "preconditions": [
+            "InPerson meeting in status InProgress.",
+            "The actor is its current Secretary and an active user.",
+            "The audio file is already stored by the endpoint at 'recordings/x.mp3'.",
+            "The upload came from the browser capture source."
+          ],
+          "inputs": "upload: source BrowserCapture.",
+          "return": "Success; the recording keeps the given source.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44c · MSG290",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

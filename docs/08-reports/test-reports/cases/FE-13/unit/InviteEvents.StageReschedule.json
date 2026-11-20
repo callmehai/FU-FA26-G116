@@ -1,0 +1,47 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "InviteEvents.StageReschedule",
+  "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+  "precondition": "Meeting with participants and guests.",
+  "methods": [
+    {
+      "method": "MeetingInvitationEvents.StageRescheduleInvitationsAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "line": 47,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A Published meeting with 2 active participants and 1 Guest, moved from 09:00 to 14:00 on the same day."
+          ],
+          "inputs": "meeting (new time 14:00-15:30); historyId H2; previous (09:00, 10:30).",
+          "return": "No result. Three Rescheduled dispatches staged with key roster:H2:Rescheduled:<owner id>.",
+          "exception": "N/A",
+          "log": "Each payload holds PreviousStartsAt 09:00 and PreviousEndsAt 10:30. No in-app notification is staged here; the caller adds it, leaving out the organizer who moved the meeting.",
+          "type": "Normal",
+          "note": "UC-15 · BR-76 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A meeting with no active participants and no Guests."
+          ],
+          "inputs": "meeting.",
+          "return": "Nothing is staged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-15 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

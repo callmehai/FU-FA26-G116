@@ -1,0 +1,92 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.PlaybackForGuest",
+  "description": "Speech clips for a guest session: list, capture, delete, playback.",
+  "precondition": "Guest session in a meeting in progress.",
+  "methods": [
+    {
+      "method": "SpeechClipService.PlaybackForGuestAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 380,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A current guest session; the sentence is the guest's own, with audio, still in the record."
+          ],
+          "inputs": "guest session; clipId: the guest's own sentence with audio.",
+          "return": "Success with a signed playback link for the sentence.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43b",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A current guest session; the sentence is another speaker's."
+          ],
+          "inputs": "guest session; clipId: someone else's sentence.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A current guest session; the guest's own sentence was taken out of the record."
+          ],
+          "inputs": "guest session; clipId: the guest's own excluded sentence.",
+          "return": "NotFound; only the Chair and the Secretary hear an excluded sentence.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46c · BR-357",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A current guest session; the guest's own sentence was stored without audio (disk was full)."
+          ],
+          "inputs": "guest session; clipId: the guest's own sentence without audio.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A current guest session; the database fails while reading."
+          ],
+          "inputs": "guest session; clipId.",
+          "return": "ReadFailed (500, MSG297).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to sign playback for speech clip for a guest'.",
+          "type": "Abnormal",
+          "note": "UC-43b · MSG297",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1015 @@
+{
+  "description": "Meeting workflow transitions: submit, approve, reject, publish, cancel and organizer transfer with guards.",
+  "feature": "FE-04",
+  "methods": [
+    {
+      "cases": [
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "Meeting status: Draft; actor: organizer; command: SubmitForApproval with AssignedApproverId of an eligible approver.",
+          "log": "Saved: status WaitingApproval; history row SubmitForApproval with the approver; notification \"Cuộc họp cần được duyệt\" to the approver.",
+          "note": "UC-18 · BR-33 · BR-34 · BR-35 · MSG78",
+          "preconditions": [
+            "Meeting is Draft; organizer holds MeetingCreator.",
+            "Persisted meeting information passes the submission readiness check.",
+            "Approver is active, holds MeetingApprover and differs from the organizer."
+          ],
+          "return": "Success(WaitingApproval); AssignedApproverId set; MSG78.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "Meeting status: Rejected; actor: organizer; command: SubmitForApproval.",
+          "log": "Saved: history row from Rejected to WaitingApproval; approver notified.",
+          "note": "UC-18 · BR-33 · BR-34 · MSG78",
+          "preconditions": [
+            "Meeting is Rejected; organizer holds MeetingCreator; readiness passes.",
+            "A new eligible approver is chosen."
+          ],
+          "return": "Success(WaitingApproval); MSG78.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "command: SubmitForApproval without an approver id.",
+          "log": "N/A",
+          "note": "UC-18 · MSG80",
+          "preconditions": [
+            "Meeting is Draft."
+          ],
+          "return": "Failure InvalidRequest; MSG80; nothing read.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "command: SubmitForApproval with a Reason.",
+          "log": "N/A",
+          "note": "UC-18 · MSG80",
+          "preconditions": [
+            "Meeting is Draft."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "command: SubmitForApproval with AssignedApproverId = Guid.Empty.",
+          "log": "N/A",
+          "note": "UC-18 · MSG80",
+          "preconditions": [
+            "Meeting is Draft."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "command: Start (or End).",
+          "log": "N/A",
+          "note": "UC-21 · MSG80",
+          "preconditions": [
+            "Any meeting."
+          ],
+          "return": "Failure InvalidRequest; MSG80; Start and End belong to the lifecycle service.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "command: Action value outside the enumeration.",
+          "log": "N/A",
+          "note": "UC-18 · MSG80",
+          "preconditions": [
+            "Any meeting."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actor: organizer; command: SubmitForApproval with a valid approver.",
+          "log": "N/A",
+          "note": "UC-18 · BR-33 · MSG81",
+          "preconditions": [
+            "Draft meeting with an empty stored title."
+          ],
+          "return": "Failure SubmissionNotReady with errors { title }; MSG81; status stays Draft.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "command: SubmitForApproval with AssignedApproverId = organizer id.",
+          "log": "N/A",
+          "note": "UC-18 · BR-35 · MSG82",
+          "preconditions": [
+            "Approver is the organizer."
+          ],
+          "return": "Failure InvalidApprover; MSG82.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "command: SubmitForApproval with that approver.",
+          "log": "N/A",
+          "note": "UC-18 · BR-35 · MSG82",
+          "preconditions": [
+            "Approver is deactivated or lacks MeetingApprover."
+          ],
+          "return": "Failure InvalidApprover; MSG82; status stays Draft; no history row.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "actor: organizer; command: SubmitForApproval.",
+          "log": "N/A",
+          "note": "UC-18 · BR-33 · MSG41",
+          "preconditions": [
+            "Meeting is Approved."
+          ],
+          "return": "Failure StatusConflict; MSG41.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "command: SubmitForApproval.",
+          "log": "N/A",
+          "note": "UC-18 · BR-29 · MSG85",
+          "preconditions": [
+            "Actor is a Chair, not the creator."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "command: SubmitForApproval.",
+          "log": "N/A",
+          "note": "UC-18 · MSG85",
+          "preconditions": [
+            "Actor is the creator but lost MeetingCreator."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "Meeting status: WaitingApproval; actor: assigned approver; command: Approve.",
+          "log": "Saved: status Approved; history row Approve; organizer notified \"Cuộc họp đã được duyệt\".",
+          "note": "UC-19 · BR-36 · BR-38 · MSG43",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver.",
+            "Actor holds MeetingApprover and is not the organizer."
+          ],
+          "return": "Success(Approved); MSG43.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "command: Reject with reason \"  Thiếu tài liệu  \".",
+          "log": "Saved: status Rejected; history row Reject with the reason; organizer notified \"Cuộc họp bị từ chối\" with the reason in the body.",
+          "note": "UC-19 · BR-36 · BR-38 · MSG44",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver."
+          ],
+          "return": "Success(Rejected); MSG44; the reason is trimmed to \"Thiếu tài liệu\".",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "command: Reject with reason \"   \".",
+          "log": "N/A",
+          "note": "UC-19 · BR-36 · MSG83",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver."
+          ],
+          "return": "Failure RejectionReasonRequired; MSG83; the reason is trimmed first; nothing is written.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC017",
+          "inputs": "command: Reject with a reason of exactly 1000 characters.",
+          "log": "Saved: Reject history row with the reason.",
+          "note": "UC-19 · BR-36 · MSG44",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver."
+          ],
+          "return": "Success(Rejected); MSG44.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC018",
+          "inputs": "command: Reject with a reason of 1001 characters after trimming.",
+          "log": "N/A",
+          "note": "UC-19 · BR-36 · MSG84",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver."
+          ],
+          "return": "Failure RejectionReasonTooLong; MSG84; nothing is written.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC019",
+          "inputs": "command: Approve with Reason \"ok\".",
+          "log": "N/A",
+          "note": "UC-19 · MSG80",
+          "preconditions": [
+            "Approve command carries a Reason."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC020",
+          "inputs": "command: Reject with a reason and an approver id.",
+          "log": "N/A",
+          "note": "UC-19 · MSG80",
+          "preconditions": [
+            "Reject command carries an AssignedApproverId."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC021",
+          "inputs": "command: Approve.",
+          "log": "N/A",
+          "note": "UC-19 · BR-29 · MSG85",
+          "preconditions": [
+            "Meeting is WaitingApproval with the actor as assigned approver but without MeetingApprover."
+          ],
+          "return": "Failure Forbidden; MSG85; status stays WaitingApproval; no history row.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC022",
+          "inputs": "command: Approve; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-19 · BR-29 · MSG85",
+          "preconditions": [
+            "Actor is a user other than the assigned approver but can read the meeting (the organizer)."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC023",
+          "inputs": "command: Approve; actor: that user.",
+          "log": "N/A",
+          "note": "UC-19 · BR-35 · MSG85",
+          "preconditions": [
+            "The assigned approver is also the organizer (legacy data)."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC024",
+          "inputs": "actor: assigned approver; command: Approve.",
+          "log": "N/A",
+          "note": "UC-19 · BR-36 · MSG132",
+          "preconditions": [
+            "Meeting is already Approved."
+          ],
+          "return": "Failure StatusConflict; MSG132.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC025",
+          "inputs": "actor: assigned approver; command: Reject with reason.",
+          "log": "N/A",
+          "note": "UC-19 · BR-36 · MSG132",
+          "preconditions": [
+            "Meeting is Rejected."
+          ],
+          "return": "Failure StatusConflict; MSG132.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC026",
+          "inputs": "command: ReturnToDraft; actor: organizer.",
+          "log": "Saved: history row from Rejected to Draft.",
+          "note": "UC-15 · BR-34 · MSG79",
+          "preconditions": [
+            "Meeting is Rejected; organizer holds MeetingCreator."
+          ],
+          "return": "Success(Draft); AssignedApproverId cleared; MSG79.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC027",
+          "inputs": "command: ReturnToDraft; actor: organizer.",
+          "log": "Saved: history row from WaitingApproval to Draft.",
+          "note": "UC-15 · BR-35 · MSG79",
+          "preconditions": [
+            "Meeting is WaitingApproval and its assigned approver has been deactivated."
+          ],
+          "return": "Success(Draft); AssignedApproverId cleared; MSG79.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC028",
+          "inputs": "command: ReturnToDraft; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-15 · BR-34 · MSG133",
+          "preconditions": [
+            "Meeting is WaitingApproval and the assigned approver is still active with MeetingApprover."
+          ],
+          "return": "Failure StatusConflict; MSG133; the approval cycle continues.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC029",
+          "inputs": "command: ReturnToDraft; actor: organizer.",
+          "log": "Saved: history row; assignment cleared.",
+          "note": "UC-15 · BR-35 · MSG79",
+          "preconditions": [
+            "Meeting is WaitingApproval and the approver is the organizer (invalid legacy assignment)."
+          ],
+          "return": "Success(Draft); MSG79.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC030",
+          "inputs": "command: ReturnToDraft; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-15 · MSG133",
+          "preconditions": [
+            "Meeting is Approved."
+          ],
+          "return": "Failure StatusConflict; MSG133.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC031",
+          "inputs": "command: Publish; actor: organizer.",
+          "log": "Saved: status Published; history row Publish; \"Cuộc họp đã được công bố\" notification for the Chair, Secretary and Members but not the organizer; invitation emails staged for every active participant.",
+          "note": "UC-20 · BR-37 · BR-39 · BR-124 · BR-125 · BR-322 · MSG45",
+          "preconditions": [
+            "Meeting is Approved; organizer holds MeetingCreator.",
+            "Roster has exactly one active Chair, one active Secretary and two Members."
+          ],
+          "return": "Success(Published); MSG45.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC032",
+          "inputs": "Meeting status: Approved; actor: organizer; command: Publish.",
+          "log": "N/A",
+          "note": "UC-20 · BR-125 · MSG137",
+          "preconditions": [
+            "Meeting is Approved; organizer holds MeetingCreator.",
+            "Roster has one active chair and no active secretary."
+          ],
+          "return": "Failure PublicationRosterNotReady; MSG137; status stays Approved.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC033",
+          "inputs": "command: Publish.",
+          "log": "N/A",
+          "note": "UC-20 · BR-124 · MSG137",
+          "preconditions": [
+            "Roster has no active Chair (the Chair account is deactivated)."
+          ],
+          "return": "Failure PublicationRosterNotReady; MSG137.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC034",
+          "inputs": "command: Publish.",
+          "log": "N/A",
+          "note": "UC-20 · BR-124 · MSG137",
+          "preconditions": [
+            "Roster has two active Chairs."
+          ],
+          "return": "Failure PublicationRosterNotReady; MSG137.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC035",
+          "inputs": "command: Publish; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-20 · BR-37 · MSG46",
+          "preconditions": [
+            "Meeting is Approved but the organizer lost MeetingCreator."
+          ],
+          "return": "Failure PublisherLostCapability (403); MSG46.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC036",
+          "inputs": "command: Publish; actor: Secretary.",
+          "log": "N/A",
+          "note": "UC-20 · BR-37 · MSG85",
+          "preconditions": [
+            "Actor reads the meeting but is not the organizer."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC037",
+          "inputs": "command: Publish; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-20 · BR-41 · MSG46",
+          "preconditions": [
+            "Meeting is Draft."
+          ],
+          "return": "Failure StatusConflict; MSG46.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC038",
+          "inputs": "command: Publish; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-20 · BR-41 · MSG46",
+          "preconditions": [
+            "Meeting is already Published."
+          ],
+          "return": "Failure StatusConflict; MSG46.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC039",
+          "inputs": "command: Cancel with reason \"  Hoãn do bão  \".",
+          "log": "Saved: status Cancelled with CancelledAt, CancelledById, reason and CancelledFromStatus Published; history row Cancel with the reason; invitees (and guests) are notified with the reason by the staged cancellation messages.",
+          "note": "UC-75 · BR-297 · BR-298 · BR-299 · BR-300 · MSG261",
+          "preconditions": [
+            "Meeting is Published; organizer holds MeetingCreator."
+          ],
+          "return": "Success(Cancelled); MSG261; reason trimmed to \"Hoãn do bão\".",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC040",
+          "inputs": "command: Cancel with reason \"Không cần nữa\".",
+          "log": "Saved: history row Cancel; approver notified \"Cuộc họp đã bị huỷ\" with the reason; the assignment is kept.",
+          "note": "UC-75 · BR-297 · BR-299 · MSG261",
+          "preconditions": [
+            "Meeting is WaitingApproval with an assigned approver."
+          ],
+          "return": "Success(Cancelled); MSG261.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC041",
+          "inputs": "command: Cancel with a reason.",
+          "log": "Saved: history row Cancel; nobody is notified.",
+          "note": "UC-75 · BR-297 · MSG261",
+          "preconditions": [
+            "Meeting is Draft."
+          ],
+          "return": "Success(Cancelled); MSG261.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC042",
+          "inputs": "command: Cancel with a reason.",
+          "log": "Saved: history row Cancel; nobody is notified.",
+          "note": "UC-75 · BR-297 · MSG261",
+          "preconditions": [
+            "Meeting is Approved."
+          ],
+          "return": "Success(Cancelled); MSG261.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC043",
+          "inputs": "command: Cancel with a reason.",
+          "log": "Saved: history row Cancel; nobody is notified.",
+          "note": "UC-75 · BR-297 · MSG261",
+          "preconditions": [
+            "Meeting is Rejected."
+          ],
+          "return": "Success(Cancelled); MSG261.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC044",
+          "inputs": "command: Cancel with reason \"   \".",
+          "log": "N/A",
+          "note": "UC-75 · BR-298 · MSG262",
+          "preconditions": [
+            "Cancel command with a blank reason."
+          ],
+          "return": "Failure CancellationReasonRequired; MSG262.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC045",
+          "inputs": "reason: 1000 characters.",
+          "log": "Saved: Cancel history row with the reason.",
+          "note": "UC-75 · BR-298 · MSG261",
+          "preconditions": [
+            "Cancel command with exactly 1000 characters of reason."
+          ],
+          "return": "Success(Cancelled); MSG261.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC046",
+          "inputs": "reason: 1001 characters.",
+          "log": "N/A",
+          "note": "UC-75 · BR-298 · MSG345",
+          "preconditions": [
+            "Cancel command with a reason of 1001 characters."
+          ],
+          "return": "Failure CancellationReasonTooLong; MSG345.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC047",
+          "inputs": "command: Cancel with a reason; actor: organizer.",
+          "log": "N/A",
+          "note": "UC-75 · BR-297 · MSG263",
+          "preconditions": [
+            "Meeting is InProgress."
+          ],
+          "return": "Failure StatusConflict; MSG263.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC048",
+          "inputs": "command: Cancel with a reason.",
+          "log": "N/A",
+          "note": "UC-75 · BR-297 · MSG263",
+          "preconditions": [
+            "Meeting is Ended."
+          ],
+          "return": "Failure StatusConflict; MSG263.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC049",
+          "inputs": "command: Cancel with a reason.",
+          "log": "N/A",
+          "note": "UC-75 · BR-299 · MSG263",
+          "preconditions": [
+            "Meeting is already Cancelled."
+          ],
+          "return": "Failure StatusConflict; MSG263.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Boundary"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC050",
+          "inputs": "command: Cancel with a reason; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-75 · BR-297 · MSG85",
+          "preconditions": [
+            "Actor can read the meeting but is not the organizer."
+          ],
+          "return": "Failure Forbidden; MSG85.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC051",
+          "inputs": "command: TransferOrganizer with OrganizerId = new organizer.",
+          "log": "Saved: CreatedById = new organizer; history row TransferOrganizer recording previous and new organizer; no notification.",
+          "note": "BR-445 · MSG89",
+          "preconditions": [
+            "Meeting is Approved; the current organizer account is deactivated.",
+            "Actor holds AdminUsers.",
+            "New organizer is active, holds MeetingCreator and is neither the old organizer nor the approver."
+          ],
+          "return": "Success; no meeting contents returned, only the history record; MSG89.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Normal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC052",
+          "inputs": "command: TransferOrganizer; actor: ordinary organizer.",
+          "log": "N/A",
+          "note": "BR-445",
+          "preconditions": [
+            "Actor does not hold AdminUsers."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC053",
+          "inputs": "actor: admin; meeting: unknown.",
+          "log": "N/A",
+          "note": "BR-445",
+          "preconditions": [
+            "Meeting does not exist."
+          ],
+          "return": "Failure NotFound.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC054",
+          "inputs": "command: TransferOrganizer with OrganizerId null.",
+          "log": "N/A",
+          "note": "BR-445 · MSG80",
+          "preconditions": [
+            "Transfer command without an organizer id."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC055",
+          "inputs": "command: TransferOrganizer with Reason \"x\".",
+          "log": "N/A",
+          "note": "BR-445 · MSG80",
+          "preconditions": [
+            "Transfer command carrying a Reason."
+          ],
+          "return": "Failure InvalidRequest; MSG80.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC056",
+          "inputs": "command: TransferOrganizer.",
+          "log": "N/A",
+          "note": "BR-445 · MSG135",
+          "preconditions": [
+            "Meeting is Published, not Approved."
+          ],
+          "return": "Failure StatusConflict; MSG135.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC057",
+          "inputs": "command: TransferOrganizer.",
+          "log": "N/A",
+          "note": "BR-445 · MSG135",
+          "preconditions": [
+            "Current organizer account is still active."
+          ],
+          "return": "Failure StatusConflict; MSG135.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC058",
+          "inputs": "OrganizerId = CreatedById.",
+          "log": "N/A",
+          "note": "BR-445 · MSG134",
+          "preconditions": [
+            "New organizer is the old organizer."
+          ],
+          "return": "Failure InvalidOrganizer; MSG134.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC059",
+          "inputs": "OrganizerId = AssignedApproverId.",
+          "log": "N/A",
+          "note": "BR-35 · MSG134",
+          "preconditions": [
+            "New organizer is the assigned approver."
+          ],
+          "return": "Failure InvalidOrganizer; MSG134.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC060",
+          "inputs": "OrganizerId = such a user.",
+          "log": "N/A",
+          "note": "BR-445 · MSG134",
+          "preconditions": [
+            "New organizer lacks MeetingCreator or is deactivated."
+          ],
+          "return": "Failure InvalidOrganizer; MSG134.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC061",
+          "inputs": "command: Approve; id: unknown.",
+          "log": "N/A",
+          "note": "UC-19",
+          "preconditions": [
+            "Meeting does not exist."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "N/A",
+          "id": "UTC062",
+          "inputs": "command: Publish; actor: stranger.",
+          "log": "N/A",
+          "note": "UC-20 · BR-29",
+          "preconditions": [
+            "Actor has no read access to the meeting."
+          ],
+          "return": "Failure NotFound (404).",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC063",
+          "inputs": "command: Approve on a valid meeting.",
+          "log": "Error logged with action and meeting id; transaction rolled back.",
+          "note": "UC-19 · MSG88",
+          "preconditions": [
+            "The store fails while saving."
+          ],
+          "return": "Failure SaveFailed (500); MSG88.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC064",
+          "inputs": "command: SubmitForApproval.",
+          "log": "Error logged; rolled back.",
+          "note": "UC-18 · MSG42",
+          "preconditions": [
+            "The store fails while saving a submission."
+          ],
+          "return": "Failure SaveFailed (500); MSG42.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC065",
+          "inputs": "command: Publish.",
+          "log": "Error logged; rolled back.",
+          "note": "UC-20 · MSG47",
+          "preconditions": [
+            "The store fails while saving a publication."
+          ],
+          "return": "Failure SaveFailed (500); MSG47.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        },
+        {
+          "date1": "2026-11-18",
+          "exception": "PersistenceException is caught inside the service.",
+          "id": "UTC066",
+          "inputs": "command: Cancel.",
+          "log": "Error logged; rolled back.",
+          "note": "UC-75 · MSG264",
+          "preconditions": [
+            "The store fails while saving a cancellation."
+          ],
+          "return": "Failure SaveFailed (500); MSG264.",
+          "round1": "Passed",
+          "tester1": "KhanhPG",
+          "type": "Abnormal"
+        }
+      ],
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+      "line": 418,
+      "method": "MeetingService.TransitionAsync",
+      "layer": "Application"
+    }
+  ],
+  "module": "MEET",
+  "precondition": "Meeting in the required start status with a valid roster; actor with the required capability.",
+  "sheet": "Meeting.Transition"
+}

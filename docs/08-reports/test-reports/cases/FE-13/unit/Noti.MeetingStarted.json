@@ -1,0 +1,77 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Noti.MeetingStarted",
+  "description": "Meeting-started notification: recipients and payload.",
+  "precondition": "Meeting just started.",
+  "methods": [
+    {
+      "method": "NotificationService.QueueMeetingStartedAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 15,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting \"Họp giao ban\" started by the Chair; history event H1; three other invited participants."
+          ],
+          "inputs": "meetingId M1; title \"Họp giao ban\"; historyId H1; occurredAt 2026-11-18T02:00Z; recipients [U1, U2, U3].",
+          "return": "No result. Three notifications are saved in one commit.",
+          "exception": "N/A",
+          "log": "Each notification: type MeetingStarted, title \"Cuộc họp đã bắt đầu\", body \"Cuộc họp “Họp giao ban” đã bắt đầu.\", target Meeting M1, origin history H1, key \"meeting-started:H1:<user id>\", created at 02:00Z.",
+          "type": "Normal",
+          "note": "UC-21 · BR-164 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The recipient list contains U1 twice."
+          ],
+          "inputs": "recipients [U1, U1, U2].",
+          "return": "Two notifications (one per distinct user).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-21 · BR-164 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "No recipients (the Chair is the only invited participant)."
+          ],
+          "inputs": "recipients [].",
+          "return": "No notification and no database write.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-21 · BR-164 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Exactly one recipient."
+          ],
+          "inputs": "recipients [U1].",
+          "return": "One notification saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-21 · BR-164 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

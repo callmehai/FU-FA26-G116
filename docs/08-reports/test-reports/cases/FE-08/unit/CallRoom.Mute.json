@@ -1,0 +1,174 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.Mute",
+  "description": "Chair muting a participant.",
+  "precondition": "Meeting in progress; chair actor.",
+  "methods": [
+    {
+      "method": "CallRoomService.MuteAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 167,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair.",
+            "The target member is in the room with an unmuted microphone; LiveKit is configured."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: the member identity.",
+          "return": "Success; that microphone track is muted. Only muting, never unmuting: nobody gets their microphone switched on by someone else.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-41",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair.",
+            "The target member is in the room and already muted."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: the member identity.",
+          "return": "Success; the provider is not called again for an already-muted microphone.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-41",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is a current Member (not the Chair).",
+            "The target is in the room with a microphone."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Member; target: another member identity.",
+          "return": "NotChair; 403 \"Chỉ chủ toạ mới tắt được micro của người khác.\" (MSG123).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG123",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Caller has no room access for the meeting (unknown user)."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the stranger; target: a member identity.",
+          "return": "NotFound; existence stays hidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting Published with mode Online; caller is the current Chair."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: a member identity.",
+          "return": "RoomNotOpen; 409 \"Phòng họp chỉ mở khi cuộc họp đang diễn ra.\" (MSG117).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG117",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting InProgress with mode InPerson; caller is the current Chair."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: a member identity.",
+          "return": "RoomNotOpen (MSG117); an in-person sitting has no room to mute in.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG117",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair.",
+            "LiveKit is not configured."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: a member identity.",
+          "return": "NotConfigured; 503 \"Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.\" (MSG281).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG281",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair.",
+            "LiveKit is configured but the target is not in the room (or has no microphone track)."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: that identity.",
+          "return": "TargetNotInRoom; 409 \"Người này không còn trong phòng hoặc chưa bật micro.\" (MSG282).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG282",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair; the target has a microphone.",
+            "The provider refuses the mute call."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: the member identity.",
+          "return": "ProviderFailed; 502 \"Máy chủ phòng họp không phản hồi. Vui lòng thử lại.\" (MSG124).",
+          "exception": "N/A",
+          "log": "Could not mute {Identity} in meeting {MeetingId}.",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG124",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Meeting InProgress with mode Online; caller is the current Chair.",
+            "The access read fails in storage."
+          ],
+          "inputs": "meetingId: the meeting; actorId: the Chair; target: a member identity.",
+          "return": "ReadFailed; 500 \"Không thể tắt micro. Vui lòng thử lại.\" (MSG284).",
+          "exception": "N/A",
+          "log": "Could not read call room access for meeting {MeetingId}.",
+          "type": "Abnormal",
+          "note": "UC-41 · MSG284",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

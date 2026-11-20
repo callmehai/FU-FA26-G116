@@ -1,0 +1,107 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.IsPlanner",
+  "description": "Planner rule: the chair and the secretary plan the agenda.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaRules.IsPlanner",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 23,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meeting with participant {actor; Chair; Current; active}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-65",
+          "preconditions": [
+            "Actor is the current Chair with an active account."
+          ],
+          "return": "true.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "participant {actor; Secretary; Current; active}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-65",
+          "preconditions": [
+            "Actor is a current Secretary with an active account."
+          ],
+          "return": "true.",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "participant {actor; Member; Current; active}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-65 · MSG67",
+          "preconditions": [
+            "Actor is a plain Member."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "participant {actor; Chair; Current; User.IsActive: false}.",
+          "log": "N/A",
+          "note": "UC-23a · BR-65",
+          "preconditions": [
+            "Chair's account was deactivated."
+          ],
+          "return": "false.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "participant {actor; Secretary; AssignmentStatus: Removed}.",
+          "log": "N/A",
+          "note": "UC-28c · BR-65",
+          "preconditions": [
+            "Secretary was removed from the roster."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "Meeting.CreatedById: actor; no roster row for actor.",
+          "log": "N/A",
+          "note": "UC-23a · BR-65",
+          "preconditions": [
+            "Actor is only the meeting organizer."
+          ],
+          "return": "false.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

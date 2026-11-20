@@ -1,0 +1,77 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceCollection.CanCollect",
+  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+  "precondition": "Meeting with participants and consent.",
+  "methods": [
+    {
+      "method": "VoiceCollectionService.CanCollect",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+      "line": 37,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting status is Published."
+          ],
+          "inputs": "status: Published.",
+          "return": "true; the people are gathered or about to be, so samples may be taken.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-86b · BR-451",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting status is InProgress."
+          ],
+          "inputs": "status: InProgress.",
+          "return": "true.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-86b · BR-451",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting status is Ended."
+          ],
+          "inputs": "status: Ended.",
+          "return": "false; the gathering is over.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86b · BR-451 · MSG477",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting status is Cancelled."
+          ],
+          "inputs": "status: Cancelled.",
+          "return": "false.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86b · BR-451",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

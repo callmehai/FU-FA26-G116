@@ -1,0 +1,77 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "InviteEvents.StageCancel",
+  "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+  "precondition": "Meeting with participants and guests.",
+  "methods": [
+    {
+      "method": "MeetingInvitationEvents.StageCancellationAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "line": 35,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A Published meeting with Organizer-Chair An, Member Bình and one active Guest; An cancels it."
+          ],
+          "inputs": "meeting; historyId H1; actorId An; reason \"Hoãn do lịch bận\".",
+          "return": "No result. Three Cancelled dispatches staged, all with event id H1 and deduplication key roster:H1:Cancelled:<owner id>.",
+          "exception": "N/A",
+          "log": "An in-app notification \"Cuộc họp đã bị huỷ\" (body: Cuộc họp “<title>” đã bị huỷ. Lý do: Hoãn do lịch bận) is staged for Bình only; none for An (the actor) and none for the Guest. The dispatch payload carries the reason.",
+          "type": "Normal",
+          "note": "UC-75 · BR-300 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A meeting with only the actor as participant."
+          ],
+          "inputs": "actorId: the only participant.",
+          "return": "One dispatch for the actor, no in-app notification.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-75 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A meeting with no active participants and no Guests."
+          ],
+          "inputs": "meeting.",
+          "return": "Nothing is staged.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-75 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A cancellation reason of 1000 characters."
+          ],
+          "inputs": "reason: 1000 characters; a Member in the roster.",
+          "return": "The in-app body holds the whole reason (about 1040 characters, below its 2000-character limit); the dispatch payload keeps it too.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-75 · BR-298",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}

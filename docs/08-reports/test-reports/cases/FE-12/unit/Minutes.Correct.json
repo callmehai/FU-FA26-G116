@@ -1,0 +1,130 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Correct",
+  "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+  "precondition": "Minutes in the needed status; approver and secretary actors.",
+  "methods": [
+    {
+      "method": "MinutesService.CorrectAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 272,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision 1 Issued; no later revision exists."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the current Secretary.",
+          "return": "New Draft revision 2 with the issued content and SupersedesId = revision 1; 201 MSG432; nobody is notified until the correction is issued.",
+          "exception": "N/A",
+          "log": "Saved: Draft revision (number + 1) with the issued content and the replaced-revision id; no notification.",
+          "type": "Normal",
+          "note": "UC-83 · BR-410 · MSG432",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Revision 1 Issued.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the Member.",
+          "return": "Failure Forbidden; 403 MSG397; no revision created.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-83 · MSG397",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Draft revision exists.",
+            "Actor reads no meeting."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the stranger.",
+          "return": "Failure NotFound; 404 with no message code; no revision created.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-83",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision still Draft (not the issued one)."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary.",
+          "return": "Failure NotIssued; 409 MSG433; no revision created.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-83 · MSG433",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision 1 Issued with an unissued Draft correction (revision 2) already started."
+          ],
+          "inputs": "minutesId: revision 1; actor: the current Secretary.",
+          "return": "Failure CorrectionInProgress; 409 MSG434; no revision created.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-83 · BR-410 · MSG434",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary.",
+            "Revision 1 Issued with no later revision.",
+            "A simultaneous request corrects the same revision at the same time."
+          ],
+          "inputs": "minutesId: revision 1; actor: the current Secretary; the database's revision-number index rejects the save.",
+          "return": "Failure CorrectionInProgress; 409 MSG434; the other request's correction stands.",
+          "exception": "N/A",
+          "log": "Warning logged: concurrent correction of the revision; the existing correction stands.",
+          "type": "Abnormal",
+          "note": "UC-83 · BR-410 · MSG434",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Ended meeting; actor is the current Secretary; revision 1 Issued.",
+            "The database fails while saving the correction."
+          ],
+          "inputs": "minutesId: revision 1; actor: the current Secretary.",
+          "return": "Failure SaveFailed; 503 MSG404; no revision created.",
+          "exception": "N/A",
+          "log": "Error logged with the action and minutes id.",
+          "type": "Abnormal",
+          "note": "UC-83 · MSG404",
+          "round1": "Passed",
+          "date1": "2026-11-18",
+          "tester1": "KhanhPG"
+        }
+      ]
+    }
+  ]
+}
