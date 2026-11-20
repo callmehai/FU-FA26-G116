@@ -569,7 +569,9 @@ function GridEvent({
           style={{ top: top + Math.min(height, GO_AT) - GO_HEIGHT - GO_GAP }}
           to={routes.meetingRoom(meeting.id)}
         >
-          Vào phòng họp
+          {/* A day column on a phone is too narrow for the whole label: global.css swaps in the short one. */}
+          <span className="cal-go-label cal-go-full">Vào phòng họp</span>
+          <span className="cal-go-label cal-go-short">Vào phòng</span>
           <Icon name="arrowRight" size={13} />
         </RoomLink>
       )}

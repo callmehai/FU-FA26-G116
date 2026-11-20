@@ -2524,6 +2524,15 @@ a.menu-item { text-decoration: none; }
 .cal-go:hover { background: var(--live-wash); }
 .cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
+/* The label never wraps out of its 24px band (Hải 20/11, iPhone): the band measures itself and a narrow one says
+   "Vào phòng", one narrower still clips with an ellipsis rather than spill. */
+.cal-go { container-type: inline-size; white-space: nowrap; }
+.cal-go-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cal-go-short { display: none; }
+@container (max-width: 124px) {
+  .cal-go-full { display: none; }
+  .cal-go-short { display: inline; }
+}
 @keyframes nudge {
   0%, 60%, 100% { transform: none; }
   75% { transform: translateX(3px); }
