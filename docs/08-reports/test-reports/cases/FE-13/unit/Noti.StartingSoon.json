@@ -1,0 +1,15 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Noti.StartingSoon",
+  "description": "Starting-soon reminders: one notification per active participant inside the 15-minute window.",
+  "precondition": "Published meetings starting within 15 minutes with active participants.",
+  "methods": [
+    {
+      "method": "NotificationService.QueueStartingSoonAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Notifications/NotificationService.cs",
+      "line": 113,
+      "cases": []
+    }
+  ]
+}

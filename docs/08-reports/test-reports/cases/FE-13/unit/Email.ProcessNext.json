@@ -1,0 +1,15 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Email.ProcessNext",
+  "description": "Email queue worker: claim the oldest message, send it, retry with backoff or fail permanently.",
+  "precondition": "Queued email rows with attempts below the maximum; provider reachable.",
+  "methods": [
+    {
+      "method": "EmailQueueProcessor.ProcessNextAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Email/EmailQueueProcessor.cs",
+      "line": 32,
+      "cases": []
+    }
+  ]
+}

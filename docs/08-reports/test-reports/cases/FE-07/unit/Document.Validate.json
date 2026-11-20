@@ -1,0 +1,15 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "Document.Validate",
+  "description": "Meeting document upload gate: access, file count, sizes, type agreement and hostile content.",
+  "precondition": "Active user who may read the meeting; candidate files with names and bytes.",
+  "methods": [
+    {
+      "method": "DocumentFileRules.ValidateAsync",
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "line": 88,
+      "cases": []
+    }
+  ]
+}

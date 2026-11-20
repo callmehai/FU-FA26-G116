@@ -1,0 +1,15 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Speaker.Suggest",
+  "description": "Speaker suggestion: which user each diarized voice belongs to, with margin and split-person checks.",
+  "precondition": "Diarized speakers with embeddings and candidate users with voice samples; threshold and margin configured.",
+  "methods": [
+    {
+      "method": "SpeakerMatcher.Suggest",
+      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdContracts.cs",
+      "line": 227,
+      "cases": []
+    }
+  ]
+}
