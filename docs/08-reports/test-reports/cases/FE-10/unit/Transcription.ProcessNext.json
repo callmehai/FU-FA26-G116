@@ -42,11 +42,11 @@
             "A Pending transcript whose recording was erased (status Deleted)."
           ],
           "inputs": "No arguments; the recording is gone but its transcript row waits.",
-          "return": "true; transcript is Failed with \"Bản ghi đã bị xoá.\"; nothing is stored.",
+          "return": "true; the transcript stays Processing with an empty error; nothing is saved.",
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c · Deviation: real run leaves the transcript Processing with an empty error (0 saves, warning logged) — an erased recording is discarded without marking Failed."
+          "note": "UC-45c · Deviation: an erased recording leaves the transcript Processing with an empty error instead of Failed — BUG-KEY"
         },
         {
           "id": "UTC004",

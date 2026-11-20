@@ -247,6 +247,11 @@ Rules (same spirit as §3):
 - A behaviour the code does that contradicts the UC spec: write the case for the **code**, and add
   `Deviation: …` to Note so BA can review it.
 
+5.1 reads the code of the `app` branch at the commit pinned in `cases/functions.json`
+(`source.ref`): open every file with `git show <ref>:<path>`, never from the working tree, which
+may sit on another branch. When the pin moves, run `relink` and re-verify every UTC against the
+new code before rebuilding the workbook.
+
 Source of truth — do not hand-edit the workbook:
 
 ```

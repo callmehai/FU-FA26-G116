@@ -18,11 +18,11 @@
             "LiveKit is configured and the provider room still exists."
           ],
           "inputs": "No caller arguments (cancellation token only); seeded: the active session and the provider room.",
-          "return": "The provider room is deleted and the session ended; every person in it receives the room-closed notice.",
+          "return": "The provider room is deleted and the session ended; nobody in the room is notified and no speaking-queue update is published.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · Deviation: provider room deleted and session ended, but the service publishes no room-closed notice to anyone (nothing in this path notifies the people in the room; only a speaking Left change is published when raised hands were closed)."
+          "note": "UC-37 · Deviation: closing the room here notifies nobody in it and drops the closed-hands count, so no speaking-queue update is sent either — BUG-KEY"
         },
         {
           "id": "UTC002",

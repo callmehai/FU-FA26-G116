@@ -27,7 +27,7 @@
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "AutoEndAfterHours: 24.",
-          "log": "Each meeting ended by the lifecycle service with cutoff now-24h and reason \"Đang diễn ra quá 24 giờ sau giờ kết thúc dự kiến mà chưa ai kết thúc.\"",
+          "log": "N/A",
           "note": "UC-22 · BR-460",
           "preconditions": [
             "Three overrun meetings; each end succeeds."

@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "user: Nguyễn Thư Ký (thuky@trustcabinet.local); capabilities: [MeetingCreator, MinutesEditor].",
           "log": "N/A",
-          "note": "UC-01 · BR-08 · Deviation: real token carries the full name under claim type \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" (ClaimTypes.Name), not \"name\"; sub, jti, email, cap x2, no role claim, iss/aud \"TrustCabinet\", HS256, exp ~15 min, no nbf — all as expected. Harness called JwtTokenIssuer.CreateAccessToken for real.",
+          "note": "UC-01 · BR-08 · Deviation: real token carries the full name under claim type \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" (ClaimTypes.Name), not \"name\"; sub, jti, email, cap x2, no role claim, iss/aud \"TrustCabinet\", HS256, exp ~15 min, no nbf — all as expected.",
           "preconditions": [
             "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes.",
             "Active account \"Nguyễn Thư Ký\" <thuky@trustcabinet.local> with a known id."
