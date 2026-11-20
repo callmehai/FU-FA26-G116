@@ -171,6 +171,7 @@ const ICONS = {
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   chevronUp: ChevronUp,
+  chevronsUpDown: ChevronsUpDown,
   // Sort indicators on table headers: both ways (sortable, not sorted), then each direction.
   sortBoth: ChevronsUpDown,
   sortAsc: ArrowUp,
