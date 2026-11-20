@@ -578,9 +578,9 @@ flowchart LR
   publish --> start[Bắt đầu cuộc họp] --> run[Điều hành nghị sự · điểm danh · biểu quyết] --> endm[Kết thúc cuộc họp]
   run --> room[Phòng họp trực tuyến]
   endm --> media[Thư ký tải bản ghi âm lên] --> transcript[Transcript] --> summary[Tóm tắt: duyệt → công bố]
-  summary --> minutes[Biên bản] --> approve[Duyệt / Trả lại] --> issue[Ban hành] --> corr[Đính chính]
+  summary --> minutes[Biên bản] --> mapprove[Duyệt / Trả lại] --> issue[Ban hành] --> corr[Đính chính]
   bell[Thông báo] -.-> detail
-  admin[Quản trị] --> users[Người dùng] & roles[Vai trò] & audit[Nhật ký]
+  admin[Quản trị] --> users[Người dùng] & admroles[Vai trò] & audit[Nhật ký]
 </pre>
     </div>
   </section>
@@ -1063,14 +1063,14 @@ const LUONG = [
       <div class="sub">Gửi rồi không đổi, không rút được.</div></div></div>` },
   ] },
 
-{ id: 'S15', bf: 'BF-04', step: 'Upload Audio → Valid? → Transcribe → Review & Edit Transcript', actor: 'Secretary, Chair, người dự', ucs: 'UC-61 · 62 · 63 · 64 · 65', name: 'Bản ghi và bản gỡ băng',
+{ id: 'S15', bf: 'BF-04', step: 'Upload Audio → Valid? → Transcribe → Review & Edit Transcript', actor: 'Secretary, Chair, người dự', ucs: 'UC-43 · 44 · 45 · 46', name: 'Bản ghi và bản gỡ băng',
   notes: ['Nút icon trên mỗi bản ghi, từ trái sang phải: Nghe và xem bản gỡ băng · Tải tệp ghi âm · Xoá bản ghi.', 'Cách ghi theo hình thức họp (ADR-0040): trực tiếp thì Thư ký ghi cả phòng bằng ô góc màn hình (9.3); trực tuyến thì mỗi người ghi micro của mình trong phòng họp; kết hợp có cả hai. Hệ thống nói rõ điều này ngay trên form tạo cuộc họp.', 'Tab Bản ghi có hai phần: dòng thời gian từng câu nói (lọc theo Người nói) và danh sách bản ghi. Thư ký còn tải được tệp ghi sẵn (9.2). Cuộc họp trực tuyến chỉ có bản ghi đã có.', 'Bấm mũi tên ở một bản ghi để nghe và xem bản gỡ băng. Chủ tọa hoặc Thư ký bỏ được một câu khỏi biên bản, câu đó hiện "Đã bỏ khỏi biên bản".'],
   frames: [{ fig: '9.1', html: SPR('Bản ghi', `<div class="panel"><div class="tb"><b class="grow">Bản ghi trực tiếp</b><span class="sub">Người nói</span><span class="chip">3</span></div>
       ${[['08:32', 'Trần Quốc Bảo', 'Bắt đầu họp. Mục đầu tiên là báo cáo kết quả Sprint 5.', ''], ['08:40', 'Lê Thu Hà', 'Đề xuất chỉ biểu quyết trong cuộc họp, bỏ phiếu trước và sau họp.', 'đã sửa']].map(([t, n, s, k]) => `<div class="row" style="align-items:flex-start;padding:9px 14px;border-bottom:1px solid #e6eaf0;gap:10px"><span class="num sub" style="width:42px;flex:none">${t}</span><span class="col grow" style="gap:1px"><b style="font-size:12.5px">${n}${k ? ` <span class="sub" style="font-weight:400">${k}</span>` : ''}</b><span>${s}</span></span></div>`).join('')}</div>
     <div class="panel"><div class="tb" style="border-bottom:0"><b class="grow">Bản ghi</b>${B('Tải tệp lên', '', true)}</div>${RECH('ghi-am-phong-15-10-2026.wav', 'Mic phòng', '<span class="num">1:09:12 · 64 MB · 09:41 15/10/2026</span>')}${RECH('hop-sprint6-du-phong.m4a', 'Tải lên', '<span class="num">58:02 · 41 MB · 10:05 15/10/2026</span>')}</div>`, '',
     { who: WHO.sec, st: 'end' }) }] },
 
-{ id: 'S16', bf: 'BF-04', step: 'Generate Summary → Review & Approve → Publish', actor: 'Secretary, AI provider', ucs: 'UC-90 · 66 · 67 · 68 · 69', name: 'Tóm tắt cuộc họp',
+{ id: 'S16', bf: 'BF-04', step: 'Generate Summary → Review & Approve → Publish', actor: 'Secretary, AI provider', ucs: 'UC-47 · 48 · 49 · 50', name: 'Tóm tắt cuộc họp',
   notes: ['Ba trạng thái: Bản nháp → Đã duyệt → Đã công bố. Duyệt và công bố là hai nút riêng.', 'Việc cần làm trong tóm tắt chỉ là văn bản, không có người phụ trách hay hạn chót.'],
   frames: [{ fig: '10.2', html: SPR('Tóm tắt', `<div class="split" style="align-items:flex-start"><div class="card pad col grow" style="gap:12px"><div class="row"><b class="grow" style="font-size:15px">Bản nháp tóm tắt</b>${TS('Bản nháp', 'amber')}</div>
       <b>Nội dung chính</b><span>Sprint 5 hoàn thành 18/21 story; ba story chuyển sang Sprint 6. Nhóm thống nhất chỉ biểu quyết trong cuộc họp.</span>
@@ -1522,14 +1522,14 @@ const GROUPS = [
 ]},
 { code: 'FE-09', name: 'Bản ghi âm & Giọng nói', desc: 'Cách ghi theo hình thức họp (ADR-0040, ADR-0041): họp trực tiếp thì Thư ký ghi cả phòng, họp trực tuyến thì mỗi người ghi micro của mình, kết hợp có cả hai. Thư ký vẫn tải được tệp ghi sẵn. Voice ID có đồng ý riêng ở màn Giọng nói của tôi (ADR-0027).', screens: [
   FROM('9.1', 'Tab Bản ghi – dòng thời gian & bản ghi'),
-  { no: '9.1b', name: 'Nghe bản ghi & bản gỡ băng', ucs: 'UC-63 · UC-64 · UC-65', built: 1,
+  { no: '9.1b', name: 'Nghe bản ghi & bản gỡ băng', ucs: 'UC-43b · UC-45 · UC-46', built: 1,
     html: SPR('Bản ghi', `<div class="panel"><div class="tb" style="border-bottom:0"><b class="grow">Bản ghi</b>${B('Tải tệp lên', '', true)}</div>${RECH('ghi-am-phong-15-10-2026.wav', 'Mic phòng', '<span class="num">1:09:12 · 64 MB · 09:41 15/10/2026</span>')}
       <div class="row" style="margin:0 14px;padding:8px 12px;gap:12px;background:var(--fill);border-radius:6px"><span class="num sub">0:00 / 1:09:12</span><div class="bar grow"><i style="width:20%"></i></div>${I()}<span class="b sq p">▶</span>${I()}<span class="sub">1×</span>${I()}</div>
       <div class="row" style="padding:10px 14px 6px">${C('Máy nhận dạng')}<span class="sub grow">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>${I()}${I()}</div>
       <div class="row wrap" style="margin:0 14px 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;gap:16px">${[['Lê Thu Hà', '12:40'], ['Người nói 3', '09:15'], ['Đỗ Hải Yến', '05:02']].map(([n, d]) => `<span class="row" style="gap:5px"><i class="dot" style="background:var(--brand)"></i><b style="font-size:12.5px">${n}</b><span class="sub num">${d}</span></span>`).join('')}</div>
       <div class="col" style="margin:0 14px 12px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;gap:8px">${[['00:12:40', 'Lê Thu Hà', 'Đề xuất chỉ biểu quyết trong cuộc họp.'], ['00:14:02', 'Người nói 3', 'Bên tôi đồng ý, miễn biên bản ghi rõ kết luận.']].map(([a, n, s]) => `<div class="row" style="align-items:flex-start;gap:10px"><span class="num sub" style="width:58px;flex:none">${a}</span><span class="col grow" style="gap:1px"><b style="font-size:12.5px;color:var(--brand)">${n}</b><span>${s}</span></span></div>`).join('')}</div></div>`, '', { who: WHO.sec, st: 'end' }),
     notes: ['Nút icon, từ trái sang phải: trên bản ghi là Nghe và xem bản gỡ băng · Tải tệp ghi âm · Xoá bản ghi; dòng Máy nhận dạng là Tải bản gỡ băng (.txt) · Chuyển thành chữ lại.', 'Hàng dưới đó là danh sách người nói (chấm màu, tên, thời lượng): Thư ký chọn tên cho từng giọng. Giọng khớp giọng mẫu thì gợi ý "Khớp giọng nhất: <tên>".', 'Mở từ mũi tên ở một bản ghi. Bấm câu để sửa (Enter lưu, Esc huỷ); câu đã sửa có nhãn "đã sửa". Chỉ tên Thư ký đã gán mới thay cho "Người nói N".', 'Bản ghi nhiều lượt chia theo "Lượt n", có nút Xoá lượt này: tiếng và chữ của lượt bị xoá hẳn, các lượt khác giữ nguyên.', '"Chuyển thành chữ lại?": máy làm lại từ đầu, chữ đã sửa và tên đã gán bị thay bằng bản mới.', 'Bản ghi gộp từ nhiều nguồn gắn nhãn “Tổng hợp” (RecordingsPanel.tsx).'] },
-  { no: '9.2', name: 'Tải tệp ghi âm lên', ucs: 'UC-62',
+  { no: '9.2', name: 'Tải tệp ghi âm lên', ucs: 'UC-44c',
     html: SPR('Bản ghi', `<div class="panel grow">${X(300)}</div>`,
       DL('Lưu tệp ghi âm', `<div class="row" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px">${I()}<span class="grow">hop-sprint6.m4a · 64 MB</span></div>
         ${F('Mục đích ghi âm', 'Lập biên bản cuộc họp', { area: 1 })}
