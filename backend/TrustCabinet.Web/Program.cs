@@ -24,6 +24,7 @@ using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Recordings;
 using TrustCabinet.Infrastructure.Speaking;
 using TrustCabinet.Infrastructure.Reports;
+using TrustCabinet.Infrastructure.Retention;
 using TrustCabinet.Infrastructure.Transcription;
 using TrustCabinet.Infrastructure.VoiceId;
 using TrustCabinet.Infrastructure.Votes;
@@ -92,6 +93,9 @@ builder.Services.AddHostedService<RecordingRetentionWorker>();
 builder.Services.AddHostedService<CombinedRecordingWorker>();
 // SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
+// ADR-0067: orphaned audio, drafts of cancelled meetings, old notifications, guest codes and email bodies.
+builder.Services.AddTrustCabinetRetention(builder.Configuration);
+builder.Services.AddHostedService<DataRetentionWorker>();
 
 // SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c). A share past its end date is left out when read (BR-425): no job.
 builder.Services.AddTrustCabinetCalendarSharing();

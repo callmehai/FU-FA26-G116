@@ -5,6 +5,7 @@ using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -36,7 +37,8 @@ public sealed class MeetingOverdueService(
     IOptions<MeetingOverdueOptions> options,
     TimeProvider clock,
     ILogger<MeetingOverdueService> logger,
-    IMeetingChangePublisher? changes = null) : IMeetingOverdueService
+    IMeetingChangePublisher? changes = null,
+    IVoteMeetingEnd? voteEnd = null) : IMeetingOverdueService
 {
     /// <summary>Shown on the meeting and in its history; the actor is the system (BR-301).</summary>
     internal static string Reason(int hours) => $"Không diễn ra theo lịch: quá {hours} giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.";
@@ -117,6 +119,8 @@ public sealed class MeetingOverdueService(
             };
             meeting.StatusHistory.Add(history);
             await meetings.AddHistoryAsync(history, token);
+            // As when the organizer cancels: the drafts of a meeting that never starts go with it (ADR-0067).
+            if (voteEnd is not null) await voteEnd.DeleteDraftsOnCancelAsync(meeting.Id, null, now, token);
 
             // Only the organizer is told: the time has already passed, so a notice to every invitee would arrive
             // about a meeting they already know did not happen.

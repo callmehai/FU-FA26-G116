@@ -23,7 +23,8 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// </summary>
 public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepository recordings,
     ITranscriptRepository transcripts, IRecordingStorage storage, IAuditService audit, ISpeechChangePublisher publisher,
-    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RoomTakeService> logger) : IRoomTakeService
+    ICombinedRecordingService combined, TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RoomTakeService> logger)
+    : IRoomTakeService
 {
     private static readonly TimeSpan Vietnam = TimeSpan.FromHours(7);
 
@@ -265,7 +266,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
 
     public async Task<RecordingOutcome> DeleteTakeAsync(Guid recordingId, int take, Guid actorId, CancellationToken ct = default)
     {
-        string? cut = null;
+        string? cut = null, mixed = null;
         var committed = false;
         try
         {
@@ -301,11 +302,14 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 var lines = transcript is null ? 0 : CutTranscript(transcript, gone, now);
                 await audit.RecordAsync(AuditActions.RecordingTakeDeleted, AuditActions.RecordingObjectType, recording.Id, actorId,
                     new { recording.MeetingId, take, gone.StartedAt, gone.DurationMs, lines, totalMs = recording.DurationMs }, token);
+                // The take is in the meeting's combined recording too: mixed again without it, or erased (ADR-0067).
+                mixed = await combined.SourceRemovedAsync(recording.MeetingId, rebuild: true, actorId, token);
                 await recordings.SaveChangesAsync(token);
                 return (new RecordingOutcome(RecordingId: recording.Id), old);
             }, ct);
             committed = true;
             if (previous is not null) DeleteQuietly(previous);
+            if (mixed is not null) DeleteQuietly(mixed);
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
             return outcome;
         }

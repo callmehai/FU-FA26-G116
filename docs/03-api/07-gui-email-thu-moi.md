@@ -42,6 +42,11 @@ trước khi worker khác được phép claim dòng đó. Dòng `Queued` hoặc
 `MaxAttempts` được chuyển sang `Failed`, không được claim vô hạn. Sau khi SMTP trả thành công, bước ghi
 `Sent` không dùng cancellation token dừng host để shutdown thông thường không bỏ mất cập nhật này.
 
+**Thời hạn giữ nội dung** ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): thư `Sent` hoặc `Failed` tạo quá `Retention:EmailBodyDays` ngày
+(mặc định 30) bị job `DataRetentionWorker` xoá trắng `body`, `html_body` và `calendar_attachment` (tên, chức vụ, giờ, địa điểm
+họp của người nhận). Dòng giữ lại người nhận, tiêu đề, `sent_at`, kết quả giao và lỗi cuối để vẫn trả lời được "thư có đến
+tay không". Thư `Queued`/`Processing` không bị đụng.
+
 Lỗi SMTP không thay đổi trạng thái `Published` của meeting. Queue nằm trong PostgreSQL nên các job
 `Queued` còn lại tiếp tục được xử lý sau khi ứng dụng khởi động lại. Cách gửi có ngữ nghĩa
 at-least-once: nếu tiến trình dừng ngay sau khi SMTP đã nhận thư nhưng trước khi trạng thái `Sent`

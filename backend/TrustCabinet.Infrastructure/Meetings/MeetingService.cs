@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -13,7 +14,8 @@ namespace TrustCabinet.Infrastructure.Meetings;
 public sealed class MeetingService(
     IMeetingRepository meetings,
     ILogger<MeetingService> logger,
-    TimeProvider? timeProvider = null) : IMeetingService
+    TimeProvider? timeProvider = null,
+    IVoteMeetingEnd? voteEnd = null) : IMeetingService
 {
     private DateTimeOffset UtcNow => (timeProvider ?? TimeProvider.System).GetUtcNow();
 
@@ -605,6 +607,9 @@ public sealed class MeetingService(
                     meeting.CancelledById = actorId;
                     meeting.CancellationReason = command.Reason!;
                     meeting.CancelledFromStatus = fromStatus;
+                    // A cancelled meeting never starts, so its vote drafts can never be opened (ADR-0067): they go now,
+                    // in this transaction, with one audit row each, as at the end of a meeting.
+                    if (voteEnd is not null) await voteEnd.DeleteDraftsOnCancelAsync(meeting.Id, actorId, now, token);
                 }
 
                 var history = new MeetingStatusHistory

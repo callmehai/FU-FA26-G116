@@ -144,6 +144,14 @@ Ghi từ trước SCRUM-16 và cũng hiện trong màn nhật ký (`AuditEventCa
 |---|---|---|---|
 | `call.guest_admitted` | Khách vào phòng họp | Khách / `GuestSession` (SCRUM-59, UC-37 bước 5) | `meetingId`, `invitationId`, `displayName`, `recordingNoticeAcknowledged` (luôn `true`); IP của request ở cột riêng |
 
+Ghi bởi việc dọn dữ liệu định kỳ ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)):
+
+| Mã | Tên trên màn | Người thực hiện / đối tượng | `details` |
+|---|---|---|---|
+| `recording.orphan_files_deleted` | Hệ thống xoá tệp âm thanh không còn bản ghi | Hệ thống / `RecordingStorage`, không có `objectId` | `files`, `bytes`, `graceHours`; một dòng cho mỗi lần chạy có xoá |
+| `vote.draft_deleted_on_meeting_cancel` | Xoá biểu quyết nháp khi huỷ họp | Hệ thống / `VotingSession` | `meetingId`, `cancelledById` (`null` khi tự huỷ), `reason = "meeting_cancelled"` và nội dung nháp như `vote.draft_deleted_on_meeting_end` |
+| `recording.erased` (đã có) | Xoá âm thanh bản ghi | Người xoá bản ghi nguồn, hoặc hệ thống / `Recording` tổng hợp | `reason` thêm hai giá trị: `source_erased`, `source_removed_after_window` |
+
 `meeting.<thao tác>` là một trong `meeting.created`, `submitted_for_approval`, `approved`, `rejected`,
 `returned_to_draft`, `published`, `organizer_transferred`, `rescheduled`, `started`, `ended`, `cancelled`,
 `auto_cancelled`, `status_changed`. Dòng này do `TrustCabinetDbContext` tự thêm cho **mỗi** dòng

@@ -328,6 +328,23 @@ Domain tách khỏi EF để quy tắc nghiệp vụ về sau không bị buộc
 lớn thêm thì tách tiếp `TrustCabinet.Application` như README đã dự tính. Thời điểm và lộ trình tách:
 [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
 
+## Dọn dữ liệu định kỳ
+
+[ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md) — `DataRetentionWorker` chạy lúc khởi động rồi mỗi `Retention:IntervalMinutes` phút. Không cần
+migration: các cột bị xoá trắng (`email_messages.body`, `html_body`, `calendar_attachment`) đã cho phép rỗng hoặc `null`.
+
+| Khoá `Retention:*` | Mặc định | Làm gì |
+|---|---|---|
+| `IntervalMinutes` | `60` | Khoảng giữa hai lần chạy (1–1440) |
+| `OrphanAudioGraceHours` | `24` | Tệp âm thanh dưới `Recordings:StorageRoot` không có dòng `recordings` (chưa `Deleted`) hay `speech_clips` nào trỏ tới, không được ghi trong ngần ấy giờ, thì bị xoá (tối thiểu 1) |
+| `ReadNotificationDays` | `90` | Thông báo đã đọc, tạo quá ngần ấy ngày, bị xoá |
+| `NotificationDays` | `180` | Mọi thông báo tạo quá ngần ấy ngày bị xoá (không nhỏ hơn `ReadNotificationDays`) |
+| `GuestChallengeDays` | `1` | Mã OTP của Khách hết hạn quá ngần ấy ngày bị xoá |
+| `EmailBodyDays` | `30` | Thư `Sent`/`Failed` tạo quá ngần ấy ngày bị xoá trắng nội dung, giữ dòng |
+
+Job cũng xoá biểu quyết nháp còn sót trong cuộc họp đã huỷ. Không bao giờ xoá `meeting_status_history`, `audit_log`, biên
+bản đã ban hành, dòng `recordings` đã xoá, `guest_sessions` và mẫu giọng (mẫu giọng theo sự đồng ý, không theo thời gian).
+
 ## Migration Agenda SCRUM-98
 
 `SynchronizeAgendaWithPoRequirements` bỏ cột duration, thêm Guest presenter và conclusion/author/time nullable, check và FK Restrict. Cột presenter_name giữ nguyên dữ liệu lịch sử. Không reset seed, không đổi các bảng Meeting/Participants/Documents/Minutes/Notification/Email.

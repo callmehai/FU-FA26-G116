@@ -75,11 +75,13 @@ public static class AuditEventCatalog
         new(AuditActions.PersonalLibraryRead, "Quản trị đọc kho tài liệu cá nhân", Documents),
 
         new(AuditActions.VoteDraftDeletedOnMeetingEnd, "Xoá biểu quyết nháp khi kết thúc họp", Votes),
+        new(AuditActions.VoteDraftDeletedOnMeetingCancel, "Xoá biểu quyết nháp khi huỷ họp", Votes),
 
         new(AuditActions.MinutesIssued, "Ban hành biên bản", Minutes),
 
         new(AuditActions.RecordingUploaded, "Tải lên bản ghi", Recordings),
         new(AuditActions.RecordingErased, "Xoá âm thanh bản ghi", Recordings),
+        new(AuditActions.RecordingOrphanFilesDeleted, "Hệ thống xoá tệp âm thanh không còn bản ghi", Recordings),
         new(AuditActions.RecordingTakeStarted, "Bật micro phòng họp", Recordings),
         new(AuditActions.RecordingTakeSaved, "Lưu đoạn ghi", Recordings),
         new(AuditActions.RecordingTakeDeleted, "Xoá đoạn ghi", Recordings),
