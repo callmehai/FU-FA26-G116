@@ -1,0 +1,1274 @@
+{
+  "feature": "FE-09",
+  "code": "REC",
+  "sheet": "Recording",
+  "precondition": "Backend and frontend running on the test build, signed-in users supplied by QA lead: Chair, Secretary and Member of a meeting in the needed mode (InPerson, Online, Hybrid) and status; the speech worker running for transcript cases; a microphone for the recording cases; a Guest link for the Guest cases. Recordings are personal data: the consent confirmation, the retention date and erasure are checked where they apply.",
+  "groups": [
+    {
+      "title": "Recording List & Playback",
+      "uc": [
+        "UC-43a",
+        "UC-43b"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT01",
+          "description": "Secretary sees the recordings of the meeting with source, length, size and an open player.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "Backend answers GET /api/meetings/{meetingId}/recordings with 200.",
+            "The tab lists the recording with its file name, a \"Tải lên\" or \"Mic phòng\" badge, the length, the size, the saved date and the badge \"Có bản gỡ băng\".",
+            "The row is open: the player and the transcript show under it, after \"Đang mở…\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43a · UC-43b · Manual only"
+        },
+        {
+          "id": "REC_FT02",
+          "description": "A recording's details show who saved it, the purpose and the day it deletes itself.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Hover or focus the row's meta line."
+          ],
+          "expected": [
+            "The tooltip reads \"Lưu bởi <name> lúc <time> · Mục đích: Lập biên bản cuộc họp · Tự xoá ngày <date>\".",
+            "The date is the recording's retainUntil from the backend."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43a · Retention (Law 91/2025) · Manual only"
+        },
+        {
+          "id": "REC_FT03",
+          "description": "A meeting without recordings shows the empty state and the way to add one.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The tab shows \"Chưa có bản ghi.\".",
+            "For an InPerson meeting in progress the hint reads \"Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.\".",
+            "For an Ended InPerson meeting the hint reads \"Tải tệp ghi sẵn lên.\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No recording yet. Repeat on an Ended meeting."
+          ],
+          "note": "UC-43a · Manual only"
+        },
+        {
+          "id": "REC_FT04",
+          "description": "The player plays the recording and seeks through the signed link.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Press the play control labelled \"Nghe cả tệp\".",
+            "Drag the progress bar to the middle."
+          ],
+          "expected": [
+            "Backend answers GET /api/recordings/{recordingId}/playback with 200 and the page plays /api/recordings/{recordingId}/audio?expires=…&signature=….",
+            "Sound plays; seeking works (the audio answers with ranges).",
+            "Speed, volume and mute controls change the playback."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43b · Manual only"
+        },
+        {
+          "id": "REC_FT05",
+          "description": "A Member sees the recording but not the delete and download buttons.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The row shows only the \"Thu gọn\" toggle; there is no \"Xoá bản ghi\" and no \"Tải tệp ghi âm\" button.",
+            "There is no \"Tải tệp lên\" button in the toolbar."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43a · Manual only"
+        },
+        {
+          "id": "REC_FT06",
+          "description": "A participant sees the room mic's take being recorded but cannot play it.",
+          "procedure": [
+            "The Secretary switches the room mic on from the mic card.",
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "A row \"Mic phòng đang ghi\" with the red badge \"Đang ghi\", the Secretary's name and \"từ <time>\" appears.",
+            "It has no player and no delete button; the list refreshes by itself when the Secretary switches the mic off."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The Secretary has the room mic on."
+          ],
+          "note": "UC-43a · UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT07",
+          "description": "An erased recording leaves the tab.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Erase the recording (see Delete Take & Recording).",
+            "Reload the page."
+          ],
+          "expected": [
+            "The row disappears and \"Chưa có bản ghi.\" shows when it was the only one.",
+            "After reload it stays gone, although the backend keeps the evidence row with status Deleted."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43a · UC-44e · Manual only"
+        },
+        {
+          "id": "REC_FT08",
+          "description": "The combined recording of an ended Hybrid meeting is labelled and plays without a transcript.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The row shows the badge \"Tổng hợp\" and a file name like ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav.",
+            "Under the player the text \"Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.\" shows instead of a transcript."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "A Hybrid meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording and online sentences; the combined recording has been built."
+          ],
+          "note": "UC-43a · UC-43b · ADR-0061 · Manual only"
+        },
+        {
+          "id": "REC_FT09",
+          "description": "An Online meeting shows the recordings tab without a room-recording panel.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "No \"Chưa có bản ghi.\" panel and no upload button appear for the room recordings; the per-microphone record shows instead.",
+            "The backend answers GET /api/meetings/{meetingId}/recordings with an empty list."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No room recording exists."
+          ],
+          "note": "UC-43a · ADR-0040 · Manual only"
+        },
+        {
+          "id": "REC_FT10",
+          "description": "The Bản ghi tab is hidden for someone who is not on the participant list.",
+          "procedure": [
+            "Sign in as the meeting's creator or approver who is not a participant.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The \"Bản ghi\" tab is not in the tab bar and no recording is requested for display.",
+            "Calling GET /api/meetings/{meetingId}/recordings directly answers 404."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. The caller is not a participant."
+          ],
+          "note": "UC-43a · Manual only"
+        },
+        {
+          "id": "REC_FT11",
+          "description": "A failed load shows an error with a retry button.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Stop the backend or block the request, then open /mgmt/meetings/{meetingId}?tab=recordings.",
+            "Restore the backend and click \"Thử lại\"."
+          ],
+          "expected": [
+            "An alert with the server's message shows (for a database failure \"Không tải được danh sách bản ghi.\") and a \"Thử lại\" button.",
+            "After the retry the list loads."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43a · MSG297 · Manual only"
+        },
+        {
+          "id": "REC_FT12",
+          "description": "A playback failure shows its message on the row only.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Make the signed link fail (let it expire, or erase the file in another browser) and open the row."
+          ],
+          "expected": [
+            "The row shows the error text in red under the file name; the rest of the tab stays usable.",
+            "Playing a file the browser cannot decode shows the toast \"Không phát được tệp này.\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43b · Manual only"
+        },
+        {
+          "id": "REC_FT13",
+          "description": "A transcript still being made updates by itself.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Upload a recording and stay on /mgmt/meetings/{meetingId}?tab=recordings."
+          ],
+          "expected": [
+            "The row first shows the amber badge \"Đang chuyển chữ\".",
+            "Without reload the badge changes to \"Có bản gỡ băng\" (or the red \"Lỗi chuyển chữ\") when the worker finishes."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
+          ],
+          "note": "UC-43a · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Download Recording",
+      "uc": [
+        "UC-43c"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT14",
+          "description": "The Chair downloads the original recording file.",
+          "procedure": [
+            "Sign in as the Chair of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click the button \"Tải tệp ghi âm\" on the recording."
+          ],
+          "expected": [
+            "Backend answers GET /api/recordings/{recordingId}/download with 200 and a link with download=1.",
+            "The browser saves the file under its original name; the audit log gets a recording.downloaded row."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43c · Manual only"
+        },
+        {
+          "id": "REC_FT15",
+          "description": "The Secretary downloads the original recording file.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Tải tệp ghi âm\"."
+          ],
+          "expected": [
+            "The browser saves the original file; the page stays on the tab and shows no error."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43c · Manual only"
+        },
+        {
+          "id": "REC_FT16",
+          "description": "A Member has no download button.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The row has no \"Tải tệp ghi âm\" button.",
+            "Opening GET /api/recordings/{recordingId}/download with the Member's token answers 403 MSG355."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-43c · MSG355 · Manual only"
+        },
+        {
+          "id": "REC_FT17",
+          "description": "Nobody can download a recording of a Secret meeting.",
+          "procedure": [
+            "Sign in as the Chair of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The row has no \"Tải tệp ghi âm\" button for the Chair or the Secretary, but listening still works.",
+            "Calling the download endpoint answers 403 MSG356."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
+          ],
+          "note": "UC-43c · MSG356 · Manual only"
+        },
+        {
+          "id": "REC_FT18",
+          "description": "A download that the server refuses shows its message as a toast.",
+          "procedure": [
+            "Sign in as the Chair of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Remove the Chair's role from the meeting in another browser, then click \"Tải tệp ghi âm\"."
+          ],
+          "expected": [
+            "A red toast shows the server's message; no file is saved."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
+          ],
+          "note": "UC-43c · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Record Room Microphone",
+      "uc": [
+        "UC-44a",
+        "UC-44b"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT19",
+          "description": "The Secretary sees the floating mic card while the meeting runs, on every tab.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Open the meeting and move between its tabs."
+          ],
+          "expected": [
+            "A card titled with the meeting shows in the corner with \"Mic phòng đang tắt\" and the hint \"Báo mọi người trước khi bật mic.\".",
+            "It stays when changing tabs and can be minimised with \"Thu nhỏ ô ghi âm\" and reopened from the bubble."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44a · Manual only"
+        },
+        {
+          "id": "REC_FT20",
+          "description": "A Member and the Chair do not get the mic card.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open the meeting and its \"Bản ghi\" tab."
+          ],
+          "expected": [
+            "No floating mic card shows; \"canRecord\" is false in the backend response."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44a · Manual only"
+        },
+        {
+          "id": "REC_FT21",
+          "description": "Starting the first take asks the Secretary to confirm that the participants were told.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Click the mic switch \"Bật mic phòng\"."
+          ],
+          "expected": [
+            "The dialog \"Bắt đầu ghi âm\" opens with the field \"Mục đích ghi âm\" and the checkbox \"Tôi đã thông báo cho người dự rằng cuộc họp được ghi âm cho mục đích trên, và không ai phản đối.\".",
+            "The button \"Bắt đầu ghi\" is disabled until the box is ticked.",
+            "The hint \"Chỉ người trong cuộc họp được nghe; bản ghi tự xoá khi hết thời hạn lưu trữ.\" shows."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+          ],
+          "note": "UC-44a · Consent (Law 91/2025) · Manual only"
+        },
+        {
+          "id": "REC_FT22",
+          "description": "Cancelling the consent dialog records nothing.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Click \"Bật mic phòng\".",
+            "Click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes, the card still reads \"Mic phòng đang tắt\" and no take is opened (no POST …/recordings/takes)."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+          ],
+          "note": "UC-44a · Manual only"
+        },
+        {
+          "id": "REC_FT23",
+          "description": "Confirming consent starts the take and everyone sees it.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Click \"Bật mic phòng\", keep the purpose, tick the checkbox and click \"Bắt đầu ghi\".",
+            "On a second browser signed in as a Member, open the \"Bản ghi\" tab."
+          ],
+          "expected": [
+            "Backend answers POST /api/meetings/{meetingId}/recordings/takes with 201.",
+            "The card reads \"Đang ghi cả phòng\" with a running clock and a level meter.",
+            "The Member sees the row \"Mic phòng đang ghi\" with the badge \"Đang ghi\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+          ],
+          "note": "UC-44a · UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT24",
+          "description": "Switching the mic off saves the take and has the recording transcribed.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "With the mic on and after speaking for a while, click \"Tắt mic, lưu lượt ghi\"."
+          ],
+          "expected": [
+            "The card shows \"Đang lưu lượt ghi…\" and a toast \"Đã lưu lượt ghi.\" appears.",
+            "The tab lists one recording \"Mic phòng\" with the badge \"Đang chuyển chữ\", later \"Có bản gỡ băng\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
+          ],
+          "note": "UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT25",
+          "description": "A later take is appended without asking for consent again.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Click \"Bật mic phòng\".",
+            "Speak, then click \"Tắt mic, lưu lượt ghi\"."
+          ],
+          "expected": [
+            "No consent dialog opens; the hint reads \"Tắt mic là lưu lượt ghi và chuyển chữ.\".",
+            "The same recording now shows \"2 lượt ghi\" and its transcript is made again."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. One saved room recording."
+          ],
+          "note": "UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT26",
+          "description": "Switching off a mic that heard nothing saves nothing.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Switch the mic on and off at once in silence."
+          ],
+          "expected": [
+            "A blue toast \"Mic chưa thu được tiếng nào nên lượt này không được lưu.\" shows.",
+            "No recording is added to the list."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44b · MSG365 · Manual only"
+        },
+        {
+          "id": "REC_FT27",
+          "description": "The mic cannot be switched on for an Online meeting.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Open the meeting and its \"Bản ghi\" tab."
+          ],
+          "expected": [
+            "No mic card shows; people record on their own microphone in the call room instead."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-44a · ADR-0040 · Manual only"
+        },
+        {
+          "id": "REC_FT28",
+          "description": "A second device sees that the mic is on elsewhere and the Secretary can save that take for it.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Switch the mic on in browser A.",
+            "Open the meeting in browser B as the same or another Secretary."
+          ],
+          "expected": [
+            "Browser B shows \"Đang ghi ở nơi khác · <name>\" and the button \"Lưu lượt đó\", not the mic switch.",
+            "Clicking \"Lưu lượt đó\" saves the take; browser A can no longer add sound."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44b · MSG360 · Manual only"
+        },
+        {
+          "id": "REC_FT29",
+          "description": "A take left on this laptop by a closed tab can be continued or saved.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Switch the mic on, close the tab without switching it off, and reopen the meeting."
+          ],
+          "expected": [
+            "The card reads \"Còn lượt ghi dở trên máy này\" with the buttons \"Ghi tiếp\" and \"Lưu phần đã ghi\".",
+            "\"Lưu phần đã ghi\" saves the part kept on the device into the recording."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT30",
+          "description": "A slow network is reported without losing sound.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Switch the mic on and throttle the network until more than 30 seconds of sound are unsent."
+          ],
+          "expected": [
+            "The card notes \"Mạng chậm · <time> chưa gửi, vẫn giữ trên máy\".",
+            "When the network returns the take is saved in full."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44b · Manual only"
+        },
+        {
+          "id": "REC_FT31",
+          "description": "The room mic cannot start once the meeting has ended.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "End the meeting from another browser, then click \"Bật mic phòng\" in the first one."
+          ],
+          "expected": [
+            "The card shows the server's message \"Chỉ bật mic phòng khi cuộc họp đang diễn ra.\" (MSG359) or the card is gone, and no take is opened."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+          ],
+          "note": "UC-44a · MSG359 · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Upload Audio File",
+      "uc": [
+        "UC-44c"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT32",
+          "description": "The Secretary uploads a recorded file after confirming consent.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Tải tệp lên\" and choose an mp3 file.",
+            "In the dialog \"Lưu tệp ghi âm\" tick the consent checkbox and click \"Tải lên\"."
+          ],
+          "expected": [
+            "The dialog shows the file name and size and the warning \"Tệp phải ghi bằng đúng micro phòng họp đã dùng thu giọng mẫu. Ghi bằng điện thoại hay laptop thì máy khó nhận đúng người nói.\".",
+            "Backend answers POST /api/meetings/{meetingId}/recordings with 201 MSG290.",
+            "The recording appears with the badge \"Tải lên\" and then \"Đang chuyển chữ\"; it survives a reload."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
+          ],
+          "note": "UC-44c · MSG290 · Manual only"
+        },
+        {
+          "id": "REC_FT33",
+          "description": "The upload button stays disabled until consent is confirmed.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Tải tệp lên\" and choose a file.",
+            "Leave the checkbox empty."
+          ],
+          "expected": [
+            "\"Tải lên\" is disabled and nothing is sent.",
+            "\"Huỷ\" closes the dialog and no recording is added."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-44c · Consent (Law 91/2025) · Manual only"
+        },
+        {
+          "id": "REC_FT34",
+          "description": "A custom purpose is stored with the recording.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Choose a file, change \"Mục đích ghi âm\" to \"Họp giao ban tháng 11\", tick the box and click \"Tải lên\"."
+          ],
+          "expected": [
+            "The recording's tooltip reads \"Mục đích: Họp giao ban tháng 11\".",
+            "The field accepts at most 1000 characters."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-44c · Boundary: 1000 characters · Manual only"
+        },
+        {
+          "id": "REC_FT35",
+          "description": "A file that is not audio is refused with the server's message.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Choose a file that is not audio (the picker allows audio only, so drag or rename a PDF to .mp3 with the wrong type if needed) and confirm."
+          ],
+          "expected": [
+            "Backend answers 415 MSG292.",
+            "The upload tray and the page show \"Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.\" and no recording is added."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-44c · MSG292 · Manual only"
+        },
+        {
+          "id": "REC_FT36",
+          "description": "A file over the size limit is refused.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Choose an audio file larger than 300 MB and confirm."
+          ],
+          "expected": [
+            "Backend answers 413 MSG293.",
+            "The message \"Bản ghi vượt quá 300 MB.\" shows and the file stays available in the tray with \"Lưu về máy\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only"
+        },
+        {
+          "id": "REC_FT37",
+          "description": "No upload button for a Member, for an Online meeting or for a Hybrid meeting.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Repeat as the Secretary on an Online and a Hybrid meeting."
+          ],
+          "expected": [
+            "The Member's tab has no \"Tải tệp lên\" button.",
+            "The Secretary's tab has none either on the Online and the Hybrid meeting (canUpload is false)."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Also one Online and one Hybrid meeting."
+          ],
+          "note": "UC-44c · MSG358 · MSG478 · Manual only"
+        },
+        {
+          "id": "REC_FT38",
+          "description": "An upload before the meeting starts is refused.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Keep the \"Bản ghi\" tab open while another user cancels or while the meeting is still Scheduled, then upload a file."
+          ],
+          "expected": [
+            "Backend answers 409 MSG294 and the page shows \"Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc.\".",
+            "No recording is added."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The tab was opened through its direct link."
+          ],
+          "note": "UC-44c · MSG294 · Manual only"
+        },
+        {
+          "id": "REC_FT39",
+          "description": "An upload by someone who lost the Secretary role is refused.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "In another browser remove the Secretary role, then upload a file."
+          ],
+          "expected": [
+            "Backend answers 403 MSG295; the list is reloaded and the upload button disappears.",
+            "No recording is added."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A second account that can change participants."
+          ],
+          "note": "UC-44c · MSG295 · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Delete Take & Recording",
+      "uc": [
+        "UC-44d",
+        "UC-44e"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT40",
+          "description": "The Secretary erases a recording after a confirmation.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click the trash button \"Xoá bản ghi\".",
+            "Read the dialog \"Xoá bản ghi?\" and click \"Xoá bản ghi\"."
+          ],
+          "expected": [
+            "The dialog says that the sound and transcript of the file are deleted permanently and that only a record that it existed and who deleted it is kept.",
+            "Backend answers DELETE /api/recordings/{recordingId} with 200 MSG296 and a toast \"Đã xoá bản ghi.\" shows.",
+            "The row leaves the tab and stays gone after reload; the audit log has recording.erased."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-44e · Erasure on request · Manual only"
+        },
+        {
+          "id": "REC_FT41",
+          "description": "Cancelling the erase keeps the recording.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Xoá bản ghi\", then \"Giữ lại\"."
+          ],
+          "expected": [
+            "The dialog closes and the recording and its transcript are unchanged."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-44e · Manual only"
+        },
+        {
+          "id": "REC_FT42",
+          "description": "A Member has no erase button.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "No \"Xoá bản ghi\" button shows on any row.",
+            "DELETE /api/recordings/{recordingId} with the Member's token answers 403 MSG295."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+          ],
+          "note": "UC-44e · MSG295 · Manual only"
+        },
+        {
+          "id": "REC_FT43",
+          "description": "Erasing after losing the Secretary role is refused and the list refreshes.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "In another browser remove the Secretary role, then confirm \"Xoá bản ghi\"."
+          ],
+          "expected": [
+            "Backend answers 403 MSG295 and the dialog shows \"Chỉ Thư ký cuộc họp được quản lý bản ghi.\".",
+            "The list reloads without the erase button."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
+          ],
+          "note": "UC-44e · MSG295 · Manual only"
+        },
+        {
+          "id": "REC_FT44",
+          "description": "A take still being recorded cannot be erased.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Switch the room mic on and open the \"Bản ghi\" tab."
+          ],
+          "expected": [
+            "The open take row \"Mic phòng đang ghi\" has no \"Xoá bản ghi\" button.",
+            "Calling DELETE for it answers 409 MSG364 \"Mic phòng đang ghi lượt này. Tắt mic để lưu rồi mới xoá được.\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The room mic is on."
+          ],
+          "note": "UC-44e · MSG364 · Manual only"
+        },
+        {
+          "id": "REC_FT45",
+          "description": "The Secretary deletes one take of a room recording.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "In the transcript click the trash button \"Xoá lượt 2\" on the second take's line.",
+            "In the dialog \"Xoá lượt 2?\" click \"Xoá lượt\"."
+          ],
+          "expected": [
+            "The dialog says \"Tiếng và chữ của lượt này bị xoá hẳn, không lấy lại được.\" and \"Các lượt khác giữ nguyên chữ đã sửa và tên đã gán.\".",
+            "Backend answers DELETE /api/recordings/{recordingId}/takes/2 with 200 MSG366 and a toast \"Đã xoá lượt ghi.\" shows.",
+            "The recording now shows \"2 lượt ghi\", the lines of that take are gone and later lines are earlier."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+          ],
+          "note": "UC-44d · MSG366 · Manual only"
+        },
+        {
+          "id": "REC_FT46",
+          "description": "Cancelling the take deletion keeps the take.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Xoá lượt 2\", then \"Giữ lại\"."
+          ],
+          "expected": [
+            "The dialog closes; the recording still shows \"3 lượt ghi\" and all transcript lines."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+          ],
+          "note": "UC-44d · Manual only"
+        },
+        {
+          "id": "REC_FT47",
+          "description": "The last remaining take cannot be deleted on its own.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Delete takes until one remains, then try to delete it (call the endpoint if the button is not offered)."
+          ],
+          "expected": [
+            "Backend answers 409 MSG367 with \"Bản ghi chỉ còn một lượt ghi. Xoá cả bản ghi nếu muốn bỏ lượt này.\".",
+            "The recording stays; the Secretary uses \"Xoá bản ghi\" to remove it all."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of two takes."
+          ],
+          "note": "UC-44d · MSG367 · Manual only"
+        },
+        {
+          "id": "REC_FT48",
+          "description": "A Member sees no take delete button.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "The take lines show \"Lượt 1\", \"Lượt 2\"… with times but no trash button."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+          ],
+          "note": "UC-44d · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Personal Microphone Clips",
+      "uc": [
+        "UC-80"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT49",
+          "description": "The waiting screen tells the member that the meeting is recorded and when it is deleted.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open the call room of the meeting."
+          ],
+          "expected": [
+            "Before joining the screen shows \"Cuộc họp được ghi âm để lập biên bản · tự xoá sau <n> ngày\", where <n> is retentionDays from GET …/speech-clips."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · Consent (Law 91/2025) · Manual only"
+        },
+        {
+          "id": "REC_FT50",
+          "description": "A Guest must tick the recording notice before joining.",
+          "procedure": [
+            "Open the Guest link in a private window.",
+            "Look at the waiting screen, then tick the checkbox."
+          ],
+          "expected": [
+            "The checkbox \"Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau <n> ngày\" is shown and joining is not possible until it is ticked.",
+            "Without it the server refuses the Guest's sentences with 400 MSG380."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest invitation."
+          ],
+          "note": "UC-80 · MSG380 · Manual only"
+        },
+        {
+          "id": "REC_FT51",
+          "description": "Speaking with the call's mic on records sentences that join the transcript under the speaker's name.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Join the call room, switch the call mic on and say two sentences with a pause.",
+            "Open the \"Bản ghi\" tab of the meeting in another browser as the Secretary."
+          ],
+          "expected": [
+            "The call header shows \"Đang ghi lời bạn\".",
+            "Backend answers PUT …/speech-clips/{clientClipId} with 200 MSG318 for each sentence.",
+            "The Secretary's tab \"Bản ghi trực tiếp\" lists the sentences under the member's name, updating without reload."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · MSG318 · Manual only"
+        },
+        {
+          "id": "REC_FT52",
+          "description": "Switching the call mic off stops recording.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Join the call room, switch the mic off and speak."
+          ],
+          "expected": [
+            "No sentence is sent and the header no longer shows \"Đang ghi lời bạn\"; nobody can switch another person's mic on."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT53",
+          "description": "A sentence that could not be sent is kept and sent again.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Join the call, cut the network, say a sentence, then restore the network."
+          ],
+          "expected": [
+            "The header shows \"Chưa gửi hết lời bạn\" with a count while offline.",
+            "After the network returns the sentence reaches the transcript without speaking again."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · MSG312 · Manual only"
+        },
+        {
+          "id": "REC_FT54",
+          "description": "A sentence heard on a neighbour's microphone is marked, not hidden.",
+          "procedure": [
+            "Two members sit next to each other with open microphones and one speaks.",
+            "Open the \"Bản ghi\" tab as any participant."
+          ],
+          "expected": [
+            "The quieter copy shows the label \"Có thể là <name>\" (or \"Có đoạn của <name>\") with the tooltip \"Micro của <name> thu cùng câu này to hơn\"; the text is still readable."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT55",
+          "description": "The Chair takes a sentence out of the record and puts it back.",
+          "procedure": [
+            "Sign in as the Chair of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Bỏ khỏi biên bản\" on a sentence.",
+            "Click \"Khôi phục\" on the same sentence."
+          ],
+          "expected": [
+            "Backend answers PUT /api/speech-clips/{clipId}/exclusion with 200 MSG351, then 200 MSG352.",
+            "The sentence is struck through with a note of who left it out, and a Member sees an empty line there; \"Khôi phục\" brings it back for everyone."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+          ],
+          "note": "UC-46c · UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT56",
+          "description": "A Member has no exclude button.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "Sentences show no \"Bỏ khỏi biên bản\" and no \"Sửa nội dung\"; calling the exclusion endpoint answers 403 MSG353."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+          ],
+          "note": "UC-46c · MSG353 · Manual only"
+        },
+        {
+          "id": "REC_FT57",
+          "description": "The Secretary corrects the text of a sentence.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Sửa nội dung\" on a sentence, change the text and save."
+          ],
+          "expected": [
+            "Backend answers PUT /api/speech-clips/{clipId}/text with 200 MSG302.",
+            "The edited text shows to everyone and stays after reload."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+          ],
+          "note": "UC-80 · MSG302 · Manual only"
+        },
+        {
+          "id": "REC_FT58",
+          "description": "The Secretary deletes someone else's sentence.",
+          "procedure": [
+            "Sign in as the Secretary of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Click \"Xoá câu\" on a member's sentence.",
+            "In the dialog \"Xoá câu này?\" click \"Xoá câu\"."
+          ],
+          "expected": [
+            "The dialog quotes the sentence and says \"Câu và âm thanh của nó bị xoá khỏi cuộc họp.\".",
+            "Backend answers DELETE /api/speech-clips/{clipId} with 200 MSG322, a toast \"Đã xoá câu nói.\" shows and the sentence is gone for everyone."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+          ],
+          "note": "UC-80 · UC-46d · MSG322 · Manual only"
+        },
+        {
+          "id": "REC_FT59",
+          "description": "A member cannot delete another member's sentence.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
+          ],
+          "expected": [
+            "Only the member's own sentences have \"Xoá câu\"; calling DELETE for another member's sentence answers 403 MSG323 \"Chỉ người nói hoặc Thư ký được xoá câu này.\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. Sentences from two members."
+          ],
+          "note": "UC-80 · MSG323 · Manual only"
+        },
+        {
+          "id": "REC_FT60",
+          "description": "A listener hears a sentence again from the transcript.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
+            "Press play on a sentence."
+          ],
+          "expected": [
+            "Backend answers GET /api/speech-clips/{clipId}/playback with 200 and the sentence plays.",
+            "An excluded sentence offers no audio to a Member but does to the Chair and Secretary."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence with audio."
+          ],
+          "note": "UC-43b · Manual only"
+        },
+        {
+          "id": "REC_FT61",
+          "description": "Per-microphone recording is not offered for an InPerson meeting.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open the meeting and its \"Bản ghi\" tab."
+          ],
+          "expected": [
+            "No \"Bản ghi trực tiếp\" panel shows; the room is recorded by the Secretary's room mic only.",
+            "Sending a sentence would be refused with 409 MSG320."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+          ],
+          "note": "UC-80 · MSG320 · Manual only"
+        }
+      ]
+    },
+    {
+      "title": "My Recorded Speech",
+      "uc": [
+        "UC-80"
+      ],
+      "cases": [
+        {
+          "id": "REC_FT62",
+          "description": "\"Ghi âm của tôi\" lists my own sentences, sent and waiting.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open the \"Bản ghi\" tab and click \"Ghi âm của tôi\"."
+          ],
+          "expected": [
+            "The dialog \"Ghi âm của tôi\" (\"Mỗi câu bạn nói được lưu riêng rồi chuyển thành chữ.\") shows two sections: \"Chưa lên hệ thống · <n>\" with the chip \"Chờ gửi lại\" or \"Đang gửi\", and \"Đã lưu lên hệ thống · <n>\" with the chip \"Đã chuyển chữ\".",
+            "Only the caller's own sentences are listed, newest first, each with the time in the meeting and the length in seconds."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT63",
+          "description": "The dialog is reachable from the call room and links to the whole record.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "In the call room click the header chip \"Đang ghi lời bạn\" (or \"Chưa gửi hết lời bạn\").",
+            "Click \"Xem cả bản ghi cuộc họp\"."
+          ],
+          "expected": [
+            "The same dialog opens over the call; the link opens the meeting's recordings tab in a new tab so the call goes on."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT64",
+          "description": "A member listens to one of their own sentences.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open \"Ghi âm của tôi\" and click the play button \"Nghe lại\".",
+            "Click it again (\"Dừng nghe\")."
+          ],
+          "expected": [
+            "The sentence plays through GET /api/speech-clips/{clipId}/playback and stops on the second click."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · UC-43b · Manual only"
+        },
+        {
+          "id": "REC_FT65",
+          "description": "A member takes back one of their own sentences.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open \"Ghi âm của tôi\", click \"Xoá câu này\" on a sentence.",
+            "In the dialog \"Xoá câu này?\" click \"Xoá câu\"."
+          ],
+          "expected": [
+            "Backend answers DELETE /api/speech-clips/{clipId} with 200 MSG322 and a toast \"Đã xoá câu nói.\" shows.",
+            "The sentence leaves the dialog and the meeting's transcript for everyone, with its audio."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · UC-46d · MSG322 · Manual only"
+        },
+        {
+          "id": "REC_FT66",
+          "description": "Cancelling the removal keeps the sentence.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Open \"Ghi âm của tôi\", click \"Xoá câu này\" then \"Giữ lại\"."
+          ],
+          "expected": [
+            "The dialog closes and the sentence is still listed."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT67",
+          "description": "A sentence the Chair left out is shown as such to its speaker.",
+          "procedure": [
+            "Sign in as the Chair of the meeting.",
+            "Exclude one of the member's sentences with \"Bỏ khỏi biên bản\".",
+            "Sign in as a Member of the meeting.",
+            "Open \"Ghi âm của tôi\"."
+          ],
+          "expected": [
+            "The sentence shows the chip \"Đã bỏ khỏi biên bản\" instead of \"Đã chuyển chữ\" and has no play button for the Member."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+          ],
+          "note": "UC-80 · UC-46c · Manual only"
+        },
+        {
+          "id": "REC_FT68",
+          "description": "With nothing said the dialog shows an empty state.",
+          "procedure": [
+            "Sign in as a Member of the meeting.",
+            "Join an Online meeting in progress without speaking and open \"Ghi âm của tôi\"."
+          ],
+          "expected": [
+            "The dialog shows \"Chưa có câu nào\" and \"Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.\"."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+          ],
+          "note": "UC-80 · Manual only"
+        },
+        {
+          "id": "REC_FT69",
+          "description": "A Guest sees and deletes only their own sentences.",
+          "procedure": [
+            "Join as a Guest, speak and open \"Ghi âm của tôi\".",
+            "Delete one sentence."
+          ],
+          "expected": [
+            "Only the Guest's sentences show, timed by the clock rather than the meeting time, with \"Xoá câu này\" on each and no link to the whole record.",
+            "Deleting answers 200 MSG322; a member's sentence cannot be deleted by the Guest (404)."
+          ],
+          "preconditions": [
+            "Backend and frontend running on the test build.",
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest admitted who has spoken."
+          ],
+          "note": "UC-80 · ADR-0051 · Manual only"
+        }
+      ]
+    }
+  ]
+}

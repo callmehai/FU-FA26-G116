@@ -1,0 +1,15 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Build",
+  "description": "Fixed minutes template: renders sections I-III from the reviewed draft or from agenda, conclusions, votes and notes.",
+  "precondition": "Minutes records with agenda, people, conclusions, votes and notes; optional reviewed draft.",
+  "methods": [
+    {
+      "method": "MinutesTemplate.Build",
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesTemplate.cs",
+      "line": 32,
+      "cases": []
+    }
+  ]
+}

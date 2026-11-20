@@ -1,0 +1,674 @@
+{
+  "feature": "FE-01",
+  "code": "AUTH",
+  "sheet": "Authentication",
+  "precondition": "Test build of frontend + backend; role accounts supplied by QA lead; a controlled inbox for Guest invitations; Chrome and a second browser.",
+  "groups": [
+    {
+      "title": "Password Sign-in",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT01",
+          "description": "Verify an active user signs in with email and password.",
+          "procedure": [
+            "Open /login.",
+            "Enter the Secretary email in \"Email\" and the password in \"Mật khẩu\".",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The button shows \"Đang đăng nhập…\" and cannot be clicked twice.",
+            "The app opens /calendar inside the shell with the blue sidebar.",
+            "The account menu at the foot of the sidebar shows the Secretary's full name, email and role.",
+            "The sidebar shows only the items the role grants."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT02",
+          "description": "Verify signing in with empty fields sends nothing.",
+          "procedure": [
+            "Open /login.",
+            "Leave \"Email\" and \"Mật khẩu\" empty.",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The form shows \"Vui lòng nhập email và mật khẩu.\"",
+            "DevTools > Network shows no POST /api/auth/login.",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser)."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT03",
+          "description": "Verify a wrong password shows a message that does not reveal the account.",
+          "procedure": [
+            "Open /login.",
+            "Enter the Secretary email and password \"SaiMatKhau@2026\".",
+            "Click \"Đăng nhập bằng mật khẩu\".",
+            "Repeat with email \"khongtontai@trustcabinet.local\"."
+          ],
+          "expected": [
+            "Both attempts show \"Email hoặc mật khẩu không đúng.\" (MSG01), the same text.",
+            "The page stays on /login; the email stays filled in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT04",
+          "description": "Verify a deactivated account cannot sign in.",
+          "procedure": [
+            "Open /login.",
+            "Enter the deactivated account's email and password.",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT05",
+          "description": "Verify a user whose role grants no capability signs in and sees only the shared screens.",
+          "procedure": [
+            "Sign in with the Member account.",
+            "Look at the sidebar.",
+            "Open /mgmt/admin/users directly in the address bar."
+          ],
+          "expected": [
+            "Sign-in succeeds and opens /calendar.",
+            "The sidebar has no administration or meeting-creation items.",
+            "Step 3 shows the same \"not found\" page as an unknown URL (not \"forbidden\")."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT06",
+          "description": "Verify too many sign-in attempts are blocked for a while.",
+          "procedure": [
+            "Open /login.",
+            "Within one minute, submit the Secretary email with a wrong password 5 times.",
+            "Submit a 6th time with the correct password.",
+            "Wait about one minute, then sign in with the correct password."
+          ],
+          "expected": [
+            "Attempts 1–5 show MSG01.",
+            "Attempt 6 shows \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" (MSG414) and does not sign in.",
+            "Step 4 signs in and opens /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead.",
+            "Sign-in rate limits at their defaults (test server)."
+          ],
+          "note": "UC-01 | SCRUM-132 | Manual only"
+        },
+        {
+          "id": "AUTH_FT07",
+          "description": "Verify opening a meeting link while signed out returns to that meeting after sign-in.",
+          "procedure": [
+            "Paste a meeting link (/mgmt/meetings/{id}) into the address bar.",
+            "Sign in as the Secretary."
+          ],
+          "expected": [
+            "Step 1 opens /login with the notice \"Đăng nhập để mở cuộc họp.\"",
+            "After step 2 the app opens that meeting's detail page, not /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead.",
+            "A meeting the Secretary may view; its link copied."
+          ],
+          "note": "UC-01 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Google Sign-in",
+      "uc": [
+        "UC-02"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT08",
+          "description": "Verify a linked user signs in with Google.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\".",
+            "Choose the linked Gmail in the Google window."
+          ],
+          "expected": [
+            "The Google window closes and the app opens /calendar.",
+            "The account menu shows the linked account's name, email and role."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "Active account already linked to the tester's Gmail."
+          ],
+          "note": "UC-02 | Manual only"
+        },
+        {
+          "id": "AUTH_FT09",
+          "description": "Verify an account created with a Gmail links itself at the first Google sign-in.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose that Gmail.",
+            "Sign out, then sign in with Google again."
+          ],
+          "expected": [
+            "Step 2 signs in and opens /calendar.",
+            "Step 3 signs in again without any extra step."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "The Admin has created an active account with the tester's Gmail (UC-06a); it has never signed in with Google."
+          ],
+          "note": "UC-02 | ADR-0009 | Manual only"
+        },
+        {
+          "id": "AUTH_FT10",
+          "description": "Verify a Gmail without an account is refused with guidance.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose the Gmail that has no account."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản Google này chưa được cấp quyền truy cập hệ thống.\" (MSG05) followed by \"Hãy chọn đúng tài khoản Google có email đã đăng ký với hệ thống, hoặc liên hệ quản trị viên để được cấp tài khoản.\"",
+            "The page stays on /login; no account is created (Admin user list unchanged)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "A Gmail that no TrustCabinet account uses."
+          ],
+          "note": "UC-02 | Manual only"
+        },
+        {
+          "id": "AUTH_FT11",
+          "description": "Verify a deactivated account cannot sign in with Google.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose the Gmail of the deactivated account."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "An account linked to the tester's Gmail, then deactivated by the Admin."
+          ],
+          "note": "UC-02 | Manual only"
+        },
+        {
+          "id": "AUTH_FT12",
+          "description": "Verify the sign-in page still works when the Google service cannot load.",
+          "procedure": [
+            "In DevTools > Network, block the URL pattern \"accounts.google.com\".",
+            "Open /login.",
+            "Sign in with email and password."
+          ],
+          "expected": [
+            "The Google area shows \"Không tải được dịch vụ đăng nhập của Google. Vui lòng thử lại sau.\"",
+            "Password sign-in still works and opens /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-02 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Session Restore",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT13",
+          "description": "Verify reloading the page keeps the user signed in.",
+          "procedure": [
+            "Press F5 on /calendar.",
+            "Close the tab, open a new tab and go to the site address."
+          ],
+          "expected": [
+            "\"Đang khôi phục phiên đăng nhập…\" shows briefly, then /calendar with the same account; no sign-in form.",
+            "Step 2 also opens signed in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT14",
+          "description": "Verify an expired access token is renewed without interrupting the user.",
+          "procedure": [
+            "Leave the tab open without activity for more than 15 minutes.",
+            "Click another sidebar item, e.g. \"Cuộc họp\"."
+          ],
+          "expected": [
+            "The screen loads its data normally; no sign-in page and no error.",
+            "DevTools > Network shows POST /api/auth/refresh answering 200 with a new tc_refresh_token."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_FT15",
+          "description": "Verify a user deactivated mid-session is sent to sign-in with a notice.",
+          "procedure": [
+            "As Admin, in another browser, deactivate the account.",
+            "In the user's browser, click any sidebar item."
+          ],
+          "expected": [
+            "The app opens /login with \"Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.\"",
+            "Signing in again with that account shows MSG02."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in with a disposable account supplied by QA lead; an Admin account in a second browser."
+          ],
+          "note": "UC-01 | SCRUM-12 | Manual only"
+        },
+        {
+          "id": "AUTH_FT16",
+          "description": "Verify a signed-out user cannot open an inner screen by URL.",
+          "procedure": [
+            "Paste /mgmt/admin/users into the address bar."
+          ],
+          "expected": [
+            "The app opens /login, not the user list; after signing in as Admin it returns to /mgmt/admin/users."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Admin account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Sign-out",
+      "uc": [
+        "UC-03"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT17",
+          "description": "Verify the user signs out after confirming.",
+          "procedure": [
+            "Click the avatar at the foot of the sidebar.",
+            "Click \"Đăng xuất\".",
+            "In the dialog \"Đăng xuất\", click \"Đăng xuất\".",
+            "Press the browser Back button."
+          ],
+          "expected": [
+            "The dialog reads \"Bạn có chắc muốn đăng xuất? Phiên đăng nhập trên thiết bị này sẽ kết thúc.\"",
+            "The confirm button shows \"Đang đăng xuất…\", then the app opens /login.",
+            "Step 4 does not show the previous screen's data; the user stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only"
+        },
+        {
+          "id": "AUTH_FT18",
+          "description": "Verify cancelling the dialog keeps the session.",
+          "procedure": [
+            "Open the account menu and click \"Đăng xuất\".",
+            "Click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes; the user stays on the same screen, still signed in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only"
+        },
+        {
+          "id": "AUTH_FT19",
+          "description": "Verify a failed sign-out keeps the user signed in and says so.",
+          "procedure": [
+            "In DevTools > Network, set \"Offline\".",
+            "Open the account menu, click \"Đăng xuất\", then confirm.",
+            "Set the network back to \"No throttling\" and confirm again."
+          ],
+          "expected": [
+            "Step 2: the dialog stays open and shows \"Không thể đăng xuất. Vui lòng thử lại.\" (MSG06); the user is still signed in.",
+            "Step 3: the app opens /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only"
+        },
+        {
+          "id": "AUTH_FT20",
+          "description": "Verify signing out in one tab ends the session in the other tabs of the same browser.",
+          "procedure": [
+            "Open the app in two tabs.",
+            "Sign out in tab 1.",
+            "Go to tab 2 and click any sidebar item."
+          ],
+          "expected": [
+            "Tab 2 opens /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only"
+        },
+        {
+          "id": "AUTH_FT21",
+          "description": "Verify signing out on one device leaves the other devices signed in.",
+          "procedure": [
+            "Sign in as the Secretary in Chrome and in a second browser (e.g. Edge).",
+            "Sign out in Chrome.",
+            "In Edge, reload the page and open another screen."
+          ],
+          "expected": [
+            "Edge stays signed in and loads data normally."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-03 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Guest Invitation Access",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT22",
+          "description": "Verify opening the invitation link sends a code to the invited email.",
+          "procedure": [
+            "Open the link in the invitation email."
+          ],
+          "expected": [
+            "The page shows \"TrustCabinet mời bạn họp\", the meeting title and \"Nhập mã 6 số đã gửi tới <masked email> để xem cuộc họp.\"",
+            "The Guest inbox receives one email with a 6-digit code.",
+            "\"Gửi lại mã\" shows a countdown from about 60 seconds."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The link is opened in a browser without a Guest session for it."
+          ],
+          "note": "UC-04 | BR-152 | BR-153 | Manual only"
+        },
+        {
+          "id": "AUTH_FT23",
+          "description": "Verify the right code leads to the profile form and then into the meeting.",
+          "procedure": [
+            "Type the 6-digit code from the email into the 6 boxes.",
+            "Click \"Xác minh\".",
+            "In \"Thông tin hiển thị\", enter \"Tên hiển thị\" = \"Nguyễn Văn Khách\" and \"Chức vụ\" = \"Chuyên viên\".",
+            "Click \"Vào cuộc họp\"."
+          ],
+          "expected": [
+            "Step 2 shows \"Đang xác minh…\", then the \"Thông tin hiển thị\" form.",
+            "Step 4 opens the meeting page with the tabs \"Nội dung cuộc họp\", \"Tài liệu\", \"Biểu quyết\", \"Thành phần tham dự\" and the question \"Bạn có tham dự cuộc họp này?\".",
+            "The Secretary sees \"Nguyễn Văn Khách\" on the participant list of the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The code email of the previous case has arrived (code less than 15 minutes old)."
+          ],
+          "note": "UC-04 | BR-180 | Manual only"
+        },
+        {
+          "id": "AUTH_FT24",
+          "description": "Verify an incomplete code is caught before sending.",
+          "procedure": [
+            "Type only 4 digits.",
+            "Click \"Xác minh\"."
+          ],
+          "expected": [
+            "The page shows \"Nhập đủ 6 chữ số của mã.\" and sends no request."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open."
+          ],
+          "note": "UC-04 | Manual only"
+        },
+        {
+          "id": "AUTH_FT25",
+          "description": "Verify a wrong code is refused.",
+          "procedure": [
+            "Type 6 digits that are not the code.",
+            "Click \"Xác minh\"."
+          ],
+          "expected": [
+            "The page shows \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\" (MSG126); the user stays on the verification screen."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open with a code sent."
+          ],
+          "note": "UC-04 EX-2 | Manual only"
+        },
+        {
+          "id": "AUTH_FT26",
+          "description": "Verify 5 wrong codes lock the code until a new one is sent.",
+          "procedure": [
+            "Submit 5 wrong codes.",
+            "Type the right code.",
+            "Wait for the countdown, click \"Gửi lại mã\", then enter the new code from the email."
+          ],
+          "expected": [
+            "After the 5th attempt the page shows \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" (MSG372) and \"Xác minh\" is disabled.",
+            "Step 2 cannot be submitted.",
+            "Step 3 opens the \"Thông tin hiển thị\" form (or the meeting, if a name was already declared)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open with a code sent."
+          ],
+          "note": "UC-04 EX-4 | Manual only"
+        },
+        {
+          "id": "AUTH_FT27",
+          "description": "Verify \"Gửi lại mã\" waits for its countdown and the old code stops working.",
+          "procedure": [
+            "Note the first code C1.",
+            "Wait until the countdown ends; click \"Gửi lại mã\"; note the new code C2.",
+            "Enter C1 and click \"Xác minh\".",
+            "Enter C2 and click \"Xác minh\"."
+          ],
+          "expected": [
+            "Before the countdown ends \"Gửi lại mã\" cannot be clicked.",
+            "Step 2 shows \"Đang gửi…\", then a new countdown; a second email arrives.",
+            "Step 3 shows MSG126.",
+            "Step 4 succeeds."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open with a code sent."
+          ],
+          "note": "UC-04 EX-5 | Manual only"
+        },
+        {
+          "id": "AUTH_FT28",
+          "description": "Verify an empty display name is not accepted.",
+          "procedure": [
+            "Leave \"Tên hiển thị\" empty.",
+            "Click \"Vào cuộc họp\"."
+          ],
+          "expected": [
+            "The field shows \"Nhập tên hiển thị.\"; the user stays on the form."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest has verified and is on \"Thông tin hiển thị\"."
+          ],
+          "note": "UC-04 EX-7 | Manual only"
+        },
+        {
+          "id": "AUTH_FT29",
+          "description": "Verify reopening the link with a live session needs no new code.",
+          "procedure": [
+            "Close the tab.",
+            "Open the invitation link again in the same browser."
+          ],
+          "expected": [
+            "The meeting page opens directly; no code is requested and no new email arrives."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest is inside the meeting (verified and named) in this browser, less than 12 hours ago."
+          ],
+          "note": "UC-04 AF-1 | Manual only"
+        },
+        {
+          "id": "AUTH_FT30",
+          "description": "Verify a second device reuses the declared name.",
+          "procedure": [
+            "On another browser, open the invitation link.",
+            "Enter the code from the new email and click \"Xác minh\"."
+          ],
+          "expected": [
+            "After verification the meeting page opens directly, without the \"Thông tin hiển thị\" form; the name is still \"Nguyễn Văn Khách\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest has declared the name \"Nguyễn Văn Khách\" on the first device."
+          ],
+          "note": "UC-04 EX-9 | Manual only"
+        },
+        {
+          "id": "AUTH_FT31",
+          "description": "Verify \"Thoát\" ends the Guest session on this device.",
+          "procedure": [
+            "Click \"Thoát\".",
+            "Click \"Vào lại cuộc họp\"."
+          ],
+          "expected": [
+            "Step 1 shows \"Bạn đã thoát khỏi cuộc họp\" and \"Mở lại để nhập mã mới.\"",
+            "Step 2 returns to the verification screen and a new code is sent; the meeting is not shown until it is entered."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest is inside the meeting."
+          ],
+          "note": "UC-04 | Manual only"
+        },
+        {
+          "id": "AUTH_FT32",
+          "description": "Verify the Guest is put out when the meeting ends or the invitation is revoked.",
+          "procedure": [
+            "As Secretary, in another browser, remove the Guest from the participants (UC-28c) — or as Chair, end the meeting (UC-22).",
+            "Wait up to 20 seconds, or switch away from the Guest tab and back."
+          ],
+          "expected": [
+            "The Guest page shows \"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi\"; the meeting content is no longer shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting.",
+            "The Guest is inside the meeting."
+          ],
+          "note": "UC-04 EX-8 | BR-157 | Manual only"
+        },
+        {
+          "id": "AUTH_FT33",
+          "description": "Verify a broken or revoked link cannot be opened.",
+          "procedure": [
+            "Open the invitation link with the part after \"#token=\" changed.",
+            "Open the link of an invitation that was revoked before it was ever used."
+          ],
+          "expected": [
+            "Both show \"Không mở được lời mời\"; no code is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 EX-1 | Manual only"
+        },
+        {
+          "id": "AUTH_FT34",
+          "description": "Verify a Guest session does not open internal screens.",
+          "procedure": [
+            "In the same browser, open /calendar."
+          ],
+          "expected": [
+            "The app opens /login: the Guest session gives no access outside its meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest is inside the meeting."
+          ],
+          "note": "UC-04 | BR-155 | Manual only"
+        }
+      ]
+    }
+  ]
+}

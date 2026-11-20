@@ -1,0 +1,15 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Sanitize",
+  "description": "Minutes HTML sanitizer: allow-listed tags and styles, depth guard and empty-document detection.",
+  "precondition": "HTML fragment from the editor; allow-list and depth limit configured.",
+  "methods": [
+    {
+      "method": "MinutesHtml.Sanitize",
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "line": 79,
+      "cases": []
+    }
+  ]
+}

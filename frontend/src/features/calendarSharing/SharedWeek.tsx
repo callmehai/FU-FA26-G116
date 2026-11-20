@@ -6,6 +6,7 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage } from '../../lib/errors'
 import type { SharedWeek as Week, SharedWeekPerson } from '../../types/calendarSharing'
 import { usePhone } from '../calendar/usePhone'
+import { useNotifications } from '../notifications/notificationsContext'
 import { LEVEL_LABEL, MSG439_STOPPED, addDaysTo, periodText, vietnamToday } from './shareFormat'
 
 /** One colour per person, kept off red (danger) and away from the brand blue of buttons. */
@@ -116,6 +117,16 @@ export function SharedWeek({
       }
     })
   }, [week, attempt])
+
+  // Someone granted, changed or stopped a share while this tab is open: read the week again, so their busy hours show
+  // without a reload (Hải 20/11: accepting a request only toasted, the grid stayed "Chưa ai chia sẻ").
+  const { lastArrival } = useNotifications()
+  const seenArrival = useRef(lastArrival)
+  useEffect(() => {
+    if (!lastArrival || lastArrival === seenArrival.current) return
+    seenArrival.current = lastArrival
+    if (lastArrival.type.startsWith('CalendarShare')) void Promise.resolve().then(() => setAttempt((n) => n + 1))
+  }, [lastArrival])
 
   const monday = mondayOf(week)
   const days = [0, 1, 2, 3, 4, 5, 6].map((i) => addDaysTo(monday, i))

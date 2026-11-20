@@ -1,0 +1,15 @@
+{
+  "feature": "FE-15",
+  "module": "RPT",
+  "sheet": "Report.ParsePeriod",
+  "description": "Report period parsing: trailing 12 months by default, explicit yyyy-MM ranges up to 24 months.",
+  "precondition": "Optional from and to strings; current time for the default window.",
+  "methods": [
+    {
+      "method": "ReportPeriod.Parse",
+      "file": "backend/TrustCabinet.Domain/Reports/ReportContracts.cs",
+      "line": 40,
+      "cases": []
+    }
+  ]
+}

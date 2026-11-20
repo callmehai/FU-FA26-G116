@@ -1,0 +1,1201 @@
+{
+  "feature": "FE-16",
+  "code": "CAL",
+  "sheet": "Calendar",
+  "precondition": "Test build of frontend + backend; Organizer accounts A, B and C with MeetingCreator, a Member without MeetingCreator and an administrator, supplied by QA lead; meetings in several statuses and levels to produce busy time; Chrome and a second browser profile for the two-user cases.",
+  "groups": [
+    {
+      "title": "Working Calendar",
+      "uc": [
+        "UC-17"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT01",
+          "description": "Verify the calendar is the landing page and shows the signed-in user's meetings of the current work week.",
+          "procedure": [
+            "Sign in at /login.",
+            "Look at the page that opens."
+          ],
+          "expected": [
+            "The app lands on /calendar titled \"Lịch\" with the \"Tuần làm việc\" view; GET /api/meetings answers 200 with the visible range.",
+            "Meetings appear as blocks on their day and time; the current-time line and \"hôm nay\" mark the present."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with Approved, Published and InProgress meetings this week."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "CAL_FT02",
+          "description": "Verify the kind-of-calendar selector switches between work week, full week and month.",
+          "procedure": [
+            "Open /calendar.",
+            "In the \"Kiểu lịch\" dropdown choose \"Cả tuần\", then \"Tháng\", then \"Tuần làm việc\"."
+          ],
+          "expected": [
+            "\"Cả tuần\" adds Saturday and Sunday (\"Thứ Bảy\", \"Chủ Nhật\"); \"Tháng\" shows the month grid with \"+N cuộc họp\" where a day overflows.",
+            "Each view reads the same range from the backend, never only its first page of 100."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
+          ],
+          "note": "UC-17 · AF-4 | Manual only"
+        },
+        {
+          "id": "CAL_FT03",
+          "description": "Verify the previous, next and \"Hôm nay\" buttons move the range.",
+          "procedure": [
+            "Open /calendar.",
+            "Click the next button (aria-label \"Tuần sau\"), then the previous (\"Tuần trước\"), then \"Hôm nay\"."
+          ],
+          "expected": [
+            "The range moves a week each click and \"Hôm nay\" returns to the current week; the data of each range is read from the backend."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "CAL_FT04",
+          "description": "Verify the Danh sách view lists meetings by day.",
+          "procedure": [
+            "Open /calendar.",
+            "Click \"Danh sách\" in \"Chế độ xem\"."
+          ],
+          "expected": [
+            "Meetings are grouped under each day; a day with none shows \"Không có cuộc họp\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
+          ],
+          "note": "UC-17 · AF-4 | Manual only"
+        },
+        {
+          "id": "CAL_FT05",
+          "description": "Verify the filter opens with Approved, Published and In Progress groups only.",
+          "procedure": [
+            "Open /calendar and click \"Bộ lọc\"."
+          ],
+          "expected": [
+            "The status groups on are \"Đã duyệt\", \"Đã công bố\" and \"Đang diễn ra\"; \"Chờ duyệt\", \"Đã kết thúc, nháp\", \"Bị từ chối\" and \"Đã huỷ\" are off.",
+            "Meetings in the off groups are not drawn."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Organizer with meetings in every status."
+          ],
+          "note": "UC-17 · AF-4 | Manual only"
+        },
+        {
+          "id": "CAL_FT06",
+          "description": "Verify switching on the cancelled group shows cancelled meetings struck through.",
+          "procedure": [
+            "Open \"Bộ lọc\" and switch on \"Đã huỷ\"."
+          ],
+          "expected": [
+            "The cancelled meetings appear with their name struck through; URL gains status=... reflecting the groups; switching it off removes them."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A cancelled meeting of the signed-in user in the visible range."
+          ],
+          "note": "UC-17 · BR-297 | Manual only"
+        },
+        {
+          "id": "CAL_FT07",
+          "description": "Verify the confidentiality filter and \"Đặt lại\" restore the default view.",
+          "procedure": [
+            "Open \"Bộ lọc\", pick one confidentiality level and one more status group.",
+            "Click \"Đặt lại\"."
+          ],
+          "expected": [
+            "The calendar shows only meetings of that level and groups; the filter button names how many differ from the default (\"Bộ lọc, 2 bộ lọc khác mặc định\").",
+            "\"Đặt lại\" brings back the three default groups and all levels; reload keeps the chosen filter in the URL."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Meetings of several levels (Thường, Nội bộ, Mật) the user takes part in."
+          ],
+          "note": "UC-17 · AF-2 | Manual only"
+        },
+        {
+          "id": "CAL_FT08",
+          "description": "Verify an empty filter result shows the note.",
+          "procedure": [
+            "Open \"Bộ lọc\" and choose a combination that no meeting matches."
+          ],
+          "expected": [
+            "The calendar shows \"Không có cuộc họp nào khớp bộ lọc trong khoảng này.\" and the control \"Bỏ lọc\" removes the condition."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
+          ],
+          "note": "UC-17 · AF-3 | Manual only"
+        },
+        {
+          "id": "CAL_FT09",
+          "description": "Verify clicking a meeting opens its overview and \"Xem chi tiết\" opens the meeting page.",
+          "procedure": [
+            "Click a meeting block on the week view.",
+            "Read the pop-over, then click \"Xem chi tiết\"."
+          ],
+          "expected": [
+            "A pop-over shows \"Thời gian\", \"Hình thức\", \"Địa điểm\" (not for online), \"Liên kết tham gia\", \"Chủ toạ\", \"Nội dung\" and \"Thành phần tham dự\".",
+            "\"Xem chi tiết\" opens /mgmt/meetings/<id>; for an online meeting \"Vào phòng họp\" is offered."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant of a Published online meeting."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "CAL_FT10",
+          "description": "Verify overlapping meetings fold into \"+N cuộc họp\" and open as a list.",
+          "procedure": [
+            "Create three meetings at the same hour for the user.",
+            "Click the overflow control on the week view."
+          ],
+          "expected": [
+            "Overlapping meetings beyond the first columns fold into a control such as \"3 cuộc họp khác\"; clicking it opens the list of the folded meetings with title, time and status."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Three meetings of the user at the same time."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "CAL_FT11",
+          "description": "Verify a meeting the user declined or may not read is not on the calendar.",
+          "procedure": [
+            "Sign in as a Member and open /calendar.",
+            "Decline one meeting from its overview.",
+            "Reload."
+          ],
+          "expected": [
+            "Only meetings the user may read appear (the server filters); the declined meeting disappears after the answer and is not drawn on reload.",
+            "A meeting the user has no relation to never appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Member invited to two Published meetings, plus another meeting they are not part of."
+          ],
+          "note": "UC-17 · BR-29 · BR-321 | Manual only"
+        },
+        {
+          "id": "CAL_FT12",
+          "description": "Verify the calendar shows the backend error with a retry when meetings cannot load.",
+          "procedure": [
+            "Stop the database (QA lead) and open /calendar."
+          ],
+          "expected": [
+            "Backend answers 500 MSG38; a red alert shows \"Không thể tải danh sách cuộc họp. Vui lòng thử lại.\" with a retry control and the shell stays usable."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "The QA lead can interrupt the database on request."
+          ],
+          "note": "UC-17 · EX-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT13",
+          "description": "Verify the calendar on a phone.",
+          "procedure": [
+            "Resize to 390px (touch emulation) and open /calendar."
+          ],
+          "expected": [
+            "The page does not scroll sideways; the view toggle shows icons only; the week view lets the user pick a day and the \"+N cuộc họp\" controls are reachable by touch."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
+          ],
+          "note": "UC-17 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Request & Share Calendar",
+      "uc": [
+        "UC-84a",
+        "UC-84b"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT14",
+          "description": "Verify Organizer B asks to see A's calendar from \"Xin xem lịch\".",
+          "procedure": [
+            "Sign in as Organizer B and open /calendar/sharing from the account menu entry \"Chia sẻ lịch\".",
+            "In the section \"Lịch được chia sẻ với tôi\" click \"Xin xem lịch\".",
+            "Search \"Tìm theo tên hoặc email\", choose A, keep level and the default 30-day range, click \"Gửi yêu cầu\"."
+          ],
+          "expected": [
+            "POST /api/calendar/shares answers 201 MSG435; the dialog closes and a green toast shows \"Đã gửi yêu cầu xem lịch.\".",
+            "The list reloads: a row for A with chip \"Chờ trả lời\".",
+            "A has a \"CalendarShareRequested\" notification (check A's bell)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84a | Manual only"
+        },
+        {
+          "id": "CAL_FT15",
+          "description": "Verify the request dialog validates the range before sending.",
+          "procedure": [
+            "Open \"Xin xem lịch\" and choose A.",
+            "Set \"Ngày bắt đầu\" to yesterday; then an end date before the start; then a range of 366 days."
+          ],
+          "expected": [
+            "Messages show without any request: \"Ngày bắt đầu không được trước hôm nay.\", \"Ngày kết thúc phải từ ngày bắt đầu trở đi.\", \"Chia sẻ dài tối đa 365 ngày.\"; submitting with nobody picked shows \"Chọn một người.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84a · BR-431 | Boundary: 365 days | Manual only"
+        },
+        {
+          "id": "CAL_FT16",
+          "description": "Verify the quick range buttons fill the dates.",
+          "procedure": [
+            "Open \"Xin xem lịch\" and click \"1 tuần\", then \"1 tháng\", then \"3 tháng\"."
+          ],
+          "expected": [
+            "The start is today and the end moves 7, 30 and 90 days from it; the default is 30 days."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84a | Manual only"
+        },
+        {
+          "id": "CAL_FT17",
+          "description": "Verify a person with an open share is dimmed and the server still refuses a duplicate.",
+          "procedure": [
+            "Open \"Xin xem lịch\" again after sending a request to A.",
+            "Look at A in the list and try to pick A."
+          ],
+          "expected": [
+            "A is dimmed with the hint \"Đã có chia sẻ chờ hoặc đang chia sẻ với người này.\"; if it is sent anyway the backend answers 409 MSG449 and the page shows the server's sentence and reloads."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "B already has a Pending request to A."
+          ],
+          "note": "UC-84a · EX-2 · BR-423 | Manual only"
+        },
+        {
+          "id": "CAL_FT18",
+          "description": "Verify the candidate list shows its empty and not-found texts.",
+          "procedure": [
+            "Open \"Xin xem lịch\" and type a name nobody has."
+          ],
+          "expected": [
+            "The list shows \"Không có ai khớp.\"; with no other account at all it shows \"Chưa có ai để xin xem lịch.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84a | Manual only"
+        },
+        {
+          "id": "CAL_FT19",
+          "description": "Verify the Member without MeetingCreator sees only the first section and no request button.",
+          "procedure": [
+            "Sign in as the Member and open /calendar/sharing."
+          ],
+          "expected": [
+            "Only \"Người xem được lịch của tôi\" with \"Chia sẻ lịch\" is shown; no \"Lịch được chia sẻ với tôi\", no \"Xin xem lịch\" and no tab \"Lịch được chia sẻ\".",
+            "Opening /calendar/find shows the not-found page."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84a · BR-430 | Manual only"
+        },
+        {
+          "id": "CAL_FT20",
+          "description": "Verify the owner shares their own calendar directly with \"Chia sẻ lịch\".",
+          "procedure": [
+            "Sign in as Organizer A and open /calendar/sharing.",
+            "In \"Người xem được lịch của tôi\" click \"Chia sẻ lịch\".",
+            "Choose B, keep 30 days and click \"Chia sẻ\"."
+          ],
+          "expected": [
+            "The dialog \"Chia sẻ lịch của tôi\" explains \"Người nhận thấy giờ bận của bạn ở các cuộc họp Thường, không thấy tên hay nội dung cuộc họp.\" and offers only Level 1.",
+            "POST /api/calendar/shares/direct answers 201 MSG441; toast \"Đã chia sẻ lịch. Đang chờ bên nhận đồng ý.\"; row for B with chip \"Chờ trả lời\".",
+            "B receives \"CalendarShareReceived\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84b | Manual only"
+        },
+        {
+          "id": "CAL_FT21",
+          "description": "Verify the direct share dialog offers only accounts that can receive.",
+          "procedure": [
+            "Open \"Chia sẻ lịch của tôi\" as A and search the Member's name."
+          ],
+          "expected": [
+            "The Member without MeetingCreator is not listed; with nobody eligible the list shows \"Chưa có ai có quyền tạo cuộc họp để chia sẻ.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84b · EX-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT22",
+          "description": "Verify a refused direct share keeps the dialog open with the entered data.",
+          "procedure": [
+            "As A open \"Chia sẻ lịch\" and choose B.",
+            "Before sending, an administrator removes MeetingCreator from B's role.",
+            "Click \"Chia sẻ\"."
+          ],
+          "expected": [
+            "The backend answers 400 MSG455; the dialog stays open with the entered values and shows \"Người này không nhận được chia sẻ lịch.\"; a 5xx would also stay inside the dialog."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An administrator account."
+          ],
+          "note": "UC-84b · EX-1 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Respond to Calendar Share",
+      "uc": [
+        "UC-84c"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT23",
+          "description": "Verify the owner accepts a request at a lower level and a shorter range.",
+          "procedure": [
+            "Sign in as A (owner) and open /calendar/sharing from the notification of B's request.",
+            "On B's row click \"Đồng ý\".",
+            "In the dialog \"Cho xem lịch\" lower the level to Level 1 and shorten the end date inside the requested range, then click \"Đồng ý\"."
+          ],
+          "expected": [
+            "The notification opens /calendar/sharing?share=<id> and scrolls to and highlights the row.",
+            "POST /api/calendar/shares/{id}/accept answers 200 MSG436; toast \"Đã chấp nhận chia sẻ lịch.\"; the row chip becomes \"Đang chia sẻ\".",
+            "B receives \"CalendarShareAccepted\" and sees A under \"Lịch được chia sẻ với tôi\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A."
+          ],
+          "note": "UC-84c | Manual only"
+        },
+        {
+          "id": "CAL_FT24",
+          "description": "Verify the dialog refuses a range wider than the one requested.",
+          "procedure": [
+            "As A open \"Đồng ý\" on B's request.",
+            "Set an end date after the requested end."
+          ],
+          "expected": [
+            "The message \"Chỉ chọn trong khoảng đã xin: <range>.\" shows and no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A."
+          ],
+          "note": "UC-84c · EX-3 | Manual only"
+        },
+        {
+          "id": "CAL_FT25",
+          "description": "Verify the owner declines a request after confirming.",
+          "procedure": [
+            "As A click \"Từ chối\" on B's row.",
+            "In the dialog \"Từ chối cho xem lịch?\" click \"Từ chối\"."
+          ],
+          "expected": [
+            "The text reads \"<B's name> không xem được lịch của bạn; muốn xem phải xin lại.\"; POST .../decline answers 200 MSG437 and a toast \"Đã từ chối yêu cầu chia sẻ.\" shows.",
+            "The row turns grey with chip \"Đã từ chối\"; B receives \"CalendarShareDeclined\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A."
+          ],
+          "note": "UC-84c | Manual only"
+        },
+        {
+          "id": "CAL_FT26",
+          "description": "Verify \"Để sau\" cancels the decline dialog.",
+          "procedure": [
+            "As A click \"Từ chối\" then \"Để sau\"."
+          ],
+          "expected": [
+            "The dialog closes, no request is sent and the row is unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A."
+          ],
+          "note": "UC-84c | Manual only"
+        },
+        {
+          "id": "CAL_FT27",
+          "description": "Verify the recipient answers a direct share and cannot change it.",
+          "procedure": [
+            "Sign in as B and open the notification \"CalendarShareReceived\".",
+            "On A's row click \"Đồng ý\" in the dialog \"Nhận chia sẻ lịch\"."
+          ],
+          "expected": [
+            "The dialog only shows the offered level and dates (no editing); POST .../accept answers 200 MSG436 with an empty body and the row becomes \"Đang chia sẻ\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending direct share from A to B."
+          ],
+          "note": "UC-84c | Manual only"
+        },
+        {
+          "id": "CAL_FT28",
+          "description": "Verify a request whose sender was deactivated can only be declined.",
+          "procedure": [
+            "An administrator deactivates B while B's request to A is pending.",
+            "As A open /calendar/sharing."
+          ],
+          "expected": [
+            "The row shows \"Tài khoản người gửi đã bị vô hiệu hoá, chỉ từ chối được.\" and only \"Từ chối\" (no \"Đồng ý\")."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A; an administrator."
+          ],
+          "note": "UC-84c · EX-5 | Manual only"
+        },
+        {
+          "id": "CAL_FT29",
+          "description": "Verify a stale answer closes the dialog, says why and reloads.",
+          "procedure": [
+            "As A open \"Đồng ý\" on B's request.",
+            "Meanwhile B withdraws the request in another browser.",
+            "Click \"Đồng ý\" in A's dialog."
+          ],
+          "expected": [
+            "The backend answers 409 MSG450; the dialog closes, a red toast shows \"Không thể thực hiện ở trạng thái hiện tại của chia sẻ.\" and the list reloads without the request."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A; a second browser for B."
+          ],
+          "note": "UC-84c · EX-2 | Manual only"
+        },
+        {
+          "id": "CAL_FT30",
+          "description": "Verify the owner approves and declines a pending change.",
+          "procedure": [
+            "As B on an Effective share click \"…\" then \"Xin thay đổi\", raise the level and extend the end date, click \"Gửi yêu cầu\".",
+            "As A open the row, click \"Đồng ý\" (dialog \"Đồng ý thay đổi\").",
+            "Repeat the request and this time click \"Từ chối\" (dialog \"Từ chối thay đổi?\")."
+          ],
+          "expected": [
+            "B sees the toast \"Đã gửi yêu cầu thay đổi chia sẻ.\"; A's row shows \"Xin đổi: ...\".",
+            "Approving answers 200 MSG442, toast \"Đã cập nhật chia sẻ lịch.\" and the share carries the new level and dates.",
+            "Declining answers 200 MSG452, toast \"Đã từ chối thay đổi chia sẻ.\" and the share keeps its old values (\"Chia sẻ giữ như hiện tại.\")."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84c · AF-1 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Calendar Share List",
+      "uc": [
+        "UC-84f"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT31",
+          "description": "Verify the list shows the two sections with a count and one row per share.",
+          "procedure": [
+            "Sign in as B and open /calendar/sharing."
+          ],
+          "expected": [
+            "GET /api/calendar/shares answers 200; the sections \"Người xem được lịch của tôi\" and \"Lịch được chia sẻ với tôi\" each show a count of open shares.",
+            "A row shows the other person, a state chip, the level (\"Họp Thường\" or \"Thường và Nội bộ\") and the period such as \"10/11 – 09/12/2026\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "B has shares in both directions."
+          ],
+          "note": "UC-84f | Manual only"
+        },
+        {
+          "id": "CAL_FT32",
+          "description": "Verify the state chips read as the viewer or owner needs them.",
+          "procedure": [
+            "Open the list with a Pending share asked of the user, one the user sent, an Effective one and a stopped one."
+          ],
+          "expected": [
+            "The chips read \"Chờ bạn trả lời\", \"Chờ trả lời\", \"Đang chia sẻ\" and \"Đã dừng\" with an (i) tip \"Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị vô hiệu hoá. Hãy xin chia sẻ mới.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "Shares in each state."
+          ],
+          "note": "UC-84f | Manual only"
+        },
+        {
+          "id": "CAL_FT33",
+          "description": "Verify empty sections show their lines.",
+          "procedure": [
+            "Sign in as an Organizer with no share and open /calendar/sharing."
+          ],
+          "expected": [
+            "\"Bạn chưa chia sẻ lịch với ai.\" and \"Chưa ai chia sẻ lịch với bạn.\" show."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84f | Manual only"
+        },
+        {
+          "id": "CAL_FT34",
+          "description": "Verify closed shares are folded and expandable.",
+          "procedure": [
+            "Open the list with a Declined or Ended share present when the page loads.",
+            "Click \"Chia sẻ đã kết thúc (1)\", then \"Ẩn chia sẻ đã kết thúc\"."
+          ],
+          "expected": [
+            "Closed shares are hidden behind the toggle with their count and shown greyed when expanded; a share that closes during this visit stays in place."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A closed share."
+          ],
+          "note": "UC-84f | Manual only"
+        },
+        {
+          "id": "CAL_FT35",
+          "description": "Verify a share past its end date is gone from the list.",
+          "procedure": [
+            "Open the list when a share's end date was yesterday."
+          ],
+          "expected": [
+            "The share is not listed, in either section."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A share with a past end date (QA lead edits the data)."
+          ],
+          "note": "UC-84f · BR-425 | Manual only"
+        },
+        {
+          "id": "CAL_FT36",
+          "description": "Verify the list error shows the server's sentence with a retry.",
+          "procedure": [
+            "Interrupt the database (QA lead) and open /calendar/sharing, then restore it and click \"Thử lại\"."
+          ],
+          "expected": [
+            "A red alert shows \"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\" with \"Thử lại\"; after retry the list appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "The QA lead can interrupt the database on request."
+          ],
+          "note": "UC-84f · EX-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT37",
+          "description": "Verify a notification link focuses its row, and says so when the share is gone.",
+          "procedure": [
+            "Click a calendar-share notification in the bell.",
+            "Then open /calendar/sharing?share=<a share id that does not belong to the user>."
+          ],
+          "expected": [
+            "The first opens /calendar/sharing?share=<id>, scrolls to the row and highlights it.",
+            "The second shows an info toast \"Chia sẻ này không còn.\" and removes ?share from the URL."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84f · UC-68 | Manual only"
+        },
+        {
+          "id": "CAL_FT38",
+          "description": "Verify the sharing page on a phone.",
+          "procedure": [
+            "Resize to 390px (touch) and open /calendar/sharing."
+          ],
+          "expected": [
+            "Rows wrap without sideways scroll, \"Đồng ý\" and \"Từ chối\" stay reachable, and the \"…\" menu opens under touch."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-84f | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Change, Withdraw & End Share",
+      "uc": [
+        "UC-84d",
+        "UC-84e"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT39",
+          "description": "Verify the viewer asks to change an Effective share.",
+          "procedure": [
+            "As B open \"…\" on A's row and choose \"Xin thay đổi\".",
+            "Raise the level or extend the end date and click \"Gửi yêu cầu\"."
+          ],
+          "expected": [
+            "The dialog \"Xin thay đổi\" keeps the start date fixed; \"Mức xem chỉ nâng lên được.\" and \"Ngày bắt đầu giữ nguyên; chỉ kéo dài được ngày kết thúc.\" show as hints.",
+            "PATCH answers 201 MSG454; toast \"Đã gửi yêu cầu thay đổi chia sẻ.\"; the row shows \"Bạn xin đổi: ...\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84d | Manual only"
+        },
+        {
+          "id": "CAL_FT40",
+          "description": "Verify sending without a change is refused before the request.",
+          "procedure": [
+            "Open \"Xin thay đổi\" and click \"Gửi yêu cầu\" without changing anything."
+          ],
+          "expected": [
+            "The message \"Chọn mức xem cao hơn hoặc ngày kết thúc muộn hơn.\" shows and no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84d · EX-3 | Manual only"
+        },
+        {
+          "id": "CAL_FT41",
+          "description": "Verify the owner changes the share at once.",
+          "procedure": [
+            "As A open \"…\" on B's row and choose \"Đổi chia sẻ\".",
+            "Lower the level and click \"Lưu thay đổi\"."
+          ],
+          "expected": [
+            "PATCH answers 200 MSG442; toast \"Đã cập nhật chia sẻ lịch.\"; the row shows the new level; B receives \"CalendarShareUpdated\".",
+            "A new start date earlier than today is refused with \"Ngày bắt đầu mới không được trước hôm nay.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84d · AF-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT42",
+          "description": "Verify the sender withdraws a pending request after confirming.",
+          "procedure": [
+            "As B open \"…\" on the pending row and choose \"Rút yêu cầu\".",
+            "In the dialog \"Rút yêu cầu?\" click \"Rút yêu cầu\" (the other button is \"Giữ yêu cầu\")."
+          ],
+          "expected": [
+            "The text reads \"<A's name> sẽ không còn thấy yêu cầu này.\"; POST .../withdraw answers 200 MSG438, toast \"Đã rút yêu cầu chia sẻ lịch.\", the row turns grey \"Đã rút\" and A receives \"CalendarShareWithdrawn\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A pending request from B to A."
+          ],
+          "note": "UC-84e | Manual only"
+        },
+        {
+          "id": "CAL_FT43",
+          "description": "Verify the viewer withdraws only the pending change.",
+          "procedure": [
+            "As B choose \"Rút yêu cầu thay đổi\" on an Effective share with a pending change and confirm \"Rút yêu cầu thay đổi?\"."
+          ],
+          "expected": [
+            "The text \"Chia sẻ giữ như hiện tại.\" shows; after confirming the share stays \"Đang chia sẻ\" and the line \"Bạn xin đổi\" is gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share with a pending change from B."
+          ],
+          "note": "UC-84e | Manual only"
+        },
+        {
+          "id": "CAL_FT44",
+          "description": "Verify the owner ends a share after confirming.",
+          "procedure": [
+            "As A open \"…\" on B's row and choose \"Ngừng chia sẻ\".",
+            "In \"Ngừng chia sẻ lịch?\" click \"Ngừng chia sẻ\" (the other button is \"Giữ chia sẻ\")."
+          ],
+          "expected": [
+            "The text reads \"<B's name> sẽ không còn thấy giờ bận của bạn.\"; POST .../end answers 200 MSG451, toast \"Đã ngừng chia sẻ lịch.\", the row turns grey \"Đã ngừng\" and B receives \"CalendarShareEnded\".",
+            "B no longer sees A in the shared week."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84e · AF-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT45",
+          "description": "Verify the viewer stops viewing with \"Thôi xem lịch\".",
+          "procedure": [
+            "As B choose \"Thôi xem lịch\" on A's row and confirm \"Thôi xem lịch của <A's name>?\" with \"Thôi xem\"."
+          ],
+          "expected": [
+            "The text \"Muốn xem lại phải xin chia sẻ mới.\" shows; afterwards the row is closed (\"Đã ngừng\") and A receives \"CalendarShareEnded\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An Effective share A to B."
+          ],
+          "note": "UC-84e | Manual only"
+        },
+        {
+          "id": "CAL_FT46",
+          "description": "Verify losing MeetingCreator turns the viewer's shares into \"Đã dừng\".",
+          "procedure": [
+            "An administrator removes MeetingCreator from B's role.",
+            "As B open /calendar/sharing."
+          ],
+          "expected": [
+            "B's shares as viewer show the chip \"Đã dừng\" with the (i) tip; the section and tab for viewing are no longer offered to B; A is told by \"CalendarShareStopped\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "An administrator account; an Effective share A to B."
+          ],
+          "note": "UC-84e · BR-424 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Shared Week",
+      "uc": [
+        "UC-85c"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT47",
+          "description": "Verify the shared week shows each person's busy time without any meeting detail.",
+          "procedure": [
+            "Sign in as Organizer B and open /calendar/sharing, then click the tab \"Lịch được chia sẻ\"."
+          ],
+          "expected": [
+            "The URL gets ?tab=week; GET /api/calendar/shared-week answers 200.",
+            "One row per owner, Monday to Friday, each day a bar from 08:00 to 17:00 with an hour mark; busy time is coloured and a tooltip such as \"<name> bận 09:00 - 11:00\" gives the range.",
+            "No meeting title, place, attendee or confidentiality is visible anywhere."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "Effective shares to B with busy meetings this week."
+          ],
+          "note": "UC-85c · BR-427 | Manual only"
+        },
+        {
+          "id": "CAL_FT48",
+          "description": "Verify days outside a share read \"Chưa biết\" and never look free.",
+          "procedure": [
+            "Open the shared week for a week that is partly outside A's share."
+          ],
+          "expected": [
+            "Days outside the share show \"Chưa biết\" with a hatch; the busy bars of days inside the share are normal."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A share covering only part of the week."
+          ],
+          "note": "UC-85c · BR-415 | Manual only"
+        },
+        {
+          "id": "CAL_FT49",
+          "description": "Verify a stopped share reads \"Đã dừng\".",
+          "procedure": [
+            "Open the shared week while one share is Stopped."
+          ],
+          "expected": [
+            "The person's row shows \"Đã dừng\" with the message that they can no longer be seen, and no bars."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A stopped share."
+          ],
+          "note": "UC-85c · BR-424 | Manual only"
+        },
+        {
+          "id": "CAL_FT50",
+          "description": "Verify the week can be moved with the previous and next buttons and the URL.",
+          "procedure": [
+            "Click \"Tuần sau\", then \"Tuần trước\".",
+            "Open /calendar/sharing?tab=week&week=2026-11-12 directly."
+          ],
+          "expected": [
+            "The week changes and the URL carries week=<date>; the direct link opens the week of 09-13/11/2026."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85c | Manual only"
+        },
+        {
+          "id": "CAL_FT51",
+          "description": "Verify the tab and route are hidden from a Member without MeetingCreator.",
+          "procedure": [
+            "Sign in as the Member and open /calendar/sharing?tab=week."
+          ],
+          "expected": [
+            "The tab control is absent and the list tab content is shown; GET /api/calendar/shared-week is not requested."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85c · BR-430 | Manual only"
+        },
+        {
+          "id": "CAL_FT52",
+          "description": "Verify the shared week on a phone.",
+          "procedure": [
+            "Resize to 390px (touch) and open the tab \"Lịch được chia sẻ\"."
+          ],
+          "expected": [
+            "A day picker (group \"Ngày trong tuần\") selects one day; busy times are written under the bar because touch cannot open a tooltip; no sideways scroll."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85c | Manual only"
+        },
+        {
+          "id": "CAL_FT53",
+          "description": "Verify the shared week shows an empty state when nobody shared and a retry on failure.",
+          "procedure": [
+            "As an Organizer nobody shared with, open the tab.",
+            "Interrupt the database (QA lead) and reload."
+          ],
+          "expected": [
+            "The first shows no rows and offers \"Xin xem lịch\" to ask.",
+            "The failure shows \"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\" with a retry."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "The QA lead can interrupt the database on request."
+          ],
+          "note": "UC-85c · EX-1 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Find Meeting Time",
+      "uc": [
+        "UC-85a"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT54",
+          "description": "Verify Organizer B finds free slots for the people who shared with them.",
+          "procedure": [
+            "Sign in as B and open \"Tìm giờ họp\" in the sidebar (/calendar/find).",
+            "In \"Người dự chính\" search and add A and C; leave the defaults of \"Điều kiện tìm giờ\" and click \"Tìm giờ\"."
+          ],
+          "expected": [
+            "POST /api/calendar/slots answers 200; the button shows \"Đang tìm…\" then days with start-time chips grouped by day appear.",
+            "Opening a chip lists who is \"Rảnh\", \"Bận\" or \"Chưa biết\" for that slot."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A and C share their calendars with B."
+          ],
+          "note": "UC-85a | Manual only"
+        },
+        {
+          "id": "CAL_FT55",
+          "description": "Verify the search needs at least one person.",
+          "procedure": [
+            "Open /calendar/find and click \"Tìm giờ\" with nobody chosen."
+          ],
+          "expected": [
+            "\"Chọn ít nhất một người dự.\" shows and no request is sent; the empty panel reads \"Chọn người dự rồi bấm Tìm giờ\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85a | Manual only"
+        },
+        {
+          "id": "CAL_FT56",
+          "description": "Verify people who have not shared are flagged and the quick pick offers those who have.",
+          "procedure": [
+            "Add someone who never shared a calendar with B.",
+            "Look at \"Người đã chia sẻ lịch với bạn:\"."
+          ],
+          "expected": [
+            "The person carries the badge \"Chưa được chia sẻ lịch\" (or \"Đang chờ đồng ý\" when a request is pending) and is never counted free.",
+            "People who shared with B appear as quick picks."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "C without a share to B."
+          ],
+          "note": "UC-85a · BR-416 | Manual only"
+        },
+        {
+          "id": "CAL_FT57",
+          "description": "Verify the no-common-slot result says so and shows the most-free slots.",
+          "procedure": [
+            "Search with people who are never free at the same time."
+          ],
+          "expected": [
+            "The notice reads \"Không có khung giờ nào hợp với tất cả. Đang hiện các khung nhiều người dự được nhất.\" and each slot lists who is busy or unknown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A and C busy at different times throughout the range."
+          ],
+          "note": "UC-85a · AF-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT58",
+          "description": "Verify the empty results explain themselves.",
+          "procedure": [
+            "Search when the shared calendars do not cover the date range.",
+            "Search with a range that has no slot left."
+          ],
+          "expected": [
+            "The first reads \"Lịch được chia sẻ không phủ khoảng ngày này\" with \"Chọn khoảng ngày nằm trong thời gian chia sẻ, hoặc xin gia hạn chia sẻ.\".",
+            "The second reads \"Không còn khung nào trong khoảng đã chọn\" with \"Thử khoảng ngày khác, thời lượng ngắn hơn hoặc cách cuộc họp khác ít hơn.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85a · AF-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT59",
+          "description": "Verify invalid search settings are flagged by field.",
+          "procedure": [
+            "Set \"Giờ làm việc\" end before start, or no day in \"Ngày trong tuần\", then click \"Tìm giờ\"."
+          ],
+          "expected": [
+            "The backend answers 400 MSG444 and the wrong fields are marked with the server's sentences; the entered settings stay."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85a · EX-1 | Manual only"
+        },
+        {
+          "id": "CAL_FT60",
+          "description": "Verify the search settings reach the backend.",
+          "procedure": [
+            "Change \"Thời lượng họp\", \"Khoảng ngày\", \"Ngày trong tuần\", \"Giờ nghỉ trưa\", \"Cách họp khác\" and \"Làm tròn giờ\", then search."
+          ],
+          "expected": [
+            "Slots respect the new duration, skip unchecked weekdays, never overlap lunch, keep the chosen gap from busy time and start on the chosen rounding."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85a · BR-422 | Manual only"
+        },
+        {
+          "id": "CAL_FT61",
+          "description": "Verify the Member without MeetingCreator cannot open the page.",
+          "procedure": [
+            "Sign in as the Member and go to /calendar/find."
+          ],
+          "expected": [
+            "The not-found page shows; \"Tìm giờ họp\" is absent from the sidebar and POST /api/calendar/slots would answer 403 MSG448."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
+          ],
+          "note": "UC-85a · BR-430 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "Create Draft from Time Slot",
+      "uc": [
+        "UC-85b"
+      ],
+      "cases": [
+        {
+          "id": "CAL_FT62",
+          "description": "Verify a chosen slot becomes a draft meeting with the default roles.",
+          "procedure": [
+            "Search free slots for A and C and click a start-time chip, then click \"Tạo nháp\" in its detail.",
+            "In the dialog \"Tạo cuộc họp nháp\" enter \"Tên cuộc họp\" = \"Giao ban tuần 40\", keep the roster and click \"Tạo nháp\"."
+          ],
+          "expected": [
+            "The dialog shows \"Giờ theo khung đã chọn\", the roster with A first as \"Chủ toạ\", C as \"Thành viên\" and the user as \"Thư ký\", and \"Người đầu danh sách làm Chủ toạ. Bạn là Thư ký.\".",
+            "POST /api/calendar/slots/draft answers 201 MSG29; a toast confirms and the draft appears in the meeting list with status \"Nháp\"; it follows the normal approval flow."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A free slot for A and C."
+          ],
+          "note": "UC-85b · BR-429 | Manual only"
+        },
+        {
+          "id": "CAL_FT63",
+          "description": "Verify the roster can be reordered to change the Chair.",
+          "procedure": [
+            "In the dialog move C above A with the buttons \"Đưa C lên\"."
+          ],
+          "expected": [
+            "C is shown as \"Chủ toạ\" and A as \"Thành viên\"; the created meeting has C as Chair."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A slot dialog open."
+          ],
+          "note": "UC-85b · BR-429 | Manual only"
+        },
+        {
+          "id": "CAL_FT64",
+          "description": "Verify the dialog validates the title before sending.",
+          "procedure": [
+            "Open the dialog and click \"Tạo nháp\" with an empty \"Tên cuộc họp\"."
+          ],
+          "expected": [
+            "\"Tên cuộc họp không được để trống.\" shows and no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A slot dialog open."
+          ],
+          "note": "UC-85b | Manual only"
+        },
+        {
+          "id": "CAL_FT65",
+          "description": "Verify a slot that is no longer free is refused and the search refreshes.",
+          "procedure": [
+            "Search and open the dialog for a slot.",
+            "Meanwhile A gets a shared meeting at that time.",
+            "Click \"Tạo nháp\"."
+          ],
+          "expected": [
+            "The backend answers 409 MSG446; the dialog shows \"Khung giờ này không còn trống. Hãy chọn khung khác.\" and the page searches again, with the dialog's entries kept where possible; no meeting is created."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A second browser to give A the meeting."
+          ],
+          "note": "UC-85b · EX-1 · BR-428 | Manual only"
+        },
+        {
+          "id": "CAL_FT66",
+          "description": "Verify a still-busy person from a most-free slot is accepted explicitly.",
+          "procedure": [
+            "Pick a slot from a most-free result where A is busy and create the draft."
+          ],
+          "expected": [
+            "The draft is created (201 MSG29) because A was listed as busy when the user chose the slot; a new busy or unknown person would give 409 MSG446."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A most-free result."
+          ],
+          "note": "UC-85b | Manual only"
+        },
+        {
+          "id": "CAL_FT67",
+          "description": "Verify closing the dialog with typed text asks before discarding.",
+          "procedure": [
+            "Type a title in the dialog and close it."
+          ],
+          "expected": [
+            "A confirmation \"Bỏ cuộc họp đang soạn?\" shows; confirming closes the dialog and creates nothing."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "A slot dialog open."
+          ],
+          "note": "UC-85b | Manual only"
+        },
+        {
+          "id": "CAL_FT68",
+          "description": "Verify a failed save shows an error and keeps the dialog.",
+          "procedure": [
+            "Make the save fail (QA lead) and click \"Tạo nháp\"."
+          ],
+          "expected": [
+            "The backend answers 500 MSG35 and the server's sentence appears in the dialog with the entries kept; no draft is listed."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
+            "The QA lead can make saving fail on request."
+          ],
+          "note": "UC-85b · EX-4 | Manual only"
+        }
+      ]
+    }
+  ]
+}

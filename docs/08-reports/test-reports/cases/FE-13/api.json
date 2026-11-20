@@ -1,0 +1,838 @@
+{
+  "feature": "FE-13",
+  "code": "NOTI",
+  "sheet": "Notifications",
+  "precondition": "Backend running on the test build (GET /api/health answers 200). Participant accounts supplied by QA lead, with notifications created by publishing meetings; an Organizer to publish and change meetings; an administrator to deactivate accounts. For the webhook: the Resend webhook secret and a sent email row, supplied by QA lead.",
+  "groups": [
+    {
+      "title": "GET /api/notifications",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT01",
+          "description": "Verify GET /api/notifications returns the caller's notifications newest first with the paging fields.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"items\": [ { \"id\", \"type\", \"title\", \"body\", \"meetingId\", \"targetType\": \"Meeting\", \"targetId\", \"actionUrl\": \"/mgmt/meetings/{meetingId}\", \"isRead\", \"readAt\", \"createdAt\" } ], \"unreadCount\", \"totalCount\", \"page\": 1, \"pageSize\": 20, \"totalPages\" }.",
+            "Items are ordered with the newest \"createdAt\" first; \"unreadCount\" equals the number of unread notifications across all pages."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT02",
+          "description": "Verify GET /api/notifications pages the list with page and pageSize.",
+          "procedure": [
+            "Sign in as a participant with at least 3 notifications (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications?page=2&pageSize=1 with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: \"page\": 2, \"pageSize\": 1, \"items\" holds exactly the second newest notification, \"totalCount\" is the number of the caller's notifications and \"totalPages\" equals \"totalCount\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with at least 3 notifications."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT03",
+          "description": "Verify GET /api/notifications accepts the maximum pageSize of 100.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications?pageSize=100 with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: \"pageSize\": 100 and at most 100 items."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-66 | Boundary: pageSize upper limit 100 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT04",
+          "description": "Verify GET /api/notifications rejects page=0 with MSG39.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications?page=0 with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: { \"code\": \"MSG39\", \"message\": \"Trang thông báo được yêu cầu không khả dụng.\", \"errors\": { \"page\": \"page phải là số nguyên từ 1 trở lên.\" } }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT05",
+          "description": "Verify GET /api/notifications rejects pageSize above 100 with MSG39.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications?pageSize=101 with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: { \"code\": \"MSG39\", \"message\": \"Trang thông báo được yêu cầu không khả dụng.\", \"errors\": { \"pageSize\": \"pageSize phải là số nguyên từ 1 đến 100.\" } }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-66 · EX-2 | Boundary: pageSize 101 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT06",
+          "description": "Verify GET /api/notifications rejects non-numeric paging values with MSG39.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications?page=abc&pageSize=0 with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: \"code\": \"MSG39\" with \"errors\" naming both \"page\" and \"pageSize\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-66 · EX-2 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT07",
+          "description": "Verify GET /api/notifications lists only the caller's own notifications.",
+          "procedure": [
+            "Sign in as participant A (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications with Authorization: Bearer <accessToken>.",
+            "Sign in as participant B and repeat step 2."
+          ],
+          "expected": [
+            "Each response lists only notifications addressed to that account; no \"id\" of A's list appears in B's list.",
+            "\"unreadCount\" and \"totalCount\" count only the caller's own rows."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active accounts supplied by QA lead, each with its own notifications."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT08",
+          "description": "Verify GET /api/notifications answers 401 without a token.",
+          "procedure": [
+            "Send GET /api/notifications with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Notifications_and_hub_require_a_valid_sign_in)"
+        },
+        {
+          "id": "NOTI_API_IT09",
+          "description": "Verify GET /api/notifications answers 403 for a deactivated account with a still-valid token.",
+          "procedure": [
+            "Sign in as an active user (POST /api/auth/login) and keep the access token.",
+            "An administrator deactivates that account.",
+            "Send GET /api/notifications with the old access token."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden; no notification is returned."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead and an administrator account."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Deactivated_account_is_refused_even_with_a_valid_token)"
+        },
+        {
+          "id": "NOTI_API_IT10",
+          "description": "Verify GET /api/notifications answers 500 MSG40 when the account check fails.",
+          "procedure": [
+            "With the database unreachable for the account lookup (QA lead interrupts it for one request), send GET /api/notifications with a valid access token."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error.",
+            "Body: { \"code\": \"MSG40\", \"message\": \"Không thể tải thông báo. Vui lòng thử lại.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead; the QA lead can interrupt the database on request."
+          ],
+          "note": "UC-66 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_returns_MSG40_and_500_when_account_lookup_fails)"
+        },
+        {
+          "id": "NOTI_API_IT11",
+          "description": "Verify GET /api/notifications returns an empty page for an account with no notification.",
+          "procedure": [
+            "Sign in as an account that has never been invited to anything (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: \"items\": [], \"unreadCount\": 0, \"totalCount\": 0, \"page\": 1."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with no notification."
+          ],
+          "note": "UC-66 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/notifications/unread-count",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT12",
+          "description": "Verify GET /api/notifications/unread-count returns the caller's unread number.",
+          "procedure": [
+            "Sign in as a participant with 2 unread notifications (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/unread-count with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"unreadCount\": 2 }, equal to \"unreadCount\" of GET /api/notifications."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with exactly 2 unread notifications."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT13",
+          "description": "Verify GET /api/notifications/unread-count drops after a notification is read.",
+          "procedure": [
+            "Sign in as a participant with 1 unread notification (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/{id}/read for it with Authorization: Bearer <accessToken>.",
+            "Send GET /api/notifications/unread-count with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "Step 3 returns HTTP 200 with { \"unreadCount\": 0 }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with exactly 1 unread notification."
+          ],
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT14",
+          "description": "Verify GET /api/notifications/unread-count counts only the caller's notifications.",
+          "procedure": [
+            "Sign in as participant A (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/unread-count with Authorization: Bearer <accessToken>.",
+            "Sign in as participant B and repeat step 2."
+          ],
+          "expected": [
+            "Each caller gets the number of their own unread rows; the other account's notifications are never counted."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active accounts with different numbers of unread notifications."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT15",
+          "description": "Verify GET /api/notifications/unread-count answers 401 without a token.",
+          "procedure": [
+            "Send GET /api/notifications/unread-count with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT16",
+          "description": "Verify GET /api/notifications/unread-count answers 403 for a deactivated account.",
+          "procedure": [
+            "Sign in as an active user (POST /api/auth/login) and keep the access token.",
+            "An administrator deactivates that account.",
+            "Send GET /api/notifications/unread-count with the old access token."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden; no count is returned."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead and an administrator account."
+          ],
+          "note": "UC-66 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/notifications/{id}/read",
+      "uc": [
+        "UC-67a"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT17",
+          "description": "Verify POST /api/notifications/{id}/read marks the caller's notification read.",
+          "procedure": [
+            "Sign in as a participant with an unread notification (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/{id}/read with Authorization: Bearer <accessToken> and an empty body."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body is the notification with \"isRead\": true and \"readAt\" set to the current time.",
+            "GET /api/notifications/unread-count is one lower than before."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)"
+        },
+        {
+          "id": "NOTI_API_IT18",
+          "description": "Verify POST /api/notifications/{id}/read keeps the first readAt when called again.",
+          "procedure": [
+            "Sign in as a participant with an unread notification (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/{id}/read twice with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "Both calls answer HTTP 200 OK.",
+            "\"readAt\" in the second response equals \"readAt\" of the first; the unread count does not drop a second time."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)"
+        },
+        {
+          "id": "NOTI_API_IT19",
+          "description": "Verify POST /api/notifications/{id}/read answers 404 for another account's notification.",
+          "procedure": [
+            "Sign in as participant B (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/{id of participant A's notification}/read with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with no body code; the existence of the row is not revealed.",
+            "Participant A's notification is still unread."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active accounts supplied by QA lead; A has an unread notification."
+          ],
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT20",
+          "description": "Verify POST /api/notifications/{id}/read answers 404 for an unknown id.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/00000000-0000-0000-0000-000000000001/read with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-67a | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT21",
+          "description": "Verify POST /api/notifications/{id}/read answers 404 for an id that is not a GUID.",
+          "procedure": [
+            "Sign in as a participant (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/abc/read with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found (the route only matches a GUID)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
+          ],
+          "note": "UC-67a | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT22",
+          "description": "Verify POST /api/notifications/{id}/read answers 401 without a token.",
+          "procedure": [
+            "Send POST /api/notifications/{id}/read with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-67a | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/notifications/read-all",
+      "uc": [
+        "UC-67b"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT23",
+          "description": "Verify POST /api/notifications/read-all marks every unread notification of the caller.",
+          "procedure": [
+            "Sign in as a participant with 3 unread notifications (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/read-all with Authorization: Bearer <accessToken> and an empty body.",
+            "Send GET /api/notifications."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK with { \"markedCount\": 3, \"unreadCount\": 0 }.",
+            "Step 3: every item has \"isRead\": true and \"unreadCount\" is 0, including notifications beyond the first page."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with 3 unread notifications and more than 20 notifications in total."
+          ],
+          "note": "UC-67b · BR-51 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)"
+        },
+        {
+          "id": "NOTI_API_IT24",
+          "description": "Verify POST /api/notifications/read-all with nothing unread changes nothing.",
+          "procedure": [
+            "Sign in as a participant with all notifications read (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/read-all with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK with { \"markedCount\": 0, \"unreadCount\": 0 }.",
+            "No \"readAt\" of any notification changes."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account supplied by QA lead with every notification already read."
+          ],
+          "note": "UC-67b | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT25",
+          "description": "Verify POST /api/notifications/read-all leaves other accounts' notifications unread.",
+          "procedure": [
+            "Sign in as participant A (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/notifications/read-all with Authorization: Bearer <accessToken>.",
+            "Sign in as participant B and send GET /api/notifications/unread-count."
+          ],
+          "expected": [
+            "Participant B's unread count is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active accounts supplied by QA lead, both with unread notifications."
+          ],
+          "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)"
+        },
+        {
+          "id": "NOTI_API_IT26",
+          "description": "Verify POST /api/notifications/read-all answers 401 without a token.",
+          "procedure": [
+            "Send POST /api/notifications/read-all with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-67b | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/notifications/{id}/target",
+      "uc": [
+        "UC-68"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT27",
+          "description": "Verify GET /api/notifications/{id}/target returns the meeting page for a meeting notification.",
+          "procedure": [
+            "Sign in as a participant who can still read the meeting (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"targetType\": \"Meeting\", \"targetId\": \"<meetingId>\", \"url\": \"/mgmt/meetings/<meetingId>\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active participant of a Published meeting with an unread \"MeetingInvited\" notification."
+          ],
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)"
+        },
+        {
+          "id": "NOTI_API_IT28",
+          "description": "Verify GET /api/notifications/{id}/target does not mark the notification read.",
+          "procedure": [
+            "Sign in as a participant with an unread meeting notification (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target with Authorization: Bearer <accessToken>.",
+            "Send GET /api/notifications."
+          ],
+          "expected": [
+            "Step 2 answers 200.",
+            "Step 3: the notification still has \"isRead\": false and \"readAt\": null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active participant of a Published meeting with an unread notification."
+          ],
+          "note": "UC-68 | Deviation: the UC-68 sequence diagram marks the notification read before opening it; the endpoint only checks and returns the target, and the frontend marks it read | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT29",
+          "description": "Verify GET /api/notifications/{id}/target answers 404 once the caller may no longer read the meeting.",
+          "procedure": [
+            "Sign in as a participant and keep the access token.",
+            "The Organizer removes that participant from the meeting.",
+            "Send GET /api/notifications/{id}/target for the earlier invitation with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found; no URL is returned."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Participant with an invitation notification; Organizer account to remove them."
+          ],
+          "note": "UC-68 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)"
+        },
+        {
+          "id": "NOTI_API_IT30",
+          "description": "Verify GET /api/notifications/{id}/target answers 404 for another account's notification.",
+          "procedure": [
+            "Sign in as participant B (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id of participant A's notification}/target with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active accounts supplied by QA lead."
+          ],
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+        },
+        {
+          "id": "NOTI_API_IT31",
+          "description": "Verify GET /api/notifications/{id}/target answers 404 for a notification with no target.",
+          "procedure": [
+            "Sign in as the recipient of a notification that has no targetType (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A notification row without a target, supplied by QA lead (seed data)."
+          ],
+          "note": "UC-68 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT32",
+          "description": "Verify GET /api/notifications/{id}/target returns the sharing page for a calendar-share notification.",
+          "procedure": [
+            "Sign in as a party of a calendar share who received a calendar-share notice (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"targetType\": \"CalendarShare\", \"targetId\": \"<shareId>\", \"url\": \"/calendar/sharing?share=<shareId>\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A calendar share between two active accounts (SCRUM-142)."
+          ],
+          "note": "UC-68 · UC-84 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT33",
+          "description": "Verify GET /api/notifications/{id}/target answers 404 for a calendar-share notice of someone who is not a party.",
+          "procedure": [
+            "Sign in as an account that is neither the owner nor the viewer of the share (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target for a notice about that share with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A calendar-share notice whose recipient is no longer a party of the share (QA lead edits the data)."
+          ],
+          "note": "UC-68 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT34",
+          "description": "Verify GET /api/notifications/{id}/target returns the Voice ID page for a voice-sample notification.",
+          "procedure": [
+            "Sign in as the owner of a voice sample a Secretary collected for them (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/notifications/{id}/target with Authorization: Bearer <accessToken>.",
+            "The owner deletes that voice sample and repeats step 2."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK with { \"targetType\": \"VoiceSample\", \"targetId\": \"<sampleId>\", \"url\": \"/mgmt/my-voice?tab=proxy\" }.",
+            "Step 4: HTTP 404 Not Found."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A \"VoiceSampleCollected\" notification (ADR-0060)."
+          ],
+          "note": "UC-68 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT35",
+          "description": "Verify GET /api/notifications/{id}/target answers 401 without a token.",
+          "procedure": [
+            "Send GET /api/notifications/{id}/target with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-68 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/email/resend/webhook",
+      "uc": [
+        "UC-20"
+      ],
+      "cases": [
+        {
+          "id": "NOTI_API_IT36",
+          "description": "Verify POST /api/email/resend/webhook records a delivered event without any sign-in.",
+          "procedure": [
+            "Build the body { \"type\": \"email.delivered\", \"created_at\": \"<now ISO>\", \"data\": { \"email_id\": \"<provider id>\", \"to\": [\"<recipient>\"] } }.",
+            "Compute svix-signature as \"v1,\" + base64(HMAC-SHA256(key = base64-decoded part of the secret after \"whsec_\", message = <svix-id> + \".\" + <svix-timestamp> + \".\" + <raw body>)); svix-timestamp is the current Unix time in seconds.",
+            "Send POST /api/email/resend/webhook with headers svix-id, svix-timestamp, svix-signature, Content-Type: application/json and the body; no Authorization header."
+          ],
+          "expected": [
+            "HTTP 200 OK with no message code.",
+            "The email row now has delivery_state \"Delivered\" and delivery_state_at equal to the event's created_at; its status stays \"Sent\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 · ADR-0031 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_correct_signature_is_accepted)"
+        },
+        {
+          "id": "NOTI_API_IT37",
+          "description": "Verify POST /api/email/resend/webhook records a bounce with its reason.",
+          "procedure": [
+            "Build the body { \"type\": \"email.bounced\", \"created_at\": \"<now ISO>\", \"data\": { \"email_id\": \"<provider id>\", \"bounce\": { \"type\": \"Permanent\", \"subType\": \"General\", \"message\": \"550 5.1.1 user unknown\" } } }.",
+            "Compute svix-signature as \"v1,\" + base64(HMAC-SHA256(key = base64-decoded part of the secret after \"whsec_\", message = <svix-id> + \".\" + <svix-timestamp> + \".\" + <raw body>)); svix-timestamp is the current Unix time in seconds.",
+            "Send POST /api/email/resend/webhook with the three Svix headers and the body."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "The email row has delivery_state \"Bounced\" and delivery_detail \"Permanent General 550 5.1.1 user unknown\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_bounce_carries_its_reason_and_the_row_id_from_the_tag)"
+        },
+        {
+          "id": "NOTI_API_IT38",
+          "description": "Verify POST /api/email/resend/webhook ignores an event the app does not track.",
+          "procedure": [
+            "Build a signed body with \"type\": \"email.opened\" and send it as in the delivered case."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "The email row is not changed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Events_the_app_does_not_track_are_ignored)"
+        },
+        {
+          "id": "NOTI_API_IT39",
+          "description": "Verify POST /api/email/resend/webhook ignores an event older than the stored delivery state.",
+          "procedure": [
+            "Send a signed \"email.delivered\" with created_at 10:00 for the row.",
+            "Send a signed \"email.delivery_delayed\" for the same row with created_at 09:00."
+          ],
+          "expected": [
+            "Both answer HTTP 200 OK.",
+            "The row stays \"Delivered\" with delivery_state_at 10:00."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT40",
+          "description": "Verify POST /api/email/resend/webhook answers 401 for a wrong signature.",
+          "procedure": [
+            "Send a valid body with svix-signature \"v1,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized with no message code.",
+            "No email row changes."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (An_unsigned_request_is_401_without_a_sign_in)"
+        },
+        {
+          "id": "NOTI_API_IT41",
+          "description": "Verify POST /api/email/resend/webhook answers 401 when the body was changed after signing.",
+          "procedure": [
+            "Sign a body, then change one character of the body before sending."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_changed_body_id_or_secret_is_rejected)"
+        },
+        {
+          "id": "NOTI_API_IT42",
+          "description": "Verify POST /api/email/resend/webhook answers 401 when the svix headers are missing.",
+          "procedure": [
+            "Send a body with no svix-id, svix-timestamp or svix-signature header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Missing_or_garbled_headers_are_rejected)"
+        },
+        {
+          "id": "NOTI_API_IT43",
+          "description": "Verify POST /api/email/resend/webhook answers 401 for a request older than 5 minutes.",
+          "procedure": [
+            "Sign a body with svix-timestamp set to 6 minutes ago and send it."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized; the replay is not recorded."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Boundary: 5-minute window | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_replayed_request_outside_the_window_is_rejected)"
+        },
+        {
+          "id": "NOTI_API_IT44",
+          "description": "Verify POST /api/email/resend/webhook answers 400 for a signed body that cannot be read.",
+          "procedure": [
+            "Sign the body \"not json\" correctly and send it."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request; retrying the same bytes will not help."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (The_raw_body_and_svix_headers_reach_the_receiver)"
+        },
+        {
+          "id": "NOTI_API_IT45",
+          "description": "Verify POST /api/email/resend/webhook answers 413 for a body above 256 KB.",
+          "procedure": [
+            "Send a body of 256 KB + 1 byte with any headers."
+          ],
+          "expected": [
+            "HTTP 413 Payload Too Large."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
+          ],
+          "note": "UC-20 | Boundary: 256 KB body limit | Manual only"
+        },
+        {
+          "id": "NOTI_API_IT46",
+          "description": "Verify POST /api/email/resend/webhook answers 503 when no webhook secret is configured.",
+          "procedure": [
+            "On a build without Email:Resend:WebhookSecret, send POST /api/email/resend/webhook with any body."
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on a build without the webhook secret (GET /api/health answers 200)."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (Without_a_webhook_secret_the_webhook_is_503)"
+        },
+        {
+          "id": "NOTI_API_IT47",
+          "description": "Verify POST /api/email/resend/webhook answers 500 when recording fails so Resend retries.",
+          "procedure": [
+            "With the database unreachable (QA lead interrupts it), send a correctly signed \"email.delivered\" body."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error; the event is not recorded and Resend will send it again."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known.",
+            "The QA lead can interrupt the database on request."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (A_receiver_error_is_500_so_resend_retries)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "feature": "FE-16",
+  "module": "CAL",
+  "sheet": "MeetingSlot.Find",
+  "description": "Meeting time search: candidate slots on the work grid with busy and unknown marking.",
+  "precondition": "Slot search with invitees, duration, range and working hours; each person with busy windows.",
+  "methods": [
+    {
+      "method": "MeetingSlotFinder.Find",
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs",
+      "line": 14,
+      "cases": []
+    }
+  ]
+}
