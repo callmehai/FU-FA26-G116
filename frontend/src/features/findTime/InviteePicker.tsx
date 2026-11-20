@@ -106,9 +106,14 @@ export function InviteePicker({
     place()
     window.addEventListener('scroll', place, true)
     window.addEventListener('resize', place)
+    // iOS: the on-screen keyboard and zoom move the visual viewport without a window resize.
+    window.visualViewport?.addEventListener('resize', place)
+    window.visualViewport?.addEventListener('scroll', place)
     return () => {
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('scroll', place)
       if (menu.matches(':popover-open')) menu.hidePopover()
     }
   }, [open])

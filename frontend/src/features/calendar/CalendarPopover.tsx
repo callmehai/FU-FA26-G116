@@ -67,10 +67,15 @@ export function CalendarPopover({
     const observer = new ResizeObserver(place)
     if (card) observer.observe(card)
     window.addEventListener('resize', place)
+    // iOS: the on-screen keyboard and zoom move the visual viewport without a window resize.
+    window.visualViewport?.addEventListener('resize', place)
+    window.visualViewport?.addEventListener('scroll', place)
     window.addEventListener('scroll', place, true)
     return () => {
       observer.disconnect()
       window.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('scroll', place)
       window.removeEventListener('scroll', place, true)
     }
   }, [place])

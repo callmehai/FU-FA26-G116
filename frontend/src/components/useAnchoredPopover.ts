@@ -67,6 +67,9 @@ export function useAnchoredPopover(
     // Capture phase: a scroll inside the dialog body does not bubble to window.
     window.addEventListener('scroll', place, true)
     window.addEventListener('resize', place)
+    // iOS: the on-screen keyboard and zoom move the visual viewport without a window resize.
+    window.visualViewport?.addEventListener('resize', place)
+    window.visualViewport?.addEventListener('scroll', place)
     // A month of four, five or six weeks changes the calendar's height while it is open.
     const resized = new ResizeObserver(place)
     resized.observe(panel)
@@ -75,6 +78,8 @@ export function useAnchoredPopover(
       resized.disconnect()
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('scroll', place)
       if (panel.matches(':popover-open')) panel.hidePopover()
     }
   }, [open, anchorRef, panelRef, matchWidth])
