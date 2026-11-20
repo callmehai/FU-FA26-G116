@@ -2,7 +2,7 @@
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
 cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis, LiveKit (phòng
-họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (§10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (§10). Mỗi lần merge vào nhánh của server và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Staging` (lỗi không trả stack
@@ -11,16 +11,16 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu
 > cá nhân 91/2025/QH15).
 
-**Hai server, hai nhánh** ([ADR-0065](../docs/05-decisions/0065-hai-nhanh-hai-server.md)):
+**Hai server, hai nhánh** ([ADR-0065](../docs/05-decisions/0065-hai-nhanh-hai-server.md), [ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)):
 
 | Nhánh | Server Lightsail | URL | Bản |
 |---|---|---|---|
-| `main` | `trustcabinet-4gb` | https://trustcabinet.workspace-hub.space | Bản demo, backend ba project |
-| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | Backend bốn project (Clean Architecture) |
+| `main` | `trustcabinet-4gb` | https://trustcabinet.workspace-hub.space | Bản demo cũ, backend ba project — đóng băng từ 20/11 |
+| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
 
 Hai server dựng giống nhau theo file này, mỗi máy một database, một bộ secret và một kho tệp riêng. Server `app`
-không dùng R2 mà dùng kho tệp tự host (§9, cách B). Mọi thay đổi trên `main` cũng phải đưa vào `app` bằng một PR
-merge `main` vào `app`, không thì hai bản lệch nhau.
+không dùng R2 mà dùng kho tệp tự host (§9, cách B). Từ 20/11 mọi việc làm trên `app` (nhánh mặc định của repo);
+`main` không nhận thay đổi mới và không còn merge sang `app` ([ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)).
 
 ## Dành cho người test
 
@@ -67,7 +67,7 @@ và cách chạy lại nằm trong README đó.
 - Chưa đo riêng lúc CPU burst của Lightsail đã cạn, nên số trên là số lúc còn burst. Trước buổi demo nên deploy
   sớm một ngày để burst hồi lại.
 
-Server chạy đúng code của `main`. Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
+Mỗi server chạy đúng code của nhánh của nó (`app` là nhánh đang phát triển). Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
 tính năng chưa merge thì chưa có.
 
 ## Tự động deploy
@@ -199,7 +199,7 @@ $compose start app
 
 Xoá rồi tạo lại database chứ không `pg_restore --clean`: `--clean` chỉ xoá những gì có trong bản backup, nên bảng
 do migration mới tạo vẫn còn và lần migrate sau sẽ báo bảng đã tồn tại. Khôi phục xong, đừng *Run workflow* lại
-cho tới khi `main` đã có bản sửa: deploy lại cùng commit là chạy lại đúng migration đó. Cách được ưu tiên vẫn là
+cho tới khi nhánh của server đã có bản sửa: deploy lại cùng commit là chạy lại đúng migration đó. Cách được ưu tiên vẫn là
 sửa tiến: một PR mới với migration sửa lỗi.
 
 ### Xoá sạch dữ liệu, seed lại từ đầu
@@ -550,7 +550,7 @@ plan: hết credit là AWS trừ tiền thẻ.
 | Trình duyệt báo chứng chỉ không hợp lệ | `logs caddy`; bản ghi DNS phải trỏ đúng IP tĩnh, `SITE_ADDRESS` phải khớp tên miền |
 | `502 Bad Gateway` | App đang khởi động hoặc chết — `logs app` |
 | Workflow deploy đỏ ở bước SSH | `DEPLOY_HOST` / `DEPLOY_HOST_KEY` sai, hoặc đã đổi IP tĩnh |
-| Workflow deploy đỏ ở bước *Khởi động lại* | Log của bước: `pg_dump` lỗi (đĩa đầy, `postgres` không chạy) hay `--migrate` lỗi (dòng `crit:`). Server đã quay về bản trước; sửa migration trên `main` bằng PR mới. Bản trước không chạy được thì *Khôi phục database* |
+| Workflow deploy đỏ ở bước *Khởi động lại* | Log của bước: `pg_dump` lỗi (đĩa đầy, `postgres` không chạy) hay `--migrate` lỗi (dòng `crit:`). Server đã quay về bản trước; sửa migration trên nhánh của server bằng PR mới. Bản trước không chạy được thì *Khôi phục database* |
 | Workflow deploy đỏ ở bước *Kiểm tra*, `/api/health` trả `503` | App không tới được database: `logs app`, `logs postgres`. Server đã quay về bản trước |
 | Đăng nhập xong bị văng ra ngay | Phải vào bằng `https://`; cookie refresh token chỉ gửi qua HTTPS |
 | Hết ổ đĩa | `docker system prune -f` (không có `-v`, để giữ database) |

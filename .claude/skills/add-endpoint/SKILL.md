@@ -24,7 +24,7 @@ An endpoint is never one file. Work through every step; skipping one is what bre
   - not allowed to read one specific record (document, meeting): `404`, so existence is not leaked
 - Message codes (`MSGnn`):
   - take the next free code from the catalogue ("Mã tiếp theo"), never restart numbering
-  - one code means one situation; never renumber or reuse a code that reached `main`
+  - one code means one situation; never renumber or reuse a code that reached `app`
   - declare `private const string MsgNNName = "MSGnn";` at the top of the endpoint file
   - no inline `"MSGnn"` literals
 - Enums are stored as strings, keys are `Guid.CreateVersion7()`, users are deactivated not deleted, `MeetingStatusHistory` is append-only.

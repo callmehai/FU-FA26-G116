@@ -92,4 +92,4 @@ With the chrome-devtools MCP, use `emulate` (viewport `390x844x3,mobile,touch`) 
 - In the PR's "Tested locally", one line per width with the measured result ("390×844: no sideways
   scroll, 0 clipped elements, dialog 610px of 844px").
 - Fix what the phone run finds before the PR, or say in the PR which problem is left and why
-  (for example, one that was already on `main`).
+  (for example, one that was already on `app`).
