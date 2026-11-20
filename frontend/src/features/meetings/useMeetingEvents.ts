@@ -4,7 +4,7 @@ import { createHubConnection, retryDelay } from '../../api/hubs'
 import type { AttendanceChangedEvent } from '../../types/attendance'
 import type { DocumentsChangedEvent } from '../../types/document'
 import type { NotesChange } from '../../types/note'
-import type { AgendaChangedEvent } from '../../types/meeting'
+import type { AgendaChangedEvent, MeetingRereadEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 import type { SpeakingChangedEvent } from '../../types/speaking'
 import type { SpeechChangedEvent } from '../../types/speech'
@@ -24,6 +24,12 @@ import type { VoteChangedEvent } from '../../types/vote'
  * `notesChanged` (SCRUM-30) reaches only the Chair and the Secretary: a note was saved in another window.
  * `speakingChanged` (SCRUM-27) is any change to the queue of raised hands; `speakingInvited` reaches only the person
  * the Chair just invited, with the same event id, so the room can tell them it is their turn.
+ * `meetingChanged` is any change to the meeting itself made by someone else: a workflow step (submitted, approved,
+ * rejected, published, cancelled — by a person or the system — started, ended, organizer transferred), an edit or a
+ * reschedule. It also reaches a reader who just lost access, whose re-read then answers 404. `minutesChanged` is the AI
+ * draft or the minutes moving (asked for, being written, written or failed, corrected, reviewed, built, saved, sent,
+ * returned, issued, corrected again). `commentsChanged` is a comment posted on any of the meeting's documents; it does
+ * not say which, so an open comment panel re-reads its own.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -40,6 +46,9 @@ export type MeetingEvent =
   | 'notesChanged'
   | 'speakingChanged'
   | 'speakingInvited'
+  | 'meetingChanged'
+  | 'minutesChanged'
+  | 'commentsChanged'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -53,7 +62,7 @@ interface Channel {
   closing?: number
 }
 
-type RereadEvent = ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent | NotesChange
+type RereadEvent = ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent | NotesChange | MeetingRereadEvent
 
 /** One `/hubs/meetings` connection per meeting on screen, shared by the page and its panels. */
 const channels = new Map<string, Channel>()
@@ -81,7 +90,15 @@ function open(meetingId: string): Channel {
       () => false,
     )
 
-  for (const name of ['participantsChanged', 'attendanceChanged', 'documentsChanged', 'notesChanged'] as const) {
+  for (const name of [
+    'participantsChanged',
+    'attendanceChanged',
+    'documentsChanged',
+    'notesChanged',
+    'meetingChanged',
+    'minutesChanged',
+    'commentsChanged',
+  ] as const) {
     connection.on(name, (event: RereadEvent) => {
       if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
       seen.add(event.eventId)

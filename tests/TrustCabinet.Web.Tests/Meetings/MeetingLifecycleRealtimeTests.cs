@@ -74,6 +74,52 @@ public sealed partial class MeetingLifecycleTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => excludedEvents.Reader.ReadAsync(deadline.Token).AsTask());
     }
 
+    [Fact]
+    public async Task Start_tells_every_joined_reader_and_a_reader_who_just_lost_access_to_reread_the_meeting()
+    {
+        var s = await fixture.Seed();
+        var other = await fixture.Seed();
+        await using var member = fixture.Hub(s.Member);
+        await using var secretary = fixture.Hub(s.Secretary);
+        await using var outsider = fixture.Hub(other.Member);
+        var memberEvents = Channel.CreateUnbounded<JsonElement>();
+        var secretaryEvents = Channel.CreateUnbounded<JsonElement>();
+        var excluded = Channel.CreateUnbounded<JsonElement>();
+        member.On<JsonElement>("meetingChanged", e => memberEvents.Writer.TryWrite(e));
+        secretary.On<JsonElement>("meetingChanged", e => secretaryEvents.Writer.TryWrite(e));
+        outsider.On<JsonElement>("meetingChanged", e => excluded.Writer.TryWrite(e));
+        await Task.WhenAll(member.StartAsync(), secretary.StartAsync(), outsider.StartAsync());
+        await member.InvokeAsync("JoinMeeting", s.MeetingId);
+        await secretary.InvokeAsync("JoinMeeting", s.MeetingId);
+        await outsider.InvokeAsync("JoinMeeting", other.MeetingId);
+        // The member's page was opened while they could read it; they were removed since.
+        await using (var db = fixture.Db())
+        {
+            var row = await db.MeetingParticipants.SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Member);
+            row.AssignmentStatus = AssignmentStatus.Removed; row.RemovedAt = fixture.Clock.Now; row.RemovedById = s.Organizer;
+            await db.SaveChangesAsync();
+        }
+
+        await Expect(await Act(s, "Start"), 200, "MSG110");
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var change = await secretaryEvents.Reader.ReadAsync(timeout.Token);
+        Assert.Equal(s.MeetingId, change.GetProperty("meetingId").GetGuid());
+        Assert.NotEqual(Guid.Empty, change.GetProperty("eventId").GetGuid());
+        Assert.Equal(fixture.Clock.Now, change.GetProperty("occurredAt").GetDateTimeOffset());
+        // Only ids: nothing of the meeting itself reaches a page, least of all one that may no longer read it.
+        Assert.Equal(["eventId", "meetingId", "occurredAt"], change.EnumerateObject().Select(p => p.Name).Order());
+        var lost = await memberEvents.Reader.ReadAsync(timeout.Token);
+        Assert.Equal(change.GetProperty("eventId").GetGuid(), lost.GetProperty("eventId").GetGuid());
+        // Its re-read answers as for an unknown meeting.
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, (await fixture.Client(s.Member).GetAsync($"/api/meetings/{s.MeetingId}")).StatusCode);
+        // A refused transition changes nothing, so it says nothing.
+        await Expect(await Act(s, "Start"), 409, "MSG112");
+        await Task.Delay(300);
+        Assert.False(secretaryEvents.Reader.TryRead(out _));
+        Assert.False(excluded.Reader.TryRead(out _));
+    }
+
     [Theory]
     [InlineData("inactive")]
     [InlineData("removed")]

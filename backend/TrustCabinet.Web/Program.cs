@@ -33,6 +33,8 @@ builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.Co
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
+// The meeting header, its minutes and its document comments: "re-read" events for the screens other users have open.
+builder.Services.AddScoped<TrustCabinet.Application.Meetings.IMeetingChangePublisher, MeetingChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Votes.IVoteChangePublisher, VoteChangePublisher>();
 // SCRUM-27: the speaking queue; SCRUM-30: a note save tells the Chair's and the Secretary's other windows.

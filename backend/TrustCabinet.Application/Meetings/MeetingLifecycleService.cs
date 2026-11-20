@@ -28,7 +28,8 @@ public sealed class MeetingLifecycleService(
     INotificationService notifications,
     ICallRoomService rooms,
     TimeProvider clock,
-    ILogger<MeetingLifecycleService> logger) : IMeetingLifecycleService
+    ILogger<MeetingLifecycleService> logger,
+    IMeetingChangePublisher? changes = null) : IMeetingLifecycleService
 {
     public async Task<MeetingWorkflowResult> TransitionAsync(
         Guid meetingId, MeetingTransitionCommand command, Guid actorId, CancellationToken ct = default)
@@ -50,7 +51,11 @@ public sealed class MeetingLifecycleService(
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.NotFound);
 
                 var active = meeting.Participants.Where(ParticipantRules.Active).ToArray();
-                if (!active.Any(p => p.UserId == actorId && p.Role == MeetingRole.Chair))
+                // The Chair or the Secretary starts it (PO 20/11/2026: the Secretary often opens the meeting while
+                // the Chair is on the way); only the Chair ends it.
+                var actor = active.FirstOrDefault(p => p.UserId == actorId
+                    && (p.Role == MeetingRole.Chair || (starting && p.Role == MeetingRole.Secretary)));
+                if (actor is null)
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
 
                 var from = starting ? MeetingStatus.Published : MeetingStatus.InProgress;
@@ -62,7 +67,7 @@ public sealed class MeetingLifecycleService(
                 if (starting)
                 {
                     meeting.ActualStartedAt = now;
-                    // The Chair just started it, so only the others are told (as for Publish).
+                    // Whoever just started it is not told (as for Publish).
                     recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
                         .Where(p => p.UserId != actorId)
                         .Select(p => p.UserId).ToArray();
@@ -84,7 +89,7 @@ public sealed class MeetingLifecycleService(
                 meeting.StatusHistory.Add(history);
                 await meetings.AddHistoryAsync(history, token);
                 await unitOfWork.SaveChangesAsync(token);
-                var actorName = active.First(p => p.UserId == actorId && p.Role == MeetingRole.Chair).User.FullName;
+                var actorName = actor.User.FullName;
                 return MeetingWorkflowResult.Success(MeetingDetails.From(meeting, actorId),
                     new MeetingHistoryRecord(history.Id, meetingId, history.Action, from, meeting.Status,
                         actorId, actorName, now, null, null));
@@ -155,6 +160,8 @@ public sealed class MeetingLifecycleService(
 
         logger.LogInformation("Ended meeting {MeetingId} left running past its planned end.", meetingId);
         await AfterEndAsync(meetingId, historyId, end!);
+        // The Chair's End is published by the transition endpoint; the system's has no request to do it.
+        if (changes is not null) await changes.MeetingChangedAsync(meetingId);
         return true;
     }
 

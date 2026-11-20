@@ -42,6 +42,8 @@ import {
 } from './listParams'
 import { SensitivityBadge, StatusBadge } from './StatusBadge'
 import { MeetingStats } from './MeetingStats'
+import { isMeetingNotification, useNotificationRefresh } from '../notifications/useNotificationRefresh'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import { useCreateMeetingLink } from './meetingDialogLink'
 
 // An empty value means "no filter", which is why these lists lead with an all-pass entry.
@@ -117,6 +119,13 @@ export function MeetingsPage() {
   const [shown, setShown] = useState<{ data: MeetingListResponse; key: string } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [attempt, setAttempt] = useState(0)
+
+  // Another user's change: re-read the page and the cards in place, with the same filters, sort and page — on a
+  // notification about any meeting, and on coming back to the tab, which also catches the changes nobody is told of
+  // (a draft cancelled, a meeting edited before it was announced).
+  const refresh = () => setAttempt((n) => n + 1)
+  useNotificationRefresh(isMeetingNotification, refresh)
+  useRefetchOnFocus(refresh)
 
   // Filter changes replace the history entry: typing a search should not leave twenty Back steps.
   const update = useCallback(

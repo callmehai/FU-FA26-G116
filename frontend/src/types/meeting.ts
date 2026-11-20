@@ -331,3 +331,13 @@ export interface AgendaChangedEvent {
   title: string | null
   occurredAt: string
 }
+
+/**
+ * `meetingChanged`, `minutesChanged` and `commentsChanged` on `/hubs/meetings` (MeetingChangePublisher.cs): only which
+ * meeting, so an open screen re-reads what it shows through its own, reauthorized endpoints.
+ */
+export interface MeetingRereadEvent {
+  eventId: string
+  meetingId: string
+  occurredAt: string
+}

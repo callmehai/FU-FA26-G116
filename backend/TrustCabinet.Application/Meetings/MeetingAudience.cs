@@ -42,17 +42,20 @@ public sealed class MeetingAudience(IUnitOfWork unitOfWork, IMeetingRepository m
         }, TransactionMode.None, ct);
 
     /// <summary>Every active user and guest session who may read the meeting now: agenda, documents, speaking, votes.</summary>
-    public Task<MeetingAudienceMembers> ReadersAsync(Guid meetingId, CancellationToken ct)
+    /// <param name="includeFormer">Also everyone tied to the meeting who may no longer read it (a participant removed, a
+    /// meeting cancelled before it was announced) and its guest sessions once it closed. Only a connection that joined
+    /// while it could read is in such a group, and it receives an id to re-read, never data: its re-read answers 404.</param>
+    public Task<MeetingAudienceMembers> ReadersAsync(Guid meetingId, CancellationToken ct, bool includeFormer = false)
         => unitOfWork.ExecuteAsync(async token =>
         {
             var meeting = await meetings.FindWorkflowAsync(meetingId, ct: token);
             if (meeting is null) return MeetingAudienceMembers.None;
             var candidates = meeting.Participants.Select(p => p.UserId).Append(meeting.CreatedById)
                 .Concat(meeting.AssignedApproverId is { } approver ? [approver] : [])
-                .Distinct().Where(actor => MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
+                .Distinct().Where(actor => includeFormer || MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
             var active = await audience.ListActiveUserIdsAsync(candidates, token);
             IReadOnlyList<MeetingGuestSession> readers = [];
-            if (GuestAccessRules.MeetingOpen(meeting.Status))
+            if (includeFormer || GuestAccessRules.MeetingOpen(meeting.Status))
             {
                 readers = (await guests.ListReadersAsync(meeting.Id, token))
                     .Where(g => g.IsValid && g.MeetingId == meeting.Id).Distinct().ToList();

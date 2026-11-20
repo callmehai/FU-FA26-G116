@@ -8,6 +8,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { LibraryDocument, LibraryView } from '../../types/document'
 import type { UserAccount } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -83,6 +84,8 @@ export function UserLibraryPage() {
     setLoadError(null)
     setAttempt((n) => n + 1)
   }
+  // The owner's own changes since show on coming back to the tab.
+  useRefetchOnFocus(() => setAttempt((n) => n + 1))
 
   const folders = view?.folders ?? []
   const trail = trailOf(folders, folderId)

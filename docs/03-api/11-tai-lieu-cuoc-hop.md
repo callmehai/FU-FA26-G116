@@ -476,8 +476,10 @@ Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự k
 
 ### Note cho FE (SCRUM-23)
 
-- `commentCount` ở danh sách tài liệu (tab Tài liệu, panel phòng họp) đếm cả góp ý và trả lời; gửi góp ý **không** phát
-  `documentsChanged`, nên số này cập nhật ở lần tải lại danh sách.
+- `commentCount` ở danh sách tài liệu (tab Tài liệu, panel phòng họp) đếm cả góp ý và trả lời. Gửi góp ý không phát
+  `documentsChanged` mà phát `commentsChanged` `{ eventId, meetingId, occurredAt }` cho mọi người đang đọc được cuộc họp
+  đã join, không kèm id tài liệu; FE đọc lại danh sách và panel Góp ý đang mở
+  ([25](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md)).
 - Trang PDF: gửi `pageNumber` là trang đang xem nếu người dùng chọn gắn trang; DOCX không gửi.
 - `MSG251`/`MSG349` giữa chừng: tải lại góp ý (`canComment` sẽ là `false`) và giữ nội dung đang soạn để người dùng chép lại.
 

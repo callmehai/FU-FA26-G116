@@ -16,6 +16,7 @@ import { NewShareDialog } from '../calendarSharing/ShareDialogs'
 import type { ShareOutcome } from '../calendarSharing/shareOutcome'
 import { SharedWeek } from '../calendarSharing/SharedWeek'
 import { vietnamToday } from '../calendarSharing/shareFormat'
+import { useNotificationRefresh } from '../notifications/useNotificationRefresh'
 import { InviteePicker, type Invitee, type ShareState } from './InviteePicker'
 import { SlotDraftDialog } from './SlotDraftDialog'
 import { SlotResults } from './SlotResults'
@@ -97,6 +98,11 @@ export function FindTimePage() {
       cancelled = true
     }
   }, [sharesKey])
+  // Someone granted, changed or stopped a share, or answered a request: the rows' share states follow.
+  useNotificationRefresh(
+    (notification) => notification.type.startsWith('CalendarShare'),
+    () => setSharesKey((k) => k + 1),
+  )
 
   /** Before searching, each invitee's share with the caller, from "Lịch được chia sẻ với tôi". */
   const shareOf = useCallback(

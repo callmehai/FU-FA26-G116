@@ -21,8 +21,25 @@ namespace TrustCabinet.Application.Summaries;
 /// </summary>
 public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummarySourceQuery sources, IUnitOfWork unitOfWork,
     IMeetingRepository meetings, ILanguageModelProvider models, MeetingTranscriptReader transcript, TimeProvider clock,
-    ILogger<SummaryService> logger, IOptions<LanguageModelOptions> aiOptions) : ISummaryService
+    ILogger<SummaryService> logger, IOptions<LanguageModelOptions> aiOptions, IMeetingChangePublisher? changes = null)
+    : ISummaryService
 {
+    /// <summary>
+    /// The other officer's open Biên bản tab, and the readers' once the draft is reviewed, re-read (minutesChanged): a
+    /// draft asked for, started, written, failed, corrected or reviewed. Called after the write; the publisher logs its
+    /// own failures.
+    /// </summary>
+    private async Task AnnounceAsync(Guid meetingId)
+    {
+        if (changes is not null) await changes.MinutesChangedAsync(meetingId);
+    }
+
+    /// <summary>Announces a successful request, edit or review once its write has committed.</summary>
+    private async Task<SummaryOutcome> AnnounceAsync(Guid meetingId, SummaryOutcome outcome)
+    {
+        if (outcome.Failure == SummaryFailure.None) await AnnounceAsync(meetingId);
+        return outcome;
+    }
     /// <summary>ADR-0056 — the hosted harness: whole agenda items, <c>Ai:ApiParallelism</c> of them at once.</summary>
     private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
         => new SummaryWriter(model, SummaryWriter.ApiChunkChars, SummaryWriter.ApiSpellingRule)
@@ -65,7 +82,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
     {
         try
         {
-            return await ReadAsync(async token =>
+            return await AnnounceAsync(meetingId, await ReadAsync(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token);
                 if (meeting is null) return new SummaryOutcome(failure);
@@ -90,7 +107,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 row.UpdatedAt = now;
                 await unitOfWork.SaveChangesAsync(token);
                 return await GetAsync(meetingId, actorId, token);
-            }, ct);
+            }, ct));
         }
         catch (UniqueConflictException error)
         {
@@ -109,7 +126,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
     {
         try
         {
-            return await ReadAsync(async token =>
+            return await AnnounceAsync(meetingId, await ReadAsync(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token);
                 if (meeting is null) return new SummaryOutcome(failure);
@@ -132,7 +149,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 var saved = await summaries.SaveEditAsync(row.Id, content, actorId, now, token);
                 if (saved == 0) return new(SummaryFailure.Busy);
                 return await GetAsync(meetingId, actorId, token);
-            }, ct);
+            }, ct));
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
@@ -145,7 +162,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
     {
         try
         {
-            return await ReadAsync(async token =>
+            return await AnnounceAsync(meetingId, await ReadAsync(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token);
                 if (meeting is null) return new SummaryOutcome(failure);
@@ -158,7 +175,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 var saved = await summaries.MarkReviewedAsync(row.Id, actorId, now, token);
                 if (saved == 0) return new(SummaryFailure.Busy);
                 return await GetAsync(meetingId, actorId, token);
-            }, ct);
+            }, ct));
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
@@ -174,6 +191,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
         // Claim it: only one worker turns Queued into Running.
         var claimed = await ReadAsync(token => summaries.ClaimAsync(next.Id, clock.GetUtcNow(), token), ct);
         if (claimed == 0) return true;
+        await AnnounceAsync(next.MeetingId);
 
         string? content = null;
         ILanguageModel? model = null;
@@ -211,6 +229,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
             {
                 // A new draft replaces the old one whole: what was reviewed or corrected was the old text.
                 await ReadAsync(token => summaries.StoreDraftAsync(next.Id, content, model!.Model, readAt, now, token), ct);
+                await AnnounceAsync(next.MeetingId);
                 return true;
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
@@ -221,6 +240,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
             }
         }
         await ReadAsync(token => summaries.MarkFailedAsync(next.Id, error, now, token), ct);
+        await AnnounceAsync(next.MeetingId);
         return true;
     }
 
