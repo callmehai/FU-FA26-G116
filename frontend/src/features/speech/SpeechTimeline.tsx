@@ -389,9 +389,9 @@ function Paragraph({
             <button
               type="button"
               className={hearing && player.playing ? 'tl-play is-on' : 'tl-play'}
-              onClick={() => (hearing && player.playing ? player.toggle() : player.playFrom(first, { alone }))}
+              onClick={() => (hearing && player.playing ? player.toggle() : player.playFrom(first, { alone, then: alone ? group.clips.slice(1) : undefined }))}
               aria-label={hearing && player.playing ? 'Tạm dừng' : `Nghe lại từ ${wall(first.startedAt)}`}
-              data-tooltip={hearing && player.playing ? 'Tạm dừng' : alone ? 'Nghe câu này' : 'Nghe lại'}
+              data-tooltip={hearing && player.playing ? 'Tạm dừng' : alone ? (group.clips.length > 1 ? 'Nghe cả đoạn' : 'Nghe câu này') : 'Nghe lại'}
             >
               <Icon name={hearing && player.playing ? 'pause' : 'play'} size={12} />
               {at !== undefined && formatClock(at)}
