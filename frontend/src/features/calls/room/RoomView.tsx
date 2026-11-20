@@ -72,6 +72,9 @@ import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
 import { playCue, setCueOutput } from './roomSounds'
 import { deviceErrorMessage, roomMessage } from './roomSupport'
 
+/** How long a chat message pops up over the stage while the chat panel is closed. */
+const CHAT_TOAST_MS = 6000
+
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
@@ -178,6 +181,11 @@ function RoomLayout({
   const chat = useChat()
   const [seenMessages, setSeenMessages] = useState(0)
   const unread = panel === 'chat' ? 0 : chat.chatMessages.length - seenMessages
+  // Someone else's newest message the reader has not seen pops up over the stage while the chat is closed (team
+  // meeting 19/11), until it times out, is closed, or the chat opens.
+  const [hiddenToast, setHiddenToast] = useState<string | null>(null)
+  const incoming = panel === 'chat' ? undefined : chat.chatMessages.slice(seenMessages).findLast((m) => !m.from?.isLocal)
+  const chatToast = incoming && incoming.id !== hiddenToast ? incoming : undefined
   const toast = useToast()
   const selfMuting = useRef(false)
   const { isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled, localParticipant } = useLocalParticipant()
@@ -263,6 +271,15 @@ function RoomLayout({
       room.off(RoomEvent.ActiveDeviceChanged, onDevice)
     }
   }, [room])
+
+  // Each new pop-up chimes once (the cue itself spaces a burst out) and stays a few seconds.
+  const chatToastId = chatToast?.id
+  useEffect(() => {
+    if (!chatToastId) return
+    playCue('chat')
+    const timer = window.setTimeout(() => setHiddenToast(chatToastId), CHAT_TOAST_MS)
+    return () => window.clearTimeout(timer)
+  }, [chatToastId])
 
   // Meet's shortcuts: ⌘/Ctrl + D for the microphone, ⌘/Ctrl + E for the camera. They override the
   // browser's own (bookmark, search bar) only while in the room.
@@ -398,6 +415,29 @@ function RoomLayout({
             setPanel('votes')
           }}
         />
+        {chatToast && (
+          <div className="room-chat-toast" role="status">
+            <button
+              type="button"
+              className="room-chat-toast-open"
+              data-tooltip="Mở Chat"
+              onClick={() => togglePanel('chat')}
+            >
+              <Icon name="messageSquare" size={18} />
+              <strong>{chatToast.from?.name || 'Người dự'}</strong>
+              <span>{chatToast.message}</span>
+            </button>
+            <button
+              type="button"
+              className="icon-button icon-button-sm"
+              aria-label="Đóng"
+              data-tooltip="Đóng"
+              onClick={() => setHiddenToast(chatToast.id)}
+            >
+              <Icon name="x" size={16} />
+            </button>
+          </div>
+        )}
         <main className="room-stage" aria-label="Người trong phòng">
           {floating.pip ? (
             // As in Meet: while the call lives in the floating window, the stage says so instead of
