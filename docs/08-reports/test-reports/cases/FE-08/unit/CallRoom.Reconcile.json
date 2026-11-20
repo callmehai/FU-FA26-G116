@@ -22,7 +22,7 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · Deviation: closing the room here notifies nobody in it and drops the closed-hands count, so no speaking-queue update is sent either — BUG-KEY"
+          "note": "UC-37 · Deviation: closing the room here notifies nobody in it and drops the closed-hands count, so no speaking-queue update is sent either — SCRUM-213"
         },
         {
           "id": "UTC002",

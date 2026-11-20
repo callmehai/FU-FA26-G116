@@ -46,7 +46,7 @@
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c · Deviation: an erased recording leaves the transcript Processing with an empty error instead of Failed — BUG-KEY"
+          "note": "UC-45c · Deviation: defensive path only; recording erasure deletes the transcript in the same transaction, so production never reaches this state"
         },
         {
           "id": "UTC004",
