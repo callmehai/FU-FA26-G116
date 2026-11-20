@@ -7,16 +7,22 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { DocumentComment, DocumentCommentList } from '../../types/document'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useMeetingEvents } from '../meetings/useMeetingEvents'
 
 /** The server's limit (MSG348). */
 const MAX_LENGTH = 4000
+
+/** Someone posted a comment on one of the meeting's documents; the event does not say which. */
+const COMMENTS_CHANGED = ['commentsChanged'] as const
 
 /**
  * UC-35 Comment on Meeting Document (SCRUM-23), beside the viewer. Anyone who can read the meeting reads and
  * writes here (BR-249, BR-275); once the meeting has ended or was cancelled the list stays and the box goes
  * (BR-282). Replies are one level (BR-317). A PDF comment may carry the page being read (AF-1, BR-248).
  *
- * Posting does not reach the hub, so the list is read again after each comment and on "Làm mới".
+ * The list is read again after each comment the reader posts, and whenever the hub says someone else posted one on
+ * any of the meeting's documents (`commentsChanged`), or the connection comes back after a gap. That made the old
+ * "Làm mới" button redundant.
  */
 export function CommentsPanel({
   meetingId,
@@ -77,6 +83,7 @@ export function CommentsPanel({
   }, [meetingId, meetingDocumentId, attempt, handleAccessLost])
 
   const reload = useCallback(() => setAttempt((n) => n + 1), [])
+  useMeetingEvents(meetingId, reload, COMMENTS_CHANGED)
 
   useEffect(() => {
     if (!posted || !list) return
@@ -90,15 +97,6 @@ export function CommentsPanel({
     <aside className="viewer-comments" aria-label="Góp ý">
       <div className="viewer-comments-head">
         <h2>Góp ý</h2>
-        <button
-          type="button"
-          className="icon-button icon-button-sm"
-          aria-label="Làm mới góp ý"
-          data-tooltip="Làm mới"
-          onClick={reload}
-        >
-          <Icon name="refresh" size={16} />
-        </button>
         <button
           type="button"
           className="icon-button icon-button-sm"

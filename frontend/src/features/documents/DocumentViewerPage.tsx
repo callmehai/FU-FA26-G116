@@ -194,6 +194,12 @@ function Viewer({
   // Open beside a wide document; on a narrow screen the panel would cover it, so it waits to be asked for.
   const [commentsOpen, setCommentsOpen] = useState(() => window.innerWidth >= 1100)
   const [commentCount, setCommentCount] = useState(doc.commentCount)
+  // With the panel closed, the count follows the document list, which re-reads when someone comments.
+  const [listedCount, setListedCount] = useState(doc.commentCount)
+  if (listedCount !== doc.commentCount) {
+    setListedCount(doc.commentCount)
+    setCommentCount(doc.commentCount)
+  }
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
   // A guest is not told the sensitivity (UC-04); their session says whether downloading is allowed (MSG159).

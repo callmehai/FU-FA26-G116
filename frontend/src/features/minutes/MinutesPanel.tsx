@@ -26,6 +26,7 @@ import type { Meeting } from '../../types/meeting'
 import type { MeetingMinutes, MinutesState, SummaryReadiness, SummaryState } from '../../types/summary'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { saveBlob } from '../documents/documentFile'
+import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { MinutesPaper } from './MinutesPaper'
 import { NameVoicesSheet } from './NameVoicesSheet'
 import { OutlineSections, type OutlineValues } from './OutlineSections'
@@ -33,6 +34,9 @@ import { ReturnMinutesDialog } from './ReturnMinutesDialog'
 
 // The editor brings TipTap with it: it loads when someone opens the minutes to edit, not with every meeting page.
 const MinutesEditor = lazy(() => import('./MinutesEditor').then((m) => ({ default: m.MinutesEditor })))
+
+/** The hub event of the AI draft and the minutes changing, from either officer's window or the AI worker. */
+const MINUTES_CHANGED = ['minutesChanged'] as const
 
 type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: T }
 
@@ -84,6 +88,19 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
     if (seenStamp.current !== null && seenStamp.current !== draftStamp) void loadMinutes()
     seenStamp.current = draftStamp
   }, [draftStamp, loadMinutes])
+
+  // The other officer asked for a draft, the AI started, finished or failed it, or the minutes were built, saved, sent,
+  // returned or issued: read both cards again. A draft just asked for turns `waiting` on, which starts the poll below.
+  // An edit in progress survives: the Dự thảo editor is keyed by the draft it opened, the minutes editor keeps the
+  // version it started from.
+  useMeetingEvents(
+    meeting.id,
+    () => {
+      void loadSummary()
+      void loadMinutes()
+    },
+    MINUTES_CHANGED,
+  )
 
   // Poll while the AI writes, as eCab's pipeline chip does (every 5 s until the job is done).
   const waiting = summary.kind === 'ready' && ['Queued', 'Running'].includes(summary.data.summary?.status ?? '')

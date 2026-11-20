@@ -8,6 +8,7 @@ import { Select, type SelectOption } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { MeetingReport } from '../../types/report'
 import { saveBlob } from '../documents/documentFile'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
@@ -80,6 +81,9 @@ export function ReportsPage() {
     setServerPeriodError(null)
     setParams(followPeriod(from, to, next), { replace: true })
   }
+
+  // Meetings held or changed since show on coming back to the tab; the figures stay on screen while they reload.
+  useRefetchOnFocus(() => setAttempt((n) => n + 1), { enabled: valid })
 
   const retry = useCallback(() => {
     setLoad({ kind: 'loading' })

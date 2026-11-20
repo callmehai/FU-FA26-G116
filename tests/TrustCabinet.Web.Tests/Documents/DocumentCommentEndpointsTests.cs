@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Threading.Channels;
+using Microsoft.AspNetCore.SignalR.Client;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Documents;
@@ -216,5 +218,38 @@ public sealed class DocumentCommentEndpointsTests(DocumentFixture fixture) : IAs
         fixture.ReadFailure.Table = null;
         await using var db = fixture.Db();
         Assert.False(await db.DocumentComments.AnyAsync(c => c.MeetingDocumentId == document));
+    }
+
+    [Fact]
+    public async Task A_comment_tells_the_joined_readers_of_its_meeting_and_names_no_document()
+    {
+        var s = await fixture.Seed();
+        var other = await fixture.Seed();
+        var document = await AddMeetingDocument(s.MeetingId, s.Secretary);
+        await using var chair = fixture.Hub(s.Chair);
+        await using var outsider = fixture.Hub(other.Member);
+        var received = Channel.CreateUnbounded<JsonElement>();
+        var excluded = Channel.CreateUnbounded<JsonElement>();
+        chair.On<JsonElement>("commentsChanged", e => received.Writer.TryWrite(e));
+        outsider.On<JsonElement>("commentsChanged", e => excluded.Writer.TryWrite(e));
+        await Task.WhenAll(chair.StartAsync(), outsider.StartAsync());
+        await chair.InvokeAsync("JoinMeeting", s.MeetingId);
+        await outsider.InvokeAsync("JoinMeeting", other.MeetingId);
+        using var member = fixture.Client(s.Member);
+
+        Assert.Equal((201, "MSG199"), Pick(await Read(await member.PostAsJsonAsync(Url(s, document), new { body = "Xem lại số liệu" }))));
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var change = await received.Reader.ReadAsync(timeout.Token);
+        Assert.Equal(s.MeetingId, change.GetProperty("meetingId").GetGuid());
+        Assert.NotEqual(Guid.Empty, change.GetProperty("eventId").GetGuid());
+        // Only "re-read": neither the text nor which document (a draft's id stays with those who see drafts).
+        Assert.DoesNotContain("Xem lại", change.GetRawText());
+        Assert.DoesNotContain(document.ToString(), change.GetRawText(), StringComparison.OrdinalIgnoreCase);
+        // A refused comment changes nothing, so it says nothing.
+        Assert.Equal((400, "MSG200"), Pick(await Read(await member.PostAsJsonAsync(Url(s, document), new { body = "  " }))));
+        await Task.Delay(500);
+        Assert.False(received.Reader.TryRead(out _));
+        Assert.False(excluded.Reader.TryRead(out _));
     }
 }

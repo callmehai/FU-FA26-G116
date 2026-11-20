@@ -8,6 +8,7 @@ import { InfoTip } from '../../components/InfoTip'
 import { PageHeader } from '../../components/PageHeader'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { RoleRecord } from '../../types/role'
 import type { PermissionDescriptor, RolePermissionMatrix } from '../../types/rolePermission'
 import type { Capability } from '../../types/user'
@@ -80,6 +81,11 @@ export function RolesPage() {
     // Let load own the request and defer its state updates past the effect's synchronous phase.
     void Promise.resolve().then(load)
   }, [load])
+  // Another administrator's change shows on coming back to the tab, but never over a matrix row being edited or saved,
+  // or under an open dialog.
+  useRefetchOnFocus(() => void load(), {
+    enabled: Object.keys(drafts).length === 0 && saving === null && !formTarget && !deleteTarget,
+  })
 
   const columns = matrix?.capabilities ?? []
   const groups = groupColumns(columns)

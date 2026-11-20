@@ -1,12 +1,13 @@
 import type { Meeting } from '../../../types/meeting'
 
 /**
- * Whether the Chair may start or end this meeting now (SCRUM-69, UC-21/22). The server decides and
- * re-checks: MSG112/MSG114 when the caller is no longer the Chair or the status moved on.
+ * Whether the caller may start or end this meeting now (SCRUM-69, UC-21/22): the Chair or the Secretary starts it
+ * (PO 20/11/2026), only the Chair ends it. The server decides and re-checks: MSG112/MSG114 when the caller's role or the
+ * status moved on.
  */
 export function lifecycleAction(meeting: Meeting): 'Start' | 'End' | null {
-  if (meeting.myMeetingRole !== 'Chair') return null
-  if (meeting.status === 'Published') return 'Start'
-  if (meeting.status === 'InProgress') return 'End'
+  const role = meeting.myMeetingRole
+  if (meeting.status === 'Published' && (role === 'Chair' || role === 'Secretary')) return 'Start'
+  if (meeting.status === 'InProgress' && role === 'Chair') return 'End'
   return null
 }

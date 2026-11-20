@@ -12,6 +12,7 @@ import { MEETING_MODE_LABEL, type Meeting, type MeetingListItem } from '../../ty
 import type { ParticipantRow } from '../../types/participant'
 import { useAccessLost } from '../auth/useAccessLost'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
+import { useNotificationRefresh } from '../notifications/useNotificationRefresh'
 import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { CalendarPopover } from './CalendarPopover'
 import { usePhone } from './usePhone'
@@ -77,6 +78,11 @@ export function OverviewContent({
     kind: 'loading',
   })
   const [attempt, setAttempt] = useState(0)
+  // A notification about this meeting (rescheduled, cancelled, a role changed…) re-reads the quick look in place.
+  useNotificationRefresh(
+    (notification) => notification.meetingId?.toLowerCase() === item.id.toLowerCase(),
+    () => setAttempt((n) => n + 1),
+  )
   const [expanded, setExpanded] = useState(false)
 
   // The meeting for its Chair, link and description; the roster for who attends. A roster the
