@@ -41,6 +41,11 @@ export interface SpeechClip {
   hasAudio: boolean
   /** Its waveform, base64: one byte (0–255) per 100 ms. */
   peaks: string | null
+  /**
+   * When each word of `text` begins, in ms from the start of the sentence's audio, as the speech worker measured it.
+   * Null for a sentence stored before word times were kept, or corrected since.
+   */
+  wordStartsMs?: number[] | null
 }
 
 /** GET /api/meetings/{id}/speech-clips — the whole list, or what changed since `readAt` of the last read. */

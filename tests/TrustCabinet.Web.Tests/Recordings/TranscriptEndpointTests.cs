@@ -298,4 +298,41 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
         try { await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{segment}", new { text = "x" }), 503, "MSG304"); }
         finally { fixture.Failures.FailSave = false; }
     }
+
+    [Fact]
+    public async Task A_line_keeps_the_time_of_each_word_until_the_secretary_corrects_it()
+    {
+        var s = await fixture.Seed();
+        fixture.Speech.Failure = null;
+        var before = fixture.Speech.Result;
+        fixture.Speech.Result = before with
+        {
+            Segments = [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí.", null, [80, 400, 720, 1040, 1300]),
+                // One time short of its words: no timing rather than a wrong one.
+                new(6500, 10900, "SPEAKER_01", "Tôi đề nghị bổ sung kinh phí.", null, [6500, 6800])],
+        };
+        try
+        {
+            var id = await Upload(s);
+            await ProcessAll();
+            using var member = fixture.Client(s.Member);
+            var segments = (await Transcript(member, id)).GetProperty("segments");
+            Assert.Equal([80L, 400, 720, 1040, 1300],
+                segments[0].GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
+            Assert.Equal(JsonValueKind.Null, segments[1].GetProperty("wordStartsMs").ValueKind);
+
+            using var secretary = fixture.Client(s.Secretary);
+            var line = segments[0].GetProperty("id").GetGuid();
+            await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{line}",
+                new { text = "Kính thưa các vị đại biểu." }), 200, "MSG302");
+            Assert.Equal(JsonValueKind.Null,
+                (await Transcript(member, id)).GetProperty("segments")[0].GetProperty("wordStartsMs").ValueKind);
+            await using var db = fixture.Db();
+            Assert.Null((await db.TranscriptSegments.SingleAsync(x => x.Id == line)).WordStartsMs);
+        }
+        finally
+        {
+            fixture.Speech.Result = before;
+        }
+    }
 }

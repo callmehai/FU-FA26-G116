@@ -164,9 +164,7 @@ does everything mechanical; nobody opens the workbooks to edit them:
 | `scaffold` | creates the missing `FE-xx/ui.json` and `FE-xx/api.json` with the groups from `sheets.json` and no cases |
 | `check` | every route in exactly one sheet; JSON groups = `sheets.json`; IDs `<CODE>_FT01…` / `<CODE>_API_IT01…` in sequence; no empty field; no test-code wording; every `MSGnn` in the catalogue; every test method in a Note exists; lists groups still without cases |
 | `md` | writes `cases/preview/FE-xx/{ui,api}.md` |
-| `sync-back` | reads the two old workbooks in the repo (if present) and merges executed Round 1/2/3, Test date and Tester cells back into the JSON, matched by case id (`<CODE>_FTnn` in the UI book, `<CODE>_API_ITnn` in the API book). Only non-empty, non-Pending cells are merged; description/procedure/expected and every other standard field are never overwritten from Excel. Prints per-sheet merged counts; exits 0 when an old workbook is missing |
-| `build` | dry-run: runs `check` first (an error stops everything), then prints the diff between the old workbooks and the JSON — cover version old→new, added/removed sheets, per-sheet case counts old→new (by case id), totals. Writes nothing |
-| `build --overwrite` | backs each old workbook up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx` in the same directory, then `check` + `md` + Report 5.2.2 as before (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README). Close the workbooks in Excel first |
+| `build` | `check`, then `md`, then Report 5.2.2 (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README) from `scripts/test_reports/templates/integration-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per FE). Close the workbooks in Excel first |
 
 Never copy the course's sample workbooks (`docs/08-reports/sample/`, gitignored) into the repo; the
 template is derived from our own Report 5.2.

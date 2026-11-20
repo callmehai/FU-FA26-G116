@@ -78,7 +78,7 @@ Không cần xác thực.
 {"status":"ok","models":{"asr":"gipformer-1.5-68m-int8@b528768939c7","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
 ```
 
-### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip]`
+### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip][&context=…]`
 
 - `diarize` mặc định `true`. Với `false`, worker chỉ cắt theo khoảng lặng, không tách người nói,
   `speaker` là `null` và `speakers` rỗng. Dùng cho bản ghi micro của riêng một người, khi đã biết
@@ -88,6 +88,9 @@ Không cần xác thực.
 - `profile` mặc định `room` (bản ghi cả phòng: tăng âm tối đa 30 dB, VAD 0.2). `clip` dùng cho một câu
   từ micro riêng của một người (SCRUM-109): tăng âm tối đa 6 dB, VAD 0.5, vì chỗ nhỏ tiếng trên micro
   riêng phần lớn là người ngồi cạnh lọt vào. Xem [Hiệu chỉnh](#tiếng-lọt-giữa-các-micro-riêng).
+- `context` (tuỳ chọn, tối đa 2000 ký tự, dùng khi không quá 60 từ): câu ngay trước đó của cùng người nói. Worker đọc
+  nó trước đoạn đầu tiên khi thêm dấu câu, nên một câu trình duyệt cắt ở chỗ ngắt hơi được thêm dấu câu như một câu liền, và
+  trả lại câu trước đã chấm lại ở trường `context` của kết quả (`null` khi không gửi hay không dùng được).
 
 ```json
 {
@@ -95,7 +98,7 @@ Không cần xác thực.
   "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
-    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6}
+    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"]}
   ],
   "speakers": [
     {"label": "SPEAKER_00", "speechMs": 11846, "embedding": [-0.051461, 0.011607, "… 512 số, độ dài 1"]}
@@ -111,9 +114,13 @@ Không cần xác thực.
 - Bản ghi im lặng trả về `segments` rỗng.
 - `levelDbfs` là độ to của đoạn khi đến micro, đo **trước** bước tăng âm. Backend dùng nó để nhận ra câu
   một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
+- `wordStartsMs`: mốc bắt đầu (ms trong bản ghi) của từng từ trong `text`, lấy từ mốc của từng token mà Gipformer
+  trả (`result.timestamps`, token mở đầu một từ mang dấu `▁`). Bước dấu câu không thêm bớt từ nên mốc vẫn khớp.
+  `null` khi số mốc không khớp số từ: không bao giờ chia đều để đoán.
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
   bằng viBERT-capu (bước 7 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
-  đoạn trước thì bắt đầu bằng chữ thường. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
+  đoạn trước thì bắt đầu bằng chữ thường; đoạn đầu của một lượt nói luôn viết hoa, và một đoạn bị bỏ ngỏ ngay trước
+  một đoạn model viết hoa (câu mới sau chỗ ngắt hơi) được thêm dấu chấm. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
   sửa tay.
 
 ### `POST /v1/embed`

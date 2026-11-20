@@ -15,7 +15,8 @@ const PRESSED_CLASS = 'press-flash'
 
 function press(target: EventTarget | null) {
   const element = target instanceof Element ? target.closest<HTMLElement>(PRESSABLE) : null
-  if (!element || element.matches(':disabled')) return
+  // A blocked button (BlockedButton) only shows its reason when pressed: no flash that reads as "it worked".
+  if (!element || element.matches(':disabled, [aria-disabled="true"]')) return
 
   // Restart rather than ignore when pressed again mid-animation (a quick double click).
   element.classList.remove(PRESSED_CLASS)

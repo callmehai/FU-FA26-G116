@@ -126,6 +126,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         if (errors.Count > 0) return new(SpeechClipFailure.Invalid, Errors: errors);
 
         SpeechClipView? existing;
+        PreviousClip? before;
         try
         {
             var allowed = await check(ct);
@@ -133,6 +134,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             // A retry of a sentence already stored (its response was lost): answer as before, transcribe nothing.
             existing = await ReadAsync(token => FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, token), ct);
             if (existing is not null) return new(Data: existing);
+            before = await PreviousAsync(meetingId, speaker, upload, ct);
         }
         catch (PersistenceException ex)
         {
@@ -140,9 +142,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             return new(SpeechClipFailure.SaveFailed);
         }
 
-        var heard = await TranscribeAsync(upload, ct);
+        var heard = await TranscribeAsync(upload, before?.Text, ct);
         if (heard is not { } transcribed) return new(SpeechClipFailure.EngineUnavailable);
-        var (text, segments) = transcribed;
+        var (text, segments, beforeAgain) = transcribed;
         // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
         if (text.Length == 0) return new();
 
@@ -166,6 +168,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                     Peaks = audioPath is null ? null : SpeechClipPeaks.FromWav(upload.Audio),
                 };
                 clips.Add(row);
+                await RepunctuateAsync(before, beforeAgain, now, token);
                 await unitOfWork.SaveChangesAsync(token);
                 return row;
             }, TransactionMode.ReadCommitted, ct);
@@ -308,7 +311,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                 var excluded = r.ExcludedAt is not null;
                 return new SpeechClipView(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded ? "" : r.Text,
                     r.UpdatedAt, r.EditedAt, null, true, excluded, HasAudio: r.HasAudio && !excluded,
-                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true);
+                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true, WordStartsMs: excluded ? null : Words(r));
             }).ToList();
             var capturing = SpeechClipRules.AcceptsGuest(meeting) && await ReadAsync(token => GuestNoticeConfirmedAsync(guest, token), ct);
             return new(Data: new SpeechClipList(meetingId, capturing, false, now, items, RetentionDays: options.Value.RetentionDays));
@@ -474,12 +477,49 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         }
     }
 
+    /// <summary>The speaker's sentence just before this one, read ahead of it by the worker; never one a person edited.</summary>
+    private sealed record PreviousClip(Guid Id, string Text);
+
+    /// <summary>
+    /// The same speaker's sentence that ended at most <see cref="SpeechClipRules.ContextGap"/> before this one began:
+    /// the browser cuts a sentence at a breath, and each half punctuated alone was closed with a full stop it never had
+    /// (Hải, 19/11/2026). Not one the Secretary corrected or took out of the record, nor a long one.
+    /// </summary>
+    private async Task<PreviousClip?> PreviousAsync(Guid meetingId, Speaker speaker, SpeechClipUpload upload,
+        CancellationToken ct)
+    {
+        var started = upload.StartedAt.ToUniversalTime();
+        var from = started - SpeechClipRules.ContextGap - TimeSpan.FromMilliseconds(SpeechClipRules.MaxDurationMs);
+        var last = await ReadAsync(token => clips.FindLastRowStartedBetweenAsync(meetingId, speaker.UserId,
+            speaker.GuestInvitationId, from, started, token), ct);
+        if (last is null || last.EditedAt is not null || last.ExcludedAt is not null) return null;
+        if (last.StartedAt.AddMilliseconds(last.DurationMs) < started - SpeechClipRules.ContextGap) return null;
+        var words = last.Text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+        return words is > 0 and <= SpeechClipRules.MaxContextWords ? new(last.Id, last.Text) : null;
+    }
+
+    /// <summary>
+    /// The previous sentence as the worker punctuated it again, with this one after it ("kế hoạch này." becomes "kế
+    /// hoạch này" when this one goes on with "cần thêm thời gian."). Only its marks and capitals change, and only while
+    /// nobody edited or excluded it meanwhile; its words, their times and the marks of overheard words stay valid.
+    /// </summary>
+    private async Task RepunctuateAsync(PreviousClip? before, string? again, DateTimeOffset now, CancellationToken ct)
+    {
+        if (before is null || again is null || again == before.Text || again.Length > SpeechClipRules.MaxTextLength) return;
+        var earlier = await clips.FindAsync(before.Id, ct);
+        if (earlier is not { EditedAt: null, ExcludedAt: null } || earlier.Text != before.Text
+            || !SpeechClipRules.SameWords(earlier.Text, again)) return;
+        earlier.Text = again;
+        earlier.UpdatedAt = now;
+    }
+
     /// <summary>
     /// The sentence's text and its segments, or null when the worker cannot be reached or is busy for too long; the
-    /// browser keeps the sentence and retries.
+    /// browser keeps the sentence and retries. <paramref name="context"/> is the speaker's previous sentence, which comes
+    /// back punctuated again (<c>Before</c>) when the worker used it.
     /// </summary>
-    private async Task<(string Text, List<SpeechClipSegment> Segments)?> TranscribeAsync(SpeechClipUpload upload,
-        CancellationToken ct)
+    private async Task<(string Text, List<SpeechClipSegment> Segments, string? Before)?> TranscribeAsync(
+        SpeechClipUpload upload, string? context, CancellationToken ct)
     {
         if (!engine.IsConfigured) return null;
         if (!await gate.Slots.WaitAsync(gate.Wait, ct)) return null;
@@ -487,11 +527,11 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         {
             using var audio = new MemoryStream(upload.Audio, writable: false);
             // Diarization off: the owner of the mic is the speaker, so there is nothing to tell apart.
-            var result = await engine.TranscribeAsync(audio, upload.ContentType, diarize: false, clip: true, ct);
+            var result = await engine.TranscribeAsync(audio, upload.ContentType, diarize: false, clip: true, ct, context);
             var spoken = result.Segments.Select(s => (Segment: s, Text: s.Text.Trim())).Where(s => s.Text.Length > 0).ToList();
             return (string.Join(' ', spoken.Select(s => s.Text)), [.. spoken.Select(s => new SpeechClipSegment(
                 s.Segment.StartMs, s.Segment.EndMs, s.Text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length,
-                s.Segment.LevelDbfs))]);
+                s.Segment.LevelDbfs, WordTimings.Of(s.Text, s.Segment.WordStartsMs)))], context is null ? null : result.Context?.Trim());
         }
         catch (SpeechEngineException ex)
         {
@@ -548,7 +588,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         var excluded = row.ExcludedAt is not null;
         return new SpeechClipView(row.Id, row.SpeakerId, row.SpeakerName, row.StartedAt, row.DurationMs,
             excluded ? "" : row.Text, row.UpdatedAt, row.EditedAt, row.EditedByName, true, excluded,
-            HasAudio: row.HasAudio && !excluded, Peaks: excluded ? null : row.Peaks, SpeakerIsGuest: row.Guest);
+            HasAudio: row.HasAudio && !excluded, Peaks: excluded ? null : row.Peaks, SpeakerIsGuest: row.Guest,
+            WordStartsMs: excluded ? null : Words(row));
     }
 
     /// <summary>Who sends a sentence: a member by their user id, or a guest by their invitation (SCRUM-129).</summary>
@@ -602,8 +643,11 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             r.UpdatedAt, r.EditedAt, r.EditedByName, secretary || (!r.Guest && r.SpeakerId == actorId), excluded,
             r.ExclusionReason?.ToString(), officer ? r.ExcludedByName : null,
             mark is null || excluded ? null : Leak(r, mark, byId),
-            r.HasAudio && (!excluded || officer), excluded && !officer ? null : r.Peaks, r.Guest);
+            r.HasAudio && (!excluded || officer), excluded && !officer ? null : r.Peaks, r.Guest,
+            excluded && !officer ? null : Words(r));
     }
+
+    private static IReadOnlyList<long>? Words(ClipRow r) => WordTimings.ForClip(r.Text, r.Segments, r.EditedAt is not null);
 
     private static SpeechClipLeak? Leak(ClipRow r, FoldMark mark, Dictionary<Guid, ClipRow> byId)
     {

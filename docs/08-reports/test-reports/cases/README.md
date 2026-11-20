@@ -1,7 +1,8 @@
 # Nguồn test case Report 5.1 / 5.2 / 5.2.2
 
 Nội dung của ba workbook nằm ở đây, **mỗi Feature một thư mục**: ai nhận FE nào thì chỉ sửa trong
-`FE-xx/` của mình. Workbook được sinh từ thư mục này, không sửa tay file Excel. Cách viết case và
+`FE-xx/` của mình. File này là README cho cả cây con (`FE-xx/`, `FE-xx/unit/`, `preview/`) —
+các thư mục con không có README riêng. Workbook được sinh từ thư mục này, không sửa tay file Excel. Cách viết case và
 cách chia việc: [AGENTS.md](../AGENTS.md).
 
 | Đường dẫn | Vai trò |

@@ -6,6 +6,8 @@ import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
 import { useAuth } from '../auth/useAuth'
+import { isMeetingNotification, useNotificationRefresh } from '../notifications/useNotificationRefresh'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import { placeLabel } from '../meetings/place'
 import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { useCreateMeetingLink } from '../meetings/meetingDialogLink'
@@ -91,6 +93,11 @@ export function CalendarPage() {
   const [params, setParams] = useSearchParams()
   const now = useNow()
   const [attempt, setAttempt] = useState(0)
+  // Another user's change: re-read the range in place (a retry keeps it on screen), on a notification about any
+  // meeting and on coming back to the tab, which also catches what nobody is told of.
+  const refresh = () => setAttempt((n) => n + 1)
+  useNotificationRefresh(isMeetingNotification, refresh)
+  useRefetchOnFocus(refresh)
   /** The one layer floating over the calendar, as AI-eCabinet's opens it: a tile's quick look, or a "+N" list. */
   const [layer, setLayer] = useState<Layer | null>(null)
   const closeLayer = useCallback(() => setLayer(null), [])

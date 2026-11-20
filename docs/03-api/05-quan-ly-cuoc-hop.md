@@ -54,7 +54,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected`/`Published` trả `4
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved; đúng một Chair active và ít nhất một Secretary active. Invitation response không ảnh hưởng readiness | Không; chỉ được nếu Chair đồng thời là Organizer |
 | TransferOrganizer | Actor active có `AdminUsers`; meeting Approved và Organizer hiện tại inactive; Organizer mới active có `MeetingCreator`, khác người cũ và current Assigned Approver | Không |
-| Start | Active current Chair; Published; đúng một active current Chair và ít nhất một active current Secretary | Có; không cần system capability |
+| Start | Active current Chair **hoặc Secretary** (PO 20/11/2026); Published; đúng một active current Chair và ít nhất một active current Secretary | Có; không cần system capability |
 | End | Active current Chair; InProgress; không gate Secretary/Vote/attendance/agenda Pending | Có; không cần system capability |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair được đọc rejection reason; organizer-transfer metadata vẫn redacted |
 | Đọc history/rejection reason của Chair/Secretary | Participant current của chính meeting có role Chair hoặc Secretary, user active, chưa ủy quyền (`Response != Delegated`, `DelegatedToUserId = null`) | Có; không xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
@@ -209,7 +209,14 @@ một history `Reschedule` (`Published → Published`) và một notification `M
 participant active, chưa Delegated, trừ chính người dời lịch (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
+Sửa hoặc dời lịch thành công phát `meetingChanged` trên `/hubs/meetings` (xem dưới).
+
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
+
+**Realtime.** Mỗi transition thành công (kể cả Start, End, TransferOrganizer), mỗi `PUT` thành công, việc hệ thống tự
+huỷ (BR-301) và tự kết thúc (ADR-0062) đều phát `meetingChanged` `{ eventId, meetingId, occurredAt }` sau commit, cho
+người đang đọc được cuộc họp và cả người gắn với cuộc họp vừa mất quyền đọc mà đã join từ trước. Trang chi tiết đọc
+lại cuộc họp và lịch sử; người mất quyền nhận `404`. Chi tiết: [25](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md).
 
 Các endpoint SCRUM-19 trong mục này là contract đã chốt để triển khai và bàn giao kiểm thử; chúng
 không tự khẳng định code đã được merge hay đạt Backend Ready.
@@ -527,9 +534,9 @@ stale content.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
   SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
-- Màn danh sách mở sẵn thẻ **Họp hôm nay**: mọi trạng thái, Thời điểm “Hôm nay” (PO chọn khi đổi sang bốn thẻ
-  của AI-eCabinet, PR #287). Đường dẫn không có `status` hay `scope` thì lọc Hôm nay; có `status` hoặc
-  `scope=todo` thì không lọc thời điểm, như thẻ của nó đếm; `status=all` là bỏ lọc trạng thái. Bộ lọc **Thời điểm** chỉ có
+- Màn danh sách mở **không lọc** (mọi trạng thái, mọi thời điểm), như AI-eCabinet. PO bỏ việc mở sẵn thẻ
+  **Họp hôm nay** (PR #287) ngày 20/11/2026: ngày không có họp thì danh sách trống, người xem tưởng mất cuộc họp.
+  Đường dẫn không có `when` là mọi thời điểm; `when=all`, `status=all` của link cũ vẫn đọc là bỏ lọc. Bộ lọc **Thời điểm** chỉ có
   các lựa chọn sẵn như AI-eCabinet: Hôm nay, Tuần này (Thứ Hai–Chủ Nhật) gửi `from`/`to` theo múi
   giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.
 - **Bốn thẻ trên danh sách** theo AI-eCabinet, mỗi thẻ là `totalCount` của một request `pageSize=1`
@@ -616,12 +623,12 @@ Form FE hiện có phải bổ sung participants khi tạo. Chi tiết contract,
 Chỉ nhận `action`, đúng casing; property lạ/trùng (kể cả actor, timestamp, reason) bị từ chối.
 Giới hạn 64 KiB, Content-Type application/json. Request End là xác nhận của người dùng.
 
-- Start: active current Chair, Published → InProgress; đúng một active current Chair và ít nhất một active current Secretary. Không yêu cầu Accepted/Present, giờ dự kiến, agenda hoặc LiveKit.
+- Start: active current Chair hoặc active current Secretary (PO 20/11/2026: Thư ký thường mở họp khi Chủ toạ chưa tới), Published → InProgress; đúng một active current Chair và ít nhất một active current Secretary. Không yêu cầu Accepted/Present, giờ dự kiến, agenda hoặc LiveKit.
 - End: active current Chair, InProgress → Ended; không gate Secretary, Vote Open, attendance hay Pending agenda. Current agenda thành Done trong cùng transaction; Pending/Done khác giữ nguyên.
 - End xoá mọi Vote `Draft` còn lại của cuộc họp trong cùng transaction, mỗi nháp một dòng audit `vote.draft_deleted_on_meeting_end` (PO 08/11/2026, SCRUM-28); Vote Open/Closed giữ nguyên. Chi tiết ở [contract Biểu quyết §7](15-bieu-quyet.md#7-đã-triển-khai--scrum-28).
 - Thành công: `MeetingTransitionResponse { code, message, meeting, history }`; Start `200/MSG110`, End `200/MSG111`. Server ghi actualStartedAt/actualEndedAt UTC microsecond và một history Start/End; End giữ actualStartedAt.
 - Không đăng nhập: 401; inactive: 403 theo gate; lookup gate lỗi: 503/MSG131.
-- Không tồn tại/không được đọc: 404 body rỗng. Đọc được nhưng không phải Chair: 403/MSG112 (Start), MSG114 (End). Sai trạng thái/readiness: 409 cùng mã. Gọi lặp cũng 409, không lặp side effect.
+- Không tồn tại/không được đọc: 404 body rỗng. Đọc được nhưng không phải Chair/Secretary (Start) hoặc không phải Chair (End): 403/MSG112 (Start), MSG114 (End). Sai trạng thái/readiness: 409 cùng mã. Gọi lặp cũng 409, không lặp side effect.
 - Persistence thất bại trước commit: 503/MSG115 (Start), MSG116 (End); timestamp agenda không hợp lệ cũng MSG116 và rollback. JSON/action sai 400/MSG80, Content-Type sai 415/MSG34, body quá lớn 413/MSG87.
 
 Meeting, current agenda và history được ghi dưới khóa Meeting trong một transaction ReadCommitted.

@@ -501,4 +501,76 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         }
         await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: said.ToString("O")), 409, "MSG320");
     }
+
+    [Fact]
+    public async Task A_sentence_cut_at_a_breath_is_punctuated_with_the_one_before_it()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
+        fixture.Speech.Failure = null;
+        using var member = fixture.Client(s.Member);
+        var first = fixture.Clock.Now.AddSeconds(-20);
+        fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+            [new(0, 2400, null, "Theo tôi thì kế hoạch này.", -24.5)], []);
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: first.ToString("O")), 200, "MSG318");
+        Assert.Null(fixture.Speech.LastContext);
+
+        // 1.5 s after the first one ended: the worker reads it ahead, and the first one loses the full stop it never had.
+        fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+            [new(0, 2400, null, "cần thêm thời gian.", -24.5)], [], "Theo tôi thì kế hoạch này");
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: first.AddSeconds(3.9).ToString("O")),
+            200, "MSG318");
+        Assert.Equal("Theo tôi thì kế hoạch này.", fixture.Speech.LastContext);
+        var texts = (await List(member, s.MeetingId)).GetProperty("items").EnumerateArray()
+            .Select(i => i.GetProperty("text").GetString()!).ToArray();
+        Assert.Equal(["Theo tôi thì kế hoạch này", "cần thêm thời gian."], texts);
+
+        // A sentence the Secretary corrected is theirs: never read ahead, never re-punctuated.
+        using var secretary = fixture.Client(s.Secretary);
+        var second = (await List(member, s.MeetingId)).GetProperty("items")[1].GetProperty("id").GetGuid();
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/speech-clips/{second}/text", new { text = "Cần thêm thời gian." }),
+            200, "MSG302");
+        fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+            [new(0, 2400, null, "Đồng ý.", -24.5)], [], "cần thêm thời gian");
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: first.AddSeconds(7).ToString("O")),
+            200, "MSG318");
+        Assert.Null(fixture.Speech.LastContext);
+        Assert.Equal("Cần thêm thời gian.",
+            (await List(member, s.MeetingId)).GetProperty("items")[1].GetProperty("text").GetString());
+
+        // Long after the previous one: a new turn, read alone.
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: first.AddSeconds(30).ToString("O")),
+            200, "MSG318");
+        Assert.Null(fixture.Speech.LastContext);
+        Assert.False(SpeechClipRules.SameWords("Theo tôi.", "theo tôi thì"));
+        Assert.True(SpeechClipRules.SameWords("Theo tôi, thì.", "theo tôi thì"));
+    }
+
+    [Fact]
+    public async Task A_sentence_follows_its_words_until_the_secretary_corrects_them()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+            [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5, [40, 200, 360, 560, 760, 960]),
+                new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0, [1300, 1500, 1720, 1980])], []);
+        using var member = fixture.Client(s.Member);
+        var clip = (await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 200, "MSG318")).GetProperty("clip");
+        long[] words = [40, 200, 360, 560, 760, 960, 1300, 1500, 1720, 1980];
+        Assert.Equal(words, clip.GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
+        using var secretary = fixture.Client(s.Secretary);
+        var line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.Equal(words, line.GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
+
+        // The times were the machine's words': once a person rewrites them, the line is followed as a whole.
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/speech-clips/{clip.GetProperty("id").GetGuid()}/text",
+            new { text = "Tôi đồng ý với dự thảo, đề nghị biểu quyết ngay." }), 200, "MSG302");
+        line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.Equal(JsonValueKind.Null, line.GetProperty("wordStartsMs").ValueKind);
+
+        // A stretch the worker sent no times for (an older worker) leaves the whole sentence without: never a guess.
+        fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+            [new(0, 1200, null, "Tôi đồng ý.", -24.5, [40, 200, 360]), new(1300, 2400, null, "Biểu quyết.", -25.0)], []);
+        var partial = (await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 200, "MSG318")).GetProperty("clip");
+        Assert.Equal(JsonValueKind.Null, partial.GetProperty("wordStartsMs").ValueKind);
+    }
 }

@@ -36,6 +36,15 @@ public sealed class SpeechClipRepository(TrustCabinetDbContext db) : ISpeechClip
         return (await RowsAsync(clips, ct)).SingleOrDefault();
     }
 
+    public async Task<ClipRow?> FindLastRowStartedBetweenAsync(Guid meetingId, Guid? speakerId, Guid? guestInvitationId,
+        DateTimeOffset after, DateTimeOffset before, CancellationToken ct)
+    {
+        var clips = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId && c.StartedAt > after && c.StartedAt < before);
+        clips = speakerId is { } user ? clips.Where(c => c.SpeakerId == user)
+            : clips.Where(c => c.GuestInvitationId == guestInvitationId);
+        return (await RowsAsync(clips.OrderByDescending(c => c.StartedAt).Take(1), ct)).SingleOrDefault();
+    }
+
     public Task<SpeechClip?> FindAsync(Guid clipId, CancellationToken ct)
         => db.SpeechClips.SingleOrDefaultAsync(c => c.Id == clipId, ct);
 

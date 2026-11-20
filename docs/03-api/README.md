@@ -100,6 +100,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`15-bieu-quyet.md`](15-bieu-quyet.md) — contract FE-11 (Backend đã triển khai: SCRUM-28, SCRUM-96): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-76), xác nhận đã đọc (UC-74); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
 - [`23-chia-se-lich.md`](23-chia-se-lich.md) — SCRUM-142: chia sẻ lịch bận/rảnh (UC-84a → UC-84f), danh sách người để chọn `share-candidates`, xem tuần được chia sẻ (UC-85c), dừng khi vô hiệu hoá / mất quyền tạo cuộc họp (BR-424), hết ngày kết thúc tính lúc đọc (BR-425); mã `MSG435`–`MSG455`, `MSG467`, `MSG468`. Note cho FE: [`23-chia-se-lich-note-cho-fe.md`](23-chia-se-lich-note-cho-fe.md)
 - [`24-tim-gio-hop.md`](24-tim-gio-hop.md) — SCRUM-137: tìm khung giờ mọi người cùng rảnh từ lịch đã chia sẻ (UC-85a, `POST /api/calendar/slots`) và tạo cuộc họp Nháp từ một khung (UC-85b, `POST /api/calendar/slots/draft`); mã `MSG444`–`MSG446`, dùng lại `MSG448`, `MSG453`, `MSG29`, `MSG31`, `MSG35`, `MSG277`. Note cho FE: [`24-tim-gio-hop-note-cho-fe.md`](24-tim-gio-hop-note-cho-fe.md)
+- [`25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md`](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md) — màn hình tự đọc lại khi người khác thay đổi: event `meetingChanged`, `minutesChanged`, `commentsChanged` trên `/hubs/meetings`, màn hình đọc lại theo thông báo hoặc khi quay lại tab
+
 Dự kiến có thêm:
 
 - `05-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái

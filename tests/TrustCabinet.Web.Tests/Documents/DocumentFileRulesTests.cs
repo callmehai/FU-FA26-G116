@@ -56,6 +56,31 @@ public sealed class DocumentFileRulesTests
         Assert.Null(await Detect([]));
     }
 
+    /// <summary>A real PDF that says it is <paramref name="length"/> bytes long: the limits read the declared size.</summary>
+    private static DocumentUploadCandidate Sized(string name, long length)
+        => new(name, length, () => new MemoryStream(SampleFiles.Pdf()));
+
+    [Fact]
+    public async Task Ten_files_of_10_MB_are_the_most_one_upload_takes()
+    {
+        // BR-214 and BR-319 (meeting decision 19/11/2026): 10 MB a file, 10 files and 100 MB an upload.
+        Assert.Equal(10L * 1024 * 1024, DocumentFileRules.MaxFileBytes);
+        Assert.Equal(10, DocumentFileRules.MaxFiles);
+        Assert.Equal(100L * 1024 * 1024, DocumentFileRules.MaxTotalBytes);
+
+        var full = Enumerable.Range(0, 10).Select(i => Sized($"{i}.pdf", DocumentFileRules.MaxFileBytes)).ToArray();
+        Assert.Equal(DocumentUploadFailure.None, (await Validate(full)).Failure);
+
+        var oneTooBig = await Validate([Sized("lon.pdf", DocumentFileRules.MaxFileBytes + 1)]);
+        Assert.Equal(DocumentUploadFailure.Invalid, oneTooBig.Failure);
+        Assert.Equal(["lon.pdf: tệp lớn hơn 10 MB."], oneTooBig.Errors!["files[0]"]);
+
+        var eleven = Enumerable.Range(0, 11).Select(i => Sized($"{i}.pdf", 1024)).ToArray();
+        Assert.Equal(DocumentUploadFailure.TooMany, (await Validate(eleven)).Failure);
+        Assert.Equal(DocumentUploadFailure.TooMany,
+            (await Validate([Sized("a.pdf", DocumentFileRules.MaxTotalBytes), Sized("b.pdf", 1)])).Failure);
+    }
+
     [Theory]
     [InlineData("C:\\Users\\me\\Báo cáo.pdf", "Báo cáo.pdf")]
     [InlineData("  thư mục/tờ trình.docx ", "tờ trình.docx")]
@@ -97,13 +122,13 @@ public sealed class DocumentFileRulesTests
     }
 
     [Fact]
-    public async Task Total_size_over_200_MB_is_checked_before_any_file_is_read()
+    public async Task Total_size_over_100_MB_is_checked_before_any_file_is_read()
     {
         Stream Unread() => throw new InvalidOperationException("Must not be read.");
-        var five = Enumerable.Range(0, 5).Select(i => new DocumentUploadCandidate($"{i}.pdf", 41L * 1024 * 1024, Unread)).ToArray();
+        var five = Enumerable.Range(0, 5).Select(i => new DocumentUploadCandidate($"{i}.pdf", 21L * 1024 * 1024, Unread)).ToArray();
         Assert.Equal(DocumentUploadFailure.TooMany, (await Validate(five)).Failure);
 
-        var exactly = Enumerable.Range(0, 4).Select(i => new DocumentUploadCandidate($"{i}.pdf", 50L * 1024 * 1024, () => new MemoryStream(SampleFiles.Pdf()))).ToArray();
+        var exactly = Enumerable.Range(0, 4).Select(i => new DocumentUploadCandidate($"{i}.pdf", 25L * 1024 * 1024, () => new MemoryStream(SampleFiles.Pdf()))).ToArray();
         Assert.NotEqual(DocumentUploadFailure.TooMany, (await Validate(exactly)).Failure);
     }
 

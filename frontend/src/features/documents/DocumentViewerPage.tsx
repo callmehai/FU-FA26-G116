@@ -35,13 +35,60 @@ type Content =
  * DOCX as one flowing text with docx-preview. Every open of a Secret meeting's
  * document is audited by the server (BR-318).
  *
- * Opened from the call room it lives in its own tab (BR-315), and "‹ Tài liệu" closes that tab.
- * Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them — for a verified guest too
+ * A click in the app opens it over the page instead (`MeetingDocumentViewer` in DocumentOverlay, Hải 19/11/2026), so
+ * the call room keeps its call; this route is what a link opened in a new tab lands on, and "‹ Tài liệu" closes a tab
+ * the call room opened. Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them — for a verified guest too
  * (BR-181), whose session ends with the meeting, so a guest never sees the read-only list.
  */
 export function DocumentViewerPage() {
   const { meetingId = '', documentId = '' } = useParams()
-  return <DocumentViewer meetingId={meetingId} documentId={documentId} meeting={useMeeting(meetingId)} />
+  const [params] = useSearchParams()
+  return (
+    <DocumentViewer
+      meetingId={meetingId}
+      documentId={documentId}
+      meeting={useMeeting(meetingId)}
+      reading={params.get('read') === '1'}
+    />
+  )
+}
+
+/**
+ * The viewer over the page it was opened from (DocumentOverlay): the guest's meeting from their session on a guest
+ * page, the internal one read here otherwise. `onClose` takes the place of "‹ Tài liệu".
+ */
+export function MeetingDocumentViewer({
+  meetingId,
+  documentId,
+  reading,
+  onClose,
+}: {
+  meetingId: string
+  documentId: string
+  reading: boolean
+  onClose: () => void
+}) {
+  const guest = useGuest()
+  if (guest) {
+    return (
+      <DocumentViewer
+        meetingId={meetingId}
+        documentId={documentId}
+        meeting={{
+          state: { kind: 'loaded', meeting: guest.session.meeting },
+          retry: guest.recheck,
+          reload: guest.recheck,
+        }}
+        reading={reading}
+        onClose={onClose}
+      />
+    )
+  }
+  return <InternalViewer meetingId={meetingId} documentId={documentId} reading={reading} onClose={onClose} />
+}
+
+function InternalViewer(props: { meetingId: string; documentId: string; reading: boolean; onClose: () => void }) {
+  return <DocumentViewer {...props} meeting={useMeeting(props.meetingId)} />
 }
 
 /** The meeting the viewer shows: the internal page reads it; a guest's comes from their session (UC-04). */
@@ -55,27 +102,42 @@ export function DocumentViewer({
   meetingId,
   documentId,
   meeting,
+  reading = false,
+  onClose,
 }: {
   meetingId: string
   documentId: string
   meeting: ViewerMeetingSource
+  /** Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached. */
+  reading?: boolean
+  /** Shown over a page: a close button instead of the way back to the meeting's tab. */
+  onClose?: () => void
 }) {
   const documents = useMeetingDocuments(meetingId)
   const content = useContent(meetingId, documentId)
 
+  const gone = <ViewerGone onClose={onClose} />
   if (meeting.state.kind === 'notFound' || documents.state.kind === 'gone' || content.state.kind === 'gone') {
-    return <NotFound />
+    return gone
   }
   const list = documents.state.kind === 'loaded' || documents.state.kind === 'error' ? documents.state.data : null
   const doc = list && everyDocument(list).find((d) => d.id === documentId)
   // Listed without it: removed from the meeting while open, or never part of it.
-  if (list && !doc) return <NotFound />
+  if (list && !doc) return gone
 
   const failure =
     meeting.state.kind === 'error' ? meeting.state : documents.state.kind === 'error' && !list ? documents.state : null
 
+  const ready = !failure && meeting.state.kind === 'loaded' && doc
   return (
     <div className="viewer">
+      {/* Over a page, the way out is there before the document is. */}
+      {onClose && !ready && (
+        <header className="viewer-head">
+          <span className="viewer-spacer" />
+          <ViewerClose onClose={onClose} />
+        </header>
+      )}
       {failure ? (
         <div className="viewer-message">
           <div className="alert alert-error" role="alert">
@@ -95,6 +157,8 @@ export function DocumentViewer({
           meeting={meeting.state.meeting}
           doc={doc}
           content={content}
+          reading={reading}
+          onClose={onClose}
           // MSG159: the meeting became Secret. MSG156: the document is gone, and the re-read list says so.
           onStale={() => {
             void meeting.reload()
@@ -114,11 +178,15 @@ function Viewer({
   meeting,
   doc,
   content,
+  reading,
+  onClose,
   onStale,
 }: {
   meeting: Meeting | GuestMeeting
   doc: MeetingDocument
   content: ReturnType<typeof useContent>
+  reading: boolean
+  onClose?: () => void
   onStale: () => void
 }) {
   const [zoom, setZoom] = useState(2)
@@ -126,26 +194,30 @@ function Viewer({
   // Open beside a wide document; on a narrow screen the panel would cover it, so it waits to be asked for.
   const [commentsOpen, setCommentsOpen] = useState(() => window.innerWidth >= 1100)
   const [commentCount, setCommentCount] = useState(doc.commentCount)
+  // With the panel closed, the count follows the document list, which re-reads when someone comments.
+  const [listedCount, setListedCount] = useState(doc.commentCount)
+  if (listedCount !== doc.commentCount) {
+    setListedCount(doc.commentCount)
+    setCommentCount(doc.commentCount)
+  }
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
   // A guest is not told the sensitivity (UC-04); their session says whether downloading is allowed (MSG159).
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
   const guestScope = useGuest()
   const canDownload = guestScope ? guestScope.session.canDownload : sensitivity !== 'Secret'
-  // Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached.
-  const [params] = useSearchParams()
-  const reading = params.get('read') === '1'
   const stage = useRef<HTMLElement>(null)
   const progress = useReachedEnd(stage, reading && content.state.kind === 'loaded')
 
   return (
     <>
       <header className="viewer-head">
-        <BackToDocuments meetingId={meeting.id} reading={reading} />
+        {!onClose && <BackToDocuments meetingId={meeting.id} reading={reading} />}
         <FileTypeTag pdf={pdf} />
         <h1 className="viewer-title" data-tooltip={doc.fileName}>
           {doc.fileName}
         </h1>
+        {onClose && <ViewerClose onClose={onClose} />}
         {/* On a phone the name gets the first line to itself, the controls go under it. */}
         <span className="viewer-break" aria-hidden="true" />
         {sensitivity && sensitivity !== 'Normal' && <SensitivityBadge sensitivity={sensitivity} />}
@@ -227,6 +299,43 @@ function Viewer({
         )}
       </div>
     </>
+  )
+}
+
+/**
+ * The viewer's close, over a page: the header's last control on a wide screen, beside the name on a phone (CSS), so
+ * it is always the top-right corner.
+ */
+export function ViewerClose({ onClose }: { onClose: () => void }) {
+  return (
+    <button type="button" className="icon-button icon-button-sm viewer-close" onClick={onClose} aria-label="Đóng" data-tooltip="Đóng">
+      <Icon name="x" size={18} />
+    </button>
+  )
+}
+
+/**
+ * Removed, unreadable or unknown: the page's NotFound, or over a page the server's own words for it (MSG156 for a
+ * meeting's document, MSG175 for a library's) with the way out.
+ */
+export function ViewerGone({
+  onClose,
+  message = 'Không truy cập được tài liệu của cuộc họp.',
+}: {
+  onClose?: () => void
+  message?: string
+}) {
+  if (!onClose) return <NotFound />
+  return (
+    <div className="viewer">
+      <header className="viewer-head">
+        <span className="viewer-spacer" />
+        <ViewerClose onClose={onClose} />
+      </header>
+      <div className="viewer-message">
+        <p>{message}</p>
+      </div>
+    </div>
   )
 }
 

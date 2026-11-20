@@ -1,0 +1,15 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "Meeting.IsOverrun",
+  "description": "Overrun detection: a running meeting left past its planned end is auto-ended by the worker.",
+  "precondition": "Meeting with known status, planned end and actual start; cutoff is now minus grace.",
+  "methods": [
+    {
+      "method": "MeetingRules.IsOverrun",
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "line": 23,
+      "cases": []
+    }
+  ]
+}

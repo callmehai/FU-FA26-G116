@@ -171,6 +171,7 @@ const ICONS = {
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   chevronUp: ChevronUp,
+  chevronsUpDown: ChevronsUpDown,
   // Sort indicators on table headers: both ways (sortable, not sorted), then each direction.
   sortBoth: ChevronsUpDown,
   sortAsc: ArrowUp,
@@ -291,6 +292,8 @@ const ICONS = {
   cellsMerge: TableCellsMerge,
   cellsSplit: TableCellsSplit,
   tableFrame: SquareDashed,
+  /** A draft (a vote not yet opened): dashed like its card, never the edit pencil. */
+  draft: SquareDashed,
   clearFormat: RemoveFormatting,
   replace: Replace,
   replaceAll: ReplaceAll,

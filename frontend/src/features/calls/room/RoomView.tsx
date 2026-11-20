@@ -69,6 +69,7 @@ import { showInTab } from '../meetingTabs'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
+import { playCue, setCueOutput } from './roomSounds'
 import { deviceErrorMessage, roomMessage } from './roomSupport'
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
@@ -227,6 +228,41 @@ function RoomLayout({
       room.off(RoomEvent.TrackMuted, onMuted)
     }
   }, [room, toast])
+
+  // Google Meet's cues (Hải 20/11): a chime when someone joins and when someone starts presenting. Never for oneself,
+  // for the people already here when one arrives, or for the roster LiveKit replays while it reconnects.
+  useEffect(() => {
+    const quietUntil = { at: Date.now() + 2000 }
+    const quiet = () => Date.now() < quietUntil.at
+    setCueOutput(room.getActiveDevice('audiooutput'))
+    const onJoined = () => {
+      if (!quiet()) playCue('join')
+    }
+    const onShare = (publication: TrackPublication, participant: Participant) => {
+      if (publication.source === Track.Source.ScreenShare && !participant.isLocal && !quiet()) playCue('share')
+    }
+    const onReconnecting = () => {
+      quietUntil.at = Number.POSITIVE_INFINITY
+    }
+    const onReconnected = () => {
+      quietUntil.at = Date.now() + 3000
+    }
+    const onDevice = (kind: MediaDeviceKind, deviceId: string) => {
+      if (kind === 'audiooutput') setCueOutput(deviceId)
+    }
+    room.on(RoomEvent.ParticipantConnected, onJoined)
+    room.on(RoomEvent.TrackPublished, onShare)
+    room.on(RoomEvent.Reconnecting, onReconnecting)
+    room.on(RoomEvent.Reconnected, onReconnected)
+    room.on(RoomEvent.ActiveDeviceChanged, onDevice)
+    return () => {
+      room.off(RoomEvent.ParticipantConnected, onJoined)
+      room.off(RoomEvent.TrackPublished, onShare)
+      room.off(RoomEvent.Reconnecting, onReconnecting)
+      room.off(RoomEvent.Reconnected, onReconnected)
+      room.off(RoomEvent.ActiveDeviceChanged, onDevice)
+    }
+  }, [room])
 
   // Meet's shortcuts: ⌘/Ctrl + D for the microphone, ⌘/Ctrl + E for the camera. They override the
   // browser's own (bookmark, search bar) only while in the room.

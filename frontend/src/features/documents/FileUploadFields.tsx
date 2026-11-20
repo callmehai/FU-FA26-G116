@@ -1,11 +1,13 @@
 import { Icon } from '../../components/Icon'
 import { formatBytes } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
-import { INVALID_FILES, OVER_LIMIT, type FileUpload } from './useFileUpload'
+import { INVALID_FILES, LIMITS_HINT, OVER_LIMIT, type FileUpload } from './useFileUpload'
 
 /** The dropzone, the picked files and what is wrong with the pick. Sending is the upload tray's. */
 export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roomLeft?: number }) {
   const { picked, rejected, dragging, total, overLimit, overQuota } = upload
+  const tooBig = rejected.filter((r) => r.tooBig).map((r) => r.name)
+  const wrongKind = rejected.filter((r) => !r.tooBig).map((r) => r.name)
   return (
     <>
       <label
@@ -29,13 +31,16 @@ export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roo
         />
         <Icon name="upload" size={24} />
         <strong>Kéo tệp vào đây hoặc bấm để chọn</strong>
-        <span>PDF, DOCX, mỗi tệp tối đa 50 MB, mỗi lần tối đa 10 tệp, 200 MB</span>
+        <span>{LIMITS_HINT}</span>
       </label>
 
       {rejected.length > 0 && (
         <div className="alert alert-error" role="alert">
           <p>{INVALID_FILES}</p>
-          <p className="alert-hint">Không thêm: {rejected.join(', ')}</p>
+          {tooBig.length > 0 && <p className="alert-hint">Quá 10 MB, không thêm: {tooBig.join(', ')}</p>}
+          {wrongKind.length > 0 && (
+            <p className="alert-hint">Không phải PDF, DOCX hoặc tệp rỗng, không thêm: {wrongKind.join(', ')}</p>
+          )}
         </div>
       )}
       {overLimit && (
@@ -48,7 +53,7 @@ export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roo
       )}
       {!overLimit && overQuota && (
         <div className="alert alert-error" role="alert">
-          {/* MSG346's situation and wording, caught before sending up to 200 MB for nothing. */}
+          {/* MSG346's situation and wording, caught before sending up to 100 MB for nothing. */}
           <p>Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.</p>
           <p className="alert-hint">
             Đang chọn {formatBytes(total)}, hệ thống còn {formatBytes(Math.max(0, roomLeft ?? 0))}.

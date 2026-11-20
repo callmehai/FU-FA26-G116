@@ -60,7 +60,8 @@ export function InviteePicker({
   const [result, setResult] = useState<
     | { kind: 'idle' }
     | { kind: 'loading' }
-    | { kind: 'loaded'; items: ParticipantOption[] }
+    /** `self`: the caller matched too, though they are never in the list. */
+    | { kind: 'loaded'; items: ParticipantOption[]; self: boolean }
     | { kind: 'error'; message: string }
   >({ kind: 'idle' })
 
@@ -72,7 +73,12 @@ export function InviteePicker({
       try {
         // One more than shown, since the caller is left out of the list.
         const page = await listParticipantOptions(query, 1, SHOWN + 1 + value.length)
-        if (!cancelled) setResult({ kind: 'loaded', items: page.items.filter((p) => p.id !== me) })
+        if (!cancelled)
+          setResult({
+            kind: 'loaded',
+            items: page.items.filter((p) => p.id !== me),
+            self: page.items.some((p) => p.id === me),
+          })
       } catch (err) {
         if (!cancelled) setResult({ kind: 'error', message: errorMessage(err) })
       }
@@ -186,7 +192,15 @@ export function InviteePicker({
               ) : result.kind !== 'loaded' ? (
                 <li className="roster-menu-note">Đang tìm…</li>
               ) : matches.length === 0 ? (
-                <li className="roster-menu-note">{query.trim() ? 'Không có ai khớp.' : 'Chưa có ai để mời.'}</li>
+                <li className="roster-menu-note">
+                  {/* Searching one's own name or email found only oneself (Lộc 20/11 read it as "email does not
+                      match"): say so, and where one's own calendar is counted instead. */}
+                  {result.self
+                    ? 'Đây là bạn. Lịch của bạn được tính khi chọn “Tính cả lịch của tôi”.'
+                    : query.trim()
+                      ? 'Không có ai khớp.'
+                      : 'Chưa có ai để mời.'}
+                </li>
               ) : (
                 matches.slice(0, SHOWN + value.length).map((option, index) => (
                   <li

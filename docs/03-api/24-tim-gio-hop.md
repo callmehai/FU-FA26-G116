@@ -33,7 +33,7 @@ Mọi trường không gửi (hoặc `null`) dùng mặc định.
 | `durationMinutes` | `int` | `120` | 15–480, bội 5 | `durationMinutes` |
 | `fromDate` | `YYYY-MM-DD` | hôm nay | từ hôm nay đến tối đa 365 ngày sau | `fromDate` |
 | `toDate` | `YYYY-MM-DD` | thứ Sáu của tuần chứa `fromDate` (thứ Bảy/CN → thứ Sáu tuần sau) | không trước `fromDate`, khoảng ≤ 31 ngày tính cả hai đầu | `toDate` |
-| `weekdays` | `int[]` | `[1,2,3,4,5]` | không rỗng, không trùng, mỗi số 1–5 (1 = thứ Hai … 5 = thứ Sáu) | `weekdays` |
+| `weekdays` | `int[]` | `[1,2,3,4,5]` | không rỗng, không trùng, mỗi số 1–7 (1 = thứ Hai … 6 = thứ Bảy, 7 = Chủ nhật; được chọn cuối tuần từ 19/11/2026) | `weekdays` |
 | `workStart`, `workEnd` | `"HH:mm"` | `"08:00"`, `"17:00"` | đúng định dạng 24 giờ, `workEnd > workStart` | `workStart`, `workEnd` |
 | `lunchBreak` | `bool` | `true` | `false` = không có giờ nghỉ trưa | — |
 | `lunchStart`, `lunchEnd` | `"HH:mm"` | `"12:00"`, `"13:00"` | chỉ xét khi `lunchBreak`: `workStart ≤ lunchStart < lunchEnd ≤ workEnd` | `lunchStart`, `lunchEnd` |

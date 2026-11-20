@@ -475,7 +475,7 @@ const MSG = {
   197: 'Đã xoá thư mục.',
   238: 'Đã gắn tài liệu vào mục nghị sự.',
   239: 'Đã gỡ tài liệu khỏi mục nghị sự.',
-  164: 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.',
+  164: 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.',
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -594,7 +594,7 @@ export default {
         'API: tải vào thư mục của người khác; không đăng nhập',
       ],
       expected:
-        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB." và nêu tên tệp, nút Tải lên khoá; API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
+        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nêu tên tệp, nút Tải lên khoá; API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
       async run(qa) {
         const bad = textFile(qa.name(`FE-07 Ghi chú ${rand()}.txt`))
         const before = (await library(qa, 'member')).documents.length
@@ -1253,7 +1253,7 @@ export default {
         'Bấm Tờ trình.pdf; quay lại; bấm Phụ lục.docx',
       ],
       expected:
-        'Mục 1 hiện Tờ trình.pdf "3 trang", mục 2 "Mục này chưa có tài liệu."; nhóm chung có Phụ lục.docx; không có "Thêm tài liệu chung", kẹp giấy hay nút gỡ; có nút "Tải về"; trình xem PDF: tên tệp, tên cuộc họp, "Trang 1 / 3", nút "Góp ý" và "Tải về"; trình xem DOCX hiện nội dung; tải về trả đúng byte (API 200)',
+        'Mục 1 hiện Tờ trình.pdf "3 trang", mục 2 "Mục này chưa có tài liệu."; nhóm chung có Phụ lục.docx; không có "Thêm tài liệu chung", kẹp giấy hay nút gỡ; có nút "Tải về"; trình xem PDF mở phủ trên tab (ADR-0066, URL không đổi): tên tệp, tên cuộc họp, "Trang 1 / 3", nút "Góp ý" và "Tải về", "Đóng" về lại danh sách; trình xem DOCX (đường dẫn riêng) hiện nội dung; tải về trả đúng byte (API 200)',
       async run(qa) {
         const m = await reused(qa, 'Published')
         await openDocuments(qa, m)
@@ -1275,14 +1275,21 @@ export default {
         await qa.shot('tai-lieu-chung')
         await group(qa, 'Nội dung')
         await press(qa, docRow(qa, PUB_PDF).getByRole('link'))
-        await qa.expect(qa.page.getByRole('heading', { level: 1, name: PUB_PDF })).toBeVisible()
-        await qa.expect(qa.page.getByText('Trang 1 / 3')).toBeVisible({ timeout: 15_000 })
-        await qa.expect(qa.page.getByRole('button', { name: /Góp ý/ })).toBeVisible()
-        await qa.expect(qa.page.getByRole('button', { name: /Tải về/ })).toBeVisible()
-        await qa.expect(qa.page.locator('.viewer-meeting')).toHaveText(m.title)
+        // ADR-0066: the viewer opens over the tab (same URL), not as a page of its own; the list stays underneath.
+        const viewer = qa.page.getByRole('dialog', { name: 'Xem tài liệu' })
+        await qa.expect(viewer).toBeVisible()
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}\\?tab=documents`))
+        await qa.expect(viewer.getByRole('heading', { level: 1, name: PUB_PDF })).toBeVisible()
+        await qa.expect(viewer.getByText('Trang 1 / 3')).toBeVisible({ timeout: 15_000 })
+        await qa.expect(viewer.getByRole('button', { name: /Góp ý/ })).toBeVisible()
+        await qa.expect(viewer.getByRole('button', { name: /Tải về/ })).toBeVisible()
+        await qa.expect(viewer.locator('.viewer-meeting')).toHaveText(m.title)
         await settled(qa)
         await qa.shot('trinh-xem-pdf')
         await noSidewaysScroll(qa)
+        await press(qa, viewer.getByRole('button', { name: 'Đóng', exact: true }))
+        await qa.expect(viewer).toHaveCount(0)
+        await qa.expect(docRow(qa, PUB_PDF)).toBeVisible()
         const list = await docsOf(qa, 'member', m.id)
         const docx = list.general.find((d) => d.fileName === PUB_DOCX)
         await qa.goto(`/mgmt/meetings/${m.id}/documents/${docx.id}`)

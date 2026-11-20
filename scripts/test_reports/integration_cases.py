@@ -13,28 +13,18 @@ Usage (from the repository root):
   python scripts/test_reports/integration_cases.py scaffold   # create the missing FE-xx/{ui,api}.json, groups only
   python scripts/test_reports/integration_cases.py check      # validate; exit 1 on an error
   python scripts/test_reports/integration_cases.py md         # write cases/preview/FE-xx/{ui,api}.md
-  python scripts/test_reports/integration_cases.py sync-back  # merge executed Round/Test date/Tester cells from the old workbooks back into the JSON (by case id)
-  python scripts/test_reports/integration_cases.py build      # dry-run: check, then print the diff old workbooks vs JSON (writes nothing)
-  python scripts/test_reports/integration_cases.py build --overwrite  # check + md + Report 5.2.2 (backs the old file up first)
-  python scripts/test_reports/integration_cases.py build --overwrite --with-ui  # ... and Report 5.2 as well (replaces the v1.2 workbook)
+  python scripts/test_reports/integration_cases.py build      # check + md + Report 5.2.2
+  python scripts/test_reports/integration_cases.py build --with-ui   # ... and Report 5.2 as well
 
 Report 5.2 is not rebuilt by default: the workbook in use is version 1.1 kept cell for cell plus 22 sheets
 (see the test-reports README), and building it from FE-xx/ui.json would replace it.
 
 The workbooks are output: never edit them in Excel, edit the JSON and build again.
-JSON is the source of truth and the template is the frame: build always regenerates from the
-template, never patches cells into an old workbook. `build` without flags writes nothing; only
-`build --overwrite` writes, after copying each old file to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`.
-`sync-back` only fills Round/Test date/Tester cells that are non-empty and not Pending, matched
-by case id (`<CODE>_FTnn` in the UI book, `<CODE>_API_ITnn` in the API book); description,
-procedure, expected and every other standard field are never overwritten from Excel.
 """
 import argparse
-import datetime
 import json
 import math
 import re
-import shutil
 import subprocess
 import sys
 from copy import copy
@@ -434,211 +424,17 @@ def build_book(book, m):
     print(f'{target.relative_to(ROOT)}: {len(built)} sheets, {total} cases')
 
 
-# ---------------------------------------------------------------- safe rebuild: sync-back, dry-run, --overwrite
-
-#: Columns of the executed results in a feature sheet (1-based): Round 1/2/3, Test date, Tester.
-#: Same column positions as the 5.1 unit sheets (only the case-id shape differs).
-RESULT_COLS = {'round1': 6, 'date1': 7, 'tester1': 8,
-               'round2': 9, 'date2': 10, 'tester2': 11,
-               'round3': 12, 'date3': 13, 'tester3': 14}
-#: Case-id shapes per book: `<CODE>_FTnn` (UI) vs `<CODE>_API_ITnn` (API).
-ID_PATTERNS = {'ui': re.compile(r'^.+_FT\d+$'), 'api': re.compile(r'^.+_API_IT\d+$')}
-#: Sheets that hold no case rows.
-NON_CASE_SHEETS = {'Cover', 'Test Cases', 'Test Statistics', 'Feature'}
-FIRST_CASE_ROW = 11
-
-
-def _cell_text(value):
-    """Excel cell -> comparable text. Dates become ISO strings; everything else is stripped."""
-    if value is None:
-        return ''
-    if isinstance(value, datetime.datetime):
-        return value.date().isoformat() if value.time() == datetime.time() else value.isoformat(sep=' ')
-    if isinstance(value, datetime.date):
-        return value.isoformat()
-    return str(value).strip()
-
-
-def _backup(target):
-    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-    bak = target.with_name(f'{target.stem}.bak-{stamp}.xlsx')
-    shutil.copy2(target, bak)
-    print(f'backup -> {bak.relative_to(ROOT)}')
-    return bak
-
-
-def _sheet_ids(ws, book):
-    """Case IDs of a feature sheet in row order (column A, `<CODE>_FTnn` or `<CODE>_API_ITnn`)."""
-    pat = ID_PATTERNS[book]
-    ids = []
-    for row in range(FIRST_CASE_ROW, (ws.max_row or 0) + 1):
-        v = _cell_text(ws.cell(row, 1).value)
-        if pat.match(v):
-            ids.append(v)
-    return ids
-
-
-def _book_target(m, book):
-    return REPORTS / m['books'][book]['file']
-
-
-def cmd_sync_back(_):
-    """Merge executed results from the old workbooks back into the JSON, by case id.
-
-    Only Round 1/2/3, Test date and Tester cells that are non-empty and not
-    Pending are merged. Description, procedure, expected and every other
-    standard field are never overwritten from Excel.
-    """
-    import openpyxl
-    m = manifest()
-    grand_cases, grand_cells = 0, 0
-    for book in BOOKS:
-        target = _book_target(m, book)
-        if not target.exists():
-            print(f'[{book}] no existing workbook at {target.relative_to(ROOT)}; nothing to sync-back.')
-            continue
-        wb = openpyxl.load_workbook(target, data_only=True)
-        by_sheet = {s['sheet']: s for s in m['sheets']}
-        total_cases, total_cells = 0, 0
-        for name in wb.sheetnames:
-            if name in NON_CASE_SHEETS:
-                continue
-            sheet = by_sheet.get(name)
-            if sheet is None:
-                print(f'[{book}] SKIP {name}: not in sheets.json')
-                continue
-            path = case_file(book, sheet)
-            if not path.exists():
-                print(f'[{book}] SKIP {name}: {path.relative_to(ROOT)} missing')
-                continue
-            ws = wb[name]
-            wanted = {}
-            for row in range(FIRST_CASE_ROW, (ws.max_row or 0) + 1):
-                cid = _cell_text(ws.cell(row, 1).value)
-                if ID_PATTERNS[book].match(cid):
-                    vals = {k: _cell_text(ws.cell(row, c).value) for k, c in RESULT_COLS.items()}
-                    vals = {k: v for k, v in vals.items() if v and v != 'Pending'}
-                    if vals:
-                        wanted[cid] = vals
-            if not wanted:
-                print(f'[{book}] {name}: 0 result(s) merged (no executed cell beyond Pending)')
-                continue
-            doc = load(path)
-            index = {}
-            for g in doc.get('groups', []):
-                for c in g.get('cases', []):
-                    index[c.get('id')] = c
-            n_cases, n_cells = 0, 0
-            for cid, vals in wanted.items():
-                c = index.get(cid)
-                if c is None:
-                    print(f'  WARN [{book}] {name} {cid}: in the workbook but not in the JSON (left as is)')
-                    continue
-                for k, v in vals.items():
-                    if c.get(k) != v:
-                        c[k] = v
-                        n_cells += 1
-                n_cases += 1
-            if n_cells:
-                save_json(path, doc)
-            total_cases += n_cases
-            total_cells += n_cells
-            print(f'[{book}] {name}: {n_cases} case(s), {n_cells} cell(s) merged')
-        print(f'[{book}] sync-back total: {total_cases} case(s), {total_cells} cell(s)')
-        grand_cases += total_cases
-        grand_cells += total_cells
-    print(f'sync-back grand total: {grand_cases} case(s), {grand_cells} cell(s)')
-    return 0
-
-
-def _json_counts(m, book):
-    """sheet -> (case count, {ids}) from the JSON of one book."""
-    out = {}
-    for sheet in m['sheets']:
-        path = case_file(book, sheet)
-        ids = []
-        if path.exists():
-            for g in load(path).get('groups', []):
-                ids += [c.get('id') for c in g.get('cases', [])]
-        out[sheet['sheet']] = (len(ids), set(ids))
-    return out
-
-
-def _workbook_counts(target, book):
-    """(cover version, {sheet -> (count, {ids})}) from an existing workbook."""
-    import openpyxl
-    wb = openpyxl.load_workbook(target, data_only=True)
-    cover = ''
-    if 'Cover' in wb.sheetnames:
-        cover = _cell_text(wb['Cover']['F6'].value)
-    sheets = {}
-    for name in wb.sheetnames:
-        if name in NON_CASE_SHEETS:
-            continue
-        ids = _sheet_ids(wb[name], book)
-        sheets[name] = (len(ids), set(ids))
-    return cover, sheets
-
-
-def cmd_dry_run(m=None):
-    """Print the diff between the old workbooks (if any) and the JSON; writes nothing."""
-    m = m or manifest()
-    for book in BOOKS:
-        new = _json_counts(m, book)
-        target = _book_target(m, book)
-        new_total = sum(n for n, _ in new.values())
-        print(f'--- [{book}] {target.name} ---')
-        if not target.exists():
-            print(f'no existing workbook at {target.relative_to(ROOT)}: build would create '
-                  f'{len(new)} sheet(s), {new_total} case(s).')
-            continue
-        old_cover, old = _workbook_counts(target, book)
-        print(f'old workbook: {target.relative_to(ROOT)} ({len(old)} sheets, '
-              f'{sum(n for n, _ in old.values())} cases); cover version {old_cover or "?"} '
-              f'-> {m["cover"]["version"]}')
-        added = [s for s in new if s not in old]
-        removed = [s for s in old if s not in new]
-        print(f'sheets: {len(old)} -> {len(new)}'
-              + (f'; added: {added}' if added else '; no added sheet')
-              + (f'; removed: {removed}' if removed else '; no removed sheet'))
-        for name in new:
-            if name in old:
-                on, oids = old[name]
-                nn, nids = new[name]
-                flag = '' if (on == nn and oids == nids) else '  *'
-                extra = ''
-                if oids != nids:
-                    extra = (f' (+{sorted(nids - oids)[:5]}{"..." if len(nids - oids) > 5 else ""}'
-                             f' / -{sorted(oids - nids)[:5]}{"..." if len(oids - nids) > 5 else ""})')
-                print(f'  {name}: {on} -> {nn}{extra}{flag}')
-            else:
-                print(f'  {name}: (new) {new[name][0]} cases  *')
-        for name in removed:
-            print(f'  {name}: ({old[name][0]} cases, removed)  *')
-        print(f'total: {sum(n for n, _ in old.values())} -> {new_total} cases')
-    return 0
-
-
 def cmd_build(args):
     errors, todo = run_checks()
     if errors:
         for e in errors:
             print('ERROR', e)
         sys.exit(f'{len(errors)} error(s): fix them before building.')
-    if not args.overwrite:
-        print('dry-run (no file written; re-run with --overwrite to write). check passed.')
-        cmd_dry_run()
-        print(f'{len(todo)} group(s) still without cases')
-        return 0
+    cmd_md(args)
     m = manifest()
     books = BOOKS if args.with_ui else tuple(b for b in BOOKS if b != 'ui')
     if 'ui' not in books:
         print('Report 5.2 skipped: it is the v1.2 workbook, not built from cases/ (pass --with-ui to replace it)')
-    for book in books:
-        target = _book_target(m, book)
-        if target.exists():
-            _backup(target)
-    cmd_md(args)
     for book in books:
         build_book(book, m)
     print(f'{len(todo)} group(s) still without cases')
@@ -646,14 +442,12 @@ def cmd_build(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', choices=('routes', 'scaffold', 'check', 'md', 'sync-back', 'build'))
-    parser.add_argument('--overwrite', action='store_true',
-                        help='build only: back the old workbooks up to <name>.bak-<YYYYMMDD-HHMMSS>.xlsx and write them (default is a dry-run diff)')
+    parser.add_argument('command', choices=('routes', 'scaffold', 'check', 'md', 'build'))
     parser.add_argument('--with-ui', action='store_true',
                         help='build: also rebuild Report 5.2 from FE-xx/ui.json, replacing the v1.2 workbook')
     args = parser.parse_args()
     return {'routes': cmd_routes, 'scaffold': cmd_scaffold, 'check': cmd_check,
-            'md': cmd_md, 'sync-back': cmd_sync_back, 'build': cmd_build}[args.command](args) or 0
+            'md': cmd_md, 'build': cmd_build}[args.command](args) or 0
 
 
 if __name__ == '__main__':

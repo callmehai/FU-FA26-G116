@@ -20,6 +20,13 @@
 // minutes for ever, so each run makes a few fresh Ended meetings for it (one per device for the screens, three for the
 // API rules).
 
+import { request as playwrightRequest } from '@playwright/test'
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdirSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Helpers: accounts, API clients, meetings.
 
@@ -160,6 +167,55 @@ async function reused(qa, key) {
   return m
 }
 
+/**
+ * Khánh 19/11/2026 (PR #421): an AI draft needs something said in the meeting (MSG481). When the reused AI meeting has
+ * no sentence yet (a fresh database), the Secretary uploads a short machine-voiced recording after the end (UC-44c) —
+ * `say -v Linh`, never a real person's voice — and the speech worker transcribes it.
+ */
+async function ensureSaid(qa, meeting) {
+  const sec = await client(qa, 'secretary')
+  const S = `/api/meetings/${meeting.id}/summary`
+  if ((await sec.get(S)).body?.readiness?.sentences > 0) return
+  const dir = process.env.QA_AUDIO_DIR ?? join(tmpdir(), 'trustcabinet-qa-fe12')
+  const wav = join(dir, 'said.wav')
+  try {
+    mkdirSync(dir, { recursive: true })
+    if (!existsSync(wav)) {
+      const text = 'Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm hai nghìn không trăm hai mươi bảy.'
+      execFileSync('say', ['-v', 'Linh', '-o', join(dir, 'said.aiff'), text])
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(dir, 'said.aiff'), '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', wav])
+    }
+  } catch (error) {
+    qa.inconclusive(`Cuộc họp dự thảo AI chưa có câu nói nào (MSG481) và không tạo được âm thanh thử (cần macOS "say -v Linh" và ffmpeg): ${error.message}`)
+  }
+  const ctx = await playwrightRequest.newContext({ baseURL: qa.base })
+  try {
+    const login = await ctx.post('/api/auth/login', {
+      data: { email: (await users(qa)).secretary.email, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' },
+    })
+    const token = (await login.json()).accessToken
+    const up = await ctx.post(`/api/meetings/${meeting.id}/recordings`, {
+      headers: { Authorization: `Bearer ${token}` },
+      multipart: {
+        file: { name: 'qa-fe12-loi-thoai.wav', mimeType: 'audio/wav', buffer: await readFile(wav) },
+        consentConfirmed: 'true',
+        consentPurpose: 'QA FE-12: có lời thoại cho dự thảo AI',
+      },
+      timeout: 120_000,
+    })
+    qa.expect(up.status(), await up.text()).toBe(201)
+    qa.note('Cuộc họp dự thảo AI chưa có câu nói nào: đã tải lên một bản ghi giọng máy để có lời thoại (MSG481)')
+  } finally {
+    await ctx.dispose()
+  }
+  const until = Date.now() + 150_000
+  while (Date.now() < until) {
+    if ((await sec.get(S)).body?.readiness?.sentences > 0) return
+    await new Promise((r) => setTimeout(r, 3000))
+  }
+  qa.inconclusive('Bản ghi đã tải lên chưa chuyển chữ xong sau 150 giây: máy chuyển chữ (speech worker) có đang chạy không?')
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Helpers: minutes API.
 
@@ -262,6 +318,29 @@ async function press(qa, locator) {
  * Opens the meeting's "Biên bản" tab and waits for its cards to load. A Member sees the draft card only once a draft is
  * approved, so for a Member it waits only for the minutes card; a criterion that expects the draft card checks it.
  */
+/** A blocked button (aria-disabled, PR #427) still takes a press, which shows its reason; Playwright waits for an enabled one. */
+async function pressBlocked(qa, locator) {
+  if (qa.device === 'phone') await locator.tap({ force: true })
+  else await locator.click({ force: true })
+}
+
+/**
+ * PR #427: before the meeting ends the Biên bản tab stays in the bar, dimmed with a lock, says why on hover, focus or a
+ * press, and a link straight to it (`?tab=minutes`) opens Thông tin chung — as AI-eCabinet locks its tabs.
+ */
+async function minutesLocked(qa, meeting) {
+  await qa.goto(`/mgmt/meetings/${meeting.id}?tab=minutes`)
+  await qa.expect(qa.page.getByRole('heading', { level: 1, name: meeting.title })).toBeVisible()
+  const tab = qa.page.getByRole('tab', { name: 'Biên bản' })
+  await qa.expect(tab).toHaveAttribute('aria-disabled', 'true')
+  await qa.expect(tab).toHaveAccessibleDescription('Mở khi cuộc họp kết thúc')
+  await qa.expect(qa.page.getByRole('tab', { name: 'Thông tin chung' })).toHaveAttribute('aria-selected', 'true')
+  await qa.expect(card(qa)).toHaveCount(0)
+  await pressBlocked(qa, tab)
+  await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mở khi cuộc họp kết thúc')
+  await qa.expect(card(qa)).toHaveCount(0)
+}
+
 async function openMinutes(qa, meeting, { draft = qa.role !== 'member' } = {}) {
   await qa.goto(`/mgmt/meetings/${meeting.id}?tab=minutes`)
   await qa.expect(qa.page.getByRole('heading', { level: 1, name: meeting.title })).toBeVisible()
@@ -361,7 +440,7 @@ export default {
     {
       id: 'AC2',
       role: 'chair',
-      title: 'API tạo bản nháp: đã có thì 409 MSG399; tạo lại thay toàn bộ nội dung (MSG395); chỉ khi đang họp hoặc đã kết thúc (MSG398); người khác 403 MSG397',
+      title: 'API tạo bản nháp: đã có thì 409 MSG399; tạo lại thay toàn bộ nội dung (MSG395); chỉ khi đã kết thúc (MSG398, Khánh 19/11); người khác 403 MSG397',
       steps: [
         'Chủ toạ POST …/minutes trên cuộc họp đã kết thúc, rồi POST lần nữa không rebuild',
         'Thư ký sửa nội dung (PUT) rồi Chủ toạ POST rebuild: true',
@@ -369,7 +448,7 @@ export default {
         'thanhvien@ POST trước và sau khi có bản nháp',
       ],
       expected:
-        '201 MSG395; 409 MSG399 bản cũ giữ nguyên; tạo lại 201 MSG395, đoạn đã sửa mất (BR-388); đang họp 201 hoặc 409 MSG399 (đã có từ lần chạy trước); chưa họp 409 MSG398; thành viên 403 MSG397 cả hai lần (không lộ bản nháp)',
+        '201 MSG395; 409 MSG399 bản cũ giữ nguyên; tạo lại 201 MSG395, đoạn đã sửa mất (BR-388); đang họp 409 MSG398 "Chỉ soạn biên bản khi cuộc họp đã kết thúc."; chưa họp 409 MSG398; thành viên 403 MSG397 cả hai lần (không lộ bản nháp)',
       async run(qa) {
         const c = checker(qa)
         const chair = await client(qa, 'chair')
@@ -394,8 +473,9 @@ export default {
           c.fact('vẫn là bản số 1, cùng id', rebuilt.body.minutes.revisionNumber === 1 && rebuilt.body.minutes.id === cur.id, JSON.stringify(rebuilt.body.minutes).slice(0, 120))
         }
         const ip = await reused(qa, 'inProgress')
+        // Minutes are built only once the meeting has ended (Khánh 19/11/2026, PR #421): in progress is refused too.
         const live = await chair.post(M(ip.id), { rebuild: false })
-        c.fact('đang họp: tạo được', live.status === 201 || (live.status === 409 && live.body.code === 'MSG399'), `${live.status} ${live.body?.code}`)
+        if (c.check('đang họp', live, 409, 'MSG398')) c.fact('message MSG398', live.body.message === 'Chỉ soạn biên bản khi cuộc họp đã kết thúc.', live.body.message)
         const ns = await reused(qa, 'notStarted')
         c.check('cuộc họp chưa họp', await chair.post(M(ns.id), { rebuild: false }), 409, 'MSG398')
         c.done()
@@ -574,16 +654,16 @@ export default {
     {
       id: 'AC7',
       role: 'secretary',
-      title: 'Gửi duyệt sai người, sai lúc: Chủ toạ 403 MSG425; đang họp 409 MSG426 (màn hình chặn trước); bản cũ 409 MSG401; đã gửi 409 MSG400; thành viên 404',
+      title: 'Gửi duyệt sai người, sai lúc: Chủ toạ 403 MSG425; bản cũ 409 MSG401; đã gửi 409 MSG400; thành viên 404; đang họp không có bản nháp để gửi (MSG398) và tab Biên bản khoá',
       steps: [
         'Chủ toạ POST submit bản nháp',
         'Thư ký POST submit với updatedAt cũ; rồi đúng; rồi lần nữa',
         'Khi chờ duyệt: Thư ký PUT nội dung, Chủ toạ POST rebuild',
         'thanhvien@ POST submit',
-        'Cuộc họp đang họp: API submit; trên màn hình bấm Gửi duyệt',
+        'Cuộc họp đang họp: API tạo bản nháp; mở tab Biên bản',
       ],
       expected:
-        '403 MSG425; 409 MSG401; 200 MSG424; 409 MSG400 (gửi lại, sửa, tạo lại); thành viên 404 không mã; đang họp 409 MSG426, hộp thoại báo "Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc." và nút xác nhận bị khoá',
+        '403 MSG425; 409 MSG401; 200 MSG424; 409 MSG400 (gửi lại, sửa, tạo lại); thành viên 404 không mã; đang họp: không tạo được bản nháp (409 MSG398, nên không có gì để gửi duyệt; một bản nháp cũ gửi duyệt vẫn 409 MSG426), tab Biên bản khoá "Mở khi cuộc họp kết thúc", ?tab=minutes mở Thông tin chung',
       async run(qa) {
         const c = checker(qa)
         const sec = await client(qa, 'secretary')
@@ -602,20 +682,17 @@ export default {
         c.check('gửi lần nữa', await sec.post(`${R(cur.id)}/submit`, { updatedAt: waiting.updatedAt }), 409, 'MSG400')
         c.check('sửa khi chờ duyệt', await sec.put(R(cur.id), { content: '<p>x</p>', updatedAt: waiting.updatedAt }), 409, 'MSG400')
         c.check('tạo lại khi chờ duyệt', await chair.post(M(m.id), { rebuild: true }), 409, 'MSG400')
+        // In progress there is nothing to send (PR #421: minutes are built once the meeting has ended) and the tab is
+        // locked (PR #427). A draft left by a run before that rule is still refused on submit.
         const ip = await reused(qa, 'inProgress')
-        await chair.post(M(ip.id), { rebuild: false })
+        c.check('tạo bản nháp khi đang họp', await chair.post(M(ip.id), { rebuild: false }), 409, 'MSG398')
         const live = (await minutesState(qa, 'secretary', ip.id)).minutes
-        c.fact('cuộc họp đang họp có bản nháp', live?.status === 'Draft', live?.status)
         if (live?.status === 'Draft') {
-          c.check('gửi duyệt khi đang họp', await sec.post(`${R(live.id)}/submit`, { updatedAt: live.updatedAt }), 409, 'MSG426')
-          await openMinutes(qa, ip)
-          await btn(qa, 'Gửi duyệt').click()
-          const d = dialog(qa, 'Gửi biên bản cho Chủ toạ duyệt?')
-          await qa.expect(d.getByText('Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.')).toBeVisible()
-          await qa.expect(d.getByRole('button', { name: 'Gửi duyệt', exact: true })).toBeDisabled()
-          await snap(qa, 'dang-hop-chua-gui-duoc')
+          c.check('gửi duyệt bản nháp cũ khi đang họp', await sec.post(`${R(live.id)}/submit`, { updatedAt: live.updatedAt }), 409, 'MSG426')
           c.fact('vẫn là bản nháp', (await minutesState(qa, 'secretary', ip.id)).minutes.status === 'Draft')
         }
+        await minutesLocked(qa, ip)
+        await snap(qa, 'dang-hop-tab-bien-ban-khoa')
         c.done()
       },
     },
@@ -1072,16 +1149,17 @@ export default {
     {
       id: 'AC19',
       role: 'secretary',
-      title: 'Dự thảo AI — quyền và trạng thái (chỉ trên họp Nội bộ, không gọi API trả phí): thành viên 403 MSG385; chưa họp 409 MSG386; chưa có dự thảo 409 MSG390; họp Thường chỉ đọc aiReady',
+      title: 'Dự thảo AI — quyền và trạng thái (không gọi API trả phí): thành viên 403 MSG385; chưa họp, đang họp 409 MSG386; đã kết thúc mà chưa có câu nói 409 MSG481; chưa có dự thảo 409 MSG390; họp Thường chỉ đọc aiReady',
       steps: [
         'Đọc cấu hình AI (quantri@ GET /api/admin/ai), không đổi gì',
         'Cuộc họp Nội bộ đã kết thúc: thanhvien@ POST, PUT …/summary, POST …/summary/review',
         'Cuộc họp Nội bộ chưa họp: Thư ký POST …/summary; PUT …/summary; POST …/summary/review',
-        'Cuộc họp Thường đã kết thúc: chỉ GET …/summary',
+        'Cuộc họp Thường đang họp: POST …/summary',
+        'Cuộc họp Thường đã kết thúc, không có câu nói nào: GET …/summary; POST …/summary (bị chặn trước khi vào hàng chờ)',
         'Đọc lại cấu hình AI',
       ],
       expected:
-        'Thành viên 403 MSG385 ba lần; chưa họp: POST 409 MSG386, PUT/review 409 MSG390 (không có gì vào hàng chờ); họp Thường: aiReady true, canManage true, readiness có; cấu hình AI trước và sau giống hệt',
+        'Thành viên 403 MSG385 ba lần; chưa họp: POST 409 MSG386 "Chỉ tạo dự thảo khi cuộc họp đã kết thúc.", PUT/review 409 MSG390 (không có gì vào hàng chờ); đang họp: POST 409 MSG386; họp Thường đã kết thúc: aiReady true, canManage true, readiness.sentences 0, POST 409 MSG481 "Cuộc họp chưa có lời thoại nào để AI tóm tắt." và không có gì vào hàng chờ; cấu hình AI trước và sau giống hệt',
       async run(qa) {
         const c = checker(qa)
         const admin = await client(qa, 'admin')
@@ -1099,7 +1177,7 @@ export default {
         c.check('thành viên duyệt', await member.post(`${S(ai.id)}/review`), 403, 'MSG385')
         const ns = await reused(qa, 'notStarted')
         const early = await sec.post(S(ns.id))
-        if (c.check('chưa họp POST', early, 409, 'MSG386')) c.fact('message MSG386', early.body.message === 'Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc.', early.body.message)
+        if (c.check('chưa họp POST', early, 409, 'MSG386')) c.fact('message MSG386', early.body.message === 'Chỉ tạo dự thảo khi cuộc họp đã kết thúc.', early.body.message)
         c.check('chưa có dự thảo PUT', await sec.put(S(ns.id), edit), 409, 'MSG390')
         c.check('chưa có dự thảo duyệt', await sec.post(`${S(ns.id)}/review`), 409, 'MSG390')
         const nsState = await sec.get(S(ns.id))
@@ -1107,6 +1185,15 @@ export default {
         const normal = await fresh(qa, 'api-draft', 'Ended', 'API bản nháp')
         const n = await sec.get(S(normal.id))
         if (c.check('họp Thường GET', n, 200)) c.fact('aiReady, canManage, readiness', n.body.aiReady === true && n.body.canManage === true && !!n.body.readiness, JSON.stringify(n.body).slice(0, 200))
+        // Khánh 19/11/2026 (PR #421): a draft only once the meeting has ended, and only from something said in it. Both
+        // are refused before anything is queued, so neither reaches an AI service.
+        const live = await sec.post(S((await reused(qa, 'inProgress')).id))
+        c.check('đang họp POST', live, 409, 'MSG386')
+        if (n.body?.readiness?.sentences === 0) {
+          const silent = await sec.post(S(normal.id))
+          if (c.check('chưa có câu nói POST', silent, 409, 'MSG481')) c.fact('message MSG481', silent.body.message === 'Cuộc họp chưa có lời thoại nào để AI tóm tắt.', silent.body.message)
+          c.fact('không có gì vào hàng chờ (MSG481)', (await sec.get(S(normal.id))).body?.summary === null)
+        } else qa.note(`Bỏ qua MSG481: cuộc họp Thường có ${n.body?.readiness?.sentences} câu nói (không gửi để khỏi gọi API trả phí)`)
         const after = await admin.get('/api/admin/ai')
         c.fact('cấu hình AI không đổi', JSON.stringify(after.body) === JSON.stringify(before.body), JSON.stringify(after.body))
         c.done()
@@ -1116,10 +1203,10 @@ export default {
       id: 'AC20',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thẻ Dự thảo nội dung: Thành viên không thấy dự thảo chưa duyệt và không có nút; Thư ký thấy nút và mức sẵn sàng (không bấm trên họp Thường)',
+      title: 'Thẻ Dự thảo nội dung: Thành viên không thấy dự thảo chưa duyệt và không có nút; Thư ký thấy nút "Tạo dự thảo" khoá kèm lý do khi chưa có câu nói nào (không bấm trên họp Thường)',
       steps: ['thanhvien@ mở tab Biên bản của cuộc họp Thường đã kết thúc', 'Đăng nhập lại thuky@, mở cùng tab'],
       expected:
-        'Thành viên: không có thẻ Dự thảo (chưa có dự thảo đã duyệt); Thư ký: nút "Tạo dự thảo" bật (máy AI sẵn sàng), dòng "Chưa có dự thảo. Bấm “Tạo dự thảo”…", ghi chú "Chưa có lời thoại nào…"',
+        'Thành viên: không có thẻ Dự thảo (chưa có dự thảo đã duyệt); Thư ký: nút "Tạo dự thảo" khoá (aria-disabled), lý do "Chưa có lời thoại nào để AI tóm tắt" khi rê chuột/focus/chạm (PR #421, #427), dòng "Chưa có lời thoại nào để AI tóm tắt, nên chưa tạo được dự thảo."; bấm không gửi gì',
       async run(qa) {
         const m = await fresh(qa, 'api-draft', 'Ended', 'API bản nháp')
         await openMinutes(qa, m)
@@ -1127,11 +1214,17 @@ export default {
         await snap(qa, 'thanh-vien-the-du-thao')
         await qa.signIn('secretary')
         await openMinutes(qa, m)
+        // Khánh 19/11/2026 (PR #421): no sentence, no draft. The button stays, blocked with its reason (PR #427).
         const ask = draftCard(qa).getByRole('button', { name: 'Tạo dự thảo', exact: true })
-        await qa.expect(ask).toBeEnabled()
-        await qa.expect(draftCard(qa).getByText(/Chưa có dự thảo\. Bấm “Tạo dự thảo”/)).toBeVisible()
-        await qa.expect(draftCard(qa).getByText('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')).toBeVisible()
+        await qa.expect(ask).toBeDisabled()
+        await qa.expect(ask).toHaveAttribute('aria-disabled', 'true')
+        await qa.expect(ask).toHaveAccessibleDescription('Chưa có lời thoại nào để AI tóm tắt')
+        await qa.expect(draftCard(qa).getByText('Chưa có lời thoại nào để AI tóm tắt, nên chưa tạo được dự thảo.')).toBeVisible()
+        await pressBlocked(qa, ask)
+        await qa.expect(qa.page.getByRole('tooltip')).toContainText('Chưa có lời thoại nào để AI tóm tắt')
         await snap(qa, 'thu-ky-the-du-thao')
+        const summary = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}/summary`)).body
+        qa.expect(summary?.summary ?? null, 'a press on the blocked button queued a draft').toBeNull()
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
       },
@@ -1141,7 +1234,8 @@ export default {
       role: 'secretary',
       title: 'Thư ký yêu cầu dự thảo AI cho cuộc họp Nội bộ: vào hàng chờ (MSG384), luôn chạy trên máy AI local; máy tắt thì thẻ báo lỗi dễ hiểu, không gọi API ngoài',
       steps: [
-        'Mở tab Biên bản của "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" (đã kết thúc)',
+        'Cuộc họp "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" chưa có câu nói nào thì Thư ký tải lên một bản ghi giọng máy và chờ chuyển chữ (dự thảo cần lời thoại, MSG481)',
+        'Mở tab Biên bản của cuộc họp đó (đã kết thúc)',
         'Bấm "Tạo dự thảo" (hoặc "Tạo lại" và xác nhận khi lần trước đã lỗi)',
         'Chờ tối đa 90 giây',
       ],
@@ -1152,6 +1246,7 @@ export default {
         const sec = await client(qa, 'secretary')
         const ai = await reused(qa, 'ai')
         qa.expect(ai.sensitivity, 'never ask for a draft of a Normal meeting (it would call the paid API)').toBe('Internal')
+        await ensureSaid(qa, ai)
         const settings = (await (await client(qa, 'admin')).get('/api/admin/ai')).body
         const state0 = (await sec.get(S(ai.id))).body
         const status0 = state0.summary?.status

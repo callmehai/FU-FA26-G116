@@ -18,14 +18,9 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
 
 ```powershell
-python scripts/test_reports/integration_cases.py check            # kiểm tra
-python scripts/test_reports/integration_cases.py sync-back       # gom kết quả Round/Test date/Tester đã chạy thật từ 2 workbook cũ vào JSON (theo mã case)
-python scripts/test_reports/integration_cases.py build           # dry-run: kiểm tra rồi in diff workbook cũ so với JSON (không ghi file)
-python scripts/test_reports/integration_cases.py build --overwrite  # sao lưu bản cũ thành .bak-YYYYMMDD-HHMM rồi sinh lại 5.2.2 (đóng Excel trước)
-python scripts/test_reports/integration_cases.py build --overwrite --with-ui  # ... và sinh lại cả 5.2 (thay bản 1.2 viết tay)
+python scripts/test_reports/integration_cases.py check   # kiểm tra
+python scripts/test_reports/integration_cases.py build   # sinh lại 5.2.2 (đóng Excel trước)
 ```
-
-Quy trình bắt buộc khi sinh lại workbook: chạy `build` (dry-run) → trình diff cho người dùng → chờ OK → chạy `sync-back` (nếu workbook cũ có kết quả) → chạy `build --overwrite`. JSON là nguồn sự thật, template là khung; không vá từng ô vào workbook cũ. Không chạy `build --overwrite` cho 5.2/5.2.2 khi chưa thống nhất về bản 1.2 viết tay.
 
 Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
 

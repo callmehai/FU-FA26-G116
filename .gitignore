@@ -504,6 +504,9 @@ backend/TrustCabinet.Web/App_Data/
 workers/speech/.venv/
 workers/speech/models/
 
+# ACCE sample workbooks: another team's data, read-only reference, never committed
+docs/08-reports/sample/
+
 # Bản gốc ảnh sơ đồ do script xuất ra (đầy đủ độ phân giải, phục vụ dựng báo cáo chuẩn nộp).
 # Chỉ bản nén palette nằm trong docs/ mới vào git.
 anh-goc/

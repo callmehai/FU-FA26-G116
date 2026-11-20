@@ -366,6 +366,13 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-394` | Minutes content may not be empty (after filtering), may not exceed 300,000 characters, and its tags may not nest deeper than 64 levels. | UC-60 | SCRUM-32 — what the editor accepts | Meeting Minutes |
 | `BR-395` | Changing the speaker of one sentence moves that sentence to the chosen person's voice, creating a new voice for a person who has none; the other sentences keep their voices. | UC-46b | SCRUM-35 / PR #265 — one sentence, the rest of the voice untouched | Transcription |
 | `BR-396` | While the AI is writing a draft again, the draft cannot be edited or approved; the actor waits for it to finish. | UC-49, UC-50 | SCRUM-36 / PR #265 — one write at a time | Meeting Summary |
+| `BR-397` | Only the current Secretary of a Meeting may write its meeting notes. The current Chair may read them; nobody else, Guests included, can read them. | UC-82 | SCRUM-30 | Agenda Management |
+| `BR-398` | Meeting notes may be written while the Meeting is InProgress, and after it has Ended until its minutes draft is built. After that the notes are read-only. | UC-82 | SCRUM-30 / BR-310 | Agenda Management |
+| `BR-399` | A meeting note belongs to one agenda item of the Meeting or to the Meeting as a whole. While an item is InProgress, what the Secretary types goes to that item unless the Secretary chooses another. | UC-82, UC-24 | SCRUM-30 | Agenda Management |
+| `BR-400` | Each author has at most one note per agenda item and one note for the Meeting as a whole. | UC-82 | SCRUM-30 | Agenda Management |
+| `BR-401` | A note save made from an out-of-date copy is rejected; newer text is never overwritten by an older one, whichever window or device it comes from. | UC-82 | SCRUM-30 | Agenda Management |
+| `BR-402` | When the minutes draft is built and the Meeting has no AI draft, each item's notes are written under that item in section II, lines marked Kết luận are added to section III, and lines marked Nhiệm vụ are added to “Nhiệm vụ, sản phẩm và thời hạn”. | UC-59 | SCRUM-30 | Meeting Minutes |
+| `BR-403` | A meeting note holds at most 20,000 characters. An empty note is allowed. | UC-82 | SCRUM-30 | Agenda Management |
 | `BR-404` | Only the current Secretary may submit the minutes for approval. | UC-61 | SCRUM-33 — the Secretary sends the minutes for approval | Meeting Minutes |
 | `BR-405` | The minutes may be submitted for approval only after the Meeting has Ended. | UC-61 | SCRUM-33 — the minutes record a finished sitting | Meeting Minutes |
 | `BR-406` | Only the current Chair may approve or return minutes waiting for approval. | UC-64, UC-65 | SCRUM-33 — the Chair approves or returns | Meeting Minutes |
@@ -421,7 +428,9 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-456` | After a Hybrid Meeting ends, the system builds one combined recording from the room recording and every online sentence on the real clock; sentences excluded from the record are left out; silences over 2 s are shortened to 2 s; a track over 12 h is not built. A Secret Meeting has no combined recording. | UC-43a | ADR-0061 / SCRUM-153 — the system-built combined recording | Meeting Recording |
 | `BR-457` | When a source of the combined recording changes later, the system builds it again; once the Secretary erases it, it is never built again. | UC-43a, UC-44e | ADR-0061 / SCRUM-153 — rebuild unless erased | Meeting Recording |
 | `BR-458` | The combined recording is for listening and downloading only and is never transcribed. | UC-43a, UC-43b, UC-43c, UC-45c | ADR-0061 / SCRUM-153 — listening only | Meeting Recording |
+| `BR-459` | A line of a note may start with the mark Ý kiến, Kết luận or Nhiệm vụ. A mark is text only; the system tracks no assignee, due date or progress. | UC-82 | SCRUM-30 / BR-392 | Agenda Management |
 | `BR-460` | If an In Progress Meeting has not been ended 24 hours after its planned end time — or 24 hours after its actual start, when it started after its planned end — the system ends it the same way as UC-22, records System as the actor with the reason "In progress more than 24 hours past the planned end" in its lifecycle history and the audit log, and notifies no one. (PO 13/11/2026, ADR-0062) | UC-22 | ADR-0062 / PR #332 — auto-end a forgotten Meeting | Meeting Management |
+| `BR-461` | Text typed into a note that has not reached the system yet is kept on the device it was typed on and sent when the connection returns. For a Secret Meeting it is kept only until the page is closed. | UC-82 | SCRUM-30 / review #271 | Agenda Management |
 
 ## BR đã ngừng dùng
 

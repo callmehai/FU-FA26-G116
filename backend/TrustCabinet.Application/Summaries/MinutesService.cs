@@ -24,9 +24,18 @@ namespace TrustCabinet.Application.Summaries;
 public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSourceQuery sources,
     ISummarySourceQuery summarySources, IMeetingSummaryRepository summaries, IMinutesRenderer renderer,
     INotificationRepository notifications, IAuditLogRepository auditLog, IUnitOfWork unitOfWork, IMeetingRepository meetings,
-    TimeProvider clock, ILogger<MinutesService> logger, IEmailMessageRepository emails, IOptions<EmailDeliveryOptions> email)
+    TimeProvider clock, ILogger<MinutesService> logger, IEmailMessageRepository emails, IOptions<EmailDeliveryOptions> email,
+    IMeetingChangePublisher? changes = null)
     : IMinutesService
 {
+    /// <summary>The other officer's open Biên bản tab, and every reader's once a revision is issued, re-reads (minutesChanged).
+    /// Called after the commit; the publisher logs its own failures.</summary>
+    private async Task<MinutesOutcome> AnnounceAsync(Guid meetingId, MinutesOutcome outcome)
+    {
+        if (outcome.Failure == MinutesFailure.None && changes is not null) await changes.MinutesChangedAsync(meetingId);
+        return outcome;
+    }
+
     private static readonly TimeZoneInfo Hanoi = SummaryWriter.FindHanoi();
 
     public async Task<MinutesOutcome> GetAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
@@ -53,7 +62,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         {
             // The meeting row is locked as a note save locks it (SCRUM-30): a note saved before is in these minutes, one
             // saved after is refused (BR-396).
-            return await unitOfWork.ExecuteAsync<MinutesOutcome>(async token =>
+            return await AnnounceAsync(meetingId, await unitOfWork.ExecuteAsync<MinutesOutcome>(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token, forUpdate: true);
                 if (meeting is null) return new(failure);
@@ -80,7 +89,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 current.UpdatedAt = now;
                 await unitOfWork.SaveChangesAsync(token);
                 return new(Data: await StateAsync(meeting, actorId, token));
-            }, TransactionMode.ReadCommitted, ct);
+            }, TransactionMode.ReadCommitted, ct));
         }
         catch (UniqueConflictException error)
         {
@@ -100,12 +109,14 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
     {
         try
         {
-            return await ReadAsync(async token =>
+            var meetingId = Guid.Empty;
+            var outcome = await ReadAsync(async token =>
             {
                 var row = await minutes.FindAsync(minutesId, token);
                 if (row is null) return new MinutesOutcome(MinutesFailure.NotFound);
                 var (meeting, failure) = await ReadableAsync(row.MeetingId, actorId, token);
                 if (meeting is null) return new(failure);
+                meetingId = meeting.Id;
                 // Someone who may not edit learns nothing about a draft they may not read.
                 if (!SummaryService.Manages(meeting, actorId)) return new(Hidden(row.Status));
                 // A returned revision is corrected again before it is sent back (BR-407).
@@ -131,6 +142,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 if (saved == 0) return new(MinutesFailure.Stale);
                 return new(Data: await StateAsync(meeting, actorId, token));
             }, ct);
+            return await AnnounceAsync(meetingId, outcome);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
@@ -303,7 +315,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         {
             var meetingId = await ReadAsync(token => minutes.FindMeetingIdAsync(minutesId, token), ct);
             if (meetingId is null) return new(MinutesFailure.NotFound);
-            return await unitOfWork.ExecuteAsync<MinutesOutcome>(async token =>
+            return await AnnounceAsync(meetingId.Value, await unitOfWork.ExecuteAsync<MinutesOutcome>(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId.Value, actorId, token, forUpdate: true);
                 if (meeting is null) return new(failure);
@@ -313,7 +325,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 if (result != MinutesFailure.None) return new(result);
                 await unitOfWork.SaveChangesAsync(token);
                 return new(Data: await StateAsync(meeting, actorId, token));
-            }, TransactionMode.ReadCommitted, ct);
+            }, TransactionMode.ReadCommitted, ct));
         }
         catch (UniqueConflictException error)
         {

@@ -20,6 +20,8 @@ export interface Speech {
   list: SpeechClipList | null
   clips: SpeechClip[]
   error: string | null
+  /** The first read is under way: not before it is allowed, nor after it answered or failed. */
+  loading: boolean
   reload: () => void
   /** Whether their sentences are being captured now: the meeting allows it and their call mic is on. */
   capturing: boolean
@@ -92,6 +94,7 @@ export function useSpeech(
     list,
     clips,
     error,
+    loading: enabled && !list && !error,
     reload: () => void load(true),
     capturing,
     capture,

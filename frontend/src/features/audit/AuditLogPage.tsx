@@ -14,6 +14,7 @@ import { formatDateTime } from '../../lib/format'
 import { tipIfClipped } from '../../lib/tipIfClipped'
 import { useSearchBox } from '../../lib/useSearchBox'
 import { latestSearchParams } from '../../lib/latestSearchParams'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { AuditEventType, AuditLogItem, AuditLogPage } from '../../types/auditLog'
 import { useAccessLost } from '../auth/useAccessLost'
 import { ActorCell, AuditEntrySheet } from './AuditEntrySheet'
@@ -116,6 +117,8 @@ export function AuditLogPage() {
   const [actors, setActors] = useState<SelectOption<string>[] | null>(null)
   const [opened, setOpened] = useState<AuditLogItem | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  // Entries written since show on coming back to the tab, on the same page and filters.
+  useRefetchOnFocus(() => setAttempt((n) => n + 1))
 
   const update = useCallback(
     (patch: Partial<Criteria>) =>

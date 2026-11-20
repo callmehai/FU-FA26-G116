@@ -90,7 +90,7 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
         var p = await f.Seed();
         using var organizer = f.Client(p.Organizer);
         var body = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots",
-            new { userIds = new[] { p.Owner }, durationMinutes = 7, stepMinutes = 1, weekdays = new[] { 6 } }), 400, "MSG444");
+            new { userIds = new[] { p.Owner }, durationMinutes = 7, stepMinutes = 1, weekdays = new[] { 8 } }), 400, "MSG444");
         var errors = body.GetProperty("errors");
         Assert.True(errors.TryGetProperty("durationMinutes", out _));
         Assert.True(errors.TryGetProperty("stepMinutes", out _));

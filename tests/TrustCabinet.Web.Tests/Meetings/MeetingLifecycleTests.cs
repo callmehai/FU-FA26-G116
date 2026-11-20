@@ -90,13 +90,31 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
         await AssertUnchanged(s, status);
     }
 
+    [Fact]
+    public async Task Secretary_starts_the_meeting_and_the_chair_is_told_but_only_the_chair_ends_it()
+    {
+        // PO 20/11/2026: the Secretary may open the meeting too; ending stays the Chair's.
+        var s = await fixture.Seed(MeetingStatus.Published);
+        await Expect(await Act(s, "Start", s.Secretary), 200, "MSG110");
+        await Expect(await Act(s, "End", s.Secretary), 403, "MSG114");
+        await using var check = fixture.Db();
+        var history = await check.MeetingStatusHistory.SingleAsync(h => h.MeetingId == s.MeetingId);
+        Assert.Equal((MeetingHistoryAction.Start, s.Secretary), (history.Action, history.ActorId));
+        var told = await check.Notifications.Where(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.MeetingStarted)
+            .Select(n => n.UserId).ToArrayAsync();
+        Assert.Equal(new[] { s.Chair, s.Member }.Order(), told.Order());
+        Assert.Equal(MeetingStatus.InProgress, (await check.Meetings.SingleAsync(m => m.Id == s.MeetingId)).Status);
+    }
+
     [Theory]
     [InlineData("Start")]
     [InlineData("End")]
     public async Task Readable_non_chair_forbidden_and_hidden_resource_indistinguishable(string action)
     {
         var s = await fixture.Seed(action == "Start" ? MeetingStatus.Published : MeetingStatus.InProgress);
-        foreach (var actor in new[] { s.Secretary, s.Member, s.Organizer })
+        // The Secretary may start (see above), so only End refuses them.
+        var refused = action == "Start" ? new[] { s.Member, s.Organizer } : new[] { s.Secretary, s.Member, s.Organizer };
+        foreach (var actor in refused)
             await Expect(await Act(s, action, actor), 403, action == "Start" ? "MSG112" : "MSG114");
         var hidden = await Act(s, action, s.Outsider);
         var missing = await fixture.Client(s.Outsider).PostAsJsonAsync(Url(Guid.NewGuid()), new { action });

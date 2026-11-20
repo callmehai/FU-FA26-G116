@@ -71,7 +71,9 @@ With the chrome-devtools MCP, use `emulate` (viewport `390x844x3,mobile,touch`) 
 4. **No hover.** `@media (hover: none)` applies: `data-tooltip` and `title` never appear. Every
    icon-only button must be recognisable without its tooltip — otherwise show its label on narrow
    or touch screens. Facts that minimize-text moved into tooltips must still be reachable by tap or
-   focus; an explanation sits behind an `InfoTip` (i), whose tap shows the text (ADR-0052).
+   focus; an explanation sits behind an `InfoTip` (i), whose tap shows the text (ADR-0052). A
+   disabled button or a locked tab says why on a tap: it is a `BlockedButton`, never a native
+   `disabled` (which a finger cannot reach) — tap it and assert `.tooltip` shows the reason.
 5. **Touch targets** are at least 40px high and wide (ADR-0043: controls grow to 40px on a touch screen), 8px apart.
 6. **Dialogs fit**: height ≤ `innerHeight - 32`, the body scrolls, the footer buttons are on
    screen. Focus a field and shrink the viewport height to 500px (the on-screen keyboard): the

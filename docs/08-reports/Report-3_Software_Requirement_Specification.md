@@ -73,6 +73,7 @@ Table of Contents
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 50): align Report 3 and API docs with QA-built behavior 15/11 (drop UC-09/UC-69, fix UC/BR/MSG mismatches). |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop remaining FE-14 mentions; features are Must-have FE-01 to FE-13, Should-have FE-15 to FE-16. |
 | 19/11/2026 | M | KhanhPG | [PR docs note 54] Sync Report 3 UC/BR/messages/screens with the shipped UI audit and the In-Progress busy rule — done. (source: note 54, PR #396–#399, BR-420) |
+| 19/11/2026 | M | KhanhPG | BA Final Review note 55: retire UC-51, add UC-82 (Take Meeting Notes) to FE-05 with BR-397–BR-403/BR-459/BR-461 and MSG415–MSG423; promote UC-84/85 to official; update UC-59 (BR-402) and UC-24 (AF-2); sync inventory and UC diagram. |
 
 *A - Added M - Modified D - Deleted
 
@@ -785,7 +786,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | UC-48 | View Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Read the AI draft, its AI label and its review state; before review only the current Chair and Secretary see it, and after review every reader of the Meeting does. |
 | UC-49 | Edit Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Correct the text of the three sections; saving withdraws the review until the draft is approved again. |
 | UC-50 | Approve Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Approve the draft so the other participants can read it and the minutes can use sections I-III. |
-| UC-51 | Publish Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-51 | Publish Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Retired on 19/11/2026 by the Product Owner: the approved summary (UC-50) is already readable by everyone who may read the Meeting; the number is kept for now and will be renumbered later. |
 | UC-52 | View Meeting Votes | Voting Management | View visible Meeting Votes and their status or result through UC-52a and UC-52b. |
 | UC-53 | Create / Configure Vote | Voting Management | Allows the current Chair or Secretary to prepare a Vote draft and configure or delete an existing draft; only the Chair may proceed to opening the Vote. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs directly to its Meeting; its documents are managed through UC-76. |
 | UC-54 | Open Vote | Voting Management | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |
@@ -1449,6 +1450,17 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Normal Flow | Record Agenda Item Conclusion<br>1. The actor selects an InProgress or Done Agenda Item and chooses Record conclusion.<br>2. The system displays the current conclusion of the Item, if any, for editing.<br>3. The actor enters or edits the conclusion and saves.<br>4. The system rechecks the Chair or Secretary assignment, the Meeting status and minutes state, the Item status, and that the conclusion is not blank and does not exceed 2,000 characters. (BR-309, BR-310)<br>5. The system saves the conclusion with the actor and the time. (BR-309, BR-311)<br>6. The system displays MSG271 – "Agenda item conclusion saved." and automatically refreshes the Agenda for authorized viewers. (BR-73) |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Conclusion is blank or too long<br>1. At Step 4, the conclusion is blank or longer than 2,000 characters. (BR-309)<br>2. Nothing is saved. The system displays MSG272 – "Enter a conclusion of up to 2,000 characters."<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Conclusion can no longer be changed<br>1. At Step 4, the actor is no longer the current Chair or Secretary, the Item is Pending, the Meeting is not InProgress or Ended, or the minutes draft has already been generated. (BR-310)<br>2. Nothing is saved; any earlier conclusion remains. The system displays MSG273 – "The conclusion of this agenda item can no longer be changed."<br>3. The use case ends.<br>EX-3 – Conclusion cannot be saved<br>1. At Step 5, the system cannot save the conclusion.<br>2. Any earlier conclusion remains unchanged. The system displays MSG274 – "Unable to save the agenda item conclusion. Please try again."<br>3. The use case ends.<br>EX-4 – Meeting is unavailable<br>1. Before displaying or saving, the Meeting cannot be accessed or the Item no longer exists.<br>2. No Agenda information is disclosed and nothing is saved. The system displays MSG174 – "This Meeting is not accessible."<br>3. The use case ends. |  |  |
+
+#### 5.6 UC-82 – Take Meeting Notes
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to type running notes during the sitting, each attached to the agenda item under discussion or to the Meeting as a whole, so that the minutes are written from what was noted at the time rather than from memory. (BR-397, BR-399) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current Secretary of the Meeting. (BR-397)<br>● PRE-2: The Meeting is InProgress, or it has Ended and no minutes draft has been built yet. (BR-398) |  |  |
+| Postconditions | ● POST-1: The note of the chosen agenda item, or of the Meeting as a whole, holds the text the actor typed, with the time it was saved. (BR-400)<br>● POST-2: Text that could not reach the system yet stays on the actor's device until it is sent; for a Secret Meeting, only until the page is closed. (BR-461)<br>● POST-3: No agenda item, conclusion, minutes or other Meeting record is changed. |  |  |
+| Normal Flow | Take Meeting Notes<br>1. During the sitting, the actor opens the Ghi chú panel — on the Meeting page or inside the online room, without leaving the call.<br>2. The system loads the actor's notes for the Meeting and opens the note of the agenda item that is InProgress. (BR-399)<br>3. The actor types. A line may start with a mark — Ý kiến, Kết luận or Nhiệm vụ. (BR-459)<br>4. Shortly after the actor stops typing, the system checks that the actor is still the current Secretary, that the Meeting still accepts notes, that the item still belongs to the Meeting, that the text is within 20,000 characters and that the note was not saved elsewhere since the actor read it. (BR-397, BR-398, BR-401, BR-403)<br>5. The system saves the note and shows the time it was saved: MSG415 – “Note saved.” |  |  |
+| Alternative Flows | AF-1 – Note on another item or on the Meeting as a whole<br>1. At Step 2 or Step 3, the actor selects another agenda item, or “Chung” [General].<br>2. The system opens the actor's note of that choice. (BR-399, BR-400)<br>3. The flow resumes at Step 3 of the Main Flow.<br>AF-2 – The Chair moves to another item<br>1. After Step 2, the Chair sets another agenda item as current (UC-24).<br>2. The system keeps the text already typed with the earlier item and opens the note of the new current item for what is typed next. (BR-399)<br>3. The flow resumes at Step 3 of the Main Flow.<br>AF-3 – The connection is lost<br>1. At Step 4, the text cannot reach the system.<br>2. The system keeps the text on the actor's device and displays MSG423 – “You are offline. The note is kept on this device and will be saved when the connection returns.” (BR-461)<br>3. When the connection returns, the flow resumes at Step 4 of the Main Flow.<br>AF-4 – The Chair reads the notes<br>1. At Step 1, the actor is the current Chair.<br>2. The system shows the current Secretary's notes read-only. (BR-397)<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Actor is not the current Secretary<br>1. At Step 4, the actor is no longer the current Secretary. (BR-397)<br>2. Nothing is saved; the typed text stays in the panel so it can be copied. The system displays MSG416 – “Only the Secretary may write meeting notes.”<br>3. The use case ends.<br>EX-2 – The Meeting no longer accepts notes<br>1. At Step 4, the Meeting is not InProgress, or it has Ended and its minutes draft has been built. (BR-398)<br>2. Nothing is saved; the typed text stays in the panel. The system displays MSG417 – “Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.”<br>3. The use case ends.<br>EX-3 – The note was changed in another window<br>1. At Step 4, the note was saved from another window or device after the actor read it. (BR-401)<br>2. Nothing is overwritten. The system shows the latest text next to the actor's unsaved text and displays MSG418 – “This note was changed in another window. Reload to see the latest version.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-4 – The note is too long<br>1. At Step 4, the text is longer than 20,000 characters. (BR-403)<br>2. Nothing is saved. The system displays MSG419 – “The note is too long. A note can hold up to 20,000 characters.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – The agenda item was removed<br>1. At Step 4, the item the note belongs to is no longer part of the Meeting.<br>2. Nothing is saved; the typed text stays in the panel. The system displays MSG420 – “The selected agenda item is no longer part of this meeting.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-6 – The notes cannot be loaded<br>1. At Step 2, the system cannot read the notes.<br>2. Nothing is shown. The system displays MSG421 – “Unable to load the meeting notes.”<br>3. The use case ends.<br>EX-7 – The note cannot be saved<br>1. At Step 5, the system cannot save the note.<br>2. The text stays on the device and the system displays MSG422 – “Unable to save the note. It is kept on this device and will be sent again.”<br>3. The use case ends. |  |  |
 
 ### 6. FE-06 – Meeting Participant Management
 
@@ -2225,9 +2237,18 @@ Delivery scope: UC-31 attendance is delivered separately from the roster, invita
 | Alternative Flows | AF-1 – Approve again<br>1. At Step 2, the draft has already been reviewed and has not been corrected since.<br>2. The system applies Steps 3–4 again; the later reviewer and time replace the earlier ones.<br>3. The use case ends successfully. |  |  |
 | Exception Flows | EX-1 – There is no finished draft<br>1. At Step 2, no draft has finished being written.<br>2. Nothing is reviewed. The system displays MSG390 – “There is no draft to correct or review.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Chair or Secretary<br>1. At Step 2, the actor may read the Meeting but is neither its current Chair nor its current Secretary. (BR-374)<br>2. Nothing is reviewed. The system displays MSG385 – “Only the Chair or Secretary may create, edit and review the draft.”<br>3. The use case ends.<br>EX-3 – The review cannot be saved<br>1. At Step 4, the system cannot save the review.<br>2. The draft stays as it was and is not visible to the other participants. The system displays MSG393 – “Unable to save the draft. Please try again.”<br>3. The use case ends.<br>EX-4 – The Meeting is not accessible<br>1. Before Step 2, the Meeting is unavailable or the actor may no longer read it.<br>2. The system answers as if the Meeting did not exist and discloses nothing about its draft.<br>3. The use case ends.<br>EX-5 – The AI is writing the draft again<br>1. At Step 2, a new draft is being written for this Meeting.<br>2. Nothing is reviewed. The system displays MSG387 – “The AI is writing the draft, please wait.”<br>3. The flow resumes at Step 1 when the draft is ready. |  |  |
 
-#### 10.8 UC-51 – Publish Meeting Summary
+#### 10.8 UC-51 – Publish Meeting Summary (retired)
 
-Placeholder only – not implemented in the current release.
+Retired on 19/11/2026 – the number is kept for now and will be renumbered later.
+
+| Primary Actors | None (retired) | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Retired on 19/11/2026 by the Product Owner: approving the summary (UC-50) already makes it readable to everyone who may read the Meeting, so a separate publish step has no work left. The number UC-51 is kept for now and will be renumbered later. |  |  |
+| Preconditions | N/A |  |  |
+| Postconditions | N/A |  |  |
+| Normal Flow | N/A |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | N/A |  |  |
 
 ### 11. FE-11 – Voting Management
 
@@ -4751,6 +4772,13 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-394 | Minutes content may not be empty (after filtering), may not exceed 300,000 characters, and its tags may not nest deeper than 64 levels. | UC-60 | SCRUM-32 — what the editor accepts | Meeting Minutes |
 | BR-395 | Changing the speaker of one sentence moves that sentence to the chosen person's voice, creating a new voice for a person who has none; the other sentences keep their voices. | UC-46b | SCRUM-35 / PR #265 — one sentence, the rest of the voice untouched | Transcription |
 | BR-396 | While the AI is writing a draft again, the draft cannot be edited or approved; the actor waits for it to finish. | UC-49, UC-50 | SCRUM-36 / PR #265 — one write at a time | Meeting Summary |
+| BR-397 | Only the current Secretary of a Meeting may write its meeting notes. The current Chair may read them; nobody else, Guests included, can read them. | UC-82 | SCRUM-30 | Agenda Management |
+| BR-398 | Meeting notes may be written while the Meeting is InProgress, and after it has Ended until its minutes draft is built. After that the notes are read-only. | UC-82 | SCRUM-30 / BR-310 | Agenda Management |
+| BR-399 | A meeting note belongs to one agenda item of the Meeting or to the Meeting as a whole. While an item is InProgress, what the Secretary types goes to that item unless the Secretary chooses another. | UC-82, UC-24 | SCRUM-30 | Agenda Management |
+| BR-400 | Each author has at most one note per agenda item and one note for the Meeting as a whole. | UC-82 | SCRUM-30 | Agenda Management |
+| BR-401 | A note save made from an out-of-date copy is rejected; newer text is never overwritten by an older one, whichever window or device it comes from. | UC-82 | SCRUM-30 | Agenda Management |
+| BR-402 | When the minutes draft is built and the Meeting has no AI draft, each item's notes are written under that item in section II, lines marked Kết luận are added to section III, and lines marked Nhiệm vụ are added to “Nhiệm vụ, sản phẩm và thời hạn”. | UC-59 | SCRUM-30 | Meeting Minutes |
+| BR-403 | A meeting note holds at most 20,000 characters. An empty note is allowed. | UC-82 | SCRUM-30 | Agenda Management |
 | BR-404 | Only the current Secretary may submit the minutes for approval. | UC-61 | SCRUM-33 — the Secretary sends the minutes for approval | Meeting Minutes |
 | BR-405 | The minutes may be submitted for approval only after the Meeting has Ended. | UC-61 | SCRUM-33 — the minutes record a finished sitting | Meeting Minutes |
 | BR-406 | Only the current Chair may approve or return minutes waiting for approval. | UC-64, UC-65 | SCRUM-33 — the Chair approves or returns | Meeting Minutes |
@@ -4806,7 +4834,9 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-456 | After a Hybrid Meeting ends, the system builds one combined recording from the room recording and every online sentence on the real clock; sentences excluded from the record are left out; silences over 2 s are shortened to 2 s; a track over 12 h is not built. A Secret Meeting has no combined recording. | UC-43a | ADR-0061 / SCRUM-153 — the system-built combined recording | Meeting Recording |
 | BR-457 | When a source of the combined recording changes later, the system builds it again; once the Secretary erases it, it is never built again. | UC-43a, UC-44e | ADR-0061 / SCRUM-153 — rebuild unless erased | Meeting Recording |
 | BR-458 | The combined recording is for listening and downloading only and is never transcribed. | UC-43a, UC-43b, UC-43c, UC-45c | ADR-0061 / SCRUM-153 — listening only | Meeting Recording |
+| BR-459 | A line of a note may start with the mark Ý kiến, Kết luận or Nhiệm vụ. A mark is text only; the system tracks no assignee, due date or progress. | UC-82 | SCRUM-30 / BR-392 | Agenda Management |
 | BR-460 | If an In Progress Meeting has not been ended 24 hours after its planned end time — or 24 hours after its actual start, when it started after its planned end — the system ends it the same way as UC-22, records System as the actor with the reason "In progress more than 24 hours past the planned end" in its lifecycle history and the audit log, and notifies no one. (PO 13/11/2026, ADR-0062) | UC-22 | ADR-0062 / PR #332 — auto-end a forgotten Meeting | Meeting Management |
+| BR-461 | Text typed into a note that has not reached the system yet is kept on the device it was typed on and sent when the connection returns. For a Secret Meeting it is kept only until the page is closed. | UC-82 | SCRUM-30 / review #271 | Agenda Management |
 
 ### 2. System Messages
 
@@ -5263,6 +5293,15 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 477 | MSG479 | Dialog | UC-45c / EX-4 | The combined recording is for listening only. Its speech has already been transcribed from the room and per-microphone recordings. |
 | 478 | MSG414 | API error (429 + Retry-After) | UC-01 – Sign in with Email and Password / UC-02 – Sign in with Google – rate limiting (SCRUM-132) | Too many attempts. Please try again in a few minutes. |
 | 479 | MSG480 | Inline error (lobby) | UC-37 – Join Meeting Room / Exception Flows (EX-11) | Could not connect to the meeting room. Please try again. |
+| 480 | MSG415 | Success (200) | UC-82 Main Flow | Note saved. |
+| 481 | MSG416 | Error (403) | UC-82 EX-1 | Only the Secretary may write meeting notes. |
+| 482 | MSG417 | Error (409) | UC-82 EX-2 | Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created. |
+| 483 | MSG418 | Error (409) | UC-82 EX-3 | This note was changed in another window. Reload to see the latest version. |
+| 484 | MSG419 | Error (400) | UC-82 EX-4 | The note is too long. A note can hold up to 20,000 characters. |
+| 485 | MSG420 | Error (409) | UC-82 EX-5 | The selected agenda item is no longer part of this meeting. |
+| 486 | MSG421 | Error (500) | UC-82 EX-6 | Unable to load the meeting notes. |
+| 487 | MSG422 | Error (503) | UC-82 EX-7 | Unable to save the note. It is kept on this device and will be sent again. |
+| 488 | MSG423 | FE (client) | UC-82 AF-3 | You are offline. The note is kept on this device and will be saved when the connection returns. |
 
 ### 3. Other Requirements
 

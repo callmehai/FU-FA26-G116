@@ -14,7 +14,7 @@ public enum VoteFailure
     DocumentAlreadyAttached,
     /// <summary>The document is no longer attached to the vote, or no longer in the meeting.</summary>
     DocumentNotAttached,
-    /// <summary>An uploaded file is not a valid PDF or DOCX of at most 50 MB (BR-187, BR-214, BR-215).</summary>
+    /// <summary>An uploaded file is not a valid PDF or DOCX of at most 10 MB (BR-187, BR-214, BR-215).</summary>
     FilesInvalid,
     /// <summary>More files, or more bytes, than one upload takes (BR-319).</summary>
     FilesTooMany,
