@@ -189,7 +189,7 @@
             "Publish_requires_exactly_one_active_chair_and_an_active_secretary"
           ],
           "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingService.cs",
-          "line": 411,
+          "line": 412,
           "method": "MeetingService.TransitionAsync"
         }
       ],
