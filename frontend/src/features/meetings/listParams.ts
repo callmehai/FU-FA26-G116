@@ -18,11 +18,9 @@ import {
  * Whatever is in the URL is read defensively: an unknown value is dropped rather than sent, so a
  * hand-edited or outdated link falls back to the default instead of failing with a 400.
  *
- * The list opens on today, the "Họp hôm nay" card: a URL with no `status`, `scope` or `when` means
- * every status held today, and `when=all` is the explicit "any time". Once a status or the
- * "Cần xử lý" scope is chosen, no `when` means any time, so those cards' links stay `?status=Draft`
- * and `?scope=todo`. (AI-eCabinet opens unfiltered; opening on today is ours.) `status=all` from
- * older links still reads as every status.
+ * The list opens unfiltered, as AI-eCabinet's does: a URL with no `when` means any time. Opening on
+ * today (PR #287) was dropped by the PO on 2026-11-20 — a quiet day showed an empty list and read as
+ * "no meetings". `when=all` and `status=all` from older links still read as any time / every status.
  */
 export interface ListState {
   q: string
@@ -53,7 +51,6 @@ export const WHEN_LABEL: Record<When, string> = {
   past: 'Đã diễn ra',
 }
 
-const ANY_TIME = 'all'
 const SCOPES: readonly MeetingListScope[] = ['todo']
 
 export const PAGE_SIZES = [10, 20, 50] as const
@@ -68,7 +65,7 @@ export const DEFAULT_STATE: ListState = {
   q: '',
   status: '',
   sensitivity: '',
-  when: 'today',
+  when: '',
   scope: '',
   page: 1,
   pageSize: 20,
@@ -87,11 +84,6 @@ function naturalDirection(state: Pick<ListState, 'sortBy' | 'when' | 'scope'>): 
   return defaultDirection(state.sortBy)
 }
 
-/** A plain list is today's; a status or "Cần xử lý" is shown at any time, as its card counts it. */
-function defaultWhen(status: ListState['status'], scope: ListState['scope']): ListState['when'] {
-  return status || scope ? '' : DEFAULT_STATE.when
-}
-
 function oneOf<T extends string>(value: string | null, allowed: readonly T[]): T | undefined {
   return allowed.find((candidate) => candidate === value)
 }
@@ -102,13 +94,12 @@ export function readListState(params: URLSearchParams): ListState {
   const pageSize = Number(params.get('pageSize'))
   const status = oneOf(params.get('status'), MEETING_STATUSES) ?? ''
   const scope = oneOf(params.get('scope'), SCOPES) ?? ''
-  const when = params.get('when')
   const picked = oneOf(params.get('sortDir'), ['asc', 'desc'] as const)
   const state: Omit<ListState, 'sortDir'> = {
     q: params.get('q') ?? '',
     status,
     sensitivity: oneOf(params.get('sensitivity'), SENSITIVITIES) ?? '',
-    when: when === ANY_TIME ? '' : (oneOf(when, WHEN_OPTIONS) ?? defaultWhen(status, scope)),
+    when: oneOf(params.get('when'), WHEN_OPTIONS) ?? '',
     scope,
     page: Number.isInteger(page) && page >= 1 ? page : 1,
     pageSize: (PAGE_SIZES as readonly number[]).includes(pageSize) ? pageSize : DEFAULT_STATE.pageSize,
@@ -125,7 +116,7 @@ export function writeListState(state: ListState): URLSearchParams {
   if (q) params.set('q', q)
   if (state.status) params.set('status', state.status)
   if (state.sensitivity) params.set('sensitivity', state.sensitivity)
-  if (state.when !== defaultWhen(state.status, state.scope)) params.set('when', state.when || ANY_TIME)
+  if (state.when) params.set('when', state.when)
   if (state.scope) params.set('scope', state.scope)
   if (state.sortSet || state.sortBy !== DEFAULT_STATE.sortBy) {
     params.set('sortBy', state.sortBy)
@@ -145,7 +136,6 @@ export function hasFilters(state: ListState) {
 export function clearedState(state: ListState): ListState {
   return {
     ...DEFAULT_STATE,
-    when: '',
     pageSize: state.pageSize,
     sortBy: state.sortBy,
     sortDir: state.sortDir,
