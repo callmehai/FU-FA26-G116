@@ -18,6 +18,7 @@ using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Recordings;
 using TrustCabinet.Infrastructure.Reports;
+using TrustCabinet.Infrastructure.Retention;
 using TrustCabinet.Infrastructure.Speaking;
 using TrustCabinet.Infrastructure.Summaries;
 using TrustCabinet.Infrastructure.Transcription;
@@ -66,6 +67,8 @@ public static class DependencyInjection
         services.AddTrustCabinetDocuments(configuration);
         // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
         services.AddTrustCabinetRecordings(configuration, contentRootPath);
+        // ADR-0067: orphaned audio, drafts of cancelled meetings, old notifications, guest codes and email bodies.
+        services.AddTrustCabinetRetention(configuration);
         // SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c).
         services.AddTrustCabinetCalendarSharing();
         // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.

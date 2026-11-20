@@ -35,7 +35,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     ISpeechEngine engine,
     SpeechClipGate gate, ISpeechChangePublisher publisher, IAuditService audit, TimeProvider clock,
     IOptions<RecordingOptions> options, IRecordingStorage storage, ISpeechClipAudioSigner signer,
-    ILogger<SpeechClipService> logger) : ISpeechClipService
+    ICombinedRecordingService combined, ILogger<SpeechClipService> logger) : ISpeechClipService
 {
     public async Task<SpeechClipOutcome> ListAsync(Guid meetingId, Guid actorId, DateTimeOffset? since, CancellationToken ct = default)
     {
@@ -233,7 +233,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     {
         try
         {
-            string? audioPath = null;
+            string? audioPath = null, mixed = null;
             var outcome = await ChangeClipAsync(clipId, actorId, async (clip, meeting, now, token) =>
             {
                 if (clip.SpeakerId != actorId && !RecordingRules.IsSecretary(meeting, actorId))
@@ -242,10 +242,16 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                     new { clip.MeetingId, clip.SpeakerId, clip.GuestInvitationId, byOwner = clip.SpeakerId == actorId }, token);
                 clips.Remove(clip);
                 audioPath = clip.AudioPath;
+                // The sentence is in the meeting's combined recording too: mixed again without it, or erased (ADR-0067).
+                if (clip.AudioPath is not null) mixed = await combined.SourceRemovedAsync(clip.MeetingId, rebuild: true, actorId, token);
                 return new();
             }, "ClipDeleted", ct);
             // After the commit: a failed delete keeps the row, and with it the way to the file.
-            if (outcome.Failure == SpeechClipFailure.None) DeleteAudio(audioPath);
+            if (outcome.Failure == SpeechClipFailure.None)
+            {
+                DeleteAudio(audioPath);
+                DeleteAudio(mixed);
+            }
             return outcome;
         }
         catch (PersistenceException ex)
@@ -354,7 +360,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     {
         try
         {
-            string? audioPath = null;
+            string? audioPath = null, mixed = null;
             var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 if (!await GuestAdmittedAsync(guest, guest.MeetingId, token)) return new SpeechClipOutcome(SpeechClipFailure.NotFound);
@@ -364,12 +370,14 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                 await audit.RecordAsync(AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, clip.Id, actorId: null,
                     new { clip.MeetingId, clip.GuestInvitationId, guestSessionId = guest.SessionId, byOwner = true }, token);
                 clips.Remove(clip);
+                if (clip.AudioPath is not null) mixed = await combined.SourceRemovedAsync(clip.MeetingId, rebuild: true, null, token);
                 await unitOfWork.SaveChangesAsync(token);
                 audioPath = clip.AudioPath;
                 return new();
             }, TransactionMode.ReadCommitted, ct);
             if (outcome.Failure != SpeechClipFailure.None) return outcome;
             DeleteAudio(audioPath);
+            DeleteAudio(mixed);
             await PublishAsync(guest.MeetingId, "ClipDeleted", ct);
             return outcome;
         }

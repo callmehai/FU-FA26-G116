@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Recordings;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -248,6 +249,103 @@ public sealed class CombinedRecordingTests(RecordingFixture fixture) : IClassFix
         await BuildAll();
         Assert.Null(await Combined(huge.MeetingId));
         Assert.Equal(files, fixture.StoredFileCount());
+    }
+
+    [Fact]
+    public async Task Its_retention_date_is_the_room_recordings_not_the_build_time()
+    {
+        var (s, room, _) = await Arrange();
+        var roomUntil = T0.AddDays(180);
+        await using (var db = fixture.Db())
+            await db.Recordings.Where(r => r.Id == room).ExecuteUpdateAsync(u => u.SetProperty(r => r.RetainUntil, roomUntil));
+        await BuildAll();
+
+        // BR-347: counted from the room's first take, so the mix goes with the room recording, never after it.
+        Assert.Equal(roomUntil, (await Combined(s.MeetingId))!.RetainUntil);
+    }
+
+    [Fact]
+    public async Task Erasing_the_room_recording_erases_the_combined_one_on_request_and_at_retention()
+    {
+        var (s, room, _) = await Arrange();
+        await BuildAll();
+        var combined = (await Combined(s.MeetingId))!;
+        using (var secretary = fixture.Client(s.Secretary))
+            Assert.True((await secretary.DeleteAsync($"/api/recordings/{room}")).IsSuccessStatusCode);
+
+        var erased = (await Combined(s.MeetingId))!;
+        Assert.Equal(RecordingStatus.Deleted, erased.Status);
+        Assert.False(File.Exists(Path.Combine(fixture.StorageRoot, combined.StoragePath)));
+        await using (var db = fixture.Db())
+        {
+            var audit = await db.AuditLog.AsNoTracking()
+                .SingleAsync(a => a.Action == AuditActions.RecordingErased && a.ObjectId == combined.Id);
+            Assert.Equal(s.Secretary, audit.ActorId);
+            Assert.Contains("source_erased", audit.Details);
+        }
+        // Nothing brings it back.
+        await BuildAll();
+        Assert.Equal(RecordingStatus.Deleted, (await Combined(s.MeetingId))!.Status);
+
+        // The room recording's retention date passes: the same.
+        var (expiring, expiringRoom, _) = await Arrange();
+        await BuildAll();
+        var mix = (await Combined(expiring.MeetingId))!;
+        await using (var db = fixture.Db())
+            await db.Recordings.Where(r => r.Id == expiringRoom)
+                .ExecuteUpdateAsync(u => u.SetProperty(r => r.RetainUntil, fixture.Clock.Now.AddMinutes(-1)));
+        using (var scope = fixture.Host.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<IRecordingService>().EraseExpiredAsync();
+        Assert.Equal(RecordingStatus.Deleted, (await Combined(expiring.MeetingId))!.Status);
+        Assert.False(File.Exists(Path.Combine(fixture.StorageRoot, mix.StoragePath)));
+    }
+
+    [Fact]
+    public async Task A_deleted_sentence_is_mixed_out_inside_the_window_and_erases_the_mix_after_it()
+    {
+        var (s, _, overlapping) = await Arrange();
+        await BuildAll();
+        var first = (await Combined(s.MeetingId))!;
+        Assert.Equal(1100, At(first, 750));
+
+        // Eight days are not over: the mix is made again without the sentence.
+        using (var secretary = fixture.Client(s.Secretary))
+            Assert.True((await secretary.DeleteAsync($"/api/speech-clips/{overlapping}")).IsSuccessStatusCode);
+        await BuildAll();
+        var rebuilt = (await Combined(s.MeetingId))!;
+        Assert.Equal(RecordingStatus.Available, rebuilt.Status);
+        Assert.NotEqual(first.StoragePath, rebuilt.StoragePath);
+        Assert.Equal(100, At(rebuilt, 750));
+
+        // Past the window nothing rebuilds it any more, so a sentence deleted then takes the mix with it.
+        await using (var db = fixture.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.ActualEndedAt, fixture.Clock.Now.AddDays(-9)));
+        Guid another;
+        await using (var db = fixture.Db())
+            another = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId && c.ExcludedAt == null).Select(c => c.Id).FirstAsync();
+        using (var secretary = fixture.Client(s.Secretary))
+            Assert.True((await secretary.DeleteAsync($"/api/speech-clips/{another}")).IsSuccessStatusCode);
+        Assert.Equal(RecordingStatus.Deleted, (await Combined(s.MeetingId))!.Status);
+        Assert.False(File.Exists(Path.Combine(fixture.StorageRoot, rebuilt.StoragePath)));
+    }
+
+    [Fact]
+    public async Task A_mix_left_with_one_source_is_erased()
+    {
+        var (s, _, _) = await Arrange();
+        await BuildAll();
+        var combined = (await Combined(s.MeetingId))!;
+
+        // Every online sentence deleted: what is left is the room recording, which plays on its own.
+        await using (var db = fixture.Db())
+        {
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ExecuteDeleteAsync();
+            await db.Recordings.Where(r => r.Id == combined.Id).ExecuteUpdateAsync(u => u.SetProperty(r => r.UpdatedAt, DateTimeOffset.UnixEpoch));
+        }
+        await BuildAll();
+        Assert.Equal(RecordingStatus.Deleted, (await Combined(s.MeetingId))!.Status);
+        Assert.False(File.Exists(Path.Combine(fixture.StorageRoot, combined.StoragePath)));
     }
 
     [Fact]

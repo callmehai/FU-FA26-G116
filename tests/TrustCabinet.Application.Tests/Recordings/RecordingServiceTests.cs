@@ -30,7 +30,8 @@ public sealed class RecordingServiceTests
     }
 
     private RecordingService Service() => new(_meetings, _recordings, _unitOfWork, _storage, new FakeRecordingSigner(), _audit,
-        _publisher, new FixedClock(Now), Options.Create(new RecordingOptions()), NullLogger<RecordingService>.Instance);
+        _publisher, new FakeCombinedRecordings(), new FixedClock(Now), Options.Create(new RecordingOptions()),
+        NullLogger<RecordingService>.Instance);
 
     private RecordingUpload Upload(bool consent = true)
         => new("hop.mp3", "audio/mpeg", _storage.Create(".mp3"), 1000, RecordingSource.Upload, consent, null, 5000);

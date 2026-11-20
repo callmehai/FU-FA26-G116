@@ -51,6 +51,8 @@ builder.Services.AddHostedService<RecordingRetentionWorker>();
 builder.Services.AddHostedService<CombinedRecordingWorker>();
 // SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
+// ADR-0067: orphaned audio, drafts of cancelled meetings, old notifications, guest codes and email bodies.
+builder.Services.AddHostedService<DataRetentionWorker>();
 builder.Services.AddHostedService<TranscriptionWorker>();
 builder.Services.AddHostedService<SummaryWorker>();
 

@@ -200,6 +200,8 @@ public sealed class FakeRecordingStorage(FakeUnitOfWork? unitOfWork = null) : IR
         CommitsAtDelete.Add(unitOfWork?.Commits ?? 0);
     }
 
+    public IEnumerable<StoredAudioFile> ListWrittenBefore(DateTimeOffset cutoff) => [];
+
     public Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct) => throw new NotSupportedException();
     public Task<string> CutAsync(string source, long from, long length, CancellationToken ct) => throw new NotSupportedException();
 }
@@ -311,4 +313,18 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
 
     public Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<TranscriptPerson>>(Guests);
+}
+
+/// <summary>The combined recording as the services that remove a source see it: each call noted, nothing to erase.</summary>
+public sealed class FakeCombinedRecordings : ICombinedRecordingService
+{
+    public List<(Guid MeetingId, bool Rebuild)> Removed { get; } = [];
+
+    public Task<bool> BuildNextAsync(CancellationToken ct = default) => Task.FromResult(false);
+
+    public Task<string?> SourceRemovedAsync(Guid meetingId, bool rebuild, Guid? actorId, CancellationToken ct = default)
+    {
+        Removed.Add((meetingId, rebuild));
+        return Task.FromResult<string?>(null);
+    }
 }

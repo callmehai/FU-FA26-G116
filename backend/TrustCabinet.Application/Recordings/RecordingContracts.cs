@@ -154,7 +154,17 @@ public interface IRecordingStorage
     void SealWav(string storagePath);
     Stream OpenRead(string storagePath);
     void Delete(string storagePath);
+
+    /// <summary>
+    /// Every file under the storage root last written before <paramref name="cutoff"/>, streamed rather than listed
+    /// whole, for the retention job's orphan sweep (ADR-0067). A link, to a file or a folder, is skipped and never
+    /// followed, so nothing outside the root is reached through one.
+    /// </summary>
+    IEnumerable<StoredAudioFile> ListWrittenBefore(DateTimeOffset cutoff);
 }
+
+/// <summary>A file under the storage root: its path as a row stores it, and its size.</summary>
+public sealed record StoredAudioFile(string StoragePath, long ByteSize);
 
 /// <summary>Raised by <see cref="IRecordingStorage.SaveAsync"/> when the stream passes the size limit.</summary>
 public sealed class RecordingTooLargeException() : Exception("The recording exceeds the upload limit.");

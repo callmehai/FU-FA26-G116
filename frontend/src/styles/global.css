@@ -3135,8 +3135,6 @@ a.menu-item { text-decoration: none; }
 /* The step (Bắt đầu, Xong) and the icons (attach, edit, delete): one group on a wide panel, split on a narrow one. */
 .agenda-steps, .agenda-tools { display: contents; }
 .icon-button-danger { color: var(--danger); }
-.agenda-action-slot { width: 34px; flex: none; }
-@media (pointer: coarse) { .agenda-action-slot { width: 40px; } }
 .agenda-body { padding: 4px var(--agenda-pad) 12px var(--agenda-indent); }
 .agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-times { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -3321,6 +3319,7 @@ a.menu-item { text-decoration: none; }
 .vote-role-pick:has(input:checked) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand-ink); }
 .agenda-attach-trigger[aria-expanded='true'] { background: var(--surface-alt); }
 .agenda-room { overflow-y: auto; }
+.agenda-end-steps { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
 /* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */
 @container (min-width: 960px) {
@@ -3367,7 +3366,7 @@ a.menu-item { text-decoration: none; }
   .agenda-head { column-gap: 14px; }
   .agenda-break { order: 2; }
   .agenda-actions { display: contents; }
-  .agenda-tools { display: flex; flex: none; order: 1; align-self: flex-start; gap: 6px; margin-top: 3px; }
+  .agenda-tools { display: flex; flex: none; order: 1; align-self: flex-start; gap: 6px; margin-top: 3px; margin-left: auto; }
   .agenda-steps { display: flex; flex: none; order: 6; gap: 6px; margin-left: auto; }
   .agenda-tools:empty, .agenda-steps:empty { display: none; }
   @media (pointer: coarse) { .agenda-tools { margin-top: 0; } }
@@ -5643,7 +5642,6 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .share-change { display: inline-flex; align-items: center; gap: 4px; color: var(--muted-ink); }
 /* 40px tall like "…", so the buttons sit level with the name (38px avatar) on every row. */
 .share-row-actions { display: flex; flex: none; grid-row: 1; grid-column: 2; align-items: center; justify-content: flex-end; gap: 8px; min-height: 40px; }
-.share-row-menu-slot { flex: none; width: 40px; height: 40px; }
 .share-empty { flex: none; padding: 48px 16px; text-align: center; }
 .share-empty .empty-title { color: var(--muted-ink); font-weight: 500; }
 @media (max-width: 1100px) {
@@ -5659,7 +5657,6 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   /* Into the place kept for "…", so the answer buttons end at the same edge as "…" above them. */
   .share-row-actions { width: calc(100% + 46px); min-height: 0; margin-right: -46px; justify-content: flex-end; }
   .share-row-actions > .menu-button-end { position: absolute; top: 8px; right: 6px; }
-  .share-row-menu-slot { display: none; }
   /* Only "…" (in the corner): takes no room, its gap given back, so the text keeps clear of "…". */
   .share-row-actions:not(:has(> .btn)) { width: 0; margin-right: -12px; }
 }

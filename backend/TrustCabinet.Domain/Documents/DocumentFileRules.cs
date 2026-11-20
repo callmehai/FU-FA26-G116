@@ -36,6 +36,11 @@ public static class DocumentFileRules
     private static readonly XNamespace RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 
     private static readonly byte[] PdfHeader = "%PDF-"u8.ToArray();
+    /// <summary>How much whitespace may precede "%PDF-": tab, line feed, form feed, carriage return, space (the
+    /// white-space characters of PDF 32000-1 §7.2.2 except NUL, which no text writer puts there).</summary>
+    private const int MaxPdfLeadingWhitespace = 64;
+
+    private static bool IsPdfWhitespace(byte b) => b is 0x09 or 0x0A or 0x0C or 0x0D or 0x20;
     private static readonly byte[] PdfEndOfFile = "%%EOF"u8.ToArray();
     private static readonly byte[] PdfStartXref = "startxref"u8.ToArray();
     /// <summary>Where a reader looks for the end of a PDF: Acrobat accepts <c>%%EOF</c> anywhere in the last 1024 bytes.</summary>
@@ -143,11 +148,14 @@ public static class DocumentFileRules
     {
         if (!stream.CanSeek) throw new ArgumentException("The file stream must be seekable.", nameof(stream));
         stream.Position = 0;
-        var head = new byte[PdfHeader.Length];
+        var head = new byte[MaxPdfLeadingWhitespace + PdfHeader.Length];
         var read = await stream.ReadAtLeastAsync(head, head.Length, throwOnEndOfStream: false, ct);
-        // At offset 0 only. The spec tolerates junk before the header, but then any HTML page with
-        // "%PDF-" in a comment would pass as a PDF.
-        if (head.AsSpan(0, read).SequenceEqual(PdfHeader)) return PdfContentType;
+        // "%PDF-" at the start, after whitespace at most: some writers (CV builders, a few exporters) put a line break
+        // first, and Acrobat, pdf.js and PdfPig all open those (Hải 20/11/2026). Anything else before it is still
+        // refused — the spec tolerates junk there, but then any HTML page with "%PDF-" in a comment would pass as a PDF.
+        var start = 0;
+        while (start < read && start < MaxPdfLeadingWhitespace && IsPdfWhitespace(head[start])) start++;
+        if (head.AsSpan(start, read - start).StartsWith(PdfHeader)) return PdfContentType;
         if (!head.AsSpan(0, read).StartsWith(ZipHeader) || !await CentralDirectoryIsSmallAsync(stream, ct)) return null;
 
         stream.Position = 0;

@@ -13,7 +13,7 @@ public sealed record ClipRow(Guid Id, Guid SpeakerId, string SpeakerName, DateTi
     bool Guest);
 
 /// <summary>A sentence's sound as the combined recording mixes it in (ADR-0062).</summary>
-public sealed record CombinedClip(DateTimeOffset StartedAt, long DurationMs, string AudioPath);
+public sealed record CombinedClip(DateTimeOffset StartedAt, long DurationMs, string AudioPath, DateTimeOffset CreatedAt);
 
 /// <summary>What deciding whether a sentence may be heard needs of it.</summary>
 public sealed record ClipPlayback(Guid MeetingId, string? AudioPath, DateTimeOffset? ExcludedAt);
