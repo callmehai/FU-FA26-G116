@@ -1,4 +1,5 @@
 using TrustCabinet.Domain.Documents;
+using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Web.Endpoints;
 
@@ -32,10 +33,14 @@ public static class DocumentCommentEndpoints
             });
         app.MapGroup(pattern).RequireActiveUserOrGuest(Error(CommentFailure.SaveFailed))
             .MapPost("", async (Guid meetingId, Guid meetingDocumentId, CommentBody body, HttpContext context,
-                IDocumentCommentService service, IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
+                IDocumentCommentService service, IMeetingGuestIdentityResolver identities, IMeetingChangePublisher changes,
+                CancellationToken ct) =>
             {
                 var outcome = await service.AddAsync(meetingId, meetingDocumentId,
                     MeetingDocumentEndpoints.Reader(context, identities), body.Body, body.PageNumber, body.ParentCommentId, ct);
+                // Open comment panels and the documents' counts re-read. The event names the meeting only: a draft
+                // document's id never reaches someone who may not see the draft.
+                if (outcome.Value is not null) await changes.CommentsChangedAsync(meetingId, ct);
                 return outcome.Value is { } comment
                     ? Results.Json(new { code = Msg199CommentAdded, message = "Đã gửi góp ý.", comment },
                         statusCode: StatusCodes.Status201Created)

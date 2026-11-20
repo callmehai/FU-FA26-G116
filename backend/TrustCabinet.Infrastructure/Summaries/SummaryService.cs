@@ -21,8 +21,18 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// </summary>
 public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository meetings, ILanguageModelProvider models,
     MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger,
-    IOptions<LanguageModelOptions> aiOptions) : ISummaryService
+    IOptions<LanguageModelOptions> aiOptions, IMeetingChangePublisher? changes = null) : ISummaryService
 {
+    /// <summary>
+    /// The other officer's open Biên bản tab, and the readers' once the draft is reviewed, re-read (minutesChanged): a
+    /// draft asked for, started, written, failed, corrected or reviewed. Called after the write; the publisher logs its
+    /// own failures.
+    /// </summary>
+    private async Task AnnounceAsync(Guid meetingId)
+    {
+        if (changes is not null) await changes.MinutesChangedAsync(meetingId);
+    }
+
     /// <summary>ADR-0056 — the hosted harness: whole agenda items, <c>Ai:ApiParallelism</c> of them at once.</summary>
     private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
         => new SummaryWriter(model, SummaryWriter.ApiChunkChars, SummaryWriter.ApiSpellingRule)
@@ -84,6 +94,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             row.RequestedAt = now;
             row.UpdatedAt = now;
             await db.SaveChangesAsync(ct);
+            await AnnounceAsync(meetingId);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (DbUpdateException error)
@@ -129,6 +140,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                     .SetProperty(x => x.ReviewedById, (Guid?)null).SetProperty(x => x.ReviewedAt, (DateTimeOffset?)null)
                     .SetProperty(x => x.UpdatedAt, now), ct);
             if (saved == 0) return new(SummaryFailure.Busy);
+            await AnnounceAsync(meetingId);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -155,6 +167,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                 .ExecuteUpdateAsync(u => u.SetProperty(x => x.ReviewedById, actorId).SetProperty(x => x.ReviewedAt, now)
                     .SetProperty(x => x.UpdatedAt, now), ct);
             if (saved == 0) return new(SummaryFailure.Busy);
+            await AnnounceAsync(meetingId);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -178,6 +191,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, SummaryStatus.Running)
                 .SetProperty(x => x.UpdatedAt, clock.GetUtcNow()), ct);
         if (claimed == 0) return true;
+        await AnnounceAsync(next.MeetingId);
 
         string? content = null;
         ILanguageModel? model = null;
@@ -225,6 +239,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                     .SetProperty(x => x.EditedById, (Guid?)null)
                     .SetProperty(x => x.EditedAt, (DateTimeOffset?)null)
                     .SetProperty(x => x.UpdatedAt, now), ct);
+                await AnnounceAsync(next.MeetingId);
                 return true;
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
@@ -238,6 +253,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             .SetProperty(x => x.Status, SummaryStatus.Failed)
             .SetProperty(x => x.ErrorMessage, error)
             .SetProperty(x => x.UpdatedAt, now), ct);
+        await AnnounceAsync(next.MeetingId);
         return true;
     }
 

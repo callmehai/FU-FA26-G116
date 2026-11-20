@@ -35,7 +35,8 @@ public sealed class MeetingOverdueService(
     IMeetingLifecycleService lifecycle,
     IOptions<MeetingOverdueOptions> options,
     TimeProvider clock,
-    ILogger<MeetingOverdueService> logger) : IMeetingOverdueService
+    ILogger<MeetingOverdueService> logger,
+    IMeetingChangePublisher? changes = null) : IMeetingOverdueService
 {
     /// <summary>Shown on the meeting and in its history; the actor is the system (BR-301).</summary>
     internal static string Reason(int hours) => $"Không diễn ra theo lịch: quá {hours} giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.";
@@ -65,7 +66,10 @@ public sealed class MeetingOverdueService(
         {
             try
             {
-                if (await CancelAsync(id, delay, ct)) cancelled++;
+                if (!await CancelAsync(id, delay, ct)) continue;
+                cancelled++;
+                // Pages left open on it show the cancellation; the publisher logs its own failures.
+                if (changes is not null) await changes.MeetingChangedAsync(id, ct);
             }
             catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
             {

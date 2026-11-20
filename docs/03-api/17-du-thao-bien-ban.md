@@ -199,6 +199,13 @@ Cả bốn trả cùng dạng với `POST …/minutes`: `{ code, message, minute
     `Issued` (kể cả bản `Superseded`); `409` `MSG434` khi bản đó đã có bản đính chính chưa ban hành.
   - `409` `MSG401` khi `updatedAt` cũ, `503` `MSG404` khi lỗi lưu.
 
+### Realtime
+
+Mỗi thay đổi thành công của dự thảo (xin viết, AI bắt đầu, viết xong hoặc lỗi, sửa, duyệt) và của biên bản (tạo, lưu,
+gửi duyệt, duyệt, trả lại, đính chính) phát `minutesChanged` `{ eventId, meetingId, occurredAt }` trên `/hubs/meetings`
+cho mọi người đang đọc được cuộc họp đã join. Tab Biên bản đọc lại `GET …/summary` và `GET …/minutes`; event không mang
+nội dung. Chi tiết: [25](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md).
+
 ## Cấu hình máy AI
 
 | Khoá | Ví dụ | Ghi chú |

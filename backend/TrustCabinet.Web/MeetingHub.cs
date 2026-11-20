@@ -81,18 +81,21 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
     }
 
     /// <summary>The joined groups of every active user and guest session who may read the meeting now.</summary>
+    /// <param name="includeFormer">Also the groups of everyone tied to the meeting who may no longer read it (a
+    /// participant removed, a meeting cancelled before it was announced). Only a connection that joined while it could
+    /// read is in such a group, and it receives an id to re-read, never data: its re-read answers 404.</param>
     internal static async Task<List<string>> ReaderGroupsAsync(Guid meetingId, IMeetingRepository meetings,
-        TrustCabinetDbContext db, IAgendaGuestAccess guests, CancellationToken ct)
+        TrustCabinetDbContext db, IAgendaGuestAccess guests, CancellationToken ct, bool includeFormer = false)
     {
         var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
         if (meeting is null) return [];
         var candidates = meeting.Participants.Select(p => p.UserId).Append(meeting.CreatedById)
             .Concat(meeting.AssignedApproverId is { } approver ? [approver] : [])
-            .Distinct().Where(actor => MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
+            .Distinct().Where(actor => includeFormer || MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
         var active = await db.Users.AsNoTracking().Where(u => candidates.Contains(u.Id) && u.IsActive)
             .Select(u => u.Id).ToListAsync(ct);
         var groups = active.Select(actor => MeetingHub.Group(meeting.Id, actor)).ToList();
-        if (GuestAccessRules.MeetingOpen(meeting.Status))
+        if (includeFormer || GuestAccessRules.MeetingOpen(meeting.Status))
         {
             var readers = await guests.ListReadersAsync(meeting.Id, ct);
             groups.AddRange(readers.Where(g => g.IsValid && g.MeetingId == meeting.Id)

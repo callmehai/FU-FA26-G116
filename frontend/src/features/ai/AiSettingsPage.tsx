@@ -9,6 +9,7 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { useRefetchOnFocus } from '../../lib/useRefetchOnFocus'
 import type { AiProviderMode, AiSettings, AiSettingsInput } from '../../types/aiSettings'
 
 type Field = 'mode' | 'apiBaseUrl' | 'apiModel' | 'apiKey'
@@ -64,6 +65,11 @@ export function AiSettingsPage() {
   useEffect(() => {
     void Promise.resolve().then(load)
   }, [load])
+  // Another administrator's change shows on coming back to the tab, never over the form being edited.
+  const dirty =
+    !!settings &&
+    (mode !== settings.mode || baseUrl !== settings.apiBaseUrl || model !== settings.apiModel || key.trim() !== '')
+  useRefetchOnFocus(() => void load(), { enabled: !dirty && !saving && !testing })
 
   const input = (): AiSettingsInput => ({
     mode,
@@ -129,9 +135,6 @@ export function AiSettingsPage() {
   const api = mode === 'Api'
   // What the server uses now, and whether the form differs from it: picking Máy local or API changes nothing until Lưu.
   const inUse = settings?.mode === 'Api' ? `API · ${settings.apiModel}` : 'Máy local'
-  const dirty =
-    !!settings &&
-    (mode !== settings.mode || baseUrl !== settings.apiBaseUrl || model !== settings.apiModel || key.trim() !== '')
   return (
     <>
       <PageHeader title="Cấu hình AI" description="Máy viết dự thảo biên bản" />

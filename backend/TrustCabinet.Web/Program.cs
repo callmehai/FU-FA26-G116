@@ -58,6 +58,8 @@ builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
+// The meeting header, its minutes and its document comments: "re-read" events for the screens other users have open.
+builder.Services.AddScoped<TrustCabinet.Domain.Meetings.IMeetingChangePublisher, MeetingChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Votes.IVoteChangePublisher, VoteChangePublisher>();
 // SCRUM-27: raised hands and the Chair's queue of speakers (UC-79).

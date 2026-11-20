@@ -9,6 +9,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
 import type { VoiceProfile } from '../../types/voice'
+import { useNotificationRefresh } from '../notifications/useNotificationRefresh'
 import { formatDuration } from '../recordings/format'
 import { PASSAGES } from './passages'
 import { ProxyTab } from './ProxyVoice'
@@ -49,6 +50,9 @@ export function VoicePage() {
       loads.current++
     }
   }, [load])
+
+  // A meeting's Secretary just recorded a sample for this person (ADR-0060): show it without a reload.
+  useNotificationRefresh((notification) => notification.type === 'VoiceSampleCollected', () => void load())
 
   return (
     <div className="form-page voice-page">
