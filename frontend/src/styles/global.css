@@ -159,6 +159,11 @@
 /* ---------- Base ---------- */
 * { box-sizing: border-box; }
 
+/* The app is a fixed frame (Hải 20/11): a swipe or a trackpad flick past an edge must not drag the whole shell aside
+   and show white behind it. Only the content pane scrolls, and it does not hand its bounce to the page. */
+html, body { overscroll-behavior: none; }
+html { background: var(--paper); }
+
 body {
   margin: 0;
   background: var(--paper);
@@ -606,7 +611,9 @@ input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--dan
 /* ---------- Shell (ADR-0012) ----------
    One vertical sidebar and the content beside it; no app bar. The content column is the one
    scroll container, so a listing table can fill the remaining height with its own scroll. */
-.shell { --sidebar-current: var(--sidebar-width); display: flex; height: 100vh; }
+/* 100dvh, not 100vh: on a phone 100vh counts the browser bar's space too, so the page was taller than the screen,
+   scrolled, and resized as the bar came and went. */
+.shell { --sidebar-current: var(--sidebar-width); display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
 .shell-collapsed { --sidebar-current: var(--sidebar-width-collapsed); }
 
 .sidebar {
@@ -1033,7 +1040,9 @@ a.menu-item { text-decoration: none; }
   flex: 1;
   min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: none;
   /* Its bottom padding: a bar stuck to the bottom of the screen subtracts it, since sticky offsets count from inside it. */
   --content-pad-bottom: 32px;
   padding: 20px 24px var(--content-pad-bottom);
