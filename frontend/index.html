@@ -8,6 +8,13 @@
       name="description"
       content="TrustCabinet — hệ thống phòng họp không giấy ứng dụng AI, có gọi thoại/video trong ứng dụng. Đồ án tốt nghiệp SEP490-G116."
     />
+    <!-- Installable on a phone (PWA): name, icons and colours live in public/manifest.webmanifest. There is no service
+         worker on purpose: browsers no longer require one to install, and none means a deploy can never be hidden
+         behind a cached app shell. theme-color is --brand, the colour of the sidebar and the room's title bar. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#2a4d94" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="TrustCabinet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
