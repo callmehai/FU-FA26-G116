@@ -442,10 +442,13 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         var s = await fixture.Seed();
         await Enrol(s.Secretary, 1, 0, 0);
         await Enrol(s.Member, 0, 1, 0);
-        // Member at 0.995: named at once. Secretary at 0.66: over the suggestion threshold, under the sure one.
+        await using var db = fixture.Db();
+        // The suggestion and the sure threshold are both 0.5, so a voice is only suggested when its person agreed to
+        // the older notice that said the machine only suggests (ADR-0048).
+        await db.VoiceConsents.Where(c => c.UserId == s.Secretary).ExecuteUpdateAsync(u => u.SetProperty(c => c.NoticeVersion, "1.1"));
+        // Member at 0.995: named at once. Secretary at 0.66: suggested only.
         var id = await UploadAndTranscribe(s, new("SPEAKER_00", 30000, [0.66f, 0.15f, 0.736f]), new("SPEAKER_01", 20000, [0f, 1f, 0.1f]));
 
-        await using var db = fixture.Db();
         var fair = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_00");
         Assert.Equal(s.Secretary, fair.SuggestedUserId);
         Assert.Null(fair.AssignedUserId);
