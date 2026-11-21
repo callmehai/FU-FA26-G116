@@ -34,7 +34,7 @@
           ],
           "note": "UC-59 | BR-384 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -58,7 +58,7 @@
           ],
           "note": "UC-59 AF-4 | BR-382 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,7 +81,7 @@
           ],
           "note": "UC-59 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (rebuild keeps single history line)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -104,7 +104,7 @@
           ],
           "note": "UC-59 AF-2 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (rebuild keeps single history line)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -125,7 +125,7 @@
           ],
           "note": "UC-59 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Rebuilding_a_returned_revision_keeps_it_returned)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -146,7 +146,7 @@
           ],
           "note": "UC-59 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404) | Deviation: docs/03-api/17-du-thao-bien-ban.md and the MSG397 catalogue row say a non-officer gets 404 while the minutes are a draft; the code answers 403 MSG397 on POST .../minutes in every state (as UC-59 EX-1 says).",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -167,7 +167,7 @@
           ],
           "note": "UC-59 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -186,7 +186,7 @@
           ],
           "note": "UC-59 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -207,7 +207,7 @@
           ],
           "note": "UC-59 EX-2 | BR-387 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_are_built_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -229,7 +229,7 @@
           ],
           "note": "UC-59 EX-4 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -252,7 +252,7 @@
           ],
           "note": "UC-59 EX-7 | BR-413 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -276,7 +276,7 @@
           ],
           "note": "UC-59 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -305,7 +305,7 @@
           ],
           "note": "UC-58 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (empty-state flags)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -327,7 +327,7 @@
           ],
           "note": "UC-58 | BR-404 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (canManage)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -348,7 +348,7 @@
           ],
           "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (member history empty)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -370,7 +370,7 @@
           ],
           "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (working facts null)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -392,7 +392,7 @@
           ],
           "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -412,7 +412,7 @@
           ],
           "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -430,7 +430,7 @@
           ],
           "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -451,7 +451,7 @@
           ],
           "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Deactivated_and_guest_callers_are_refused_the_minutes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -473,7 +473,7 @@
           ],
           "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -494,7 +494,7 @@
           ],
           "note": "UC-58 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_row_of_line_text_reads_back_as_html_and_exports)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -524,7 +524,7 @@
           ],
           "note": "UC-58 AF-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -546,7 +546,7 @@
           ],
           "note": "UC-58 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Chair_and_secretary_open_any_revision)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -567,7 +567,7 @@
           ],
           "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -588,7 +588,7 @@
           ],
           "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Strangers_and_unknown_ids_learn_nothing_about_a_revision)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -606,7 +606,7 @@
           ],
           "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Reading_a_revision_without_signing_in_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -628,7 +628,7 @@
           ],
           "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (A_revision_that_cannot_be_read_answers_MSG403)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -663,7 +663,7 @@
           ],
           "note": "UC-60 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text; The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -686,7 +686,7 @@
           ],
           "note": "UC-60 | BR-385 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Saved_html_is_kept_to_the_allow_list)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -711,7 +711,7 @@
           ],
           "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -733,7 +733,7 @@
           ],
           "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Two_saves_from_the_same_load_cannot_both_succeed)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -755,7 +755,7 @@
           ],
           "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -777,7 +777,7 @@
           ],
           "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -798,7 +798,7 @@
           ],
           "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -819,7 +819,7 @@
           ],
           "note": "UC-60 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -840,7 +840,7 @@
           ],
           "note": "UC-60 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -861,7 +861,7 @@
           ],
           "note": "UC-60 EX-4 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -883,7 +883,7 @@
           ],
           "note": "UC-60 EX-4 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -901,7 +901,7 @@
           ],
           "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -925,7 +925,7 @@
           ],
           "note": "UC-60 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -955,7 +955,7 @@
           ],
           "note": "UC-60 AF-1 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_word_file_of_the_draft)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -978,7 +978,7 @@
           ],
           "note": "UC-60 AF-2 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_pdf_of_the_draft_in_its_own_font)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1000,7 +1000,7 @@
           ],
           "note": "UC-60 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (An_unknown_export_format_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1022,7 +1022,7 @@
           ],
           "note": "UC-60 EX-6 | UC-58 EX-4 | BR-390 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_secret_meeting_minutes_are_not_exported); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Issued_minutes_of_a_secret_meeting_are_read_on_screen_only)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1043,7 +1043,7 @@
           ],
           "note": "UC-58 AF-3 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1065,7 +1065,7 @@
           ],
           "note": "UC-58 EX-2 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1083,7 +1083,7 @@
           ],
           "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1105,7 +1105,7 @@
           ],
           "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1139,7 +1139,7 @@
           ],
           "note": "UC-61 | BR-404 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (waiting notification title/body)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1161,7 +1161,7 @@
           ],
           "note": "UC-61 AF-2 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1182,7 +1182,7 @@
           ],
           "note": "UC-61 EX-1 | BR-404 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1205,7 +1205,7 @@
           ],
           "note": "UC-61 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1227,7 +1227,7 @@
           ],
           "note": "UC-61 EX-2 | BR-405 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1250,7 +1250,7 @@
           ],
           "note": "UC-61 EX-4 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1271,7 +1271,7 @@
           ],
           "note": "UC-61 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1295,7 +1295,7 @@
           ],
           "note": "UC-61 EX-5 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1313,7 +1313,7 @@
           ],
           "note": "UC-61 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Submitting_without_signing_in_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1348,7 +1348,7 @@
           ],
           "note": "UC-64 | BR-408 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1373,7 +1373,7 @@
           ],
           "note": "UC-64 | BR-411 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (issued notification title/body and email words/link)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1397,7 +1397,7 @@
           ],
           "note": "UC-64 AF-1 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issuing_a_correction_tells_readers_it_is_a_correction) (correction notification body)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1420,7 +1420,7 @@
           ],
           "note": "UC-64 EX-1 | UC-64 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1442,7 +1442,7 @@
           ],
           "note": "UC-64 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1463,7 +1463,7 @@
           ],
           "note": "UC-64 EX-3 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1487,7 +1487,7 @@
           ],
           "note": "UC-64 EX-4 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Approving_when_the_save_fails_issues_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1505,7 +1505,7 @@
           ],
           "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Approving_without_signing_in_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1539,7 +1539,7 @@
           ],
           "note": "UC-65 | BR-407 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Only_the_latest_return_reason_is_kept) (return notification title/body)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1561,7 +1561,7 @@
           ],
           "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1583,7 +1583,7 @@
           ],
           "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting) (2,001 refused); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (A_two_thousand_character_return_reason_is_accepted) (2,000 accepted)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1606,7 +1606,7 @@
           ],
           "note": "UC-65 EX-1 | UC-65 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1627,7 +1627,7 @@
           ],
           "note": "UC-65 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1648,7 +1648,7 @@
           ],
           "note": "UC-65 EX-6 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1670,7 +1670,7 @@
           ],
           "note": "UC-65 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Only_the_latest_return_reason_is_kept)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1694,7 +1694,7 @@
           ],
           "note": "UC-65 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Returning_when_the_save_fails_changes_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1712,7 +1712,7 @@
           ],
           "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Returning_without_signing_in_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1744,7 +1744,7 @@
           ],
           "note": "UC-83 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1767,7 +1767,7 @@
           ],
           "note": "UC-83 | BR-409 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1788,7 +1788,7 @@
           ],
           "note": "UC-83 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1809,7 +1809,7 @@
           ],
           "note": "UC-83 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1830,7 +1830,7 @@
           ],
           "note": "UC-83 EX-3 | BR-410 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1851,7 +1851,7 @@
           ],
           "note": "UC-83 EX-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1875,7 +1875,7 @@
           ],
           "note": "UC-83 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Correcting_when_the_save_fails_creates_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1893,7 +1893,7 @@
           ],
           "note": "UC-83 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Correcting_without_signing_in_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]

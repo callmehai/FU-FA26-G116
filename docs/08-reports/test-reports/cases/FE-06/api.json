@@ -30,7 +30,7 @@
           "note": "UC-14 · UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantCreationLookupTests.cs (Creator_can_find_active_people_and_create_without_admin_access)",
           "id": "PART_API_IT01",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,7 +51,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_NeverListsDeactivatedAccounts)",
           "id": "PART_API_IT02",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,7 +73,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_SearchIgnoresCaseAndTreatsWildcardsLiterally)",
           "id": "PART_API_IT03",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -93,7 +93,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_EmptyPagePastTheEnd)",
           "id": "PART_API_IT04",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -114,7 +114,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_AcceptsPageSize100And200CharQuery)",
           "id": "PART_API_IT05",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -136,7 +136,7 @@
           "note": "UC-14 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_RejectsOversizedPaging)",
           "id": "PART_API_IT06",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -157,7 +157,7 @@
           "note": "UC-14 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_RejectsUnknownOrRepeatedKeys)",
           "id": "PART_API_IT07",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -175,7 +175,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_AnonymousIs401)",
           "id": "PART_API_IT08",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -195,7 +195,7 @@
           "note": "UC-14 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantOptions_MemberWithoutCreatorIs403)",
           "id": "PART_API_IT09",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -223,7 +223,7 @@
           "note": "UC-27 · BR-79 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_and_secretary_manage_before_publication)",
           "id": "PART_API_IT10",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -244,7 +244,7 @@
           "note": "UC-27 · UC-29 · BR-105 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT11",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -265,7 +265,7 @@
           "note": "UC-29 · BR-106 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Answered_invitation_put_and_no_op_match_read_permissions)",
           "id": "PART_API_IT12",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -285,7 +285,7 @@
           "note": "UC-29 · BR-105 · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Context_tracks_chair_authority_and_removed_contracts_are_rejected)",
           "id": "PART_API_IT13",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -306,7 +306,7 @@
           "note": "UC-28b · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Context_tracks_chair_authority_and_removed_contracts_are_rejected)",
           "id": "PART_API_IT14",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -327,7 +327,7 @@
           "note": "UC-28b · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Context_tracks_chair_authority_and_removed_contracts_are_rejected)",
           "id": "PART_API_IT15",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -347,7 +347,7 @@
           "note": "UC-27 · BR-80 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT16",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -367,7 +367,7 @@
           "note": "UC-27 · BR-80 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT17",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -387,7 +387,7 @@
           "note": "UC-27 · BR-79 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Removed_organizer_keeps_read_access_but_cannot_manage_roster)",
           "id": "PART_API_IT18",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -407,7 +407,7 @@
           "note": "UC-27 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_reads_prepublication_and_member_does_not)",
           "id": "PART_API_IT19",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -426,7 +426,7 @@
           "note": "UC-27 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT20",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -444,7 +444,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantContext_UnknownMeetingIs404)",
           "id": "PART_API_IT21",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -462,7 +462,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantContext_AnonymousIs401)",
           "id": "PART_API_IT22",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -483,7 +483,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
           "id": "PART_API_IT23",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -503,7 +503,7 @@
           "note": "UC-27 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ParticipantContext_RejectsQueryString)",
           "id": "PART_API_IT24",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -524,7 +524,7 @@
           "note": "UC-27 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestMeetingAccessTests.cs (Guest_reads_the_invited_meeting_like_a_member_and_nothing_else)",
           "id": "PART_API_IT25",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -554,7 +554,7 @@
           "note": "UC-27 · BR-176 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT26",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -576,7 +576,7 @@
           "note": "UC-30 · BR-115 · BR-176 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_owned_without_attendance_changes)",
           "id": "PART_API_IT27",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -597,7 +597,7 @@
           "note": "UC-27 · UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_sessions_are_independent_and_profile_does_not_replace_invitation_evidence)",
           "id": "PART_API_IT28",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -619,7 +619,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_SearchesNameEmailAndInvitedName)",
           "id": "PART_API_IT29",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -641,7 +641,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Five_hundred_rows_are_paged_and_one_hundred_recipient_batch_avoids_n_plus_one_reads)",
           "id": "PART_API_IT30",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -662,7 +662,7 @@
           "note": "UC-27 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_AcceptsPageSize100ButNot101)",
           "id": "PART_API_IT31",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -684,7 +684,7 @@
           "note": "UC-27 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_RejectsBadPagingKeys)",
           "id": "PART_API_IT32",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -706,7 +706,7 @@
           "note": "UC-27 · UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
           "id": "PART_API_IT33",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -728,7 +728,7 @@
           "note": "UC-27 · BR-176 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
           "id": "PART_API_IT34",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -747,7 +747,7 @@
           "note": "UC-27 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_reads_prepublication_and_member_does_not)",
           "id": "PART_API_IT35",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -767,7 +767,7 @@
           "note": "UC-27 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT36",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -785,7 +785,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_AnonymousIs401)",
           "id": "PART_API_IT37",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -806,7 +806,7 @@
           "note": "UC-27 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
           "id": "PART_API_IT38",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -836,7 +836,7 @@
           "note": "UC-28a · BR-82 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT39",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -856,7 +856,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (EditorOptions_SearchesNameAndEmailWithPaging)",
           "id": "PART_API_IT40",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -876,7 +876,7 @@
           "note": "UC-28a · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (EditorOptions_RejectsOversizedPageAndUnknownKeys)",
           "id": "PART_API_IT41",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -896,7 +896,7 @@
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
           "id": "PART_API_IT42",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -916,7 +916,7 @@
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT43",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -935,7 +935,7 @@
           "note": "UC-28a · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (EditorOptions_StrangerIs404)",
           "id": "PART_API_IT44",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -953,7 +953,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (EditorOptions_AnonymousIs401)",
           "id": "PART_API_IT45",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -986,7 +986,7 @@
           "note": "UC-28a · BR-88 · MSG96 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_and_secretary_manage_before_publication)",
           "id": "PART_API_IT46",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1011,7 +1011,7 @@
           "note": "UC-28a · BR-79 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_and_secretary_manage_before_publication)",
           "id": "PART_API_IT47",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1035,7 +1035,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Five_hundred_rows_are_paged_and_one_hundred_recipient_batch_avoids_n_plus_one_reads)",
           "id": "PART_API_IT48",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1059,7 +1059,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT49",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1082,7 +1082,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT50",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1105,7 +1105,7 @@
           "note": "UC-28a · BR-82 · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT51",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1129,7 +1129,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT52",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1152,7 +1152,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Internal_invitee_matching_current_guest_returns_userIds_error)",
           "id": "PART_API_IT53",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1175,7 +1175,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
           "id": "PART_API_IT54",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1200,7 +1200,7 @@
           "note": "UC-28a · BR-126 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_RefusesSecondChair)",
           "id": "PART_API_IT55",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1224,7 +1224,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
           "id": "PART_API_IT56",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1247,7 +1247,7 @@
           "note": "UC-28a · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT57",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1272,7 +1272,7 @@
           "note": "UC-28a · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Concurrent_adds_use_revision_and_store_one_assignment_and_delivery_intent)",
           "id": "PART_API_IT58",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1292,7 +1292,7 @@
           "note": "UC-28a · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_RejectsQueryString)",
           "id": "PART_API_IT59",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1313,7 +1313,7 @@
           "note": "UC-28a · MSG34 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT60",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1336,7 +1336,7 @@
           "note": "UC-28a · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
           "id": "PART_API_IT61",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1359,7 +1359,7 @@
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT62",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1381,7 +1381,7 @@
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT63",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1405,7 +1405,7 @@
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
           "id": "PART_API_IT64",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1427,7 +1427,7 @@
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Removed_organizer_keeps_read_access_but_cannot_manage_roster)",
           "id": "PART_API_IT65",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1450,7 +1450,7 @@
           "note": "UC-28a · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_StrangerIs404)",
           "id": "PART_API_IT66",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1468,7 +1468,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_CreateAnonymousIs401)",
           "id": "PART_API_IT67",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1491,7 +1491,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
           "id": "PART_API_IT68",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1518,7 +1518,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Events_include_removed_reader_and_response_audit_only_contains_changed_row)",
           "id": "PART_API_IT69",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1550,7 +1550,7 @@
           "note": "UC-28b · BR-79 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_and_secretary_manage_before_publication)",
           "id": "PART_API_IT70",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1574,7 +1574,7 @@
           "note": "UC-28b · MSG154 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_SameRoleIsNoOp)",
           "id": "PART_API_IT71",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1598,7 +1598,7 @@
           "note": "UC-28b · BR-294 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Chair_replacement_requires_confirmation_and_rolls_back_both_roles_on_second_save_failure)",
           "id": "PART_API_IT72",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1622,7 +1622,7 @@
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Chair_replacement_requires_confirmation_and_rolls_back_both_roles_on_second_save_failure)",
           "id": "PART_API_IT73",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1645,7 +1645,7 @@
           "note": "UC-28b · BR-126 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_can_never_be_removed_or_demoted_without_a_replacement)",
           "id": "PART_API_IT74",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1668,7 +1668,7 @@
           "note": "UC-28b · BR-122 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
           "id": "PART_API_IT75",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1692,7 +1692,7 @@
           "note": "UC-28b · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
           "id": "PART_API_IT76",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1716,7 +1716,7 @@
           "note": "UC-28b · BR-122 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_DraftMeetingMayHaveNoSecretary)",
           "id": "PART_API_IT77",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1740,7 +1740,7 @@
           "note": "UC-28b · BR-126 · MSG256 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Secretary_cannot_touch_active_chair_and_chair_can_hand_over)",
           "id": "PART_API_IT78",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1764,7 +1764,7 @@
           "note": "UC-28b · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_chair_can_only_be_demoted_during_confirmed_replacement_by_active_member)",
           "id": "PART_API_IT79",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1787,7 +1787,7 @@
           "note": "UC-28b · UC-73 · BR-126 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Secretary_cannot_touch_active_chair_and_chair_can_hand_over)",
           "id": "PART_API_IT80",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1810,7 +1810,7 @@
           "note": "UC-28b · BR-295 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Invalid_chair_recipient_is_rejected)",
           "id": "PART_API_IT81",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1834,7 +1834,7 @@
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_RejectsEmptyDuplicateUnknownAndOversizedChanges)",
           "id": "PART_API_IT82",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1856,7 +1856,7 @@
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
           "id": "PART_API_IT83",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1877,7 +1877,7 @@
           "note": "UC-28b · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
           "id": "PART_API_IT84",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1900,7 +1900,7 @@
           "note": "UC-28b · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_UnknownParticipantIs404)",
           "id": "PART_API_IT85",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1922,7 +1922,7 @@
           "note": "UC-28b · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT86",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1944,7 +1944,7 @@
           "note": "UC-28b · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
           "id": "PART_API_IT87",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1964,7 +1964,7 @@
           "note": "UC-28b · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_StrangerIs404AndAnonymousIs401)",
           "id": "PART_API_IT88",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1990,7 +1990,7 @@
           "note": "UC-28b · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_PublishedChangeNotifiesNewRoleHolderAndAudits)",
           "id": "PART_API_IT89",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -2021,7 +2021,7 @@
           "note": "UC-28c · MSG103 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
           "id": "PART_API_IT90",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2045,7 +2045,7 @@
           "note": "UC-28c · BR-337 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_ClearsAgendaPresenterAndSpeakingQueue)",
           "id": "PART_API_IT91",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2069,7 +2069,7 @@
           "note": "UC-28c · BR-88 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
           "id": "PART_API_IT92",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2092,7 +2092,7 @@
           "note": "UC-28c · BR-126 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_can_never_be_removed_or_demoted_without_a_replacement)",
           "id": "PART_API_IT93",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2115,7 +2115,7 @@
           "note": "UC-28c · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
           "id": "PART_API_IT94",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2137,7 +2137,7 @@
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_UnknownAssignmentIs404)",
           "id": "PART_API_IT95",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2159,7 +2159,7 @@
           "note": "UC-28c · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_RejectsRequestBody)",
           "id": "PART_API_IT96",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2180,7 +2180,7 @@
           "note": "UC-28c · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT97",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2201,7 +2201,7 @@
           "note": "UC-28c · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT98",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2222,7 +2222,7 @@
           "note": "UC-28c · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
           "id": "PART_API_IT99",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2242,7 +2242,7 @@
           "note": "UC-28c · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_StrangerIs404AndAnonymousIs401)",
           "id": "PART_API_IT100",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2267,7 +2267,7 @@
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_PublishedRemovalNotifiesPersonAndAudits)",
           "id": "PART_API_IT101",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -2300,7 +2300,7 @@
           "note": "UC-28a · BR-88 · MSG96 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
           "id": "PART_API_IT102",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2324,7 +2324,7 @@
           "note": "UC-28a · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantDeliveryTests.cs (Materialization_is_atomic_deduplicated_and_smtp_disabled_retains_intent)",
           "id": "PART_API_IT103",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2347,7 +2347,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_TrimsNameAndAcceptsBoundaryLengths)",
           "id": "PART_API_IT104",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2370,7 +2370,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT105",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2393,7 +2393,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT106",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2416,7 +2416,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
           "id": "PART_API_IT107",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2438,7 +2438,7 @@
           "note": "UC-28a · BR-82 · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_RejectsEmailOfCurrentInternalParticipant)",
           "id": "PART_API_IT108",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2460,7 +2460,7 @@
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
           "id": "PART_API_IT109",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2481,7 +2481,7 @@
           "note": "UC-28a · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT110",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2503,7 +2503,7 @@
           "note": "UC-28a · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT111",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2525,7 +2525,7 @@
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT112",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2547,7 +2547,7 @@
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
           "id": "PART_API_IT113",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2569,7 +2569,7 @@
           "note": "UC-28a · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_StrangerIs404)",
           "id": "PART_API_IT114",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2587,7 +2587,7 @@
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_AnonymousIs401)",
           "id": "PART_API_IT115",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -2619,7 +2619,7 @@
           "note": "UC-28c · BR-181 · MSG103 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
           "id": "PART_API_IT116",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2642,7 +2642,7 @@
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_ClearsGuestAsAgendaPresenter)",
           "id": "PART_API_IT117",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2665,7 +2665,7 @@
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantDeliveryTests.cs (Removal_requires_materialized_invitation_for_same_owner)",
           "id": "PART_API_IT118",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2687,7 +2687,7 @@
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_UnknownOrRevokedInvitationIs404)",
           "id": "PART_API_IT119",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2711,7 +2711,7 @@
           "note": "UC-28c · MSG97 · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT120",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2733,7 +2733,7 @@
           "note": "UC-28c · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT121",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2757,7 +2757,7 @@
           "note": "UC-28c · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_MemberIs403StrangerIs404AnonymousIs401)",
           "id": "PART_API_IT122",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -2786,7 +2786,7 @@
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_owned_without_attendance_changes)",
           "id": "PART_API_IT123",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2807,7 +2807,7 @@
           "note": "UC-29 · BR-106 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Answered_invitation_put_and_no_op_match_read_permissions)",
           "id": "PART_API_IT124",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2828,7 +2828,7 @@
           "note": "UC-29 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
           "id": "PART_API_IT125",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2847,7 +2847,7 @@
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_DraftMeetingIs404)",
           "id": "PART_API_IT126",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2867,7 +2867,7 @@
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_OrganizerWithoutSeatIs404)",
           "id": "PART_API_IT127",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2887,7 +2887,7 @@
           "note": "UC-29 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_StrangerIs404AndAnonymousIs401)",
           "id": "PART_API_IT128",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2906,7 +2906,7 @@
           "note": "UC-29 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_RejectsQueryString)",
           "id": "PART_API_IT129",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -2938,7 +2938,7 @@
           "note": "UC-29 · BR-105 · BR-115 · MSG105 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_owned_without_attendance_changes)",
           "id": "PART_API_IT130",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2961,7 +2961,7 @@
           "note": "UC-29 · BR-105 · BR-321 · MSG105 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (A_declined_meeting_leaves_only_the_decliners_calendar)",
           "id": "PART_API_IT131",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -2984,7 +2984,7 @@
           "note": "UC-29 · BR-106 · MSG154 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Answered_invitation_put_and_no_op_match_read_permissions)",
           "id": "PART_API_IT132",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3008,7 +3008,7 @@
           "note": "UC-29 · BR-106 · MSG285 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_asked_once_and_never_of_the_chair)",
           "id": "PART_API_IT133",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3031,7 +3031,7 @@
           "note": "UC-29 · BR-105 · MSG286 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_asked_once_and_never_of_the_chair)",
           "id": "PART_API_IT134",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3056,7 +3056,7 @@
           "note": "UC-29 · MSG106 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
           "id": "PART_API_IT135",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3078,7 +3078,7 @@
           "note": "UC-29 · BR-106 · MSG107 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
           "id": "PART_API_IT136",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3099,7 +3099,7 @@
           "note": "UC-29 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
           "id": "PART_API_IT137",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3121,7 +3121,7 @@
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Respond_OrganizerWithoutSeatIs404)",
           "id": "PART_API_IT138",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3141,7 +3141,7 @@
           "note": "UC-29 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Respond_StrangerIs404AndAnonymousIs401)",
           "id": "PART_API_IT139",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3163,7 +3163,7 @@
           "note": "UC-29 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
           "id": "PART_API_IT140",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3184,7 +3184,7 @@
           "note": "UC-29 · UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Response_racing_removal_cannot_resurrect_assignment_or_access)",
           "id": "PART_API_IT141",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -3214,7 +3214,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT142",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3234,7 +3234,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT143",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3254,7 +3254,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
           "id": "PART_API_IT144",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3275,7 +3275,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Legacy_values_are_separate_and_can_be_corrected_without_rewriting_others)",
           "id": "PART_API_IT145",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3297,7 +3297,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Attendance_PagesListAndEmptyPagePastEnd)",
           "id": "PART_API_IT146",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3318,7 +3318,7 @@
           "note": "UC-31 · MSG278 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Read_failure_query_media_size_and_wrong_identifiers_have_stable_codes)",
           "id": "PART_API_IT147",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3337,7 +3337,7 @@
           "note": "UC-31 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT148",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3358,7 +3358,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT149",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3379,7 +3379,7 @@
           "note": "UC-31 · MSG289 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Corrupt_database_attendance_is_not_silently_mapped_to_unmarked)",
           "id": "PART_API_IT150",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -3412,7 +3412,7 @@
           "note": "UC-31 · BR-170 · MSG147 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
           "id": "PART_API_IT151",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3436,7 +3436,7 @@
           "note": "UC-31 · BR-172 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
           "id": "PART_API_IT152",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3459,7 +3459,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Attendance_CanMarkGuest)",
           "id": "PART_API_IT153",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3483,7 +3483,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
           "id": "PART_API_IT154",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3506,7 +3506,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Legacy_values_are_separate_and_can_be_corrected_without_rewriting_others)",
           "id": "PART_API_IT155",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3531,7 +3531,7 @@
           "note": "UC-31 · BR-172 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceConcurrencyTests.cs (Reverse_order_batches_do_not_deadlock_and_stale_batch_is_atomic)",
           "id": "PART_API_IT156",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3554,7 +3554,7 @@
           "note": "UC-31 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Invalid_entries_are_rejected)",
           "id": "PART_API_IT157",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3577,7 +3577,7 @@
           "note": "UC-31 · BR-172 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceConcurrencyTests.cs (Concurrent_writers_compare_versions_after_waiting)",
           "id": "PART_API_IT158",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3600,7 +3600,7 @@
           "note": "UC-31 · BR-170 · MSG149 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
           "id": "PART_API_IT159",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3622,7 +3622,7 @@
           "note": "UC-31 · MSG149 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
           "id": "PART_API_IT160",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3645,7 +3645,7 @@
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT161",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3669,7 +3669,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT162",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3689,7 +3689,7 @@
           "note": "UC-31 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
           "id": "PART_API_IT163",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3714,7 +3714,7 @@
           "note": "UC-31 · MSG148 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Strict_body_validation)",
           "id": "PART_API_IT164",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3737,7 +3737,7 @@
           "note": "UC-31 · MSG148 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Strict_body_validation)",
           "id": "PART_API_IT165",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3758,7 +3758,7 @@
           "note": "UC-31 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Chunked_requests_cannot_bypass_body_size_limit)",
           "id": "PART_API_IT166",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3783,7 +3783,7 @@
           "note": "UC-31 · MSG150 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Persistence_failure_rolls_back_batch_and_transport_failure_keeps_commit)",
           "id": "PART_API_IT167",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3803,7 +3803,7 @@
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Response_and_role_updates_preserve_attendance_token_and_ABA_does_not)",
           "id": "PART_API_IT168",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -3833,7 +3833,7 @@
           "note": "UC-73 · BR-295 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Candidates_filter_before_search_and_paging_without_guest_profile_dependency)",
           "id": "PART_API_IT169",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3855,7 +3855,7 @@
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Candidates_filter_before_search_and_paging_without_guest_profile_dependency)",
           "id": "PART_API_IT170",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3876,7 +3876,7 @@
           "note": "UC-73 · MSG258 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (No_eligible_members_is_successful_empty_state_and_has_no_side_effects)",
           "id": "PART_API_IT171",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3896,7 +3896,7 @@
           "note": "UC-73 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Query_validation_is_strict)",
           "id": "PART_API_IT172",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3917,7 +3917,7 @@
           "note": "UC-73 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT173",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3936,7 +3936,7 @@
           "note": "UC-73 · BR-126 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Status_gate_precedes_validation)",
           "id": "PART_API_IT174",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3957,7 +3957,7 @@
           "note": "UC-73 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT175",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3977,7 +3977,7 @@
           "note": "UC-73 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT176",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -3998,7 +3998,7 @@
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ChairCandidates_DeactivatedChairIs403)",
           "id": "PART_API_IT177",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4019,7 +4019,7 @@
           "note": "UC-73 · MSG95 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Missing_secretary_blocks_swap_and_read_failures_have_standard_mapping)",
           "id": "PART_API_IT178",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -4051,7 +4051,7 @@
           "note": "UC-73 · BR-126 · BR-295 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
           "id": "PART_API_IT179",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4073,7 +4073,7 @@
           "note": "UC-73 · BR-126 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
           "id": "PART_API_IT180",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4100,7 +4100,7 @@
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
           "id": "PART_API_IT181",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4124,7 +4124,7 @@
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Transport_failure_after_commit_does_not_report_false_save_failure)",
           "id": "PART_API_IT182",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4149,7 +4149,7 @@
           "note": "UC-73 · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Strict_body_validation_precedes_missing_header)",
           "id": "PART_API_IT183",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4174,7 +4174,7 @@
           "note": "UC-73 · BR-295 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Invalid_recipient_precedes_stale_revision)",
           "id": "PART_API_IT184",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4194,7 +4194,7 @@
           "note": "UC-73 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Invalid_recipient_precedes_stale_revision)",
           "id": "PART_API_IT185",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4219,7 +4219,7 @@
           "note": "UC-73 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
           "id": "PART_API_IT186",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4239,7 +4239,7 @@
           "note": "UC-73 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Header_media_length_and_query_limits_are_enforced)",
           "id": "PART_API_IT187",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4260,7 +4260,7 @@
           "note": "UC-73 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Body_media_and_size_errors_precede_unknown_query)",
           "id": "PART_API_IT188",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4284,7 +4284,7 @@
           "note": "UC-73 · BR-126 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT189",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4307,7 +4307,7 @@
           "note": "UC-73 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Status_gate_precedes_validation)",
           "id": "PART_API_IT190",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4327,7 +4327,7 @@
           "note": "UC-73 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT191",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4347,7 +4347,7 @@
           "note": "UC-73 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
           "id": "PART_API_IT192",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4371,7 +4371,7 @@
           "note": "UC-73 · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Missing_secretary_blocks_swap_and_read_failures_have_standard_mapping)",
           "id": "PART_API_IT193",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4396,7 +4396,7 @@
           "note": "UC-73 · MSG102 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Failure_at_either_save_rolls_back_roles_revision_and_all_side_effects)",
           "id": "PART_API_IT194",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -4417,7 +4417,7 @@
           "note": "UC-73 · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
           "id": "PART_API_IT195",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]

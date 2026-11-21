@@ -29,7 +29,7 @@
             "Sign in as the Member and repeat step 2."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -49,7 +49,7 @@
             "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,7 +66,7 @@
             "Send GET /api/meetings/{meetingId}/votes with no Authorization header."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -90,7 +90,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -120,7 +120,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{secretVoteId}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -140,7 +140,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{otherMeetingsVoteId}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -164,7 +164,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -195,7 +195,7 @@
             "Body: { \"title\": \"Thông qua kế hoạch quý IV\", \"description\": \"\", \"options\": [\"Thông qua\", \"Không thông qua\"], \"isAnonymous\": false, \"eligibleRoles\": [\"Chair\", \"Member\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -218,7 +218,7 @@
             "Body: { \"title\": \"\", \"options\": [\"Một\"], \"eligibleRoles\": [] } (missing isAnonymous, one option, no roles)"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -240,7 +240,7 @@
             "Send it with Content-Type: application/json and a body larger than 64 KiB."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -260,7 +260,7 @@
             "Sign in as the Chair and repeat it."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -281,7 +281,7 @@
             "Repeat it with \"eligibleRoles\": [\"Guest\"] while no Guest may vote."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -306,7 +306,7 @@
             "Body: a valid draft with two options."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -336,7 +336,7 @@
             "Body: the full draft with a new title and new options."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -357,7 +357,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{draftId} and check the title."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -376,7 +376,7 @@
             "Send PUT /api/meetings/{meetingId}/votes/{voteId} with a valid draft body."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -404,7 +404,7 @@
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId} with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -424,7 +424,7 @@
             "Sign in as the Chair and send DELETE for the open vote."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -454,7 +454,7 @@
             "Body: { \"meetingDocumentIds\": [\"<doc1>\", \"<doc2>\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -474,7 +474,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with Body: { \"meetingDocumentIds\": [\"<foreign doc>\"] }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -493,7 +493,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with the already linked document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -512,7 +512,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{openVoteId}/documents with a meeting document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -542,7 +542,7 @@
             "Body: { \"documentIds\": [\"<library doc>\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -561,7 +561,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library with Body: { \"documentIds\": [] }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -589,7 +589,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -609,7 +609,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the .txt file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -629,7 +629,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the 11 files."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -649,7 +649,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -670,7 +670,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -698,7 +698,7 @@
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId} with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -717,7 +717,7 @@
             "Send DELETE for that document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -745,7 +745,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -764,7 +764,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -784,7 +784,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{draftId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -804,7 +804,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -828,7 +828,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -858,7 +858,7 @@
             "Body: { \"optionId\": \"<one option id from the vote detail>\" }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -879,7 +879,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{voteId} and check the counts."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -899,7 +899,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -918,7 +918,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -938,7 +938,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: {}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -958,7 +958,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<foreign option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -979,7 +979,7 @@
             "Confirm the document read, then repeat step 2."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -999,7 +999,7 @@
             "Repeat step 1."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1023,7 +1023,7 @@
             "Body: { \"optionId\": \"<option id>\" }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1044,7 +1044,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1073,7 +1073,7 @@
             "Sign in as a voter and send a ballot."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1092,7 +1092,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1116,7 +1116,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1147,7 +1147,7 @@
             "Repeat step 2 with \"conclusion\": \"NotPassed\"."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1166,7 +1166,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Maybe\", \"note\": \"\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1185,7 +1185,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Passed\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1210,7 +1210,7 @@
             "Body: { \"conclusion\": \"Passed\" }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]

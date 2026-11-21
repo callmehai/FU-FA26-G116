@@ -289,6 +289,57 @@ def clear_from(ws, first_row):
         ws.delete_rows(first_row, ws.max_row - first_row + 1)
 
 
+HEADER_BLUE = ('FF000080', 'FF333399')     # house-template header fills of the first three sheets
+HEADER_GREEN = 'FF76923C'                  # header fill of the feature sheets
+TEXT_COLOURS = ('FF993300', 'FF008000', 'FF0000FF')   # brown labels, green notes, blue descriptions
+
+
+def harmonise(wb):
+    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Calibri 11, the green
+    header fill, thin borders, black text (links stay blue), instead of the house template's Tahoma,
+    navy headers, hair borders and brown/green/blue text."""
+    from openpyxl.styles import Border, Font, PatternFill, Side
+    thin = Side(style='thin')
+    for name in ('Cover', 'Test Cases', 'Test Statistics'):
+        ws = wb[name]
+        for row in ws.iter_rows():
+            for cell in row:
+                font = copy(cell.font)
+                size = 20 if (font.sz or 0) >= 20 else 11
+                rgb = font.color.rgb if font.color is not None and font.color.type == 'rgb' else None
+                if cell.hyperlink:
+                    colour = font.color
+                elif rgb in TEXT_COLOURS:
+                    colour = None
+                else:
+                    colour = font.color
+                cell.font = Font(name='Calibri', sz=size, b=font.b, i=False if size == 11 else font.i,
+                                 u=font.u if cell.hyperlink else None, color=colour)
+                fill = cell.fill
+                if fill.fill_type == 'solid' and fill.fgColor.type == 'rgb' and fill.fgColor.rgb in HEADER_BLUE:
+                    cell.fill = PatternFill('solid', fgColor=HEADER_GREEN)
+                border = cell.border
+                if any(side is not None and side.style == 'hair' for side in (border.left, border.right, border.top, border.bottom)):
+                    cell.border = Border(*(thin if side is not None and side.style else side
+                                           for side in (border.left, border.right, border.top, border.bottom)))
+
+    # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
+    # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
+    for ws in wb.worksheets:
+        if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
+            continue
+        for row in ws.iter_rows():
+            for cell in row:
+                font = copy(cell.font)
+                if font.name != 'Calibri' or not font.sz:
+                    font.name = 'Calibri'
+                    font.sz = font.sz or 11
+                    cell.font = font
+    normal = wb._named_styles['Normal']
+    normal.font = Font(name='Calibri', sz=11)
+    wb._fonts[0] = Font(name='Calibri', sz=11)
+
+
 def build_book(book, m):
     import openpyxl
     from openpyxl.worksheet.datavalidation import DataValidation
@@ -297,20 +348,26 @@ def build_book(book, m):
     wb = openpyxl.load_workbook(TEMPLATE)
     cover, tc, ts, proto = wb['Cover'], wb['Test Cases'], wb['Test Statistics'], wb['Feature']
 
-    # Cover
+    # Cover. A book may carry its own version and issue date (meta["version"], meta["issueDate"]) and
+    # a change may be limited to some books (change["books"]); the rest is shared.
+    version = meta.get('version', m['cover']['version'])
+    issue_date = meta.get('issueDate', m['cover']['issueDate'])
+    changes = [ch for ch in m['cover']['changes'] if book in ch.get('books', BOOKS)]
     cover['B2'] = meta['title']
     cover['B4'] = m['project']
     cover['B5'] = m['projectCode']
     cover['F4'] = m['cover']['creator']
-    cover['F5'] = m['cover']['issueDate']
-    cover['F6'] = m['cover']['version']
+    cover['F5'] = issue_date
+    cover['F6'] = version
     change_style = styles_of(cover, 11, 6)
     clear_from(cover, 11)
-    for i, ch in enumerate(m['cover']['changes']):
+    for i, ch in enumerate(changes):
         r = 11 + i
         apply(cover, r, change_style)
         for col, key in zip('ABCDEF', ('date', 'version', 'item', 'type', 'description', 'reference')):
             cover[f'{col}{r}'] = ch[key]
+        cover.row_dimensions[r].height = height_for(
+            [(ch['item'], 14.4), (ch['description'], 75.9), (ch['reference'], 48.1)], line_height=15)
 
     # Feature sheets, cloned from the prototype
     group_style = styles_of(proto, 11, 15)
@@ -379,7 +436,12 @@ def build_book(book, m):
         tc[f'D{r}'] = sheet['sheet']
         tc[f'E{r}'] = f"{sheet[book]['requirement']} ({n} cases)"
         tc[f'F{r}'] = doc['precondition']
-        tc.row_dimensions[r].height = height_for([(tc[f'E{r}'].value, 28), (doc['precondition'], 30)])
+        for col in 'BCDEF':
+            al = copy(tc[f'{col}{r}'].alignment)
+            al.vertical = 'top'
+            tc[f'{col}{r}'].alignment = al
+        tc.row_dimensions[r].height = height_for(
+            [(tc[f'C{r}'].value, 32), (tc[f'E{r}'].value, 23), (doc['precondition'], 26)], line_height=15)
 
     # Test Statistics
     data_style = styles_of(ts, 11, 8)
@@ -387,8 +449,8 @@ def build_book(book, m):
     cover_style = styles_of(ts, 14, 8)
     ts['C3'] = m['project']
     ts['C4'] = m['projectCode']
-    ts['C5'] = f"{m['projectCode']}_{'API_Test' if book == 'api' else 'Integration_Test'}_v{m['cover']['version']}"
-    ts['G5'] = m['cover']['issueDate']
+    ts['C5'] = f"{m['projectCode']}_{'API_Test' if book == 'api' else 'Integration_Test'}_v{version}"
+    ts['G5'] = issue_date
     ts['C6'] = meta['note']
     clear_from(ts, 11)
     for i, (sheet, _, _) in enumerate(built, 1):
@@ -413,6 +475,15 @@ def build_book(book, m):
         ts[f'C{r}'] = label
         ts[f'E{r}'] = formula
         ts[f'F{r}'] = '%'
+
+    for r in range(11, t):
+        ts.row_dimensions[r].height = 21 if len(str(ts[f'C{r}'].value)) <= 18 else 32
+    ts.row_dimensions[t].height = 21
+    notes = copy(ts['C6'].alignment)
+    notes.wrap_text = True
+    notes.vertical = 'top'
+    ts['C6'].alignment = notes
+    harmonise(wb)
 
     target = REPORTS / meta['file']
     try:

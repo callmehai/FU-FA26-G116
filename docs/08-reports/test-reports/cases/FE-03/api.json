@@ -30,7 +30,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (List_returns_every_role_with_its_user_count_in_display_order) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (List_puts_built_in_roles_first_then_custom_roles_by_creation)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Anonymous_callers_get_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,7 +67,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Callers_without_admin_users_get_403)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -87,7 +87,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (A_token_claiming_admin_users_is_refused_once_the_account_is_deactivated)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -119,7 +119,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG19_with_201_and_a_location; Create_records_the_signed_in_administrator_as_the_actor) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_saves_the_role_with_its_capabilities_and_answers_with_it; Create_records_role_created_with_what_was_created)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -140,7 +140,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_without_capabilities_is_accepted) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_without_capabilities_is_valid; Create_accepts_capability_codes_in_any_casing_and_ignores_repeats) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG19_with_201_and_a_location)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -160,7 +160,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_trims_the_name_and_collapses_inner_whitespace; Create_stores_a_blank_description_as_null; Create_stores_the_name_in_NFC_and_measures_it_that_way) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG19_with_201_and_a_location)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -181,7 +181,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG20_with_400_and_the_offending_fields) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_reports_every_invalid_field_at_once; Create_names_every_unknown_capability)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -202,7 +202,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_accepts_64_characters_and_refuses_65; Create_measures_the_name_after_collapsing_whitespace) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG19_with_201_and_a_location) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG20_with_400_and_the_offending_fields)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -221,7 +221,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_refuses_a_description_over_256_characters) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG20_with_400_and_the_offending_fields)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -241,7 +241,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG20_for_an_empty_body_rather_than_a_binding_error; Create_and_update_answer_MSG20_when_there_is_no_body_at_all)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -260,7 +260,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_refuses_a_capability_given_as_a_number; Create_names_a_null_capability_rather_than_leaving_a_blank) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG20_with_400_and_the_offending_fields)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -282,7 +282,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG21_with_409_for_a_name_already_used) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_answers_MSG21_for_a_name_already_used_in_any_casing; Create_answers_MSG21_for_the_same_name_typed_with_combining_marks; Create_answers_MSG21_for_the_name_of_a_built_in_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -303,7 +303,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_500_with_a_retry_message_when_the_database_refuses) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_answers_save_failed_when_the_database_refuses_for_another_reason)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -323,7 +323,7 @@
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Anonymous_callers_get_401; Callers_without_admin_users_get_403)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -352,7 +352,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_renames_a_custom_role_and_answers_with_it; Update_records_before_and_after)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -374,7 +374,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_ignores_capabilities_in_the_body) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -396,7 +396,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_with_nothing_changed_answers_MSG22_but_writes_nothing) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -416,7 +416,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_may_change_only_the_case_of_its_own_name) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -438,7 +438,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG20_for_an_invalid_name) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_MSG20_for_invalid_information)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -459,7 +459,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG21_for_the_name_of_another_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_MSG21_for_the_name_of_another_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -480,7 +480,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG24_with_409_for_a_built_in_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_MSG24_for_every_built_in_role; Update_answers_MSG24_before_validating)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -501,7 +501,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_404_without_a_body_for_an_unknown_role; A_role_id_that_is_not_a_guid_is_an_unmatched_route) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_not_found_when_the_role_was_deleted_before_the_save)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -522,7 +522,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG27_when_the_database_refuses) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_save_failed_when_the_database_refuses)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -542,7 +542,7 @@
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Anonymous_callers_get_401; Callers_without_admin_users_get_403)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -573,7 +573,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG23) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_removes_a_custom_role_nobody_holds_and_its_capabilities; Delete_records_the_name_and_capabilities_that_are_about_to_disappear)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -594,7 +594,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG25_with_409_and_the_user_count) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_answers_MSG25_with_the_count_while_accounts_hold_the_role; Delete_answers_MSG25_when_someone_was_given_the_role_in_the_meantime)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -613,7 +613,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG24_with_409_for_a_built_in_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_answers_MSG24_for_every_built_in_role_even_one_nobody_holds)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -632,7 +632,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_404_without_a_body_for_an_unknown_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_answers_not_found_for_an_unknown_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -654,7 +654,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG28_when_the_database_refuses) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_answers_save_failed_when_the_database_refuses_for_another_reason)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -675,7 +675,7 @@
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Anonymous_callers_get_401; Callers_without_admin_users_get_403)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -706,7 +706,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Get_returns_the_matrix_and_the_catalogue; Catalogue_entries_carry_vietnamese_labels) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Matrix_lists_every_role_even_one_with_no_capabilities; Matrix_returns_the_seeded_defaults; Matrix_carries_the_whole_capability_catalogue)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -726,7 +726,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Matrix_lists_built_in_roles_first_then_custom_roles_by_creation) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Get_returns_the_matrix_and_the_catalogue)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -743,7 +743,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Anonymous_callers_are_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -762,7 +762,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (A_caller_without_admin_users_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -783,7 +783,7 @@
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (A_token_claiming_admin_users_is_refused_once_the_role_has_lost_it; A_deactivated_administrator_is_refused_even_with_a_valid_token)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -813,7 +813,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_saves_the_requested_capabilities; Update_records_the_change_with_before_and_after)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -832,7 +832,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_accepts_a_capability_name_in_any_casing) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_ignores_duplicates_in_the_request) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -852,7 +852,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (An_empty_capability_list_is_accepted) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_can_remove_every_capability_from_a_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -872,7 +872,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_configures_a_custom_role_like_any_other) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -893,7 +893,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_that_changes_nothing_writes_nothing) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -915,7 +915,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_does_not_sign_out_the_accounts_holding_the_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_tells_everyone_holding_the_role_and_nobody_else; Update_tells_the_role_when_a_capability_is_taken_away_too) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -937,7 +937,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG17_when_removing_the_last_admin_users_grant) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_refuses_to_remove_admin_users_from_the_last_role_holding_it)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -958,7 +958,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_refuses_to_move_admin_users_to_a_role_nobody_holds; Update_refuses_when_the_only_administrator_account_is_inactive) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG17_when_removing_the_last_admin_users_grant)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -979,7 +979,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_allows_moving_admin_users_to_a_role_that_has_active_users; Granting_admin_users_to_a_role_with_users_is_allowed; A_custom_role_can_take_over_administration) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG16_and_returns_the_updated_matrix)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -999,7 +999,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG17_with_the_roleId_key_for_a_role_that_does_not_exist) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_refuses_an_unknown_role)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1019,7 +1019,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG17_for_a_capability_the_enum_does_not_know; Put_names_every_unknown_capability_not_just_the_first) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_refuses_an_unknown_capability)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1040,7 +1040,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (A_missing_capability_list_is_refused_rather_than_read_as_empty)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1059,7 +1059,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Every_rejection_carries_a_vietnamese_message)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1080,7 +1080,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Put_answers_MSG18_when_the_database_refuses) · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionServiceTests.cs (Update_answers_save_failed_when_the_database_refuses)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1100,7 +1100,7 @@
           ],
           "note": "UC-11 · Automated: tests/TrustCabinet.Web.Tests/Access/RolePermissionEndpointsTests.cs (Anonymous_callers_are_refused; A_caller_without_admin_users_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1131,7 +1131,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Entries_come_newest_first_with_each_actor_named_as_an_account_a_guest_or_the_system)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1154,7 +1154,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Every_filter_narrows_and_all_must_hold)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1178,7 +1178,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (The_keyword_matches_recorded_values_never_key_names; The_keyword_matches_the_name_the_list_shows_and_no_other_object)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1201,7 +1201,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Pages_keep_their_size_and_report_the_total)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1222,7 +1222,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (An_invalid_period_or_filter_is_refused_with_MSG469)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1243,7 +1243,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (A_keyword_longer_than_100_characters_is_refused_with_MSG469)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1263,7 +1263,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (A_log_that_cannot_be_read_answers_MSG470)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1284,7 +1284,7 @@
           ],
           "note": "UC-13 · BR-440 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Only_a_role_holding_user_administration_reads_the_log)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1304,7 +1304,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (An_audit_entry_can_be_neither_changed_nor_deleted)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1326,7 +1326,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Each_lifecycle_move_writes_an_audit_row_in_the_same_save_stamped_with_the_caller_ip; The_system_cancelling_an_overdue_meeting_is_recorded_without_an_actor)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1354,7 +1354,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Event_types_name_every_code_with_a_group) · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditEventCatalogTests.cs (Codes_are_unique_and_every_entry_has_a_label_and_a_group; Every_declared_code_has_a_name)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1374,7 +1374,7 @@
           ],
           "note": "UC-13 · Automated: tests/TrustCabinet.Web.Tests/Audit/AuditLogEndpointTests.cs (Only_a_role_holding_user_administration_reads_the_log)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]

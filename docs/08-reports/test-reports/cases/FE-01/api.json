@@ -32,7 +32,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_returns_a_token_pair_and_the_user; Login_puts_the_refresh_token_in_an_HttpOnly_cookie_and_not_in_the_body; Login_never_returns_the_password_hash)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -77,7 +77,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_unknown_email_and_a_wrong_password_are_indistinguishable) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Unknown_email_answers_exactly_like_a_wrong_password)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -98,7 +98,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Login_rejects_empty_credentials_with_MSG01_and_sets_no_cookie)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -120,7 +120,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG02_for_a_deactivated_account)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -140,7 +140,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Login_checks_the_password_before_the_account_status)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -161,7 +161,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_succeeds_when_the_role_grants_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -183,7 +183,7 @@
           ],
           "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_past_the_email_limit_answers_429_MSG414_even_with_the_right_password) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -204,7 +204,7 @@
           ],
           "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_works_again_once_the_window_has_passed)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -225,7 +225,7 @@
           ],
           "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (The_ip_limit_is_shared_by_login_google_and_password_reset)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -257,7 +257,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_linked_active_account_gets_a_token_pair; The_response_shape_matches_password_sign_in)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -281,7 +281,7 @@
           ],
           "note": "UC-02 | ADR-0009 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -301,7 +301,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unverifiable_token_answers_MSG03)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -323,7 +323,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unlinked_google_account_answers_MSG05)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -344,7 +344,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_deactivated_account_answers_MSG02)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -366,7 +366,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_deactivated_before_its_first_google_sign_in_answers_MSG02) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Google_sign_in_links_after_reactivation)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -387,7 +387,7 @@
           ],
           "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (The_endpoint_is_absent_when_google_sign_in_is_switched_off) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Password_sign_in_still_works_when_google_is_switched_off)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -416,7 +416,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_exchanges_the_token_for_a_new_pair; Refresh_rejects_a_token_that_was_already_used) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_replay_answers_MSG01)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -435,7 +435,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_without_the_cookie_answers_like_an_expired_token; A_refused_refresh_clears_the_cookie)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -454,7 +454,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_ignores_a_token_sent_in_the_body) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_ignores_a_token_in_the_body_with_MSG01)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -478,7 +478,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/RedisRefreshTokenStoreTests.cs (Replaying_a_used_token_ends_every_session_of_its_account) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Replaying_a_used_token_past_the_grace_period_ends_every_session)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -499,7 +499,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_answers_MSG02_once_the_account_is_deactivated); Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (Deactivating_an_account_ends_its_session_at_the_next_refresh)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -519,7 +519,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Capability_change_reaches_the_next_refresh_without_signing_in_again)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -539,7 +539,7 @@
           ],
           "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Refresh_and_logout_are_not_limited) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_stays_200_when_the_sign_in_limit_is_tight)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -568,7 +568,7 @@
           ],
           "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_invalidates_the_refresh_token_server_side_and_clears_the_cookie) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_after_logout_answers_MSG01)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -586,7 +586,7 @@
           ],
           "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_is_idempotent; Logout_clears_the_cookie_even_with_no_valid_token)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -607,7 +607,7 @@
           ],
           "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Logout_on_one_device_leaves_the_other_signed_in)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -634,7 +634,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_returns_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -653,7 +653,7 @@
           ],
           "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_rejects_a_request_with_no_token; Me_rejects_a_forged_token)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -673,7 +673,7 @@
           ],
           "note": "UC-01 | SCRUM-12 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Me_refuses_a_deactivated_account_with_401)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -692,7 +692,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Me_refuses_a_guest_token)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -723,7 +723,7 @@
           ],
           "note": "UC-04 | BR-152 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -742,7 +742,7 @@
           ],
           "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -761,7 +761,7 @@
           ],
           "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Invitation_of_a_meeting_that_is_not_open_is_no_longer_valid)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -780,7 +780,7 @@
           ],
           "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Revoked_invitation_is_refused_at_open)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -810,7 +810,7 @@
           ],
           "note": "UC-04 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -830,7 +830,7 @@
           ],
           "note": "UC-04 EX-5 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -853,7 +853,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code) · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -873,7 +873,7 @@
           ],
           "note": "UC-04 EX-6 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Twenty_codes_in_24_hours_is_the_cap_until_the_oldest_leaves_the_window)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -894,7 +894,7 @@
           ],
           "note": "UC-04 EX-3 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Mail_failure_leaves_no_code_and_allows_an_immediate_retry) · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -926,7 +926,7 @@
           ],
           "note": "UC-04 | BR-153 | BR-155 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Verification_issues_a_guest_token_bound_to_the_session_without_internal_claims) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Verify_response_says_the_profile_is_missing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -946,7 +946,7 @@
           ],
           "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -966,7 +966,7 @@
           ],
           "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Verify_refuses_malformed_codes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -989,7 +989,7 @@
           ],
           "note": "UC-04 EX-4 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1010,7 +1010,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_is_single_use_and_concurrent_verifications_open_one_session_without_users)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1030,7 +1030,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_expires_after_fifteen_minutes)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1050,7 +1050,7 @@
           ],
           "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Revoking_between_send_and_verify_denies_the_code)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1077,7 +1077,7 @@
           ],
           "note": "UC-04 AF-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Reopening_with_a_live_session_needs_no_new_code_and_a_second_device_reuses_the_profile)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1096,7 +1096,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_says_whether_documents_may_be_downloaded_without_telling_the_sensitivity)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1116,7 +1116,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_endpoints_refuse_anonymous_and_internal_callers)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1136,7 +1136,7 @@
           ],
           "note": "UC-04 EX-8 | BR-155 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_ends_after_twelve_hours_and_with_its_invitation)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1166,7 +1166,7 @@
           ],
           "note": "UC-04 step 5 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Profile_is_self_declared_and_never_overwrites_the_invitation)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1187,7 +1187,7 @@
           ],
           "note": "UC-04 EX-7 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Guest_profile_rejects_a_blank_display_name)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1209,7 +1209,7 @@
           ],
           "note": "UC-04 EX-7 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Guest_profile_rejects_overlong_and_control_character_values)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1229,7 +1229,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1252,7 +1252,7 @@
           ],
           "note": "UC-04 EX-9 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session) | Deviation: docs/03-api/16-truy-cap-khach-uc04.md §9 still says the name is not locked; the code locks it.",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1283,7 +1283,7 @@
           ],
           "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Logout_ends_only_that_session_and_cannot_be_undone_by_signing_in_again)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]

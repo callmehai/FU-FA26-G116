@@ -14,6 +14,7 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `round1-plan.md` | Phân việc chạy Round 1 của 5.2: case nào agent chạy, case nào người chạy, cách ghi kết quả vào JSON |
 | `round1-api-plan.md` | Phân việc chạy Round 1 của 5.2.2 (API): soát case, đối chiếu `dotnet test`, viết test cho case chưa có test, giao theo Feature cho agent |
 | `round1-checklist.md` | Checklist Round 1 theo thứ tự làm cho cả 5.2 (UI) và 5.2.2 (API): người làm và điều kiện xong từng bước |
+| `round1-unit-checklist.md` | Checklist Round 1 cho 5.1 (unit): công cụ ghi kết quả, viết test cho UTC, chạy chính thức, duyệt mẫu, chốt workbook |
 | `round1-prompts.md` | Prompt giao agent Round 1, chia nhóm chạy song song (5 agent API, 2 agent UI) và quy tắc chung |
 | `round1-report/`, `round1-ui-map/` | Báo cáo cuối của agent API và bảng ánh xạ AC sang case UI; tài liệu làm việc, không phải nguồn của workbook |
 | `../../../scripts/test_reports/apply_trx.py` | Đọc file `.trx` của `dotnet test` và ghi `round1`/`date1`/`tester1` vào `cases/FE-xx/api.json` cho case có `Automated:`

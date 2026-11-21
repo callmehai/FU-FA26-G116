@@ -10,6 +10,8 @@
     },
     "api": {
       "file": "Report5.2.2_Integration_Test_API_Test.xlsx",
+      "version": "2.1",
+      "issueDate": "2026-11-21",
       "title": "API TEST",
       "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One group per endpoint. FE-14 Dashboard has no sheet: UC-69 is a placeholder and has no endpoint."
@@ -21,7 +23,8 @@
     "issueDate": "2026-11-13",
     "changes": [
       { "date": "2026-10-23", "version": "1.0", "item": "", "type": "A", "description": "Generated integration test file", "reference": "" },
-      { "date": "2026-11-13", "version": "2.0", "item": "All sheets", "type": "M", "description": "Rewritten by feature (FE-01 to FE-16): business test cases, one sheet per feature, from cases/*.json", "reference": "docs/08-reports/test-reports/AGENTS.md" }
+      { "date": "2026-11-13", "version": "2.0", "item": "All sheets", "type": "M", "description": "Rewritten by feature (FE-01 to FE-16): business test cases, one sheet per feature, from cases/*.json", "reference": "docs/08-reports/test-reports/AGENTS.md" },
+      { "date": "2026-11-21", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 executed on the test build by Phạm Gia Khánh: 1537 cases, 1537 Passed, 0 Failed, 0 N/A, 0 Pending (columns Round 1, Test date, Tester). Cover, Test Cases and Test Statistics restyled to match the feature sheets.", "reference": "docs/08-reports/test-reports/round1-report/FULL3.md", "books": ["api"] }
     ]
   },
   "excludedRoutes": {

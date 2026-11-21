@@ -28,7 +28,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,7 +48,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_ReturnsSecondPageWithOneItem)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,7 +68,7 @@
           ],
           "note": "UC-66 | Boundary: pageSize upper limit 100 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_AcceptsPageSize100)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,7 +88,7 @@
           ],
           "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -108,7 +108,7 @@
           ],
           "note": "UC-66 · EX-2 | Boundary: pageSize 101 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_RejectsPageSize101)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -128,7 +128,7 @@
           ],
           "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_RejectsNonNumericPaging)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -149,7 +149,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -166,7 +166,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Notifications_and_hub_require_a_valid_sign_in)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -186,7 +186,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Deactivated_account_is_refused_even_with_a_valid_token)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -205,7 +205,7 @@
           ],
           "note": "UC-66 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_returns_MSG40_and_500_when_account_lookup_fails)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -225,7 +225,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationList_EmptyForAccountWithNoNotification)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -253,7 +253,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -273,7 +273,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -293,7 +293,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_CountsOnlyCallersNotifications)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -310,7 +310,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_RequiresToken)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -330,7 +330,7 @@
           ],
           "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_RefusesDeactivatedAccount)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -359,7 +359,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -379,7 +379,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -399,7 +399,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -418,7 +418,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_UnknownIdIs404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -437,7 +437,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_NonGuidIdIs404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -454,7 +454,7 @@
           ],
           "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_RequiresToken)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -483,7 +483,7 @@
           ],
           "note": "UC-67b · BR-51 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -503,7 +503,7 @@
           ],
           "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (ReadAll_WithNothingUnreadChangesNothing)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -523,7 +523,7 @@
           ],
           "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -540,7 +540,7 @@
           ],
           "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (ReadAll_RequiresToken)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -568,7 +568,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -589,7 +589,7 @@
           ],
           "note": "UC-68 | Deviation: the UC-68 sequence diagram marks the notification read before opening it; the endpoint only checks and returns the target, and the frontend marks it read | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_DoesNotMarkNotificationRead)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -609,7 +609,7 @@
           ],
           "note": "UC-68 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -628,7 +628,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -647,7 +647,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_WithoutTargetIs404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -667,7 +667,7 @@
           ],
           "note": "UC-68 · UC-84 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_CalendarShareOpensSharingPage)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -686,7 +686,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_CalendarShareForStrangerIs404)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -707,7 +707,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_VoiceSampleOpensVoiceIdPageThen404AfterDelete)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -724,7 +724,7 @@
           ],
           "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_RequiresToken)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -754,7 +754,7 @@
           ],
           "note": "UC-20 · ADR-0031 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_correct_signature_is_accepted)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -776,7 +776,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_bounce_carries_its_reason_and_the_row_id_from_the_tag)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -796,7 +796,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Events_the_app_does_not_track_are_ignored)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -817,7 +817,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Webhook_IgnoresOlderEvent)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -837,7 +837,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (An_unsigned_request_is_401_without_a_sign_in)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -856,7 +856,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_changed_body_id_or_secret_is_rejected)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -875,7 +875,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Missing_or_garbled_headers_are_rejected)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -894,7 +894,7 @@
           ],
           "note": "UC-20 | Boundary: 5-minute window | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_replayed_request_outside_the_window_is_rejected)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -913,7 +913,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (The_raw_body_and_svix_headers_reach_the_receiver)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -932,7 +932,7 @@
           ],
           "note": "UC-20 | Boundary: 256 KB body limit | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Webhook_BodyAbove256KBIs413)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -950,7 +950,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (Without_a_webhook_secret_the_webhook_is_503)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -970,7 +970,7 @@
           ],
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (A_receiver_error_is_500_so_resend_retries)",
           "round1": "Passed",
-          "date1": "2026-11-20",
+          "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
         }
       ]
