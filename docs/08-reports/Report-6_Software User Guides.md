@@ -273,7 +273,7 @@ Internet Explorer is not supported. On a phone every screen works, with a bottom
 
 Open your browser and go to the address your organisation gives you. On the test server this is https://app.trustcabinet.workspace-hub.space. You will see the sign-in page.
 
-Figure 1: Sign-in page
+Figure 1: Sign-in page (the name on the Google button is blurred in this manual)
 
 #### 1.3 Creating Your Account
 
@@ -691,6 +691,8 @@ You can record Voice ID samples for another person, so that the transcript recog
 
 - The person is notified each time a sample is recorded for them, and can delete any sample or withdraw consent at any time.
 
+Figure 48: The Voice samples for the room microphone card in a hybrid meeting; nobody here has agreed to Voice ID yet
+
 ### 4. Chair Guide
 
 As a Chair you approve meetings, run them and approve their minutes. The built-in Chủ toạ role can also create meetings exactly as a Secretary does (chapter 3).
@@ -699,18 +701,18 @@ As a Chair you approve meetings, run them and approve their minutes. The built-i
 
 When a meeting is sent to you, you get a notification and the meeting shows Cuộc họp đang chờ bạn duyệt (Waiting for your approval).
 
-Figure 48: A meeting waiting for your approval
+Figure 49: A meeting waiting for your approval
 
 | Action | When available | What happens |
 | --- | --- | --- |
 | Duyệt (Approve) | Pending approval | Confirm the dialog. The meeting becomes Approved and the Secretary can publish it. |
 | Từ chối (Reject) | Pending approval | Enter a reason (required). The Secretary sees it, edits the meeting and may send it again. |
 
-Figure 49: Approve confirmation
+Figure 50: Approve confirmation
 
-Figure 50: Reject with a reason
+Figure 51: Reject with a reason
 
-Figure 51: Approved
+Figure 52: Approved
 
 #### 4.2 Starting and Running the Meeting
 
@@ -722,9 +724,9 @@ You can start a published meeting with Bắt đầu họp, join with Vào phòng
 
 - edit the agenda and hand the Chair over to another participant from the Participants tab.
 
-Figure 52: A meeting in progress, seen by the Chair
+Figure 53: A meeting in progress, seen by the Chair
 
-Figure 53: Speaking queue
+Figure 54: Speaking queue: a member has raised a hand and the Chair can invite them with Mời
 
 #### 4.3 Running a Vote
 
@@ -738,21 +740,21 @@ Figure 53: Speaking queue
 
 If documents are attached to the vote, every voter must open each one, read it to the last page and confirm reading it; until then Gửi phiếu stays disabled.
 
-Figure 54: Opening a vote
+Figure 55: Opening a vote
 
-Figure 55: Casting a ballot
+Figure 56: Casting a ballot
 
-Figure 56: Ballot recorded
+Figure 57: Ballot recorded
 
-Figure 57: Result of a closed vote in the meeting's Votes tab
+Figure 58: Result of a closed vote in the meeting's Votes tab
 
 #### 4.4 Ending the Meeting
 
 Click Kết thúc họp and confirm. The meeting ends and cannot be reopened; the online room closes and everybody is disconnected. Leaving the room with Rời phòng does not end the meeting.
 
-Figure 58: End meeting confirmation
+Figure 59: End meeting confirmation
 
-Figure 59: Leaving the room, which does not end the meeting
+Figure 60: Leaving the room, which does not end the meeting
 
 #### 4.5 Approving the Minutes
 
@@ -780,37 +782,39 @@ You cannot create meetings or see meetings you are not invited to.
 
 When a meeting is published you get a notification and an email. Open the meeting and answer Bạn có tham dự cuộc họp này? (Will you attend this meeting?) with Tham dự (Attend) or Không tham dự (Decline). You can answer only once. Declining removes the meeting from your calendar.
 
-Figure 60: Meeting list, seen by a Member (no Create meeting button, three cards)
+Figure 61: Meeting list, seen by a Member (no Create meeting button, three cards)
 
-Figure 61: Answering an invitation
+Figure 62: Answering an invitation
 
-Figure 62: Declining asks for confirmation
+Figure 63: Declining asks for confirmation
 
 #### 5.2 Reading Documents and Commenting
 
 Open the Tài liệu tab and click a document to read it full screen; zoom with the buttons at the top. Documents you have not opened are marked Chưa đọc. Click Góp ý (Comment) to write a comment, optionally tied to a page; others can reply. Comments close when the meeting ends or is cancelled. In a Secret meeting documents can only be read online.
 
+Figure 64: Document viewer with the comment panel open
+
 #### 5.3 Joining the Room and Voting
 
 When the meeting is in progress, click Vào phòng họp on the meeting or in the calendar (section 3.9). To speak, click Giơ tay: you see your place in the queue and the Chair invites you; Hạ tay (Lower hand) lowers your hand. When the Chair opens a vote, choose your option in Biểu quyết and click Gửi phiếu. If the vote has documents, open each one, read it to the last page and confirm; Gửi phiếu unlocks after that.
 
-Figure 63: An open vote, seen by a member
+Figure 65: An open vote, seen by a member
 
-Figure 64: After voting
+Figure 66: After voting
 
-Figure 65: Raising a hand to speak
+Figure 67: Raising a hand to speak
 
 #### 5.4 Leaving the Room
 
-Click the red button and choose Rời phòng. The meeting continues and you can join again while it is in progress. The confirmation is the same as in Figure 59.
+Click the red button and choose Rời phòng. The meeting continues and you can join again while it is in progress. The confirmation is the same as in section 4.4.
 
 #### 5.5 Reading the Results
 
 After the meeting the Biểu quyết tab shows each vote's result and conclusion, the Thành phần tham dự tab shows attendance, and the Biên bản tab shows the issued minutes, which you can download.
 
-Figure 66: Votes of an ended meeting
+Figure 68: Votes of an ended meeting
 
-Figure 67: Participants and attendance of an ended meeting
+Figure 69: Participants and attendance of an ended meeting
 
 #### 5.6 Joining as a Guest
 
@@ -832,9 +836,9 @@ The link stops working when the meeting ends or the Secretary revokes the invita
 
 Kho tài liệu (Document library), in the account menu, holds your own documents in folders (up to 5 levels). Thư mục mới (New folder) creates a folder, Tải tài liệu lên (Upload documents) uploads files; the icons on each row rename, move and delete. The Đang dùng (In use) column counts the meetings that use a document. Documents added to a meeting by upload are stored here in the meeting's folder. The bar at the top right shows the storage used by the whole system.
 
-Figure 68: Document library
+Figure 70: Document library
 
-Figure 69: Creating a folder
+Figure 71: Creating a folder
 
 #### 6.2 Calendar Sharing
 
@@ -846,13 +850,13 @@ Chia sẻ lịch (Calendar sharing), in the account menu, decides which meeting 
 
 - The ⋮ menu ends a sharing; ended ones are listed under Chia sẻ đã kết thúc (Ended sharings).
 
-Figure 70: Calendar sharing, seen by a Secretary (both columns)
+Figure 72: Calendar sharing, seen by a Secretary (both columns)
 
-Figure 71: Sharing my calendar
+Figure 73: Sharing my calendar
 
-Figure 72: A request to see my calendar
+Figure 74: A request to see my calendar
 
-Figure 73: Accepting, with the period to share
+Figure 75: Accepting, with the period to share
 
 #### 6.3 My Voice (Voice ID)
 
@@ -868,13 +872,13 @@ If you agreed to an older version, the page asks you once to agree to the new te
 
 You can listen to and delete each sample and withdraw consent at any time on the same page; withdrawing deletes every sample, suggestion and name filled in by the system. Without Voice ID every other feature still works.
 
-Figure 74: Voice ID consent (captured before the version 1.4 terms; the wording now also covers collection at any time)
+Figure 76: Voice ID consent, terms version 1.4
 
 #### 6.4 Reports
 
 Báo cáo (Reports) summarises the meetings you can see over a period of up to 24 months: average attendance, average length, time from the end of a meeting to issued minutes, meetings per month, by status and by sensitivity. Xuất Excel (Export to Excel) downloads the figures.
 
-Figure 75: Reports
+Figure 77: Reports (figures come from the test server, where test meetings left open inflate the average length)
 
 #### 6.5 Frequently Asked Questions
 
