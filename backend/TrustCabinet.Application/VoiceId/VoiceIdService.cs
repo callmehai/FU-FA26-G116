@@ -227,7 +227,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IUnitOfWork un
             VoiceIdRules.NoticeVersion, VoiceIdRules.Purpose, options.Value.Controller,
             new(consent is not null && VoiceIdRules.AllowsCollection(consent.NoticeVersion),
                 [.. proxySamples.Select(s => new ProxySampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null,
-                    s.MeetingId!.Value, s.Meeting!.Title, s.CollectedBy!.FullName))],
+                    s.MeetingId, s.Meeting?.Title, s.CollectedBy!.FullName))],
                 VoiceIdRules.MaxProxySamples));
     }, ct);
 

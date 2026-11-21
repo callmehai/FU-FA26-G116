@@ -28,6 +28,10 @@ namespace TrustCabinet.Application.VoiceId;
 /// </list>
 /// A sample is bound to the person and encrypted exactly as one they took themself; the Secretary sees, hears and deletes
 /// only the samples taken in their meeting, each play is audited, and the person is told each time one is taken.
+///
+/// ADR-0071 adds a second way in, with no meeting: a holder of <see cref="Capability.VoiceCollector"/> (gated by the
+/// endpoint) records an active person at any time, under that person's consent to notice 1.4 or later, and sees, hears
+/// and deletes every sample anyone took for them. Same limits, encryption, notice to the person and audit.
 /// </summary>
 public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotificationRepository notifications,
     IUnitOfWork unitOfWork, IVoiceEmbedder embedder, IVoiceprintProtector protector, IAuditService audit, TimeProvider clock,
@@ -213,6 +217,164 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             return new(VoiceFailure.SaveFailed);
         }
     }
+
+    public async Task<VoiceOutcome> GetPersonAsync(Guid actorId, Guid userId, CancellationToken ct = default)
+    {
+        try
+        {
+            return await ReadAsync(async token =>
+            {
+                if (await PersonAsync(userId, token) is not { } person) return new VoiceOutcome(VoiceFailure.NotFound);
+                var consent = await repository.FindActiveConsentAsync(userId, false, token);
+                var consented = consent is not null && VoiceIdRules.AllowsAnytimeCollection(consent.NoticeVersion);
+                var samples = await repository.ListProxySamplesAsync(userId, token);
+                return new(Data: new PersonVoiceCollectionView(userId, person.FullName, consented,
+                    consented && !VoiceIdRules.ProxyFull(samples, actorId), VoiceIdRules.MaxProxySamples,
+                    VoiceIdRules.MaxProxySamplesPerCollector,
+                    [.. samples.Select(s => new ProxySampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null,
+                        s.MeetingId, s.Meeting?.Title, s.CollectedBy?.FullName ?? ""))]));
+            }, ct);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to read proxy voice samples of {UserId}", userId);
+            return new(VoiceFailure.ReadFailed);
+        }
+    }
+
+    public async Task<VoiceOutcome> AddForPersonAsync(Guid actorId, Guid userId, Stream audio, string contentType,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            if (await ReadAsync(token => PersonAsync(userId, token), ct) is null) return new(VoiceFailure.NotFound);
+            // Checked before the audio goes to the worker, then again under the lock before anything is kept.
+            if (await ReadAsync(token => repository.FindActiveConsentAsync(userId, false, token), ct) is not { } given
+                || !VoiceIdRules.AllowsAnytimeCollection(given.NoticeVersion))
+                return new(VoiceFailure.NoConsent);
+            if (VoiceIdRules.ProxyFull(await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct), actorId))
+                return new(VoiceFailure.LimitReached);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to read proxy voice samples of {UserId}", userId);
+            return new(VoiceFailure.SaveFailed);
+        }
+
+        using var copy = new MemoryStream();
+        await audio.CopyToAsync(copy, ct);
+        var recorded = copy.ToArray();
+        SpeechEmbedding embedding;
+        try
+        {
+            copy.Position = 0;
+            embedding = await embedder.EmbedAsync(copy, contentType, ct);
+        }
+        catch (VoiceSampleRejectedException rejected)
+        {
+            return new(VoiceFailure.Rejected, Reason: rejected.Reason, Errors: new Dictionary<string, string[]>
+            {
+                ["file"] = [VoiceIdRules.RejectionMessage(rejected.Reason)],
+            });
+        }
+        catch (SpeechEngineException ex)
+        {
+            logger.LogWarning(ex, "Speech worker could not embed a sample collected for {UserId}", userId);
+            return new(VoiceFailure.EngineUnavailable);
+        }
+
+        try
+        {
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                // The same row lock a withdrawal takes: a sample is never kept after the person said no.
+                var consent = await repository.FindActiveConsentAsync(userId, true, token);
+                if (consent is null || !VoiceIdRules.AllowsAnytimeCollection(consent.NoticeVersion))
+                    return new VoiceOutcome(VoiceFailure.NoConsent);
+                if (await PersonAsync(userId, token) is null) return new(VoiceFailure.NotFound);
+                if (VoiceIdRules.ProxyFull(await repository.ListProxySamplesAsync(userId, token), actorId))
+                    return new(VoiceFailure.LimitReached);
+                var now = clock.GetUtcNow();
+                var id = Guid.CreateVersion7();
+                repository.Add(new VoiceSample
+                {
+                    Id = id, UserId = userId, ConsentId = consent.Id, EmbeddingModel = embedding.Model,
+                    Ciphertext = protector.Protect(embedding.Embedding, userId, id, embedding.Model),
+                    SpeechMs = embedding.SpeechMs,
+                    AudioCiphertext = protector.ProtectAudio(recorded, userId, id), AudioContentType = contentType,
+                    CollectedById = actorId, MeetingId = null, CreatedAt = now, UpdatedAt = now,
+                });
+                var collector = (await callers.FindByIdAsync(actorId, token))?.FullName ?? "Người thu hộ";
+                notifications.Add(new Notification
+                {
+                    Id = Guid.CreateVersion7(), UserId = userId, Type = NotificationType.VoiceSampleCollected,
+                    Title = "Có người đã thu giọng mẫu của bạn",
+                    Body = Clip($"{collector} đã thu giọng mẫu Voice ID của bạn. "
+                        + "Bạn nghe lại hoặc xoá được ở trang Giọng nói của tôi."),
+                    TargetType = NotificationTargetType, TargetId = id, CreatedAt = now, UpdatedAt = now,
+                });
+                await audit.RecordAsync(AuditActions.VoiceSampleAdded, AuditActions.VoiceSampleObjectType, id, actorId,
+                    new { scope = "proxy", userId, meetingId = (Guid?)null, embedding.Model, embedding.SpeechMs }, token);
+                await unitOfWork.SaveChangesAsync(token);
+                return new VoiceOutcome(Data: new ProxySampleView(id, now, embedding.SpeechMs, true, null, null, collector));
+            }, TransactionMode.ReadCommitted, ct);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to store a voice sample collected for {UserId}", userId);
+            return new(VoiceFailure.SaveFailed);
+        }
+    }
+
+    public async Task<VoiceSampleAudio?> PersonAudioAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default)
+    {
+        var sample = await ReadAsync(async token => await PersonAsync(userId, token) is null ? null
+            : await repository.FindProxySampleAsync(userId, sampleId, false, token), ct);
+        if (sample?.AudioCiphertext is null || sample.AudioContentType is null) return null;
+        byte[] bytes;
+        try
+        {
+            bytes = protector.UnprotectAudio(sample.AudioCiphertext, sample.UserId, sample.Id);
+        }
+        catch (CryptographicException ex)
+        {
+            logger.LogWarning(ex, "Audio of voice sample {SampleId} could not be decrypted", sampleId);
+            return null;
+        }
+        // Someone else's biometric sample heard: on the record before a byte leaves.
+        await audit.RecordAsync(AuditActions.VoiceSamplePlayed, AuditActions.VoiceSampleObjectType, sampleId, actorId,
+            new { userId, sample.MeetingId }, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return new(bytes, sample.AudioContentType);
+    }
+
+    public async Task<VoiceOutcome> DeletePersonSampleAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default)
+    {
+        try
+        {
+            return await ReadAsync(async token =>
+            {
+                if (await PersonAsync(userId, token) is null) return new VoiceOutcome(VoiceFailure.NotFound);
+                // The person's own sample, or one of someone else, is answered exactly like one that does not exist.
+                if (await repository.FindProxySampleAsync(userId, sampleId, true, token) is not { } sample)
+                    return new(VoiceFailure.NotFound);
+                repository.Remove(sample);
+                await audit.RecordAsync(AuditActions.VoiceSampleDeleted, AuditActions.VoiceSampleObjectType, sampleId, actorId,
+                    new { scope = "proxy", userId, sample.MeetingId, sample.CollectedById }, token);
+                await unitOfWork.SaveChangesAsync(token);
+                return new(Data: new { id = sampleId });
+            }, ct);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to delete voice sample {SampleId}", sampleId);
+            return new(VoiceFailure.SaveFailed);
+        }
+    }
+
+    /// <summary>The person, when their account exists and is active; a deactivated one has no Voice ID left (ADR-0049).</summary>
+    private async Task<User?> PersonAsync(Guid userId, CancellationToken ct)
+        => await callers.FindByIdAsync(userId, ct) is { IsActive: true } user ? user : null;
 
     /// <summary>
     /// The meeting, when the caller is now its Secretary, it has a room mic, and it is not Secret (a Secret meeting is

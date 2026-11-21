@@ -1479,6 +1479,8 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 .users-table th.users-col-status { width: 144px; }
 .users-table th.users-col-date { width: 116px; }
 .users-table th.users-col-action { width: 172px; }
+/* Five 34px actions (the mic for "Thu giọng mẫu hộ") on one line. */
+.users-table th.users-col-action-wide { width: 212px; }
 .users-person { display: flex; flex-direction: column; min-width: 0; }
 .users-table .person-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .users-table .person-name .badge { flex: none; height: 20px; }
@@ -6016,5 +6018,5 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 @media (max-width: 560px) {
   .tab-locked { gap: 4px; }
 }
-/* ADR-0060: the meeting picker over the collection panel in "Quản lý giọng nói thu hộ". */
+/* ADR-0071: one person's proxy samples, opened from their row on the users page. */
 .voice-collect-for { display: flex; flex-direction: column; gap: 12px; min-width: 0; }

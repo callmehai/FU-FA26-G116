@@ -12,3 +12,14 @@ public sealed class NoCallerAccounts : ICallerAccountQuery
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(Guid roleId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Capability>>([]);
 }
+
+/// <summary>Accounts held in a list, with no capability: enough for a service that only looks a person up.</summary>
+public sealed class ListCallerAccounts : ICallerAccountQuery
+{
+    public List<User> Users { get; } = [];
+
+    public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(Users.SingleOrDefault(u => u.Id == id));
+
+    public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(Guid roleId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyCollection<Capability>>([]);
+}

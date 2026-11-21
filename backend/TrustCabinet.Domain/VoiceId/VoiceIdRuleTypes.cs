@@ -10,9 +10,11 @@ public static class VoiceIdRules
     /// 1.1 or later; a person who agreed to 1.0 renews to have it kept. 1.2 (ADR-0048): the machine fills in the name
     /// on a sure match (ADR-0045), only for a person whose consent is to 1.2 or later; for the others it still only
     /// suggests. 1.3 (ADR-0060): the same consent lets the Secretary of a meeting the person attends record their samples
-    /// on the room's mic (ADR-0060); a person who agreed to an earlier notice renews before a Secretary can.
+    /// on the room's mic (ADR-0060); a person who agreed to an earlier notice renews before a Secretary can. 1.4
+    /// (ADR-0071): anyone an administrator gave "Thu giọng mẫu hộ" may record them at any time, with no meeting; a person
+    /// who agreed to 1.3 is still recorded in their meetings, and renews before anyone can outside them.
     /// </summary>
-    public const string NoticeVersion = "1.3";
+    public const string NoticeVersion = "1.4";
 
     /// <summary>The first notice under which a sample's recording is kept.</summary>
     public const string AudioNoticeVersion = "1.1";
@@ -25,9 +27,16 @@ public static class VoiceIdRules
 
     public static bool AllowsCollection(string noticeVersion) => string.CompareOrdinal(noticeVersion, CollectionNoticeVersion) >= 0;
 
+    /// <summary>The first notice under which a holder of "Thu giọng mẫu hộ" may record the person outside any meeting (ADR-0071).</summary>
+    public const string AnytimeCollectionNoticeVersion = "1.4";
+
+    public static bool AllowsAnytimeCollection(string noticeVersion)
+        => string.CompareOrdinal(noticeVersion, AnytimeCollectionNoticeVersion) >= 0;
+
     public const string Purpose =
         "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
-        + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, hoặc do Thư ký cuộc họp tôi dự thu bằng micro phòng họp.";
+        + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, do Thư ký cuộc họp tôi dự thu bằng micro phòng họp, hoặc do "
+        + "người được quản trị viên giao quyền \"Thu giọng mẫu hộ\" thu bất kỳ lúc nào, không cần cuộc họp.";
 
     public const int MaxSamples = 5;
     /// <summary>Samples the meetings' Secretaries may keep for one person on the room's mic (PO 2026-11-21).</summary>

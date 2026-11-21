@@ -48,17 +48,17 @@ export function ProxyTab({
     <section className="card voice-card" aria-labelledby="voice-proxy-title">
       <div className="voice-status">
         <h2 id="voice-proxy-title" className="card-title">
-          Thư ký thu hộ giọng tôi
+          Người khác thu hộ
         </h2>
         <span className="voice-count">
           {proxy.samples.length}/{proxy.maxSamples}
         </span>
       </div>
       {!proxy.allowed ? (
-        <p className="alert alert-info">Đồng ý điều khoản mới ở trên để Thư ký cuộc họp thu giọng mẫu hộ bạn.</p>
+        <p className="alert alert-info">Đồng ý điều khoản mới ở trên để người khác thu giọng mẫu hộ bạn.</p>
       ) : (
         proxy.samples.length === 0 && (
-          <p className="alert alert-info">Chưa có mẫu nào. Thư ký thu ở cuộc họp trực tiếp hoặc kết hợp bạn dự.</p>
+          <p className="alert alert-info">Chưa có mẫu nào.</p>
         )
       )}
       {proxy.samples.length > 0 && (
@@ -67,7 +67,12 @@ export function ProxyTab({
             <li key={sample.id} className="voice-sample voice-sample-stacked">
               <span className="voice-sample-text">
                 <span className="voice-sample-name">
-                  <Link to={routes.meeting(sample.meetingId)}>{sample.meetingTitle}</Link>
+                  {/* ADR-0071: a sample taken outside any meeting names only who took it. */}
+                  {sample.meetingId ? (
+                    <Link to={routes.meeting(sample.meetingId)}>{sample.meetingTitle}</Link>
+                  ) : (
+                    'Ngoài cuộc họp'
+                  )}
                 </span>
                 <span
                   className="field-hint"

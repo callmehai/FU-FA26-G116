@@ -68,6 +68,9 @@ public sealed class FakeVoiceIdRepository : IVoiceIdRepository
     public Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct)
         => Task.FromResult(Samples.SingleOrDefault(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null));
 
+    public Task<VoiceSample?> FindProxySampleAsync(Guid userId, Guid sampleId, bool tracked, CancellationToken ct)
+        => Task.FromResult(Samples.SingleOrDefault(s => s.Id == sampleId && s.UserId == userId && s.CollectedById != null));
+
     public Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == meetingId));
 

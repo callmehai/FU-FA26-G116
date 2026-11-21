@@ -12,7 +12,8 @@ namespace TrustCabinet.Web.Endpoints;
 ///
 /// ADR-0060 adds the one way to record someone else's voice: the Secretary of an in-person or hybrid meeting, holding
 /// <see cref="Capability.VoiceCollector"/>, records samples for its people on the room's mic, under each person's own
-/// Voice ID consent: the one consent covers both sets (ADR-0060).
+/// Voice ID consent: the one consent covers both sets (ADR-0060). ADR-0071: a holder of that capability may also record
+/// one person at any time, with no meeting, under a consent to notice 1.4 or later.
 /// </summary>
 public static class VoiceIdEndpoints
 {
@@ -80,6 +81,36 @@ public static class VoiceIdEndpoints
             IVoiceCollectionService service, CancellationToken ct)
             => Map(await service.DeleteAsync(meetingId, CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg474ProxySampleDeleted, "Đã xoá giọng mẫu thu hộ.", collection: true));
+
+        // ADR-0071: the capability itself is the gate (403 without it, a fixed path); a person who does not exist, is
+        // deactivated, or a sample not taken for them by someone else, is a 404.
+        var person = app.MapGroup("/api/users/{userId:guid}/voice-collection")
+            .RequireCapability(Capability.VoiceCollector, Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
+        person.MapGet("", async (Guid userId, HttpContext context, IVoiceCollectionService service, CancellationToken ct)
+            => Map(await service.GetPersonAsync(CapabilityGate.GatedUserId(context.User), userId, ct), collection: true));
+        person.MapPost("/samples", CollectForPersonAsync);
+        person.MapGet("/samples/{sampleId:guid}/audio", async (Guid userId, Guid sampleId, HttpContext context,
+            IVoiceCollectionService service, CancellationToken ct) =>
+        {
+            var audio = await service.PersonAudioAsync(CapabilityGate.GatedUserId(context.User), userId, sampleId, ct);
+            if (audio is null) return Results.NotFound();
+            context.Response.Headers.CacheControl = "no-store";
+            return Results.File(audio.Bytes, audio.ContentType, enableRangeProcessing: true);
+        });
+        person.MapDelete("/samples/{sampleId:guid}", async (Guid userId, Guid sampleId, HttpContext context,
+            IVoiceCollectionService service, CancellationToken ct)
+            => Map(await service.DeletePersonSampleAsync(CapabilityGate.GatedUserId(context.User), userId, sampleId, ct),
+                Msg474ProxySampleDeleted, "Đã xoá giọng mẫu thu hộ.", collection: true));
+    }
+
+    private static async Task<IResult> CollectForPersonAsync(Guid userId, HttpContext context, IVoiceCollectionService service,
+        CancellationToken ct)
+    {
+        var (audio, type, refused) = await ReadSampleAsync(context, ct);
+        if (refused is not null) return refused;
+        await using (audio)
+            return Map(await service.AddForPersonAsync(CapabilityGate.GatedUserId(context.User), userId, audio!, type!, ct),
+                Msg473ProxySampleAdded, "Đã lưu giọng mẫu thu hộ.", created: true, collection: true);
     }
 
     private static async Task<IResult> CollectSampleAsync(Guid meetingId, Guid userId, HttpContext context,
