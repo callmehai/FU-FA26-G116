@@ -467,7 +467,7 @@ Figure 14: AI configuration (API address and key blurred in this manual)
 
 Quản trị › Nhật ký hệ thống (Audit log) lists business and security events — sign-ins, account and role changes, meeting workflow, document access, voice consent — with time, person, object and IP address. Filter by object, period, person or event type; the eye icon shows the details. Entries cannot be edited or deleted.
 
-Figure 15: Audit log (IP addresses blurred in this manual)
+Figure 15: Audit log (IP addresses and the names and e-mails of real people blurred in this manual)
 
 ### 3. Secretary Guide
 
