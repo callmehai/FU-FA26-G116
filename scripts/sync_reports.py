@@ -27,8 +27,10 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = ROOT / "docs" / "08-reports" / "source"
 # Drive targets come from "Link Drive chuẩn Report 1–7" in docs/08-reports/README.md;
 # change them together, and only ever point at the file named there.
-# Keyed by report number: (default local file name, title, Drive URL, snapshot path).
-REPORTS: dict[int, tuple[str, str, str, Path]] = {
+# Keyed by report number: (default local file name, title, Drive URL or None, snapshot path).
+# A report with no Drive URL is never downloaded: its Drive file is not a source to import
+# (Report 6's Drive file was still the empty template when the local source was written).
+REPORTS: dict[int, tuple[str, str, str | None, Path]] = {
     1: (
         "Report-1.docx",
         "Report 1 – Project Introduction",
@@ -47,6 +49,12 @@ REPORTS: dict[int, tuple[str, str, str, Path]] = {
         "https://docs.google.com/document/d/1JNNCwt0Yc_KLS9dPB6wtP8HW6x7D1fWl/edit",
         ROOT / "docs" / "08-reports" / "Report-3_Software_Requirement_Specification.md",
     ),
+    6: (
+        "Report-6_Software User Guides.docx",
+        "Report 6 – Software User Guides",
+        None,
+        ROOT / "docs" / "08-reports" / "Report-6_Software User Guides.md",
+    ),
 }
 SUPPORTED = "/".join(str(number) for number in REPORTS)
 
@@ -55,7 +63,7 @@ NS = {"w": W}
 
 
 def report_number(name: str) -> int:
-    # Only the supported numbers match, so other reports in source/ are skipped.
+    # Only the supported numbers match, so other reports in source/ (Report 4) are skipped.
     digits = "".join(str(number) for number in REPORTS)
     match = re.search(rf"report[\s_-]*([{digits}])(?=[\s_.-]|$)", name, re.IGNORECASE)
     if not match:
@@ -142,7 +150,7 @@ def download_reports(force: bool = False) -> None:
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
     for filename, title, source_url, _ in REPORTS.values():
         target = SOURCE_DIR / filename
-        if target.is_file() and not force:
+        if source_url is None or (target.is_file() and not force):
             continue
         print(f"Downloading {filename} ({title}) from Google Drive...")
         download_docx(source_url, target)
@@ -352,7 +360,7 @@ def main() -> int:
                 if args.download:
                     download_reports(force=True)
                     for number, (name, _, url, _) in REPORTS.items():
-                        if selected is None or selected == number:
+                        if url is not None and (selected is None or selected == number):
                             add(number, SOURCE_DIR / name, url)
                 else:
                     paths = [local] if local.is_file() else sorted(local.glob("*"))
@@ -371,7 +379,7 @@ def main() -> int:
                     # Preserve automatic download for missing default reports only.
                     if not source_arg:
                         for number, (name, _, url, _) in REPORTS.items():
-                            if number not in sources and (selected is None or selected == number):
+                            if url is not None and number not in sources and (selected is None or selected == number):
                                 path = SOURCE_DIR / name
                                 download_docx(url, path)
                                 add(number, path, url)
