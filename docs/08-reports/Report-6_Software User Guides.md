@@ -449,7 +449,7 @@ Figure 12: Permission matrix
 | --- | --- |
 | Tạo cuộc họp (Create meetings) | Create and prepare meetings, find a time, see calendars shared with them |
 | Phê duyệt cuộc họp (Approve meetings) | Be chosen as the approver of a meeting and approve or reject it |
-| Thu giọng mẫu hộ (Collect voice samples) | Record Voice ID samples for a person at any time, without a meeting (with Administer users, from the user list), and lets a meeting's Secretary record on the room microphone in any status but Cancelled. Without it a Secretary still records while the meeting is published or in progress (section 3.14) |
+| Thu giọng mẫu hộ (Collect voice samples) | Record Voice ID samples for a person at any time, without a meeting (with Administer users, from the user list). It also lets a meeting's Secretary open the room-microphone card in any status except Cancelled to list, play and delete the samples taken there. In a meeting, new samples are recorded only while it is published or in progress, with or without this permission (section 3.14) |
 | Soạn biên bản (Write minutes) | Shown in the matrix but not enforced yet: today the minutes are written by the Chair or the Secretary of each meeting, whatever this box says |
 | Quản trị người dùng (Administer users) | Every screen under Quản trị |
 
@@ -535,7 +535,9 @@ Figure 22: Participants tab
 
 #### 3.5 Meeting Documents
 
-The Tài liệu (Documents) tab groups documents Theo nội dung họp (by agenda item), Biểu quyết (by vote) and Tài liệu chung (general). Click Thêm tài liệu chung, or the paper-clip of an agenda item, then either:
+The Tài liệu (Documents) tab groups documents Theo nội dung họp (by agenda item), Biểu quyết (by vote) and Tài liệu chung (general). Click Thêm tài liệu chung, or the paper-clip of an agenda item or a vote, then choose where the documents come from:
+
+- Trong cuộc họp (In this meeting) — only when adding to an agenda item or a vote: pick documents already in the meeting; they stay where they are and are also attached here;
 
 - Tải từ máy (Upload) — drag PDF or DOCX files in, up to 10 MB each, 10 files and 100 MB at a time. The files are also saved in your document library, in the meeting's folder; or
 
@@ -681,7 +683,7 @@ You can record Voice ID samples for another person, so that the transcript recog
 | Condition | In a meeting, on the room microphone | At any time, without a meeting |
 | --- | --- | --- |
 | Who | The Secretary of that meeting | Anybody whose role has the Thu giọng mẫu hộ (Collect voice samples) permission and can open Quản trị › Người dùng (the Administer users permission) |
-| When | The meeting is in person or hybrid, not Secret, and Đã công bố or Đang diễn ra. A Secretary who also has the Collect voice samples permission can record in the other statuses too, except Đã huỷ. | Any time |
+| When | New samples: the meeting is in person or hybrid, not Secret, and Đã công bố or Đang diễn ra. With the Collect voice samples permission the Secretary can also open the card in any other status except Đã huỷ, to list, play and delete the samples taken there. | Any time |
 | Whom | Participants of the meeting who agreed to the Voice ID terms version 1.3 or later | Any active account that agreed to the Voice ID terms version 1.4 or later |
 | Where | Thành phần tham dự tab, card Giọng mẫu cho mic phòng (Voice samples for the room microphone) | Quản trị › Người dùng (Administration › Users), microphone icon Giọng nói thu hộ (Collected voice samples) on the person's row |
 
