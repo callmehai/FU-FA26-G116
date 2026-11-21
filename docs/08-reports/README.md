@@ -25,8 +25,8 @@ Markdown snapshot của Report 1–7.
 - DOCX trong `source/` là bản local chuẩn để đồng bộ Report 1–7 ra Markdown.
 - Không sửa thẳng Markdown snapshot của Report 1–7. Sửa DOCX local, rồi sinh Markdown bằng
   `scripts/sync_reports.py`. Không tải DOCX từ Drive để tạo hoặc cập nhật Markdown. Script hiện xuất
-  Report 1–3; Report 4–7 dùng cùng quy tắc, không viết snapshot bằng tay khi script chưa xuất report
-  đó.
+  Report 1, 2, 3 và 6; Report 4, 5, 7 dùng cùng quy tắc, không viết snapshot bằng tay khi script chưa
+  xuất report đó.
 - Khi được yêu cầu đưa report lên Drive, dùng DOCX local tương ứng để **thay nội dung file Drive
   hiện có tại chỗ**. Không tạo bản sao, không xóa/tạo lại file và không đổi tên hoặc di chuyển file.
   Giữ nguyên Drive file ID và link.
@@ -190,7 +190,15 @@ Script nhận tên `Report-1.docx` và `Report_1_Project_Introduction.docx` (cù
 khác), chỉ đọc file DOCX trực tiếp trong thư mục nguồn, và báo lỗi nếu có nhiều file cùng số report.
 Có thể dùng `--output-dir <thư-mục>` để xem thử Markdown ở nơi khác. Script chuyển đổi văn bản, tiêu
 đề, danh sách và bảng; ảnh, định dạng ký tự và bố cục trang không được thể hiện đầy đủ trong
-Markdown. Mỗi report được giữ trong một snapshot Markdown. `--report` hiện nhận 1, 2 hoặc 3.
+Markdown. Mỗi report được giữ trong một snapshot Markdown. `--report` hiện nhận 1, 2, 3 hoặc 6. Report 6
+không có link Drive trong script nên `--download` và việc tự tải report còn thiếu luôn bỏ qua nó:
+nguồn duy nhất là `source/Report-6_Software User Guides.docx`.
+
+Sync Report 6 (snapshot `Report-6_Software User Guides.md`, ảnh chỉ còn caption "Figure n: …"):
+
+```powershell
+python scripts/sync_reports.py --source "docs/08-reports/source/Report-6_Software User Guides.docx" --report 6
+```
 
 Cập nhật snapshot chỉ bằng script với đúng DOCX và số report. Không vá snapshot bằng tay, kể cả khi
 diff của script lớn hơn vùng vừa sửa trong DOCX. Rà diff để chắc chỉ report được yêu cầu thay đổi.
