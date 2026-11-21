@@ -285,18 +285,22 @@ ngoại lệ Drive → repo có đồng ý, chỉ để lấy template; từ đ�
 style và footer của template; footer dùng field `NUMPAGES` thay số "6" gõ cứng. Nội dung: mục I (Deliverable Package,
 System Requirements, cài đặt máy dev và server theo [deploy/README.md](../../deploy/README.md)) và mục II User Manual
 theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thành viên, Khách, tính năng chung), viết tiếng Anh như
-Report 1–4, nhãn giao diện giữ tiếng Việt. 75 ảnh chụp màn hình (không tính logo của template) từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
+Report 1–4, nhãn giao diện giữ tiếng Việt. 77 ảnh chụp màn hình (không tính logo của template) từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
 mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
 quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
 trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI, tên
 người nói và lời thoại ở ảnh tab Bản ghi (cuộc họp "Test mail FE…", không thu được bản ghi demo vì trình duyệt chụp ảnh
 không có micro). Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
-sẵn; màn xem tài liệu, các màn của Khách và màn thu giọng hộ chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
+sẵn; các màn của Khách và đường thu giọng hộ ngoài cuộc họp chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
 quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
 kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
 / tự kết thúc sau 24 giờ, chia sẻ lịch chỉ với người tổ chức, thu giọng hộ bất kỳ lúc nào và điều khoản Voice ID 1.4
 (ADR-0071). Vòng review 2: mục 3.14 tách hai đường thu giọng hộ — trong cuộc họp (Thư ký của cuộc họp, điều khoản
-1.3, quyền Thu giọng mẫu hộ chỉ mở rộng thêm trạng thái) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Mục
+1.3, quyền Thu giọng mẫu hộ chỉ mở rộng thêm trạng thái) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Chụp lại bằng Chrome (khung 1440×675): trang đăng nhập (làm mờ tên trên nút Google), tab Tài liệu và
+hai hộp thoại thêm tài liệu với 3 tệp mẫu bịa nội dung, màn xem tài liệu, luồng duyệt → công bố → bắt đầu của cuộc họp
+mẫu thứ ba "Họp rà soát tiến độ dự án số hoá hồ sơ" (14:00 thứ Hai 23/11), hàng chờ phát biểu có người giơ tay, thẻ
+Giọng mẫu cho mic phòng và trang Voice ID điều khoản 1.4; micro và camera của Chrome luôn tắt. Ảnh Báo cáo vẫn là dữ
+liệu thử của server (caption ghi rõ). Mục
 lục và số trang cập nhật bằng Word (55 trang). Snapshot Markdown
 `Report-6_Software User Guides.md` sinh bằng `sync_reports.py --report 6` (script mở rộng cho Report 6 cùng đợt); chưa
 có đích trong `push_reports.py`.
