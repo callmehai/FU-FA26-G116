@@ -449,7 +449,7 @@ Figure 12: Permission matrix
 | --- | --- |
 | Tạo cuộc họp (Create meetings) | Create and prepare meetings, find a time, see calendars shared with them |
 | Phê duyệt cuộc họp (Approve meetings) | Be chosen as the approver of a meeting and approve or reject it |
-| Thu giọng mẫu hộ (Collect voice samples) | Record Voice ID samples for people who agreed to Voice ID: at any time, or with the room microphone during a meeting (section 3.14) |
+| Thu giọng mẫu hộ (Collect voice samples) | Record Voice ID samples for a person at any time, without a meeting (with Administer users, from the user list), and lets a meeting's Secretary record on the room microphone in any status but Cancelled. Without it a Secretary still records while the meeting is published or in progress (section 3.14) |
 | Soạn biên bản (Write minutes) | Shown in the matrix but not enforced yet: today the minutes are written by the Chair or the Secretary of each meeting, whatever this box says |
 | Quản trị người dùng (Administer users) | Every screen under Quản trị |
 
@@ -676,13 +676,18 @@ The Lịch được chia sẻ (Shared calendars) tab shows the week of busy hour
 
 #### 3.14 Collecting Voice Samples for Others
 
-If your role has the Thu giọng mẫu hộ (Collect voice samples) permission — the built-in Thư ký role has it — you can record Voice ID samples for a person, so that the transcript recognises them. You can only record people who enabled Voice ID themselves and agreed to version 1.4 of its terms or later (section 6.3).
+You can record Voice ID samples for another person, so that the transcript recognises them. Only people who enabled Voice ID themselves can be recorded (section 6.3). There are two ways, with different conditions:
 
-- During a meeting, in the Thành phần tham dự tab: the card Giọng mẫu cho mic phòng (Voice samples for the room microphone) lets you record each participant on the room microphone. Ask the person to sit where they usually sit and read the paragraph shown. Not available in Secret meetings.
+| Condition | In a meeting, on the room microphone | At any time, without a meeting |
+| --- | --- | --- |
+| Who | The Secretary of that meeting | Anybody whose role has the Thu giọng mẫu hộ (Collect voice samples) permission and can open Quản trị › Người dùng (the Administer users permission) |
+| When | The meeting is in person or hybrid, not Secret, and Đã công bố or Đang diễn ra. A Secretary who also has the Collect voice samples permission can record in the other statuses too, except Đã huỷ. | Any time |
+| Whom | Participants of the meeting who agreed to the Voice ID terms version 1.3 or later | Any active account that agreed to the Voice ID terms version 1.4 or later |
+| Where | Thành phần tham dự tab, card Giọng mẫu cho mic phòng (Voice samples for the room microphone) | Quản trị › Người dùng (Administration › Users), microphone icon Giọng nói thu hộ (Collected voice samples) on the person's row |
 
-- At any time, without a meeting: on Quản trị › Người dùng (Administration › Users) the microphone icon Giọng nói thu hộ (Collected voice samples) on a person's row opens their samples, where you record a new one. Reaching that screen also needs the Administer users permission.
+- In a meeting, ask the person to sit where they usually sit and read the paragraph shown, so the sample matches the room microphone.
 
-- Each collector can record at most 5 samples for one person, and a person has at most 50 collected samples in all. You can listen to and delete every sample collected for that person, with the name of whoever collected it.
+- Each collector can record at most 5 samples for one person, and a person has at most 50 collected samples in all. In the anytime view you can listen to and delete every sample collected for that person, with the name of whoever collected it.
 
 - The person is notified each time a sample is recorded for them, and can delete any sample or withdraw consent at any time.
 
@@ -729,7 +734,7 @@ Figure 53: Speaking queue
 
 - Click Đóng phiếu (Close) when everybody has voted. The counts per option appear; for an open vote, Phiếu từng người (Ballots by person) shows who chose what.
 
-- Choose the conclusion — for example Thông qua (Passed) or Hoãn (Postponed) — add a short note and click Ghi kết luận (Record conclusion). The system never decides the conclusion from the counts; it is always the Chair's. Sửa kết luận changes it later.
+- Choose the conclusion — for example Thông qua (Passed) or Hoãn (Postponed) — add a short note and click Ghi kết luận (Record conclusion). The system never decides the conclusion from the counts; it is always the Chair's. Sửa kết luận (Edit conclusion) changes it later.
 
 If documents are attached to the vote, every voter must open each one, read it to the last page and confirm reading it; until then Gửi phiếu stays disabled.
 
@@ -859,7 +864,7 @@ Giọng nói của tôi (My voice) lets the system recognise you in the transcri
 
 - Record your sample by reading the paragraph shown.
 
-If you agreed to an older version, the page asks you once to agree to the new terms (Đồng ý điều khoản mới); until you do, nobody can record samples for you outside a meeting.
+If you agreed to an older version, the page asks you once to agree to the new terms (Đồng ý điều khoản mới, Agree to the new terms); until you do, nobody can record samples for you outside a meeting.
 
 You can listen to and delete each sample and withdraw consent at any time on the same page; withdrawing deletes every sample, suggestion and name filled in by the system. Without Voice ID every other feature still works.
 
