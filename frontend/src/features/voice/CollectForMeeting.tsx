@@ -7,7 +7,8 @@ import type { MeetingListItem, MeetingStatus } from '../../types/meeting'
 import { VoiceCollectionPanel } from './VoiceCollectionPanel'
 
 /**
- * ADR-0060 — the Secretary's own entry to recording samples for others, without opening each meeting: pick one of the
+ * ADR-0060 — the Secretary's own entry to recording samples for others ("Quản lý giọng nói thu hộ" on the users
+ * page), without opening each meeting: pick one of the
  * in-person or hybrid meetings they are Secretary of (published or in progress), then record its people. A meeting is
  * offered only when the server answers its collection view, so the server alone decides who may record where.
  */
@@ -46,21 +47,20 @@ export function CollectForMeeting() {
     }
   }, [])
 
-  if (meetings === null || meetings.length === 0) return null
+  if (meetings === null) return <p className="field-hint">Đang tải…</p>
+  if (meetings.length === 0)
+    return <p className="alert alert-info">Chưa có cuộc họp trực tiếp hoặc kết hợp nào bạn làm Thư ký đang mở để thu.</p>
 
   return (
-    <section className="voice-collect-for" aria-label="Thu hộ">
-      <div className="voice-status">
-        <h2 className="card-title">Thu hộ</h2>
-        <Select
-          value={picked}
-          label="Cuộc họp"
-          placeholder="Chọn cuộc họp"
-          options={meetings.map((m) => ({ value: m.id, label: m.title, hint: formatDate(m.plannedStartTime) }))}
-          onChange={setPicked}
-        />
-      </div>
+    <div className="voice-collect-for">
+      <Select
+        value={picked}
+        label="Cuộc họp"
+        placeholder="Chọn cuộc họp"
+        options={meetings.map((m) => ({ value: m.id, label: m.title, hint: formatDate(m.plannedStartTime) }))}
+        onChange={setPicked}
+      />
       {picked && <VoiceCollectionPanel key={picked} meetingId={picked} />}
-    </section>
+    </div>
   )
 }

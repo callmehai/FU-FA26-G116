@@ -141,37 +141,23 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     }
 
     [Fact]
-    public async Task Without_the_capability_even_the_meetings_secretary_gets_403()
+    public async Task A_meetings_secretary_without_the_capability_collects_only_while_the_meeting_is_open()
     {
-        var s = await fixture.Seed();
+        // PO 2026-11-21: a stand-in Secretary, no VoiceCollector on their role, holds the right for this meeting only.
+        var s = await fixture.Seed(MeetingStatus.InProgress, MeetingMode.Hybrid);
         await VoiceCollection.Agree(fixture, s.Member);
         var url = VoiceCollection.Url(s.MeetingId);
-        // A plain Member role, with no claim at all, or with a claim the database no longer backs: the gate is the data.
-        using var noClaim = fixture.Client(s.Secretary);
-        Assert.Equal(HttpStatusCode.Forbidden, (await noClaim.GetAsync(url)).StatusCode);
-        using var staleClaim = VoiceCollection.Client(fixture, s.Secretary, Capability.VoiceCollector);
-        Assert.Equal(HttpStatusCode.Forbidden, (await staleClaim.GetAsync(url)).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden,
-            (await staleClaim.PostAsync($"{url}/{s.Member}/samples", VoiceCollection.Sample())).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await staleClaim.GetAsync($"{url}/samples/{Guid.NewGuid()}/audio")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await staleClaim.DeleteAsync($"{url}/samples/{Guid.NewGuid()}")).StatusCode);
+        using var secretary = fixture.Client(s.Secretary);
+        Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(url)).StatusCode);
+        var sample = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
 
-        // The capability taken from the role while the token still names it: refused on the next call.
-        await VoiceCollection.MakeCollectors(fixture, s.Secretary);
-        Assert.Equal(HttpStatusCode.OK, (await staleClaim.GetAsync(url)).StatusCode);
-        await using var db = fixture.Db();
-        await db.RoleCapabilities.Where(rc => rc.RoleId == BuiltInRoles.Secretary && rc.Capability == Capability.VoiceCollector)
-            .ExecuteDeleteAsync();
-        try
-        {
-            Assert.Equal(HttpStatusCode.Forbidden, (await staleClaim.GetAsync(url)).StatusCode);
-            Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
-        }
-        finally
-        {
-            db.RoleCapabilities.Add(new() { RoleId = BuiltInRoles.Secretary, Capability = Capability.VoiceCollector });
-            await db.SaveChangesAsync();
-        }
+        await using (var db = fixture.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(m => m.SetProperty(x => x.Status, MeetingStatus.Ended));
+        Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync(url)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync($"{url}/samples/{sample}/audio")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await secretary.DeleteAsync($"{url}/samples/{sample}")).StatusCode);
+        await using var check = fixture.Db();
+        Assert.Equal(1, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member));
     }
 
     [Fact]
@@ -387,7 +373,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     }
 
     [Fact]
-    public async Task A_person_holds_at_most_fifty_proxy_samples_across_meetings_and_their_own_set_does_not_count()
+    public async Task One_secretary_takes_at_most_five_proxy_samples_of_a_person_and_their_own_set_does_not_count()
     {
         var (s, secretary) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
@@ -405,12 +391,12 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         }
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
         await VoiceCollection.Collect(fixture, elsewhere, other.MeetingId, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 0; i < VoiceIdRules.MaxProxySamplesPerCollector; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
 
         await VoiceCollection.AssertCode(
             await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()), 409, Msg476Limit);
         await using var check = fixture.Db();
-        Assert.Equal(VoiceIdRules.MaxProxySamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById != null));
+        Assert.Equal(VoiceIdRules.MaxProxySamplesPerCollector + 1, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById != null));
         Assert.Equal(VoiceIdRules.MaxSamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById == null));
     }
 
@@ -469,7 +455,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     }
 
     [Fact]
-    public async Task Two_secretaries_recording_the_last_place_at_once_keep_the_limit()
+    public async Task Recording_the_last_place_twice_at_once_keeps_the_limit()
     {
         var (s, secretary) = await Arrange();
         var other = await fixture.Seed();
@@ -480,16 +466,16 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
             await db.SaveChangesAsync();
         }
         await VoiceCollection.Agree(fixture, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 1; i < VoiceIdRules.MaxProxySamplesPerCollector; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
 
         var both = await Task.WhenAll(
             secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()),
-            elsewhere.PostAsync($"{VoiceCollection.Url(other.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()));
+            secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()));
         Assert.Single(both, r => r.StatusCode == HttpStatusCode.Created);
         await VoiceCollection.AssertCode(Assert.Single(both, r => r.StatusCode != HttpStatusCode.Created), 409, Msg476Limit);
         await using var check = fixture.Db();
-        Assert.Equal(VoiceIdRules.MaxProxySamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member));
+        Assert.Equal(VoiceIdRules.MaxProxySamplesPerCollector, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member));
     }
 
     [Fact]
@@ -498,7 +484,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         var (s, secretary) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
         var first = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 1; i < VoiceIdRules.MaxProxySamplesPerCollector; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         var url = $"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples";
         await VoiceCollection.AssertCode(await secretary.PostAsync(url, VoiceCollection.Sample()), 409, Msg476Limit);
         await VoiceCollection.AssertCode(await secretary.DeleteAsync($"{VoiceCollection.Url(s.MeetingId)}/samples/{first}"), 200, Msg474Deleted);

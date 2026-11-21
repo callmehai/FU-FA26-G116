@@ -29,7 +29,7 @@ public sealed class VoiceCollectionServiceTests
     }
 
     private VoiceCollectionService Service() => new(_repository, _notifications, _unitOfWork, _embedder,
-        new FakeVoiceprintProtector(), _audit, new FixedClock(Now), NullLogger<VoiceCollectionService>.Instance);
+        new FakeVoiceprintProtector(), _audit, new FixedClock(Now), new NoCallerAccounts(), NullLogger<VoiceCollectionService>.Instance);
 
     private Task<VoiceOutcome> Collect(Guid? actor = null)
         => Service().AddAsync(_meeting.Meeting.Id, actor ?? _meeting.Secretary, _meeting.Member, new MemoryStream([1, 2, 3]), "audio/webm");

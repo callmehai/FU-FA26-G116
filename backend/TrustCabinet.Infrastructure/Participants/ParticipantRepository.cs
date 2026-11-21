@@ -73,7 +73,8 @@ public sealed class ParticipantRepository(TrustCabinetDbContext db) : IParticipa
                     .ThenBy(u => u.Id)
                     .Skip((int)offset)
                     .Take(query.PageSize)
-                    .Select(u => new ParticipantOption(u.Id, u.FullName, u.Email))
+                    .Select(u => new ParticipantOption(u.Id, u.FullName, u.Email,
+                        db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId && rc.Capability == Capability.VoiceCollector)))
                     .ToArrayAsync(ct);
         return (total, items);
     }

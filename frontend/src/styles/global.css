@@ -6016,6 +6016,5 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 @media (max-width: 560px) {
   .tab-locked { gap: 4px; }
 }
-/* ADR-0060: the Secretary's "Thu hộ" picker under the proxy samples on "Giọng nói của tôi". */
-.voice-collect-for { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; min-width: 0; }
-.voice-collect-for > .voice-status { flex-wrap: wrap; gap: 12px; }
+/* ADR-0060: the meeting picker over the collection panel in "Quản lý giọng nói thu hộ". */
+.voice-collect-for { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
