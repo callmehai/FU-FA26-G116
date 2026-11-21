@@ -423,19 +423,19 @@
       "cases": [
         {
           "id": "MEET_FT22",
-          "description": "Verify the list opens on today's meetings with four cards.",
+          "description": "Verify the list opens unfiltered with four cards.",
           "procedure": [
             "Sign in as the Organizer and go to /mgmt/meetings."
           ],
           "expected": [
-            "The table \"Danh sách cuộc họp\" lists only today's meetings; the cards \"Họp hôm nay\", \"Đã công bố\", \"Cần xử lý\" and \"Bản nháp\" show counts (the last only for an account with MeetingCreator).",
+            "The URL has no filter and the table \"Danh sách cuộc họp\" lists the meetings of any time and status the account may read (PO 20/11/2026: it no longer opens on today); the cards \"Họp hôm nay\", \"Đã công bố\", \"Cần xử lý\" and \"Bản nháp\" show counts (the last only for an account with MeetingCreator).",
             "Under \"Họp hôm nay\" the line reads \"N đang diễn ra\" or \"Chưa có cuộc họp đang diễn ra\".",
             "The columns are \"Tên cuộc họp\", \"Thời gian diễn ra\", \"Hình thức\", \"Trạng thái\", \"Mức độ\", \"Thao tác\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Meetings today, a Published one and a Draft."
+            "Meetings today and on other days, a Published one and a Draft."
           ],
           "note": "UC-17 | BR-29 | Manual only"
         },
@@ -538,7 +538,7 @@
           "procedure": [
             "Go to /mgmt/meetings as an Organizer with no meeting.",
             "Search for a text that matches nothing with status=all.",
-            "Open /mgmt/meetings on a day with no meeting."
+            "On a day with no meeting click the card \"Họp hôm nay\"."
           ],
           "expected": [
             "Step 1: \"Chưa có cuộc họp nào.\" with the button \"Tạo cuộc họp\".",
@@ -1182,12 +1182,12 @@
         },
         {
           "id": "MEET_FT63",
-          "description": "Verify only the Chair sees Start and End.",
+          "description": "Verify the Chair and the Secretary see Start, and only the Chair sees End.",
           "procedure": [
-            "Open the Published meeting as its Organizer who is not the Chair, as the Secretary and as a Member."
+            "Open the Published meeting as its Organizer who is not the Chair, as a Member and as the Secretary; then open the InProgress meeting as the Secretary."
           ],
           "expected": [
-            "None of them has the \"Bắt đầu họp\" button; the backend would answer 403/MSG112 to a direct call."
+            "The Organizer and the Member have no \"Bắt đầu họp\" button (the backend would answer 403/MSG112 to a direct call); the Secretary has it, but on the InProgress meeting has no \"Kết thúc họp\" (403/MSG114 to a direct call)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",

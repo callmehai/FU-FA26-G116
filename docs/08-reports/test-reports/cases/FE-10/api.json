@@ -29,7 +29,7 @@
             "The recording has no transcript yet.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_recording_without_a_transcript_can_be_sent_to_speech_to_text; Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps)"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_recording_without_a_transcript_can_be_sent_to_speech_to_text; Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT02",
@@ -49,7 +49,7 @@
             "The recording's transcript is in status \"Failed\" (for example the speech worker was down).",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT03",
@@ -70,7 +70,7 @@
             "The transcript is \"Completed\", with a segment corrected and a voice named.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Redoing_a_finished_transcript_replaces_corrections_and_names_and_is_audited)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT04",
@@ -90,7 +90,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT05",
@@ -110,7 +110,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Active Chair and Member accounts of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT06",
@@ -129,7 +129,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "An account that can read the meeting but is not on its roster; a deleted recording of the same meeting."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (A_recording_the_caller_may_not_hear_is_not_confirmed_to_exist)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT07",
@@ -148,7 +148,7 @@
             "A Hybrid meeting that has ended and has a recording with source \"Combined\".",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | ADR-0061 point 5 | Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)"
+          "note": "UC-45c | ADR-0061 point 5 | Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT08",
@@ -163,7 +163,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT09",
@@ -181,7 +181,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Secretary account that an administrator can deactivate."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (A_deactivated_account_is_refused_while_its_token_is_still_valid)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -209,7 +209,7 @@
             "The transcript is Completed and one enrolled participant's voice was matched.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps; Secretary_corrects_a_segment_and_the_correction_is_attributed)"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps; Secretary_corrects_a_segment_and_the_correction_is_attributed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT11",
@@ -229,7 +229,7 @@
             "Completed transcript with one voice matched by the machine and another named by the Secretary.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT12",
@@ -248,7 +248,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Active Chair account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Chair_may_read_and_export_but_not_edit)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT13",
@@ -266,7 +266,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "The recording has no transcript row yet."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (A_recording_not_yet_sent_has_no_transcript)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT14",
@@ -284,7 +284,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "The speech worker was stopped so the transcript failed."
           ],
-          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again; An_unexpected_error_fails_the_transcript_instead_of_leaving_it_processing)"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again; An_unexpected_error_fails_the_transcript_instead_of_leaving_it_processing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT15",
@@ -301,7 +301,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Strangers_learn_nothing_about_a_transcript_or_its_text_file)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT16",
@@ -315,7 +315,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -344,7 +344,7 @@
             "Completed transcript; one voice named, one not.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT18",
@@ -361,7 +361,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Active Chair account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45b | Manual only"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Chair_saves_the_finished_transcript_as_text)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT19",
@@ -379,7 +379,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT20",
@@ -398,7 +398,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "The meeting's sensitivity is Secret."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT21",
@@ -417,7 +417,7 @@
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster.",
             "Transcript in status Pending, Processing, Failed or None."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT22",
@@ -433,7 +433,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting that has an Available recording (uploaded file or room mic) with the Chair, the Secretary and a Member on its roster."
           ],
-          "note": "UC-45b | Manual only"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Strangers_learn_nothing_about_a_transcript_or_its_text_file)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT23",
@@ -447,7 +447,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-45b | Manual only"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -475,7 +475,7 @@
             "A Hybrid or Online meeting that is running or ended, with sentences from two speakers, one of them excluded.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_per_mic_transcript_is_saved_without_the_sentences_taken_out)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_per_mic_transcript_is_saved_without_the_sentences_taken_out)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT25",
@@ -494,7 +494,7 @@
             "A running Hybrid meeting with sentences.",
             "Active Member account and a valid Guest invitation of that meeting."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT26",
@@ -510,7 +510,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting marked Secret with sentences."
           ],
-          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT27",
@@ -526,7 +526,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting with sentences."
           ],
-          "note": "UC-45b | Manual only"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Strangers_learn_nothing_about_the_per_mic_text_file)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT28",
@@ -540,7 +540,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-45b | Manual only"
+          "note": "UC-45b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -569,7 +569,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT30",
@@ -588,7 +588,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT31",
@@ -606,7 +606,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Boundary 8000 | Manual only"
+          "note": "UC-46a | Boundary 8000 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Segment_text_boundary_is_8000_characters)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT32",
@@ -624,7 +624,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Boundary 8000 | Manual only"
+          "note": "UC-46a | Boundary 8000 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Segment_text_boundary_is_8000_characters)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT33",
@@ -643,7 +643,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_gets_the_machines_guess_and_a_correction_is_audited)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_gets_the_machines_guess_and_a_correction_is_audited)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT34",
@@ -661,7 +661,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT35",
@@ -675,7 +675,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -703,7 +703,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT37",
@@ -721,7 +721,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT38",
@@ -740,7 +740,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Boundary 8000 | Manual only"
+          "note": "UC-46a | Boundary 8000 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Speech_clip_text_boundary_is_8000_characters)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT39",
@@ -759,7 +759,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "Active Member account that said the sentence, supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT40",
@@ -775,7 +775,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "A valid Guest invitation of that meeting."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT41",
@@ -793,7 +793,7 @@
             "A running Hybrid or Online meeting with a sentence a Member said into their own mic.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Strangers_and_unknown_sentences_learn_nothing_about_corrections)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT42",
@@ -807,7 +807,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -837,7 +837,7 @@
             "A participant who is not yet named on any voice of the recording.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_said_by_someone_no_voice_is_named_as_moves_to_a_new_voice_of_theirs_and_the_next_line_joins_it)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_said_by_someone_no_voice_is_named_as_moves_to_a_new_voice_of_theirs_and_the_next_line_joins_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT44",
@@ -856,7 +856,7 @@
             "A voice of the recording is already named as that participant.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT45",
@@ -875,7 +875,7 @@
             "A line currently under another voice.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT46",
@@ -894,7 +894,7 @@
             "A Guest invitation of the meeting still in force.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT47",
@@ -912,7 +912,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Moving_a_line_to_its_own_voice_writes_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT48",
@@ -931,7 +931,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT49",
@@ -949,7 +949,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT50",
@@ -967,7 +967,7 @@
             "The transcript already uses SPEAKER_00 to SPEAKER_99 (QA lead seeds it).",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Boundary 100 voices | Manual only"
+          "note": "UC-46b | Boundary 100 voices | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (A_hundredth_voice_is_the_last_one)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT51",
@@ -984,7 +984,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Unknown_voices_learn_nothing_and_change_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT52",
@@ -1001,7 +1001,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT53",
@@ -1020,7 +1020,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label), tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT54",
@@ -1039,7 +1039,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Two_moves_of_one_line_at_once_run_one_after_the_other_and_each_voice_keeps_its_true_time)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Two_moves_of_one_line_at_once_run_one_after_the_other_and_each_voice_keeps_its_true_time)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1067,7 +1067,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT56",
@@ -1085,7 +1085,7 @@
             "A Guest invitation of the meeting still in force.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT57",
@@ -1104,7 +1104,7 @@
             "SPEAKER_00 is named as a participant.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Clearing_a_voice_name_takes_it_back_to_speaker_numbers)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT58",
@@ -1122,7 +1122,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT59",
@@ -1140,7 +1140,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT60",
@@ -1157,7 +1157,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Unknown_voices_learn_nothing_and_change_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT61",
@@ -1174,7 +1174,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT62",
@@ -1191,7 +1191,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster."
           ],
-          "note": "UC-46b | Manual only"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Strangers_learn_nothing_about_naming_voices), tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT63",
@@ -1211,7 +1211,7 @@
             "A participant whose Voice ID consent is to notice 1.2 or later and whose voice matches surely.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent)"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1239,45 +1239,44 @@
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Secretary_asks_for_a_draft_which_is_queued_then_written_per_agenda_item)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Secretary_asks_for_a_draft_which_is_queued_then_written_per_agenda_item)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT65",
-          "description": "Verify POST /api/meetings/{meetingId}/summary is allowed for the Chair, while the meeting runs and after it ended.",
+          "description": "Verify POST /api/meetings/{meetingId}/summary is allowed for the Chair once the meeting has ended.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>",
-            "End the meeting, wait for the draft, then send the request again."
+            "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
-            "Both requests: HTTP 202 with \"code\": \"MSG384\"."
+            "HTTP 202 with \"code\": \"MSG384\"; the draft is queued and written when the AI server answers."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in status InProgress then Ended, with the AI server configured.",
+            "A meeting in status Ended with spoken sentences in its transcript, with the AI server configured.",
             "Active Chair account of that meeting supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Chair_and_secretary_may_ask_while_in_progress_and_after_the_end)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (The_chair_may_ask_once_the_meeting_has_ended)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT66",
-          "description": "Verify POST /api/meetings/{meetingId}/summary is refused before the meeting has started or after it was cancelled.",
+          "description": "Verify POST /api/meetings/{meetingId}/summary is refused unless the meeting has ended.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
             "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG386\", \"message\": \"Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc.\" }.",
+            "Body: { \"code\": \"MSG386\", \"message\": \"Chỉ tạo dự thảo khi cuộc họp đã kết thúc.\" }.",
             "No summary row is queued.",
-            "Repeat for a meeting in status Published and one in status Cancelled: same answer."
+            "Repeat for a meeting in status Draft, Approved, Published, InProgress and Cancelled: same answer."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Published meeting and a Cancelled meeting, each with a Secretary.",
+            "One meeting in each of the statuses Draft, Approved, Published, InProgress and Cancelled, each with a Secretary.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_draft_is_asked_for_only_once_the_meeting_has_started)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_draft_is_asked_for_only_once_the_meeting_has_ended)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT67",
@@ -1297,7 +1296,7 @@
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_second_request_while_one_is_queued_is_busy)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_second_request_while_one_is_queued_is_busy)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT68",
@@ -1316,7 +1315,7 @@
             "An InProgress meeting; the server has no model for it (QA lead removes the in-house AI settings).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Without_an_ai_server_a_request_is_refused_and_nothing_is_queued)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Without_an_ai_server_a_request_is_refused_and_nothing_is_queued)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT69",
@@ -1335,7 +1334,7 @@
             "An InProgress meeting marked Internal (and one marked Secret).",
             "Administrator with AdminUsers and the Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | BR-381 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves; An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write)"
+          "note": "UC-47 | BR-381 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves; An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT70",
@@ -1355,7 +1354,7 @@
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT71",
@@ -1372,7 +1371,7 @@
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable.",
             "An account that is not on the meeting's roster and cannot read it."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT72",
@@ -1386,7 +1385,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT73",
@@ -1404,7 +1403,7 @@
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable.",
             "Secretary account that an administrator can deactivate."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_deactivated_secretary_is_refused)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_deactivated_secretary_is_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT74",
@@ -1426,7 +1425,7 @@
             "A Ready draft that was edited and reviewed.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_rerun_keeps_the_last_draft_readable_then_replaces_it_and_its_review)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_rerun_keeps_the_last_draft_readable_then_replaces_it_and_its_review)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT75",
@@ -1446,7 +1445,7 @@
             "QA lead can make the AI server fail.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_model_failure_leaves_the_draft_failed_with_its_message; A_draft_too_long_to_store_ends_failed_rather_than_stuck_running)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_model_failure_leaves_the_draft_failed_with_its_message; A_draft_too_long_to_store_ends_failed_rather_than_stuck_running)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT76",
@@ -1466,7 +1465,7 @@
             "A closed public vote and a closed secret vote in that meeting with a recorded conclusion.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Vote_results_are_copied_from_the_data_and_never_pass_through_the_model)"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Vote_results_are_copied_from_the_data_and_never_pass_through_the_model)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1493,7 +1492,7 @@
             "No draft has been requested yet.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT78",
@@ -1513,7 +1512,7 @@
             "A Ready draft that is not reviewed.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT79",
@@ -1532,7 +1531,7 @@
             "A draft was just requested.",
             "Active Chair account of that meeting supplied by QA lead."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_rerun_keeps_the_last_draft_readable_then_replaces_it_and_its_review)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_rerun_keeps_the_last_draft_readable_then_replaces_it_and_its_review)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT80",
@@ -1552,7 +1551,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind; A_line_corrected_while_the_AI_writes_is_not_in_the_draft_so_the_draft_reads_as_behind; Deleting_a_sentence_after_the_draft_makes_the_draft_read_as_behind; Erasing_a_recording_after_the_draft_makes_the_draft_read_as_behind)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind; A_line_corrected_while_the_AI_writes_is_not_in_the_draft_so_the_draft_reads_as_behind; Deleting_a_sentence_after_the_draft_makes_the_draft_read_as_behind; Erasing_a_recording_after_the_draft_makes_the_draft_read_as_behind)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT81",
@@ -1569,7 +1568,7 @@
             "An Internal meeting; the API is chosen and the in-house model is not configured.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT82",
@@ -1585,7 +1584,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT83",
@@ -1599,7 +1598,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-48 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1628,7 +1627,7 @@
             "A Ready draft that was already reviewed.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Editing_saves_the_three_sections_and_takes_the_review_back)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Editing_saves_the_three_sections_and_takes_the_review_back)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT85",
@@ -1648,7 +1647,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT86",
@@ -1667,7 +1666,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-49 | Boundary 2000/12000/8000 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_of_vietnamese_text_within_the_documented_limits_is_saved)"
+          "note": "UC-49 | Boundary 2000/12000/8000 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_of_vietnamese_text_within_the_documented_limits_is_saved)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT87",
@@ -1686,7 +1685,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-49 | Boundary 2000/12000/8000 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)"
+          "note": "UC-49 | Boundary 2000/12000/8000 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT88",
@@ -1705,7 +1704,7 @@
             "No draft was requested yet, or the only request ended Failed.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Edit_and_review_need_a_written_draft)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Edit_and_review_need_a_written_draft)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT89",
@@ -1725,7 +1724,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT90",
@@ -1743,7 +1742,7 @@
             "A Ready draft.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT91",
@@ -1761,7 +1760,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable."
           ],
-          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in; Not_signed_in_gets_401)"
+          "note": "UC-49 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in; Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1790,7 +1789,7 @@
             "A Ready, unreviewed draft.",
             "Active Chair and Member accounts of that meeting supplied by QA lead."
           ],
-          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)"
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT93",
@@ -1808,7 +1807,7 @@
             "No finished draft exists.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Edit_and_review_need_a_written_draft)"
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Edit_and_review_need_a_written_draft)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT94",
@@ -1826,7 +1825,7 @@
             "A Ready draft.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed)"
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT95",
@@ -1844,7 +1843,7 @@
             "A Ready draft.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)"
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT96",
@@ -1862,7 +1861,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress meeting with a Chair, a Secretary and a Member, at least one agenda item, and recorded speech; the AI server is configured and reachable."
           ],
-          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in; Not_signed_in_gets_401)"
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Outsider_gets_404_not_403_for_a_meeting_they_are_not_in; Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1888,7 +1887,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead (any role)."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT98",
@@ -1906,7 +1905,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with Voice ID consent and two own samples recorded after notice 1.1."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT99",
@@ -1924,7 +1923,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A participant with consent to notice 1.3 and one sample taken by a Secretary in a hybrid meeting."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT100",
@@ -1940,7 +1939,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user whose standing consent was given to notice 1.2 (QA lead seeds it)."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed)"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT101",
@@ -1958,7 +1957,7 @@
             "Active account supplied by QA lead (any role).",
             "A second user with Voice ID on."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT102",
@@ -1976,7 +1975,7 @@
             "Active account supplied by QA lead (any role).",
             "An account an administrator can deactivate."
           ],
-          "note": "UC-81a | Manual only"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (A_deactivated_account_is_refused_while_its_token_is_still_valid), tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2002,7 +2001,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user without Voice ID consent."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT104",
@@ -2019,7 +2018,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with a standing consent to notice 1.3."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT105",
@@ -2038,7 +2037,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user without Voice ID consent."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT106",
@@ -2057,7 +2056,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user whose standing consent is to notice 1.2 with two samples (QA lead seeds it)."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed; One_consent_covers_both_sets)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed; One_consent_covers_both_sets)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT107",
@@ -2075,7 +2074,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user without Voice ID consent."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Two_grants_at_once_leave_one_standing_consent)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Two_grants_at_once_leave_one_standing_consent)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT108",
@@ -2091,7 +2090,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user without Voice ID consent."
           ],
-          "note": "UC-81b | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)"
+          "note": "UC-81b | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT109",
@@ -2106,7 +2105,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-81b | Manual only"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2135,7 +2134,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with consent and samples of both sets; a transcript where the machine matched this person and the Secretary named another voice as them."
           ],
-          "note": "UC-81f | Law 91/2025/QH15 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Withdrawing_erases_samples_and_suggestions_but_keeps_what_the_secretary_decided)"
+          "note": "UC-81f | Law 91/2025/QH15 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Withdrawing_erases_samples_and_suggestions_but_keeps_what_the_secretary_decided)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT111",
@@ -2153,7 +2152,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with samples of both sets; the Secretary of the meeting where one was recorded."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Withdrawing_erases_both_sets_at_once)"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Withdrawing_erases_both_sets_at_once)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT112",
@@ -2169,7 +2168,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user without Voice ID consent."
           ],
-          "note": "UC-81f | Manual only"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Withdrawing_nothing_answers_200_and_changes_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT113",
@@ -2187,7 +2186,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user who withdrew; a Secretary of a hybrid meeting that the user attends."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT114",
@@ -2204,7 +2203,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A transcription in progress for a meeting the user attends; QA lead can slow the worker."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_withdrawal_while_the_worker_matches_still_clears_what_it_writes)"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_withdrawal_while_the_worker_matches_still_clears_what_it_writes)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT115",
@@ -2222,7 +2221,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user who withdrew consent and had samples."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing)"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT116",
@@ -2241,7 +2240,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator with AdminUsers; a user with consent, samples and a named voice in a transcript."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing; Deactivating_an_account_ends_the_consent_and_erases_both_sets)"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing; Deactivating_an_account_ends_the_consent_and_erases_both_sets)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT117",
@@ -2256,7 +2255,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-81f | Manual only"
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2284,7 +2283,7 @@
             "A user with consent to notice 1.3 and fewer than 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT119",
@@ -2302,7 +2301,7 @@
             "A user without Voice ID consent.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT120",
@@ -2320,7 +2319,7 @@
             "A user with consent and exactly 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT121",
@@ -2337,7 +2336,7 @@
             "A user with consent, 4 own samples and 5 samples recorded by Secretaries.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_own_limit_counts_only_the_samples_the_person_recorded)"
+          "note": "UC-81c | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_own_limit_counts_only_the_samples_the_person_recorded)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT122",
@@ -2356,7 +2355,7 @@
             "A user with consent and fewer than 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Boundary 6 seconds | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Boundary 6 seconds | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT123",
@@ -2375,7 +2374,7 @@
             "A user with consent and fewer than 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT124",
@@ -2395,7 +2394,7 @@
             "A user with consent and fewer than 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Manual only"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Sample_quality_checks_reject_short_quiet_and_oversize_audio)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT125",
@@ -2414,7 +2413,7 @@
             "A user with consent and fewer than 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | Boundary 60 s / 10 MB | Manual only"
+          "note": "UC-81c | Boundary 60 s / 10 MB | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Sample_quality_checks_reject_short_quiet_and_oversize_audio)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT126",
@@ -2431,7 +2430,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with consent."
           ],
-          "note": "UC-81c | Manual only"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted), tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Unsupported_audio_and_missing_files_are_refused_before_the_worker)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT127",
@@ -2449,7 +2448,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with consent."
           ],
-          "note": "UC-81c | Manual only"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Unsupported_audio_and_missing_files_are_refused_before_the_worker)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT128",
@@ -2466,7 +2465,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with consent; QA lead can stop the speech worker."
           ],
-          "note": "UC-81c | Manual only"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Own_samples_are_refused_when_the_worker_is_down)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT129",
@@ -2485,7 +2484,7 @@
             "A user whose standing consent is to notice 1.0 (QA lead seeds it).",
             "The speech worker is running."
           ],
-          "note": "UC-81c | ADR-0042 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)"
+          "note": "UC-81c | ADR-0042 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT130",
@@ -2499,7 +2498,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-81c | Manual only"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2525,7 +2524,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with a sample recorded under notice 1.1 or later (\"playable\": true)."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT132",
@@ -2541,7 +2540,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A participant with a Secretary-recorded sample (\"playable\": true)."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT133",
@@ -2558,7 +2557,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A sample owned by another user and a sample recorded by this Secretary for another person."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT134",
@@ -2574,7 +2573,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A sample with \"playable\": false."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT135",
@@ -2592,7 +2591,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead (any role)."
           ],
-          "note": "UC-81d | Manual only"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Sample_audio_of_unknown_ids_learns_nothing), tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2619,7 +2618,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user with consent and two samples."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT137",
@@ -2638,7 +2637,7 @@
             "A user with consent and exactly 5 own samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81e | Boundary 5 samples | Manual only"
+          "note": "UC-81e | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Deleting_a_sample_frees_a_place_under_the_limit)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT138",
@@ -2657,7 +2656,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A participant with a Secretary-recorded sample."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT139",
@@ -2674,7 +2673,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A sample owned by another user."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT140",
@@ -2689,7 +2688,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-81e | Manual only"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Calls_without_signing_in_are_refused)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2716,7 +2715,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "One participant consented to notice 1.3, one has not agreed."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_list_shows_the_active_people_their_consent_their_count_and_only_this_meetings_samples)"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_list_shows_the_active_people_their_consent_their_count_and_only_this_meetings_samples)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT142",
@@ -2732,7 +2731,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "The same meeting in status Ended."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)"
+          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT143",
@@ -2749,7 +2748,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "The Secretary's role does not hold VoiceCollector (QA lead removes it in the role matrix)."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT144",
@@ -2766,7 +2765,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "An account with VoiceCollector that is not the meeting's Secretary."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT145",
@@ -2782,7 +2781,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Three meetings with that Secretary: Online, Secret, Cancelled."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_meeting_without_a_room_mic_a_secret_one_or_a_cancelled_one_is_not_found)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_meeting_without_a_room_mic_a_secret_one_or_a_cancelled_one_is_not_found)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT146",
@@ -2796,7 +2795,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2825,7 +2824,7 @@
             "A participant whose consent is to notice 1.3 and who has fewer than 5 Secretary samples.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | UC-86 | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_sample_is_the_persons_own_kept_encrypted_audited_and_they_are_told)"
+          "note": "UC-81c | UC-86 | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_sample_is_the_persons_own_kept_encrypted_audited_and_they_are_told)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT148",
@@ -2845,7 +2844,7 @@
             "A participant with no Voice ID consent, and one whose consent is to notice 1.2.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT149",
@@ -2862,7 +2861,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A user not on the roster who has Voice ID on."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT150",
@@ -2882,7 +2881,7 @@
             "A participant who already holds 5 Secretary samples (in this or other meetings).",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count)"
+          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT151",
@@ -2902,7 +2901,7 @@
             "A consenting participant.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT152",
@@ -2925,7 +2924,7 @@
             "A consenting participant.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Manual only"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_pass_the_same_quality_checks)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT153",
@@ -2943,7 +2942,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A consenting participant; QA lead can stop the speech worker."
           ],
-          "note": "UC-86 | Manual only"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_are_refused_when_the_worker_is_down)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT154",
@@ -2961,7 +2960,7 @@
             "A participant with 4 Secretary samples and a Secretary account in each of two hybrid meetings the person attends.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Two_secretaries_recording_the_last_place_at_once_keep_the_limit)"
+          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Two_secretaries_recording_the_last_place_at_once_keep_the_limit)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT155",
@@ -2982,7 +2981,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403; Not_signed_in_gets_401)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403; Not_signed_in_gets_401)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -3008,7 +3007,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample the Secretary recorded in this meeting."
           ],
-          "note": "UC-81d | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)"
+          "note": "UC-81d | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT157",
@@ -3026,7 +3025,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample recorded in another meeting; a participant's own sample."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT158",
@@ -3047,7 +3046,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample recorded in this meeting."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -3075,7 +3074,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample the Secretary recorded in this meeting."
           ],
-          "note": "UC-81e | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited; Deleting_frees_a_place_under_the_limit)"
+          "note": "UC-81e | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited; Deleting_frees_a_place_under_the_limit)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT160",
@@ -3093,7 +3092,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample recorded in another meeting; a participant's own sample."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT161",
@@ -3115,7 +3114,7 @@
             "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
             "A sample recorded in this meeting."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -3142,7 +3141,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "No AI settings saved yet (then repeat after saving an API key)."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft; The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft; The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT163",
@@ -3158,7 +3157,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT164",
@@ -3172,7 +3171,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-47 | Manual only"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT165",
@@ -3190,7 +3189,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "A second administrator who can change the role matrix."
           ],
-          "note": "UC-47 | Manual only"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiCoverageTests.cs (A_role_that_lost_admin_users_is_refused_with_its_old_token)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -3216,7 +3215,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Administrator account (capability AdminUsers) supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT167",
@@ -3234,7 +3233,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Administrator account (capability AdminUsers) supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT168",
@@ -3254,7 +3253,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "An API key already saved."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT169",
@@ -3273,14 +3272,14 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "No API key saved yet."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT170",
           "description": "Verify PUT /api/admin/ai refuses a missing address when the API is chosen and an invalid mode.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/admin/ai\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"mode\": \"Api\", \"apiBaseUrl\": \"\", \"apiModel\": \"model-x\", \"apiKey\": \"<API key>\" }",
+            "Send PUT /api/admin/ai\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"mode\": \"Api\", \"apiBaseUrl\": \"\", \"apiModel\": \"model-x\", \"apiKey\": \"khoa-kiem-tra-hop-le-123\" }",
             "Send it with \"mode\": \"Cloud\"."
           ],
           "expected": [
@@ -3291,7 +3290,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Administrator account (capability AdminUsers) supplied by QA lead."
           ],
-          "note": "UC-47 | Manual only"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiCoverageTests.cs (Api_mode_needs_an_address_and_a_known_mode)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT171",
@@ -3310,7 +3309,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Administrator account (capability AdminUsers) supplied by QA lead."
           ],
-          "note": "UC-47 | Boundary key 8-500, model 100 | Manual only"
+          "note": "UC-47 | Boundary key 8-500, model 100 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiCoverageTests.cs (Key_and_model_limits_are_checked_character_by_character)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT172",
@@ -3327,7 +3326,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "An API key already saved."
           ],
-          "note": "UC-47 | Manual only"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiCoverageTests.cs (The_api_key_cannot_be_removed_while_the_api_is_in_use)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT173",
@@ -3346,7 +3345,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "An Internal meeting and a Normal meeting, both InProgress, each with a Secretary."
           ],
-          "note": "UC-47 | BR-381 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves)"
+          "note": "UC-47 | BR-381 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT174",
@@ -3364,7 +3363,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Chair account supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -3391,7 +3390,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "The in-house AI server is configured and reachable."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Testing_the_in_house_model_calls_it_as_drafts_do_and_never_the_api)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Testing_the_in_house_model_calls_it_as_drafts_do_and_never_the_api)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT176",
@@ -3410,7 +3409,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "A working API address, model and key supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT177",
@@ -3429,7 +3428,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "An API endpoint that can be made to refuse (QA lead)."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT178",
@@ -3446,7 +3445,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "The in-house AI server is not configured or is switched off."
           ],
-          "note": "UC-47 | Manual only"
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiCoverageTests.cs (Testing_the_local_machine_reports_when_it_is_not_configured)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT179",
@@ -3465,7 +3464,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "No API key saved."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT180",
@@ -3483,7 +3482,7 @@
             "Active Administrator account (capability AdminUsers) supplied by QA lead.",
             "An API key saved whose ciphertext was damaged (QA lead)."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (A_key_that_can_no_longer_be_read_sends_nothing_out)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (A_key_that_can_no_longer_be_read_sends_nothing_out)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT181",
@@ -3501,7 +3500,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)"
+          "note": "UC-47 | ADR-0056 | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)", "round1": "Passed", "date1": "2026-11-20", "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -771,14 +771,14 @@ export default {
       id: 'AC7',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Khoảng sai trên màn (EX-1): tháng bắt đầu sau tháng kết thúc, hoặc quá 24 tháng → MSG463 dưới thanh chọn, không gọi API, khoá Xuất Excel; tháng sai dạng trên URL bị bỏ qua',
+      title: 'Khoảng sai trên URL (EX-1) → MSG463 dưới thanh chọn, không gọi API, khoá Xuất Excel; ô chọn không bao giờ để lại khoảng sai (đầu kia chạy theo, BR-433); tháng sai dạng trên URL bị bỏ qua',
       steps: [
         'thuky@ mở /mgmt/reports?from=2026-06&to=2026-01',
         `Mở /mgmt/reports?from=${addMonths(NOW_MONTH, -24)}&to=${NOW_MONTH} (25 tháng)`,
         `Từ khoảng đúng ${monthLabel(P6.from)} – ${monthLabel(P6.to)}, chọn Từ tháng = Tháng ${monthLabel(NOW_MONTH)} (sau Đến tháng) bằng ô chọn`,
         'Mở /mgmt/reports?from=2026-13&to=abc',
       ],
-      expected: `Câu "${MSG463}" (role alert), không có bảng số liệu, không request /api/reports, nút Xuất Excel bị khoá; URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
+      expected: `URL sai: câu "${MSG463}" (role alert), không có bảng số liệu, không request /api/reports, nút Xuất Excel bị khoá; ô chọn: Đến tháng chạy theo thành Tháng ${monthLabel(NOW_MONTH)}, số liệu tải lại, không báo lỗi (followPeriod); URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
       async run(qa) {
         const seen = watchReports(qa)
         const expectInvalid = async (slug) => {
@@ -803,10 +803,16 @@ export default {
         seen.length = 0
         await press(qa, qa.page.getByRole('button', { name: /^Từ tháng:/ }))
         await press(qa, qa.page.getByRole('listbox', { name: 'Từ tháng' }).getByRole('option', { name: `Tháng ${monthLabel(NOW_MONTH)}` }))
-        await qa.expect(qa.page).toHaveURL(new RegExp(`from=${NOW_MONTH}&to=${P6.to}`))
-        await expectInvalid('chon-tu-thang-sau-den-thang')
-        await qa.page.waitForTimeout(500)
-        qa.expect(seen, 'the page asked the API after an invalid choice').toEqual([])
+        // followPeriod (BR-433): picking one end never leaves an invalid period — the other end follows instead of an error.
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/reports\\?from=${NOW_MONTH}&to=${NOW_MONTH}$`))
+        const followed = await lastReport(qa, seen, (x) => x.from === NOW_MONTH && x.to === NOW_MONTH)
+        await figuresReady(qa)
+        qa.expect(problems(followed, NOW_MONTH, NOW_MONTH)).toEqual([])
+        await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toHaveCount(0)
+        await qa.expect(exportButton(qa)).toBeEnabled()
+        await settled(qa)
+        await qa.shot('chon-tu-thang-sau-den-thang-dau-kia-chay-theo')
+        await noSidewaysScroll(qa)
 
         await qa.goto('/mgmt/reports?from=2026-13&to=abc')
         const rep = await lastReport(qa, seen, (x) => x.from === DEFAULT.from && x.to === DEFAULT.to)

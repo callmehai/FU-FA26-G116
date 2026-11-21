@@ -30,7 +30,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_returns_a_token_pair_and_the_user; Login_puts_the_refresh_token_in_an_HttpOnly_cookie_and_not_in_the_body; Login_never_returns_the_password_hash)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_returns_a_token_pair_and_the_user; Login_puts_the_refresh_token_in_an_HttpOnly_cookie_and_not_in_the_body; Login_never_returns_the_password_hash)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT02",
@@ -49,7 +52,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT03",
@@ -69,7 +75,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "No account uses the email \"khongtontai@trustcabinet.local\"."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_unknown_email_and_a_wrong_password_are_indistinguishable)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_unknown_email_and_a_wrong_password_are_indistinguishable) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Unknown_email_answers_exactly_like_a_wrong_password)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT04",
@@ -87,7 +96,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-01 | Manual only (empty input takes the MSG01 branch)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Login_rejects_empty_credentials_with_MSG01_and_sets_no_cookie)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT05",
@@ -106,7 +118,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG02_for_a_deactivated_account)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG02_for_a_deactivated_account)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT06",
@@ -123,7 +138,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Same deactivated account as the previous case."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Login_checks_the_password_before_the_account_status)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT07",
@@ -141,7 +159,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_succeeds_when_the_role_grants_nothing)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_succeeds_when_the_role_grants_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT08",
@@ -160,7 +181,10 @@
             "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_past_the_email_limit_answers_429_MSG414_even_with_the_right_password)"
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_past_the_email_limit_answers_429_MSG414_even_with_the_right_password) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT09",
@@ -178,7 +202,10 @@
             "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_works_again_once_the_window_has_passed)"
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_works_again_once_the_window_has_passed)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT10",
@@ -196,7 +223,10 @@
             "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
             "Run from a network address no other tester uses during that minute."
           ],
-          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (The_ip_limit_is_shared_by_login_google_and_password_reset)"
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (The_ip_limit_is_shared_by_login_google_and_password_reset)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -225,7 +255,10 @@
             "Active account already linked to the tester's Gmail (has signed in with Google before).",
             "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_linked_active_account_gets_a_token_pair; The_response_shape_matches_password_sign_in)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_linked_active_account_gets_a_token_pair; The_response_shape_matches_password_sign_in)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT12",
@@ -246,7 +279,10 @@
             "The Admin has created an active account with the tester's Gmail as its email (UC-06a); it has never signed in with Google.",
             "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
           ],
-          "note": "UC-02 | ADR-0009 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking)"
+          "note": "UC-02 | ADR-0009 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT13",
@@ -263,7 +299,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Google sign-in enabled on the build (Authentication:Google:Enabled = true)."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unverifiable_token_answers_MSG03)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unverifiable_token_answers_MSG03)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT14",
@@ -282,7 +321,10 @@
             "A Gmail that no TrustCabinet account uses.",
             "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unlinked_google_account_answers_MSG05)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unlinked_google_account_answers_MSG05)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT15",
@@ -300,7 +342,10 @@
             "An account linked to the tester's Gmail, then deactivated by the Admin (UC-06c).",
             "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_deactivated_account_answers_MSG02)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_deactivated_account_answers_MSG02)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT16",
@@ -319,7 +364,10 @@
             "An account created with the tester's Gmail, never signed in with Google, then deactivated.",
             "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_deactivated_before_its_first_google_sign_in_answers_MSG02)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_deactivated_before_its_first_google_sign_in_answers_MSG02) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Google_sign_in_links_after_reactivation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT17",
@@ -337,7 +385,10 @@
             "A build with Authentication:Google:Enabled = false, prepared by QA lead.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (The_endpoint_is_absent_when_google_sign_in_is_switched_off)"
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (The_endpoint_is_absent_when_google_sign_in_is_switched_off) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Password_sign_in_still_works_when_google_is_switched_off)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -363,7 +414,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_exchanges_the_token_for_a_new_pair; Refresh_rejects_a_token_that_was_already_used)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_exchanges_the_token_for_a_new_pair; Refresh_rejects_a_token_that_was_already_used) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_replay_answers_MSG01)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT19",
@@ -379,7 +433,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_without_the_cookie_answers_like_an_expired_token; A_refused_refresh_clears_the_cookie)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_without_the_cookie_answers_like_an_expired_token; A_refused_refresh_clears_the_cookie)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT20",
@@ -395,7 +452,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_ignores_a_token_sent_in_the_body)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_ignores_a_token_sent_in_the_body) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_ignores_a_token_in_the_body_with_MSG01)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT21",
@@ -416,7 +476,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/RedisRefreshTokenStoreTests.cs (Replaying_a_used_token_ends_every_session_of_its_account)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/RedisRefreshTokenStoreTests.cs (Replaying_a_used_token_ends_every_session_of_its_account) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Replaying_a_used_token_past_the_grace_period_ends_every_session)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT22",
@@ -434,7 +497,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Disposable active account and an Admin account, supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_answers_MSG02_once_the_account_is_deactivated); Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (Deactivating_an_account_ends_its_session_at_the_next_refresh)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_answers_MSG02_once_the_account_is_deactivated); Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (Deactivating_an_account_ends_its_session_at_the_next_refresh)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT23",
@@ -451,7 +517,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Disposable role with at least one capability and an account in it, supplied by QA lead; restore the role afterwards."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Capability_change_reaches_the_next_refresh_without_signing_in_again)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT24",
@@ -468,7 +537,10 @@
             "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Refresh_and_logout_are_not_limited)"
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Refresh_and_logout_are_not_limited) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_stays_200_when_the_sign_in_limit_is_tight)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -494,7 +566,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_invalidates_the_refresh_token_server_side_and_clears_the_cookie)"
+          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_invalidates_the_refresh_token_server_side_and_clears_the_cookie) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Refresh_after_logout_answers_MSG01)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT26",
@@ -509,7 +584,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_is_idempotent; Logout_clears_the_cookie_even_with_no_valid_token)"
+          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_is_idempotent; Logout_clears_the_cookie_even_with_no_valid_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT27",
@@ -527,7 +605,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Logout_on_one_device_leaves_the_other_signed_in)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -551,7 +632,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_returns_the_signed_in_user)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_returns_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT29",
@@ -567,7 +651,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_rejects_a_request_with_no_token; Me_rejects_a_forged_token)"
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_rejects_a_request_with_no_token; Me_rejects_a_forged_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT30",
@@ -584,7 +671,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Disposable active account and an Admin account, supplied by QA lead."
           ],
-          "note": "UC-01 | SCRUM-12 | Automated: tests/TrustCabinet.Web.Tests/Access/CapabilityGateTests.cs (A_token_belonging_to_a_deactivated_account_is_refused)"
+          "note": "UC-01 | SCRUM-12 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Me_refuses_a_deactivated_account_with_401)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT31",
@@ -600,7 +690,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation."
           ],
-          "note": "UC-04 | Manual only"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Me_refuses_a_guest_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -628,7 +721,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 | BR-152 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)"
+          "note": "UC-04 | BR-152 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT33",
@@ -644,7 +740,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)"
+          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT34",
@@ -660,7 +759,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting."
           ],
-          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Invitation_of_a_meeting_that_is_not_open_is_no_longer_valid)"
+          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Invitation_of_a_meeting_that_is_not_open_is_no_longer_valid)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT35",
@@ -676,7 +778,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 | BR-157 | Manual only"
+          "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Revoked_invitation_is_refused_at_open)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -703,7 +808,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)"
+          "note": "UC-04 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT37",
@@ -720,7 +828,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 EX-5 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)"
+          "note": "UC-04 EX-5 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT38",
@@ -740,7 +851,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code) · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT39",
@@ -757,7 +871,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable invitation."
           ],
-          "note": "UC-04 EX-6 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Twenty_codes_in_24_hours_is_the_cap_until_the_oldest_leaves_the_window)"
+          "note": "UC-04 EX-6 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Twenty_codes_in_24_hours_is_the_cap_until_the_oldest_leaves_the_window)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT40",
@@ -775,7 +892,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "QA lead can break email delivery on the build (wrong SMTP setting) and restore it."
           ],
-          "note": "UC-04 EX-3 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Mail_failure_leaves_no_code_and_allows_an_immediate_retry)"
+          "note": "UC-04 EX-3 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Mail_failure_leaves_no_code_and_allows_an_immediate_retry) · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -804,7 +924,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 | BR-153 | BR-155 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Verification_issues_a_guest_token_bound_to_the_session_without_internal_claims)"
+          "note": "UC-04 | BR-153 | BR-155 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Verification_issues_a_guest_token_bound_to_the_session_without_internal_claims) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Verify_response_says_the_profile_is_missing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT42",
@@ -821,7 +944,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)"
+          "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT43",
@@ -838,7 +964,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 EX-2 | Manual only"
+          "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Verify_refuses_malformed_codes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT44",
@@ -858,7 +987,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 EX-4 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)"
+          "note": "UC-04 EX-4 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT45",
@@ -876,7 +1008,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_is_single_use_and_concurrent_verifications_open_one_session_without_users)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_is_single_use_and_concurrent_verifications_open_one_session_without_users)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT46",
@@ -893,7 +1028,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_expires_after_fifteen_minutes)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_expires_after_fifteen_minutes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT47",
@@ -910,7 +1048,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
           ],
-          "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Revoking_between_send_and_verify_denies_the_code)"
+          "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Revoking_between_send_and_verify_denies_the_code)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -934,7 +1075,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. The meeting is not marked \"Mật\".",
             "A Guest access token from a successful POST .../verify for this invitation."
           ],
-          "note": "UC-04 AF-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Reopening_with_a_live_session_needs_no_new_code_and_a_second_device_reuses_the_profile)"
+          "note": "UC-04 AF-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Reopening_with_a_live_session_needs_no_new_code_and_a_second_device_reuses_the_profile)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT49",
@@ -950,7 +1094,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Guest invited to a Published meeting marked \"Mật\" and verified; Guest access token kept."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_says_whether_documents_may_be_downloaded_without_telling_the_sensitivity)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_says_whether_documents_may_be_downloaded_without_telling_the_sensitivity)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT50",
@@ -967,7 +1114,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_endpoints_refuse_anonymous_and_internal_callers)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_endpoints_refuse_anonymous_and_internal_callers)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT51",
@@ -984,7 +1134,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting.",
             "A Guest access token from a successful POST .../verify for this invitation."
           ],
-          "note": "UC-04 EX-8 | BR-155 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_ends_after_twelve_hours_and_with_its_invitation)"
+          "note": "UC-04 EX-8 | BR-155 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_ends_after_twelve_hours_and_with_its_invitation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1011,7 +1164,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
           ],
-          "note": "UC-04 step 5 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Profile_is_self_declared_and_never_overwrites_the_invitation)"
+          "note": "UC-04 step 5 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Profile_is_self_declared_and_never_overwrites_the_invitation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT53",
@@ -1029,7 +1185,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
           ],
-          "note": "UC-04 EX-7 | BR-180 | Manual only"
+          "note": "UC-04 EX-7 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Guest_profile_rejects_a_blank_display_name)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT54",
@@ -1048,7 +1207,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
           ],
-          "note": "UC-04 EX-7 | BR-180 | Manual only"
+          "note": "UC-04 EX-7 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRound1Tests.cs (Guest_profile_rejects_overlong_and_control_character_values)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT55",
@@ -1065,7 +1227,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation."
           ],
-          "note": "UC-04 | Manual only"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_API_IT56",
@@ -1085,7 +1250,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "A Guest access token from a successful POST .../verify for this invitation."
           ],
-          "note": "UC-04 EX-9 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session) | Deviation: docs/03-api/16-truy-cap-khach-uc04.md §9 still says the name is not locked; the code locks it."
+          "note": "UC-04 EX-9 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session) | Deviation: docs/03-api/16-truy-cap-khach-uc04.md §9 still says the name is not locked; the code locks it.",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1113,7 +1281,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Logout_ends_only_that_session_and_cannot_be_undone_by_signing_in_again)"
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Logout_ends_only_that_session_and_cannot_be_undone_by_signing_in_again)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

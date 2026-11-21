@@ -30,9 +30,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress, has two agenda items (one with a recorded conclusion) and one closed vote; no AI draft and no minutes yet."
+            "The meeting is Ended, has two agenda items (one with a recorded conclusion) and one closed vote; no AI draft and no minutes yet."
           ],
-          "note": "UC-59 | BR-384 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting)"
+          "note": "UC-59 | BR-384 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT02",
@@ -53,7 +56,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the AI machine is configured on the build; no minutes yet."
           ],
-          "note": "UC-59 AF-4 | BR-382 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)"
+          "note": "UC-59 AF-4 | BR-382 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT03",
@@ -71,9 +77,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
+            "The meeting is Ended and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
           ],
-          "note": "UC-59 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft)"
+          "note": "UC-59 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (rebuild keeps single history line)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT04",
@@ -91,9 +100,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
+            "The meeting is Ended and its draft minutes were saved with the content \"<p>Bản Thư ký đã sửa.</p>\"."
           ],
-          "note": "UC-59 AF-2 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft)"
+          "note": "UC-59 AF-2 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_second_create_needs_rebuild_which_overwrites_the_same_draft); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (rebuild keeps single history line)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT05",
@@ -111,7 +123,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Chair returned the minutes with reason \"Bổ sung kết luận mục 2.\" (UC-65)."
           ],
-          "note": "UC-59 | BR-407 | Manual only"
+          "note": "UC-59 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Rebuilding_a_returned_revision_keeps_it_returned)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT06",
@@ -127,9 +142,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has no minutes."
+            "The meeting is Ended and has no minutes."
           ],
-          "note": "UC-59 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404) | Deviation: docs/03-api/17-du-thao-bien-ban.md and the MSG397 catalogue row say a non-officer gets 404 while the minutes are a draft; the code answers 403 MSG397 on POST .../minutes in every state (as UC-59 EX-1 says)."
+          "note": "UC-59 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404) | Deviation: docs/03-api/17-du-thao-bien-ban.md and the MSG397 catalogue row say a non-officer gets 404 while the minutes are a draft; the code answers 403 MSG397 on POST .../minutes in every state (as UC-59 EX-1 says).",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT07",
@@ -145,9 +163,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-59 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+          "note": "UC-59 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT08",
@@ -163,25 +184,31 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress meeting with no minutes."
           ],
-          "note": "UC-59 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-59 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT09",
-          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses a meeting that has not started or was cancelled.",
+          "description": "Verify POST /api/meetings/{meetingId}/minutes refuses a meeting that has not ended or was cancelled.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{draftMeetingId}/minutes with Body: { \"rebuild\": false }.",
-            "Repeat for the Published meeting and the Cancelled meeting."
+            "Repeat for the Published, InProgress and Cancelled meetings."
           ],
           "expected": [
-            "Each call: HTTP 409 Conflict, body { \"code\": \"MSG398\", \"message\": \"Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.\" }.",
-            "No minutes row exists for any of the three meetings."
+            "Each call: HTTP 409 Conflict, body { \"code\": \"MSG398\", \"message\": \"Chỉ soạn biên bản khi cuộc họp đã kết thúc.\" }.",
+            "No minutes row exists for any of the four meetings."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "Three meetings where the Secretary is the current Secretary: one Draft, one Published, one Cancelled."
+            "Four meetings where the Secretary is the current Secretary: one Draft, one Published, one InProgress, one Cancelled."
           ],
-          "note": "UC-59 EX-2 | BR-387 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_are_built_only_once_the_meeting_has_started)"
+          "note": "UC-59 EX-2 | BR-387 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_are_built_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT10",
@@ -200,7 +227,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "One Ended meeting whose minutes are WaitingApproval and one whose minutes are Issued; the Secretary is their current Secretary."
           ],
-          "note": "UC-59 EX-4 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+          "note": "UC-59 EX-4 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT11",
@@ -220,7 +250,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes were issued and a correction (revision 2, Draft) was created (UC-83)."
           ],
-          "note": "UC-59 EX-7 | BR-413 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-59 EX-7 | BR-413 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT12",
@@ -238,10 +271,13 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes.",
+            "The meeting is Ended and has draft minutes.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-59 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+          "note": "UC-59 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -267,7 +303,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is InProgress; no AI draft and no minutes."
           ],
-          "note": "UC-58 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting)"
+          "note": "UC-58 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Secretary_builds_the_draft_from_the_records_of_the_meeting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (empty-state flags)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT14",
@@ -286,7 +325,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-58 | BR-404 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-58 | BR-404 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (canManage)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT15",
@@ -302,9 +344,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and the Secretary has built draft minutes."
+            "The meeting is Ended and the Secretary has built draft minutes."
           ],
-          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Draft_state_tells_each_officer_what_they_may_do) (member history empty)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT16",
@@ -323,7 +368,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes were submitted by the Secretary and issued by the Chair. The Organizer is not on the roster."
           ],
-          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (working facts null)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT17",
@@ -342,7 +390,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes were issued and the Chair created a correction that is not issued yet."
           ],
-          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT18",
@@ -359,7 +410,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes are issued."
           ],
-          "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT19",
@@ -374,7 +428,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any meeting id."
           ],
-          "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT20",
@@ -392,7 +449,10 @@
             "The meeting is Ended and its minutes are issued.",
             "An access token issued to a Member before the Admin deactivated the account (UC-06c); a Guest invited to the meeting with a verified Guest token."
           ],
-          "note": "UC-58 | BR-412 | Manual only"
+          "note": "UC-58 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Deactivated_and_guest_callers_are_refused_the_minutes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT21",
@@ -411,7 +471,10 @@
             "The meeting has draft minutes.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT22",
@@ -429,7 +492,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "QA lead stored draft minutes in the old line-marked format (\"@@ **THƯ KÝ** | **CHỦ TỌA**\", \"# BIÊN BẢN\", \"**Địa điểm:** Phòng họp số 1.\") as minutes saved before 05/11/2026 were."
           ],
-          "note": "UC-58 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_row_of_line_text_reads_back_as_html_and_exports)"
+          "note": "UC-58 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_row_of_line_text_reads_back_as_html_and_exports)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -456,7 +522,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes were issued, then a correction was issued (revision 2)."
           ],
-          "note": "UC-58 AF-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-58 AF-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT24",
@@ -475,7 +544,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes are issued and a correction is being written."
           ],
-          "note": "UC-58 | BR-386 | Manual only"
+          "note": "UC-58 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Chair_and_secretary_open_any_revision)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT25",
@@ -493,7 +565,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "One Ended meeting whose minutes are WaitingApproval; a second Ended meeting with issued minutes and a correction in Draft; the Member is on both."
           ],
-          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-58 EX-2 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT26",
@@ -511,7 +586,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes are issued."
           ],
-          "note": "UC-58 EX-3 | Manual only"
+          "note": "UC-58 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Strangers_and_unknown_ids_learn_nothing_about_a_revision)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT27",
@@ -526,7 +604,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-58 | Manual only"
+          "note": "UC-58 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Reading_a_revision_without_signing_in_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT28",
@@ -545,7 +626,10 @@
             "The meeting has draft minutes.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-58 EX-1 | Manual only"
+          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (A_revision_that_cannot_be_read_answers_MSG403)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -575,9 +659,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text; The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)"
+          "note": "UC-60 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text; The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT30",
@@ -595,9 +682,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 | BR-385 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Saved_html_is_kept_to_the_allow_list)"
+          "note": "UC-60 | BR-385 | ADR-0055 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Saved_html_is_kept_to_the_allow_list)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT31",
@@ -617,9 +707,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text)"
+          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Save_with_a_stale_updated_at_is_refused_and_keeps_the_newer_text)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT32",
@@ -636,9 +729,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Two_saves_from_the_same_load_cannot_both_succeed)"
+          "note": "UC-60 EX-1 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Two_saves_from_the_same_load_cannot_both_succeed)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT33",
@@ -655,9 +751,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT34",
@@ -674,9 +773,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT35",
@@ -692,9 +794,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)"
+          "note": "UC-60 EX-2 | BR-394 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Empty_or_oversized_content_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT36",
@@ -712,7 +817,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "One Ended meeting whose minutes are WaitingApproval and one whose minutes are Issued; the Secretary is their current Secretary."
           ],
-          "note": "UC-60 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+          "note": "UC-60 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT37",
@@ -730,7 +838,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Chair returned the minutes with a reason."
           ],
-          "note": "UC-60 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-60 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT38",
@@ -748,7 +859,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes are issued."
           ],
-          "note": "UC-60 EX-4 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)"
+          "note": "UC-60 EX-4 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Minutes_past_draft_are_locked)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT39",
@@ -765,9 +879,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-60 EX-4 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+          "note": "UC-60 EX-4 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT40",
@@ -782,7 +899,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT41",
@@ -800,10 +920,13 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes.",
+            "The meeting is Ended and has draft minutes.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-60 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+          "note": "UC-60 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -828,9 +951,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress (Normal sensitivity) and has draft minutes."
+            "The meeting is Ended (Normal sensitivity) and has draft minutes."
           ],
-          "note": "UC-60 AF-1 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_word_file_of_the_draft)"
+          "note": "UC-60 AF-1 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_word_file_of_the_draft)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT43",
@@ -848,9 +974,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress (Normal sensitivity) and has draft minutes."
+            "The meeting is Ended (Normal sensitivity) and has draft minutes."
           ],
-          "note": "UC-60 AF-2 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_pdf_of_the_draft_in_its_own_font)"
+          "note": "UC-60 AF-2 | BR-391 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Export_returns_a_pdf_of_the_draft_in_its_own_font)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT44",
@@ -869,7 +998,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting has draft minutes."
           ],
-          "note": "UC-60 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (An_unknown_export_format_is_refused)"
+          "note": "UC-60 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (An_unknown_export_format_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT45",
@@ -888,7 +1020,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Secret meeting with draft minutes, and a Secret Ended meeting with issued minutes; the Secretary and the Member are on both."
           ],
-          "note": "UC-60 EX-6 | UC-58 EX-4 | BR-390 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_secret_meeting_minutes_are_not_exported); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Issued_minutes_of_a_secret_meeting_are_read_on_screen_only)"
+          "note": "UC-60 EX-6 | UC-58 EX-4 | BR-390 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (A_secret_meeting_minutes_are_not_exported); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Issued_minutes_of_a_secret_meeting_are_read_on_screen_only)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT46",
@@ -906,7 +1041,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended (Normal); its minutes were issued and later corrected, so revision 1 is Superseded and revision 2 Issued."
           ],
-          "note": "UC-58 AF-3 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-58 AF-3 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT47",
@@ -923,9 +1061,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-58 EX-2 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)"
+          "note": "UC-58 EX-2 | UC-60 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Members_neither_build_nor_see_a_draft_and_outsiders_get_404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT48",
@@ -940,7 +1081,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)"
+          "note": "UC-60 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Not_signed_in_gets_401)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT49",
@@ -959,7 +1103,10 @@
             "The meeting has draft minutes.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)"
+          "note": "UC-58 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesEndpointTests.cs (Database_outages_have_their_codes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -990,7 +1137,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\"."
           ],
-          "note": "UC-61 | BR-404 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-61 | BR-404 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (waiting notification title/body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT51",
@@ -1009,7 +1159,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Chair returned the minutes with reason \"Bổ sung kết luận mục 2.\"."
           ],
-          "note": "UC-61 AF-2 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-61 AF-2 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT52",
@@ -1025,9 +1178,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-61 EX-1 | BR-404 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+          "note": "UC-61 EX-1 | BR-404 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT53",
@@ -1045,15 +1201,19 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and has draft minutes."
           ],
-          "note": "UC-61 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+          "note": "UC-61 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT54",
           "description": "Verify POST /api/minutes/{minutesId}/submit refuses while the meeting is still in progress.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to set the meeting back to InProgress in the database (a draft from before 20/11/2026, when drafts could be built while the meeting ran).",
             "Send POST /api/minutes/{minutesId}/submit with Body: { \"updatedAt\": \"<minutes.updatedAt>\" }."
           ],
           "expected": [
@@ -1063,9 +1223,12 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
-            "The meeting is InProgress and has draft minutes."
+            "The meeting is Ended and the Secretary has built draft minutes; QA lead can change the meeting status in the database."
           ],
-          "note": "UC-61 EX-2 | BR-405 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+          "note": "UC-61 EX-2 | BR-405 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT55",
@@ -1085,7 +1248,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\"."
           ],
-          "note": "UC-61 EX-4 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+          "note": "UC-61 EX-4 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT56",
@@ -1103,7 +1269,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and the minutes are WaitingApproval."
           ],
-          "note": "UC-61 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-61 EX-3 | BR-388 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT57",
@@ -1124,7 +1293,10 @@
             "The meeting is Ended; the Secretary built the draft minutes and read their \"updatedAt\".",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-61 EX-5 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)"
+          "note": "UC-61 EX-5 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_secretary_submits_and_only_once_the_meeting_has_ended)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT58",
@@ -1139,7 +1311,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-61 | Manual only"
+          "note": "UC-61 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Submitting_without_signing_in_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1171,7 +1346,10 @@
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
             "Admin account supplied by QA lead."
           ],
-          "note": "UC-64 | BR-408 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-64 | BR-408 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees; A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT60",
@@ -1193,7 +1371,10 @@
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
             "The Organizer is not on the roster; a Guest is invited. Every internal account uses a controlled inbox."
           ],
-          "note": "UC-64 | BR-411 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees)"
+          "note": "UC-64 | BR-411 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Secretary_submits_and_the_chair_issues_which_everyone_reading_the_meeting_then_sees); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issued_minutes_tell_every_reader_with_the_exact_words) (issued notification title/body and email words/link)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT61",
@@ -1214,7 +1395,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes were issued, a correction (revision 2) was edited and submitted by the Secretary."
           ],
-          "note": "UC-64 AF-1 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-64 AF-1 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Issuing_a_correction_tells_readers_it_is_a_correction) (correction notification body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT62",
@@ -1234,7 +1418,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-64 EX-1 | UC-64 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-64 EX-1 | UC-64 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT63",
@@ -1253,7 +1440,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "One Ended meeting with Draft minutes and one with WaitingApproval minutes; the Chair chairs both."
           ],
-          "note": "UC-64 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-64 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT64",
@@ -1271,7 +1461,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-64 EX-3 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-64 EX-3 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT65",
@@ -1292,7 +1485,10 @@
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-64 EX-4 | BR-446 | Manual only"
+          "note": "UC-64 EX-4 | BR-446 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Approving_when_the_save_fails_issues_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT66",
@@ -1307,7 +1503,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-64 | Manual only"
+          "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Approving_without_signing_in_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1338,7 +1537,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-65 | BR-407 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-65 | BR-407 | BR-411 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Only_the_latest_return_reason_is_kept) (return notification title/body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT68",
@@ -1357,7 +1559,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT69",
@@ -1376,7 +1581,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting) (2,001); 2,000 manual"
+          "note": "UC-65 EX-3 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting) (2,001 refused); Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (A_two_thousand_character_return_reason_is_accepted) (2,000 accepted)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT70",
@@ -1396,7 +1604,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-65 EX-1 | UC-65 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-65 EX-1 | UC-65 EX-5 | BR-406 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT71",
@@ -1414,7 +1625,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes are a Draft that was never submitted."
           ],
-          "note": "UC-65 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-65 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT72",
@@ -1432,7 +1646,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\"."
           ],
-          "note": "UC-65 EX-6 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)"
+          "note": "UC-65 EX-6 | BR-389 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (Only_the_chair_approves_or_returns_and_only_what_is_waiting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT73",
@@ -1451,7 +1668,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; the minutes were returned once with \"Bổ sung kết luận mục 2.\", then corrected and submitted again."
           ],
-          "note": "UC-65 | BR-407 | Manual only"
+          "note": "UC-65 | BR-407 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Only_the_latest_return_reason_is_kept)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT74",
@@ -1472,7 +1692,10 @@
             "The meeting is Ended; the Secretary submitted the minutes (WaitingApproval) and the Chair read their \"updatedAt\".",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-65 EX-4 | Manual only"
+          "note": "UC-65 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Returning_when_the_save_fails_changes_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT75",
@@ -1487,7 +1710,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-65 | Manual only"
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Returning_without_signing_in_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1516,7 +1742,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes (revision 1) are Issued."
           ],
-          "note": "UC-83 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT77",
@@ -1536,7 +1765,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes (revision 1) are Issued."
           ],
-          "note": "UC-83 | BR-409 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 | BR-409 | BR-412 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT78",
@@ -1554,7 +1786,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended and its minutes (revision 1) are Issued."
           ],
-          "note": "UC-83 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 EX-1 | BR-386 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT79",
@@ -1572,7 +1807,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes are issued and a correction is in Draft."
           ],
-          "note": "UC-83 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT80",
@@ -1590,7 +1828,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes are issued and the Chair has just created a correction (revision 2, Draft)."
           ],
-          "note": "UC-83 EX-3 | BR-410 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 EX-3 | BR-410 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT81",
@@ -1608,7 +1849,10 @@
             "Meeting \"Họp giao ban tháng 11\" with a current Chair, a current Secretary and a Member; an Outsider account that is not on it.",
             "The meeting is Ended; its minutes are issued and a correction is in Draft (later issued for step 3)."
           ],
-          "note": "UC-83 EX-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)"
+          "note": "UC-83 EX-2 | BR-409 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesApprovalEndpointTests.cs (A_correction_is_a_new_revision_that_replaces_the_issued_one_only_once_issued)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT82",
@@ -1629,7 +1873,10 @@
             "The meeting is Ended and its minutes (revision 1) are Issued.",
             "QA lead can stop the database of the test build and start it again."
           ],
-          "note": "UC-83 EX-4 | Manual only"
+          "note": "UC-83 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Correcting_when_the_save_fails_creates_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_API_IT83",
@@ -1644,7 +1891,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any minutes id."
           ],
-          "note": "UC-83 | Manual only"
+          "note": "UC-83 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MinutesCoverageTests.cs (Correcting_without_signing_in_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

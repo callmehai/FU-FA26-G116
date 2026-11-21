@@ -28,7 +28,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer account supplied by QA lead who created a Draft meeting on 10/01/2026, a Published Secret meeting on 20/01/2026 and an Ended meeting on 01/03/2026 00:00 Hanoi time."
           ],
-          "note": "UC-70a | BR-433 BR-434 BR-437 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)"
+          "note": "UC-70a | BR-433 BR-434 BR-437 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT02",
@@ -46,7 +49,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer with one meeting whose planned start is 01/03/2026 00:30 Hanoi time."
           ],
-          "note": "UC-70a | BR-434 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)"
+          "note": "UC-70a | BR-434 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT03",
@@ -64,7 +70,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer who cancelled a meeting planned in 01/2026."
           ],
-          "note": "UC-70a | BR-434 | Manual only"
+          "note": "UC-70a | BR-434 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportRound1Tests.cs (Report_CancelledMeetingIsCounted)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT04",
@@ -82,7 +91,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70a | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Without_a_period_the_report_covers_the_twelve_months_ending_this_month)"
+          "note": "UC-70a | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Without_a_period_the_report_covers_the_twelve_months_ending_this_month)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT05",
@@ -103,7 +115,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account and an Organizer account supplied by QA lead; the Organizer has Draft meetings the Administrator is not on."
           ],
-          "note": "UC-70a | BR-432 | Manual only"
+          "note": "UC-70a | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportRound1Tests.cs (Report_AdminCountsOnlyReadableMeetings)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT06",
@@ -124,7 +139,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer with several Ended meetings: one with attendance marks, one without any, one with issued minutes and a later correction, one with no issued minutes."
           ],
-          "note": "UC-70a | BR-435 BR-436 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Averages_attendance_and_minutes_turnaround_over_ended_meetings)"
+          "note": "UC-70a | BR-435 BR-436 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Averages_attendance_and_minutes_turnaround_over_ended_meetings)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT07",
@@ -142,7 +160,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account that created no meeting and is on none."
           ],
-          "note": "UC-70a AF-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_viewer_with_nothing_readable_gets_zeros_and_no_averages)"
+          "note": "UC-70a AF-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_viewer_with_nothing_readable_gets_zeros_and_no_averages)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT08",
@@ -161,7 +182,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period; The_last_year_a_period_may_reach_is_9998)"
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period; The_last_year_a_period_may_reach_is_9998)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT09",
@@ -180,7 +204,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)"
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT10",
@@ -197,7 +224,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period)"
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT11",
@@ -211,7 +241,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-70a | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+          "note": "UC-70a | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT12",
@@ -229,7 +262,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Guest invitation link; an internal account that QA lead can deactivate."
           ],
-          "note": "UC-70a | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+          "note": "UC-70a | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT13",
@@ -248,7 +284,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "QA lead can stop and start the database of the test build."
           ],
-          "note": "UC-70a EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)"
+          "note": "UC-70a EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT14",
@@ -267,7 +306,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer account; QA lead can read the audit log."
           ],
-          "note": "UC-70a | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Viewing_the_report_records_nothing)"
+          "note": "UC-70a | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Viewing_the_report_records_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -298,7 +340,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Organizer with a Published Secret meeting in 02/2026 and a Draft meeting in 03/2026; QA lead can read the audit log."
           ],
-          "note": "UC-70b | BR-437 BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Export_returns_the_same_figures_as_an_excel_file_and_records_the_export)"
+          "note": "UC-70b | BR-437 BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Export_returns_the_same_figures_as_an_excel_file_and_records_the_export)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT16",
@@ -315,7 +360,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70b | BR-433 | Manual only"
+          "note": "UC-70b | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportRound1Tests.cs (Export_WithoutPeriodExportsTwelveMonthsEndingThisMonth)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT17",
@@ -334,7 +382,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Any active internal account."
           ],
-          "note": "UC-70b EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)"
+          "note": "UC-70b EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT18",
@@ -349,7 +400,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-70b | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+          "note": "UC-70b | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT19",
@@ -366,7 +420,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Guest invitation link; an internal account that QA lead can deactivate."
           ],
-          "note": "UC-70b | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+          "note": "UC-70b | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT20",
@@ -386,7 +443,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "QA lead can stop and start the database of the test build."
           ],
-          "note": "UC-70b EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)"
+          "note": "UC-70b EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RPT_API_IT21",
@@ -405,7 +465,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "QA lead can make writes fail while reads still work."
           ],
-          "note": "UC-70b EX-2 | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (No_file_leaves_when_the_export_cannot_be_recorded)"
+          "note": "UC-70b EX-2 | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (No_file_leaves_when_the_export_cannot_be_recorded)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

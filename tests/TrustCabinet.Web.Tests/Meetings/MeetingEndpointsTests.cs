@@ -1611,12 +1611,27 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal($"/api/meetings/{meetingId}", created.Headers.Location!.OriginalString);
         Assert.Equal("MSG29", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Draft", body.RootElement.GetProperty("meeting").GetProperty("status").GetString());
+        Assert.Equal("Giao ban tuần", body.RootElement.GetProperty("meeting").GetProperty("title").GetString());
         Assert.Equal(creator.Id, body.RootElement.GetProperty("meeting").GetProperty("createdById").GetGuid());
 
         var read = await client.GetAsync($"/api/meetings/{meetingId}");
         using var readBody = await JsonOf(read);
         Assert.Equal(HttpStatusCode.OK, read.StatusCode);
         Assert.Equal(meetingId, readBody.RootElement.GetProperty("id").GetGuid());
+
+        var stored = Assert.Single(_factory.Meetings.Meetings);
+        var createHistory = Assert.Single(stored.StatusHistory);
+        Assert.Equal(MeetingHistoryAction.Create, createHistory.Action);
+        Assert.Null(createHistory.FromStatus);
+        Assert.Equal(MeetingStatus.Draft, createHistory.ToStatus);
+        Assert.Empty(_factory.Meetings.Notifications);
+        var chair = body.RootElement.GetProperty("meeting").GetProperty("chair");
+        Assert.Equal(Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"), chair.GetProperty("userId").GetGuid());
+        Assert.Equal("Selected user", chair.GetProperty("fullName").GetString());
+        Assert.Empty(body.RootElement.GetProperty("meeting").GetProperty("secretaries").EnumerateArray());
+        Assert.Equal(JsonValueKind.Null, body.RootElement.GetProperty("meeting").GetProperty("myMeetingRole").ValueKind);
+        Assert.Equal(JsonValueKind.Null, body.RootElement.GetProperty("meeting").GetProperty("myResponse").ValueKind);
+        Assert.False(body.RootElement.GetProperty("meeting").GetProperty("canRespond").GetBoolean());
     }
 
     [Fact]
@@ -1669,10 +1684,12 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var backwardsBody = await JsonOf(backwards);
 
         Assert.Equal(HttpStatusCode.BadRequest, past.StatusCode);
+        Assert.Equal("MSG31", pastBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(
             "Thời gian bắt đầu phải sau thời điểm hiện tại.",
             pastBody.RootElement.GetProperty("errors").GetProperty("plannedStartTime").GetString());
         Assert.Equal(HttpStatusCode.BadRequest, backwards.StatusCode);
+        Assert.Equal("MSG31", backwardsBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(
             "Thời gian kết thúc phải sau thời gian bắt đầu.",
             backwardsBody.RootElement.GetProperty("errors").GetProperty("plannedEndTime").GetString());
@@ -1698,6 +1715,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var meeting = body.RootElement.GetProperty("meeting");
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("MSG29", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
         Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
         Assert.Equal(FutureStart, meeting.GetProperty("plannedStartTime").GetDateTimeOffset());
@@ -1706,6 +1724,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("actualEndedAt").ValueKind);
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("onlineLink").ValueKind);
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("assignedApproverId").ValueKind);
+        Assert.Empty(_factory.Meetings.Notifications);
     }
 
     [Fact]
@@ -1720,6 +1739,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG31", body.RootElement.GetProperty("code").GetString());
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("onlineLink", out _));
     }
 
@@ -2187,6 +2207,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG31", body.RootElement.GetProperty("code").GetString());
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("plannedStartTime", out _));
         Assert.Equal(FutureStart, meeting.PlannedStartTime);
     }

@@ -740,21 +740,23 @@
         },
         {
           "id": "TRANS_FT41",
-          "description": "Verify the empty card explains how to start and before the meeting starts offers nothing.",
+          "description": "Verify the empty card explains how to start, and before the meeting has ended the tab is locked.",
           "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
+            "Open an Ended meeting that has a transcript from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
             "Look at the card before any draft exists.",
-            "Open the \"Biên bản\" tab of a Published meeting that has not started."
+            "Open a Published meeting that has not started and hover or tap the tab \"Biên bản\".",
+            "Open the address \"?tab=minutes\" of that Published meeting."
           ],
           "expected": [
             "Step 2: \"Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.\" with the button \"Tạo dự thảo\".",
-            "Step 3: the card reads \"Tạo dự thảo khi cuộc họp đã bắt đầu.\" and has no \"Tạo dự thảo\" button (the backend would answer 409/MSG386)."
+            "Step 3: the tab is dimmed with a lock and says \"Mở khi cuộc họp kết thúc\" (a Cancelled meeting says \"Cuộc họp đã huỷ\"); it does not open.",
+            "Step 4: the page opens the overview tab, not the minutes (the backend would answer 409/MSG386)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; an InProgress meeting with no draft and a Published meeting."
+            "Signed in as the Secretary; an Ended meeting with a transcript and no draft, and a Published meeting."
           ],
-          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_draft_is_asked_for_only_once_the_meeting_has_started)"
+          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_draft_is_asked_for_only_once_the_meeting_has_ended)"
         },
         {
           "id": "TRANS_FT42",

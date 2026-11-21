@@ -31,7 +31,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | BR-24, BR-25, BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)"
+          "note": "UC-14 | BR-24, BR-25, BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT02",
@@ -52,7 +55,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_the_schedule_and_meeting_level_defaults)"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_the_schedule_and_meeting_level_defaults)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT03",
@@ -72,7 +78,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | BR-163 | Manual only"
+          "note": "UC-14 | BR-163 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Post_stores_a_blank_online_link_as_null)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT04",
@@ -93,7 +102,10 @@
             "Active Chair and Secretary accounts exist (their user ids are known to the tester).",
             "An Approver account exists."
           ],
-          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_does_not_create_a_current_assignment_from_a_client_supplied_approver)"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_does_not_create_a_current_assignment_from_a_client_supplied_approver)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT05",
@@ -115,7 +127,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | EX-1 | BR-24, BR-62 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_all_validation_errors_without_writing; Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
+          "note": "UC-14 | EX-1 | BR-24, BR-62 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_all_validation_errors_without_writing; Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT06",
@@ -136,7 +151,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | BR-25 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_requires_the_planned_schedule)"
+          "note": "UC-14 | BR-25 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_requires_the_planned_schedule)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT07",
@@ -157,7 +175,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
+          "note": "UC-14 | BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT08",
@@ -176,7 +197,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | Boundary | Manual only"
+          "note": "UC-14 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Post_accepts_a_300_character_title_and_rejects_301)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT09",
@@ -196,7 +220,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | BR-163 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_an_online_link_over_1000_characters)"
+          "note": "UC-14 | BR-163 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_an_online_link_over_1000_characters)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT10",
@@ -216,7 +243,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | Boundary | Manual only"
+          "note": "UC-14 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Post_rejects_an_over_long_location_and_description_together)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT11",
@@ -238,7 +268,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT12",
@@ -261,7 +294,10 @@
             "Active Chair and Secretary accounts exist (their user ids are known to the tester).",
             "A deactivated user account exists."
           ],
-          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT13",
@@ -273,14 +309,17 @@
             "Body: { \"title\": \"Họp giao ban\", "
           ],
           "expected": [
-            "HTTP 400 Bad Request, code \"MSG31\", no \"errors\" map.",
+            "HTTP 400 Bad Request with an empty body: the framework rejects the malformed JSON before the endpoint runs, so no MSG31 envelope is returned.",
             "No meeting is created."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-14 | Manual only"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Post_rejects_a_body_that_is_not_valid_json)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT14",
@@ -296,7 +335,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT15",
@@ -316,7 +358,10 @@
             "Active Member account without MeetingCreator supplied by QA lead.",
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
-          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT16",
@@ -337,7 +382,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "QA lead can make the database fail for one request."
           ],
-          "note": "UC-14 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_save_failure_returns_MSG35_and_500)"
+          "note": "UC-14 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_save_failure_returns_MSG35_and_500)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -367,7 +415,10 @@
             "Draft meeting created by the Organizer, with a roster.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)"
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT18",
@@ -386,7 +437,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Manual only"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Put_with_unchanged_data_succeeds_without_writing)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT19",
@@ -406,7 +460,10 @@
             "Meeting created by the Organizer and rejected by its approver.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)"
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT20",
@@ -430,7 +487,10 @@
             "Published meeting created by the Organizer with an invited Member.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee; Put_reschedule_does_not_notify_the_organizer_of_their_own_change)"
+          "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee; Put_reschedule_does_not_notify_the_organizer_of_their_own_change)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT21",
@@ -448,7 +508,10 @@
             "Published meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | AF-1 | BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_rejects_fields_outside_the_schedule)"
+          "note": "UC-15 | AF-1 | BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_rejects_fields_outside_the_schedule)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT22",
@@ -466,7 +529,10 @@
             "Published meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)"
+          "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT23",
@@ -485,7 +551,10 @@
             "Published meeting created by the Organizer with an invited Member.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_without_changes_notifies_nobody)"
+          "note": "UC-15 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_without_changes_notifies_nobody)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT24",
@@ -503,7 +572,10 @@
             "Meeting created by the Organizer, in status WaitingApproval.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)"
+          "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT25",
@@ -522,7 +594,10 @@
             "One Draft and one WaitingApproval meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_status_before_parsing_invalid_json; Put_returns_400_for_invalid_json_when_meeting_is_editable)"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_status_before_parsing_invalid_json; Put_returns_400_for_invalid_json_when_meeting_is_editable)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT26",
@@ -541,7 +616,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)"
+          "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT27",
@@ -558,7 +636,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Manual only"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Put_allows_a_draft_start_that_is_already_past)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT28",
@@ -578,7 +659,10 @@
             "Draft meeting created by the Organizer, with a roster.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT29",
@@ -595,7 +679,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type)"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT30",
@@ -613,7 +700,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-15 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_rejects_json_larger_than_64_kib)"
+          "note": "UC-15 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_rejects_json_larger_than_64_kib)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT31",
@@ -631,7 +721,10 @@
             "Draft meeting created by the Organizer.",
             "Active Member account without MeetingCreator supplied by QA lead."
           ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT32",
@@ -650,7 +743,10 @@
             "Draft meeting created by the first Organizer.",
             "Second active Organizer account supplied by QA lead."
           ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT33",
@@ -672,7 +768,10 @@
             "Draft meeting created by the Organizer.",
             "QA lead can make the database fail for one request."
           ],
-          "note": "UC-15 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_save_failure_returns_MSG36_and_500)"
+          "note": "UC-15 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_save_failure_returns_MSG36_and_500)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -700,7 +799,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "More than 20 meetings visible to the Organizer."
           ],
-          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
+          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT35",
@@ -718,7 +820,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Member account on the roster of one Published meeting; the Organizer has meetings in several statuses."
           ],
-          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata; Get_enforces_lifecycle_visibility_for_related_readers)"
+          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata; Get_enforces_lifecycle_visibility_for_related_readers)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT36",
@@ -736,7 +841,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Published meetings of mixed sensitivity."
           ],
-          "note": "UC-17 | BR-30, BR-31 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
+          "note": "UC-17 | BR-30, BR-31 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT37",
@@ -754,7 +862,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "A meeting titled \"E2E Lộc\" visible to the Organizer."
           ],
-          "note": "UC-17 | BR-30 | Manual only"
+          "note": "UC-17 | BR-30 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_searches_titles_without_case_or_accents_and_matches_wildcards_literally)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT38",
@@ -771,7 +882,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Meetings on and around 1 December 2026."
           ],
-          "note": "UC-17 | BR-30 | Manual only"
+          "note": "UC-17 | BR-30 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_filters_by_overlap_of_the_planned_time_with_from_and_to)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT39",
@@ -788,7 +902,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "At least 10 meetings visible to the Organizer."
           ],
-          "note": "UC-17 | BR-32 | Manual only"
+          "note": "UC-17 | BR-32 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_sorts_and_pages_as_asked)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT40",
@@ -806,7 +923,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | BR-12 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_empty_page_for_no_match_or_page_beyond_end)"
+          "note": "UC-17 | BR-12 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_empty_page_for_no_match_or_page_beyond_end)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT41",
@@ -823,7 +943,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT42",
@@ -840,7 +963,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT43",
@@ -858,7 +984,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+          "note": "UC-17 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT44",
@@ -879,7 +1008,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Meetings both before and after the current time."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_splits_upcoming_from_past_and_rejects_other_timing_values)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT45",
@@ -897,7 +1029,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Approver account with one meeting assigned and one not assigned to them."
           ],
-          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT46",
@@ -915,7 +1050,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Member account who declined one Published meeting."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_exclude_declined_hides_meetings_the_caller_declined)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT47",
@@ -929,7 +1067,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_requires_authentication_and_an_active_account)"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_requires_authentication_and_an_active_account)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT48",
@@ -945,7 +1086,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Member account supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_list_is_open_to_any_signed_in_account_without_meeting_creator)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT49",
@@ -965,7 +1109,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "QA lead can make the database fail for one request."
           ],
-          "note": "UC-17 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_MSG38_and_500_when_the_database_read_fails)"
+          "note": "UC-17 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_MSG38_and_500_when_the_database_read_fails)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -991,7 +1138,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "A meeting created by the Organizer with a Chair and a Secretary."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_the_schedule_and_meeting_level_defaults)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT51",
@@ -1009,7 +1159,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Draft meeting with the Member on its roster."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers; Get_allows_an_active_meeting_participant_without_MeetingCreator)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers; Get_allows_an_active_meeting_participant_without_MeetingCreator)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT52",
@@ -1025,7 +1178,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Draft meeting whose roster has the Chair and the Secretary."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication; Assigned_secretary_can_read_detail_list_and_rejection_before_publication)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication; Assigned_secretary_can_read_detail_list_and_rejection_before_publication)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT53",
@@ -1043,7 +1199,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "One WaitingApproval meeting assigned to the Approver and one unrelated Draft."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_allows_an_active_assigned_approver_without_MeetingCreator)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_allows_an_active_assigned_approver_without_MeetingCreator)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT54",
@@ -1060,7 +1219,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Existing meeting; an unrelated active account."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT55",
@@ -1079,7 +1241,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Member and the Chair on the roster."
           ],
-          "note": "UC-16 | SCRUM-20 | Manual only"
+          "note": "UC-16 | SCRUM-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_detail_shows_the_caller_their_invitation_answer)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT56",
@@ -1094,7 +1259,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Existing meeting."
           ],
-          "note": "UC-16 | Manual only"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_detail_requires_a_token)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT57",
@@ -1115,7 +1283,10 @@
             "Existing meeting the Organizer can read.",
             "QA lead can make the database fail for one request."
           ],
-          "note": "UC-16 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_returns_MSG37_when_the_repository_fails)"
+          "note": "UC-16 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_returns_MSG37_when_the_repository_fails)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1143,7 +1314,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "At least two active Approver accounts and one deactivated Approver."
           ],
-          "note": "UC-14 | UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_excludes_the_caller_and_preserves_other_options)"
+          "note": "UC-14 | UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_excludes_the_caller_and_preserves_other_options)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT59",
@@ -1160,7 +1334,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Member account supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT60",
@@ -1177,7 +1354,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "QA lead can stop the database for the test."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_returns_a_structured_503_when_the_repository_is_unavailable; Get_approvers_returns_the_contract_503_when_capability_account_lookup_fails)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_returns_a_structured_503_when_the_repository_is_unavailable; Get_approvers_returns_the_contract_503_when_capability_account_lookup_fails)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1205,7 +1385,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Draft meeting with title and planned schedule and no agenda items."
           ],
-          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_does_not_depend_on_agenda_content); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_submission_readiness_does_not_require_agenda_or_sessions_and_does_not_write)"
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_does_not_depend_on_agenda_content); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_submission_readiness_does_not_require_agenda_or_sessions_and_does_not_write)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT62",
@@ -1222,7 +1405,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Legacy Draft row without a valid planned schedule, prepared by QA lead in the database."
           ],
-          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_requires_a_valid_planned_schedule)"
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_requires_a_valid_planned_schedule)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT63",
@@ -1239,7 +1425,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Approved meeting created by the Organizer."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT64",
@@ -1258,7 +1447,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Draft meeting with a Chair on its roster; an unrelated account."
           ],
-          "note": "UC-18 | Manual only"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_submission_readiness_is_for_the_organizer_only)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1293,7 +1485,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Active Approver account."
           ],
-          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_accepts_the_documented_submit_contract_and_returns_history)"
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_accepts_the_documented_submit_contract_and_returns_history)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT66",
@@ -1313,7 +1508,10 @@
             "Rejected meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_resubmits_rejected_directly_and_preserves_the_previous_rejection)"
+          "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_resubmits_rejected_directly_and_preserves_the_previous_rejection)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT67",
@@ -1333,7 +1531,10 @@
             "Ready Draft meeting.",
             "Organizer account that also holds MeetingApprover."
           ],
-          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)"
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT68",
@@ -1353,7 +1554,10 @@
             "Ready Draft meeting.",
             "Active Member account without MeetingApprover."
           ],
-          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT69",
@@ -1373,7 +1577,10 @@
             "Legacy Draft row without a valid schedule, prepared by QA lead in the database.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
+          "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT70",
@@ -1393,7 +1600,10 @@
             "Ready Draft meeting.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_rejects_unknown_fields_and_numeric_actions)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_rejects_unknown_fields_and_numeric_actions)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT71",
@@ -1413,7 +1623,10 @@
             "Meeting already WaitingApproval or Approved.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT72",
@@ -1432,7 +1645,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver (MeetingApprover, not the Organizer)."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT73",
@@ -1452,7 +1668,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason; Reject_requires_nonblank_reason_and_stores_trimmed_value)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason; Reject_requires_nonblank_reason_and_stores_trimmed_value); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT74",
@@ -1472,7 +1691,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver."
           ],
-          "note": "UC-19 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_null_rejection_reason_to_required_reason_error)"
+          "note": "UC-19 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_null_rejection_reason_to_required_reason_error)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT75",
@@ -1492,7 +1714,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver."
           ],
-          "note": "UC-19 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_reject_returns_MSG84_when_reason_exceeds_1000_characters)"
+          "note": "UC-19 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_reject_returns_MSG84_when_reason_exceeds_1000_characters); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT76",
@@ -1511,7 +1736,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to another Approver; second Approver account who can read the meeting."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_self_assignment_returns_MSG85_without_approving_or_rejecting)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_self_assignment_returns_MSG85_without_approving_or_rejecting)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT77",
@@ -1530,7 +1758,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting already Approved or Rejected by the same Approver."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT78",
@@ -1550,7 +1781,10 @@
             "Meeting WaitingApproval whose approver was deactivated after submission.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | AF | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_missing_or_self_assignment_returns_MSG79_when_the_organizer_withdraws)"
+          "note": "UC-18 | AF | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_missing_or_self_assignment_returns_MSG79_when_the_organizer_withdraws)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT79",
@@ -1570,7 +1804,10 @@
             "Meeting WaitingApproval with an active approver who still holds MeetingApprover.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Ineligible_approver_does_not_allow_withdrawal_from_other_states)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Ineligible_approver_does_not_allow_withdrawal_from_other_states); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Waiting_withdrawal_checks_current_approver_and_organizer_permissions)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT80",
@@ -1591,7 +1828,10 @@
             "Approved meeting created by the Organizer with exactly one Chair and at least one Secretary on the roster.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant)"
+          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_without_a_meeting_session_returns_MSG45_and_commits)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT81",
@@ -1611,7 +1851,10 @@
             "Approved meeting whose roster has no active Secretary.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
+          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT82",
@@ -1631,7 +1874,10 @@
             "Meeting already Published or still WaitingApproval.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
+          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT83",
@@ -1652,7 +1898,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Approved meeting; the Organizer's role was changed by an administrator to one without MeetingCreator; the meeting has a Chair."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability; Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability; Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT84",
@@ -1672,7 +1921,10 @@
             "Approved meeting; QA lead can make the database fail for the request.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs)"
+          "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_persistence_failures_to_action_specific_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT85",
@@ -1686,19 +1938,23 @@
           "expected": [
             "HTTP 200 OK. Body: { \"code\": \"MSG110\", \"message\": \"Bắt đầu cuộc họp thành công.\", \"meeting\": { ... \"status\": \"InProgress\" }, \"history\": { ... } }.",
             "\"meeting.actualStartedAt\" is set by the server in UTC; one history row \"Start\".",
-            "Every active internal roster member except the Chair has a \"MeetingStarted\" notification; no email."
+            "Every active internal roster member except whoever started it has a \"MeetingStarted\" notification; no email.",
+        "The Secretary may start the meeting too (200/MSG110; the history actor is the Secretary and the Chair is notified), but a Secretary who sends End gets 403/MSG114: only the Chair ends it."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with exactly one active Chair and at least one active Secretary."
           ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)"
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT86",
-          "description": "Verify Start is refused for a reader who is not the Chair.",
+          "description": "Verify Start is refused for a reader who is neither the Chair nor the Secretary.",
           "procedure": [
-            "Sign in as the Organizer, who is not the Chair and keep the access token.",
+            "Sign in as the Organizer, who is neither the Chair nor the Secretary, and keep the access token (repeat for a Member).",
             "Send POST /api/meetings/<id>/transitions",
             "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
             "Body: { \"action\": \"Start\" }"
@@ -1709,9 +1965,12 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "Published meeting where the Organizer is not the Chair."
+            "Published meeting where the Organizer is neither the Chair nor the Secretary."
           ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT87",
@@ -1731,7 +1990,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting whose roster has no active Secretary; and an InProgress meeting."
           ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not; Invalid_state_does_not_mutate)"
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not; Invalid_state_does_not_mutate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT88",
@@ -1750,7 +2012,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting; QA lead can make the database fail for the request."
           ],
-          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)"
+          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT89",
@@ -1770,7 +2035,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "InProgress meeting with one agenda item in progress, one Pending and an open vote."
           ],
-          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
+          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT90",
@@ -1791,7 +2059,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "InProgress meeting where the Organizer is not the Chair; and a Published meeting."
           ],
-          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable; Invalid_state_does_not_mutate)"
+          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable; Invalid_state_does_not_mutate)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT91",
@@ -1810,7 +2081,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "InProgress meeting; QA lead can make the database fail for the request."
           ],
-          "note": "UC-22 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects; Invalid_agenda_timestamps_roll_back_end)"
+          "note": "UC-22 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects; Invalid_agenda_timestamps_roll_back_end)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT92",
@@ -1831,7 +2105,10 @@
             "Published meeting created by the Organizer with an invited Member.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)"
+          "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT93",
@@ -1851,7 +2128,10 @@
             "One WaitingApproval and one Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody)"
+          "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT94",
@@ -1871,7 +2151,10 @@
             "Draft meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262)"
+          "note": "UC-75 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT95",
@@ -1892,7 +2175,10 @@
             "Two Draft meetings created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_with_a_reason_over_1000_characters_returns_MSG345); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_accepts_exactly_1000_characters_and_rejects_1001)"
+          "note": "UC-75 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_with_a_reason_over_1000_characters_returns_MSG345); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_accepts_exactly_1000_characters_and_rejects_1001); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT96",
@@ -1912,7 +2198,10 @@
             "InProgress meeting created by the Organizer (repeat for Ended and Cancelled).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (A_started_ended_or_cancelled_meeting_cannot_be_cancelled)"
+          "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (A_started_ended_or_cancelled_meeting_cannot_be_cancelled)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT97",
@@ -1931,7 +2220,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Chair on its roster."
           ],
-          "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)"
+          "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT98",
@@ -1951,7 +2243,10 @@
             "Draft meeting; QA lead can make the database fail for the request.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)"
+          "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT99",
@@ -1970,7 +2265,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Approved meeting whose Organizer is deactivated; administrator account; active new Organizer with MeetingCreator who is not the assigned approver."
           ],
-          "note": "UC-20 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history; Transfer_does_not_return_sensitive_content_to_a_recovery_administrator)"
+          "note": "UC-20 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history; Transfer_does_not_return_sensitive_content_to_a_recovery_administrator)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT100",
@@ -1989,7 +2287,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Approved meeting whose Organizer is deactivated; administrator account."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Invalid_replacement_returns_MSG134_and_transfer_persistence_failure_returns_MSG88)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Invalid_replacement_returns_MSG134_and_transfer_persistence_failure_returns_MSG88)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT101",
@@ -2008,7 +2309,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Approved meeting whose Organizer is still active; administrator account."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_cannot_replace_an_active_organizer_even_if_their_creator_capability_was_removed; Transfer_requires_an_approved_meeting)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_cannot_replace_an_active_organizer_even_if_their_creator_capability_was_removed; Transfer_requires_an_approved_meeting); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT102",
@@ -2026,7 +2330,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Approved meeting whose Organizer is deactivated."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_requires_current_active_administrator_before_reading_the_meeting)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_requires_current_active_administrator_before_reading_the_meeting)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT103",
@@ -2047,7 +2354,10 @@
             "Meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_one_exact_action_name_without_publishing; Post_transition_rejects_unknown_fields_and_numeric_actions)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_one_exact_action_name_without_publishing; Post_transition_rejects_unknown_fields_and_numeric_actions)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT104",
@@ -2066,7 +2376,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Strict_parser_rejects_forged_or_malformed_commands)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Strict_parser_rejects_forged_or_malformed_commands)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT105",
@@ -2085,7 +2398,10 @@
             "Meeting created by the Organizer.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_json_and_returns_MSG34); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Authentication_active_gate_content_type_and_size_contracts_are_preserved)"
+          "note": "UC-18 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_json_and_returns_MSG34); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Authentication_active_gate_content_type_and_size_contracts_are_preserved)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT106",
@@ -2103,7 +2419,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Existing Approved meeting; an unrelated active account."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT107",
@@ -2120,7 +2439,10 @@
             "QA lead can make the account lookup fail.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_workflow_endpoints_return_MSG136_and_MSG131_for_transient_read_failures)"
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_workflow_endpoints_return_MSG136_and_MSG131_for_transient_read_failures)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT108",
@@ -2143,7 +2465,10 @@
             "Active Approver account.",
             "QA lead can make the database fail for one request."
           ],
-          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_persistence_failures_to_action_specific_codes)"
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_persistence_failures_to_action_specific_codes)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2171,7 +2496,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Meeting that was created, submitted and rejected."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT110",
@@ -2188,7 +2516,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting WaitingApproval assigned to an Approver."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_full_history_to_the_current_assigned_approver)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_full_history_to_the_current_assigned_approver)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT111",
@@ -2204,7 +2535,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting that was rejected once before publication; Member on its roster."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT112",
@@ -2220,7 +2554,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Draft meeting that was rejected, then returned to Draft, with a Chair on its roster."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT113",
@@ -2239,7 +2576,10 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
             "Meeting with at least 3 history rows."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_empty_for_an_out_of_range_page_before_offset_cast)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_empty_for_an_out_of_range_page_before_offset_cast)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT114",
@@ -2256,7 +2596,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-16 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_invalid_query_when_offset_is_unrepresentable_within_data)"
+          "note": "UC-16 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_invalid_query_when_offset_is_unrepresentable_within_data)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT115",
@@ -2273,7 +2616,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Existing meeting; an unrelated account."
           ],
-          "note": "UC-16 | Manual only"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingApiCoverageTests.cs (Get_history_requires_a_token_and_hides_unreadable_meetings)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_API_IT116",
@@ -2296,7 +2642,10 @@
             "A meeting InProgress whose planned end is more than 24 hours ago (Meetings:AutoEndAfterHours = 24), prepared by QA lead; a running agenda item and a draft vote.",
             "Active Chair account of that meeting."
           ],
-          "note": "UC-22 | ADR-0062 | SCRUM-212 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleAutoEndTests.cs (Meetings_left_running_are_ended_by_the_system_twelve_hours_after_their_planned_end; System_end_yields_to_a_chair_who_already_ended_the_meeting)"
+          "note": "UC-22 | ADR-0062 | SCRUM-212 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleAutoEndTests.cs (Meetings_left_running_are_ended_by_the_system_twelve_hours_after_their_planned_end; System_end_yields_to_a_chair_who_already_ended_the_meeting)",
+            "round1": "Passed",
+            "date1": "2026-11-20",
+            "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -26,7 +26,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT02",
@@ -43,7 +46,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with at least 3 notifications."
           ],
-          "note": "UC-66 | Manual only"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_ReturnsSecondPageWithOneItem)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT03",
@@ -60,7 +66,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-66 | Boundary: pageSize upper limit 100 | Manual only"
+          "note": "UC-66 | Boundary: pageSize upper limit 100 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_AcceptsPageSize100)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT04",
@@ -77,7 +86,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT05",
@@ -94,7 +106,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-66 · EX-2 | Boundary: pageSize 101 | Manual only"
+          "note": "UC-66 · EX-2 | Boundary: pageSize 101 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_RejectsPageSize101)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT06",
@@ -111,7 +126,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-66 · EX-2 | Manual only"
+          "note": "UC-66 · EX-2 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationPaging_RejectsNonNumericPaging)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT07",
@@ -129,7 +147,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active accounts supplied by QA lead, each with its own notifications."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT08",
@@ -143,7 +164,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Notifications_and_hub_require_a_valid_sign_in)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Notifications_and_hub_require_a_valid_sign_in)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT09",
@@ -160,7 +184,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead and an administrator account."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Deactivated_account_is_refused_even_with_a_valid_token)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (Deactivated_account_is_refused_even_with_a_valid_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT10",
@@ -176,7 +203,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead; the QA lead can interrupt the database on request."
           ],
-          "note": "UC-66 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_returns_MSG40_and_500_when_account_lookup_fails)"
+          "note": "UC-66 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_returns_MSG40_and_500_when_account_lookup_fails)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT11",
@@ -193,7 +223,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with no notification."
           ],
-          "note": "UC-66 | Manual only"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (NotificationList_EmptyForAccountWithNoNotification)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -218,7 +251,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with exactly 2 unread notifications."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT13",
@@ -235,7 +271,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with exactly 1 unread notification."
           ],
-          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT14",
@@ -252,7 +291,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active accounts with different numbers of unread notifications."
           ],
-          "note": "UC-66 | Manual only"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_CountsOnlyCallersNotifications)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT15",
@@ -266,7 +308,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-66 | Manual only"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_RequiresToken)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT16",
@@ -283,7 +328,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead and an administrator account."
           ],
-          "note": "UC-66 | Manual only"
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (UnreadCount_RefusesDeactivatedAccount)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -309,7 +357,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT18",
@@ -326,7 +377,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Reading_is_scoped_to_the_recipient_and_is_idempotent)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT19",
@@ -343,7 +397,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active accounts supplied by QA lead; A has an unread notification."
           ],
-          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT20",
@@ -359,7 +416,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-67a | Manual only"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_UnknownIdIs404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT21",
@@ -375,7 +435,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead, with a few notifications (some unread) created by publishing meetings that invite it."
           ],
-          "note": "UC-67a | Manual only"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_NonGuidIdIs404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT22",
@@ -389,7 +452,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-67a | Manual only"
+          "note": "UC-67a | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (MarkRead_RequiresToken)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -415,7 +481,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with 3 unread notifications and more than 20 notifications in total."
           ],
-          "note": "UC-67b · BR-51 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)"
+          "note": "UC-67b · BR-51 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT24",
@@ -432,7 +501,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active account supplied by QA lead with every notification already read."
           ],
-          "note": "UC-67b | Manual only"
+          "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (ReadAll_WithNothingUnreadChangesNothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT25",
@@ -449,7 +521,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active accounts supplied by QA lead, both with unread notifications."
           ],
-          "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)"
+          "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Mark_all_changes_only_the_callers_unread_rows)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT26",
@@ -463,7 +538,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-67b | Manual only"
+          "note": "UC-67b | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (ReadAll_RequiresToken)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -488,7 +566,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active participant of a Published meeting with an unread \"MeetingInvited\" notification."
           ],
-          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT28",
@@ -506,7 +587,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Active participant of a Published meeting with an unread notification."
           ],
-          "note": "UC-68 | Deviation: the UC-68 sequence diagram marks the notification read before opening it; the endpoint only checks and returns the target, and the frontend marks it read | Manual only"
+          "note": "UC-68 | Deviation: the UC-68 sequence diagram marks the notification read before opening it; the endpoint only checks and returns the target, and the frontend marks it read | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_DoesNotMarkNotificationRead)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT29",
@@ -523,7 +607,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Participant with an invitation notification; Organizer account to remove them."
           ],
-          "note": "UC-68 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)"
+          "note": "UC-68 · EX-1 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationServiceTests.cs (Target_uses_the_shared_meeting_access_rule_for_participant_roles)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT30",
@@ -539,7 +626,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active accounts supplied by QA lead."
           ],
-          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationEndpointsTests.cs (List_read_all_and_target_are_scoped_to_the_signed_in_user)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT31",
@@ -555,7 +645,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A notification row without a target, supplied by QA lead (seed data)."
           ],
-          "note": "UC-68 | Manual only"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_WithoutTargetIs404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT32",
@@ -572,7 +665,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A calendar share between two active accounts (SCRUM-142)."
           ],
-          "note": "UC-68 · UC-84 | Manual only"
+          "note": "UC-68 · UC-84 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_CalendarShareOpensSharingPage)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT33",
@@ -588,7 +684,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A calendar-share notice whose recipient is no longer a party of the share (QA lead edits the data)."
           ],
-          "note": "UC-68 | Manual only"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_CalendarShareForStrangerIs404)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT34",
@@ -606,7 +705,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A \"VoiceSampleCollected\" notification (ADR-0060)."
           ],
-          "note": "UC-68 | Manual only"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_VoiceSampleOpensVoiceIdPageThen404AfterDelete)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT35",
@@ -620,7 +722,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-68 | Manual only"
+          "note": "UC-68 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Target_RequiresToken)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -647,7 +752,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 · ADR-0031 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_correct_signature_is_accepted)"
+          "note": "UC-20 · ADR-0031 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_correct_signature_is_accepted)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT37",
@@ -666,7 +774,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_bounce_carries_its_reason_and_the_row_id_from_the_tag)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_bounce_carries_its_reason_and_the_row_id_from_the_tag)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT38",
@@ -683,7 +794,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Events_the_app_does_not_track_are_ignored)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Events_the_app_does_not_track_are_ignored)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT39",
@@ -701,7 +815,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Manual only"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Webhook_IgnoresOlderEvent)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT40",
@@ -718,7 +835,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (An_unsigned_request_is_401_without_a_sign_in)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (An_unsigned_request_is_401_without_a_sign_in)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT41",
@@ -734,7 +854,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_changed_body_id_or_secret_is_rejected)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_changed_body_id_or_secret_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT42",
@@ -750,7 +873,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Missing_or_garbled_headers_are_rejected)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (Missing_or_garbled_headers_are_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT43",
@@ -766,7 +892,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Boundary: 5-minute window | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_replayed_request_outside_the_window_is_rejected)"
+          "note": "UC-20 | Boundary: 5-minute window | Automated: tests/TrustCabinet.Web.Tests/Email/ResendWebhookReceiverTests.cs (A_replayed_request_outside_the_window_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT44",
@@ -782,7 +911,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (The_raw_body_and_svix_headers_reach_the_receiver)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (The_raw_body_and_svix_headers_reach_the_receiver)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT45",
@@ -798,7 +930,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known."
           ],
-          "note": "UC-20 | Boundary: 256 KB body limit | Manual only"
+          "note": "UC-20 | Boundary: 256 KB body limit | Automated: tests/TrustCabinet.Web.Tests/Notifications/NotificationRound1Tests.cs (Webhook_BodyAbove256KBIs413)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT46",
@@ -813,7 +948,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Backend running on a build without the webhook secret (GET /api/health answers 200)."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (Without_a_webhook_secret_the_webhook_is_503)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (Without_a_webhook_secret_the_webhook_is_503)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "NOTI_API_IT47",
@@ -830,7 +968,10 @@
             "Email:Resend:WebhookSecret is set on the test build; QA lead supplies the secret and a queued email row with status \"Sent\" whose provider id is known.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (A_receiver_error_is_500_so_resend_retries)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Email/EmailEndpointsTests.cs (A_receiver_error_is_500_so_resend_retries)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

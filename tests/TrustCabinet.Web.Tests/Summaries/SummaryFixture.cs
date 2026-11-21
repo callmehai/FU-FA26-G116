@@ -323,6 +323,23 @@ public sealed class SummaryFixture : IAsyncLifetime
         return client;
     }
 
+    /// <summary>A caller with a guest token (UC-04): subject "guest:{session}" plus the guest claims, signed like any
+    /// token, with no internal account behind it.</summary>
+    internal HttpClient GuestClient()
+    {
+        var session = Guid.NewGuid();
+        var client = Host.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", new JwtSecurityTokenHandler()
+            .WriteToken(new JwtSecurityToken("TrustCabinet", "TrustCabinet",
+                [new Claim("sub", $"guest:{session}"), new Claim("guest_meeting", Guid.NewGuid().ToString()),
+                    new Claim("guest_invitation", Guid.NewGuid().ToString()),
+                    new Claim("guest_session", session.ToString())],
+                expires: DateTime.UtcNow.AddMinutes(10),
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
+                    SecurityAlgorithms.HmacSha256))));
+        return client;
+    }
+
     private static string Token(Guid actor, params string[] capabilities) => new JwtSecurityTokenHandler().WriteToken(
         new JwtSecurityToken("TrustCabinet", "TrustCabinet",
             [new Claim("sub", actor.ToString()), .. capabilities.Select(c => new Claim("cap", c))],

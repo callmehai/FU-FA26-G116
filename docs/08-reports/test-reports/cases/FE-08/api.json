@@ -113,7 +113,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A build where the LiveKit settings are empty (QA lead's local build)."
           ],
-          "note": "UC-37 EX-3 | Manual only"
+          "note": "UC-37 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Unconfigured_livekit_reports_the_room_unavailable)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT07",
@@ -168,7 +171,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member has delegated attendance to another user (response Delegated)."
           ],
-          "note": "UC-37 PRE-3 | BR-323 | Manual only"
+          "note": "UC-37 PRE-3 | BR-323 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Delegated_member_reads_no_room)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT10",
@@ -202,7 +208,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A disposable Member account on M1 and an Admin account, supplied by QA lead."
           ],
-          "note": "UC-37 PRE-1 | Manual only"
+          "note": "UC-37 PRE-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_reads_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT12",
@@ -403,7 +412,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A disposable Member account on M1 and an Admin account, supplied by QA lead."
           ],
-          "note": "UC-37 PRE-1 | Manual only"
+          "note": "UC-37 PRE-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_joins_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT23",
@@ -601,7 +613,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with the microphone on."
           ],
-          "note": "UC-41 EX-1 | BR-329 | Manual only"
+          "note": "UC-41 EX-1 | BR-329 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Former_chair_mutes_nothing_after_handover)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT33",
@@ -705,7 +720,10 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-41 | Manual only"
+          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Outsider_mutes_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT39",
@@ -720,7 +738,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-41 | Manual only"
+          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_mute_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT40",
@@ -737,7 +758,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A build where the LiveKit settings are empty (QA lead's local build)."
           ],
-          "note": "UC-41 | Manual only"
+          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Mute_without_livekit_is_unavailable)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT41",
@@ -835,7 +859,10 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "A signing helper run by the QA lead that signs a body with the test build's LiveKit API key and secret (bare JWT in Authorization, claim sha256 = SHA-256 of the body); the secret never appears in the case."
           ],
-          "note": "UC-37 | Manual only"
+          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Oversized_webhook_body_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT46",
@@ -1055,7 +1082,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Organizer_outside_the_roster_still_reads_the_queue)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT57",
@@ -1365,7 +1395,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room); the Chair has invited the Member's request."
           ],
-          "note": "UC-79 AF-1 | Manual only"
+          "note": "UC-79 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Invited_person_lowers_the_hand_and_frees_the_floor)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT73",
@@ -1420,7 +1453,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) and has started speaking."
           ],
-          "note": "UC-79 AF-1 | Manual only"
+          "note": "UC-79 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Lowering_a_hand_while_speaking_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT76",
@@ -1438,7 +1474,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member raised a hand, then the browser lost its room connection without LiveKit reporting it yet (stint still open is not enough: the stint is closed)."
           ],
-          "note": "UC-79 step 2 | Manual only"
+          "note": "UC-79 step 2 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Lowering_a_hand_from_outside_the_room_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT77",
@@ -1453,7 +1492,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_lower_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1499,7 +1541,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Chair is not connected to the room; the Member is in the room with a hand raised."
           ],
-          "note": "UC-79 PRE-2 | Deviation: UC-79 PRE-2 requires the actor in the room; the code lets the Chair run turns from outside it (noted on SCRUM-27). | Manual only"
+          "note": "UC-79 PRE-2 | Deviation: UC-79 PRE-2 requires the actor in the room; the code lets the Chair run turns from outside it (noted on SCRUM-27). | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_invites_from_the_meeting_page)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT80",
@@ -1553,7 +1598,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member raised then lowered a hand."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Inviting_a_lowered_hand_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT83",
@@ -1631,7 +1679,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with a hand raised, not invited."
           ],
-          "note": "UC-79 step 6 | Manual only"
+          "note": "UC-79 step 6 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Starting_a_turn_that_was_not_invited_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT87",
@@ -1667,7 +1718,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member was invited, then left the room while the request stayed open long enough to test (or the stint was closed by the reconciliation)."
           ],
-          "note": "UC-79 step 6 | Manual only"
+          "note": "UC-79 step 6 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Starting_a_turn_from_outside_the_room_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT89",
@@ -1682,7 +1736,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_start_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1730,7 +1787,10 @@
             "The Member has been invited and has not started.",
             "Read-only database access supplied by QA lead."
           ],
-          "note": "UC-79 step 7 | Manual only"
+          "note": "UC-79 step 7 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_finishes_an_invited_turn_that_never_started)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT92",
@@ -1820,7 +1880,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_finish_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1867,7 +1930,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is Invited; the Secretary has a hand raised."
           ],
-          "note": "UC-79 AF-3 | Manual only"
+          "note": "UC-79 AF-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Declining_an_invited_person_frees_the_floor)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT99",
@@ -1918,7 +1984,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_decline_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2013,7 +2082,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_move_up_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2108,7 +2180,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_move_down_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2272,7 +2347,10 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A disposable Secretary account on M1 and an Admin account."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_secretary_reads_no_notes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT121",
@@ -2548,7 +2626,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_notes_save_is_rejected)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT136",

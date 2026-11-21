@@ -11,6 +11,12 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.1_Unit_Test.xlsx` | Test unit theo hàng: mỗi production function một sheet, mỗi sheet các nhóm `Class.Method` và các dòng `UTCnnn`; sinh từ `cases/FE-xx/unit/` |
 | `Report5.2_Integration_Test.xlsx` | Test tích hợp qua giao diện, mỗi Feature một sheet; sinh từ `cases/FE-xx/ui.json` |
 | `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
+| `round1-plan.md` | Phân việc chạy Round 1 của 5.2: case nào agent chạy, case nào người chạy, cách ghi kết quả vào JSON |
+| `round1-api-plan.md` | Phân việc chạy Round 1 của 5.2.2 (API): soát case, đối chiếu `dotnet test`, viết test cho case chưa có test, giao theo Feature cho agent |
+| `round1-checklist.md` | Checklist Round 1 theo thứ tự làm cho cả 5.2 (UI) và 5.2.2 (API): người làm và điều kiện xong từng bước |
+| `round1-prompts.md` | Prompt giao agent Round 1, chia nhóm chạy song song (5 agent API, 2 agent UI) và quy tắc chung |
+| `round1-report/`, `round1-ui-map/` | Báo cáo cuối của agent API và bảng ánh xạ AC sang case UI; tài liệu làm việc, không phải nguồn của workbook |
+| `../../../scripts/test_reports/apply_trx.py` | Đọc file `.trx` của `dotnet test` và ghi `round1`/`date1`/`tester1` vào `cases/FE-xx/api.json` cho case có `Automated:`
 | `Report5.3_System_Test.xlsx` | Các workflow kiểm thử toàn hệ thống; bảng ba vòng theo mẫu |
 | `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
@@ -19,16 +25,12 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 
 ```powershell
 python scripts/test_reports/integration_cases.py check   # kiểm tra
-python scripts/test_reports/integration_cases.py build   # sinh lại 5.2.2 (đóng Excel trước)
+python scripts/test_reports/integration_cases.py build   # sinh lại 5.2 và 5.2.2 (đóng Excel trước)
 ```
 
 Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
 
-**Workbook 5.2 đang dùng (trên Drive và trong repo) chưa sinh từ `cases/`.** Theo yêu cầu ngày 18/11/2026,
-nó là bản 1.1 (13 sheet theo chức năng, 124 case `XXX_IT01`) giữ nguyên từng ô, cộng 22 sheet mới cùng kiểu
-cho các chức năng bản 1.1 chưa có (287 case) — bản 1.2, tổng 411 case. Vì vậy `integration_cases.py build`
-mặc định chỉ sinh 5.2.2 và bỏ qua 5.2; `build --with-ui` mới sinh 5.2 từ `cases/` và ghi đè bản 1.2 — chỉ chạy
-khi nhóm đã thống nhất lấy `cases/` làm nguồn của 5.2.
+**Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
 Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). Mọi vòng đều `Pending` cho tới khi chạy thật:
 

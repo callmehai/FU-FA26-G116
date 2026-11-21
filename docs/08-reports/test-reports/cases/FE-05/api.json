@@ -27,7 +27,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-26 | BR-29, BR-64 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | BR-29, BR-64 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT02",
@@ -43,7 +46,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Secretary and no agenda item."
           ],
-          "note": "UC-26 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT03",
@@ -62,7 +68,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Chair and a Member, one item InProgress and one Pending."
           ],
-          "note": "UC-26 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-26 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT04",
@@ -79,7 +88,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with items: one with an internal presenter, one with a Guest presenter, one with a legacy typed presenter name (prepared by QA lead)."
           ],
-          "note": "UC-26 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)"
+          "note": "UC-26 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT05",
@@ -98,7 +110,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Published and a Draft meeting, each with the Member on the roster."
           ],
-          "note": "UC-26 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT06",
@@ -115,7 +130,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An existing meeting; an unrelated active account."
           ],
-          "note": "UC-26 | EX-1 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | EX-1 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT07",
@@ -130,7 +148,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Existing meeting."
           ],
-          "note": "UC-26 | Manual only"
+          "note": "UC-26 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Get_agenda_requires_a_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT08",
@@ -150,7 +171,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Guest invitation (email in a controlled inbox)."
           ],
-          "note": "UC-26 | BR-181 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_snapshot_has_member_document_metadata_but_no_write_permissions_or_user_identity; Guest_sees_the_agenda_only_while_the_meeting_is_open)"
+          "note": "UC-26 | BR-181 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_snapshot_has_member_document_metadata_but_no_write_permissions_or_user_identity; Guest_sees_the_agenda_only_while_the_meeting_is_open) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT09",
@@ -167,7 +191,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-26 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Cancellation_propagates_instead_of_becoming_business_failure) ; Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Read_failure_and_push_failure_have_different_commit_semantics)"
+          "note": "UC-26 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Cancellation_propagates_instead_of_becoming_business_failure) ; Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Read_failure_and_push_failure_have_different_commit_semantics)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -194,7 +221,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "The meeting has a Guest invitation and two meeting documents, one attached to an item."
           ],
-          "note": "UC-23 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT11",
@@ -210,7 +240,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)"
+          "note": "UC-23 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT12",
@@ -230,7 +263,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "The Organizer of the meeting can read it but holds no Chair or Secretary role in it."
           ],
-          "note": "UC-23 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT13",
@@ -246,7 +282,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended with a Secretary."
           ],
-          "note": "UC-23 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
+          "note": "UC-23 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT14",
@@ -265,7 +304,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An unrelated active account."
           ],
-          "note": "UC-23 | Manual only"
+          "note": "UC-23 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Editor_options_answers_404_for_a_stranger_and_401_without_a_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT15",
@@ -282,7 +324,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-23 | EX | Manual only"
+          "note": "UC-23 | EX | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Editor_options_answers_500_MSG128_when_it_cannot_be_read)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -310,7 +355,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-64, BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)"
+          "note": "UC-23a | BR-64, BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT17",
@@ -326,7 +374,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Six meetings, one in each planning status, each with the Chair on the roster."
           ],
-          "note": "UC-23a | BR-74 | PO decision 02/11/2026 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)"
+          "note": "UC-23a | BR-74 | PO decision 02/11/2026 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT18",
@@ -347,7 +398,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; A_secretary_who_assigns_themselves_is_not_notified)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; A_secretary_who_assigns_themselves_is_not_notified) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT19",
@@ -367,7 +421,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A Guest invitation of the meeting that is not revoked (a Guest who declined is allowed)."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT20",
@@ -386,7 +443,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | EX-1 | BR-66 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | EX-1 | BR-66 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT21",
@@ -405,7 +465,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Normalization_preserves_newlines_and_validates_boundaries)"
+          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Normalization_preserves_newlines_and_validates_boundaries) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT22",
@@ -425,7 +488,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An active user who is not on the roster."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT23",
@@ -442,7 +508,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT24",
@@ -461,7 +530,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A revoked Guest invitation of the meeting."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT25",
@@ -481,7 +553,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A document that belongs to a different meeting."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Invalid_guest_reference_rolls_back_information_and_links)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Invalid_guest_reference_rolls_back_information_and_links)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT26",
@@ -500,7 +575,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT27",
@@ -518,7 +596,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data; Malformed_unicode_property_names_return_validation_without_mutation)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data; Malformed_unicode_property_names_return_validation_without_mutation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT28",
@@ -537,7 +618,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | EX-2 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23a | EX-2 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT29",
@@ -554,7 +638,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended (repeat for Cancelled) with a Secretary."
           ],
-          "note": "UC-23a | EX-2 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
+          "note": "UC-23a | EX-2 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT30",
@@ -572,7 +659,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
+          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT31",
@@ -592,7 +682,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An unrelated account; a Guest invitation."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Create_answers_401_without_a_token_and_404_for_an_unrelated_account) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT32",
@@ -610,7 +703,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-23a | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23a | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT33",
@@ -628,7 +724,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_creates_append_distinct_positions)"
+          "note": "UC-23a | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_creates_append_distinct_positions) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -656,7 +755,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)"
+          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT35",
@@ -672,7 +774,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one item InProgress and one Done."
           ],
-          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)"
+          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT36",
@@ -691,7 +796,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item with a presenter, a description and two attached documents."
           ],
-          "note": "UC-23b | BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Update_without_document_ids_keeps_links_and_an_empty_list_clears_them)"
+          "note": "UC-23b | BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Update_without_document_ids_keeps_links_and_an_empty_list_clears_them)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT37",
@@ -709,7 +817,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
+          "note": "UC-23b | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Put_unchanged_item_succeeds_without_writing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT38",
@@ -728,7 +839,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with items; Members A and B on the roster."
           ],
-          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; Notifier_deduplicates_rechecks_recipient_and_failure_does_not_undo_commit)"
+          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; Notifier_deduplicates_rechecks_recipient_and_failure_does_not_undo_commit)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT39",
@@ -746,7 +860,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23b | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT40",
@@ -765,7 +882,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item whose internal presenter was deactivated afterwards."
           ],
-          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)"
+          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT41",
@@ -786,7 +906,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A second meeting in status Ended."
           ],
-          "note": "UC-23b | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23b | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT42",
@@ -803,7 +926,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item of a different meeting."
           ],
-          "note": "UC-23b | Manual only"
+          "note": "UC-23b | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Put_item_answers_404_for_an_item_that_is_not_in_the_meeting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT43",
@@ -820,7 +946,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-23b | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23b | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT44",
@@ -840,7 +969,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
+          "note": "UC-23b | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Put_item_rejects_a_mistyped_and_an_oversized_body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -867,7 +999,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A Pending item with two attached documents, one of them also attached to another item."
           ],
-          "note": "UC-23c | BR-237, BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)"
+          "note": "UC-23c | BR-237, BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT46",
@@ -883,7 +1018,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one InProgress and one Done item."
           ],
-          "note": "UC-23c | EX-2 | BR-237 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)"
+          "note": "UC-23c | EX-2 | BR-237 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT47",
@@ -901,7 +1039,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A Member wrote a note while an item was current."
           ],
-          "note": "UC-23c | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Deleting_an_item_with_notes_keeps_the_one_meeting_wide_note_per_author)"
+          "note": "UC-23c | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Deleting_an_item_with_notes_keeps_the_one_meeting_wide_note_per_author)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT48",
@@ -922,7 +1063,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A meeting in status Ended with a Pending item."
           ],
-          "note": "UC-23c | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23c | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT49",
@@ -940,7 +1084,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23c | Manual only"
+          "note": "UC-23c | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Delete_item_answers_401_without_a_token_and_404_outside_the_meeting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT50",
@@ -957,7 +1104,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-23c | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23c | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -986,7 +1136,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)"
+          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT52",
@@ -1002,7 +1155,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Done, an InProgress and a Pending item."
           ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
+          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT53",
@@ -1018,7 +1174,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23d | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
+          "note": "UC-23d | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT54",
@@ -1034,7 +1193,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite; Reorder_waiting_behind_a_changed_set_detects_stale_snapshot)"
+          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite; Reorder_waiting_behind_a_changed_set_detects_stale_snapshot)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT55",
@@ -1053,7 +1215,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item of another meeting."
           ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT56",
@@ -1070,7 +1235,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting with one item and a meeting with two items."
           ],
-          "note": "UC-23d | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Reorder_requires_two_items_and_rejects_legacy_body)"
+          "note": "UC-23d | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Reorder_requires_two_items_and_rejects_legacy_body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT57",
@@ -1090,7 +1258,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A meeting in status Ended with two items."
           ],
-          "note": "UC-23d | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23d | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT58",
@@ -1109,7 +1280,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-23d | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23d | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Reorder_answers_401_without_a_token)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1135,7 +1309,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-24 | BR-69, BR-70 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)"
+          "note": "UC-24 | BR-69, BR-70 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT60",
@@ -1153,7 +1330,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current)"
+          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT61",
@@ -1169,7 +1349,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Done item and no current item."
           ],
-          "note": "UC-24 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-24 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT62",
@@ -1185,7 +1368,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
+          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT63",
@@ -1202,7 +1388,10 @@
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items.",
             "The Organizer is not the Chair."
           ],
-          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT64",
@@ -1220,7 +1409,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-24 | Manual only"
+          "note": "UC-24 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Start_answers_401_without_a_token_and_404_outside_the_meeting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT65",
@@ -1237,7 +1429,10 @@
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items.",
             "QA lead can make the database fail for the request."
           ],
-          "note": "UC-24 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-24 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1263,7 +1458,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one item InProgress and two Pending."
           ],
-          "note": "UC-25 | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Completion_records_timestamp_even_immediately_after_start)"
+          "note": "UC-25 | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Completion_records_timestamp_even_immediately_after_start)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT67",
@@ -1279,7 +1477,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Pending item and a Done item."
           ],
-          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT68",
@@ -1295,7 +1496,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended with a Done item."
           ],
-          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
+          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT69",
@@ -1311,7 +1515,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress."
           ],
-          "note": "UC-25 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-25 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT70",
@@ -1329,7 +1536,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress and one Pending."
           ],
-          "note": "UC-25 | UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
+          "note": "UC-25 | UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT71",
@@ -1349,7 +1559,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress; QA lead can make the database fail."
           ],
-          "note": "UC-25 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-25 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRound1Tests.cs (Complete_answers_401_without_a_token_and_404_outside_the_meeting)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1377,7 +1590,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress and no minutes."
           ],
-          "note": "UC-77 | BR-309, BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | BR-309, BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT73",
@@ -1393,7 +1609,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended with a Done item and no minutes document at all."
           ],
-          "note": "UC-77 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT74",
@@ -1409,7 +1628,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress."
           ],
-          "note": "UC-77 | BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT75",
@@ -1425,7 +1647,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item that already has a conclusion."
           ],
-          "note": "UC-77 | EX-1 | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-1 | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT76",
@@ -1443,7 +1668,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress."
           ],
-          "note": "UC-77 | Boundary | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | Boundary | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT77",
@@ -1460,7 +1688,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress."
           ],
-          "note": "UC-77 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_parser_rejects_invalid_or_forged_fields)"
+          "note": "UC-77 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_parser_rejects_invalid_or_forged_fields)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT78",
@@ -1476,7 +1707,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT79",
@@ -1492,7 +1726,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting with an item Done and a minutes document, prepared in each status by QA lead."
           ],
-          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)"
+          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT80",
@@ -1511,7 +1748,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress; and a Published meeting."
           ],
-          "note": "UC-77 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT81",
@@ -1529,7 +1769,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress; an unrelated active account."
           ],
-          "note": "UC-77 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT82",
@@ -1551,7 +1794,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress and a Guest invitation."
           ],
-          "note": "UC-77 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT83",
@@ -1567,7 +1813,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress; QA lead can make the database fail."
           ],
-          "note": "UC-77 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

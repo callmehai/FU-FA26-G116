@@ -27,7 +27,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>.",
             "Sign in as the Member and repeat step 2."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify GET /api/meetings/{meetingId}/votes answers 404 for a caller who may not read the meeting.",
@@ -36,7 +39,7 @@
             "Body: { \"code\": \"MSG205\", \"message\": \"Không truy cập được biểu quyết của cuộc họp này.\" }."
           ],
           "id": "VOTE_API_IT02",
-          "note": "UC-52a | Manual only",
+          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteList_OutsideMeetingIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting the caller is not a participant of, or a Draft meeting an outsider cannot read."
@@ -44,7 +47,10 @@
           "procedure": [
             "Sign in as the outsider (POST /api/auth/login) and keep the access token.",
             "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify GET /api/meetings/{meetingId}/votes without a token answers 401.",
@@ -52,13 +58,16 @@
             "HTTP 401 Unauthorized."
           ],
           "id": "VOTE_API_IT03",
-          "note": "UC-52a | Manual only",
+          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteList_RequiresToken)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
           "procedure": [
             "Send GET /api/meetings/{meetingId}/votes with no Authorization header."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify GET /api/meetings/{meetingId}/votes answers 500 Internal Server Error MSG206 when the database fails.",
@@ -79,7 +88,10 @@
             "QA lead makes the database fail for the next request.",
             "Send GET /api/meetings/{meetingId}/votes",
             "Headers: Authorization: Bearer <access_token>"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -106,7 +118,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send GET /api/meetings/{meetingId}/votes/{publicVoteId} with Authorization: Bearer <accessToken>.",
             "Send GET /api/meetings/{meetingId}/votes/{secretVoteId}."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify GET /api/meetings/{meetingId}/votes/{voteId} answers 404 for an unknown vote or another meeting's vote.",
@@ -114,7 +129,7 @@
             "HTTP 404 Not Found, body code \"MSG205\"."
           ],
           "id": "VOTE_API_IT06",
-          "note": "UC-52b | Manual only",
+          "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDetail_UnknownOrForeignVoteIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting the Chair may read; a random vote id. A second meeting with its own vote."
@@ -123,7 +138,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send GET /api/meetings/{meetingId}/votes/{randomId}.",
             "Send GET /api/meetings/{meetingId}/votes/{otherMeetingsVoteId}."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify GET /api/meetings/{meetingId}/votes/{voteId} answers 500 Internal Server Error MSG208 when the database fails.",
@@ -144,7 +162,10 @@
             "QA lead makes the database fail for the next request.",
             "Send GET /api/meetings/{meetingId}/votes/{voteId}",
             "Headers: Authorization: Bearer <access_token>"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -172,7 +193,10 @@
             "Send POST /api/meetings/{meetingId}/votes",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"title\": \"Thông qua kế hoạch quý IV\", \"description\": \"\", \"options\": [\"Thông qua\", \"Không thông qua\"], \"isAnonymous\": false, \"eligibleRoles\": [\"Chair\", \"Member\"] }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes rejects a bad configuration with one error per field.",
@@ -192,7 +216,10 @@
             "Send POST /api/meetings/{meetingId}/votes",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"title\": \"\", \"options\": [\"Một\"], \"eligibleRoles\": [] } (missing isAnonymous, one option, no roles)"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes refuses a non-JSON body and a body over 64 KiB.",
@@ -211,7 +238,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes with Content-Type: text/plain and a JSON body.",
             "Send it with Content-Type: application/json and a body larger than 64 KiB."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes refuses a caller who may not manage drafts.",
@@ -228,7 +258,10 @@
           "procedure": [
             "Sign in as the Member and send POST /api/meetings/{meetingId}/votes with a valid draft body.",
             "Sign in as the Chair and repeat it."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes with openImmediately opens at once and leaves no draft on failure.",
@@ -246,7 +279,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes with a valid draft body plus \"openImmediately\": true and eligibleRoles covering the roster.",
             "Repeat it with \"eligibleRoles\": [\"Guest\"] while no Guest may vote."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes answers 503 Service Unavailable MSG214 when the database fails.",
@@ -268,7 +304,10 @@
             "Send POST /api/meetings/{meetingId}/votes",
             "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
             "Body: a valid draft with two options."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -295,7 +334,10 @@
             "Send PUT /api/meetings/{meetingId}/votes/{voteId}",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: the full draft with a new title and new options."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify PUT /api/meetings/{meetingId}/votes/{voteId} with openImmediately keeps the old draft when the vote cannot open.",
@@ -313,7 +355,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send PUT /api/meetings/{meetingId}/votes/{draftId} with a new title plus \"openImmediately\": true.",
             "Send GET /api/meetings/{meetingId}/votes/{draftId} and check the title."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify PUT /api/meetings/{meetingId}/votes/{voteId} answers 404 for a Member.",
@@ -329,7 +374,10 @@
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send PUT /api/meetings/{meetingId}/votes/{voteId} with a valid draft body."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -354,7 +402,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId} with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify DELETE /api/meetings/{meetingId}/votes/{voteId} answers 404 for a Member and 409 for an open vote.",
@@ -371,7 +422,10 @@
           "procedure": [
             "Sign in as the Member and send DELETE for the draft vote.",
             "Sign in as the Chair and send DELETE for the open vote."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -398,7 +452,10 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"meetingDocumentIds\": [\"<doc1>\", \"<doc2>\"] }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify attaching a document that is not in the meeting answers 404.",
@@ -407,7 +464,7 @@
             "Nothing is linked."
           ],
           "id": "VOTE_API_IT20",
-          "note": "UC-76a | Manual only",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachForeignDocumentIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a document id from another meeting."
@@ -415,7 +472,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with Body: { \"meetingDocumentIds\": [\"<foreign doc>\"] }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify attaching an already linked document answers 409.",
@@ -423,7 +483,7 @@
             "HTTP 409, body code \"MSG266\"."
           ],
           "id": "VOTE_API_IT21",
-          "note": "UC-76a | Manual only",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachDuplicateIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote with one linked document."
@@ -431,7 +491,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with the already linked document id."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify attaching documents to a vote that is no longer a draft answers 409.",
@@ -447,7 +510,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{openVoteId}/documents with a meeting document id."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -474,7 +540,10 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"documentIds\": [\"<library doc>\"] }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify attaching from the library with no documents answers 400.",
@@ -482,7 +551,7 @@
             "HTTP 400, body code \"MSG249\"."
           ],
           "id": "VOTE_API_IT24",
-          "note": "UC-76a | Manual only",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachFromEmptyLibraryIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote."
@@ -490,7 +559,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library with Body: { \"documentIds\": [] }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -515,7 +587,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify uploading a non-PDF/DOCX file answers 400.",
@@ -524,7 +599,7 @@
             "Nothing is added to the meeting or the vote."
           ],
           "id": "VOTE_API_IT26",
-          "note": "UC-76a | Manual only",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadNonPdfIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a .txt file on the test machine."
@@ -532,16 +607,19 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the .txt file."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify uploading more than 10 files or 200 MB answers 400.",
+          "description": "Verify uploading more than 10 files or 100 MB in one request answers 400.",
           "expected": [
             "HTTP 400, body code \"MSG288\".",
             "Nothing is added to the meeting or the vote."
           ],
           "id": "VOTE_API_IT27",
-          "note": "UC-76a | Manual only",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadElevenFilesIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; 11 small PDFs on the test machine."
@@ -549,7 +627,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the 11 files."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify uploading to a draft answers 409 MSG346 when the system document storage is full.",
@@ -558,7 +639,7 @@
             "Nothing is added to the meeting, the vote or the personal library; no stored object is left (ADR-0034)."
           ],
           "id": "VOTE_API_IT28",
-          "note": "UC-76a | ADR-0034 | Manual only",
+          "note": "UC-76a | ADR-0034 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadWhenStorageFullIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a PDF file larger than the storage still free (FileStorage:MaxTotalGigabytes set low by QA lead)."
@@ -566,7 +647,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify uploading to a draft answers 503 MSG166 when the file store fails.",
@@ -584,7 +668,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "QA lead makes the file store fail for the next request.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -609,7 +696,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId} with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify detaching a document that was never linked answers 404.",
@@ -617,7 +707,7 @@
             "HTTP 404, body code \"MSG269\"."
           ],
           "id": "VOTE_API_IT31",
-          "note": "UC-76b | Manual only",
+          "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_DetachNeverLinkedIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a meeting document that was never linked to it."
@@ -625,7 +715,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send DELETE for that document id."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -650,7 +743,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify opening a draft answers 409 when the caller is not the current Chair.",
@@ -658,7 +754,7 @@
             "HTTP 409, body code \"MSG218\"."
           ],
           "id": "VOTE_API_IT33",
-          "note": "UC-54 | Manual only",
+          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteOpen_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote in an InProgress meeting."
@@ -666,7 +762,10 @@
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify opening a second vote while one is open answers 409.",
@@ -683,7 +782,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{draftId}/open with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify opening a vote with nobody eligible answers 409 and does not open.",
@@ -700,7 +802,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/open answers 503 Service Unavailable MSG221 when the database fails.",
@@ -721,7 +826,10 @@
             "QA lead makes the database fail for the next request.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open",
             "Headers: Authorization: Bearer <access_token>"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -748,7 +856,10 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"optionId\": \"<one option id from the vote detail>\" }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a second ballot from the same voter answers 409 and changes nothing.",
@@ -766,7 +877,10 @@
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<the other option id>\" }.",
             "Send GET /api/meetings/{meetingId}/votes/{voteId} and check the counts."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a voter outside the fixed eligible list answers 409.",
@@ -783,7 +897,10 @@
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify voting on a vote that is no longer open answers 409.",
@@ -791,7 +908,7 @@
             "HTTP 409, body code \"MSG225\"."
           ],
           "id": "VOTE_API_IT40",
-          "note": "UC-55 | Manual only",
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Ballot_OnClosedVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed vote; a Member who was eligible."
@@ -799,7 +916,10 @@
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a ballot without an optionId answers 400.",
@@ -816,7 +936,10 @@
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: {}."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a ballot with an optionId from another vote answers 400.",
@@ -833,7 +956,10 @@
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<foreign option id>\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a voter with unread vote documents answers 409 until every document is confirmed read.",
@@ -851,7 +977,10 @@
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }.",
             "Confirm the document read, then repeat step 2."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a verified Guest votes once by invitation.",
@@ -868,7 +997,10 @@
           "procedure": [
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Authorization: Bearer <Guest access token> and Body: { \"optionId\": \"<option id>\" }.",
             "Repeat step 1."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/ballots answers 503 Service Unavailable MSG228 when the database fails.",
@@ -889,7 +1021,10 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
             "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
             "Body: { \"optionId\": \"<option id>\" }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a read confirmation refused with MSG254 does not unlock the ballot.",
@@ -907,7 +1042,10 @@
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation with Body: { \"lastPageReached\": false }.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -933,7 +1071,10 @@
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>.",
             "Sign in as a voter and send a ballot."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify closing an open vote answers 409 for anyone but the current Chair.",
@@ -941,7 +1082,7 @@
             "HTTP 409, body code \"MSG230\"."
           ],
           "id": "VOTE_API_IT48",
-          "note": "UC-56 | Manual only",
+          "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteClose_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting."
@@ -949,7 +1090,10 @@
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/close answers 503 Service Unavailable MSG231 when the database fails.",
@@ -970,7 +1114,10 @@
             "QA lead makes the database fail for the next request.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close",
             "Headers: Authorization: Bearer <access_token>"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -998,7 +1145,10 @@
             "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
             "Body: { \"conclusion\": \"Passed\", \"note\": \"Đa số thông qua.\" }",
             "Repeat step 2 with \"conclusion\": \"NotPassed\"."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify a conclusion outside Passed/NotPassed/Deferred answers 400.",
@@ -1006,7 +1156,7 @@
             "HTTP 400, body code \"MSG232\"."
           ],
           "id": "VOTE_API_IT51",
-          "note": "UC-57 | Manual only",
+          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OutsideAllowedSetIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed vote with no conclusion."
@@ -1014,7 +1164,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Maybe\", \"note\": \"\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify recording a conclusion answers 409 when the vote is not closed.",
@@ -1022,7 +1175,7 @@
             "HTTP 409, body code \"MSG234\"."
           ],
           "id": "VOTE_API_IT52",
-          "note": "UC-57 | Manual only",
+          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OnOpenVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting."
@@ -1030,7 +1183,10 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Passed\" }."
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/conclusion answers 503 Service Unavailable MSG236 when the database fails.",
@@ -1052,7 +1208,10 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion",
             "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
             "Body: { \"conclusion\": \"Passed\" }"
-          ]
+          ],
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

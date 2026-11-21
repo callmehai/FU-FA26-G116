@@ -27,7 +27,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "B has one share as viewer and one as owner in different states."
           ],
-          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_list_shows_both_directions_with_what_the_caller_may_do)"
+          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_list_shows_both_directions_with_what_the_caller_may_do)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT02",
@@ -45,7 +48,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share of B whose endDate was yesterday (QA lead edits the data)."
           ],
-          "note": "UC-84f · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_share_past_its_end_date_is_gone_without_any_state_or_notice)"
+          "note": "UC-84f · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_share_past_its_end_date_is_gone_without_any_state_or_notice)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT03",
@@ -63,7 +69,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A share where the Member is the calendar owner."
           ],
-          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_member_lists_their_own_shares_but_never_shares_with_them)"
+          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_member_lists_their_own_shares_but_never_shares_with_them)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT04",
@@ -77,7 +86,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_the_share_list_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT05",
@@ -95,7 +107,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An administrator account."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_deactivated_account_gets_an_empty_403_on_the_share_list)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT06",
@@ -113,7 +128,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-84f · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_database_outage_is_reported_and_nobody_is_told)"
+          "note": "UC-84f · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_database_outage_is_reported_and_nobody_is_told)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -139,7 +157,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT08",
@@ -156,7 +177,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)"
+          "note": "UC-84b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT09",
@@ -174,7 +198,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Candidates_are_filtered_and_paged_on_the_server)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT10",
@@ -192,7 +219,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a | Boundary: pageSize 1-100 | Manual only"
+          "note": "UC-84a | Boundary: pageSize 1-100 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_bad_candidate_query_is_refused_without_a_body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT11",
@@ -209,7 +239,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-1 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_a_meeting_organizer_may_ask)"
+          "note": "UC-84a · EX-1 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_a_meeting_organizer_may_ask)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT12",
@@ -223,7 +256,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84a | Manual only"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_the_candidate_list_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT13",
@@ -241,7 +277,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-84a · EX-6 | Manual only"
+          "note": "UC-84a · EX-6 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_candidate_read_failure_answers_MSG467)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -269,7 +308,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_organizer_asks_to_see_a_calendar_and_the_owner_is_told)"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_organizer_asks_to_see_a_calendar_and_the_owner_is_told)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT15",
@@ -285,7 +327,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · BR-431 | Boundary: 365 days | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_share_of_the_full_365_days_is_accepted)"
+          "note": "UC-84a · BR-431 | Boundary: 365 days | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_share_of_the_full_365_days_is_accepted)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT16",
@@ -303,7 +348,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-3 · BR-431 | Boundary: 366 days | Manual only"
+          "note": "UC-84a · EX-3 · BR-431 | Boundary: 366 days | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_range_longer_than_365_days_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT17",
@@ -319,7 +367,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-3 · BR-431 | Manual only"
+          "note": "UC-84a · EX-3 · BR-431 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_start_date_in_the_past_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT18",
@@ -335,7 +386,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-3 · BR-431 | Manual only"
+          "note": "UC-84a · EX-3 · BR-431 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (An_end_date_before_the_start_date_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT19",
@@ -351,7 +405,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-3 · BR-414 | Manual only"
+          "note": "UC-84a · EX-3 · BR-414 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_missing_or_unknown_level_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT20",
@@ -368,7 +425,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-1 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_a_meeting_organizer_may_ask)"
+          "note": "UC-84a · EX-1 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_a_meeting_organizer_may_ask)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT21",
@@ -386,7 +446,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A deactivated account."
           ],
-          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Asking_yourself_an_unknown_or_a_locked_owner_discloses_nothing)"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Asking_yourself_an_unknown_or_a_locked_owner_discloses_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT22",
@@ -404,7 +467,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84a · EX-2 · BR-423 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (One_open_share_per_direction_of_a_pair)"
+          "note": "UC-84a · EX-2 · BR-423 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (One_open_share_per_direction_of_a_pair)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT23",
@@ -422,7 +488,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective B-to-A share whose endDate has passed."
           ],
-          "note": "UC-84a · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_new_request_for_the_pair_closes_the_share_past_its_end_date_silently)"
+          "note": "UC-84a · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_new_request_for_the_pair_closes_the_share_past_its_end_date_silently)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT24",
@@ -436,7 +505,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84a | Manual only"
+          "note": "UC-84a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_a_share_request_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT25",
@@ -455,7 +527,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-84a · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_database_outage_is_reported_and_nobody_is_told)"
+          "note": "UC-84a · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_database_outage_is_reported_and_nobody_is_told)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -482,7 +557,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_owner_shares_directly_at_level_1_and_the_recipient_answers)"
+          "note": "UC-84b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_owner_shares_directly_at_level_1_and_the_recipient_answers)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT27",
@@ -500,7 +578,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A deactivated account."
           ],
-          "note": "UC-84b · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_an_active_meeting_organizer_can_receive_a_direct_share)"
+          "note": "UC-84b · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_an_active_meeting_organizer_can_receive_a_direct_share)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT28",
@@ -517,7 +598,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84b · EX-2 · BR-423 | Manual only"
+          "note": "UC-84b · EX-2 · BR-423 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_duplicate_direct_share_answers_MSG449)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT29",
@@ -533,7 +617,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84b · EX-3 · BR-431 | Manual only"
+          "note": "UC-84b · EX-3 · BR-431 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_direct_share_with_a_bad_range_answers_MSG443)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT30",
@@ -549,7 +636,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-84b · BR-430 | Manual only"
+          "note": "UC-84b · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_member_may_share_their_own_calendar_directly)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT31",
@@ -563,7 +653,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84b | Manual only"
+          "note": "UC-84b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_a_direct_share_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -590,7 +683,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request from B to A at Level2."
           ],
-          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_accepts_at_a_lower_level_and_a_shorter_range)"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_accepts_at_a_lower_level_and_a_shorter_range)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT33",
@@ -607,7 +703,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request from B to A."
           ],
-          "note": "UC-84c · EX-3 | Manual only"
+          "note": "UC-84c · EX-3 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Accepting_a_wider_range_or_higher_level_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT34",
@@ -626,7 +725,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending direct share from A to B."
           ],
-          "note": "UC-84c · BR-414 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_owner_shares_directly_at_level_1_and_the_recipient_answers)"
+          "note": "UC-84c · BR-414 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_owner_shares_directly_at_level_1_and_the_recipient_answers)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT35",
@@ -644,7 +746,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share A-to-B with a pending change requested by B (UC-84d)."
           ],
-          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_viewer_asks_for_more_and_the_owner_approves)"
+          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_viewer_asks_for_more_and_the_owner_approves)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT36",
@@ -662,7 +767,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A share with such a stale pending change."
           ],
-          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_change_the_owner_moved_the_dates_past_can_only_be_declined)"
+          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_change_the_owner_moved_the_dates_past_can_only_be_declined)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT37",
@@ -680,7 +788,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request from B to A, B then deactivated by an administrator."
           ],
-          "note": "UC-84c · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_invitation_whose_sender_was_deactivated_can_only_be_declined)"
+          "note": "UC-84c · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_invitation_whose_sender_was_deactivated_can_only_be_declined)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT38",
@@ -698,7 +809,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A third active account; a Pending request from B to A."
           ],
-          "note": "UC-84c · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_the_asked_side_answers_and_strangers_learn_nothing)"
+          "note": "UC-84c · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_the_asked_side_answers_and_strangers_learn_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT39",
@@ -715,7 +829,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A closed share."
           ],
-          "note": "UC-84c · EX-2 | Manual only"
+          "note": "UC-84c · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Accepting_a_closed_share_answers_MSG450)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT40",
@@ -732,7 +849,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request whose viewer lost the right."
           ],
-          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_request_whose_viewer_lost_the_right_offers_only_decline)"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_request_whose_viewer_lost_the_right_offers_only_decline)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT41",
@@ -746,7 +866,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_an_accept_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -773,7 +896,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request from B to A."
           ],
-          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_declines_and_the_requester_is_told)"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_declines_and_the_requester_is_told)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT43",
@@ -791,7 +917,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share with a pending change from B."
           ],
-          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_declines_a_change_and_the_share_stays_as_it_was)"
+          "note": "UC-84c · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_declines_a_change_and_the_share_stays_as_it_was)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT44",
@@ -808,7 +937,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request whose sender was then deactivated."
           ],
-          "note": "UC-84c · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_invitation_whose_sender_was_deactivated_can_only_be_declined)"
+          "note": "UC-84c · EX-5 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (An_invitation_whose_sender_was_deactivated_can_only_be_declined)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT45",
@@ -826,7 +958,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A third active account; a Pending request from B to A."
           ],
-          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_the_asked_side_answers_and_strangers_learn_nothing)"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Only_the_asked_side_answers_and_strangers_learn_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT46",
@@ -843,7 +978,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A closed share."
           ],
-          "note": "UC-84c · EX-2 | Manual only"
+          "note": "UC-84c · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Declining_a_closed_share_answers_MSG450)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT47",
@@ -857,7 +995,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_a_decline_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -884,7 +1025,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective Level1 share from A to B with no pending change."
           ],
-          "note": "UC-84d | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_viewer_asks_for_more_and_the_owner_approves)"
+          "note": "UC-84d | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_viewer_asks_for_more_and_the_owner_approves)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT49",
@@ -902,7 +1046,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective Level2 share from A to B."
           ],
-          "note": "UC-84d · EX-3 | Manual only"
+          "note": "UC-84d · EX-3 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_viewer_request_that_lowers_or_changes_nothing_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT50",
@@ -919,7 +1066,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share."
           ],
-          "note": "UC-84d · BR-431 | Boundary: 366 days | Manual only"
+          "note": "UC-84d · BR-431 | Boundary: 366 days | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_change_past_365_days_from_the_start_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT51",
@@ -937,7 +1087,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective Level2 share from A to B that has a pending change."
           ],
-          "note": "UC-84d · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_lowers_the_level_at_once_even_while_a_change_is_pending)"
+          "note": "UC-84d · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_owner_lowers_the_level_at_once_even_while_a_change_is_pending)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT52",
@@ -954,7 +1107,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share."
           ],
-          "note": "UC-84d · EX-2 | Manual only"
+          "note": "UC-84d · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_second_change_while_one_is_pending_answers_MSG450)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT53",
@@ -971,7 +1127,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending share."
           ],
-          "note": "UC-84d · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_pending_share_cannot_be_changed)"
+          "note": "UC-84d · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (A_pending_share_cannot_be_changed)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT54",
@@ -988,7 +1147,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A third active account."
           ],
-          "note": "UC-84d | Manual only"
+          "note": "UC-84d | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_stranger_cannot_change_a_share)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT55",
@@ -1002,7 +1164,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84d | Manual only"
+          "note": "UC-84d | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_a_change_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1028,7 +1193,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending request from B to A."
           ],
-          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_sender_withdraws_a_request_or_a_change)"
+          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_sender_withdraws_a_request_or_a_change)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT57",
@@ -1046,7 +1214,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share with a pending change requested by B."
           ],
-          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_sender_withdraws_a_request_or_a_change)"
+          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (The_sender_withdraws_a_request_or_a_change)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT58",
@@ -1063,7 +1234,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An Effective share without a pending change."
           ],
-          "note": "UC-84e · EX-2 | Manual only"
+          "note": "UC-84e · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Withdrawing_an_effective_share_with_nothing_pending_answers_MSG450)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT59",
@@ -1080,7 +1254,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A third active account."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_stranger_cannot_withdraw_a_share)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT60",
@@ -1094,7 +1271,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_token_a_withdraw_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1121,7 +1301,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "Two Effective shares between A and B in opposite directions."
           ],
-          "note": "UC-84e · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Either_side_ends_an_effective_share)"
+          "note": "UC-84e · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareEndpointTests.cs (Either_side_ends_an_effective_share)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT62",
@@ -1138,7 +1321,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A Pending share."
           ],
-          "note": "UC-84e · EX-2 | Manual only"
+          "note": "UC-84e · EX-2 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Ending_a_share_that_is_not_effective_answers_MSG450)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT63",
@@ -1157,7 +1343,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An administrator account; an Effective and a Pending share involving A."
           ],
-          "note": "UC-84e · BR-424 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (Deactivating_the_owner_or_the_viewer_stops_effective_shares_keeps_pending_and_restarts_nothing)"
+          "note": "UC-84e · BR-424 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (Deactivating_the_owner_or_the_viewer_stops_effective_shares_keeps_pending_and_restarts_nothing)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT64",
@@ -1175,7 +1364,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An administrator account; an Effective share where B views A."
           ],
-          "note": "UC-84e · BR-424 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (Taking_meeting_creator_off_a_role_stops_the_shares_its_holders_view)"
+          "note": "UC-84e · BR-424 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (Taking_meeting_creator_off_a_role_stops_the_shares_its_holders_view)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT65",
@@ -1192,7 +1384,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "An administrator account; an Effective share past its endDate."
           ],
-          "note": "UC-84e · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (A_share_past_its_end_date_is_left_alone_when_an_account_is_deactivated_or_loses_the_right)"
+          "note": "UC-84e · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareStopTests.cs (A_share_past_its_end_date_is_left_alone_when_an_account_is_deactivated_or_loses_the_right)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT66",
@@ -1211,7 +1406,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A third active account."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Only_a_party_may_end_a_share)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1230,8 +1428,8 @@
           ],
           "expected": [
             "HTTP 200 OK with Cache-Control: no-store.",
-            "Body: { \"weekStart\": \"2026-11-09\", \"weekEnd\": \"2026-11-13\", \"dayStart\": \"08:00\", \"dayEnd\": \"17:00\", \"people\": [ { \"shareId\", \"owner\", \"status\", \"level\", \"startDate\", \"endDate\", \"days\": [ { \"date\", \"known\", \"busy\": [ { \"start\", \"end\" } ] } ] } ] }.",
-            "Days outside the share have \"known\": false and \"busy\": []; busy intervals are merged and clipped to 08:00-17:00 and contain no title, place, attendee or confidentiality.",
+            "Body: { \"weekStart\": \"2026-11-09\", \"weekEnd\": \"2026-11-15\", \"dayStart\": \"00:00\", \"dayEnd\": \"24:00\", \"people\": [ { \"shareId\", \"owner\", \"status\", \"level\", \"startDate\", \"endDate\", \"days\": [ { \"date\", \"known\", \"busy\": [ { \"start\", \"end\" } ] } ] } ] }.",
+            "Days outside the share have \"known\": false and \"busy\": []; busy intervals are merged and clipped to each day 00:00-24:00 (a meeting past midnight shows on both days, ending at next-day 00:00 on the first) and contain no title, place, attendee or confidentiality.",
             "Level1 shows only Thường meetings, Level2 also Nội bộ; Mật is never shown."
           ],
           "preconditions": [
@@ -1239,7 +1437,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "Effective shares to B at Level1 and Level2 covering part of that week, with Thường, Nội bộ and Mật meetings of the owners."
           ],
-          "note": "UC-85c · BR-414 · BR-415 · BR-427 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (The_week_shows_only_what_each_share_allows)"
+          "note": "UC-85c · BR-414 · BR-415 · BR-427 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (The_week_shows_only_what_each_share_allows)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT68",
@@ -1249,13 +1450,16 @@
             "Send GET /api/calendar/shared-week with Authorization: Bearer <accessToken> and no query."
           ],
           "expected": [
-            "HTTP 200 OK; weekStart is the Monday of the current week in Asia/Ho_Chi_Minh and weekEnd the Friday; on a Sunday the week that started on the previous Monday is returned."
+            "HTTP 200 OK; weekStart is the Monday of the current week in Asia/Ho_Chi_Minh and weekEnd the Sunday; on a Sunday the week that started on the previous Monday is returned."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85c | Manual only"
+          "note": "UC-85c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (Without_a_query_the_current_Vietnam_week_is_shown)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT69",
@@ -1272,7 +1476,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A share to B that was stopped (the owner was deactivated or B lost MeetingCreator earlier)."
           ],
-          "note": "UC-85c · BR-424 | Manual only"
+          "note": "UC-85c · BR-424 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_stopped_share_is_listed_without_days)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT70",
@@ -1288,14 +1495,17 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85c · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (Nobody_shared_yet_is_an_empty_week_and_only_organizers_may_look)"
+          "note": "UC-85c · BR-425 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (Nobody_shared_yet_is_an_empty_week_and_only_organizers_may_look)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT71",
           "description": "Verify GET /api/calendar/shared-week rejects a malformed week with 400 and no body.",
           "procedure": [
             "Sign in as Organizer B (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/calendar/shared-week?week=12-11-2026 with Authorization: Bearer <accessToken>."
+            "Send GET /api/calendar/shared-week?week=not-a-date with Authorization: Bearer <accessToken>."
           ],
           "expected": [
             "HTTP 400 Bad Request with no body."
@@ -1304,7 +1514,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85c | Manual only"
+          "note": "UC-85c | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (A_malformed_week_is_refused_without_a_body)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT72",
@@ -1321,7 +1534,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85c · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (Nobody_shared_yet_is_an_empty_week_and_only_organizers_may_look)"
+          "note": "UC-85c · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SharedWeekEndpointTests.cs (Nobody_shared_yet_is_an_empty_week_and_only_organizers_may_look)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT73",
@@ -1340,7 +1556,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-85c · EX-1 | Manual only"
+          "note": "UC-85c · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/CalendarShareRound1Tests.cs (The_shared_week_needs_a_token_and_reports_a_read_failure)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1368,7 +1587,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A and C each share a calendar with B for the whole searched week."
           ],
-          "note": "UC-85a · BR-415 · BR-422 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Common_slots_respect_shared_levels_statuses_and_roles)"
+          "note": "UC-85a · BR-415 · BR-422 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Common_slots_respect_shared_levels_statuses_and_roles)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT75",
@@ -1385,7 +1607,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A has an Approved Thường meeting 08:00-09:10 on one searched day, shared at Level1."
           ],
-          "note": "UC-85a · D15 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_gap_keeps_slots_away_from_busy_periods)"
+          "note": "UC-85a · D15 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_gap_keeps_slots_away_from_busy_periods)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT76",
@@ -1404,7 +1629,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "B has a Mật meeting on a searched day."
           ],
-          "note": "UC-85a · BR-416 · BR-418 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (The_finders_own_calendar_counts_only_when_ticked_and_at_every_level)"
+          "note": "UC-85a · BR-416 · BR-418 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (The_finders_own_calendar_counts_only_when_ticked_and_at_every_level)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT77",
@@ -1422,7 +1650,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "Shares with A and C who are busy in every possible hour of the search (QA lead prepares meetings)."
           ],
-          "note": "UC-85a · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Without_a_common_slot_the_most_people_free_are_shown_with_who_is_busy)"
+          "note": "UC-85a · AF-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Without_a_common_slot_the_most_people_free_are_shown_with_who_is_busy)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT78",
@@ -1440,7 +1671,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A shares with B for part of the searched range."
           ],
-          "note": "UC-85a · BR-415 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_share_that_does_not_reach_the_search_range_leaves_only_unknown_days)"
+          "note": "UC-85a · BR-415 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_share_that_does_not_reach_the_search_range_leaves_only_unknown_days)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT79",
@@ -1457,14 +1691,17 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "C has no Effective share to B."
           ],
-          "note": "UC-85a · BR-416 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (People_without_a_live_share_are_not_shared_and_never_free)"
+          "note": "UC-85a · BR-416 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (People_without_a_live_share_are_not_shared_and_never_free)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT80",
           "description": "Verify POST /api/calendar/slots reports each invalid field with MSG444.",
           "procedure": [
             "Sign in as Organizer B (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/calendar/slots with Authorization: Bearer <accessToken>; Content-Type: application/json and body { \"userIds\": [], \"durationMinutes\": 7, \"weekdays\": [6], \"workStart\": \"17:00\", \"workEnd\": \"08:00\" }."
+            "Send POST /api/calendar/slots with Authorization: Bearer <accessToken>; Content-Type: application/json and body { \"userIds\": [], \"durationMinutes\": 7, \"weekdays\": [8], \"workStart\": \"17:00\", \"workEnd\": \"08:00\" }."
           ],
           "expected": [
             "HTTP 400 Bad Request.",
@@ -1474,7 +1711,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85a · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Broken_parameters_are_reported_by_field)"
+          "note": "UC-85a · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Broken_parameters_are_reported_by_field)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT81",
@@ -1493,7 +1733,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "11 active accounts other than B."
           ],
-          "note": "UC-85a · BR-421 | Boundary: 10 people | Manual only"
+          "note": "UC-85a · BR-421 | Boundary: 10 people | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotRound1Tests.cs (Ten_people_are_accepted_but_eleven_are_not)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT82",
@@ -1512,7 +1755,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85a · BR-422 | Boundary: 15-480 minutes, 31 days | Manual only"
+          "note": "UC-85a · BR-422 | Boundary: 15-480 minutes, 31 days | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotRound1Tests.cs (Duration_and_date_range_limits_are_enforced)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT83",
@@ -1528,7 +1774,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85a · EX-1 | Manual only"
+          "note": "UC-85a · EX-1 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotRound1Tests.cs (A_duration_longer_than_one_working_session_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT84",
@@ -1544,7 +1793,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Dates_at_either_end_of_the_calendar_are_refused_not_crashed_on)"
+          "note": "UC-85a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Dates_at_either_end_of_the_calendar_are_refused_not_crashed_on)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT85",
@@ -1560,7 +1812,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85a · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Only_a_Meeting_Organizer_may_search)"
+          "note": "UC-85a · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Only_a_Meeting_Organizer_may_search)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT86",
@@ -1574,7 +1829,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-85a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Without_a_token_the_search_is_refused)"
+          "note": "UC-85a | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (Without_a_token_the_search_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT87",
@@ -1591,7 +1849,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-85a · EX-3 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_database_failure_answers_MSG453)"
+          "note": "UC-85a · EX-3 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotEndpointTests.cs (A_database_failure_answers_MSG453)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1618,7 +1879,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The slot is free for A and C (shared with B); a future date."
           ],
-          "note": "UC-85b · BR-428 · BR-429 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_free_slot_becomes_a_Draft_with_the_default_roles)"
+          "note": "UC-85b · BR-428 · BR-429 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_free_slot_becomes_a_Draft_with_the_default_roles)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT89",
@@ -1636,7 +1900,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A shares at Level1 and gets an Approved Thường meeting overlapping the slot after the search."
           ],
-          "note": "UC-85b · EX-1 · BR-428 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Someone_who_became_busy_makes_the_slot_taken)"
+          "note": "UC-85b · EX-1 · BR-428 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Someone_who_became_busy_makes_the_slot_taken)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT90",
@@ -1653,7 +1920,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A slot from a most-free search (MSG445) where only A was busy."
           ],
-          "note": "UC-85b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_most_free_slot_is_kept_when_those_busy_then_are_still_the_only_ones)"
+          "note": "UC-85b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_most_free_slot_is_kept_when_those_busy_then_are_still_the_only_ones)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT91",
@@ -1670,7 +1940,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "A has a Mật meeting overlapping the slot."
           ],
-          "note": "UC-85b · BR-428 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_Secret_meeting_never_blocks_a_draft)"
+          "note": "UC-85b · BR-428 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_Secret_meeting_never_blocks_a_draft)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT92",
@@ -1687,7 +1960,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "C has no share to B."
           ],
-          "note": "UC-85b · BR-416 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (People_without_a_share_are_not_rechecked)"
+          "note": "UC-85b · BR-416 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (People_without_a_share_are_not_rechecked)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT93",
@@ -1703,7 +1979,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85b · UC-14 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (An_invalid_invitee_list_answers_MSG277)"
+          "note": "UC-85b · UC-14 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (An_invalid_invitee_list_answers_MSG277)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT94",
@@ -1719,7 +1998,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85b · UC-14 | Boundary: 8 hours | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Invalid_meeting_values_answer_MSG31)"
+          "note": "UC-85b · UC-14 | Boundary: 8 hours | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Invalid_meeting_values_answer_MSG31)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT95",
@@ -1735,7 +2017,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Times_at_either_end_of_the_calendar_or_too_long_are_refused_not_crashed_on)"
+          "note": "UC-85b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Times_at_either_end_of_the_calendar_or_too_long_are_refused_not_crashed_on)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT96",
@@ -1751,7 +2036,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead."
           ],
-          "note": "UC-85b · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Only_a_Meeting_Organizer_may_create_a_draft_from_a_slot)"
+          "note": "UC-85b · EX-2 · BR-430 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (Only_a_Meeting_Organizer_may_create_a_draft_from_a_slot)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT97",
@@ -1765,7 +2053,10 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-85b | Manual only"
+          "note": "UC-85b | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotRound1Tests.cs (Without_a_token_a_draft_from_a_slot_is_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_API_IT98",
@@ -1784,7 +2075,10 @@
             "Two active Organizer accounts with MeetingCreator, A (calendar owner) and B (viewer), and an active Member without MeetingCreator, supplied by QA lead.",
             "The QA lead can make reads and then writes fail on request."
           ],
-          "note": "UC-85b · EX-3 · EX-4 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_read_failure_answers_MSG453_and_a_save_failure_MSG35)"
+          "note": "UC-85b · EX-3 · EX-4 | Automated: tests/TrustCabinet.Web.Tests/CalendarSharing/SlotDraftEndpointTests.cs (A_read_failure_answers_MSG453_and_a_save_failure_MSG35)",
+          "round1": "Passed",
+          "date1": "2026-11-20",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

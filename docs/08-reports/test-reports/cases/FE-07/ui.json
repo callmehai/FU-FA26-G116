@@ -217,7 +217,7 @@
             "Click \"Tải lên 2 tài liệu\"."
           ],
           "expected": [
-            "The dialog \"Tải tài liệu lên\" shows \"Kéo tệp vào đây hoặc bấm để chọn\" and \"PDF, DOCX, mỗi tệp tối đa 50 MB, mỗi lần tối đa 10 tệp, 200 MB\"; both files are listed with their size.",
+            "The dialog \"Tải tài liệu lên\" shows \"Kéo tệp vào đây hoặc bấm để chọn\" and \"PDF, DOCX, mỗi tệp tối đa 10 MB, mỗi lần tối đa 10 tệp, 100 MB\"; both files are listed with their size.",
             "The dialog closes and the upload tray shows \"Đang tải lên 0/2 tệp\", then \"Đã tải lên 2 tệp\" (backend 201/MSG177 per file).",
             "Both documents appear in the folder and the quota grows; nothing is changed in any meeting."
           ],
@@ -234,7 +234,7 @@
             "Click \"Tải tài liệu lên\" and pick \"anh.png\"."
           ],
           "expected": [
-            "The red alert \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.\" with the hint \"Không thêm: anh.png\" appears; the file is not listed and \"Tải lên\" stays disabled."
+            "The red alert \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.\" with the hint \"Không thêm: anh.png\" appears; the file is not listed and \"Tải lên\" stays disabled."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -249,7 +249,7 @@
             "Click \"Tải tài liệu lên\" and pick 11 valid PDFs."
           ],
           "expected": [
-            "The alert \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB.\" appears with \"Đang chọn 11 tệp, ...\"; the upload button is disabled until files are removed (BR-319)."
+            "The alert \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.\" appears with \"Đang chọn 11 tệp, ...\"; the upload button is disabled until files are removed (BR-319)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -300,7 +300,7 @@
             "Rename a PNG to \"gia.pdf\", click \"Tải tài liệu lên\", pick it and click \"Tải lên 1 tài liệu\"."
           ],
           "expected": [
-            "Backend answers 400/MSG164; the tray shows \"1 tệp chưa tải lên được\" and the row carries \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.\" with the button \"Thử lại gia.pdf\"; the library has no new document (BR-187)."
+            "Backend answers 400/MSG164; the tray shows \"1 tệp chưa tải lên được\" and the row carries \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.\" with the button \"Thử lại gia.pdf\"; the library has no new document (BR-187)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -979,7 +979,7 @@
             "Click \"Thêm tài liệu chung\" > \"Tải từ máy\" and pick \"anh.png\"."
           ],
           "expected": [
-            "The alert \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.\" with \"Không thêm: anh.png\" appears; the submit button stays disabled."
+            "The alert \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.\" with \"Không thêm: anh.png\" appears; the submit button stays disabled."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
