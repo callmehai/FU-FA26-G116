@@ -28,6 +28,8 @@ public static class VoiceIdRules
         + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, hoặc do Thư ký cuộc họp tôi dự thu bằng micro phòng họp.";
 
     public const int MaxSamples = 5;
+    /// <summary>Samples the meetings' Secretaries may keep for one person on the room's mic (PO 2026-11-21).</summary>
+    public const int MaxProxySamples = 50;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
 
     public static string RejectionMessage(string reason) => reason switch

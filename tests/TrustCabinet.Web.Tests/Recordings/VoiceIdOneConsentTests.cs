@@ -47,7 +47,7 @@ public sealed class VoiceIdOneConsentTests(RecordingFixture fixture) : IClassFix
         var proxy = (await member.GetFromJsonAsync<JsonElement>("/api/me/voice")).GetProperty("proxy");
         Assert.False(proxy.GetProperty("allowed").GetBoolean());
         Assert.Equal(0, proxy.GetProperty("samples").GetArrayLength());
-        Assert.Equal(VoiceIdRules.MaxSamples, proxy.GetProperty("maxSamples").GetInt32());
+        Assert.Equal(VoiceIdRules.MaxProxySamples, proxy.GetProperty("maxSamples").GetInt32());
         Assert.False(proxy.TryGetProperty("consent", out _));
         Assert.False((await member.PostAsJsonAsync("/api/me/voice/proxy-consent", new { noticeVersion = "1.0" })).IsSuccessStatusCode);
         Assert.False((await member.DeleteAsync("/api/me/voice/proxy-consent")).IsSuccessStatusCode);

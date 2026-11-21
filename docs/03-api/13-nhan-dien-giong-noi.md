@@ -60,7 +60,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 }
 ```
 
-`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu Thư ký thu hộ, mỗi bộ tối đa 5 mẫu. `proxy.allowed`:
+`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu Thư ký thu hộ, bộ tự thu tối đa 5 mẫu, bộ thu hộ tối đa 50. `proxy.allowed`:
 đồng ý hiện có là theo thông báo 1.3 trở lên, nên Thư ký thu hộ được.
 
 `consent` là `null` khi chưa đồng ý hoặc đã rút. `noticeVersion`, `purpose` và `controller` ở gốc là
@@ -144,7 +144,7 @@ cuộc họp, để so với giới hạn 5. `samples`: chỉ mẫu thu **ở cu
 
 Kiểm tra tệp và chất lượng như `POST /api/me/voice/samples` (`415 MSG292`, `422 MSG309`, `503 MSG312`). `201 MSG473`,
 `data`: `{ id, createdAt, speechMs, collectedByName }`. Người được thu nhận thông báo `VoiceSampleCollected` (mở
-`/mgmt/my-voice?tab=proxy`). `userId` không phải người trong cuộc họp: `404`. Chưa đồng ý Voice ID theo thông báo 1.3 `409 MSG475`; đủ 5 mẫu
+`/mgmt/my-voice?tab=proxy`). `userId` không phải người trong cuộc họp: `404`. Chưa đồng ý Voice ID theo thông báo 1.3 `409 MSG475`; đủ 50 mẫu
 thu hộ `409 MSG476`; cuộc họp chưa công bố hoặc đã kết thúc `409 MSG477`.
 
 ### `GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio`
