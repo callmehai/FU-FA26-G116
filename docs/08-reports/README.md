@@ -25,8 +25,8 @@ Markdown snapshot của Report 1–7.
 - DOCX trong `source/` là bản local chuẩn để đồng bộ Report 1–7 ra Markdown.
 - Không sửa thẳng Markdown snapshot của Report 1–7. Sửa DOCX local, rồi sinh Markdown bằng
   `scripts/sync_reports.py`. Không tải DOCX từ Drive để tạo hoặc cập nhật Markdown. Script hiện xuất
-  Report 1–3; Report 4–7 dùng cùng quy tắc, không viết snapshot bằng tay khi script chưa xuất report
-  đó.
+  Report 1, 2, 3 và 6; Report 4, 5, 7 dùng cùng quy tắc, không viết snapshot bằng tay khi script chưa
+  xuất report đó.
 - Khi được yêu cầu đưa report lên Drive, dùng DOCX local tương ứng để **thay nội dung file Drive
   hiện có tại chỗ**. Không tạo bản sao, không xóa/tạo lại file và không đổi tên hoặc di chuyển file.
   Giữ nguyên Drive file ID và link.
@@ -190,7 +190,15 @@ Script nhận tên `Report-1.docx` và `Report_1_Project_Introduction.docx` (cù
 khác), chỉ đọc file DOCX trực tiếp trong thư mục nguồn, và báo lỗi nếu có nhiều file cùng số report.
 Có thể dùng `--output-dir <thư-mục>` để xem thử Markdown ở nơi khác. Script chuyển đổi văn bản, tiêu
 đề, danh sách và bảng; ảnh, định dạng ký tự và bố cục trang không được thể hiện đầy đủ trong
-Markdown. Mỗi report được giữ trong một snapshot Markdown. `--report` hiện nhận 1, 2 hoặc 3.
+Markdown. Mỗi report được giữ trong một snapshot Markdown. `--report` hiện nhận 1, 2, 3 hoặc 6. Report 6
+không có link Drive trong script nên `--download` và việc tự tải report còn thiếu luôn bỏ qua nó:
+nguồn duy nhất là `source/Report-6_Software User Guides.docx`.
+
+Sync Report 6 (snapshot `Report-6_Software User Guides.md`, ảnh chỉ còn caption "Figure n: …"):
+
+```powershell
+python scripts/sync_reports.py --source "docs/08-reports/source/Report-6_Software User Guides.docx" --report 6
+```
 
 Cập nhật snapshot chỉ bằng script với đúng DOCX và số report. Không vá snapshot bằng tay, kể cả khi
 diff của script lớn hơn vùng vừa sửa trong DOCX. Rà diff để chắc chỉ report được yêu cầu thay đổi.
@@ -270,6 +278,28 @@ thêm việc dọn file mồ côi vào dòng Background Workers; dòng Workers c
 và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn trang (118 mục khớp bản PDF). Thêm một dòng Change
 Log (LocHD). Trước khi đẩy, md5 của file Drive trùng bản đẩy lần trước (không ai sửa trên Drive); đã đẩy bằng
 `push_reports.py 4 --confirm`, `--check` trả `UP TO DATE`, file ID và link không đổi.
+
+**Report 6 (21/11/2026):** tạo nguồn `source/Report-6_Software User Guides.docx` lần đầu. Template lấy từ bản sao
+template trống trên Drive mà người dùng đưa (cùng nội dung với file chuẩn ở bảng trên, file chuẩn khi đó vẫn trống) —
+ngoại lệ Drive → repo có đồng ý, chỉ để lấy template; từ đây theo chiều repo → Drive. Giữ bìa, mục lục, Change Log,
+style và footer của template; footer dùng field `NUMPAGES` thay số "6" gõ cứng. Nội dung: mục I (Deliverable Package,
+System Requirements, cài đặt máy dev và server theo [deploy/README.md](../../deploy/README.md)) và mục II User Manual
+theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thành viên, Khách, tính năng chung), viết tiếng Anh như
+Report 1–4, nhãn giao diện giữ tiếng Việt. 75 ảnh chụp màn hình (không tính logo của template) từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
+mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
+quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
+trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI, tên
+người nói và lời thoại ở ảnh tab Bản ghi (cuộc họp "Test mail FE…", không thu được bản ghi demo vì trình duyệt chụp ảnh
+không có micro). Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
+sẵn; màn xem tài liệu, các màn của Khách và màn thu giọng hộ chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
+quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
+kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
+/ tự kết thúc sau 24 giờ, chia sẻ lịch chỉ với người tổ chức, thu giọng hộ bất kỳ lúc nào và điều khoản Voice ID 1.4
+(ADR-0071). Vòng review 2: mục 3.14 tách hai đường thu giọng hộ — trong cuộc họp (Thư ký của cuộc họp, điều khoản
+1.3, quyền Thu giọng mẫu hộ chỉ mở rộng thêm trạng thái) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Mục
+lục và số trang cập nhật bằng Word (55 trang). Snapshot Markdown
+`Report-6_Software User Guides.md` sinh bằng `sync_reports.py --report 6` (script mở rộng cho Report 6 cùng đợt); chưa
+có đích trong `push_reports.py`.
 
 **Report 4 — fill script (`scripts/fill_report4.py`):** md5-sync ảnh mục I (kiến trúc, 4 trang
 package) và mục II (class + sequence) với PNG trong repo; rebuild mục I.3 thành hình ERD mục tiêu
