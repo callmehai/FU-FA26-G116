@@ -71,6 +71,10 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
         => (tracked ? db.VoiceSamples : db.VoiceSamples.AsNoTracking())
             .SingleOrDefaultAsync(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null, ct);
 
+    public Task<VoiceSample?> FindProxySampleAsync(Guid userId, Guid sampleId, bool tracked, CancellationToken ct)
+        => (tracked ? db.VoiceSamples : db.VoiceSamples.AsNoTracking())
+            .SingleOrDefaultAsync(s => s.Id == sampleId && s.UserId == userId && s.CollectedById != null, ct);
+
     public Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct)
         => db.Meetings.AsNoTracking().AsSplitQuery()
             .Include(m => m.Participants).ThenInclude(p => p.User)

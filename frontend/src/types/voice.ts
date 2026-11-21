@@ -37,9 +37,24 @@ export interface ProxyVoiceProfile {
 }
 
 export interface ProxySample extends VoiceSample {
-  meetingId: string
-  meetingTitle: string
+  /** Null for a sample taken outside any meeting by a holder of "Thu giọng mẫu hộ" (ADR-0071). */
+  meetingId: string | null
+  meetingTitle: string | null
   collectedByName: string
+}
+
+/** GET /api/users/{userId}/voice-collection — one person, as a holder of "Thu giọng mẫu hộ" sees them (ADR-0071). */
+export interface PersonVoiceCollection {
+  userId: string
+  fullName: string
+  /** Their consent is to notice 1.4 or later, which names recording outside a meeting. */
+  consented: boolean
+  /** Consented, and neither their limit nor the caller's share of it is reached. */
+  canCollect: boolean
+  maxSamples: number
+  maxSamplesPerCollector: number
+  /** Every sample anyone took for them, in a meeting or not. */
+  samples: ProxySample[]
 }
 
 /** GET /api/meetings/{id}/voice-collection — what the meeting's Secretary sees (ADR-0060). */

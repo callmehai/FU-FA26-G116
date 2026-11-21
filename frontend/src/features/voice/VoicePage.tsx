@@ -94,7 +94,7 @@ export function VoicePage() {
               className={`tab${tab === 'proxy' ? ' tab-active' : ''}`}
               onClick={() => openTab('proxy')}
             >
-              Thư ký thu hộ giọng tôi
+              Người khác thu hộ
               <span className="tab-count">{state.profile.proxy.samples.length}</span>
             </button>
           </div>
@@ -285,7 +285,8 @@ function Enrolled({
 /**
  * The notice changed since the person agreed: 1.1 keeps the sample recording for its owner to hear back (ADR-0042), 1.2
  * lets the machine fill in their name on a sure match (ADR-0048), 1.3 lets their meetings' Secretary record samples on
- * the room's mic (ADR-0060). Until they renew, nothing new applies to them.
+ * the room's mic (ADR-0060), 1.4 lets a holder of "Thu giọng mẫu hộ" record them with no meeting (ADR-0071). Until they
+ * renew, nothing new applies to them.
  */
 function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   const toast = useToast()
@@ -295,6 +296,7 @@ function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (
     agreed < '1.1' && 'Giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại.',
     agreed < '1.2' && 'Máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được.',
     agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.',
+    agreed < '1.4' && 'Người được giao quyền "Thu giọng mẫu hộ" thu được giọng mẫu của bạn bất kỳ lúc nào, không cần cuộc họp.',
   ].filter((change): change is string => Boolean(change))
   // One line on the page; what changed is read in full in the dialog, before agreeing to it.
   return (

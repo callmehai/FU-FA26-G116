@@ -1,4 +1,12 @@
-import type { CollectedSample, VoiceCollection, VoiceMutation, VoiceProfile, VoiceSample } from '../types/voice'
+import type {
+  CollectedSample,
+  PersonVoiceCollection,
+  ProxySample,
+  VoiceCollection,
+  VoiceMutation,
+  VoiceProfile,
+  VoiceSample,
+} from '../types/voice'
 import { api } from './client'
 
 /**
@@ -42,3 +50,20 @@ export const collectedSampleAudio = (meetingId: string, sampleId: string) =>
 
 export const deleteCollectedSample = (meetingId: string, sampleId: string) =>
   api.delete<VoiceMutation<{ id: string }>>(`/api/meetings/${meetingId}/voice-collection/samples/${sampleId}`)
+
+/** ADR-0071 — one person, with no meeting: needs `VoiceCollector`, rechecked server-side (403 without it). */
+export const getPersonVoiceCollection = (userId: string) =>
+  api.get<PersonVoiceCollection>(`/api/users/${userId}/voice-collection`)
+
+export function collectPersonVoiceSample(userId: string, audio: Blob, fileName: string) {
+  const form = new FormData()
+  form.append('file', audio, fileName)
+  return api.postForm<VoiceMutation<ProxySample>>(`/api/users/${userId}/voice-collection/samples`, form)
+}
+
+/** Every play is audited server-side: the voice is someone else's. */
+export const personSampleAudio = (userId: string, sampleId: string) =>
+  api.blob(`/api/users/${userId}/voice-collection/samples/${sampleId}/audio`)
+
+export const deletePersonSample = (userId: string, sampleId: string) =>
+  api.delete<VoiceMutation<{ id: string }>>(`/api/users/${userId}/voice-collection/samples/${sampleId}`)

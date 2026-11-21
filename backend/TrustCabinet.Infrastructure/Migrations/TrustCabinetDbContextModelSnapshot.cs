@@ -2757,7 +2757,7 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.ToTable("voice_samples", null, t =>
                         {
-                            t.HasCheckConstraint("ck_voice_samples_collected_in_meeting", "(collected_by_id IS NULL) = (meeting_id IS NULL)");
+                            t.HasCheckConstraint("ck_voice_samples_meeting_has_collector", "meeting_id IS NULL OR collected_by_id IS NOT NULL");
                         });
                 });
 

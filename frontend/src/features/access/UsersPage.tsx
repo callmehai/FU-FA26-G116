@@ -20,7 +20,7 @@ import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
-import { CollectForMeeting } from '../voice/CollectForMeeting'
+import { PersonVoiceCollection } from '../voice/PersonVoiceCollection'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 import { latestSearchParams } from '../../lib/latestSearchParams'
 import { normalizeSearch } from '../../lib/search'
@@ -70,8 +70,8 @@ function resetUnavailableReason(account: UserAccount) {
  */
 export function UsersPage() {
   const { user: me, reloadSession, can } = useAuth()
-  // ADR-0060: a Secretary trusted with "Thu giọng mẫu hộ" records, hears back and deletes room-mic samples here.
-  const [collecting, setCollecting] = useState(false)
+  // ADR-0060: a Secretary trusted with "Thu giọng mẫu hộ" records, hears back and deletes one person's room-mic samples.
+  const [collectFor, setCollectFor] = useState<UserAccount | null>(null)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
 
@@ -132,7 +132,7 @@ export function UsersPage() {
     void Promise.resolve().then(load)
   }, [load])
   // Another administrator's change shows on coming back to the tab; never under an open dialog.
-  useRefetchOnFocus(() => void load(), { enabled: !formTarget && !statusTarget && !resetTarget })
+  useRefetchOnFocus(() => void load(), { enabled: !formTarget && !statusTarget && !resetTarget && !collectFor })
 
   async function openUserForm(target: UserFormTarget) {
     try {
@@ -300,29 +300,21 @@ export function UsersPage() {
         title="Người dùng"
         description={users ? `${users.length} tài khoản, ${activeCount} đang hoạt động` : undefined}
         action={
-          <>
-            {can('VoiceCollector') && (
-              <button className="btn btn-outline btn-lg" type="button" onClick={() => setCollecting(true)}>
-                <Icon name="mic" size={18} />
-                Quản lý giọng nói thu hộ
-              </button>
-            )}
-            <button
-              className="btn btn-primary btn-lg btn-cta"
-              type="button"
-              onClick={() => void openUserForm({ mode: 'create' })}
-              disabled={roles === null}
-            >
-              <Icon name="userPlus" size={18} />
-              Tạo tài khoản
-            </button>
-          </>
+          <button
+            className="btn btn-primary btn-lg btn-cta"
+            type="button"
+            onClick={() => void openUserForm({ mode: 'create' })}
+            disabled={roles === null}
+          >
+            <Icon name="userPlus" size={18} />
+            Tạo tài khoản
+          </button>
         }
       />
 
-      {collecting && (
-        <Dialog title="Quản lý giọng nói thu hộ" size="lg" onClose={() => setCollecting(false)}>
-          <CollectForMeeting />
+      {collectFor && (
+        <Dialog title={`Giọng nói thu hộ: ${collectFor.fullName}`} size="lg" onClose={() => setCollectFor(null)}>
+          <PersonVoiceCollection userId={collectFor.id} />
         </Dialog>
       )}
 
@@ -364,7 +356,7 @@ export function UsersPage() {
                 <th className="users-col-login">Đăng nhập</th>
                 <th className="users-col-status">Trạng thái</th>
                 <th className="users-col-date">Ngày tạo</th>
-                <th className="col-action users-col-action">Thao tác</th>
+                <th className={`col-action users-col-action${can('VoiceCollector') ? ' users-col-action-wide' : ''}`}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -471,23 +463,6 @@ export function UsersPage() {
                           <button
                             type="button"
                             className="icon-button icon-button-sm"
-                            onClick={() => setStatusTarget(u)}
-                            disabled={isSelf}
-                            data-tooltip={
-                              isSelf
-                                ? 'Không thể tự đổi trạng thái tài khoản của mình'
-                                : u.isActive
-                                  ? 'Vô hiệu hoá'
-                                  : 'Kích hoạt lại'
-                            }
-                            aria-label={`${u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'} tài khoản ${u.fullName}`}
-                          >
-                            <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
-                            <span className="row-action-label">{u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'}</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="icon-button icon-button-sm"
                             onClick={() => setResetTarget(u)}
                             disabled={resetUnavailable !== null}
                             data-tooltip={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
@@ -496,6 +471,19 @@ export function UsersPage() {
                             <Icon name="key" size={16} />
                             <span className="row-action-label">Đặt lại mật khẩu</span>
                           </button>
+                          {can('VoiceCollector') && (
+                            <button
+                              type="button"
+                              className="icon-button icon-button-sm"
+                              onClick={() => setCollectFor(u)}
+                              disabled={!u.isActive}
+                              data-tooltip={u.isActive ? 'Giọng nói thu hộ' : 'Tài khoản đã bị vô hiệu hoá'}
+                              aria-label={`Quản lý giọng nói thu hộ của ${u.fullName}`}
+                            >
+                              <Icon name="mic" size={16} />
+                              <span className="row-action-label">Giọng nói</span>
+                            </button>
+                          )}
                           {/* SCRUM-113: an active person's library stays theirs; a deactivated one's is read here. */}
                           {u.isActive ? (
                             <button
@@ -518,6 +506,24 @@ export function UsersPage() {
                               <span className="row-action-label">Xem kho</span>
                             </Link>
                           )}
+                          {/* Last: the one action that locks someone out sits away from the everyday ones. */}
+                          <button
+                            type="button"
+                            className="icon-button icon-button-sm"
+                            onClick={() => setStatusTarget(u)}
+                            disabled={isSelf}
+                            data-tooltip={
+                              isSelf
+                                ? 'Không thể tự đổi trạng thái tài khoản của mình'
+                                : u.isActive
+                                  ? 'Vô hiệu hoá'
+                                  : 'Kích hoạt lại'
+                            }
+                            aria-label={`${u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'} tài khoản ${u.fullName}`}
+                          >
+                            <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
+                            <span className="row-action-label">{u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'}</span>
+                          </button>
                         </span>
                       </td>
                     </tr>

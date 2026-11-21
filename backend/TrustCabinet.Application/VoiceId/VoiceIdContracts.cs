@@ -31,9 +31,10 @@ public sealed record VoiceProfile(VoiceConsentView? Consent, IReadOnlyList<Voice
 /// (<see cref="VoiceIdRules.CollectionNoticeVersion"/>): without it no Secretary can record them.</param>
 public sealed record ProxyVoiceProfile(bool Allowed, IReadOnlyList<ProxySampleView> Samples, int MaxSamples);
 
-/// <summary>One sample a Secretary took for the person: where, by whom, so nothing is taken out of their sight.</summary>
-public sealed record ProxySampleView(Guid Id, DateTimeOffset CreatedAt, long SpeechMs, bool Playable, Guid MeetingId,
-    string MeetingTitle, string CollectedByName);
+/// <summary>One sample someone took for the person: where, by whom, so nothing is taken out of their sight.</summary>
+/// <param name="MeetingId">Null for a sample taken outside any meeting, by a holder of "Thu giọng mẫu hộ" (ADR-0071).</param>
+public sealed record ProxySampleView(Guid Id, DateTimeOffset CreatedAt, long SpeechMs, bool Playable, Guid? MeetingId,
+    string? MeetingTitle, string CollectedByName);
 
 /// <summary>
 /// SCRUM-35 — a person's own Voice ID: consent, enrolment samples, withdrawal. Only ever about the caller. Covers both
@@ -65,6 +66,13 @@ public sealed record CollectedSampleView(Guid Id, DateTimeOffset CreatedAt, long
 /// <param name="CanCollect">The meeting is Published or InProgress: samples can be added now, not only managed.</param>
 public sealed record VoiceCollectionView(bool CanCollect, int MaxSamples, IReadOnlyList<VoiceCollectionPerson> People);
 
+/// <summary>ADR-0071 — one person as a holder of "Thu giọng mẫu hộ" sees them, outside any meeting.</summary>
+/// <param name="Consented">Their consent is to notice 1.4 or later, which names recording outside a meeting.</param>
+/// <param name="CanCollect">Consented, and neither the person's limit nor the caller's share of it is reached.</param>
+/// <param name="Samples">Every sample anyone took for them, in a meeting or not, with who took it.</param>
+public sealed record PersonVoiceCollectionView(Guid UserId, string FullName, bool Consented, bool CanCollect, int MaxSamples,
+    int MaxSamplesPerCollector, IReadOnlyList<ProxySampleView> Samples);
+
 /// <summary>
 /// ADR-0060 — the Secretary of an in-person or hybrid meeting records Voice ID samples for its people on the room's mic,
 /// the mic the meeting will be transcribed from. Every call requires the caller to hold <see cref="Capability.VoiceCollector"/>
@@ -81,6 +89,15 @@ public interface IVoiceCollectionService
     /// <summary>A sample taken in this meeting, for its Secretary to check; every play is audited.</summary>
     Task<VoiceSampleAudio?> AudioAsync(Guid meetingId, Guid actorId, Guid sampleId, CancellationToken ct = default);
     Task<VoiceOutcome> DeleteAsync(Guid meetingId, Guid actorId, Guid sampleId, CancellationToken ct = default);
+
+    // ADR-0071 — a holder of VoiceCollector (checked by the endpoint) records one person at any time, with no meeting:
+    // only an active account whose own consent is to notice 1.4 or later. Anything else is a person who does not exist.
+    Task<VoiceOutcome> GetPersonAsync(Guid actorId, Guid userId, CancellationToken ct = default);
+    Task<VoiceOutcome> AddForPersonAsync(Guid actorId, Guid userId, Stream audio, string contentType,
+        CancellationToken ct = default);
+    /// <summary>Any sample someone took for the person; every play is audited.</summary>
+    Task<VoiceSampleAudio?> PersonAudioAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default);
+    Task<VoiceOutcome> DeletePersonSampleAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default);
 }
 
 /// <summary>Why a person's Voice ID ended; written in the audit details.</summary>
@@ -123,6 +140,8 @@ public interface IVoiceIdRepository
     Task<IReadOnlyList<CollectedSampleRow>> ListCollectedSamplesAsync(Guid[] userIds, CancellationToken ct);
     /// <summary>ADR-0060: a sample a Secretary took in this meeting; null for one taken elsewhere or by its owner.</summary>
     Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct);
+    /// <summary>ADR-0071: a sample someone took for this person, in a meeting or not; null for their own or another's.</summary>
+    Task<VoiceSample?> FindProxySampleAsync(Guid userId, Guid sampleId, bool tracked, CancellationToken ct);
     /// <summary>The meeting with its participants and their accounts, untracked, for collecting samples in it.</summary>
     Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct);
     void Add(VoiceConsent consent);
