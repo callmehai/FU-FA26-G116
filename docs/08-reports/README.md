@@ -290,14 +290,15 @@ mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác thá
 quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
 trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI. Ảnh tab
 Bản ghi: cuộc họp trực tiếp mẫu "Họp đánh giá kết quả kinh doanh 10 tháng năm 2026" (09:00 thứ Tư 25/11), tải lên một
-đoạn 47 giây ghép từ 4 câu giọng tổng hợp có sẵn trong `demo-data/audio` (kịch bản bịa, không có giọng người thật) rồi
+đoạn 47 giây ghép từ 4 câu giọng tổng hợp do script tạo dữ liệu demo sinh ra (tệp trên máy tác giả, không có trong repo; kịch bản bịa, không có giọng người thật) rồi
 để máy chuyển chữ gỡ băng. Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
 sẵn; các màn của Khách và đường thu giọng hộ ngoài cuộc họp chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
 quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
 kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
 / tự kết thúc sau 24 giờ, chia sẻ lịch chỉ với người tổ chức, thu giọng hộ bất kỳ lúc nào và điều khoản Voice ID 1.4
 (ADR-0071). Vòng review 2: mục 3.14 tách hai đường thu giọng hộ — trong cuộc họp (Thư ký của cuộc họp, điều khoản
-1.3, quyền Thu giọng mẫu hộ chỉ mở rộng thêm trạng thái) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Chụp lại bằng Chrome (khung 1440×675): trang đăng nhập (làm mờ tên trên nút Google), tab Tài liệu và
+1.3, mẫu mới chỉ thu khi cuộc họp Đã công bố hoặc Đang diễn ra; quyền Thu giọng mẫu hộ chỉ cho mở thẻ ở trạng thái khác trừ Đã
+huỷ để xem, nghe lại, xoá mẫu đã thu — sửa ở vòng review 3) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Chụp lại bằng Chrome (khung 1440×675): trang đăng nhập (làm mờ tên trên nút Google), tab Tài liệu và
 hai hộp thoại thêm tài liệu với 3 tệp mẫu bịa nội dung, màn xem tài liệu, luồng duyệt → công bố → bắt đầu của cuộc họp
 mẫu thứ ba "Họp rà soát tiến độ dự án số hoá hồ sơ" (14:00 thứ Hai 23/11), hàng chờ phát biểu có người giơ tay, thẻ
 Giọng mẫu cho mic phòng và trang Voice ID điều khoản 1.4; micro và camera của Chrome luôn tắt. Ảnh Báo cáo vẫn là dữ
