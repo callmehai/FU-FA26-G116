@@ -279,6 +279,19 @@ và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn t
 Log (LocHD). Trước khi đẩy, md5 của file Drive trùng bản đẩy lần trước (không ai sửa trên Drive); đã đẩy bằng
 `push_reports.py 4 --confirm`, `--check` trả `UP TO DATE`, file ID và link không đổi.
 
+**Report 6 (21/11/2026):** tạo nguồn `source/Report-6_Software User Guides.docx` lần đầu. Template lấy từ bản sao
+template trống trên Drive mà người dùng đưa (cùng nội dung với file chuẩn ở bảng trên, file chuẩn khi đó vẫn trống) —
+ngoại lệ Drive → repo có đồng ý, chỉ để lấy template; từ đây theo chiều repo → Drive. Giữ bìa, mục lục, Change Log,
+style và footer của template; footer dùng field `NUMPAGES` thay số "6" gõ cứng. Nội dung: mục I (Deliverable Package,
+System Requirements, cài đặt máy dev và server theo [deploy/README.md](../../deploy/README.md)) và mục II User Manual
+theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thành viên, Khách, tính năng chung), viết tiếng Anh như
+Report 1–4, nhãn giao diện giữ tiếng Việt. 74 ảnh chụp từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
+mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
+quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`; cột IP và email thật trong ảnh nhật ký hệ thống đã làm mờ. Mục
+lục và số trang cập nhật bằng Word (53 trang). Snapshot Markdown
+`Report-6_Software User Guides.md` sinh bằng `sync_reports.py --report 6` (script mở rộng cho Report 6 cùng đợt); chưa
+có đích trong `push_reports.py`.
+
 **Report 4 — fill script (`scripts/fill_report4.py`):** md5-sync ảnh mục I (kiến trúc, 4 trang
 package) và mục II (class + sequence) với PNG trong repo; rebuild mục I.3 thành hình ERD mục tiêu
 (`13-erd/muc-tieu`, Chen không dùng ở Report 4) nằm thẳng dưới H2 + một H3 cho mỗi bảng
