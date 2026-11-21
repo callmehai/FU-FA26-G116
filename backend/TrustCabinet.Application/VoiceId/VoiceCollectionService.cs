@@ -5,6 +5,7 @@ using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -18,7 +19,9 @@ namespace TrustCabinet.Application.VoiceId;
 ///
 /// Three locks keep this to people who trust the Secretary with their voice:
 /// <list type="bullet">
-/// <item>the caller holds <see cref="Capability.VoiceCollector"/> (the endpoint group checks it on every request);</item>
+/// <item>the caller holds <see cref="Capability.VoiceCollector"/>, or — PO 2026-11-21 — is a meeting Secretary without
+/// it, who may then act only while the meeting is Published or InProgress: a stand-in for that one meeting, with no
+/// standing right over the samples once it ends;</item>
 /// <item>the caller is the Secretary of this very meeting, now — checked here on every call, so a Secretary replaced
 /// mid-meeting loses it at once; anyone else is answered as if the meeting did not exist;</item>
 /// <item>the person has their own standing consent, to a notice that names this (ADR-0060), which only they can give.</item>
@@ -28,7 +31,7 @@ namespace TrustCabinet.Application.VoiceId;
 /// </summary>
 public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotificationRepository notifications,
     IUnitOfWork unitOfWork, IVoiceEmbedder embedder, IVoiceprintProtector protector, IAuditService audit, TimeProvider clock,
-    ILogger<VoiceCollectionService> logger)
+    ICallerAccountQuery callers, ILogger<VoiceCollectionService> logger)
     : IVoiceCollectionService
 {
     private const string NotificationTargetType = "VoiceSample";
@@ -221,7 +224,16 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
         if (meeting is null || meeting.Sensitivity == Sensitivity.Secret || !RecordingRules.HasRoom(meeting.Mode)
             || meeting.Status is MeetingStatus.Cancelled || !ParticipantRules.IsSecretary(meeting, actorId))
             return null;
+        // A Secretary without the system capability holds it only for this meeting, while it is open.
+        if (!CanCollect(meeting.Status) && !await HoldsCollectorAsync(actorId, ct)) return null;
         return meeting;
+    }
+
+    private async Task<bool> HoldsCollectorAsync(Guid actorId, CancellationToken ct)
+    {
+        var caller = await callers.FindByIdAsync(actorId, ct);
+        return caller is { IsActive: true }
+            && (await callers.GetCapabilitiesAsync(caller.RoleId, ct)).Contains(Capability.VoiceCollector);
     }
 
     /// <summary>

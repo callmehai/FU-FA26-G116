@@ -61,9 +61,10 @@ public static class VoiceIdEndpoints
             => Map(await service.DeleteSampleAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg311SampleDeleted, "Đã xoá giọng mẫu."));
 
-        // ADR-0060: the capability, then — on every call, in the service — the Secretary of this very meeting.
+        // ADR-0060: an active account, then — on every call, in the service — the Secretary of this very meeting; one
+        // without the VoiceCollector capability only while the meeting is open (PO 2026-11-21).
         var collection = app.MapGroup("/api/meetings/{meetingId:guid}/voice-collection")
-            .RequireCapability(Capability.VoiceCollector, Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
+            .RequireActiveUser(Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
         collection.MapGet("", async (Guid meetingId, HttpContext context, IVoiceCollectionService service, CancellationToken ct)
             => Map(await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct), collection: true));
         collection.MapPost("/{userId:guid}/samples", CollectSampleAsync);

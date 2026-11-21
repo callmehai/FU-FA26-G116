@@ -172,7 +172,8 @@ function MeetingDetail({
   const collectsVoices =
     meeting.mode !== 'Online' &&
     meeting.myMeetingRole === 'Secretary' &&
-    can('VoiceCollector') &&
+    // PO 2026-11-21: a Secretary without the system capability records only while this meeting is open.
+    (can('VoiceCollector') || meeting.status === 'Published' || meeting.status === 'InProgress') &&
     meeting.sensitivity !== 'Secret' &&
     meeting.status !== 'Cancelled'
   const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting, collectsVoices)])) as Record<
