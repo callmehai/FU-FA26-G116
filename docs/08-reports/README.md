@@ -287,7 +287,15 @@ System Requirements, cài đặt máy dev và server theo [deploy/README.md](../
 theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thành viên, Khách, tính năng chung), viết tiếng Anh như
 Report 1–4, nhãn giao diện giữ tiếng Việt. 74 ảnh chụp từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
 mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
-quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`; cột IP và email thật trong ảnh nhật ký hệ thống đã làm mờ. Mục
+quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
+trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI, tên
+người nói và lời thoại ở ảnh tab Bản ghi (cuộc họp "Test mail FE…", không thu được bản ghi demo vì trình duyệt chụp ảnh
+không có micro). Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
+sẵn; màn xem tài liệu, các màn của Khách và màn thu giọng hộ chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
+quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
+kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
+/ tự kết thúc sau 24 giờ, chia sẻ lịch chỉ với người tổ chức, thu giọng hộ bất kỳ lúc nào và điều khoản Voice ID 1.4
+(ADR-0071). Mục
 lục và số trang cập nhật bằng Word (53 trang). Snapshot Markdown
 `Report-6_Software User Guides.md` sinh bằng `sync_reports.py --report 6` (script mở rộng cho Report 6 cùng đợt); chưa
 có đích trong `push_reports.py`.
