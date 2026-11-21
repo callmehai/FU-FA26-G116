@@ -147,7 +147,7 @@ public static class VoiceIdEndpoints
                 VoiceFailure.NoConsent when collection => (409, Msg475NoProxyConsent,
                     "Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi."),
                 VoiceFailure.LimitReached when collection => (409, Msg476ProxySampleLimit,
-                    $"Người này đã đủ {VoiceIdRules.MaxProxySamples} giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại."),
+                    $"Đã đủ giọng mẫu thu hộ cho người này: mỗi Thư ký thu tối đa {VoiceIdRules.MaxProxySamplesPerCollector} mẫu, tổng {VoiceIdRules.MaxProxySamples} mẫu. Xoá bớt rồi thu lại."),
                 VoiceFailure.NotCollectable => (409, Msg477NotCollectable,
                     "Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp."),
                 VoiceFailure.NoConsent => (409, Msg308NoConsent, "Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu."),

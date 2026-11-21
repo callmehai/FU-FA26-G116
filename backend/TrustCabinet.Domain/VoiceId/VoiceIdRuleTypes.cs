@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Entities;
+
 namespace TrustCabinet.Domain.VoiceId;
 
 public static class VoiceIdRules
@@ -30,6 +32,13 @@ public static class VoiceIdRules
     public const int MaxSamples = 5;
     /// <summary>Samples the meetings' Secretaries may keep for one person on the room's mic (PO 2026-11-21).</summary>
     public const int MaxProxySamples = 50;
+    /// <summary>Of those, what one Secretary may take for the same person (PO 2026-11-21).</summary>
+    public const int MaxProxySamplesPerCollector = 5;
+
+    /// <summary>True when no more proxy samples may be kept for the person, or none more by this Secretary.</summary>
+    public static bool ProxyFull(IReadOnlyCollection<VoiceSample> proxySamples, Guid collectorId)
+        => proxySamples.Count >= MaxProxySamples
+            || proxySamples.Count(s => s.CollectedById == collectorId) >= MaxProxySamplesPerCollector;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
 
     public static string RejectionMessage(string reason) => reason switch

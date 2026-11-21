@@ -86,7 +86,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             if (await ReadAsync(token => repository.FindActiveConsentAsync(userId, false, token), ct) is not { } given
                 || !VoiceIdRules.AllowsCollection(given.NoticeVersion))
                 return new(VoiceFailure.NoConsent);
-            if ((await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct)).Count >= VoiceIdRules.MaxProxySamples)
+            if (VoiceIdRules.ProxyFull(await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct), actorId))
                 return new(VoiceFailure.LimitReached);
         }
         catch (PersistenceException ex)
@@ -129,7 +129,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
                 var current = await ManagedAsync(meetingId, actorId, token);
                 if (current is null) return new(VoiceFailure.NotFound);
                 if (!CanCollect(current.Status)) return new(VoiceFailure.NotCollectable);
-                if ((await repository.ListProxySamplesAsync(userId, token)).Count >= VoiceIdRules.MaxProxySamples)
+                if (VoiceIdRules.ProxyFull(await repository.ListProxySamplesAsync(userId, token), actorId))
                     return new(VoiceFailure.LimitReached);
                 var now = clock.GetUtcNow();
                 var id = Guid.CreateVersion7();
