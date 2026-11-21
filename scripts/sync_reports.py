@@ -27,35 +27,39 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = ROOT / "docs" / "08-reports" / "source"
 # Drive targets come from "Link Drive chuẩn Report 1–7" in docs/08-reports/README.md;
 # change them together, and only ever point at the file named there.
-REPORTS = (
-    (
+# Keyed by report number: (default local file name, title, Drive URL, snapshot path).
+REPORTS: dict[int, tuple[str, str, str, Path]] = {
+    1: (
         "Report-1.docx",
         "Report 1 – Project Introduction",
         "https://docs.google.com/document/d/15ncrJ-7eInb0vLIOXmRfZsugiPkunGW6/edit",
         ROOT / "docs" / "08-reports" / "Report-1_Project_Introduction.md",
     ),
-    (
+    2: (
         "Report-2.docx",
         "Report 2 – Project Management Plan",
         "https://docs.google.com/document/d/1oyefDV6vVOBY0qtO4sCQVMcoj3tDHKqo/edit",
         ROOT / "docs" / "08-reports" / "Report-2_Project_Management_Plan.md",
     ),
-    (
+    3: (
         "Report-3.docx",
         "Report 3 – Software Requirement Specification",
         "https://docs.google.com/document/d/1JNNCwt0Yc_KLS9dPB6wtP8HW6x7D1fWl/edit",
         ROOT / "docs" / "08-reports" / "Report-3_Software_Requirement_Specification.md",
     ),
-)
+}
+SUPPORTED = "/".join(str(number) for number in REPORTS)
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 NS = {"w": W}
 
 
 def report_number(name: str) -> int:
-    match = re.search(r"report[\s_-]*([1-3])(?=[\s_.-]|$)", name, re.IGNORECASE)
+    # Only the supported numbers match, so other reports in source/ are skipped.
+    digits = "".join(str(number) for number in REPORTS)
+    match = re.search(rf"report[\s_-]*([{digits}])(?=[\s_.-]|$)", name, re.IGNORECASE)
     if not match:
-        raise ValueError(f"Cannot identify Report 1, 2 or 3 from: {name}. Use --report.")
+        raise ValueError(f"Cannot identify Report {SUPPORTED} from: {name}. Use --report.")
     return int(match.group(1))
 
 
@@ -136,7 +140,7 @@ def folder_reports(url: str) -> list[tuple[str, str, str]]:
 
 def download_reports(force: bool = False) -> None:
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
-    for filename, title, source_url, _ in REPORTS:
+    for filename, title, source_url, _ in REPORTS.values():
         target = SOURCE_DIR / filename
         if target.is_file() and not force:
             continue
@@ -290,7 +294,7 @@ def main() -> int:
         help="Allow --download to overwrite docs/08-reports/source/*.docx from Drive",
     )
     parser.add_argument("--source", help="Local DOCX/directory (relative to repo root), or Drive file/folder URL")
-    parser.add_argument("--report", type=int, choices=(1, 2, 3), help="Report to sync; required for a single Drive file")
+    parser.add_argument("--report", type=int, choices=tuple(REPORTS), help="Report to sync; required for a single Drive file")
     parser.add_argument("--report3-source", type=Path, help="Legacy alias for --source LOCAL_DOCX --report 3")
     parser.add_argument("--output-dir", type=Path, help="Alternative Markdown output directory")
     args = parser.parse_args()
@@ -334,7 +338,7 @@ def main() -> int:
                         download_docx(url, path, mime)
                 else:
                     if selected is None:
-                        raise ValueError("A single Drive file requires --report 1, 2 or 3.")
+                        raise ValueError(f"A single Drive file requires --report ({SUPPORTED}).")
                     path = Path(temporary) / f"Report-{selected}.docx"
                     download_docx(source_arg, path)
                     add(selected, path, source_arg)
@@ -347,7 +351,7 @@ def main() -> int:
                     raise ValueError(f"Local source does not exist: {local}")
                 if args.download:
                     download_reports(force=True)
-                    for number, (name, _, url, _) in enumerate(REPORTS, 1):
+                    for number, (name, _, url, _) in REPORTS.items():
                         if selected is None or selected == number:
                             add(number, SOURCE_DIR / name, url)
                 else:
@@ -366,16 +370,16 @@ def main() -> int:
                             add(number, path, origin)
                     # Preserve automatic download for missing default reports only.
                     if not source_arg:
-                        for number, (name, _, url, _) in enumerate(REPORTS, 1):
+                        for number, (name, _, url, _) in REPORTS.items():
                             if number not in sources and (selected is None or selected == number):
                                 path = SOURCE_DIR / name
                                 download_docx(url, path)
                                 add(number, path, url)
             if not sources:
-                raise ValueError("No matching Report 1/2/3 DOCX files found in the source.")
+                raise ValueError(f"No matching Report {SUPPORTED} DOCX files found in the source.")
             converted = []
             for number, (path, origin) in sorted(sources.items()):
-                _, title, _, destination = REPORTS[number - 1]
+                _, title, _, destination = REPORTS[number]
                 if output_dir:
                     destination = output_dir / destination.name
                 body = docx_to_markdown(path)
