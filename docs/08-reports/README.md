@@ -285,7 +285,7 @@ ngoại lệ Drive → repo có đồng ý, chỉ để lấy template; từ đ�
 style và footer của template; footer dùng field `NUMPAGES` thay số "6" gõ cứng. Nội dung: mục I (Deliverable Package,
 System Requirements, cài đặt máy dev và server theo [deploy/README.md](../../deploy/README.md)) và mục II User Manual
 theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thành viên, Khách, tính năng chung), viết tiếng Anh như
-Report 1–4, nhãn giao diện giữ tiếng Việt. 74 ảnh chụp từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
+Report 1–4, nhãn giao diện giữ tiếng Việt. 75 ảnh chụp màn hình (không tính logo của template) từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
 mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
 quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
 trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI, tên
@@ -295,8 +295,9 @@ sẵn; màn xem tài liệu, các màn của Khách và màn thu giọng hộ ch
 quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
 kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
 / tự kết thúc sau 24 giờ, chia sẻ lịch chỉ với người tổ chức, thu giọng hộ bất kỳ lúc nào và điều khoản Voice ID 1.4
-(ADR-0071). Mục
-lục và số trang cập nhật bằng Word (53 trang). Snapshot Markdown
+(ADR-0071). Vòng review 2: mục 3.14 tách hai đường thu giọng hộ — trong cuộc họp (Thư ký của cuộc họp, điều khoản
+1.3, quyền Thu giọng mẫu hộ chỉ mở rộng thêm trạng thái) và ngoài cuộc họp (cần quyền đó, điều khoản 1.4). Mục
+lục và số trang cập nhật bằng Word (55 trang). Snapshot Markdown
 `Report-6_Software User Guides.md` sinh bằng `sync_reports.py --report 6` (script mở rộng cho Report 6 cùng đợt); chưa
 có đích trong `push_reports.py`.
 
