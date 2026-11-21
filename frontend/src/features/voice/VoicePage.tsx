@@ -1,25 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import {
-  deleteVoiceSample,
-  getMyVoice,
-  grantVoiceConsent,
-  withdrawVoiceConsent,
-} from "../../api/voice";
-import { Badge } from "../../components/Badge";
-import { ConfirmDialog } from "../../components/ConfirmDialog";
-import { Icon } from "../../components/Icon";
-import { PageHeader } from "../../components/PageHeader";
-import { useToast } from "../../components/toastContext";
-import { errorMessage } from "../../lib/errors";
-import { formatDate, formatDateTime } from "../../lib/format";
-import type { VoiceProfile } from "../../types/voice";
-import { useNotificationRefresh } from "../notifications/useNotificationRefresh";
-import { formatDuration } from "../recordings/format";
-import { PASSAGES } from "./passages";
-import { ProxyTab } from "./ProxyVoice";
-import { useSamplePlayer } from "./samplePlayer";
-import { ConsentForm, RecordSampleDialog } from "./VoiceEnrol";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { deleteVoiceSample, getMyVoice, grantVoiceConsent, withdrawVoiceConsent } from '../../api/voice'
+import { Badge } from '../../components/Badge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { Icon } from '../../components/Icon'
+import { PageHeader } from '../../components/PageHeader'
+import { useToast } from '../../components/toastContext'
+import { errorMessage } from '../../lib/errors'
+import { formatDate, formatDateTime } from '../../lib/format'
+import type { VoiceProfile } from '../../types/voice'
+import { useNotificationRefresh } from '../notifications/useNotificationRefresh'
+import { formatDuration } from '../recordings/format'
+import { PASSAGES } from './passages'
+import { ProxyTab } from './ProxyVoice'
+import { useSamplePlayer } from './samplePlayer'
+import { ConsentForm, RecordSampleDialog } from './VoiceEnrol'
 
 /**
  * SCRUM-35 — the signed-in person's own Voice ID. A voice used to recognise someone is biometric data
@@ -27,44 +22,37 @@ import { ConsentForm, RecordSampleDialog } from "./VoiceEnrol";
  * it back before asking, and turning it off erases everything at once.
  */
 
-type State =
-  | { kind: "loading" }
-  | { kind: "error"; message: string }
-  | { kind: "loaded"; profile: VoiceProfile };
+type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; profile: VoiceProfile }
 
 export function VoicePage() {
-  const [state, setState] = useState<State>({ kind: "loading" });
-  const generation = useRef(0);
+  const [state, setState] = useState<State>({ kind: 'loading' })
+  const generation = useRef(0)
   // ADR-0060: two sets under one consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
-  const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") === "proxy" ? "proxy" : "self";
-  const openTab = (next: "self" | "proxy") =>
-    setParams(next === "proxy" ? { tab: "proxy" } : {}, { replace: true });
-  const change = (profile: VoiceProfile) => setState({ kind: "loaded", profile });
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'proxy' ? 'proxy' : 'self'
+  const openTab = (next: 'self' | 'proxy') => setParams(next === 'proxy' ? { tab: 'proxy' } : {}, { replace: true })
+  const change = (profile: VoiceProfile) => setState({ kind: 'loaded', profile })
 
   const load = useCallback(async () => {
-    const mine = generation.current;
+    const mine = generation.current
     try {
-      const profile = await getMyVoice();
-      if (mine === generation.current) setState({ kind: "loaded", profile });
+      const profile = await getMyVoice()
+      if (mine === generation.current) setState({ kind: 'loaded', profile })
     } catch (error) {
-      if (mine === generation.current) setState({ kind: "error", message: errorMessage(error) });
+      if (mine === generation.current) setState({ kind: 'error', message: errorMessage(error) })
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    void Promise.resolve().then(load);
-    const loads = generation;
+    void Promise.resolve().then(load)
+    const loads = generation
     return () => {
-      loads.current++;
-    };
-  }, [load]);
+      loads.current++
+    }
+  }, [load])
 
   // A meeting's Secretary just recorded a sample for this person (ADR-0060): show it without a reload.
-  useNotificationRefresh(
-    (notification) => notification.type === "VoiceSampleCollected",
-    () => void load(),
-  );
+  useNotificationRefresh((notification) => notification.type === 'VoiceSampleCollected', () => void load())
 
   return (
     <div className="form-page voice-page">
@@ -72,10 +60,8 @@ export function VoicePage() {
         title="Giọng nói của tôi"
         description="Voice ID giúp Thư ký biết ai đang phát biểu trong bản gỡ băng của cuộc họp bạn dự."
       />
-      {state.kind === "loading" && (
-        <div className="card voice-card voice-skeleton" aria-busy="true" />
-      )}
-      {state.kind === "error" && (
+      {state.kind === 'loading' && <div className="card voice-card voice-skeleton" aria-busy="true" />}
+      {state.kind === 'error' && (
         <div className="alert alert-error" role="alert">
           <p>{state.message}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
@@ -84,10 +70,8 @@ export function VoicePage() {
           </button>
         </div>
       )}
-      {state.kind === "loaded" && !state.profile.consent && (
-        <ConsentCard profile={state.profile} onChange={change} />
-      )}
-      {state.kind === "loaded" && state.profile.consent && (
+      {state.kind === 'loaded' && !state.profile.consent && <ConsentCard profile={state.profile} onChange={change} />}
+      {state.kind === 'loaded' && state.profile.consent && (
         <>
           {state.profile.consent.noticeVersion !== state.profile.noticeVersion && (
             <RenewNotice profile={state.profile} onChange={change} />
@@ -96,9 +80,9 @@ export function VoicePage() {
             <button
               type="button"
               role="tab"
-              aria-selected={tab === "self"}
-              className={`tab${tab === "self" ? " tab-active" : ""}`}
-              onClick={() => openTab("self")}
+              aria-selected={tab === 'self'}
+              className={`tab${tab === 'self' ? ' tab-active' : ''}`}
+              onClick={() => openTab('self')}
             >
               Tự thu
               <span className="tab-count">{state.profile.samples.length}</span>
@@ -106,15 +90,15 @@ export function VoicePage() {
             <button
               type="button"
               role="tab"
-              aria-selected={tab === "proxy"}
-              className={`tab${tab === "proxy" ? " tab-active" : ""}`}
-              onClick={() => openTab("proxy")}
+              aria-selected={tab === 'proxy'}
+              className={`tab${tab === 'proxy' ? ' tab-active' : ''}`}
+              onClick={() => openTab('proxy')}
             >
               Thư ký thu hộ giọng tôi
               <span className="tab-count">{state.profile.proxy.samples.length}</span>
             </button>
           </div>
-          {tab === "proxy" ? (
+          {tab === 'proxy' ? (
             <ProxyTab profile={state.profile} onChange={change} onReload={load} />
           ) : (
             <Enrolled profile={state.profile} onChange={change} onReload={load} />
@@ -122,16 +106,10 @@ export function VoicePage() {
         </>
       )}
     </div>
-  );
+  )
 }
 
-function ConsentCard({
-  profile,
-  onChange,
-}: {
-  profile: VoiceProfile;
-  onChange: (profile: VoiceProfile) => void;
-}) {
+function ConsentCard({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   return (
     <section className="card voice-card" aria-labelledby="voice-consent-title">
       <h2 id="voice-consent-title" className="card-title">
@@ -139,7 +117,7 @@ function ConsentCard({
       </h2>
       <ConsentForm profile={profile} onGranted={onChange} />
     </section>
-  );
+  )
 }
 
 function Enrolled({
@@ -147,30 +125,30 @@ function Enrolled({
   onChange,
   onReload,
 }: {
-  profile: VoiceProfile;
-  onChange: (profile: VoiceProfile) => void;
-  onReload: () => Promise<void>;
+  profile: VoiceProfile
+  onChange: (profile: VoiceProfile) => void
+  onReload: () => Promise<void>
 }) {
-  const toast = useToast();
-  const [recording, setRecording] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
+  const toast = useToast()
+  const [recording, setRecording] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
   // UC-81e step 2: a sample is erased for good, so the person confirms first. Holds its number in the list.
-  const [erasing, setErasing] = useState<{ id: string; n: number } | null>(null);
-  const full = profile.samples.length >= profile.maxSamples;
-  const player = useSamplePlayer();
+  const [erasing, setErasing] = useState<{ id: string; n: number } | null>(null)
+  const full = profile.samples.length >= profile.maxSamples
+  const player = useSamplePlayer()
 
   const remove = async (sampleId: string) => {
-    player.stop();
+    player.stop()
     try {
-      const result = await deleteVoiceSample(sampleId);
-      toast.show(result.message, "success");
-      onChange(result.data);
+      const result = await deleteVoiceSample(sampleId)
+      toast.show(result.message, 'success')
+      onChange(result.data)
     } catch (error) {
       // The dialog shows why; the list is read again in case the sample is already gone.
-      await onReload();
-      throw error;
+      await onReload()
+      throw error
     }
-  };
+  }
 
   return (
     <section className="card voice-card" aria-labelledby="voice-enrolled-title">
@@ -193,8 +171,8 @@ function Enrolled({
       {profile.samples.length < 2 && (
         <p className="alert alert-info">
           {profile.samples.length === 0
-            ? "Chưa có giọng mẫu nào — hãy ghi ít nhất 2 mẫu để hệ thống nhận ra bạn."
-            : "Ghi thêm một mẫu nữa (ở chỗ khác, giọng tự nhiên) để nhận diện chắc hơn."}
+            ? 'Chưa có giọng mẫu nào — hãy ghi ít nhất 2 mẫu để hệ thống nhận ra bạn.'
+            : 'Ghi thêm một mẫu nữa (ở chỗ khác, giọng tự nhiên) để nhận diện chắc hơn.'}
         </p>
       )}
       {profile.samples.length > 0 && (
@@ -213,15 +191,13 @@ function Enrolled({
                   type="button"
                   className="btn btn-ghost btn-icon"
                   onClick={() =>
-                    void player
-                      .toggle(sample.id)
-                      .catch((error) => toast.show(errorMessage(error), "error"))
+                    void player.toggle(sample.id).catch((error) => toast.show(errorMessage(error), 'error'))
                   }
-                  aria-label={`${player.playing === sample.id ? "Dừng" : "Nghe lại"} giọng mẫu ${index + 1}`}
+                  aria-label={`${player.playing === sample.id ? 'Dừng' : 'Nghe lại'} giọng mẫu ${index + 1}`}
                   aria-pressed={player.playing === sample.id}
-                  data-tooltip={player.playing === sample.id ? "Dừng" : "Nghe lại"}
+                  data-tooltip={player.playing === sample.id ? 'Dừng' : 'Nghe lại'}
                 >
-                  <Icon name={player.playing === sample.id ? "pause" : "play"} size={16} />
+                  <Icon name={player.playing === sample.id ? 'pause' : 'play'} size={16} />
                 </button>
               )}
               <button
@@ -246,9 +222,7 @@ function Enrolled({
           className="btn btn-primary"
           onClick={() => setRecording(true)}
           disabled={full}
-          data-tooltip={
-            full ? `Đã đủ ${profile.maxSamples} giọng mẫu — xoá bớt để ghi lại` : undefined
-          }
+          data-tooltip={full ? `Đã đủ ${profile.maxSamples} giọng mẫu — xoá bớt để ghi lại` : undefined}
         >
           <Icon name="mic" size={18} />
           Ghi giọng mẫu
@@ -260,9 +234,9 @@ function Enrolled({
           passage={PASSAGES[profile.samples.length % PASSAGES.length]}
           onClose={() => setRecording(false)}
           onSaved={async (message) => {
-            setRecording(false);
-            toast.show(message, "success");
-            await onReload();
+            setRecording(false)
+            toast.show(message, 'success')
+            await onReload()
           }}
           onStale={onReload}
         />
@@ -291,23 +265,21 @@ function Enrolled({
           tone="danger"
           onClose={() => setWithdrawing(false)}
           onConfirm={async () => {
-            const result = await withdrawVoiceConsent();
-            toast.show(result.message, "success");
-            setWithdrawing(false);
-            onChange(result.data);
+            const result = await withdrawVoiceConsent()
+            toast.show(result.message, 'success')
+            setWithdrawing(false)
+            onChange(result.data)
           }}
         >
           <p>
             Toàn bộ {profile.samples.length} giọng mẫu tự thu
-            {profile.proxy.samples.length > 0 &&
-              ` và ${profile.proxy.samples.length} mẫu Thư ký thu hộ`}
-            , mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ
-            nguyên. Bạn có thể bật lại sau.
+            {profile.proxy.samples.length > 0 && ` và ${profile.proxy.samples.length} mẫu Thư ký thu hộ`}, mọi gợi ý và
+            tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.
           </p>
         </ConfirmDialog>
       )}
     </section>
-  );
+  )
 }
 
 /**
@@ -315,21 +287,15 @@ function Enrolled({
  * lets the machine fill in their name on a sure match (ADR-0048), 1.3 lets their meetings' Secretary record samples on
  * the room's mic (ADR-0060). Until they renew, nothing new applies to them.
  */
-function RenewNotice({
-  profile,
-  onChange,
-}: {
-  profile: VoiceProfile;
-  onChange: (profile: VoiceProfile) => void;
-}) {
-  const toast = useToast();
-  const [reading, setReading] = useState(false);
-  const agreed = profile.consent!.noticeVersion;
+function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
+  const toast = useToast()
+  const [reading, setReading] = useState(false)
+  const agreed = profile.consent!.noticeVersion
   const changes = [
-    agreed < "1.1" && "Giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại.",
-    agreed < "1.2" && "Máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được.",
-    agreed < "1.3" && "Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.",
-  ].filter((change): change is string => Boolean(change));
+    agreed < '1.1' && 'Giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại.',
+    agreed < '1.2' && 'Máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được.',
+    agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.',
+  ].filter((change): change is string => Boolean(change))
   // One line on the page; what changed is read in full in the dialog, before agreeing to it.
   return (
     <div className="alert alert-info voice-renew">
@@ -345,9 +311,9 @@ function RenewNotice({
           cancelLabel="Để sau"
           onClose={() => setReading(false)}
           onConfirm={async () => {
-            const result = await grantVoiceConsent(profile.noticeVersion);
-            toast.show(result.message, "success");
-            onChange(result.data);
+            const result = await grantVoiceConsent(profile.noticeVersion)
+            toast.show(result.message, 'success')
+            onChange(result.data)
           }}
         >
           {/* The dialog's body is one paragraph: the changes are list items drawn from spans. */}
@@ -360,5 +326,5 @@ function RenewNotice({
         </ConfirmDialog>
       )}
     </div>
-  );
+  )
 }
