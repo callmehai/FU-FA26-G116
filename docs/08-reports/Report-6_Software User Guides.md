@@ -625,9 +625,9 @@ Figure 39: A vote saved as draft
 
 #### 3.11 Recordings and Transcript
 
-In an in-person or hybrid meeting the Secretary turns on the room microphone with Bật mic phòng; in the online room each person's microphone is recorded. Turning the microphone off saves that part and sends it to speech-to-text. The Bản ghi (Recordings) tab plays the whole meeting, lists the speakers, and shows the transcript line by line with the speaker and time. You can correct a speaker, listen to one line, download the transcript (.txt) or the MP3, and exclude a line from the minutes. Speakers are recognised with Voice ID for people who agreed to it (section 6.3).
+In an in-person or hybrid meeting the Secretary turns on the room microphone with Bật mic phòng; in the online room each person's microphone is recorded. Turning the microphone off saves that part and sends it to speech-to-text. In an in-person meeting that is in progress or ended, Tải tệp lên (Upload file) also accepts a recording made elsewhere (MP3, M4A, WAV…), after you confirm that the participants were told about the recording. The Bản ghi (Recordings) tab plays the whole meeting, lists the speakers, and shows the transcript line by line with the speaker and time. You can correct a speaker, listen to one line, download the transcript (.txt) or the MP3, and exclude a line from the minutes. Speakers are recognised with Voice ID for people who agreed to it (section 6.3).
 
-Figure 40: Recordings tab with the live transcript (speaker names and words blurred in this manual)
+Figure 40: Recordings tab: an uploaded recording with its transcript and two speakers (sample audio made with a synthetic voice)
 
 #### 3.12 Writing the Minutes
 
