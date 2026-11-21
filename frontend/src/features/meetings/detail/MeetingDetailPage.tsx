@@ -453,12 +453,15 @@ function MeetingDetail({
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
           ) : tab === 'attendees' ? (
-            <ParticipantsPanel
-              meetingId={meeting.id}
-              meetingStatus={meeting.status}
-              sensitivity={meeting.sensitivity}
-              onChanged={() => void reload()}
-            />
+            <div className="recordings-tab">
+              <ParticipantsPanel
+                meetingId={meeting.id}
+                meetingStatus={meeting.status}
+                sensitivity={meeting.sensitivity}
+                onChanged={() => void reload()}
+              />
+              {collectsVoices && <VoiceCollectionPanel meetingId={meeting.id} />}
+            </div>
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (

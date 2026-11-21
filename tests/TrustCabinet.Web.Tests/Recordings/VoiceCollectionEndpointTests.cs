@@ -258,7 +258,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
 
         var view = await secretary.GetFromJsonAsync<JsonElement>(VoiceCollection.Url(s.MeetingId));
         Assert.True(view.GetProperty("canCollect").GetBoolean());
-        Assert.Equal(VoiceIdRules.MaxSamples, view.GetProperty("maxSamples").GetInt32());
+        Assert.Equal(VoiceIdRules.MaxProxySamples, view.GetProperty("maxSamples").GetInt32());
         var people = view.GetProperty("people").EnumerateArray().ToDictionary(p => p.GetProperty("userId").GetGuid());
         Assert.Equal(new[] { s.Secretary, s.Chair, s.Member }.Order(), people.Keys.Order());
         Assert.DoesNotContain(gone, people.Keys);
@@ -387,7 +387,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     }
 
     [Fact]
-    public async Task A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count()
+    public async Task A_person_holds_at_most_fifty_proxy_samples_across_meetings_and_their_own_set_does_not_count()
     {
         var (s, secretary) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
@@ -405,12 +405,12 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         }
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
         await VoiceCollection.Collect(fixture, elsewhere, other.MeetingId, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
 
         await VoiceCollection.AssertCode(
             await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()), 409, Msg476Limit);
         await using var check = fixture.Db();
-        Assert.Equal(VoiceIdRules.MaxSamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById != null));
+        Assert.Equal(VoiceIdRules.MaxProxySamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById != null));
         Assert.Equal(VoiceIdRules.MaxSamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member && x.CollectedById == null));
     }
 
@@ -480,7 +480,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
             await db.SaveChangesAsync();
         }
         await VoiceCollection.Agree(fixture, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
 
         var both = await Task.WhenAll(
@@ -489,7 +489,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         Assert.Single(both, r => r.StatusCode == HttpStatusCode.Created);
         await VoiceCollection.AssertCode(Assert.Single(both, r => r.StatusCode != HttpStatusCode.Created), 409, Msg476Limit);
         await using var check = fixture.Db();
-        Assert.Equal(VoiceIdRules.MaxSamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member));
+        Assert.Equal(VoiceIdRules.MaxProxySamples, await check.VoiceSamples.CountAsync(x => x.UserId == s.Member));
     }
 
     [Fact]
@@ -498,7 +498,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         var (s, secretary) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
         var first = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
-        for (var i = 1; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        for (var i = 1; i < VoiceIdRules.MaxProxySamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         var url = $"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples";
         await VoiceCollection.AssertCode(await secretary.PostAsync(url, VoiceCollection.Sample()), 409, Msg476Limit);
         await VoiceCollection.AssertCode(await secretary.DeleteAsync($"{VoiceCollection.Url(s.MeetingId)}/samples/{first}"), 200, Msg474Deleted);

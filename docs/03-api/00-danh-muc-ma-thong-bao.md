@@ -591,7 +591,7 @@ thiếu tệp), `MSG314` (lỗi đọc), `MSG315` (lỗi lưu).
 | `MSG473` | 201 | `POST /api/meetings/{id}/voice-collection/{userId}/samples` | Thư ký lưu một giọng mẫu thu hộ | `Đã lưu giọng mẫu thu hộ.` | BE |
 | `MSG474` | 200 | `DELETE /api/meetings/{id}/voice-collection/samples/{sampleId}` | Thư ký xoá một mẫu đã thu ở cuộc họp này | `Đã xoá giọng mẫu thu hộ.` | BE |
 | `MSG475` | 409 | `POST …/voice-collection/{userId}/samples` | Người được thu chưa đồng ý Voice ID, hoặc đồng ý theo điều khoản trước 1.3 (chưa nói Thư ký thu hộ, [ADR-0060](../05-decisions/0060-thu-ky-thu-voice-id-ho.md)) | `Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.` | BE |
-| `MSG476` | 409 | `POST …/voice-collection/{userId}/samples` | Người được thu đã đủ 5 mẫu thu hộ (tính mọi cuộc họp) | `Người này đã đủ 5 giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại.` | BE |
+| `MSG476` | 409 | `POST …/voice-collection/{userId}/samples` | Người được thu đã đủ 50 mẫu thu hộ (tính mọi cuộc họp) | `Người này đã đủ 50 giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại.` | BE |
 | `MSG477` | 409 | `POST …/voice-collection/{userId}/samples` | Cuộc họp chưa công bố hoặc đã kết thúc | `Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp.` | BE |
 
 
