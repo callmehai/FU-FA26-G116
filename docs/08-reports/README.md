@@ -288,9 +288,10 @@ theo vai trò (Getting Started, Quản trị viên, Thư ký, Chủ toạ, Thàn
 Report 1–4, nhãn giao diện giữ tiếng Việt. 77 ảnh chụp màn hình (không tính logo của template) từ server `app` bằng tài khoản demo (khung 1280×720); dữ liệu
 mẫu tạo thêm trên server: hai cuộc họp "Họp giao ban công tác tháng 11/2026" và "Họp triển khai kế hoạch chuyển đổi số
 quý IV", thư mục "Tài liệu giao ban 2026" của `thuky@`. Đã làm mờ: cột IP và tên + email người thật trong mọi ảnh chụp
-trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI, tên
-người nói và lời thoại ở ảnh tab Bản ghi (cuộc họp "Test mail FE…", không thu được bản ghi demo vì trình duyệt chụp ảnh
-không có micro). Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
+trên nền nhật ký hệ thống, email Gmail cá nhân trong hộp thoại chia sẻ lịch, địa chỉ API và đuôi khoá ở Cấu hình AI. Ảnh tab
+Bản ghi: cuộc họp trực tiếp mẫu "Họp đánh giá kết quả kinh doanh 10 tháng năm 2026" (09:00 thứ Tư 25/11), tải lên một
+đoạn 47 giây ghép từ 4 câu giọng tổng hợp có sẵn trong `demo-data/audio` (kịch bản bịa, không có giọng người thật) rồi
+để máy chuyển chữ gỡ băng. Phần biên bản và kết quả biểu quyết dùng cuộc họp `[E2E] Họp trực tuyến kiểm thử phòng họp 20/11` có
 sẵn; các màn của Khách và đường thu giọng hộ ngoài cuộc họp chỉ mô tả bằng chữ. Cùng ngày sửa theo review PR #458:
 quy tắc họp Mật (chỉ chặn tải về, AI chạy máy nội bộ — ADR-0057), quyền Soạn biên bản chưa được kiểm ở endpoint nào,
 kết luận biểu quyết do Chủ toạ ghi, phải đọc tài liệu trước khi bỏ phiếu, biểu quyết nháp bị xoá khi kết thúc họp, tự huỷ
