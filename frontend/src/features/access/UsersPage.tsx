@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { listRoles } from '../../api/roles'
 import { changeUserStatus, getUser, listUsers, requestPasswordReset } from '../../api/users'
 import { Badge } from '../../components/Badge'
+import { Dialog } from '../../components/Dialog'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
@@ -19,6 +20,7 @@ import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
+import { CollectForMeeting } from '../voice/CollectForMeeting'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 import { latestSearchParams } from '../../lib/latestSearchParams'
 import { normalizeSearch } from '../../lib/search'
@@ -67,7 +69,9 @@ function resetUnavailableReason(account: UserAccount) {
  * as lost access rather than as an error.
  */
 export function UsersPage() {
-  const { user: me, reloadSession } = useAuth()
+  const { user: me, reloadSession, can } = useAuth()
+  // ADR-0060: a Secretary trusted with "Thu giọng mẫu hộ" records, hears back and deletes room-mic samples here.
+  const [collecting, setCollecting] = useState(false)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
 
@@ -296,17 +300,31 @@ export function UsersPage() {
         title="Người dùng"
         description={users ? `${users.length} tài khoản, ${activeCount} đang hoạt động` : undefined}
         action={
-          <button
-            className="btn btn-primary btn-lg btn-cta"
-            type="button"
-            onClick={() => void openUserForm({ mode: 'create' })}
-            disabled={roles === null}
-          >
-            <Icon name="userPlus" size={18} />
-            Tạo tài khoản
-          </button>
+          <>
+            {can('VoiceCollector') && (
+              <button className="btn btn-outline btn-lg" type="button" onClick={() => setCollecting(true)}>
+                <Icon name="mic" size={18} />
+                Quản lý giọng nói thu hộ
+              </button>
+            )}
+            <button
+              className="btn btn-primary btn-lg btn-cta"
+              type="button"
+              onClick={() => void openUserForm({ mode: 'create' })}
+              disabled={roles === null}
+            >
+              <Icon name="userPlus" size={18} />
+              Tạo tài khoản
+            </button>
+          </>
         }
       />
+
+      {collecting && (
+        <Dialog title="Quản lý giọng nói thu hộ" size="lg" onClose={() => setCollecting(false)}>
+          <CollectForMeeting />
+        </Dialog>
+      )}
 
       <div className="list-panel list-page list-fill">
         <div className="toolbar">

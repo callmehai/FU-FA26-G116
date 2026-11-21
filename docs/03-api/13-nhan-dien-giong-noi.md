@@ -38,7 +38,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 | Rút đồng ý, xoá | `DELETE /api/me/voice/consent`: trong một transaction, xoá **mọi** giọng mẫu, **mọi gợi ý** trỏ tới người đó và **tên máy tự gán** là người đó (ADR-0045); tên Thư ký đã gán giữ nguyên (đó là quyết định của người, không phải dữ liệu sinh trắc). Bản gỡ băng đang chạy dở không ghi lại được gợi ý cho người vừa rút: máy so giọng dưới khoá chia sẻ trên dòng đồng ý, việc rút đồng ý phải chờ nó ghi xong rồi mới xoá ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)) |
 | Người bị vô hiệu hoá tài khoản | Không đăng nhập được nên không tự rút được. Vô hiệu hoá (`PUT /api/users/{id}/status`, `isActive: false`) **kết thúc Voice ID như khi rút đồng ý**, trong cùng transaction: xoá giọng mẫu, gợi ý và tên máy tự gán, đóng dòng đồng ý; người làm trong nhật ký là quản trị viên. Kích hoạt lại không khôi phục gì: người đó phải đồng ý và ghi giọng mẫu lại ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)). Máy cũng không so giọng với tài khoản đã vô hiệu hoá |
 | Giới hạn phạm vi dùng | Chỉ so với người có trong danh sách thành phần hiện tại của **chính cuộc họp đó**; người ngoài cuộc họp có giọng giống đến đâu cũng không được gợi ý |
-| Người khác chạm vào giọng mẫu (ADR-0060) | Chỉ Thư ký **hiện tại** của **chính cuộc họp đó**, có quyền `VoiceCollector` do quản trị viên cấp. Thư ký chỉ thấy, nghe, xoá mẫu thu ở cuộc họp của mình; mỗi lần nghe ghi `voice.sample_played`; mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`. Chủ mẫu thấy mọi mẫu thu hộ kèm cuộc họp và người thu, nghe lại và xoá được |
+| Người khác chạm vào giọng mẫu (ADR-0060) | Chỉ Thư ký **hiện tại** của **chính cuộc họp đó**, có quyền `VoiceCollector` do quản trị viên cấp, hoặc Thư ký không có quyền đó nhưng chỉ trong lúc cuộc họp đang mở (PO 21/11/2026). Thư ký chỉ thấy, nghe, xoá mẫu thu ở cuộc họp của mình; mỗi lần nghe ghi `voice.sample_played`; mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`. Chủ mẫu thấy mọi mẫu thu hộ kèm cuộc họp và người thu, nghe lại và xoá được |
 | Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm `reason`: `withdrawn` khi chính người đó rút, `accountDeactivated` khi quản trị viên vô hiệu hoá tài khoản; số mẫu đã xoá, số gợi ý đã bỏ), `voice.sample_added`, `voice.sample_deleted`, `voice.sample_played` (Thư ký nghe mẫu thu hộ), `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không). Dòng `voice.sample_added` / `voice.sample_deleted` của mẫu thu hộ có `scope: "proxy"` trong `details` |
 
 ## Voice ID của chính mình (`/api/me/voice`)
@@ -60,7 +60,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 }
 ```
 
-`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu Thư ký thu hộ, bộ tự thu tối đa 5 mẫu, bộ thu hộ tối đa 50. `proxy.allowed`:
+`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu Thư ký thu hộ, bộ tự thu tối đa 5 mẫu, bộ thu hộ tối đa 50 (mỗi Thư ký thu tối đa 5 cho một người). `proxy.allowed`:
 đồng ý hiện có là theo thông báo 1.3 trở lên, nên Thư ký thu hộ được.
 
 `consent` là `null` khi chưa đồng ý hoặc đã rút. `noticeVersion`, `purpose` và `controller` ở gốc là
@@ -113,7 +113,7 @@ từ bộ nhớ, không ghi ra đĩa.
 Họp trực tiếp và kết hợp được gỡ băng từ micro phòng họp. Giọng mẫu ghi bằng chính micro đó khớp tốt hơn giọng mẫu mỗi
 người tự ghi trên laptop, nên Thư ký thu hộ mọi người trước hoặc trong buổi họp. Ba lớp chặn:
 
-1. Người gọi có quyền **`VoiceCollector`** ("Thu giọng mẫu hộ" trong ma trận phân quyền). Thiếu: `403`.
+1. Người gọi có quyền **`VoiceCollector`** ("Thu giọng mẫu hộ" trong ma trận phân quyền), **hoặc** là Thư ký của cuộc họp nhưng không có quyền này (PO 21/11/2026): khi đó chỉ dùng được mọi *endpoint* dưới đây lúc cuộc họp `Published` hoặc `InProgress`; họp kết thúc là `404`, mất quyền với các mẫu đã thu. Không phải Thư ký: `404`.
 2. Người gọi là **Thư ký hiện tại** của **chính cuộc họp đó**, cuộc họp **trực tiếp hoặc kết hợp**, không phải **Mật**,
    chưa **huỷ**. Kiểm lại ở mỗi lần gọi. Không đạt: `404` không body, như cuộc họp không tồn tại.
 3. Người được thu đã tự **đồng ý Voice ID** theo thông báo **1.3 trở lên** (`POST /api/me/voice/consent`), thông báo
@@ -144,7 +144,7 @@ cuộc họp, để so với giới hạn 5. `samples`: chỉ mẫu thu **ở cu
 
 Kiểm tra tệp và chất lượng như `POST /api/me/voice/samples` (`415 MSG292`, `422 MSG309`, `503 MSG312`). `201 MSG473`,
 `data`: `{ id, createdAt, speechMs, collectedByName }`. Người được thu nhận thông báo `VoiceSampleCollected` (mở
-`/mgmt/my-voice?tab=proxy`). `userId` không phải người trong cuộc họp: `404`. Chưa đồng ý Voice ID theo thông báo 1.3 `409 MSG475`; đủ 50 mẫu
+`/mgmt/my-voice?tab=proxy`). `userId` không phải người trong cuộc họp: `404`. Chưa đồng ý Voice ID theo thông báo 1.3 `409 MSG475`; đủ 50 mẫu hoặc Thư ký này đã thu đủ 5 mẫu cho người đó
 thu hộ `409 MSG476`; cuộc họp chưa công bố hoặc đã kết thúc `409 MSG477`.
 
 ### `GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio`

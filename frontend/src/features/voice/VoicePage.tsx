@@ -9,11 +9,9 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
 import type { VoiceProfile } from '../../types/voice'
-import { useAuth } from '../auth/useAuth'
 import { useNotificationRefresh } from '../notifications/useNotificationRefresh'
 import { formatDuration } from '../recordings/format'
 import { PASSAGES } from './passages'
-import { CollectForMeeting } from './CollectForMeeting'
 import { ProxyTab } from './ProxyVoice'
 import { useSamplePlayer } from './samplePlayer'
 import { ConsentForm, RecordSampleDialog } from './VoiceEnrol'
@@ -27,7 +25,6 @@ import { ConsentForm, RecordSampleDialog } from './VoiceEnrol'
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; profile: VoiceProfile }
 
 export function VoicePage() {
-  const { can } = useAuth()
   const [state, setState] = useState<State>({ kind: 'loading' })
   const generation = useRef(0)
   // ADR-0060: two sets under one consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
@@ -97,15 +94,12 @@ export function VoicePage() {
               className={`tab${tab === 'proxy' ? ' tab-active' : ''}`}
               onClick={() => openTab('proxy')}
             >
-              Thư ký thu hộ
+              Thư ký thu hộ giọng tôi
               <span className="tab-count">{state.profile.proxy.samples.length}</span>
             </button>
           </div>
           {tab === 'proxy' ? (
-            <>
-              <ProxyTab profile={state.profile} onChange={change} onReload={load} />
-              {can('VoiceCollector') && <CollectForMeeting />}
-            </>
+            <ProxyTab profile={state.profile} onChange={change} onReload={load} />
           ) : (
             <Enrolled profile={state.profile} onChange={change} onReload={load} />
           )}

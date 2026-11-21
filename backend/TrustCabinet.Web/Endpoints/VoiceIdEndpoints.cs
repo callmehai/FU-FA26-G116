@@ -61,9 +61,10 @@ public static class VoiceIdEndpoints
             => Map(await service.DeleteSampleAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg311SampleDeleted, "Đã xoá giọng mẫu."));
 
-        // ADR-0060: the capability, then — on every call, in the service — the Secretary of this very meeting.
+        // ADR-0060: an active account, then — on every call, in the service — the Secretary of this very meeting; one
+        // without the VoiceCollector capability only while the meeting is open (PO 2026-11-21).
         var collection = app.MapGroup("/api/meetings/{meetingId:guid}/voice-collection")
-            .RequireCapability(Capability.VoiceCollector, Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
+            .RequireActiveUser(Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
         collection.MapGet("", async (Guid meetingId, HttpContext context, IVoiceCollectionService service, CancellationToken ct)
             => Map(await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct), collection: true));
         collection.MapPost("/{userId:guid}/samples", CollectSampleAsync);
@@ -147,7 +148,7 @@ public static class VoiceIdEndpoints
                 VoiceFailure.NoConsent when collection => (409, Msg475NoProxyConsent,
                     "Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi."),
                 VoiceFailure.LimitReached when collection => (409, Msg476ProxySampleLimit,
-                    $"Người này đã đủ {VoiceIdRules.MaxProxySamples} giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại."),
+                    $"Đã đủ giọng mẫu thu hộ cho người này: mỗi Thư ký thu tối đa {VoiceIdRules.MaxProxySamplesPerCollector} mẫu, tổng {VoiceIdRules.MaxProxySamples} mẫu. Xoá bớt rồi thu lại."),
                 VoiceFailure.NotCollectable => (409, Msg477NotCollectable,
                     "Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp."),
                 VoiceFailure.NoConsent => (409, Msg308NoConsent, "Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu."),

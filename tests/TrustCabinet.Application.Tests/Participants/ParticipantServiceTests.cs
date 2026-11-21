@@ -30,7 +30,7 @@ public sealed class ParticipantServiceTests
 
     private ParticipantService Service() => new(_participants, _meetings, _effects, _stager, _speaking,
         _audit, _unitOfWork, _effects, new FakeCallerContext(), new FixedClock(Now),
-        NullLogger<ParticipantService>.Instance, _effects, _effects);
+        NullLogger<ParticipantService>.Instance, _effects, _effects, new NoCallerAccounts());
 
     private Meeting GivenPublished()
     {

@@ -69,7 +69,7 @@ public sealed class ParticipantCreationLookupTests(ParticipantFixture f)
         Assert.Equal(2, first.GetProperty("total").GetInt32());
         var item = Assert.Single(first.GetProperty("items").EnumerateArray());
         Assert.Equal(
-            new[] { "email", "fullName", "id" },
+            new[] { "email", "fullName", "id", "voiceCollector" },
             item.EnumerateObject().Select(p => p.Name).Order().ToArray()
         );
         var secondResponse = await client.GetAsync(

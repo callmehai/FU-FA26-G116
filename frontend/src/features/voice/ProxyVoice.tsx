@@ -48,7 +48,7 @@ export function ProxyTab({
     <section className="card voice-card" aria-labelledby="voice-proxy-title">
       <div className="voice-status">
         <h2 id="voice-proxy-title" className="card-title">
-          Thư ký thu hộ
+          Thư ký thu hộ giọng tôi
         </h2>
         <span className="voice-count">
           {proxy.samples.length}/{proxy.maxSamples}
