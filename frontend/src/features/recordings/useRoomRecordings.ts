@@ -5,6 +5,10 @@ import { useMeetingEvents, type MeetingEvent } from '../meetings/useMeetingEvent
 
 export const RECORDINGS_EVENTS: readonly MeetingEvent[] = ['recordingsChanged']
 
+/** Whether the meeting's room is still to be recorded for the first time: the participants are told before it. */
+export const isFirstTake = (list: RecordingList | null) =>
+  !list?.items.some((r) => r.source === 'BrowserCapture' && r.status === 'Available' && r.takes)
+
 /**
  * ADR-0041 — the meeting's recordings as the page needs them outside the Bản ghi tab: whether the room is being
  * recorded right now (everyone sees it), and, for the Secretary's mic, whether the meeting has its first take yet and

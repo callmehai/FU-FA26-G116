@@ -32,8 +32,11 @@ import { returnToMeetingTab, useTabName } from '../meetingTabs'
 import { MeetingPageLink } from '../TabLinks'
 import { VoiceShortcut } from '../../voice/VoiceShortcut'
 import { useNotifications } from '../../notifications/notificationsContext'
+import { RecorderCard } from '../../recordings/RecorderCard'
+import { useHeldRoomMic } from '../../recordings/roomMicContext'
+import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { DevicePicker, MicLevel } from './devices'
-import { RoomView } from './RoomView'
+import { RoomView, type LobbyMic } from './RoomView'
 import {
   ROOM_OPTIONS,
   deviceErrorMessage,
@@ -43,6 +46,7 @@ import {
   disconnectMessage,
   noDeviceReason,
   roomMessage,
+  sendsRoomMic,
 } from './roomSupport'
 
 /** What being recorded means for the person about to join, behind the lobby notice's (i). */
@@ -189,6 +193,22 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const recheckGuest = useGuest()?.recheck
   // A guest's meeting page closes with the meeting (UC-04 EX-1), so a room that is over has nowhere to send them back.
   const asGuest = recheckGuest !== undefined
+  const [lobbyMic, setLobbyMic] = useState<LobbyMic>()
+  // ADR-0072: a hybrid meeting's room mic outlives the call screen. Out of the call (the lobby, after leaving or losing
+  // the connection) the floating card shows it is still on, and switches it off; a room that is over stops it.
+  const over = call.status === 'Ended' || call.status === 'Cancelled'
+  const roomMic = useHeldRoomMic(meeting.id, over ? false : undefined)
+  const showsRoomMic = roomMic !== null && roomMic.phase !== 'off' && phase.kind !== 'inRoom'
+  const roomRecordings = useRoomRecordings(meeting.id, showsRoomMic)
+  const roomMicCard = showsRoomMic && (
+    <RecorderCard
+      title={meeting.title}
+      room={roomMic}
+      list={roomRecordings.list}
+      open={roomRecordings.open}
+      onChanged={roomRecordings.reload}
+    />
+  )
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
@@ -228,16 +248,30 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
       Cancelled: roomMessage.cancelled,
       Open: '',
     }[call.status]
-    const over = call.status === 'Ended' || call.status === 'Cancelled'
-    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!(asGuest && over)} />
+    return (
+      <>
+        <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!(asGuest && over)} />
+        {roomMicCard}
+      </>
+    )
   }
 
   if (!call.available) {
-    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={roomMessage.notConfigured} />
+    return (
+      <>
+        <LobbyMessage meetingId={meeting.id} title={meeting.title} text={roomMessage.notConfigured} />
+        {roomMicCard}
+      </>
+    )
   }
 
   if (phase.kind === 'inRoom') {
-    return <RoomView room={room} meeting={meeting} myRole={call.myRole} onLeave={leave} />
+    return (
+      <>
+        <RoomView room={room} meeting={meeting} myRole={call.myRole} lobbyMic={lobbyMic} onLeave={leave} />
+        {roomMicCard}
+      </>
+    )
   }
 
   if (phase.kind === 'left') {
@@ -245,39 +279,46 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
     // Taken off the roster (MSG330): the meeting page is a 404 to them now, so the way out is the meeting list.
     const removed = phase.reason === DisconnectReason.PARTICIPANT_REMOVED
     return (
-      <LobbyMessage
-        meetingId={meeting.id}
-        title={meeting.title}
-        text={text}
-        showHome={!asGuest || canRejoin}
-        toList={removed}
-      >
-        {canRejoin && (
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => {
-              connectedRef.current = false
-              setPhase({ kind: 'lobby' })
-            }}
-          >
-            Vào lại
-          </button>
-        )}
-      </LobbyMessage>
+      <>
+        <LobbyMessage
+          meetingId={meeting.id}
+          title={meeting.title}
+          text={text}
+          showHome={!asGuest || canRejoin}
+          toList={removed}
+        >
+          {canRejoin && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                connectedRef.current = false
+                setPhase({ kind: 'lobby' })
+              }}
+            >
+              Vào lại
+            </button>
+          )}
+        </LobbyMessage>
+        {roomMicCard}
+      </>
     )
   }
 
   return (
-    <PreJoin
-      room={room}
-      meeting={meeting}
-      call={call}
-      onJoined={() => {
-        connectedRef.current = true
-        setPhase({ kind: 'inRoom' })
-      }}
-    />
+    <>
+      <PreJoin
+        room={room}
+        meeting={meeting}
+        call={call}
+        onJoined={(mic) => {
+          connectedRef.current = true
+          setLobbyMic(mic)
+          setPhase({ kind: 'inRoom' })
+        }}
+      />
+      {roomMicCard}
+    </>
   )
 }
 
@@ -314,7 +355,8 @@ function PreJoin({
   room: Room
   meeting: Meeting | GuestMeeting
   call: CallRoomState
-  onJoined: () => void
+  /** `mic`: the lobby's mic switch and the mic picked there. */
+  onJoined: (mic: LobbyMic) => void
 }) {
   const guest = useGuest()
   // A guest confirms the recording notice before the join button works (SCRUM-59); the server keeps that as evidence.
@@ -377,11 +419,12 @@ function PreJoin({
         setJoinError(roomMessage.unreachable)
         return
       }
-      onJoined()
+      onJoined({ on: micOn, deviceId: micId || undefined })
       if (speakerId && CAN_PICK_SPEAKER) {
         await room.switchActiveDevice('audiooutput', speakerId).catch(() => undefined)
       }
-      if (micOn) {
+      // A hybrid meeting's Secretary has no call mic of their own: the room opens its room mic instead (ADR-0072).
+      if (micOn && !sendsRoomMic(meeting, call.myRole)) {
         try {
           await room.localParticipant.setMicrophoneEnabled(true, micId ? { deviceId: micId } : undefined)
         } catch (err) {

@@ -37,6 +37,8 @@ export function micError(error: unknown) {
 interface MicSource {
   /** 0–1, on the same scale as the per-mic meter. */
   level: () => number
+  /** The mic itself: in a hybrid meeting the call room sends a copy of it to the people online (ADR-0072). */
+  track: MediaStreamTrack | null
   release: () => void
 }
 
@@ -44,9 +46,20 @@ interface MicSource {
  * The laptop's mic as 16 kHz blocks. Automatic gain stays on: unlike a personal mic, the room's must lift the voices
  * at the far end of the table.
  */
-async function openMic(onBlock: (samples: Float32Array) => void, onEnded: () => void): Promise<MicSource> {
+async function openMic(
+  onBlock: (samples: Float32Array) => void,
+  onEnded: () => void,
+  deviceId?: string,
+): Promise<MicSource> {
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+    audio: {
+      // The mic picked in the call room; a choice that is gone falls back to the default rather than failing.
+      ...(deviceId ? { deviceId: { ideal: deviceId } } : {}),
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      channelCount: 1,
+    },
   })
   const context = new AudioContext()
   try {
@@ -69,11 +82,14 @@ async function openMic(onBlock: (samples: Float32Array) => void, onEnded: () => 
   const silent = context.createGain()
   silent.gain.value = 0
   tap.connect(silent).connect(context.destination)
-  stream.getAudioTracks()[0]?.addEventListener('ended', onEnded)
+  const track = stream.getAudioTracks()[0] ?? null
+  track?.addEventListener('ended', onEnded)
   void context.resume()
   return {
     level: () => level,
+    track,
     release: () => {
+      track?.removeEventListener('ended', onEnded)
       tap.port.onmessage = null
       stream.getTracks().forEach((track) => track.stop())
       void context.close()
@@ -160,6 +176,11 @@ export class RoomMic {
     return this.source?.level() ?? 0
   }
 
+  /** The open mic, or null while it opens or after it stopped. */
+  track() {
+    return this.source?.track ?? null
+  }
+
   /** Seconds of audio waiting behind a part the server has not taken: the network is slow, nothing is lost. */
   behindSeconds() {
     return (this.tape?.behind() ?? 0) / BYTES_PER_SECOND
@@ -167,17 +188,15 @@ export class RoomMic {
 
   /**
    * Opens the mic and a take — a new one, or the one this device kept from a session cut off. `consent`: the
-   * participants were told just now, which the server asks for before the meeting's first take.
+   * participants were told just now, which the server asks for before the meeting's first take. `deviceId`: the mic
+   * picked in the call room; the default one otherwise.
    */
-  async start(consent: boolean, saved?: SavedTape) {
+  async start(consent: boolean, saved?: SavedTape, deviceId?: string) {
     const taping = saved ? Promise.resolve(this.resume(saved)) : this.fresh(consent)
     taping.catch(() => undefined)
     let source: MicSource
     try {
-      source = await openMic(
-        (samples) => this.take(samples),
-        () => this.lost('Micro đã bị ngắt khỏi máy. Lượt ghi đến lúc đó vẫn được lưu.'),
-      )
+      source = await openMic((samples) => this.take(samples), this.unplugged, deviceId)
     } catch (error) {
       // No mic, no take: one already opened is saved empty at once, so the meeting holds no take nobody feeds.
       if (!saved) void taping.then((tape) => saveTake(tape.recordingId)).catch(() => undefined)
@@ -198,6 +217,29 @@ export class RoomMic {
       throw error
     }
   }
+
+  /**
+   * Another mic picked in the call room while this one records: the take goes on from the new one, with no new take
+   * and no gap worth hearing. If the new one cannot open, the old one keeps recording and the error is thrown.
+   */
+  async switchDevice(deviceId: string) {
+    if (!this.source || this.stopped) return
+    let next: MicSource
+    try {
+      next = await openMic((samples) => this.take(samples), this.unplugged, deviceId)
+    } catch (error) {
+      throw new Error(micError(error))
+    }
+    if (!this.source || this.stopped) {
+      next.release()
+      return
+    }
+    const old = this.source
+    this.source = next
+    old.release()
+  }
+
+  private readonly unplugged = () => this.lost('Micro đã bị ngắt khỏi máy. Lượt ghi đến lúc đó vẫn được lưu.')
 
   /** Releases the mic, sends the rest and saves the take. Called while the mic is still opening, it never opens. */
   async stop() {

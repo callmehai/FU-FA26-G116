@@ -8,6 +8,7 @@ import { ConsentDialog } from './ConsentDialog'
 import { formatDuration } from './format'
 import { saveTake } from './roomMic'
 import type { RoomRecorder } from './useRoomRecorder'
+import { isFirstTake } from './useRoomRecordings'
 import { useFloatingBox, type Edge } from './useFloatingBox'
 
 /**
@@ -52,6 +53,17 @@ function liftToasts(card: HTMLElement) {
   document.documentElement.style.setProperty('--mic-dock-lift', `${lift}px`)
 }
 
+/** The level and what waits to be sent, read from the mic a few times a second while it is on. */
+function useMeter(meter: RoomRecorder['meter'], on: boolean) {
+  const [value, setValue] = useState({ level: 0, behindSeconds: 0 })
+  useEffect(() => {
+    if (!on) return
+    const timer = window.setInterval(() => setValue(meter()), 125)
+    return () => window.clearInterval(timer)
+  }, [meter, on])
+  return on ? value : { level: 0, behindSeconds: 0 }
+}
+
 function useNow(on: boolean) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -86,6 +98,7 @@ export function RecorderCard({
   const { phase, unfinished } = room
   const on = phase === 'on'
   const now = useNow(on)
+  const { level, behindSeconds } = useMeter(room.meter, on)
 
   // The page scrolls past the card (it reads the height here), and a card that grew is pulled back inside the window.
   useEffect(() => {
@@ -111,7 +124,7 @@ export function RecorderCard({
   const kept = !on && phase !== 'starting' && unfinished !== null
   // A take open that is not this laptop's: on another device, or this one's own that a closed tab left behind.
   const elsewhere = !on && phase === 'off' && !kept && open !== null ? open : null
-  const firstTake = !list?.items.some((r) => r.source === 'BrowserCapture' && r.status === 'Available' && r.takes)
+  const firstTake = isFirstTake(list)
   // A problem must be seen, whatever the Secretary chose.
   const minimised = min && !room.error && !kept && !elsewhere
   useLayoutEffect(() => {
@@ -145,7 +158,9 @@ export function RecorderCard({
           : kept
             ? 'Còn lượt ghi dở trên máy này'
             : elsewhere
-              ? `Đang ghi ở nơi khác · ${elsewhere.createdByName}`
+              ? room.otherTab
+                ? 'Đang ghi ở tab khác'
+                : `Đang ghi ở nơi khác · ${elsewhere.createdByName}`
               : room.error
                 ? 'Chưa ghi được'
                 : 'Mic phòng đang tắt'
@@ -222,7 +237,7 @@ export function RecorderCard({
         </div>
         {kept ? (
           <div className="mic-choices">
-            <button type="button" className="btn btn-primary btn-sm" onClick={room.resumeUnfinished}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => room.resumeUnfinished()}>
               <Icon name="mic" size={16} />
               Ghi tiếp
             </button>
@@ -232,7 +247,9 @@ export function RecorderCard({
             </button>
           </div>
         ) : elsewhere ? (
-          elsewhere.canClose && (
+          // Fed by another tab of this browser (the call room's): saving it here would cut that tab's mic.
+          elsewhere.canClose &&
+          !room.otherTab && (
             <div className="mic-choices">
               <button
                 type="button"
@@ -259,7 +276,7 @@ export function RecorderCard({
             >
               <Icon name={on ? 'mic' : 'micOff'} size={22} />
             </button>
-            <Meter level={room.level} live={on} />
+            <Meter level={level} live={on} />
           </div>
         )}
         {room.error ? (
@@ -272,10 +289,10 @@ export function RecorderCard({
             <Icon name="alertCircle" size={16} />
             {room.notice}
           </p>
-        ) : on && room.behindSeconds > BEHIND_NOTICE_SECONDS ? (
+        ) : on && behindSeconds > BEHIND_NOTICE_SECONDS ? (
           <p className="mic-notice" role="status">
             <Icon name="alertCircle" size={16} />
-            Mạng chậm · {formatDuration(room.behindSeconds * 1000)} chưa gửi, vẫn giữ trên máy
+            Mạng chậm · {formatDuration(behindSeconds * 1000)} chưa gửi, vẫn giữ trên máy
           </p>
         ) : (
           phase === 'off' &&

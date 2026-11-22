@@ -4940,6 +4940,8 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */
 .room-recording { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border: 0; border-radius: 11px; background: var(--danger); color: var(--surface); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .room-recording-short { display: none; }
+/* The hybrid Secretary's room mic (ADR-0072): says so, does nothing when pressed; the mic button is the switch. */
+.room-recording.is-static { cursor: default; }
 .room-recording-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--surface); color: var(--danger); font-size: 11px; line-height: 16px; text-align: center; }
 @media (max-width: 560px) {
   .room-recording-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

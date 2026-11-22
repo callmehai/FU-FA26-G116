@@ -1,5 +1,15 @@
 import { DisconnectReason, MediaDeviceFailure, type Participant, type RoomOptions, VideoPresets } from 'livekit-client'
 import type { CallParticipantMetadata, MeetingRole } from '../../../types/call'
+import type { GuestMeeting } from '../../../types/guest'
+import type { Meeting } from '../../../types/meeting'
+
+/**
+ * ADR-0072: in a hybrid meeting the Secretary sits in the room, so their call mic is the room mic. One switch records
+ * the room as the room take and sends the same sound to the people online; their own per-mic capture stays off.
+ */
+export function sendsRoomMic(meeting: Meeting | GuestMeeting, role: MeetingRole) {
+  return 'mode' in meeting && meeting.mode === 'Hybrid' && role === 'Secretary'
+}
 
 /**
  * Module-level on purpose: a new options object per render would give the Room a new

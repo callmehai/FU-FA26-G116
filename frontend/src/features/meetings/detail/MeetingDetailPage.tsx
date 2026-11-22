@@ -34,7 +34,7 @@ import { RecorderCard } from '../../recordings/RecorderCard'
 import { MinutesPanel } from '../../minutes/MinutesPanel'
 import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
-import { useRoomRecorder } from '../../recordings/useRoomRecorder'
+import { useHeldRoomMic } from '../../recordings/roomMicContext'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
@@ -213,15 +213,25 @@ function MeetingDetail({
   const perMic = meeting.mode !== 'InPerson'
   const running = meeting.status === 'InProgress'
   const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online' && onRoster)
-  const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
-  // ADR-0040: an in-person or hybrid meeting has a room, recorded by the Secretary here (as the server's HasRoom).
-  const recordsRoom = meeting.mode !== 'Online' && running && meeting.myMeetingRole === 'Secretary'
+  // ADR-0072: the mic is held above the routes, so going to the call room in this tab and back keeps it on.
+  const room = useHeldRoomMic(meeting.id, running, roomRecordings.reload)
+  // ADR-0040: an in-person meeting's room is recorded by the Secretary here. A hybrid one's switch is the Secretary's
+  // mic in the call room, which the people online hear (ADR-0072): here the card only shows a mic still on, a take
+  // kept on this laptop, or one open elsewhere.
+  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
   const showsRecorder =
-    recordsRoom ||
-    room.phase !== 'off' ||
-    room.unfinished !== null ||
-    (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
+    room !== null &&
+    (recordsRoom ||
+      room.phase !== 'off' ||
+      room.unfinished !== null ||
+      (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null))
+  // A take opening or closing: whether the call room's tab of this browser feeds it, so the card says so.
+  const openTake = roomRecordings.open?.id
+  const recheckRoom = room?.recheck
+  useEffect(() => {
+    void recheckRoom?.()
+  }, [recheckRoom, openTake])
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -491,7 +501,7 @@ function MeetingDetail({
           />
         )}
 
-        {showsRecorder && (
+        {showsRecorder && room && (
           <RecorderCard
             title={meeting.title}
             room={room}

@@ -3,15 +3,18 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import type { RoomTakeSaved } from '../../types/recording'
 import { RoomMic, saveTake, sendPart } from './roomMic'
+import { holdRoomMic } from './roomMicHeld'
 import { RoomTape, TapeClosed, TapeRefused, type SavedTape } from './roomTape'
 import { tapeStore } from './tapeStore'
 import { DEFAULT_PURPOSE } from './useRecordingSave'
 
 /**
- * ADR-0041 — the Secretary's room mic, held by the meeting page so that moving between its tabs never stops it. One
- * switch: on opens a take, off saves it into the meeting's room recording, which is transcribed again as a whole. A
- * take this device kept from a session cut off (a closed tab, a crash) is offered to carry on or to save. It stops on
- * its own when the meeting is no longer running, and when the page is left.
+ * ADR-0041 — the Secretary's room mic. One switch: on opens a take, off saves it into the meeting's room recording,
+ * which is transcribed again as a whole. A take this device kept from a session cut off (a closed tab, a crash) is
+ * offered to carry on or to save. It stops on its own when the meeting is no longer running, and when it unmounts.
+ *
+ * ADR-0072 — held above the routes (RoomMicProvider), so moving between the meeting page and its call room in one tab
+ * keeps it on; in a hybrid meeting the call room sends its {@link RoomRecorder.track} to the people online.
  */
 
 export type RoomMicPhase = 'off' | 'starting' | 'on' | 'saving'
@@ -34,8 +37,9 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
   // The mic stopped on its own and nothing was lost: the take was saved, here or elsewhere. Said, not alarmed.
   const [notice, setNotice] = useState<string | null>(null)
   const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [level, setLevel] = useState(0)
-  const [behind, setBehind] = useState(0)
+  const [track, setTrack] = useState<MediaStreamTrack | null>(null)
+  // The take open on the server is fed by another tab of this browser (the call room's, say), not another device.
+  const [otherTab, setOtherTab] = useState(false)
   const [unfinished, setUnfinished] = useState<SavedTape | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
   const mic = useRef<RoomMic | null>(null)
@@ -54,7 +58,9 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
   // A take this device kept, unless another tab of it is recording that take right now.
   const look = useCallback(async () => {
     const saved = await tapeStore.load(meetingId)
-    setUnfinished(saved && !(await heldByAnotherTab(meetingId)) ? saved : null)
+    const elsewhere = await heldByAnotherTab(meetingId)
+    setOtherTab(elsewhere)
+    setUnfinished(saved && !elsewhere ? saved : null)
   }, [meetingId])
   useEffect(() => {
     void Promise.resolve().then(look)
@@ -69,7 +75,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
   )
 
   const run = useCallback(
-    async (consent: boolean, saved?: SavedTape) => {
+    async (consent: boolean, saved?: SavedTape, deviceId?: string) => {
       setError(null)
       setNotice(null)
       setPhase('starting')
@@ -106,6 +112,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
           mic.current = null
           release.current?.()
           setStartedAt(null)
+          setTrack(null)
           setPhase('off')
           if (!failed) setNotice(message)
           void look()
@@ -114,7 +121,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
       })
       opening.current = next
       try {
-        await next.start(consent, saved)
+        await next.start(consent, saved, deviceId)
       } catch (failure) {
         if (opening.current !== next) return
         opening.current = null
@@ -129,6 +136,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
       opening.current = null
       mic.current = next
       setUnfinished(null)
+      setTrack(next.track())
       setStartedAt(Date.now())
       setPhase('on')
       changedRef.current()
@@ -142,8 +150,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     if (!current) return
     mic.current = null
     setStartedAt(null)
-    setLevel(0)
-    setBehind(0)
+    setTrack(null)
     setPhase('saving')
     saving.current = current
       .stop()
@@ -189,15 +196,24 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     setPhase('off')
   }, [unfinished, said, look])
 
-  // The meter and the "still sending" notice, a few times a second.
-  useEffect(() => {
-    if (phase !== 'on') return
-    const timer = window.setInterval(() => {
-      setLevel(mic.current?.level() ?? 0)
-      setBehind(mic.current?.behindSeconds() ?? 0)
-    }, 125)
-    return () => window.clearInterval(timer)
-  }, [phase])
+  /** Another mic picked in the call room while this one records: the take goes on from it. */
+  const switchDevice = useCallback(async (deviceId: string) => {
+    const current = mic.current
+    if (!current) return
+    try {
+      await current.switchDevice(deviceId)
+      if (mic.current === current) setTrack(current.track())
+    } catch (failure) {
+      toast.show(errorMessage(failure), 'error')
+    }
+  }, [toast])
+
+  // Read by whoever draws the meter, a few times a second: polled there, so the page holding the mic is not drawn
+  // again at that pace (the call room would be).
+  const meter = useCallback(
+    () => ({ level: mic.current?.level() ?? 0, behindSeconds: mic.current?.behindSeconds() ?? 0 }),
+    [],
+  )
 
   // The meeting ended while the mic was on: the take is saved.
   useEffect(() => {
@@ -206,6 +222,10 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
 
   // A reload or a closed tab cuts the mic off; the browser asks first. What it recorded waits on the device.
   const holding = phase === 'on' || phase === 'saving'
+  useEffect(() => {
+    holdRoomMic(meetingId, holding)
+    return () => holdRoomMic(meetingId, false)
+  }, [meetingId, holding])
   useEffect(() => {
     if (!holding) return
     const warn = (event: BeforeUnloadEvent) => event.preventDefault()
@@ -234,17 +254,25 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     error,
     notice,
     startedAt,
-    level: phase === 'on' ? level : 0,
-    /** Seconds recorded but not on the server yet, past the part still filling. */
-    behindSeconds: behind,
+    /** The level (0–1) and the seconds recorded but not on the server yet, past the part still filling. */
+    meter,
+    /** The open mic while it is on, for the call room to send to the people online in a hybrid meeting. */
+    track,
+    otherTab,
+    /** Looks again whether a take was kept on this device, and whether another tab of it records. */
+    recheck: look,
     unfinished,
     purpose,
     setPurpose,
-    /** `consent`: the participants were told just now; asked before the meeting's first take only. */
-    start: (consent: boolean) => void run(consent),
+    /**
+     * `consent`: the participants were told just now; asked before the meeting's first take only. `deviceId`: the mic
+     * picked in the call room.
+     */
+    start: (consent: boolean, deviceId?: string) => void run(consent, undefined, deviceId),
+    switchDevice: (deviceId: string) => void switchDevice(deviceId),
     stop,
-    resumeUnfinished: () => {
-      if (unfinished) void run(false, unfinished)
+    resumeUnfinished: (deviceId?: string) => {
+      if (unfinished) void run(false, unfinished, deviceId)
     },
     finishUnfinished: () => void finishUnfinished(),
   }
