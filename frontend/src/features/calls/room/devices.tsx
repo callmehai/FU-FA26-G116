@@ -201,7 +201,21 @@ export function DevicePicker({
 }
 
 /** A picker inside the room: switches the device the call is using (SCRUM-42). */
-export function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: IconName; title: string }) {
+/**
+ * `pick` takes the choice over from the call: a hybrid meeting's room mic is not the call's own track, so switching the
+ * call's device would replace it in the call behind the room take's back (ADR-0072).
+ */
+export function DeviceSelect({
+  kind,
+  icon,
+  title,
+  pick,
+}: {
+  kind: MediaDeviceKind
+  icon: IconName
+  title: string
+  pick?: { activeId: string | undefined; onPick: (id: string) => void }
+}) {
   const toast = useToast()
   const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({
     kind,
@@ -213,10 +227,10 @@ export function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; ico
       title={title}
       icon={icon}
       options={deviceOptions(devices, title)}
-      activeId={activeDeviceId}
+      activeId={pick ? (pick.activeId ?? activeDeviceId) : activeDeviceId}
       emptyReason={noDeviceReason(kind, title)}
       onPick={(id) =>
-        setActiveMediaDevice(id).catch((err: unknown) =>
+        pick ? pick.onPick(id) : setActiveMediaDevice(id).catch((err: unknown) =>
           toast.show(
             kind === 'audiooutput' ? errorMessage(err) : deviceErrorMessage(err, kind === 'audioinput' ? 'micro' : 'camera'),
             'error',

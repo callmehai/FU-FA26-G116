@@ -48,19 +48,21 @@ public sealed class SpeechWorkerClientTests
     }
 
     [Fact]
-    public async Task Word_times_are_read_when_the_worker_sends_them_and_absent_when_an_older_one_does_not()
+    public async Task Word_times_and_scores_are_read_when_the_worker_sends_them_and_absent_when_an_older_one_does_not()
     {
         var client = Client(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("""
                 {"durationMs":3000,"language":"vi","asrModel":"m","embeddingModel":"e","segments":[
-                  {"startMs":0,"endMs":1200,"speaker":"SPEAKER_00","text":"Xin chào.","levelDbfs":-20.5,"wordStartsMs":[40,480]},
+                  {"startMs":0,"endMs":1200,"speaker":"SPEAKER_00","text":"Xin chào.","levelDbfs":-20.5,"wordStartsMs":[40,480],"wordConfidence":[98,31]},
                   {"startMs":1500,"endMs":3000,"speaker":"SPEAKER_00","text":"Tạm biệt."}],"speakers":[]}
                 """, Encoding.UTF8, "application/json"),
         });
         var result = await Transcribe(client);
         Assert.Equal([40L, 480L], result.Segments[0].WordStartsMs);
         Assert.Null(result.Segments[1].WordStartsMs);
+        Assert.Equal([98, 31], result.Segments[0].WordConfidence);
+        Assert.Null(result.Segments[1].WordConfidence);
     }
 
     [Fact]

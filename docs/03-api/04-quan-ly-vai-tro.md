@@ -60,14 +60,17 @@ là bốn dòng **mặc định** có id cố định. `Capability` **vẫn là 
 ### Vai trò mặc định — `BuiltInRoles`
 
 [`backend/TrustCabinet.Domain/Access/BuiltInRoles.cs`](../../backend/TrustCabinet.Domain/Access/BuiltInRoles.cs)
-giữ bốn id cố định, sinh một lần rồi dán cứng:
+giữ ba id cố định, sinh một lần rồi dán cứng. Từ [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md) Chủ toạ và Thư ký chỉ là vai trò **trong
+cuộc họp**, không còn là vai trò hệ thống:
 
-| Vai trò | `id` | `name` |
-|---|---|---|
-| Chair | `01a0ce78-7202-7945-be13-d2022cf25203` | Chủ toạ |
-| Secretary | `01a0ce78-7203-7c7f-8326-7a0baebf4c22` | Thư ký |
-| Member | `01a0ce78-7204-7558-b181-e908a08e83a3` | Thành viên |
-| Admin | `01a0ce78-7205-7486-b976-d52d428d5451` | Quản trị viên |
+| Vai trò | `id` | `name` | Quyền mặc định |
+|---|---|---|---|
+| Member | `01a0ce78-7204-7558-b181-e908a08e83a3` | Thành viên | `MeetingCreator` |
+| Approver | `01a0ce78-7202-7945-be13-d2022cf25203` | Phê duyệt viên | `MeetingCreator`, `MeetingApprover` |
+| Admin | `01a0ce78-7205-7486-b976-d52d428d5451` | Quản trị viên | `MeetingCreator`, `VoiceCollector`, `AdminUsers` |
+
+`Approver` dùng lại id của vai trò "Chủ toạ" cũ. Vai trò "Thư ký" cũ (`01a0ce78-7203-7c7f-8326-7a0baebf4c22`) đã bị xoá;
+migration `SystemRolesWithoutChairSecretary` chuyển người giữ nó sang Phê duyệt viên (mục 3a).
 
 Backend dùng `BuiltInRoles.IsDefault` để đánh dấu `Member` là vai trò mặc định khi tạo tài khoản;
 frontend chỉ đọc cờ `isDefault`. Các quy tắc phân quyền vẫn dựa trên capability, không dựa trên tên
@@ -97,6 +100,22 @@ tạo, thay vì âm thầm đổi người giữ nó thành `Member`.
 trận; `Down()` rồi `Up()` lại vẫn giữ nguyên. `RolesAsDataMigrationTests` kiểm lại việc này trên
 PostgreSQL thật mỗi lần chạy test.
 
+### 3a. Migration `SystemRolesWithoutChairSecretary` — ADR-0075
+
+Chỉ đổi dữ liệu, không đổi schema ([ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md)):
+
+1. Vai trò tự tạo nào đã tên "Phê duyệt viên" được đổi tên sang một bên (thêm 8 ký tự đầu của id), người giữ và quyền giữ
+   nguyên, để vai trò mặc định lấy được tên đó (unique index trên `name`).
+2. "Chủ toạ" đổi thành "Phê duyệt viên", **giữ id** (DB nào thiếu dòng này thì chèn).
+3. Mọi tài khoản giữ "Thư ký" chuyển sang Phê duyệt viên (gần nhất về quyền, không ai mất vai trò), rồi xoá "Thư ký";
+   `role_capabilities` của nó đi theo (`CASCADE`).
+4. Xoá mọi dòng `role_capabilities` có `MinutesEditor`, kể cả của vai trò tự tạo như "All-in-one". Các quyền khác của vai
+   trò tự tạo giữ nguyên.
+5. Ba vai trò mặc định nhận đúng quyền mặc định ở bảng trên (bỏ qua nếu `role_capabilities` đang trống: khi đó
+   `ReferenceDataSeeder` điền cả bảng).
+
+`Down()` dựng lại bốn vai trò và quyền mặc định cũ; không biết ai từng giữ "Thư ký" nên họ ở lại "Chủ toạ".
+
 `ReferenceDataSeeder` chèn vai trò mặc định **còn thiếu** theo id (không bao giờ cập nhật dòng đã
 có), rồi mới đến ma trận (chỉ khi bảng rỗng).
 
@@ -125,7 +144,7 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 ]
 ```
 
-- **Thứ tự cố định:** bốn vai trò mặc định trước (`Chair`, `Secretary`, `Member`, `Admin`), rồi vai
+- **Thứ tự cố định:** ba vai trò mặc định trước (`Member`, `Approver`, `Admin`), rồi vai
   trò tự tạo theo `created_at`. `roles` trong `GET /api/roles/capabilities` dùng **cùng thứ tự**.
 - `userCount` đếm **mọi** tài khoản mang vai trò, kể cả đã vô hiệu hoá — đúng con số chặn việc xoá.
 - `isDefault` đánh dấu vai trò được chọn sẵn khi tạo tài khoản; frontend không cần biết id seed.
@@ -134,7 +153,7 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 ### 4.2 `POST /api/roles`
 
 ```json
-{ "name": "Thư ký phó", "description": "Hỗ trợ thư ký soạn biên bản.", "capabilities": ["MinutesEditor"] }
+{ "name": "Thư ký phó", "description": "Tạo cuộc họp thay thư ký.", "capabilities": ["MeetingCreator"] }
 ```
 
 - `name`: bắt buộc; **trim**, gộp khoảng trắng liên tiếp và chuẩn hoá Unicode **NFC** trước khi

@@ -13,7 +13,6 @@ public sealed class FakeVoiceIdRepository : IVoiceIdRepository
 {
     public List<VoiceConsent> Consents { get; } = [];
     public List<VoiceSample> Samples { get; } = [];
-    public List<Meeting> Meetings { get; } = [];
     public List<string> Steps { get; } = [];
 
     public Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct)
@@ -56,23 +55,8 @@ public sealed class FakeVoiceIdRepository : IVoiceIdRepository
         return Task.FromResult(0);
     }
 
-    public Task<IReadOnlyList<VoiceConsentNotice>> ListConsentNoticesAsync(Guid[] userIds, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<VoiceConsentNotice>>([.. Consents
-            .Where(c => userIds.Contains(c.UserId) && c.WithdrawnAt == null).Select(c => new VoiceConsentNotice(c.UserId, c.NoticeVersion))]);
-
-    public Task<IReadOnlyList<CollectedSampleRow>> ListCollectedSamplesAsync(Guid[] userIds, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<CollectedSampleRow>>([.. Samples
-            .Where(s => userIds.Contains(s.UserId) && s.CollectedById != null)
-            .Select(s => new CollectedSampleRow(s.Id, s.UserId, s.MeetingId, s.CreatedAt, s.SpeechMs, s.CollectedBy?.FullName ?? ""))]);
-
-    public Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct)
-        => Task.FromResult(Samples.SingleOrDefault(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null));
-
     public Task<VoiceSample?> FindProxySampleAsync(Guid userId, Guid sampleId, bool tracked, CancellationToken ct)
         => Task.FromResult(Samples.SingleOrDefault(s => s.Id == sampleId && s.UserId == userId && s.CollectedById != null));
-
-    public Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct)
-        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == meetingId));
 
     public void Add(VoiceConsent consent) => Consents.Add(consent);
     public void Add(VoiceSample sample) => Samples.Add(sample);

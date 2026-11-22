@@ -58,11 +58,12 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_MODELS_DIR` | `~/.cache/trustcabinet-speech/models` (image: `/models`) | Thư mục model |
 | `SPEECH_API_KEY` | trống | Nếu đặt, mọi route trừ `/health` phải có `Authorization: Bearer <key>` |
 | `SPEECH_THREADS` | `min(4, số CPU)` | Số luồng cho mỗi model |
-| `SPEECH_CLUSTER_THRESHOLD` | `0.5` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
+| `SPEECH_CLUSTER_THRESHOLD` | `0.72` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_MIN_CONSISTENCY` | `0.40` | Ngưỡng "chỉ một người nói" của mẫu giọng, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_CLIP_MAX_GAIN_DB` | `6` | Mức tăng âm tối đa của hồ sơ `clip` |
 | `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
+| `SPEECH_NUMBERS` | `1` | `0` giữ số bằng chữ ("hai mươi ba" thay vì "23"), xem bước 8 ở [Cách chạy bên trong](#cách-chạy-bên-trong). Đo WER với đáp án viết bằng chữ thì đặt `0` |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -98,7 +99,7 @@ Không cần xác thực.
   "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
-    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"]}
+    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"], "wordConfidence": [99, 97, 64, "… một số cho mỗi từ"]}
   ],
   "speakers": [
     {"label": "SPEAKER_00", "speechMs": 11846, "embedding": [-0.051461, 0.011607, "… 512 số, độ dài 1"]}
@@ -116,7 +117,11 @@ Không cần xác thực.
   một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
 - `wordStartsMs`: mốc bắt đầu (ms trong bản ghi) của từng từ trong `text`, lấy từ mốc của từng token mà Gipformer
   trả (`result.timestamps`, token mở đầu một từ mang dấu `▁`). Bước dấu câu không thêm bớt từ nên mốc vẫn khớp.
-  `null` khi số mốc không khớp số từ: không bao giờ chia đều để đoán.
+  Bước viết số gộp nhiều từ thành một ("hai mươi ba" → "23"): từ mới lấy mốc của từ đầu. `null` khi số mốc không khớp
+  số từ: không bao giờ chia đều để đoán.
+- `wordConfidence`: máy nhận dạng chắc đến đâu với từng từ trong `text`, theo phần trăm (0–100). Gipformer trả xác suất
+  (log) của từng token nó chọn (`result.ys_log_probs`); một từ gồm nhiều token lấy token kém chắc nhất, một con số
+  gộp từ nhiều từ lấy từ kém chắc nhất. `null` khi số điểm không khớp số từ, như `wordStartsMs`.
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
   bằng viBERT-capu (bước 7 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
   đoạn trước thì bắt đầu bằng chữ thường; đoạn đầu của một lượt nói luôn viết hoa, và một đoạn bị bỏ ngỏ ngay trước
@@ -172,7 +177,7 @@ Các bước xử lý một bản ghi:
    - Một khung lẻ khác nhãn với cả hai khung bên cạnh thì lấy theo nhãn của chúng.
    - Các khung liền nhau cùng nhãn ghép thành một lượt nói.
    - **Gộp lần hai**: mỗi nhóm được tạo một vector giọng tổng thể (tối đa 30 giây âm thanh của
-     nhóm). Hai nhóm có cosine từ 0.85 trở lên là cùng một người bị tách đôi, nên được gộp lại,
+     nhóm). Hai nhóm có cosine từ 0.8 trở lên là cùng một người bị tách đôi, nên được gộp lại,
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
 5. **Bỏ chỗ gần như im lặng** (chỉ hồ sơ `room`): đoạn nào khi đến micro (trước bước tăng âm) vừa
    nhỏ hơn −45 dBFS vừa nhỏ hơn trung vị các đoạn của bản ghi từ 25 dB trở lên thì bị bỏ trước khi
@@ -188,7 +193,21 @@ Các bước xử lý một bản ghi:
    không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
    chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
    lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
-8. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
+8. **Viết số bằng chữ số** (`speech/numbers.py`, [ADR-0076](../../docs/05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)),
+   sau bước dấu câu vì bước đó cần đúng số từ của model. Luật tự viết, thận trọng:
+   - số từ hai từ trở lên đúng ngữ pháp thì đổi: "hai mươi ba" → 23, "một trăm linh năm" → 105, "hai nghìn không trăm
+     hai sáu" → 2026, "hai trăm triệu" → "200 triệu", "hai triệu năm trăm nghìn" → 2.500.000;
+   - số một từ giữ chữ ("một số", "hai người", "mười phân vẹn mười"), trừ khi có đơn vị: "năm phẩy năm" → 5,5,
+     "năm phần trăm" → 5%, "ba giờ" → 3 giờ ("chờ một phút" giữ), "ngày hai tháng chín" → ngày 2 tháng 9;
+   - hai chữ số liền nhau là khoảng ("hai ba người", "sáu bảy triệu") nên giữ, trừ "hai mốt", "hai tư", "ba lăm" (chỉ
+     hàng chục mới có các đơn vị đó) và ngày ("ngày hai hai tháng mười một" → ngày 22 tháng 11);
+   - từ bốn chữ số đọc rời trở lên là mã hay năm: "hai không hai sáu" → 2026;
+   - sau "thứ" một từ giữ nguyên ("thứ hai"); "hai mươi năm" → "20 năm" (25 đọc là "hai mươi lăm");
+   - dấu câu giữa hai từ cắt con số ở đó.
+
+   Từ 10.000 có dấu chấm phân cách, số bốn chữ số thì không, thập phân dùng dấu phẩy. Từ gộp lấy mốc của từ đầu và độ
+   chắc thấp nhất, nên `wordStartsMs`, `wordConfidence` vẫn mỗi từ một số.
+9. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
 
 Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + embedding cửa sổ 10 giây). Đo trên
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
@@ -199,6 +218,11 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
   đường dẫn file tạm và kết quả JSON qua lại. Process con chết (ví dụ hết RAM) thì request đó
   nhận `500`, request sau chạy trên process con mới.
 - Request thứ hai đến khi đang bận sẽ **xếp hàng**, không bị từ chối.
+- **Bên gọi ngắt kết nối thì dừng.** Trong lúc chạy `/v1/transcribe`, process HTTP cứ nửa giây xem kết nối còn không;
+  bên gọi đã đóng thì báo process con qua một danh sách số việc đã huỷ dùng chung, và process con dừng ở bước kế tiếp
+  (giữa hai khung giọng, hai lô câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
+  lượt mic phòng mới đến lúc bản cũ còn đang chạy. Đo trên máy dev: bên gọi ngắt ở giây thứ 6 của một bản ghi 9 phút, worker
+  dừng chưa tới nửa giây sau đó, và request kế tiếp chạy ngay.
 
 ## Kiểm thử
 
@@ -222,7 +246,8 @@ Thư mục cần `enrolA.wav` và `enrolB.wav` (mỗi file một giọng, 8–30
 - mẫu ghép hai giọng bị từ chối là `multiple_speakers`.
 
 Đo chất lượng trên giọng thật (VIVOS, giọng của nhóm, một cuộc họp có bản gỡ băng): xem
-[eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó.
+[eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó. Đáp án viết số bằng chữ, nên đo WER thì chạy
+worker với `SPEECH_NUMBERS=0`.
 
 ## Hiệu chỉnh
 
@@ -286,11 +311,12 @@ còn giọng mẫu để sạch. Gợi ý theo luật của backend (`SpeakerMat
 
 "Người lạ" là người nói nhưng không có trong danh sách được gợi ý. Ở 0.5 thì người lạ bị gọi bằng tên
 người khác; ở 0.6 thì không, và cũng không bỏ sót thêm ai. Từ 0.65 trở lên, bộ "khác kênh" bắt đầu bỏ
-sót người. Vì vậy backend từng mặc định dùng `VoiceId:SuggestThreshold = 0.6`; từ 21/11/2026 mọi ngưỡng `VoiceId:*` hạ xuống 0.5 (biên 0.05).
+sót người. Vì vậy backend mặc định dùng `VoiceId:SuggestThreshold = 0.6`. Ngày 21/11/2026 mọi ngưỡng `VoiceId:*` bị hạ
+xuống 0.5 rồi được trả lại sau buổi thử cùng ngày ([ADR-0074](../../docs/05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)).
 
-Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold` (từng là 0.7), và từ `VoiceId:AutoAssignThreshold`
-(từng là 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
-chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold` (từng là 0.8) thì nhận người đó
+Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold = 0.7`, và từ `VoiceId:AutoAssignThreshold =
+0.6` (bằng ngưỡng gợi ý từ 22/11; 0.7 ngày 21/11, trước đó 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
+chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold = 0.8` thì nhận người đó
 ([ADR-0050](../../docs/05-decisions/0050-giong-gan-trung-nhan-cung-ten.md), đo bằng `evaluate.py --inherit`). Số đo và lý do
 chọn nằm trong [13-nhan-dien-giong-noi.md](../../docs/03-api/13-nhan-dien-giong-noi.md#gợi-ý-và-gán-tên-trong-bản-gỡ-băng).
 
@@ -325,6 +351,27 @@ hợp. Khung 3 giây cho vector ổn định hơn: hai khung liền nhau của c
 thì vector không còn tin được: hai nhóm cùng một người chỉ đạt 0.36–0.81, trong khi hai người
 khác nhau có cặp tới 0.73. Ngưỡng 0.85 vì vậy chỉ gộp khi gần như chắc chắn. Tách thừa một người
 thành hai nhãn ít hại hơn gộp nhầm hai người: thư ký gán được cả hai nhãn cho cùng một người.
+
+**Phòng họp thật của nhóm, 21/11/2026** ([ADR-0074](../../docs/05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)).
+Hai bản ghi mic phòng của buổi thử: *test mic* (15 phút, 4 người cùng phòng, có tiếng quán cà phê) và *họp kết hợp*
+(9 phút, 3 người cùng phòng, người thứ tư nói qua loa laptop). Ở ngưỡng cũ 0.5 / 0.85, máy ra 41 và 15 giọng, đúng như
+trên server. Đo lại bằng chính code worker, chỉ bỏ bước chuyển chữ (`tune.py`, không nằm trong repo vì bản ghi là dữ liệu
+cá nhân); "đúng người" là mỗi giọng chỉ gồm lời của một người, đối chiếu theo thời gian với cấu hình có điểm giọng mẫu:
+
+| Gom nhóm / gộp lần hai | *test mic*: số giọng (≥ 10 giây) | *họp kết hợp*: số giọng (≥ 10 giây) | Ghi chú |
+|---|---|---|---|
+| 0.5 / 0.85 (cũ) | 41 (14) | 15 (3) | |
+| 0.6 / 0.8 | 19 (8) | 8 (3) | |
+| 0.7 / 0.8 | 14 (7) | 6 (5) | *test mic* có một giọng trộn lời Lộc và Hải |
+| **0.72 / 0.8** | **12 (6)** | **5 (4)** | mỗi giọng một người; người tách đôi là Lộc, Trường Huy |
+| 0.75 / 0.8 | 10 (6) | 4 (4) | mỗi giọng một người |
+| 0.78 / 0.8 | 9 (6) | 3 (3) | *họp kết hợp*: Khánh bị gộp vào Hải |
+| 0.8 / 0.85 | 9 (7) | 4 (4) | *họp kết hợp*: Khánh bị gộp vào Hải |
+
+Ngưỡng gom nhóm không đổi đều theo một chiều: 0.65 cũng gộp Khánh vào Hải ở *họp kết hợp*, trong khi 0.7–0.75 thì không.
+Chọn 0.72, cách chỗ gộp nhầm người ở 0.78 một khoảng. Trong phòng đó, giọng Khánh và Hải giống nhau 0.73; hai nửa của
+cùng một người giống nhau 0.75–0.82, nên gộp lần hai hạ từ 0.85 xuống 0.8 (vẫn trên mức 0.745 của hai người khác nhau đo
+ngày 31/10). Người bị tách đôi dưới 0.8 vẫn hiện hai giọng; Thư ký gán cùng tên là gộp lại. Đo lại trên buổi thử sau.
 
 Ba đoạn tổng hợp còn sai đều là các cặp giọng nữ tiếng Anh của macOS (Samantha, Karen, Moira),
 gần như giống hệt nhau.

@@ -1,4 +1,5 @@
 import { useEffect, type MouseEvent } from 'react'
+import { holdsRoomMic } from '../recordings/roomMicHeld'
 
 /**
  * The call room and the meeting page live in two tabs (PO, 2026-11-19): joining opens the room in a tab of its own, so
@@ -64,10 +65,11 @@ export function showInTab(path: string): boolean {
 
 /**
  * Leaves the room's tab for the meeting page: brings that tab forward and closes this one, when this tab was opened by
- * the app and so may close itself. False when it may not; the caller then shows the meeting page here.
+ * the app and so may close itself. False when it may not, or when this tab holds the room mic, which closing it would
+ * cut (ADR-0072); the caller then shows the meeting page here.
  */
 export function returnToMeetingTab(path: string): boolean {
-  if (!window.opener || isInstalledApp()) return false
+  if (!window.opener || isInstalledApp() || holdsRoomMic()) return false
   if (!showInTab(path)) return false
   window.close()
   return window.closed

@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Seed;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests;
 
@@ -257,7 +258,8 @@ public class DatabaseModelTests
 
         Assert.Equal(BuiltInRoles.All, roles.Select(r => r.Id));
         Assert.Equal(
-            ["Chủ toạ", "Thư ký", "Thành viên", "Quản trị viên"],
+            // ADR-0075: Chủ toạ and Thư ký are meeting roles only; no system role carries those names.
+            ["Thành viên", "Phê duyệt viên", "Quản trị viên"],
             roles.Select(r => r.Name));
         Assert.All(roles, r => Assert.True(r.IsBuiltIn));
         Assert.Equal(BuiltInRoles.All.Count, BuiltInRoles.All.Distinct().Count());
@@ -275,12 +277,13 @@ public class DatabaseModelTests
         // deliberate edit in two places instead of a silent one.
         var expected = new[]
         {
-            (BuiltInRoles.Chair, Capability.MeetingCreator),
-            (BuiltInRoles.Chair, Capability.MeetingApprover),
-            (BuiltInRoles.Secretary, Capability.MeetingCreator),
-            (BuiltInRoles.Secretary, Capability.MinutesEditor),
-            // ADR-0060: records Voice ID samples for the people of a meeting the holder is the Secretary of.
-            (BuiltInRoles.Secretary, Capability.VoiceCollector),
+            // ADR-0075 (Lộc 21/11/2026): Thành viên creates meetings; Phê duyệt viên creates and approves them;
+            // Quản trị viên creates meetings, collects proxy voice samples and administers users.
+            (BuiltInRoles.Member, Capability.MeetingCreator),
+            (BuiltInRoles.Approver, Capability.MeetingCreator),
+            (BuiltInRoles.Approver, Capability.MeetingApprover),
+            (BuiltInRoles.Admin, Capability.MeetingCreator),
+            (BuiltInRoles.Admin, Capability.VoiceCollector),
             (BuiltInRoles.Admin, Capability.AdminUsers),
         };
 
@@ -290,8 +293,8 @@ public class DatabaseModelTests
 
         Assert.Equal(expected, actual);
 
-        // A plain Member attends, reads and votes — none of which needs a capability.
-        Assert.DoesNotContain(actual, rc => rc.RoleId == BuiltInRoles.Member);
+        // Taking the minutes is the meeting Secretary's, decided by meeting role: no such system capability exists.
+        Assert.DoesNotContain("MinutesEditor", Enum.GetNames<Capability>());
     }
 
     [Fact]

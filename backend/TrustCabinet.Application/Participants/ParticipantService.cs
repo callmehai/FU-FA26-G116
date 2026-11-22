@@ -15,7 +15,6 @@ using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Speaking;
-using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Participants;
 
@@ -34,8 +33,7 @@ public sealed partial class ParticipantService(
     TimeProvider clock,
     ILogger<ParticipantService> logger,
     IParticipantsChangePublisher publisher,
-    IAgendaChangePublisher agendaPublisher,
-    ICallerAccountQuery accounts
+    IAgendaChangePublisher agendaPublisher
 ) : IParticipantService
 {
     private static string Revision(Meeting m) =>
@@ -220,12 +218,6 @@ public sealed partial class ParticipantService(
                 );
                 // A Guest sees names, not addresses: only their own email reaches them (PO 01/11/2026, SCRUM-116).
                 var viewerGuest = actor.Guest?.InvitationId;
-                // Whose system role may record proxy samples: told only to the people who manage the roster.
-                var collectorRoles = new HashSet<Guid>();
-                if (viewerGuest is null)
-                    foreach (var roleId in m.Participants.Where(ParticipantRules.Current).Select(p => p.User.RoleId).Distinct())
-                        if ((await accounts.GetCapabilitiesAsync(roleId, token)).Contains(Capability.VoiceCollector))
-                            collectorRoles.Add(roleId);
                 var internalRows = m
                     .Participants.Where(ParticipantRules.Current)
                     .Select(p => new ParticipantRow(
@@ -240,8 +232,7 @@ public sealed partial class ParticipantService(
                         null,
                         null,
                         p.Response.ToString(),
-                        p.RespondedAt,
-                        viewerGuest is null ? collectorRoles.Contains(p.User.RoleId) : null
+                        p.RespondedAt
                     ));
                 var guestRows = snapshot.Guests.Select(g =>
                 {

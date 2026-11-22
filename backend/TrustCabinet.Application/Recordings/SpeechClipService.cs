@@ -145,8 +145,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         var heard = await TranscribeAsync(upload, before?.Text, ct);
         if (heard is not { } transcribed) return new(SpeechClipFailure.EngineUnavailable);
         var (text, segments, beforeAgain) = transcribed;
-        // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
-        if (text.Length == 0) return new();
+        // Silence, a cough, a door, a lone "Ừ.": nothing worth a line (team test 21/11/2026). The browser drops it;
+        // nothing is stored.
+        if (text.Length == 0 || !ShortLineRules.KeepsClip(text)) return new();
 
         var audioPath = await StoreAudioAsync(upload, ct);
         var kept = false;
@@ -317,7 +318,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                 var excluded = r.ExcludedAt is not null;
                 return new SpeechClipView(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded ? "" : r.Text,
                     r.UpdatedAt, r.EditedAt, null, true, excluded, HasAudio: r.HasAudio && !excluded,
-                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true, WordStartsMs: excluded ? null : Words(r));
+                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true, WordStartsMs: excluded ? null : Words(r),
+                    WordConfidence: excluded ? null : Scores(r));
             }).ToList();
             var capturing = SpeechClipRules.AcceptsGuest(meeting) && await ReadAsync(token => GuestNoticeConfirmedAsync(guest, token), ct);
             return new(Data: new SpeechClipList(meetingId, capturing, false, now, items, RetentionDays: options.Value.RetentionDays));
@@ -543,7 +545,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             var spoken = result.Segments.Select(s => (Segment: s, Text: s.Text.Trim())).Where(s => s.Text.Length > 0).ToList();
             return (string.Join(' ', spoken.Select(s => s.Text)), [.. spoken.Select(s => new SpeechClipSegment(
                 s.Segment.StartMs, s.Segment.EndMs, s.Text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length,
-                s.Segment.LevelDbfs, WordTimings.Of(s.Text, s.Segment.WordStartsMs)))], context is null ? null : result.Context?.Trim());
+                s.Segment.LevelDbfs, WordTimings.Of(s.Text, s.Segment.WordStartsMs),
+                WordScores.Of(s.Text, s.Segment.WordConfidence)))], context is null ? null : result.Context?.Trim());
         }
         catch (SpeechEngineException ex)
         {
@@ -601,7 +604,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         return new SpeechClipView(row.Id, row.SpeakerId, row.SpeakerName, row.StartedAt, row.DurationMs,
             excluded ? "" : row.Text, row.UpdatedAt, row.EditedAt, row.EditedByName, true, excluded,
             HasAudio: row.HasAudio && !excluded, Peaks: excluded ? null : row.Peaks, SpeakerIsGuest: row.Guest,
-            WordStartsMs: excluded ? null : Words(row));
+            WordStartsMs: excluded ? null : Words(row), WordConfidence: excluded ? null : Scores(row));
     }
 
     /// <summary>Who sends a sentence: a member by their user id, or a guest by their invitation (SCRUM-129).</summary>
@@ -656,10 +659,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             r.ExclusionReason?.ToString(), officer ? r.ExcludedByName : null,
             mark is null || excluded ? null : Leak(r, mark, byId),
             r.HasAudio && (!excluded || officer), excluded && !officer ? null : r.Peaks, r.Guest,
-            excluded && !officer ? null : Words(r));
+            excluded && !officer ? null : Words(r), excluded && !officer ? null : Scores(r));
     }
 
     private static IReadOnlyList<long>? Words(ClipRow r) => WordTimings.ForClip(r.Text, r.Segments, r.EditedAt is not null);
+
+    private static IReadOnlyList<int>? Scores(ClipRow r) => WordScores.ForClip(r.Text, r.Segments, r.EditedAt is not null);
 
     private static SpeechClipLeak? Leak(ClipRow r, FoldMark mark, Dictionary<Guid, ClipRow> byId)
     {

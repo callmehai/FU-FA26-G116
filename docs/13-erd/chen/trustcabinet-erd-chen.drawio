@@ -55,19 +55,19 @@
         <mxCell id="GuestSession" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="GuestSession" vertex="1">
           <mxGeometry height="64" width="220" x="30" y="650" as="geometry" />
         </mxCell>
-                <mxCell id="TranscriptSpeaker" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="TranscriptSpeaker" vertex="1">
+        <mxCell id="TranscriptSpeaker" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="TranscriptSpeaker" vertex="1">
           <mxGeometry height="64" width="222" x="254.2" y="320" as="geometry" />
         </mxCell>
         <mxCell id="R53" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Names" vertex="1">
           <mxGeometry height="64" width="124" x="610" y="320" as="geometry" />
         </mxCell>
-        <mxCell id="e113" edge="1" parent="1" source="Transcript" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R53">
+        <mxCell id="e113" edge="1" parent="1" source="Transcript" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;" target="R53">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e114" edge="1" parent="1" source="TranscriptSpeaker" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R53">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-<mxCell id="MeetingMinutes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingMinutes" vertex="1">
+        <mxCell id="MeetingMinutes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingMinutes" vertex="1">
           <mxGeometry height="64" width="193" x="624.5" y="840" as="geometry" />
         </mxCell>
         <mxCell id="MeetingParticipant" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingParticipant" vertex="1">
@@ -274,7 +274,7 @@
         <mxCell id="e9" edge="1" parent="1" source="MeetingStatusHistory" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R4">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2026" y="790" />
+              <mxPoint x="2026" y="800" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -327,7 +327,7 @@
             <mxPoint x="2360" y="780" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e22" edge="1" parent="1" source="AgendaItem" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="R11">
+        <mxCell id="e22" edge="1" parent="1" source="AgendaItem" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="R11">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e23" edge="1" parent="1" source="MeetingDocument" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R11">
@@ -483,7 +483,7 @@
         <mxCell id="e65" edge="1" parent="1" source="Notification" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R32">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1720" y="780" />
+              <mxPoint x="1720" y="800" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -586,10 +586,10 @@
         <mxCell id="e86" edge="1" parent="1" source="MeetingParticipant" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R43">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e87" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0;exitY=0.357;exitDx=0;exitDy=0;" target="R43">
+        <mxCell id="e87" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="R43">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1126" y="1242.8" />
+              <mxPoint x="1126" y="1252" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -665,16 +665,38 @@
           <mxGeometry height="64" width="124" x="3258" y="668" as="geometry" />
         </mxCell>
         <mxCell id="e105" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.9;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R49">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1604" y="1720" /><mxPoint x="3220" y="1720" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1604" y="1720" />
+              <mxPoint x="3220" y="1720" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e106" edge="1" parent="1" source="VotingSession" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0;exitY=0.1875;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="R49">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2210" y="262" /><mxPoint x="2210" y="-20" /><mxPoint x="3220" y="-20" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2210" y="262" />
+              <mxPoint x="2210" y="-20" />
+              <mxPoint x="3220" y="-20" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e107" edge="1" parent="1" source="MeetingGuestInvitation" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.7212;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R50">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="1780" /><mxPoint x="3420" y="1780" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="520" y="1780" />
+              <mxPoint x="3420" y="1780" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e108" edge="1" parent="1" source="VotingSession" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0;exitY=0.39;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="R50">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2190" y="275" /><mxPoint x="2190" y="-60" /><mxPoint x="3420" y="-60" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2190" y="275" />
+              <mxPoint x="2190" y="-60" />
+              <mxPoint x="3420" y="-60" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e109" edge="1" parent="1" source="VotingSession" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R51">
           <mxGeometry relative="1" as="geometry" />
@@ -683,10 +705,20 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e111" edge="1" parent="1" source="MeetingGuestInvitation" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.5353;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R52">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="470" y="1750" /><mxPoint x="3320" y="1750" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="470" y="1750" />
+              <mxPoint x="3320" y="1750" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e112" edge="1" parent="1" source="VoteReceipt" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="R52">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2326" y="-40" /><mxPoint x="3320" y="-40" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2326" y="-40" />
+              <mxPoint x="3320" y="-40" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="SpeechClip" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="SpeechClip" vertex="1">
           <mxGeometry height="64" width="150" x="286" y="1100" as="geometry" />
@@ -716,16 +748,34 @@
           <mxGeometry height="64" width="124" x="780" y="1668" as="geometry" />
         </mxCell>
         <mxCell id="e540" edge="1" parent="1" source="Meeting" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.16875;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R54">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1370" y="620" /><mxPoint x="1318" y="620" /><mxPoint x="1318" y="780" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1370" y="620" />
+              <mxPoint x="1318" y="620" />
+              <mxPoint x="1318" y="780" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e541" edge="1" parent="1" source="SpeechClip" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.08;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="R54">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="298" y="780" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="298" y="780" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e542" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.04375;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R55">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1330" y="1360" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1330" y="1360" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e543" edge="1" parent="1" source="SpeechClip" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="R55">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="361" y="1360" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="361" y="1360" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e544" edge="1" parent="1" source="MeetingGuestInvitation" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.2156;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="R56">
           <mxGeometry relative="1" as="geometry" />
@@ -734,7 +784,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e546" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.15625;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R57">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1366" y="1512" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1366" y="1512" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e547" edge="1" parent="1" source="VoiceConsent" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="R57">
           <mxGeometry relative="1" as="geometry" />
@@ -746,10 +800,269 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e550" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.2125;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R59">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1384" y="1700" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1384" y="1700" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="e551" edge="1" parent="1" source="VoiceSample" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="R59">
+        <mxCell id="e551" edge="1" parent="1" source="VoiceSample" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="R59">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AiProviderSetting" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="AiProviderSetting" vertex="1">
+          <mxGeometry x="680" y="1158" width="190" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="CalendarShare" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="CalendarShare" vertex="1">
+          <mxGeometry x="680" y="1248" width="190" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="R60" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Configures" vertex="1">
+          <mxGeometry x="920" y="1158" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R60_a" edge="1" parent="1" source="AiProviderSetting" target="R60" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R60_b" edge="1" parent="1" source="User" target="R60" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.0000;exitY=0.1000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="1224" />
+              <mxPoint x="1100" y="1190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R61" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Shares calendar" vertex="1">
+          <mxGeometry x="928.8" y="1248" width="150" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R61_a" edge="1" parent="1" source="CalendarShare" target="R61" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R61_b" edge="1" parent="1" source="User" target="R61" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.0000;exitY=0.9000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R62" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Triggers" vertex="1">
+          <mxGeometry x="1810" y="933" width="100" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R62_a" edge="1" parent="1" source="Notification" target="R62" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.8103;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1780" y="965" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R62_b" edge="1" parent="1" source="MeetingStatusHistory" target="R62" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.1560;exitY=1.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1940" y="965" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R63" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Records call" vertex="1">
+          <mxGeometry x="785" y="184" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R63_a" edge="1" parent="1" source="CallSession" target="R63" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.0793;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960" y="310" />
+              <mxPoint x="850" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R63_b" edge="1" parent="1" source="Recording" target="R63" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.1849;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R64" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Raised on" vertex="1">
+          <mxGeometry x="2038" y="180" width="124" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R64_a" edge="1" parent="1" source="SpeakingRequest" target="R64" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.7178;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R64_b" edge="1" parent="1" source="AgendaItem" target="R64" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.0613;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1850" y="320" />
+              <mxPoint x="2100" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R65" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Annotates" vertex="1">
+          <mxGeometry x="1653" y="-72" width="124" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R65_a" edge="1" parent="1" source="MeetingNote" target="R65" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.8293;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1530" y="-40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R65_b" edge="1" parent="1" source="AgendaItem" target="R65" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.2226;exitY=0.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1875" y="-40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R66" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Opens" vertex="1">
+          <mxGeometry x="78" y="754" width="124" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R66_a" edge="1" parent="1" source="GuestSession" target="R66" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.5000;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R66_b" edge="1" parent="1" source="MeetingGuestInvitation" target="R66" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0.0000;exitY=0.2812;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="858" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R67" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Identified as" vertex="1">
+          <mxGeometry x="-65" y="535.2" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R67_a" edge="1" parent="1" source="TranscriptSpeaker" target="R67" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.0000;exitY=0.5000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="0" y="352" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R67_b" edge="1" parent="1" source="MeetingGuestInvitation" target="R67" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.0000;exitY=0.7812;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="0" y="890" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R68" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Collected in" vertex="1">
+          <mxGeometry x="635" y="1008" width="130" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R68_a" edge="1" parent="1" source="VoiceSample" target="R68" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1.0000;exitY=0.1562;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="1678" />
+              <mxPoint x="750" y="1456" />
+              <mxPoint x="600" y="1456" />
+              <mxPoint x="600" y="1040" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R68_b" edge="1" parent="1" source="Meeting" target="R68" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.3875;exitY=1.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="630" />
+              <mxPoint x="840" y="630" />
+              <mxPoint x="840" y="1040" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R69" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Confirms read" vertex="1">
+          <mxGeometry x="2040" y="738" width="120" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R69_a" edge="1" parent="1" source="User" target="R69" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.4500;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1460" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R69_b" edge="1" parent="1" source="MeetingDocument" target="R69" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.0000;exitY=0.7812;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R70" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Confirms as guest" vertex="1">
+          <mxGeometry x="85" y="1148" width="150" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R70_a" edge="1" parent="1" source="MeetingGuestInvitation" target="R70" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.8680;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=0.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="1067" />
+              <mxPoint x="160" y="1067" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R70_b" edge="1" parent="1" source="MeetingDocument" target="R70" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.3218;exitY=1.0000;exitDx=0;exitDy=0;entryX=0.5000;entryY=1.0000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2290" y="820" />
+              <mxPoint x="2430" y="820" />
+              <mxPoint x="2430" y="1810" />
+              <mxPoint x="160" y="1810" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R71" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Comments as guest" vertex="1">
+          <mxGeometry x="2520" y="-352" width="160" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R71_a" edge="1" parent="1" source="MeetingGuestInvitation" target="R71" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.0353;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="336" y="620" />
+              <mxPoint x="150" y="620" />
+              <mxPoint x="150" y="-320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R71_b" edge="1" parent="1" source="DocumentComment" target="R71" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1.0000;exitY=0.7812;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2900" y="770" />
+              <mxPoint x="2900" y="-320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R73" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Chooses as guest" vertex="1">
+          <mxGeometry x="2220" y="-282" width="160" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R73_a" edge="1" parent="1" source="MeetingGuestInvitation" target="R73" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.0874;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="605" />
+              <mxPoint x="170" y="605" />
+              <mxPoint x="170" y="-250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R73_b" edge="1" parent="1" source="VoteChoice" target="R73" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=1.0000;exitY=0.5000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2860" y="402" />
+              <mxPoint x="2860" y="-250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R74" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Raises hand as guest" vertex="1">
+          <mxGeometry x="1310" y="-212" width="180" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R74_a" edge="1" parent="1" source="MeetingGuestInvitation" target="R74" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.1394;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="364" y="590" />
+              <mxPoint x="190" y="590" />
+              <mxPoint x="190" y="-180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R74_b" edge="1" parent="1" source="SpeakingRequest" target="R74" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.2228;exitY=0.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2000" y="-180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R72" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Presents as guest" vertex="1">
+          <mxGeometry x="920" y="-142" width="160" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_R72_a" edge="1" parent="1" source="MeetingGuestInvitation" target="R72" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;exitX=0.1914;exitY=0.0000;exitDx=0;exitDy=0;entryX=0.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="378" y="575" />
+              <mxPoint x="210" y="575" />
+              <mxPoint x="210" y="-110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_R72_b" edge="1" parent="1" source="AgendaItem" target="R72" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.3839;exitY=0.0000;exitDx=0;exitDy=0;entryX=1.0000;entryY=0.5000;entryDx=0;entryDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1900" y="-110" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

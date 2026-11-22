@@ -534,7 +534,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
             var viewer = await db.Users.FindAsync(p.Organizer);
             await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer}", new
             {
-                fullName = viewer!.FullName, email = viewer.Email, roleId = TrustCabinet.Domain.Access.BuiltInRoles.Member.ToString(),
+                fullName = viewer!.FullName, email = viewer.Email, roleId = TrustCabinet.Web.Tests.Access.TestRoles.Attendee.ToString(),
             }), 200, "MSG10");
         }
 

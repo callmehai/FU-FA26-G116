@@ -25,16 +25,16 @@ Database-->MeetingRepository: Meeting / Not found
 deactivate Database
 MeetingRepository-->MinutesService: Meeting / Not found
 deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting is InProgress or Ended (BR-387), the latest revision is absent,\na draft or returned (BR-388, BR-407), that rebuild was asked when one exists,\nand that it is not a correction (BR-413)
+MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting has Ended (BR-387), the latest revision is absent,\na draft or returned (BR-388, BR-407), that rebuild was asked when one exists,\nand that it is not a correction (BR-413)
 
 alt Actor is not the current Chair or Secretary - EX-1
     MinutesService-->MinutesEndpoints: MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesEndpoints-->MinutesCard: MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesCard-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
-else The Meeting has not started or was cancelled - EX-2
-    MinutesService-->MinutesEndpoints: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
-    MinutesEndpoints-->MinutesCard: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
-    MinutesCard-->Actor: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
+else The Meeting has not ended - EX-2
+    MinutesService-->MinutesEndpoints: MSG398 - The minutes can be written only after the meeting has ended.
+    MinutesEndpoints-->MinutesCard: MSG398 - The minutes can be written only after the meeting has ended.
+    MinutesCard-->Actor: MSG398 - The minutes can be written only after the meeting has ended.
 else The minutes can no longer be changed - EX-4
     MinutesService-->MinutesEndpoints: MSG400 - The minutes have been submitted or issued and can no longer be changed.
     MinutesEndpoints-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.

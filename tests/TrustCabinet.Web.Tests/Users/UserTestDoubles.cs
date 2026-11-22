@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Seed;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -30,7 +31,7 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository, ICalle
     /// The roles that exist — the four built-in ones unless a test adds more with
     /// <see cref="WithRole"/>.
     /// </summary>
-    private readonly Dictionary<Guid, Role> _roles = ReferenceData.Roles().ToDictionary(r => r.Id);
+    private readonly Dictionary<Guid, Role> _roles = TestRoles.WithSecretary().ToDictionary(r => r.Id);
 
     /// <summary>How many times the service asked for changes to be persisted.</summary>
     public int SaveCount { get; private set; }
@@ -133,8 +134,8 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository, ICalle
     /// </summary>
     private readonly Dictionary<Guid, Capability[]> _capabilities = new()
     {
-        [BuiltInRoles.Chair] = [Capability.MeetingCreator, Capability.MeetingApprover],
-        [BuiltInRoles.Secretary] = [Capability.MeetingCreator, Capability.MinutesEditor],
+        [BuiltInRoles.Approver] = [Capability.MeetingCreator, Capability.MeetingApprover],
+        [TestRoles.Secretary] = [Capability.MeetingCreator, Capability.VoiceCollector],
         [BuiltInRoles.Member] = [],
         [BuiltInRoles.Admin] = [Capability.AdminUsers],
     };

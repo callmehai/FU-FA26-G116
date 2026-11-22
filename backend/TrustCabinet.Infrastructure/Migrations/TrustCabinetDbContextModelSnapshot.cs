@@ -2475,6 +2475,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.PrimitiveCollection<int[]>("WordConfidence")
+                        .HasColumnType("integer[]")
+                        .HasColumnName("word_confidence");
+
                     b.PrimitiveCollection<long[]>("WordStartsMs")
                         .HasColumnType("bigint[]")
                         .HasColumnName("word_starts_ms");

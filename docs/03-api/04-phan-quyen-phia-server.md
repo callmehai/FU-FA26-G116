@@ -80,7 +80,7 @@ từ đầu. Tài khoản không còn hoặc đã bị vô hiệu hoá thì tr�
   "fullName": "Nguyễn Thư Ký",
   "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22",  // id dòng trong bảng roles (SCRUM-63)
   "roleName": "Thư ký",                             // tên hiện tại, để hiển thị
-  "capabilities": ["MeetingCreator", "MinutesEditor"]
+  "capabilities": ["MeetingCreator", "MeetingApprover"]
 }
 ```
 

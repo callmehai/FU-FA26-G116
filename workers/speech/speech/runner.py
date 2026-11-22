@@ -4,26 +4,52 @@ sherpa-onnx holds the GIL inside some native calls (diarization of an hour of au
 minutes), which would freeze every HTTP thread — /health included — in the same process. The
 child process owns the models and runs one job at a time; the parent only moves file paths and
 JSON-able results across, and restarts the child if it dies (out of memory, for example).
+
+A caller that goes away (the backend dropped a run made stale by a newer room-mic take) is told to the
+child through a small shared list of cancelled job numbers, which the engine reads between steps:
+the run stops within a second or so, and the next request in the queue starts at once.
 """
 
 from __future__ import annotations
 
+import itertools
 import logging
 import multiprocessing
 import os
 import threading
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, TimeoutError as FutureTimeout
 from concurrent.futures.process import BrokenProcessPool
+from typing import Callable
 
 from . import manifest, pipeline
 
 log = logging.getLogger(__name__)
 
 _engine: pipeline.Engine | None = None
+# Job numbers whose caller went away, newest overwriting the oldest; shared with the child process.
+CANCELLED_SLOTS = 32
+# How often the parent asks whether the caller of a running job is still there.
+POLL_S = 0.5
+_cancelled = None
 
 
-def _load() -> None:
+def _share(cancelled) -> None:
+    """In the child: keep the list of cancelled job numbers the parent writes to."""
+    global _cancelled
+    _cancelled = cancelled
+
+
+def stopped(job: int) -> Callable[[], bool] | None:
+    """In the child: whether `job`'s caller went away, read from the shared list at each call."""
+    shared = _cancelled
+    if shared is None or not job:
+        return None
+    return lambda: job in shared[:]
+
+
+def _load(cancelled=None) -> None:
     global _engine
+    _share(cancelled)
     logging.basicConfig(
         level=os.environ.get("SPEECH_LOG_LEVEL", "INFO").upper(),
         format="%(asctime)s %(levelname)s %(name)s[engine]: %(message)s",
@@ -36,9 +62,10 @@ def _ready() -> dict[str, str]:
     return _engine.model_ids
 
 
-def _transcribe(path: str, diarize: bool, speakers: int | None, profile: str, context: str | None) -> dict:
+def _transcribe(path: str, diarize: bool, speakers: int | None, profile: str, context: str | None,
+                job: int = 0) -> dict:
     assert _engine is not None
-    return _engine.transcribe_file(path, diarize, speakers, profile, context)
+    return _engine.transcribe_file(path, diarize, speakers, profile, context, stopped(job))
 
 
 def _embed(path: str) -> tuple[bool, dict]:
@@ -54,17 +81,36 @@ class EngineProcess:
         self.model_ids = pipeline.model_ids(manifest.verify(manifest.models_dir()))
         self._context = multiprocessing.get_context("spawn")
         self._restart = threading.Lock()
+        self._cancelled = self._context.Array("q", CANCELLED_SLOTS, lock=False)
+        self._cancel_lock = threading.Lock()
+        self._next_slot = 0
+        self._jobs = itertools.count(1)
         self._pool = self._start()
         # Load the models now rather than on the first request: a broken install fails at boot.
         self._pool.submit(_ready).result()
 
     def _start(self) -> ProcessPoolExecutor:
-        return ProcessPoolExecutor(max_workers=1, mp_context=self._context, initializer=_load)
+        return ProcessPoolExecutor(max_workers=1, mp_context=self._context, initializer=_load,
+                                   initargs=(self._cancelled,))
 
-    def _call(self, function, *args):
+    def _cancel(self, job: int) -> None:
+        with self._cancel_lock:
+            self._cancelled[self._next_slot] = job
+            self._next_slot = (self._next_slot + 1) % CANCELLED_SLOTS
+
+    def _call(self, function, *args, cancelled: Callable[[], bool] | None = None, job: int = 0):
         pool = self._pool
         try:
-            return pool.submit(function, *args).result()
+            future = pool.submit(function, *args)
+            while True:
+                try:
+                    return future.result(timeout=POLL_S if cancelled else None)
+                except FutureTimeout:
+                    if cancelled is not None and cancelled():
+                        # Queued or running, the child skips or stops it at its next step; nobody waits for it.
+                        future.cancel()
+                        self._cancel(job)
+                        raise pipeline.Cancelled() from None
         except BrokenProcessPool:
             with self._restart:
                 if self._pool is pool:
@@ -73,8 +119,11 @@ class EngineProcess:
             raise RuntimeError("engine process died during the request") from None
 
     def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
-                        profile: str = "room", context: str | None = None) -> dict:
-        return self._call(_transcribe, os.fspath(path), diarize, speakers, profile, context)
+                        profile: str = "room", context: str | None = None,
+                        cancelled: Callable[[], bool] | None = None) -> dict:
+        job = next(self._jobs)
+        return self._call(_transcribe, os.fspath(path), diarize, speakers, profile, context, job,
+                          cancelled=cancelled, job=job)
 
     def embed_file(self, path: str) -> tuple[bool, dict]:
         return self._call(_embed, os.fspath(path))

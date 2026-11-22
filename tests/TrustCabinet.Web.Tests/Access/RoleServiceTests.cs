@@ -49,14 +49,14 @@ public class RoleServiceTests
     {
         var older = new Role { Name = "Uỷ viên", CreatedAt = DateTimeOffset.UtcNow.AddDays(-2) };
         var newer = new Role { Name = "Thư ký phó" };
-        _roles.WithRole(newer).WithRole(older).WithUsers(BuiltInRoles.Chair, 3);
+        _roles.WithRole(newer).WithRole(older).WithUsers(BuiltInRoles.Approver, 3);
 
         var list = await NewService().ListAsync();
 
         Assert.Equal([.. BuiltInRoles.All, older.Id, newer.Id], list.Select(r => r.Id));
-        Assert.Equal(3, list.First().UserCount);
+        Assert.Equal(3, list.Single(r => r.Id == BuiltInRoles.Approver).UserCount);
         Assert.Equal(
-            [true, true, true, true, false, false],
+            [true, true, true, false, false],
             list.Select(r => r.IsBuiltIn));
     }
 
@@ -66,7 +66,7 @@ public class RoleServiceTests
     public async Task Create_saves_the_role_with_its_capabilities_and_answers_with_it()
     {
         var result = await NewService().CreateAsync(
-            new NewRole("Thư ký phó", "Hỗ trợ thư ký soạn biên bản.", ["MinutesEditor"]),
+            new NewRole("Thư ký phó", "Hỗ trợ thư ký soạn biên bản.", ["VoiceCollector"]),
             _actorId);
 
         Assert.True(result.Succeeded);
@@ -80,14 +80,14 @@ public class RoleServiceTests
 
         var stored = Assert.Single(_roles.Roles, r => r.Id == created.Id);
         Assert.False(stored.IsBuiltIn);
-        Assert.Equal([Capability.MinutesEditor], _roles.CapabilitiesOf(created.Id));
+        Assert.Equal([Capability.VoiceCollector], _roles.CapabilitiesOf(created.Id));
     }
 
     [Fact]
     public async Task Create_records_role_created_with_what_was_created()
     {
         var result = await NewService().CreateAsync(
-            new NewRole("Thư ký phó", "Hỗ trợ.", ["MinutesEditor", "MeetingCreator"]), _actorId);
+            new NewRole("Thư ký phó", "Hỗ trợ.", ["VoiceCollector", "MeetingCreator"]), _actorId);
 
         var record = Assert.Single(_audit.Records);
         Assert.Equal(AuditActions.RoleCreated, record.Action);
@@ -99,7 +99,7 @@ public class RoleServiceTests
         Assert.Equal("Thư ký phó", details.GetProperty("Name").GetString());
         Assert.Equal("Hỗ trợ.", details.GetProperty("Description").GetString());
         Assert.Equal(
-            ["MeetingCreator", "MinutesEditor"],
+            ["MeetingCreator", "VoiceCollector"],
             details.GetProperty("Capabilities").EnumerateArray().Select(c => c.GetString()));
     }
 
@@ -195,7 +195,7 @@ public class RoleServiceTests
     public async Task Create_names_every_unknown_capability()
     {
         var result = await NewService().CreateAsync(
-            new NewRole("Thư ký phó", null, ["MinutesEditor", "DeleteEverything", "AlsoWrong"]),
+            new NewRole("Thư ký phó", null, ["VoiceCollector", "DeleteEverything", "AlsoWrong"]),
             _actorId);
 
         Assert.Equal(RoleOutcome.InvalidInformation, result.Outcome);
@@ -203,7 +203,7 @@ public class RoleServiceTests
         var message = result.Errors!["capabilities"];
         Assert.Contains("DeleteEverything", message, StringComparison.Ordinal);
         Assert.Contains("AlsoWrong", message, StringComparison.Ordinal);
-        Assert.DoesNotContain("MinutesEditor", message, StringComparison.Ordinal);
+        Assert.DoesNotContain("VoiceCollector", message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -225,7 +225,7 @@ public class RoleServiceTests
     public async Task Create_names_a_null_capability_rather_than_leaving_a_blank()
     {
         var result = await NewService().CreateAsync(
-            new NewRole("Thư ký phó", null, ["MinutesEditor", null!]), _actorId);
+            new NewRole("Thư ký phó", null, ["VoiceCollector", null!]), _actorId);
 
         Assert.Equal("Quyền không hợp lệ: null.", result.Errors!["capabilities"]);
     }
@@ -243,12 +243,12 @@ public class RoleServiceTests
     public async Task Create_accepts_capability_codes_in_any_casing_and_ignores_repeats()
     {
         var result = await NewService().CreateAsync(
-            new NewRole("Thư ký phó", null, ["minuteseditor", "MinutesEditor", "MEETINGCREATOR"]),
+            new NewRole("Thư ký phó", null, ["voicecollector", "VoiceCollector", "MEETINGCREATOR"]),
             _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(
-            [Capability.MeetingCreator, Capability.MinutesEditor],
+            [Capability.MeetingCreator, Capability.VoiceCollector],
             _roles.CapabilitiesOf(result.Role!.Id).Order());
     }
 
@@ -400,7 +400,7 @@ public class RoleServiceTests
             Assert.Equal(RoleOutcome.BuiltInRole, result.Outcome);
         }
 
-        Assert.Equal("Chủ toạ", _roles.Roles.Single(r => r.Id == BuiltInRoles.Chair).Name);
+        Assert.Equal("Phê duyệt viên", _roles.Roles.Single(r => r.Id == BuiltInRoles.Approver).Name);
         Assert.Equal(0, _roles.SaveCount);
         Assert.Empty(_audit.Records);
     }
@@ -512,7 +512,7 @@ public class RoleServiceTests
     [Fact]
     public async Task Delete_removes_a_custom_role_nobody_holds_and_its_capabilities()
     {
-        var role = GivenCustomRole("Thư ký phó", Capability.MinutesEditor);
+        var role = GivenCustomRole("Thư ký phó", Capability.VoiceCollector);
 
         var result = await NewService().DeleteAsync(role.Id, _actorId);
 
@@ -524,7 +524,7 @@ public class RoleServiceTests
     [Fact]
     public async Task Delete_records_the_name_and_capabilities_that_are_about_to_disappear()
     {
-        var role = GivenCustomRole("Thư ký phó", Capability.MinutesEditor, Capability.MeetingCreator);
+        var role = GivenCustomRole("Thư ký phó", Capability.VoiceCollector, Capability.MeetingCreator);
 
         await NewService().DeleteAsync(role.Id, _actorId);
 
@@ -536,7 +536,7 @@ public class RoleServiceTests
         var details = DetailsOf(record);
         Assert.Equal("Thư ký phó", details.GetProperty("Name").GetString());
         Assert.Equal(
-            ["MeetingCreator", "MinutesEditor"],
+            ["MeetingCreator", "VoiceCollector"],
             details.GetProperty("Capabilities").EnumerateArray().Select(c => c.GetString()));
     }
 

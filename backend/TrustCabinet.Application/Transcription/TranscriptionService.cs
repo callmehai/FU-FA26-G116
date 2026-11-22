@@ -56,7 +56,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                     [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                         s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName,
-                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null)))],
+                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null),
+                        WordScores.ForLine(s.Text, s.WordConfidence, s.EditedAt is not null)))],
                     [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                         canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
@@ -152,9 +153,11 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
 
     public async Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
-            return await ReadAsync(async token =>
+            outcome = await ReadAsync(async token =>
             {
                 var segment = await transcripts.FindSegmentAsync(segmentId, token);
                 if (segment is null) return new TranscriptOutcome(TranscriptFailure.NotFound);
@@ -172,12 +175,13 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     await audit.RecordAsync(AuditActions.TranscriptSegmentEdited, AuditActions.RecordingObjectType, recording.Id,
                         actorId, new { recording.MeetingId, segmentId, segment.Position }, token);
                 // The machine's word times belonged to the words it wrote, not to the corrected ones.
-                if (segment.Text != trimmed) segment.WordStartsMs = null;
+                if (segment.Text != trimmed) (segment.WordStartsMs, segment.WordConfidence) = (null, null);
                 segment.Text = trimmed;
                 segment.EditedById = actorId;
                 segment.EditedAt = now;
                 segment.UpdatedAt = now;
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = recording.MeetingId;
                 return new(Data: new { segmentId, text = trimmed, editedAt = now });
             }, ct);
         }
@@ -186,16 +190,20 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             logger.LogError(ex.InnerException ?? ex, "Failed to edit transcript segment {SegmentId}", segmentId);
             return new(TranscriptFailure.SaveFailed);
         }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
     }
 
     public async Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid? guestId,
         Guid actorId, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
             // Under the recording's lock, as a line moved to a person: naming a voice and giving that person a new voice
             // at the same moment would otherwise leave two voices with one name.
-            return await unitOfWork.ExecuteAsync(async token =>
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
                 if (recording is null || meeting is null) return new TranscriptOutcome(failure);
@@ -218,6 +226,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     actorId, new { recordingId, label, userId, guestId, suggestedUserId = speaker.SuggestedUserId,
                         acceptedSuggestion = userId is not null && userId == speaker.SuggestedUserId }, token);
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = meeting.Id;
                 return new(Data: new TranscriptSpeakerView(speaker.Label, speaker.SpeechMs, speaker.SuggestedUserId,
                     speaker.SuggestedUser?.FullName, speaker.SuggestionScore, userId, person?.User.FullName ?? guest?.FullName,
                     AssignedGuestId: guestId));
@@ -228,18 +237,22 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             logger.LogError(ex.InnerException ?? ex, "Failed to name speaker {Label} of {RecordingId}", label, recordingId);
             return new(TranscriptFailure.SaveFailed);
         }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
     }
 
     public async Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, string? label,
         Guid actorId, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
             // Only the recording's id before the lock: a line read now and tracked would be handed back unchanged by the
             // read after it, so a move that waited on another one of the same line would undo the wrong voice's time.
             if (await ReadAsync(token => transcripts.FindSegmentRecordingAsync(segmentId, token), ct) is not { } recordingId)
                 return new(TranscriptFailure.NotFound);
-            return await unitOfWork.ExecuteAsync(async token =>
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 // The recording's row is locked: moves on one recording run one after another, each reading what the one
                 // before it wrote, and two of them never take the same free label.
@@ -308,6 +321,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     actorId, new { recording.MeetingId, segmentId, segment.Position, previousLabel = from, speakerLabel = target,
                         userId, guestId, newVoice = created is not null }, token);
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = meeting.Id;
                 return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = created is not null });
             }, TransactionMode.ReadCommitted, ct);
         }
@@ -315,6 +329,29 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             logger.LogError(ex.InnerException ?? ex, "Failed to move transcript segment {SegmentId} to another voice", segmentId);
             return new(TranscriptFailure.SaveFailed);
+        }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
+    }
+
+    /// <summary>
+    /// Tells the meeting a transcript was corrected, once it is committed, so every open Bản ghi tab re-reads it (team
+    /// test 21/11/2026: a name the Secretary gave a voice reached nobody else before a reload). Only a change that wrote
+    /// something: a failure, or a move that changed nothing, leaves <paramref name="meetingId"/> unset.
+    /// </summary>
+    private async Task AnnounceCorrectionAsync(TranscriptOutcome outcome, Guid? meetingId, CancellationToken ct)
+    {
+        if (outcome.Failure != TranscriptFailure.None || meetingId is not { } id) return;
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await publisher.PublishAsync(new(Guid.CreateVersion7(), id, RecordingRules.TranscriptChanged, clock.GetUtcNow()),
+                timeout.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Could not publish the corrected transcript of {MeetingId}", id);
         }
     }
 
@@ -360,20 +397,72 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         if (transcript is null) return;
         var recording = transcript.Recording;
         SpeechTranscription result;
+        // Cancelled when the run goes stale: a room-mic take was appended meanwhile (ADR-0041), the recording was
+        // erased, or the transcript was queued again. The worker stops on the dropped connection, and the newer version
+        // is claimed next instead of waiting behind minutes of work whose result would be thrown away.
+        using var stale = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        using var stopWatching = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var watch = WatchAsync(transcriptId, stale, stopWatching.Token);
         try
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
             await using var audio = storage.OpenRead(recording.StoragePath);
-            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, ct);
+            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException && stale.IsCancellationRequested && !ct.IsCancellationRequested)
+        {
+            logger.LogInformation("Transcription of recording {RecordingId} stopped: a newer version waits", recording.Id);
+            return;
         }
         catch (Exception ex) when (ex is SpeechEngineException or FileNotFoundException or DirectoryNotFoundException)
         {
             var message = ex is SpeechEngineException speech ? speech.UserMessage : "Tệp âm thanh không còn trên máy chủ.";
             logger.LogWarning(ex, "Transcription of recording {RecordingId} failed: {Reason}", recording.Id, message);
+            await StopAsync(stopWatching, watch);
             await FinishAsync(transcriptId, null, message, ct);
             return;
         }
+        finally
+        {
+            // The watch shares this scope's storage: it must be over before anything else reads or writes.
+            await StopAsync(stopWatching, watch);
+        }
         await FinishAsync(transcriptId, result, null, ct);
+    }
+
+    /// <summary>How often a running transcript checks that it is still the version to make.</summary>
+    internal TimeSpan StaleCheckEvery { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Cancels <paramref name="stale"/> once the transcript is no longer Processing: whatever moved it (a new take, an
+    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away.
+    /// </summary>
+    private async Task WatchAsync(Guid transcriptId, CancellationTokenSource stale, CancellationToken ct)
+    {
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(StaleCheckEvery, clock, ct);
+                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct)) continue;
+                await stale.CancelAsync();
+                return;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (PersistenceException ex)
+        {
+            // Not being able to look is no reason to stop: the result is checked again before it is written.
+            logger.LogWarning(ex.InnerException ?? ex, "Could not check whether transcript {TranscriptId} is stale", transcriptId);
+        }
+    }
+
+    private static async Task StopAsync(CancellationTokenSource stopWatching, Task watch)
+    {
+        if (!stopWatching.IsCancellationRequested) await stopWatching.CancelAsync();
+        await watch;
     }
 
     /// <summary>
@@ -406,8 +495,13 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 // Matched before anything is deleted: it locks the consents it reads, and a withdrawal holding one of
                 // them may be waiting on the speaker rows deleted below.
                 var (suggestions, nameable) = await SuggestSpeakersAsync(recording.MeetingId, result, token);
+                // A short line no enrolled voice matched, or one of interjections only, is left out (team test
+                // 21/11/2026), and a voice left with no line goes with it: the rest are numbered again without gaps.
+                var lines = result.Segments.Where(s => s.Text.Length > 0 && ShortLineRules.KeepsRoomLine(s.Text,
+                    s.EndMs - s.StartMs, s.Speaker is not null && suggestions.ContainsKey(s.Speaker))).ToList();
+                var labels = ShortLineRules.Renumber(lines.Select(s => s.Speaker));
                 await transcripts.DeleteSegmentsAsync(transcriptId, token);
-                transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
+                transcripts.AddSegments(lines.Select((s, i) =>
                 {
                     var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs, s.EndMs, recording.Takes);
                     return new TranscriptSegment
@@ -415,21 +509,23 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
                         Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
                         WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(s.Text, s.WordStartsMs),
-                        SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
+                        WordConfidence = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordScores.Of(s.Text, s.WordConfidence),
+                        SpeakerLabel = s.Speaker is null ? "" : labels[s.Speaker], CreatedAt = now, UpdatedAt = now,
                     };
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
-                // A sure match names the voice at once (PO 01/11/2026): no assigner marks the machine's name, which
-                // the Secretary may still change, and which goes when that person withdraws Voice ID consent. Only
-                // for someone who agreed to that (notice 1.2, ADR-0048); the others are suggested, as they agreed.
+                // A match names the voice at once (PO 01/11/2026; every suggestion by default since 22/11, ADR-0074): no
+                // assigner marks the machine's name, which the Secretary may still change, and which goes when that
+                // person withdraws Voice ID consent. Only for someone who agreed to that (notice 1.2, ADR-0048); the
+                // others are suggested, as they agreed.
                 var sure = voiceOptions.Value.AutoAssignThreshold;
-                var speakers = result.Speakers.Select(sp =>
+                var speakers = result.Speakers.Where(sp => labels.ContainsKey(sp.Label)).Select(sp =>
                 {
                     var guess = suggestions.GetValueOrDefault(sp.Label);
                     var named = guess is not null && guess.Score >= sure && nameable.Contains(guess.UserId);
                     return new TranscriptSpeaker
                     {
-                        TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
+                        TranscriptId = transcriptId, Label = labels[sp.Label], SpeechMs = sp.SpeechMs,
                         SuggestedUserId = guess?.UserId, SuggestionScore = guess?.Score,
                         AssignedUserId = named ? guess!.UserId : null, AssignedAt = named ? now : null,
                         CreatedAt = now, UpdatedAt = now,

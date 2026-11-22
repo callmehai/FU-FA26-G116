@@ -37,16 +37,20 @@ DraftCard->SummaryController: request(meetingId)
 activate SummaryController
 SummaryController->SummaryService: requestAsync(meetingId, actorId)
 activate SummaryService
-SummaryService->SummaryService: Check the actor is the current Chair or Secretary (BR-374),\nthe Meeting is InProgress or Ended (BR-375), the AI server is\nconfigured, and no draft is queued or being written (BR-376)
+SummaryService->SummaryService: Check the actor is the current Chair or Secretary (BR-374),\nthe Meeting has Ended (BR-375), the AI server is\nconfigured, and no draft is queued or being written (BR-376)
 
 alt Actor is not the current Chair or Secretary - EX-1
     SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
     SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
     DraftCard-->Actor: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
-else The Meeting has not started or was cancelled - EX-2
-    SummaryService-->SummaryController: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
-    SummaryController-->DraftCard: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
-    DraftCard-->Actor: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
+else The Meeting has not ended - EX-2
+    SummaryService-->SummaryController: MSG386 - A draft can be created only after the meeting has ended.
+    SummaryController-->DraftCard: MSG386 - A draft can be created only after the meeting has ended.
+    DraftCard-->Actor: MSG386 - A draft can be created only after the meeting has ended.
+else No sentence recorded - EX-9
+    SummaryService-->SummaryController: MSG481 - The meeting has no spoken sentences for the AI to summarise.
+    SummaryController-->DraftCard: MSG481 - The meeting has no spoken sentences for the AI to summarise.
+    DraftCard-->Actor: MSG481 - The meeting has no spoken sentences for the AI to summarise.
 else The AI server is not configured - EX-4
     SummaryService-->SummaryController: MSG394 - The AI server is not ready. Contact the system administrator.
     SummaryController-->DraftCard: MSG394 - The AI server is not ready. Contact the system administrator.

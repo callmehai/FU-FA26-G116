@@ -111,10 +111,15 @@ public sealed class RecordingFixture : IAsyncLifetime
         /// <summary>What the next enrolment sample embeds to; a test sets one vector per sample it posts.</summary>
         internal float[] NextEmbedding = [1f, 0f, 0f];
         internal Exception? EmbedFailure;
+        /// <summary>Samples that reached the "worker": a refused one must never get this far.</summary>
+        internal int EmbedCalls;
 
         public Task<SpeechEmbedding> EmbedAsync(Stream audio, string contentType, CancellationToken ct)
-            => EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
+        {
+            Interlocked.Increment(ref EmbedCalls);
+            return EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
                 : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
+        }
 
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
             CancellationToken ct, string? context = null)

@@ -1,7 +1,7 @@
 # Hoàn thiện Report 3: bỏ UC-51, đưa UC-82 vào FE-05, vẽ bổ sung class diagram
 
 **Ngày:** 2026-11-19 · **Nhánh:** `docs/report3-uc51-bo-uc82-fe05-class` (PR #419 → `main`; #417 đã vào `main` ngày 19/11/2026, merge `bd954709`)
-**Trạng thái:** đã sửa DOCX + sync snapshot + class diagram và xử lý review PR #419 ngày 20/11/2026; còn chờ Hải re-review.
+**Trạng thái: ✅ XONG (21/11/2026)** — PR #419 đã `APPROVED` và vào `main` ngày 20/11/2026 (`b3d641be`). Jira 21/11/2026: SCRUM-30 comment 10639 + chuyển `BA Final Review` → `In Review`; SCRUM-36 comment 10640, giữ `Done`.
 **Nguồn chuẩn:** DOCX trong `docs/08-reports/source/` (không sửa tay `Report-3_*.md`, `05-use-case-specifications.md`, `06-business-rules.md` — sinh bằng `scripts/sync_reports.py`).
 
 ## 1. Quyết định đã chốt

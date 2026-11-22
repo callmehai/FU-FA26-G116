@@ -12,9 +12,10 @@ import { formatDuration } from '../recordings/format'
 import { useSamplePlayer } from './samplePlayer'
 
 /**
- * ADR-0060 — the samples meetings' Secretaries recorded for the person on the room's mic. A second set under the same
- * one Voice ID consent: the Secretary records, the person decides. Everything taken is listed with who took it and
- * where, can be heard back and deleted; turning Voice ID off erases this set with the other.
+ * ADR-0060, ADR-0071 — the samples someone else recorded for the person: a holder of "Thu giọng mẫu hộ" (ADR-0075;
+ * before that also a meeting's Secretary). A second set under the same one Voice ID consent: the collector records,
+ * the person decides. Everything taken is listed with who took it and where, can be heard back and deleted; turning
+ * Voice ID off erases this set with the other.
  */
 export function ProxyTab({
   profile,

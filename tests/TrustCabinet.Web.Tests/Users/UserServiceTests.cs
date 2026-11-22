@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Persistence;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -79,7 +80,7 @@ public class UserServiceTests
     {
         GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
-        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
+        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary);
 
         var accounts = await NewService().ListAsync();
 
@@ -121,13 +122,13 @@ public class UserServiceTests
     public async Task Create_stores_an_active_account_and_records_the_audit_entry()
     {
         var result = await NewService().CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Approver),
             _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal("chutoa@trustcabinet.local", result.Account!.Email);
-        Assert.Equal(BuiltInRoles.Chair, result.Account.RoleId);
-        Assert.Equal("Chủ toạ", result.Account.RoleName);
+        Assert.Equal(BuiltInRoles.Approver, result.Account.RoleId);
+        Assert.Equal("Phê duyệt viên", result.Account.RoleName);
         // "Create active user account" in the diagram — an administrator filling this form wants
         // a working account.
         Assert.True(result.Account.IsActive);
@@ -151,7 +152,7 @@ public class UserServiceTests
             _capabilitiesChanged, _voiceId, _calendarShares, NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Approver),
             _actorId);
 
         var stored = Assert.Single(_users.Users).PasswordHash;
@@ -165,7 +166,7 @@ public class UserServiceTests
     public async Task Create_never_puts_the_password_in_the_audit_details()
     {
         await NewService().CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Approver),
             _actorId);
 
         // The audit log is read by more people than the users table and is never deleted, so a
@@ -224,7 +225,7 @@ public class UserServiceTests
     public async Task Create_accepts_a_role_an_administrator_created()
     {
         var deputy = new Role { Name = "Thư ký phó" };
-        _users.WithRole(deputy, Capability.MinutesEditor);
+        _users.WithRole(deputy, Capability.VoiceCollector);
 
         var result = await NewService().CreateAsync(
             new NewUser("Phó Thư Ký", "phothuky@trustcabinet.local", ValidPassword, deputy.Id),
@@ -280,7 +281,7 @@ public class UserServiceTests
     {
         var result = await NewService().CreateAsync(
             new NewUser("  Trần Chủ Toạ  ", "  chutoa@trustcabinet.local  ", ValidPassword,
-                BuiltInRoles.Chair),
+                BuiltInRoles.Approver),
             _actorId);
 
         Assert.True(result.Succeeded);
@@ -327,13 +328,13 @@ public class UserServiceTests
     [Fact]
     public async Task Get_returns_the_current_information_for_the_edit_form()
     {
-        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
+        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary);
 
         var result = await NewService().GetAsync(user.Id);
 
         Assert.True(result.Succeeded);
         Assert.Equal("Nguyễn Thư Ký", result.Account!.FullName);
-        Assert.Equal(BuiltInRoles.Secretary, result.Account.RoleId);
+        Assert.Equal(TestRoles.Secretary, result.Account.RoleId);
     }
 
     [Fact]
@@ -351,13 +352,13 @@ public class UserServiceTests
         var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", BuiltInRoles.Member);
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", BuiltInRoles.Secretary),
+            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", TestRoles.Secretary),
             _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal("Tên Mới", result.Account!.FullName);
         Assert.Equal("moi@trustcabinet.local", result.Account.Email);
-        Assert.Equal(BuiltInRoles.Secretary, result.Account.RoleId);
+        Assert.Equal(TestRoles.Secretary, result.Account.RoleId);
 
         var recorded = Assert.Single(_audit.Records);
         Assert.Equal(AuditActions.UserUpdated, recorded.Action);
@@ -428,7 +429,7 @@ public class UserServiceTests
         _users.NextSaveThrows = DuplicateEmailException();
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", BuiltInRoles.Secretary),
+            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", TestRoles.Secretary),
             _actorId);
 
         Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
@@ -449,7 +450,7 @@ public class UserServiceTests
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, TestRoles.Secretary), _actorId);
 
         Assert.Single(_refreshTokens.ActiveTokens);
         Assert.Equal([user.Id], _capabilitiesChanged.Notified);
@@ -464,7 +465,7 @@ public class UserServiceTests
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", BuiltInRoles.Secretary),
+            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", TestRoles.Secretary),
             _actorId);
 
         Assert.Empty(_refreshTokens.ActiveTokens);
@@ -479,21 +480,21 @@ public class UserServiceTests
         _capabilitiesChanged.OnPublish = () => throw new InvalidOperationException("Hub khong phan hoi");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, TestRoles.Secretary), _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(BuiltInRoles.Secretary, Assert.Single(_users.Users).RoleId);
+        Assert.Equal(TestRoles.Secretary, Assert.Single(_users.Users).RoleId);
     }
 
     [Fact]
     public async Task Update_keeps_the_sessions_when_the_role_is_unchanged()
     {
         // Correcting a typo in someone's name should not sign them out.
-        var user = GivenUser(role: BuiltInRoles.Secretary);
+        var user = GivenUser(role: TestRoles.Secretary);
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Đã Sửa", user.Email, BuiltInRoles.Secretary), _actorId);
+            user.Id, new UserEdit("Tên Đã Sửa", user.Email, TestRoles.Secretary), _actorId);
 
         Assert.Single(_refreshTokens.ActiveTokens);
         Assert.Empty(_capabilitiesChanged.Notified);
@@ -559,10 +560,10 @@ public class UserServiceTests
         // The rule is about the capability, not the role name: moving to a role that also carries
         // AdminUsers takes nothing away, and must not be refused.
         var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
-        _users.WithCapabilities(BuiltInRoles.Chair, Capability.AdminUsers);
+        _users.WithCapabilities(BuiltInRoles.Approver, Capability.AdminUsers);
 
         var result = await NewService().UpdateAsync(
-            only.Id, new UserEdit(only.FullName, only.Email, BuiltInRoles.Chair), _actorId);
+            only.Id, new UserEdit(only.FullName, only.Email, BuiltInRoles.Approver), _actorId);
 
         Assert.True(result.Succeeded);
     }
@@ -634,7 +635,7 @@ public class UserServiceTests
         var service = NewService();
 
         await service.UpdateAsync(
-            target.Id, new UserEdit(target.FullName, target.Email, BuiltInRoles.Chair), _actorId);
+            target.Id, new UserEdit(target.FullName, target.Email, BuiltInRoles.Approver), _actorId);
         await service.ChangeStatusAsync(target.Id, false, _actorId);
 
         Assert.Equal(2, _invariant.WriteCount);
@@ -670,7 +671,7 @@ public class UserServiceTests
             Assert.False(_invariant.IsInsideWrite, "The account was told while the lock was held.");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Chair), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Approver), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal([user.Id], _capabilitiesChanged.Notified);
@@ -854,7 +855,7 @@ public class UserServiceTests
     public async Task Moving_the_last_administrator_into_a_custom_role_without_admin_users_is_refused()
     {
         var plain = new Role { Name = "Thư ký phó" };
-        _users.WithRole(plain, Capability.MinutesEditor);
+        _users.WithRole(plain, Capability.VoiceCollector);
         var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().UpdateAsync(
@@ -870,7 +871,7 @@ public class UserServiceTests
         var user = GivenUser(role: BuiltInRoles.Member);
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, TestRoles.Secretary), _actorId);
 
         Assert.Equal("Thư ký", result.Account!.RoleName);
 
@@ -882,7 +883,7 @@ public class UserServiceTests
         Assert.Equal(
             "Thư ký", parsed.RootElement.GetProperty("After").GetProperty("Role").GetString());
         Assert.Equal(
-            BuiltInRoles.Secretary,
+            TestRoles.Secretary,
             parsed.RootElement.GetProperty("After").GetProperty("RoleId").GetGuid());
     }
 

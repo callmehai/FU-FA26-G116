@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { deleteSpeechClip, editSpeechClip, getSpeechClipsText, setSpeechClipExclusion } from '../../api/speech'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -82,20 +82,16 @@ export function SpeechTimeline({
   const box = useRef<HTMLOListElement>(null)
   const stuck = useRef(true)
 
-  // Speakers in the order they were first heard; their colour follows that order.
+  // Speakers in the order they were first heard; their colour follows that order. Each counts the paragraphs its
+  // filter shows (BUGS 21/11: "Xem 26 lượt" counted sentences, and the filtered list showed fewer, merged ones), less
+  // those taken out of the record.
   const speakers = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; count: number; slot: number }>()
-    for (const clip of clips) {
-      const known = seen.get(clip.speakerId)
-      if (known) known.count += clip.excluded ? 0 : 1
-      else
-        seen.set(clip.speakerId, {
-          id: clip.speakerId,
-          name: clip.speakerName,
-          count: clip.excluded ? 0 : 1,
-          slot: seen.size,
-        })
-    }
+    for (const clip of clips)
+      if (!seen.has(clip.speakerId))
+        seen.set(clip.speakerId, { id: clip.speakerId, name: clip.speakerName, count: 0, slot: seen.size })
+    for (const speaker of seen.values())
+      speaker.count = groupClips(clips.filter((c) => c.speakerId === speaker.id)).filter((g) => !g.clips[0].excluded).length
     return [...seen.values()]
   }, [clips])
   const slotOf = useMemo(() => new Map(speakers.map((s) => [s.id, s.slot])), [speakers])
@@ -111,18 +107,8 @@ export function SpeechTimeline({
     if (el && stuck.current) el.scrollTop = el.scrollHeight
   }, [clips.length])
 
-  // While the record plays, the sentence being heard stays in view.
-  useEffect(() => {
-    const el = box.current
-    if (!el || !player.playing || !player.currentId) return
-    const row = el.querySelector<HTMLElement>(`[data-clip="${CSS.escape(player.currentId)}"]`)
-    if (!row) return
-    // A sentence is a run of words inside its paragraph: measured against the list, not its offset parent.
-    const rect = row.getBoundingClientRect()
-    const top = rect.top - el.getBoundingClientRect().top + el.scrollTop
-    if (top < el.scrollTop || top + rect.height > el.scrollTop + el.clientHeight)
-      el.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' })
-  }, [player.currentId, player.playing])
+  // Playing the record never moves the list (team test 21/11/2026): people read elsewhere while it plays, and a
+  // sentence played from a click is already in view. The sentence being heard is still marked where it is.
 
   const kept = clips.filter((c) => !c.excluded).length
   const live = !!list?.canCapture
@@ -187,23 +173,27 @@ export function SpeechTimeline({
               <h3 id="tl-speakers-title" className="tl-speakers-title">
                 Người nói <span className="tl-pill">{speakers.length}</span>
               </h3>
-              <ul>
+              {/* The same row as the room record's voices (SpeakerList): dot and name, the filter at the end. */}
+              <ul className="speaker-list">
                 {speakers.map((s) => {
                   const on = shownFilter === s.id
                   return (
-                    <li key={s.id} className={on ? 'tl-speaker is-on' : 'tl-speaker'}>
-                      <span className="tl-speaker-name" style={{ color: speakerSlot(s.slot).ink }} title={s.name}>
+                    <li key={s.id} className={on ? 'speaker-row tl-speaker is-on' : 'speaker-row tl-speaker'}>
+                      <span className="speaker-name">
+                        <span className="select-dot" style={{ background: speakerSlot(s.slot).dot }} aria-hidden="true" />
                         {s.name}
                       </span>
                       <button
                         type="button"
                         className={on ? 'tl-filter is-on' : 'tl-filter'}
                         aria-pressed={on}
+                        aria-label={on ? undefined : `Xem ${s.count} lượt của ${s.name}`}
                         onClick={() => setFilter(on ? null : s.id)}
                         data-tooltip={`Chỉ xem lời trên micro của ${s.name}`}
                       >
+                        {/* Short, as the time ends a room record's row: the funnel says it filters, the name is beside it. */}
                         <Icon name={on ? 'filterOff' : 'filter'} size={14} />
-                        {on ? 'Bỏ lọc' : `Xem ${s.count} lượt`}
+                        {on ? 'Bỏ lọc' : `${s.count} lượt`}
                       </button>
                     </li>
                   )
@@ -327,7 +317,8 @@ function Paragraph({
   const toast = useToast()
   const first = group.clips[0]
   const colour = speakerSlot(slot)
-  const at = player.placeOf.get(first.id)
+  // The paragraph's own length, as a voice message shows it: when it was said is the clock beside the name.
+  const length = group.clips.reduce((total, clip) => total + (clip.hasAudio ? clip.durationMs : 0), 0)
   const hearing = group.clips.some((c) => c.id === player.currentId)
   const leak = first.leak
   const gone = first.excluded && !canExclude
@@ -394,7 +385,7 @@ function Paragraph({
               data-tooltip={hearing && player.playing ? 'Tạm dừng' : alone ? (group.clips.length > 1 ? 'Nghe cả đoạn' : 'Nghe câu này') : 'Nghe lại'}
             >
               <Icon name={hearing && player.playing ? 'pause' : 'play'} size={12} />
-              {at !== undefined && formatClock(at)}
+              {length > 0 && formatClock(length)}
             </button>
           )}
           {leak && !first.excluded && (
@@ -586,6 +577,7 @@ function Sentence({
         <SpokenWords
           text={clip.text}
           starts={clip.wordStartsMs}
+          confidence={clip.wordConfidence}
           nowMs={active && player.playing ? player.offsetMs : null}
           marked={leakWords ? (word) => leakWords.some(([from, to]) => word >= from && word < to) : undefined}
           markClass="tl-leak-words"

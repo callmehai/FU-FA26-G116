@@ -27,7 +27,7 @@ type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 
 export function VoicePage() {
   const [state, setState] = useState<State>({ kind: 'loading' })
   const generation = useRef(0)
-  // ADR-0060: two sets under one consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
+  // ADR-0060: two sets under one consent. A "đã thu giọng mẫu của bạn" notice opens ?tab=proxy.
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'proxy' ? 'proxy' : 'self'
   const openTab = (next: 'self' | 'proxy') => setParams(next === 'proxy' ? { tab: 'proxy' } : {}, { replace: true })
@@ -51,7 +51,7 @@ export function VoicePage() {
     }
   }, [load])
 
-  // A meeting's Secretary just recorded a sample for this person (ADR-0060): show it without a reload.
+  // A holder of "Thu giọng mẫu hộ" just recorded a sample for this person (ADR-0071): show it without a reload.
   useNotificationRefresh((notification) => notification.type === 'VoiceSampleCollected', () => void load())
 
   return (
@@ -273,7 +273,7 @@ function Enrolled({
         >
           <p>
             Toàn bộ {profile.samples.length} giọng mẫu tự thu
-            {profile.proxy.samples.length > 0 && ` và ${profile.proxy.samples.length} mẫu Thư ký thu hộ`}, mọi gợi ý và
+            {profile.proxy.samples.length > 0 && ` và ${profile.proxy.samples.length} mẫu thu hộ`}, mọi gợi ý và
             tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.
           </p>
         </ConfirmDialog>
@@ -285,8 +285,9 @@ function Enrolled({
 /**
  * The notice changed since the person agreed: 1.1 keeps the sample recording for its owner to hear back (ADR-0042), 1.2
  * lets the machine fill in their name on a sure match (ADR-0048), 1.3 lets their meetings' Secretary record samples on
- * the room's mic (ADR-0060), 1.4 lets a holder of "Thu giọng mẫu hộ" record them with no meeting (ADR-0071). Until they
- * renew, nothing new applies to them.
+ * the room's mic (ADR-0060), 1.4 lets a holder of "Thu giọng mẫu hộ" record them with no meeting (ADR-0071), 1.5 takes
+ * the meeting Secretary out (ADR-0075) and says each take is asked first (ADR-0073). Until they renew, nothing new
+ * applies to them; 1.5 only narrows 1.4, so a person on 1.4 can still be recorded by a holder of the capability.
  */
 function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   const toast = useToast()
@@ -295,8 +296,8 @@ function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (
   const changes = [
     agreed < '1.1' && 'Giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại.',
     agreed < '1.2' && 'Máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được.',
-    agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.',
     agreed < '1.4' && 'Người được giao quyền "Thu giọng mẫu hộ" thu được giọng mẫu của bạn bất kỳ lúc nào, không cần cuộc họp.',
+    agreed < '1.5' && 'Thư ký cuộc họp không còn thu giọng mẫu hộ. Người thu hộ hỏi ý bạn trước mỗi lần thu.',
   ].filter((change): change is string => Boolean(change))
   // One line on the page; what changed is read in full in the dialog, before agreeing to it.
   return (
