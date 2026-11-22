@@ -10,8 +10,15 @@ public static class ShortLineRules
     /// <summary>A line with fewer characters than this is short.</summary>
     public const int MinChars = 10;
 
-    /// <summary>A line said in less time than this is short.</summary>
+    /// <summary>A line said in less time than this is short, when it also has fewer than <see cref="QuickMaxChars"/>
+    /// characters.</summary>
     public const long MinDurationMs = 3000;
+
+    /// <summary>
+    /// A line said quickly yet this long is a real sentence ("Nó có còn phải test là có nền không?", 36 characters in
+    /// 2.2 s), not a breath or a "Ừ. OK." (PO 22/11/2026): only lines shorter than this are short for their time.
+    /// </summary>
+    public const int QuickMaxChars = 20;
 
     /// <summary>
     /// Interjections that carry no content on their own: a nod said aloud, a hesitation. "Vâng", "Dạ", "Có", "Không",
@@ -24,7 +31,11 @@ public static class ShortLineRules
 
     private static readonly char[] Marks = ['.', ',', '?', '!', ':', ';', '…', '"', '\'', '(', ')', '-'];
 
-    public static bool IsShort(string text, long durationMs) => text.Trim().Length < MinChars || durationMs < MinDurationMs;
+    public static bool IsShort(string text, long durationMs)
+    {
+        var chars = text.Trim().Length;
+        return chars < MinChars || (durationMs < MinDurationMs && chars < QuickMaxChars);
+    }
 
     /// <summary>True when every word of the line is an interjection ("Ừ.", "À. Ừ.", "Ờ ờ"); false for an empty line.</summary>
     public static bool IsFillerOnly(string text)

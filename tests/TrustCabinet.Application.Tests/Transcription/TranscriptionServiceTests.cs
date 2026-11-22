@@ -153,8 +153,9 @@ public sealed class TranscriptionServiceTests
             new SpeechSegment(0, 1000, "SPEAKER_00", "Ừ."),
             new SpeechSegment(1000, 5000, "SPEAKER_01", "Kính thưa các đồng chí, hôm nay chúng ta họp."),
             new SpeechSegment(5000, 6000, "SPEAKER_00", "Đồng ý."),
-            new SpeechSegment(6000, 7500, "SPEAKER_02", "Nó có còn phải test không?"),
-            new SpeechSegment(7500, 12000, "SPEAKER_02", "Tiếp theo là phần báo cáo của phòng tài chính."),
+            new SpeechSegment(6000, 7500, "SPEAKER_02", "Đến tối là kín mịn."),
+            new SpeechSegment(7500, 9000, "SPEAKER_02", "Nó có còn phải test là có nền không?"),
+            new SpeechSegment(9000, 12000, "SPEAKER_02", "Tiếp theo là phần báo cáo của phòng tài chính."),
             new SpeechSegment(12000, 13000, "SPEAKER_01", "À."),
         ],
         [
@@ -165,11 +166,13 @@ public sealed class TranscriptionServiceTests
         Assert.True(await Service().ProcessNextAsync());
 
         // SPEAKER_00 matched nobody and said only short lines: gone. SPEAKER_01 is the member, so their short "À." goes
-        // only for being an interjection; SPEAKER_02's long line stays, its short one does not.
+        // only for being an interjection; SPEAKER_02's long lines stay (a quick one of 20+ characters too), its short
+        // one does not.
         Assert.Equal(
-            [("SPEAKER_00", "Kính thưa các đồng chí, hôm nay chúng ta họp."), ("SPEAKER_01", "Tiếp theo là phần báo cáo của phòng tài chính.")],
+            [("SPEAKER_00", "Kính thưa các đồng chí, hôm nay chúng ta họp."), ("SPEAKER_01", "Nó có còn phải test là có nền không?"),
+                ("SPEAKER_01", "Tiếp theo là phần báo cáo của phòng tài chính.")],
             transcript.Segments.OrderBy(s => s.Position).Select(s => (s.SpeakerLabel, s.Text)));
-        Assert.Equal([1, 2], transcript.Segments.Select(s => s.Position).Order());
+        Assert.Equal([1, 2, 3], transcript.Segments.Select(s => s.Position).Order());
         Assert.Equal(["SPEAKER_00", "SPEAKER_01"], transcript.Speakers.Select(s => s.Label).Order());
         Assert.Equal(_meeting.Member, transcript.Speakers.Single(s => s.Label == "SPEAKER_00").SuggestedUserId);
         Assert.Null(transcript.Speakers.Single(s => s.Label == "SPEAKER_01").SuggestedUserId);

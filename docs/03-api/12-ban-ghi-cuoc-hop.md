@@ -265,8 +265,9 @@ trả kết quả không đọc được, database lỗi khi ghi kết quả…)
 thành chữ do lỗi hệ thống. Hãy chạy lại.*, chi tiết ở log, để Thư ký chạy lại được ngay. Chỉ khi app tắt giữa chừng thì
 bản đang `Processing` giữ nguyên và quay về `Pending` ở lần khởi động sau. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
 
-**Câu quá ngắn không ai nhận được thì bỏ** (họp thử 21/11/2026, `ShortLineRules`). Một câu là ngắn khi dưới 10 ký tự
-hoặc dưới 3 giây. Câu ngắn bị bỏ khi giọng của nó không khớp giọng mẫu của ai (không có gợi ý tên), hoặc khi cả câu chỉ
+**Câu quá ngắn không ai nhận được thì bỏ** (họp thử 21/11/2026, `ShortLineRules`). Một câu là ngắn khi dưới 10 ký tự,
+hoặc dưới 3 giây mà dưới 20 ký tự (câu nói nhanh mà đủ dài như "Nó có còn phải test là có nền không?" vẫn giữ, PO
+22/11/2026). Câu ngắn bị bỏ khi giọng của nó không khớp giọng mẫu của ai (không có gợi ý tên), hoặc khi cả câu chỉ
 là tiếng đệm ("Ừ.", "À. Ừ.", "Ờm"). Câu dài luôn giữ nguyên. Giọng nào không còn câu nào thì không thành
 "Người nói N", và các nhãn còn lại được đánh số lại theo thứ tự lên tiếng (`SPEAKER_00`, `SPEAKER_01`…), không
 nhảy số.

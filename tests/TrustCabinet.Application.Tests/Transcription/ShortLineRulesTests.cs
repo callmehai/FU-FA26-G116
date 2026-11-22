@@ -7,7 +7,9 @@ public sealed class ShortLineRulesTests
 {
     [Theory]
     [InlineData("Ừ.", 900, false, false)]
-    [InlineData("Nó có còn phải test không?", 2200, false, false)]
+    [InlineData("Nó có còn phải test là có nền không?", 2200, false, true)]
+    [InlineData("Đến tối là kín mịn.", 1966, false, false)]
+    [InlineData("Ừ. Thế thì nốt lại.", 2900, false, false)]
     [InlineData("Đồng ý.", 4000, false, false)]
     [InlineData("Đồng ý.", 1500, true, true)]
     [InlineData("À. Ừ.", 1500, true, false)]
