@@ -103,8 +103,17 @@ public sealed class FakeSpeechClipRepository : ISpeechClipRepository
 
     public Task<SpeechClip?> FindAsync(Guid clipId, CancellationToken ct) => Task.FromResult(Clips.SingleOrDefault(c => c.Id == clipId));
 
+    /// <summary>After this many admission checks the guest's session is revoked: the invitation withdrawn mid-request.</summary>
+    public int? RevokeAdmissionAfterChecks { get; set; }
+    private int _admissionChecks;
+
     public Task<bool> IsGuestSessionAdmittedAsync(Guid sessionId, Guid invitationId, Guid meetingId, DateTimeOffset now,
-        CancellationToken ct) => Task.FromResult(AdmittedSessions.Contains(sessionId));
+        CancellationToken ct)
+    {
+        var admitted = AdmittedSessions.Contains(sessionId);
+        if (RevokeAdmissionAfterChecks is { } after && ++_admissionChecks >= after) AdmittedSessions.Remove(sessionId);
+        return Task.FromResult(admitted);
+    }
 
     public Task<bool> HasGuestConfirmedNoticeAsync(Guid sessionId, CancellationToken ct)
         => Task.FromResult(ConfirmedNotices.Contains(sessionId));
@@ -288,8 +297,12 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
     public Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct)
         => Task.FromResult(Transcripts.SingleOrDefault(t => t.Segments.Any(s => s.Id == segmentId))?.RecordingId);
 
+    /// <summary>Thrown by the next claim: a store that cannot be reached.</summary>
+    public Exception? ClaimFails { get; set; }
+
     public Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct)
     {
+        if (ClaimFails is { } failure) return Task.FromException<Guid?>(failure);
         var next = Transcripts.Where(t => t.Status == TranscriptStatus.Pending).MinBy(t => t.CreatedAt);
         if (next is null) return Task.FromResult<Guid?>(null);
         next.Status = TranscriptStatus.Processing;

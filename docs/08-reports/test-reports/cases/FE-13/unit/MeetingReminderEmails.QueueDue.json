@@ -14,19 +14,6 @@
         {
           "id": "UTC001",
           "preconditions": [
-            "Clock 2026-11-18T03:00Z.",
-            "No Published meeting starts within the next 15 minutes."
-          ],
-          "inputs": "No input.",
-          "return": "0; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC002",
-          "preconditions": [
             "Published in-person meeting \"Họp giao ban\" starts at 03:10Z; organizer An (an@example.vn); participants Bình (Chair) and Cường (Member); invitations were sent days ago."
           ],
           "inputs": "Clock 03:00Z; application base URL https://tc.example.vn/.",
@@ -34,58 +21,13 @@
           "exception": "N/A",
           "log": "Two EmailMessage rows queued, subject \"Cuộc họp sắp bắt đầu: Họp giao ban\", deduplication key \"email-starting-soon:<meetingId>:<start unix seconds>:<participant id>\"; the text names the start time, place and the link https://tc.example.vn/mgmt/meetings/<meetingId>; the HTML shows the role (Chủ toạ / Thành viên), the chair and the organizer contact \"An (an@example.vn)\"; one commit.",
           "type": "Normal",
-          "note": "BR-303"
+          "note": "BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC003",
-          "preconditions": [
-            "An online meeting held in the TrustCabinet room (Mode Online, no external link)."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "The button and the link point to /mgmt/meetings/<meetingId>/room, labelled \"Vào phòng họp\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "An online meeting with an external link, or a hybrid meeting with an external link."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "The button is \"Xem cuộc họp\" pointing to /mgmt/meetings/<meetingId>.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A hybrid meeting with no external link."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "The button is \"Vào phòng họp\" (a meeting that is not in person and has no link is entered from the app).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Participant Bình was invited at 02:59Z, inside the 15-minute window before the 03:10Z start."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "No email for Bình; the other participants still get theirs.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC002",
           "preconditions": [
             "Participant invited exactly at 02:55Z, which is 15 minutes before a 03:10Z start."
           ],
@@ -94,22 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303"
+          "note": "BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
-          "preconditions": [
-            "Participant invited at 02:54:59Z, one second before the boundary."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "An email is queued.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC009",
+          "id": "UTC003",
           "preconditions": [
             "All reminder keys for this meeting and start time are already stored."
           ],
@@ -118,22 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303"
+          "note": "BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC010",
-          "preconditions": [
-            "The meeting was reminded for 03:10Z, then rescheduled to 03:12Z; the new key holds the new start."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "One email per participant for the new time.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-15 · BR-303 · BR-76"
-        },
-        {
-          "id": "UTC011",
+          "id": "UTC004",
           "preconditions": [
             "The same email key is produced twice in one run (two reads of the same participant)."
           ],
@@ -142,22 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-303"
+          "note": "BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC012",
-          "preconditions": [
-            "A Guest invitation on the meeting; the link provider prepares the link https://tc.example.vn/guest/verify?t=abc."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "An email to the Guest: button \"Xác minh email để vào cuộc họp\" with that link; no place and no role; the contact is the organizer's name only.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-04 · BR-303"
-        },
-        {
-          "id": "UTC013",
+          "id": "UTC005",
           "preconditions": [
             "A Guest invitation; the link provider returns Unavailable."
           ],
@@ -166,70 +81,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · BR-303"
+          "note": "UC-04 · BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC014",
-          "preconditions": [
-            "A Guest invitation; the link provider returns Invalid."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "No email for the Guest.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04 · BR-303"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "A Guest invited at 02:59Z (inside the window)."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "No email for the Guest and the link provider is not asked.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-04 · BR-303"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "A Guest whose reminder key was already stored."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "No email; the link provider is not asked.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-04 · BR-303"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Two meetings start within the window, each with 2 participants."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "4.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC018",
-          "preconditions": [
-            "The meeting has no active Chair."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "Reminders are still queued; the HTML has no \"Chủ toạ\" row.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC019",
+          "id": "UTC006",
           "preconditions": [
             "The meeting title contains a line break and is 320 characters long."
           ],
@@ -238,31 +96,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC020",
-          "preconditions": [
-            "The subject's 300th character would split a surrogate pair."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "The subject is cut to 299 characters.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
-        },
-        {
-          "id": "UTC021",
-          "preconditions": [
-            "Only deduplicated work: every recipient is skipped."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "0; no save is made when nothing was queued.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303"
+          "note": "BR-303",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

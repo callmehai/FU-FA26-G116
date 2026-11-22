@@ -108,12 +108,22 @@ public sealed class FakeMeetingSummaryRepository : IMeetingSummaryRepository
         => Task.FromResult(Rows.Where(s => s.Status == SummaryStatus.Queued).OrderBy(s => s.RequestedAt)
             .Select(s => new QueuedSummary(s.Id, s.MeetingId)).FirstOrDefault());
 
+    /// <summary>Another worker claims every draft first: the claim answers 0 and the row is already Running.</summary>
+    public bool LoseClaims { get; set; }
+
     public Task<int> ClaimAsync(Guid id, DateTimeOffset now, CancellationToken ct)
-        => Change(id, s => s.Status == SummaryStatus.Queued, s => s.Status = SummaryStatus.Running);
+    {
+        if (!LoseClaims) return Change(id, s => s.Status == SummaryStatus.Queued, s => s.Status = SummaryStatus.Running);
+        Rows.Single(s => s.Id == id).Status = SummaryStatus.Running;
+        return Task.FromResult(0);
+    }
+
+    /// <summary>Thrown by storing a finished draft: the store rejects it.</summary>
+    public Exception? StoreDraftFails { get; set; }
 
     public Task<int> StoreDraftAsync(Guid id, string content, string model, DateTimeOffset generatedAt, DateTimeOffset now,
         CancellationToken ct)
-        => Change(id, _ => true, s => { s.Status = SummaryStatus.Ready; s.Content = content; s.Model = model; s.GeneratedAt = generatedAt; });
+        => StoreDraftFails is { } failure ? Task.FromException<int>(failure) : Change(id, _ => true, s => { s.Status = SummaryStatus.Ready; s.Content = content; s.Model = model; s.GeneratedAt = generatedAt; });
 
     public Task<int> MarkFailedAsync(Guid id, string error, DateTimeOffset now, CancellationToken ct)
     {

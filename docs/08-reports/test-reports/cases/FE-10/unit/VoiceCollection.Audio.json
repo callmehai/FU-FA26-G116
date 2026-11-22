@@ -2,50 +2,59 @@
   "feature": "FE-10",
   "module": "TRANS",
   "sheet": "VoiceCollection.Audio",
-  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
-  "precondition": "Meeting with participants and consent.",
+  "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
+  "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
   "methods": [
     {
-      "method": "VoiceCollectionService.AudioAsync",
+      "method": "VoiceCollectionService.PersonAudioAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-      "line": 168,
+      "line": 154,
       "cases": [
         {
           "id": "UTC001",
           "preconditions": [
-            "A sample was collected at the meeting; actor is its current secretary."
+            "A proxy sample with its recording exists for the active person."
           ],
-          "inputs": "meetingId: the meeting; actorId: its current secretary; sampleId: a sample collected there.",
+          "inputs": "actorId: the collector; userId: the person; sampleId: a proxy sample of the person.",
           "return": "The decrypted bytes with their content type.",
           "exception": "N/A",
-          "log": "Saved: audit row records the play with the owner and the meeting.",
+          "log": "Saved: audit row records the play with the owner, before the bytes are returned.",
           "type": "Normal",
-          "note": "UC-86c · BR-452 · BR-453"
+          "note": "UC-86c · BR-452 · BR-453",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
           "preconditions": [
-            "The sample was collected at another meeting; actor is the current secretary of this one."
+            "The sample is one the person recorded themself."
           ],
-          "inputs": "meetingId: this meeting; actorId: its current secretary; sampleId: a sample collected elsewhere.",
-          "return": "Null; a secretary only hears samples taken in their own meeting.",
+          "inputs": "actorId: the collector; userId: the person; sampleId: the person own self-recorded sample.",
+          "return": "Null; a collector only hears samples taken for the person, never the person own set.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86c · BR-452"
+          "note": "UC-86c · BR-452",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
           "preconditions": [
-            "A sample was collected at the meeting; actor takes part but is not the secretary."
+            "The person account is deactivated; a proxy sample still exists."
           ],
-          "inputs": "meetingId: the meeting; actorId: a member who is not the secretary; sampleId: a sample collected there.",
-          "return": "Null; answered as if the meeting does not exist.",
+          "inputs": "actorId: the collector; userId: a deactivated person; sampleId: a proxy sample of that person.",
+          "return": "Null; a deactivated person has no Voice ID left (ADR-0049), answered as if the sample does not exist.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86c · BR-450"
+          "note": "UC-86c · ADR-0049",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

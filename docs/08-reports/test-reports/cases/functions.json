@@ -63,6 +63,29 @@
       "sheet": "Jwt.AccessToken"
     },
     {
+      "description": "Password hashing and verification: same password verifies, different password fails, malformed hash fails instead of throwing.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": "Returns true only when the supplied password matches the stored hash; a wrong password or a malformed hash returns false without throwing.",
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 30,
+          "method": "PasswordHasher.Verify",
+          "layer": "Infrastructure"
+        },
+        {
+          "decides": "Hashes with a random salt, so the same password hashes differently every time and every hash verifies.",
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 28,
+          "method": "PasswordHasher.Hash",
+          "layer": "Infrastructure"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "No database needed; pure hashing check.",
+      "sheet": "Password.Verify"
+    },
+    {
       "description": "Google sign-in: identity verification, linking an administrator-created account by email, deactivated and unlinked accounts.",
       "feature": "FE-01",
       "methods": [
@@ -341,7 +364,7 @@
         {
           "decides": "Each legal edge changes status, writes history and notifies; wrong actor, lost capability, self-approval, ineligible approver, unready roster and stale state are refused with 404/403/409/400 and the matching MSGnn.",
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 418,
+          "line": 420,
           "method": "MeetingService.TransitionAsync",
           "layer": "Application"
         }
@@ -358,7 +381,7 @@
           "decides": "Chair starts a Published meeting and ends a running one; non-chair, wrong status and broken roster are refused; end fans out to agenda, speaking, vote drafts and room closure.",
           "file": "backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs",
           "gap": "Partial direct coverage (invalid-command rejection and cancellation-after-commit); roster and auth branches are HTTP-only.",
-          "line": 33,
+          "line": 34,
           "method": "MeetingLifecycleService.TransitionAsync",
           "layer": "Application"
         }
@@ -374,7 +397,7 @@
         {
           "decides": "Valid input creates or updates the meeting; blank title, bad enum, end before start and locked-field changes on a Published meeting are refused with field errors.",
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 22,
+          "line": 24,
           "method": "MeetingService.CreateAsync",
           "layer": "Application"
         }
@@ -406,7 +429,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 180,
+          "line": 182,
           "method": "MeetingService.CheckUpdateAsync",
           "layer": "Application"
         }
@@ -422,7 +445,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 207,
+          "line": 209,
           "method": "MeetingService.UpdateAsync",
           "layer": "Application"
         }
@@ -438,7 +461,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 373,
+          "line": 375,
           "method": "MeetingService.GetSubmissionReadinessAsync",
           "layer": "Application"
         }
@@ -454,7 +477,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-          "line": 739,
+          "line": 744,
           "method": "MeetingService.GetHistoryAsync",
           "layer": "Application"
         }
@@ -470,7 +493,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
-          "line": 48,
+          "line": 51,
           "method": "MeetingOverdueService.EndOverrunAsync",
           "layer": "Application"
         }
@@ -486,7 +509,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
-          "line": 60,
+          "line": 63,
           "method": "MeetingOverdueService.CancelOverdueAsync",
           "layer": "Application"
         }
@@ -561,38 +584,6 @@
       "sheet": "Agenda.Validate"
     },
     {
-      "description": "Planning-allowed rule: the meeting statuses in which the agenda may change.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 12,
-          "method": "AgendaRules.PlanningAllowed",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.PlanningAllowed"
-    },
-    {
-      "description": "Planner rule: the chair and the secretary plan the agenda.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 23,
-          "method": "AgendaRules.IsPlanner",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.IsPlanner"
-    },
-    {
       "description": "Conclusion-permission rule: who may record a conclusion, and when.",
       "feature": "FE-05",
       "methods": [
@@ -625,22 +616,6 @@
       "sheet": "Agenda.Actions"
     },
     {
-      "description": "Input normalization: trimming the title and defaulting the description.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 26,
-          "method": "AgendaRules.Normalize",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.Normalize"
-    },
-    {
       "description": "Order-version rule: the hash identifying the current item order.",
       "feature": "FE-05",
       "methods": [
@@ -657,38 +632,6 @@
       "sheet": "Agenda.OrderVersion"
     },
     {
-      "description": "Current-participant rule: roster membership that is still current.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 16,
-          "method": "AgendaRules.CurrentParticipant",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.CurrentParticipant"
-    },
-    {
-      "description": "Role rule: whether the actor holds a role as a current participant.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 18,
-          "method": "AgendaRules.HasRole",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.HasRole"
-    },
-    {
       "description": "Completing a running item: wrong state or time refuses; success stamps the end.",
       "feature": "FE-05",
       "methods": [
@@ -703,22 +646,6 @@
       "module": "AGENDA",
       "precondition": "No database needed; pure rules.",
       "sheet": "AgendaExecution.TryComplete"
-    },
-    {
-      "description": "Microsecond truncation: timestamps are normalized to whole microseconds.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 71,
-          "method": "AgendaExecution.UtcMicroseconds",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "AgendaExecution.UtcMicroseconds"
     },
     {
       "description": "Creating an agenda item: a planner adds a titled item while planning is allowed.",
@@ -904,7 +831,7 @@
         {
           "decides": "Valid PDF/DOCX files pass with SHA-256 and page counts; access, file count, total and per-file sizes, type mismatches and hostile PDFs are refused per file with an index.",
           "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
-          "line": 88,
+          "line": 94,
           "method": "DocumentFileRules.ValidateAsync",
           "layer": "Domain"
         }
@@ -1112,7 +1039,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 102,
+          "line": 103,
           "method": "CallRoomService.JoinAsync",
           "layer": "Application"
         }
@@ -1128,7 +1055,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 65,
+          "line": 66,
           "method": "CallRoomService.GetRoomAsync",
           "layer": "Application"
         }
@@ -1160,7 +1087,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 167,
+          "line": 168,
           "method": "CallRoomService.MuteAsync",
           "layer": "Application"
         }
@@ -1176,7 +1103,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 226,
+          "line": 227,
           "method": "CallRoomService.HandleWebhookAsync",
           "layer": "Application"
         }
@@ -1192,7 +1119,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 294,
+          "line": 295,
           "method": "CallRoomService.ReconcileAsync",
           "layer": "Application"
         }
@@ -1208,7 +1135,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-          "line": 319,
+          "line": 320,
           "method": "CallRoomService.EnforceRoomAccessAsync",
           "layer": "Application"
         }
@@ -1272,7 +1199,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
-          "line": 247,
+          "line": 296,
           "method": "RecordingRules.Export",
           "layer": "Application"
         }
@@ -1288,7 +1215,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-          "line": 61,
+          "line": 63,
           "method": "RecordingService.AddAsync",
           "layer": "Application"
         }
@@ -1304,7 +1231,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-          "line": 113,
+          "line": 115,
           "method": "RecordingService.PlaybackAsync",
           "layer": "Application"
         }
@@ -1320,7 +1247,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-          "line": 131,
+          "line": 133,
           "method": "RecordingService.DownloadAsync",
           "layer": "Application"
         }
@@ -1336,7 +1263,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-          "line": 160,
+          "line": 165,
           "method": "RecordingService.EraseAsync",
           "layer": "Application"
         }
@@ -1352,7 +1279,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-          "line": 31,
+          "line": 32,
           "method": "RoomTakeService.BeginAsync",
           "layer": "Application"
         }
@@ -1368,7 +1295,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-          "line": 95,
+          "line": 96,
           "method": "RoomTakeService.AppendAsync",
           "layer": "Application"
         }
@@ -1384,7 +1311,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-          "line": 135,
+          "line": 136,
           "method": "RoomTakeService.CompleteAsync",
           "layer": "Application"
         }
@@ -1400,7 +1327,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-          "line": 263,
+          "line": 264,
           "method": "RoomTakeService.DeleteTakeAsync",
           "layer": "Application"
         }
@@ -1432,7 +1359,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 195,
+          "line": 199,
           "method": "SpeechClipService.EditAsync",
           "layer": "Application"
         }
@@ -1448,7 +1375,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 229,
+          "line": 233,
           "method": "SpeechClipService.DeleteAsync",
           "layer": "Application"
         }
@@ -1464,7 +1391,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 255,
+          "line": 265,
           "method": "SpeechClipService.SetExclusionAsync",
           "layer": "Application"
         }
@@ -1480,7 +1407,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 341,
+          "line": 352,
           "method": "SpeechClipService.AddForGuestAsync",
           "layer": "Application"
         }
@@ -1496,7 +1423,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 350,
+          "line": 361,
           "method": "SpeechClipService.DeleteForGuestAsync",
           "layer": "Application"
         }
@@ -1512,7 +1439,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 380,
+          "line": 393,
           "method": "SpeechClipService.PlaybackForGuestAsync",
           "layer": "Application"
         }
@@ -1528,7 +1455,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-          "line": 422,
+          "line": 439,
           "method": "SpeechClipService.PlaybackAsync",
           "layer": "Application"
         }
@@ -1560,7 +1487,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs",
-          "line": 39,
+          "line": 53,
           "method": "CombinedRecordingService.BuildNextAsync",
           "layer": "Application"
         }
@@ -1576,7 +1503,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-          "line": 334,
+          "line": 374,
           "method": "TranscriptionService.ProcessNextAsync",
           "layer": "Application"
         }
@@ -1592,7 +1519,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-          "line": 152,
+          "line": 154,
           "method": "TranscriptionService.EditSegmentAsync",
           "layer": "Application"
         }
@@ -1608,7 +1535,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-          "line": 188,
+          "line": 197,
           "method": "TranscriptionService.AssignSpeakerAsync",
           "layer": "Application"
         }
@@ -1624,7 +1551,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-          "line": 230,
+          "line": 244,
           "method": "TranscriptionService.AssignSegmentSpeakerAsync",
           "layer": "Application"
         }
@@ -1640,7 +1567,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-          "line": 111,
+          "line": 113,
           "method": "TranscriptionService.ExportAsync",
           "layer": "Application"
         }
@@ -1730,67 +1657,51 @@
       "sheet": "VoiceId.SampleAudio"
     },
     {
-      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
       "feature": "FE-10",
       "methods": [
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-          "line": 37,
-          "method": "VoiceCollectionService.CanCollect",
+          "line": 68,
+          "method": "VoiceCollectionService.AddForPersonAsync",
           "layer": "Application"
         }
       ],
       "module": "TRANS",
-      "precondition": "Meeting with participants and consent.",
-      "sheet": "VoiceCollection.CanCollect"
-    },
-    {
-      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
-      "feature": "FE-10",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-          "line": 74,
-          "method": "VoiceCollectionService.AddAsync",
-          "layer": "Application"
-        }
-      ],
-      "module": "TRANS",
-      "precondition": "Meeting with participants and consent.",
+      "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
       "sheet": "VoiceCollection.Add"
     },
     {
-      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
       "feature": "FE-10",
       "methods": [
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-          "line": 168,
-          "method": "VoiceCollectionService.AudioAsync",
+          "line": 154,
+          "method": "VoiceCollectionService.PersonAudioAsync",
           "layer": "Application"
         }
       ],
       "module": "TRANS",
-      "precondition": "Meeting with participants and consent.",
+      "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
       "sheet": "VoiceCollection.Audio"
     },
     {
-      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
       "feature": "FE-10",
       "methods": [
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-          "line": 190,
-          "method": "VoiceCollectionService.DeleteAsync",
+          "line": 176,
+          "method": "VoiceCollectionService.DeletePersonSampleAsync",
           "layer": "Application"
         }
       ],
       "module": "TRANS",
-      "precondition": "Meeting with participants and consent.",
+      "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
       "sheet": "VoiceCollection.Delete"
     },
     {
@@ -1800,7 +1711,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 64,
+          "line": 81,
           "method": "SummaryService.RequestAsync",
           "layer": "Application"
         }
@@ -1816,7 +1727,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 108,
+          "line": 125,
           "method": "SummaryService.EditAsync",
           "layer": "Application"
         }
@@ -1832,7 +1743,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 144,
+          "line": 161,
           "method": "SummaryService.ReviewAsync",
           "layer": "Application"
         }
@@ -1848,7 +1759,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-          "line": 170,
+          "line": 187,
           "method": "SummaryService.ProcessNextAsync",
           "layer": "Application"
         }
@@ -1976,7 +1887,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 50,
+          "line": 59,
           "method": "MinutesService.CreateAsync",
           "layer": "Application"
         }
@@ -1992,7 +1903,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 98,
+          "line": 107,
           "method": "MinutesService.SaveAsync",
           "layer": "Application"
         }
@@ -2008,7 +1919,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 194,
+          "line": 206,
           "method": "MinutesService.SubmitAsync",
           "layer": "Application"
         }
@@ -2024,7 +1935,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 213,
+          "line": 225,
           "method": "MinutesService.ApproveAsync",
           "layer": "Application"
         }
@@ -2040,7 +1951,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 253,
+          "line": 265,
           "method": "MinutesService.ReturnAsync",
           "layer": "Application"
         }
@@ -2056,7 +1967,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 274,
+          "line": 286,
           "method": "MinutesService.CorrectAsync",
           "layer": "Application"
         }
@@ -2072,7 +1983,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 142,
+          "line": 154,
           "method": "MinutesService.ExportAsync",
           "layer": "Application"
         }
@@ -2088,7 +1999,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-          "line": 172,
+          "line": 184,
           "method": "MinutesService.GetRevisionAsync",
           "layer": "Application"
         }
@@ -2200,22 +2111,6 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
-          "line": 71,
-          "method": "NotificationService.MarkAllReadAsync",
-          "layer": "Application"
-        }
-      ],
-      "module": "NOTI",
-      "precondition": "Notifications of two users.",
-      "sheet": "Notification.MarkAllRead"
-    },
-    {
-      "description": "Marking notifications read and resolving a notification target.",
-      "feature": "FE-13",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
           "line": 75,
           "method": "NotificationService.GetTargetAsync",
           "layer": "Application"
@@ -2240,22 +2135,6 @@
       "module": "NOTI",
       "precondition": "Notifications with push state.",
       "sheet": "Notification.PendingPush"
-    },
-    {
-      "description": "Pending push selection and marking pushed.",
-      "feature": "FE-13",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
-          "line": 169,
-          "method": "NotificationService.MarkPushedAsync",
-          "layer": "Application"
-        }
-      ],
-      "module": "NOTI",
-      "precondition": "Notifications with push state.",
-      "sheet": "Notification.MarkPushed"
     },
     {
       "description": "Invitation dispatch worker: pick the next staged event and send.",
@@ -2536,7 +2415,7 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/CalendarSharing/SharedCalendarService.cs",
-          "line": 25,
+          "line": 28,
           "method": "SharedCalendarService.ReadWeekAsync",
           "layer": "Application"
         }
@@ -2553,7 +2432,7 @@
     },
     {
       "file": "backend/TrustCabinet.Application/Access/RolePermissionResult.cs",
-      "reason": "Result factories: status and message code only; covered through RolePerm.Update."
+      "reason": "Result factories: status and message code only; covered through RolePermission.Update."
     },
     {
       "file": "backend/TrustCabinet.Application/Authentication/GoogleSignInResult.cs",
@@ -2561,7 +2440,7 @@
     },
     {
       "file": "backend/TrustCabinet.Application/Authentication/SignInResult.cs",
-      "reason": "Result factory: status and message code only; covered through Auth.SignIn."
+      "reason": "Result factory: status and message code only; covered through Authentication.SignIn."
     },
     {
       "class": "CallResult",
@@ -2714,10 +2593,6 @@
     },
     {
       "method": "UserService.GetAsync",
-      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
-    },
-    {
-      "method": "VoiceCollectionService.ListAsync",
       "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
     },
     {
@@ -3916,12 +3791,6 @@
     {
       "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
       "class": "VoiceIdRules",
-      "method": "VoiceIdRules.AllowsCollection",
-      "reason": "Covered indirectly via VoiceCollection.CanCollect; Domain (mặc định BỎ): luật cho phép thu mẫu; đã phản ánh ở tầng App qua CanCollect (MSG475/MSG477) và Grant."
-    },
-    {
-      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
-      "class": "VoiceIdRules",
       "method": "VoiceIdRules.RejectionMessage",
       "reason": "Covered indirectly via VoiceId.Grant; Domain (mặc định BỎ): câu thông báo từ chối theo lý do; nội dung message đã bao phủ qua Grant/Reject cases."
     },
@@ -3972,18 +3841,6 @@
       "class": "JwtTokenIssuer",
       "method": "JwtTokenIssuer.CreateRefreshToken",
       "reason": "Covered indirectly via Authentication.Refresh; Helper plumbing (tạo refresh token, phần còn lại của luồng refresh); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
-    },
-    {
-      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-      "class": "PasswordHasher",
-      "method": "PasswordHasher.Hash",
-      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (băm mật khẩu nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
-    },
-    {
-      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-      "class": "PasswordHasher",
-      "method": "PasswordHasher.Verify",
-      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (so khớp hash nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
     },
     {
       "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
@@ -4038,10 +3895,208 @@
       "class": "SearchText",
       "method": "SearchText.Contains",
       "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure contains check over Fold (null-safe), no MSGnn; no dedicated sheet."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.PlanningAllowed",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.CurrentParticipant",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.HasRole",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.IsPlanner",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.Normalize",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaExecution",
+      "method": "AgendaExecution.UtcMicroseconds",
+      "reason": "One tick-truncation expression; its result shows in AgendaExecution.TryComplete."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "class": "NotificationService",
+      "method": "NotificationService.MarkAllReadAsync",
+      "reason": "Forwards to the notification store with no decision of its own."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "class": "NotificationService",
+      "method": "NotificationService.MarkPushedAsync",
+      "reason": "Forwards to the notification store with no decision of its own."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs",
+      "class": "CombinedRecordingService",
+      "method": "CombinedRecordingService.SourceRemovedAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.IsMp3",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.Mp3FileName",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.RunAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.DeleteOrphanAudioAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.DeleteCancelledMeetingDraftsAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.PruneNotificationsAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.PruneGuestChallengesAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Retention/DataRetentionService.cs",
+      "class": "DataRetentionService",
+      "method": "DataRetentionService.ScrubEmailBodiesAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+      "class": "VoiceCollectionService",
+      "method": "VoiceCollectionService.GetPersonAsync",
+      "reason": "Read-only query: lists the person samples through the repository; access is the VoiceCollector capability tested at the endpoint."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Votes/VoteMeetingEnd.cs",
+      "class": "VoteMeetingEnd",
+      "method": "VoteMeetingEnd.DeleteDraftsOnCancelAsync",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.SameWords",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/ShortLineRules.cs",
+      "class": "ShortLineRules",
+      "method": "ShortLineRules.IsShort",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/ShortLineRules.cs",
+      "class": "ShortLineRules",
+      "method": "ShortLineRules.IsFillerOnly",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/ShortLineRules.cs",
+      "class": "ShortLineRules",
+      "method": "ShortLineRules.KeepsRoomLine",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/ShortLineRules.cs",
+      "class": "ShortLineRules",
+      "method": "ShortLineRules.KeepsClip",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/ShortLineRules.cs",
+      "class": "ShortLineRules",
+      "method": "ShortLineRules.Renumber",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordScores.cs",
+      "class": "WordScores",
+      "method": "WordScores.Of",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordScores.cs",
+      "class": "WordScores",
+      "method": "WordScores.ForLine",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordScores.cs",
+      "class": "WordScores",
+      "method": "WordScores.ForClip",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordTimings.cs",
+      "class": "WordTimings",
+      "method": "WordTimings.Of",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordTimings.cs",
+      "class": "WordTimings",
+      "method": "WordTimings.ForLine",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/WordTimings.cs",
+      "class": "WordTimings",
+      "method": "WordTimings.ForClip",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
+      "class": "VoiceIdRules",
+      "method": "VoiceIdRules.AllowsProxyCollection",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
+      "class": "VoiceIdRules",
+      "method": "VoiceIdRules.ProxyFull",
+      "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
     }
   ],
   "source": {
     "note": "The four-project backend (ADR-0065); read with git show, never from the working tree.",
-    "ref": "7286680a22cd04c31687735c9b87fde348b235cf"
+    "ref": "8c59d3cdbb2c447b82aa9d07592db9c446c155fe"
   }
 }

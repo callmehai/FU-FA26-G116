@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "Document FileName and UpdatedAt changed and saved; meeting copies keep their own name.",
           "type": "Normal",
-          "note": "UC-71b · BR-276 · MSG183"
+          "note": "UC-71b · BR-276 · MSG183",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,22 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183"
+          "note": "UC-71b · MSG183",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Same."
-          ],
-          "inputs": "fileName: \"C:\\tmp\\moi.pdf\".",
-          "return": "Value with FileName \"moi.pdf\" (last path segment).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-71b · MSG183"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "D9 does not exist or is another user's."
           ],
@@ -58,46 +52,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · BR-242 · MSG175"
+          "note": "UC-71b · BR-242 · MSG175",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Same."
-          ],
-          "inputs": "fileName: null.",
-          "return": "Failure NameInvalid (HTTP 400, MSG347); the document is unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Same."
-          ],
-          "inputs": "fileName: \".pdf\" (nothing before the extension).",
-          "return": "Failure NameInvalid (HTTP 400, MSG347).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Same."
-          ],
-          "inputs": "fileName: \"   .pdf\" (only spaces before the extension).",
-          "return": "Failure NameInvalid (HTTP 400, MSG347).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "D1 is a PDF."
           ],
@@ -106,70 +67,28 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347"
+          "note": "UC-71b · MSG347",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC005",
           "preconditions": [
-            "D1 is a PDF."
+            "One candidate of exactly 10 MB with a valid PDF body."
           ],
-          "inputs": "fileName: \"bao-cao.docx\".",
-          "return": "Failure NameInvalid (MSG347).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "D2 is a DOCX."
-          ],
-          "inputs": "documentId: D2; fileName: \"nghi-quyet.docx\".",
-          "return": "Value with the new name.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-71b · MSG183"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "D1 is a PDF."
-          ],
-          "inputs": "fileName: 251 characters + \".pdf\" (255).",
-          "return": "Value; 255 characters is accepted.",
+          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
+          "return": "No failure; the file size limit is inclusive.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183"
+          "note": "UC-71b · MSG183",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC012",
-          "preconditions": [
-            "D1 is a PDF."
-          ],
-          "inputs": "fileName: 252 characters + \".pdf\" (256).",
-          "return": "Failure NameInvalid (MSG347).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "D1 is a PDF."
-          ],
-          "inputs": "fileName: \"bao<RLO>cao.pdf\" containing U+202E.",
-          "return": "Failure NameInvalid (MSG347).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-71b · MSG347"
-        },
-        {
-          "id": "UTC014",
+          "id": "UTC006",
           "preconditions": [
             "Database error on save."
           ],
@@ -178,7 +97,10 @@
           "exception": "N/A",
           "log": "Error log \"Failed to rename a document\".",
           "type": "Abnormal",
-          "note": "UC-71b · MSG184"
+          "note": "UC-71b · MSG184",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

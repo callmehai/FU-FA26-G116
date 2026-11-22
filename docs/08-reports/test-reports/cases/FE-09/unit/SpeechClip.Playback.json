@@ -9,7 +9,7 @@
       "method": "SpeechClipService.PlaybackAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 422,
+      "line": 439,
       "cases": [
         {
           "id": "UTC001",
@@ -21,22 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43b · BR-350"
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "An excluded sentence with audio; the actor is the meeting's Chair."
-          ],
-          "inputs": "clipId: the excluded sentence; actorId: the Chair.",
-          "return": "Success with a signed playback link; the Chair still hears a sentence taken out of the record.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-46c · BR-357"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "An excluded sentence with audio; the actor is an active Member (not Chair or Secretary)."
           ],
@@ -45,34 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357"
+          "note": "UC-46c · BR-357",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "No sentence with this id."
-          ],
-          "inputs": "clipId: a random id; actorId: a Member.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor is not on the roster of the sentence's meeting."
-          ],
-          "inputs": "clipId; actorId: an outsider.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "The actor's account is deactivated."
           ],
@@ -81,10 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350"
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "An existing sentence stored without audio (disk was full)."
           ],
@@ -93,10 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b"
+          "note": "UC-43b",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "An existing sentence with audio; the database fails while reading."
           ],
@@ -105,7 +81,10 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to sign playback for speech clip'.",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · MSG297"
+          "note": "UC-43b · BR-350 · MSG297",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

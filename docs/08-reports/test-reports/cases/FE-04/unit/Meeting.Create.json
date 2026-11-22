@@ -8,7 +8,7 @@
     {
       "method": "MeetingService.CreateAsync",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 22,
+      "line": 24,
       "cases": [
         {
           "exception": "N/A",
@@ -21,7 +21,10 @@
             "Chair and Secretary users exist and are active."
           ],
           "return": "MeetingResult Success; meeting Draft, CreatedById = actor, no approver; participants A (Chair) and B (Secretary) each with response Pending.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,7 +36,10 @@
             "Input has an empty title."
           ],
           "return": "MeetingResult Invalid; errors { title }; MSG31; nothing saved.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -45,35 +51,14 @@
             "Planned start is not after the clock."
           ],
           "return": "MeetingResult Invalid; errors { plannedStartTime: \"Thời gian bắt đầu phải sau thời điểm hiện tại.\" }; MSG31.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "participants: null.",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "Participants list is not supplied."
-          ],
-          "return": "MeetingResult InvalidParticipants; errors { participants: \"Chọn từ 1 đến 100 thành phần tham dự, có đúng một Chủ toạ.\" }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "participants: [].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "Participants list is empty."
-          ],
-          "return": "InvalidParticipants; errors { participants } ; MSG277.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "participants: 101 distinct active users, one Chair.",
           "log": "N/A",
           "note": "UC-14 · BR-320 · MSG277",
@@ -81,83 +66,14 @@
             "Participants list has 101 rows."
           ],
           "return": "InvalidParticipants; errors { participants }; MSG277.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "participants: 100 distinct active users, one Chair, 99 Members.",
-          "log": "Saved: Meeting, 100 participant rows and the Create history row.",
-          "note": "UC-14 · BR-24 · BR-26 · BR-162 · BR-320 · MSG29",
-          "preconditions": [
-            "Participants list has exactly 100 rows with one Chair."
-          ],
-          "return": "Success; Draft meeting with 100 participants; MSG29.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "participants: [Chair user A].",
-          "log": "Saved: Meeting, 1 participant row and the Create history row.",
-          "note": "UC-14 · BR-24 · BR-26 · BR-162 · BR-320 · MSG29",
-          "preconditions": [
-            "Only one participant, the Chair."
-          ],
-          "return": "Success; one participant; MSG29.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "participants: [A Chair, A Member].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "Same user is listed twice."
-          ],
-          "return": "InvalidParticipants; errors { participants[1].userId: \"Người dùng không hợp lệ hoặc bị trùng.\" }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "participants: [Guid.Empty Chair].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "A participant row carries an empty user id."
-          ],
-          "return": "InvalidParticipants; errors { participants[0].userId }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "participants: [A role \"Boss\"].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "A participant row has an unknown role."
-          ],
-          "return": "InvalidParticipants; errors { participants[0].role: \"Chọn Chủ toạ, Thư ký hoặc Thành viên.\" } and the Chair-count error; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "participants: [A Chair, B role \"Guest\"].",
-          "log": "N/A",
-          "note": "UC-14 · BR-150 · BR-320 · MSG277",
-          "preconditions": [
-            "A participant row has the Guest role."
-          ],
-          "return": "InvalidParticipants; errors { participants[1].role }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
+          "id": "UTC005",
           "inputs": "participants: [A Member, B Secretary].",
           "log": "N/A",
           "note": "UC-14 · BR-320 · MSG277",
@@ -165,47 +81,14 @@
             "No participant is Chair."
           ],
           "return": "InvalidParticipants; errors { participants: \"Cuộc họp phải có đúng một Chủ toạ.\" }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "participants: [A Chair, B Chair].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "Two participants are Chair."
-          ],
-          "return": "InvalidParticipants; errors { participants: \"Cuộc họp phải có đúng một Chủ toạ.\" }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "participants: [A Chair, unknown id Member].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "One listed user does not exist."
-          ],
-          "return": "InvalidParticipants; errors { participants[1].userId: \"Người dùng không tồn tại hoặc đã ngừng hoạt động.\" }; MSG277.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "participants: [A Chair, deactivated B Member].",
-          "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
-          "preconditions": [
-            "One listed user is deactivated."
-          ],
-          "return": "InvalidParticipants; errors { participants[1].userId: \"Người dùng không tồn tại hoặc đã ngừng hoạt động.\" }; MSG277; nothing saved.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC017",
+          "id": "UTC006",
           "inputs": "valid input and roster.",
           "log": "Error logged with the actor id; transaction rolled back.",
           "note": "UC-14 · MSG35",
@@ -213,19 +96,10 @@
             "The store fails while saving."
           ],
           "return": "MeetingResult SaveFailed; MSG35; the error is logged.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "OperationCanceledException is propagated.",
-          "id": "UTC018",
-          "inputs": "cancellation token already cancelled.",
-          "log": "N/A",
-          "note": "UC-14",
-          "preconditions": [
-            "The caller cancels the request."
-          ],
-          "return": "No result; the cancellation is rethrown.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Application"

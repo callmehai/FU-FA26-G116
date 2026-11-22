@@ -20,7 +20,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -32,7 +35,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -43,23 +49,14 @@
           "return": "NotStarted; the waiting screen shows \"Phòng họp chỉ mở khi cuộc họp đang diễn ra.\" (MSG117) and opens by itself when the sitting starts.",
           "exception": "N/A",
           "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37 · MSG117"
+          "type": "Abnormal",
+          "note": "UC-37 · MSG117",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Meeting still waiting for approval with mode Online."
-          ],
-          "inputs": "status: WaitingApproval; mode: Online.",
-          "return": "NotStarted; every status other than InProgress, Ended and Cancelled maps here (Draft, WaitingApproval, Rejected, Approved, Published).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37 · MSG117"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Meeting Ended with mode Online."
           ],
@@ -68,10 +65,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "Meeting Cancelled after it was published, with mode Online."
           ],
@@ -80,10 +80,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-75"
+          "note": "UC-75",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC006",
           "preconditions": [
             "Meeting InProgress with mode InPerson."
           ],
@@ -91,8 +94,11 @@
           "return": "InPersonOnly; the mode is decided first, so an in-person sitting never has a room whatever its status (\"Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.\" MSG280).",
           "exception": "N/A",
           "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37 · MSG280"
+          "type": "Abnormal",
+          "note": "UC-37 · MSG280",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Application"

@@ -9,7 +9,7 @@
       "method": "MeetingOverdueService.EndOverrunAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
-      "line": 48,
+      "line": 51,
       "cases": [
         {
           "exception": "N/A",
@@ -21,7 +21,10 @@
             "No meeting is overrun."
           ],
           "return": "Returns 0; the lifecycle service is not called.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,7 +36,10 @@
             "Three overrun meetings; each end succeeds."
           ],
           "return": "Returns 3.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -45,7 +51,10 @@
             "Three overrun meetings; one has been ended by the Chair before the sweep reaches it."
           ],
           "return": "Returns 2 (the skipped one is not counted).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -57,7 +66,10 @@
             "Configured AutoEndAfterHours is 48."
           ],
           "return": "Cutoff is now-48h and the reason text says 48 giờ.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -69,7 +81,10 @@
             "More than 50 meetings are overrun."
           ],
           "return": "Only the first 50 (by planned end) are handled in one sweep; returns at most 50.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
