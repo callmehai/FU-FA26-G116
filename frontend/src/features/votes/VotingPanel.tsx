@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { castBallot, closeVote, deleteVote, detachVoteDocument, openVote, recordVoteConclusion } from '../../api/votes'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -22,7 +22,7 @@ import { DocumentLink } from '../documents/DocumentLink'
 import { isPdf } from '../documents/documentFile'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { everyDocument, useMeetingDocuments } from '../documents/useMeetingDocuments'
-import { useVoteDetail, useVotes } from './useVotes'
+import { useVoteDetail, useVoteDetails, useVotes, type VoteDetailEntry } from './useVotes'
 import { VoteDialog } from './VoteDialog'
 
 const NOTE_MAX = 2000
@@ -68,6 +68,19 @@ export function VotingPanel({
   )
   const stale = useCallback(() => void reload(), [reload])
 
+  // A vote that waits on the caller — open, or closed without the Chair's conclusion — starts opened, also
+  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so until
+  // the vote moves on (opened, closed), when it starts over: a ballot cast keeps the vote open only while it runs.
+  const waitsOnMe = (vote: VoteSummary) => vote.status === 'Open' || vote.actions.canRecordConclusion
+  const toggleKey = (vote: Pick<VoteSummary, 'id' | 'status'>) => `${vote.id}:${vote.status}`
+  const isOpen = (vote: VoteSummary) => toggled.get(toggleKey(vote)) ?? waitsOnMe(vote)
+  const list = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
+  const details = useVoteDetails(
+    meetingId,
+    list?.serverTime ?? null,
+    (list?.votes ?? []).filter(isOpen).map((v) => v.id),
+  )
+
   const room = variant === 'room'
   const wrap = (body: ReactNode) =>
     room ? (
@@ -112,12 +125,6 @@ export function VotingPanel({
   // The open vote first, so the one to cast is not below the results of the closed ones (a 360px room panel
   // scrolled past them all); the rest keep the server's order.
   const votes = [...data.votes].sort((a, b) => Number(b.status === 'Open') - Number(a.status === 'Open'))
-  // A vote that waits on the caller — open, or closed without the Chair's conclusion — starts opened, also
-  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so until
-  // the vote moves on (opened, closed), when it starts over: a ballot cast keeps the vote open only while it runs.
-  const waitsOnMe = (vote: VoteSummary) => vote.status === 'Open' || vote.actions.canRecordConclusion
-  const toggleKey = (vote: Pick<VoteSummary, 'id' | 'status'>) => `${vote.id}:${vote.status}`
-  const isOpen = (vote: VoteSummary) => toggled.get(toggleKey(vote)) ?? waitsOnMe(vote)
   const toggle = (vote: VoteSummary) => setToggled((map) => new Map(map).set(toggleKey(vote), !isOpen(vote)))
   // What the caller just did stays in view, though the vote no longer waits on them.
   const keepOpen = (vote: Pick<VoteSummary, 'id' | 'status'>) => setToggled((map) => new Map(map).set(toggleKey(vote), true))
@@ -165,8 +172,10 @@ export function VotingPanel({
               key={vote.id}
               meetingId={meetingId}
               vote={vote}
-              stamp={data.serverTime}
+              detail={details.entries.get(vote.id)}
               expanded={isOpen(vote)}
+              onPrefetch={() => details.prefetch(vote.id)}
+              onReload={() => details.reload(vote.id)}
               onToggle={() => toggle(vote)}
               onEdit={() => setOpen({ kind: 'edit', voteId: vote.id })}
               onDelete={() => setOpen({ kind: 'delete', vote })}
@@ -325,8 +334,10 @@ export function VotingPanel({
 function VoteCard({
   meetingId,
   vote,
-  stamp,
+  detail,
   expanded,
+  onPrefetch,
+  onReload,
   onToggle,
   onEdit,
   onDelete,
@@ -339,9 +350,12 @@ function VoteCard({
 }: {
   meetingId: string
   vote: VoteSummary
-  /** The list's `serverTime`: the detail re-reads whenever the list did. */
-  stamp: string
+  /** The detail the panel holds for this vote, if it has read it. */
+  detail: VoteDetailEntry | undefined
   expanded: boolean
+  /** Reads the detail ahead, when the pointer or the keyboard reaches the title. */
+  onPrefetch: () => void
+  onReload: () => void
   onToggle: () => void
   onEdit: () => void
   onDelete: () => void
@@ -356,6 +370,16 @@ function VoteCard({
 }) {
   const { actions } = vote
   const bodyId = `vote-body-${vote.id}`
+  // The body unfolds once, whole: while the detail is on its way the card stays shut (its chevron already turned) and
+  // opens when it lands. Only a read slower than 300 ms shows the loading bar first (Hải 23/11/2026).
+  const ready = detailFor(vote, detail) !== null || detail?.kind === 'gone' || detail?.kind === 'error'
+  const [late, setLate] = useState(false)
+  useEffect(() => {
+    if (!expanded || ready) return
+    const timer = window.setTimeout(() => setLate(true), 300)
+    return () => window.clearTimeout(timer)
+  }, [expanded, ready])
+  const unfolded = expanded && (ready || late)
   const classes = ['vote-item']
   if (vote.status === 'Open') classes.push('vote-item-open')
   if (vote.status === 'Draft') classes.push('vote-item-draft')
@@ -363,7 +387,20 @@ function VoteCard({
   return (
     <li className={classes.join(' ')}>
       <div className="vote-head">
-        <button type="button" className="vote-title" aria-expanded={expanded} aria-controls={bodyId} onClick={onToggle}>
+        <button
+          type="button"
+          className="vote-title"
+          aria-expanded={expanded}
+          aria-controls={bodyId}
+          aria-busy={expanded && !unfolded}
+          onPointerEnter={onPrefetch}
+          onFocus={onPrefetch}
+          onClick={() => {
+            if (expanded) setLate(false)
+            else onPrefetch()
+            onToggle()
+          }}
+        >
           <Icon name={expanded ? 'chevronDown' : 'chevronRight'} size={16} />
           <span>{vote.title}</span>
         </button>
@@ -450,12 +487,13 @@ function VoteCard({
         <Turnout cast={vote.receiptCount} eligible={vote.eligibleCount} label={`Đã bỏ phiếu: ${vote.title}`} />
       )}
 
-      {expanded && (
+      {unfolded && (
         <VoteBody
           id={bodyId}
           meetingId={meetingId}
           vote={vote}
-          stamp={stamp}
+          entry={detail}
+          onReload={onReload}
           onCast={onCast}
           onConclude={onConclude}
           onDetach={onDetach}
@@ -463,6 +501,15 @@ function VoteCard({
       )}
     </li>
   )
+}
+
+/**
+ * The held detail when it still describes the vote the list shows: one read before the vote was opened or closed would
+ * draw the wrong body (a ballot for a closed vote) until the new read lands.
+ */
+function detailFor(vote: VoteSummary, entry: VoteDetailEntry | undefined): VoteDetail | null {
+  if (!entry || entry.kind === 'gone' || !entry.data) return null
+  return entry.data.status === vote.status ? entry.data : null
 }
 
 function CloseQuestion({ vote }: { vote: VoteSummary }) {
@@ -486,7 +533,8 @@ function VoteBody({
   id,
   meetingId,
   vote,
-  stamp,
+  entry,
+  onReload,
   onCast,
   onConclude,
   onDetach,
@@ -494,28 +542,27 @@ function VoteBody({
   id: string
   meetingId: string
   vote: VoteSummary
-  stamp: string
+  entry: VoteDetailEntry | undefined
+  onReload: () => void
   onCast: (optionId: string) => Promise<boolean>
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
   onDetach?: (doc: VoteDocument) => void
 }) {
-  const { state, reload } = useVoteDetail(meetingId, vote.id, stamp, true)
-
-  if (state.kind === 'gone') {
+  if (entry?.kind === 'gone') {
     return (
       <div className="vote-body" id={id}>
         <p className="value-empty">Biểu quyết này không còn xem được.</p>
       </div>
     )
   }
-  const detail = state.kind === 'loading' ? null : state.data
+  const detail = detailFor(vote, entry)
   if (!detail) {
     return (
-      <div className="vote-body" id={id} aria-busy={state.kind === 'loading'}>
-        {state.kind === 'error' ? (
+      <div className="vote-body" id={id} aria-busy={entry?.kind !== 'error'}>
+        {entry?.kind === 'error' ? (
           <div className="alert alert-error" role="alert">
-            <p>{state.message}</p>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => void reload()}>
+            <p>{entry.message}</p>
+            <button type="button" className="btn btn-outline btn-sm" onClick={onReload}>
               <Icon name="refresh" size={16} />
               Thử lại
             </button>
