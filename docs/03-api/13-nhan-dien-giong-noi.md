@@ -3,8 +3,8 @@
 Bản gỡ băng (SCRUM-31) chia lời nói theo *Người nói 1, 2, 3…*: đó là **tách người nói**
 (*diarization*), chỉ biết hai đoạn là cùng hay khác giọng, không biết là ai. Voice ID trả lời câu
 "ai": mỗi người **tự nguyện** đăng ký giọng mẫu; sau khi gỡ băng, hệ thống so từng giọng trong bản ghi
-với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng khớp rõ thì
-máy tự điền tên, nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
+với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng nào được gợi ý thì
+máy tự điền luôn tên đó (từ 22/11/2026), nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
 ([ADR-0045](../05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md),
 [ADR-0048](../05-decisions/0048-thong-bao-voice-id-1-2-may-tu-dien-ten.md)); Thư ký luôn sửa được tên.
 Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
@@ -193,6 +193,9 @@ xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
 > chỉ hơn người thứ hai 0,02. Nguyên nhân 40 giọng cho 4 người là ngưỡng gom nhóm của máy tách người nói, nay sửa ở worker
 > (0,5 → 0,72). Các ngưỡng ở đây trở lại như đã đo (0,6 / 0,05 / 0,7 / 0,7 / 0,8), riêng tự gán hạ 0,75 → 0,7. Trên hai bản
 > ghi mic phòng của buổi thử, người trong phòng khớp giọng mẫu 0,73–0,88; mọi giọng khác cao nhất 0,66.
+>
+> **22/11/2026** (ADR-0074, bổ sung): tự gán hạ tiếp 0,7 → **0,6**, bằng ngưỡng gợi ý. Bản ghi mic phòng của cuộc họp ngày
+> 22/11 gợi ý đúng cả ba người ở 0,61–0,68, nhưng Thư ký vẫn phải chọn tay từng tên dù ô chọn đã hiện "Khớp giọng nhất".
 
 Ngưỡng cũ 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
 `workers/speech/eval/`). Ở 0,5, 3% thời gian nói bị gợi ý sai người, có cả người chưa đăng ký bị gợi ý
@@ -218,8 +221,8 @@ máy tách ra: trên server test ngày 03/11/2026, Hải hát hai lượt, bản
 giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đọc, nên ba giọng phụ không được gợi ý ai. Hai người khác
 nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
 
-**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,7) được gán luôn tên
-người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
+**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,6 từ 22/11/2026, bằng
+`SuggestThreshold`, nên **mọi giọng được gợi ý** đều được tự gán) được gán luôn tên người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
 Thư ký gán thì giữ. Máy không gán Khách. Máy chỉ tự gán người có đồng ý từ thông báo 1.2 trở lên (ADR-0048):
@@ -242,6 +245,13 @@ VIVOS không có lần gợi ý sai nào ở mọi khoảng điểm, nên ngư�
 lạ 0,645; người thật 0,737–0,938. 0,75 để cách người lạ một khoảng rộng. Ngày 21/11/2026 hạ còn 0,7 (ADR-0074): một trong
 bốn người của phòng *test mic* chỉ khớp 0,73, giọng không phải người trong phòng cao nhất 0,66. Ở 0,7, hai giọng bị tách của cùng một người
 hiện thành hai người nói; Thư ký gán cùng một tên là gộp lại.
+
+Ngày 22/11/2026 hạ tiếp còn 0,6, bằng ngưỡng gợi ý (ADR-0074, bổ sung, PO yêu cầu): cuộc họp thật cùng ngày, bản ghi mic phòng gợi ý
+đúng Lộc 0,61, Hải 0,68, Khánh 0,68 mà không ai được tự gán. Các luật an toàn vẫn giữ, vì chúng nằm ở bước gợi ý: hơn người
+xếp sau 0,05; giọng thứ hai của cùng một người phải giống giọng đầu 0,7 và đạt 0,7 so với giọng mẫu; giọng nhận theo cần giống
+giọng đầu 0,8; chỉ người đồng ý thông báo 1.2 trở lên; không bao giờ là Khách. Đánh đổi: giọng 0,6–0,7 (VIVOS 18/18 đúng người,
+người lạ trên server cao nhất 0,66) giờ hiện sẵn tên thay vì chỉ gợi ý; Thư ký nhận ra tên máy gán qua chú thích "Máy tự gán…"
+ở ô chọn và sửa như thường.
 
 ### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null, "guestId": "…" | null }`
 
@@ -285,4 +295,4 @@ câu mất theo.
 | `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
 | `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
 | `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
-| `AutoAssignThreshold` | `0.7` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |
+| `AutoAssignThreshold` | `0.6` | Từ điểm này máy tự gán tên, xem *Máy tự gán*. Bằng `SuggestThreshold`: mọi giọng được gợi ý đều được tự gán |

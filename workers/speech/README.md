@@ -298,7 +298,7 @@ sót người. Vì vậy backend mặc định dùng `VoiceId:SuggestThreshold =
 xuống 0.5 rồi được trả lại sau buổi thử cùng ngày ([ADR-0074](../../docs/05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)).
 
 Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold = 0.7`, và từ `VoiceId:AutoAssignThreshold =
-0.7` (trước 21/11 là 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
+0.6` (bằng ngưỡng gợi ý từ 22/11; 0.7 ngày 21/11, trước đó 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
 chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold = 0.8` thì nhận người đó
 ([ADR-0050](../../docs/05-decisions/0050-giong-gan-trung-nhan-cung-ten.md), đo bằng `evaluate.py --inherit`). Số đo và lý do
 chọn nằm trong [13-nhan-dien-giong-noi.md](../../docs/03-api/13-nhan-dien-giong-noi.md#gợi-ý-và-gán-tên-trong-bản-gỡ-băng).

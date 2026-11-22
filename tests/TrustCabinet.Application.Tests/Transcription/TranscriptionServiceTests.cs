@@ -101,6 +101,35 @@ public sealed class TranscriptionServiceTests
     }
 
     [Fact]
+    public async Task A_voice_only_just_suggested_is_named_by_the_machine_too()
+    {
+        // ADR-0074, 22/11/2026: the room recording's three people were suggested right at 0.61–0.68 and each had to be
+        // picked by hand. Every suggestion now fills the name in, and the Secretary still corrects it.
+        Assert.Equal(new VoiceIdOptions().SuggestThreshold, new VoiceIdOptions().AutoAssignThreshold);
+        var transcript = Queued();
+        var consent = new VoiceConsent
+        {
+            UserId = _meeting.Member, GrantedAt = Now.AddDays(-1), NoticeVersion = VoiceIdRules.NoticeVersion, Purpose = VoiceIdRules.Purpose,
+        };
+        _voices.Consents.Add(consent);
+        var sampleId = Guid.CreateVersion7();
+        _voices.Samples.Add(new VoiceSample
+        {
+            Id = sampleId, UserId = _meeting.Member, ConsentId = consent.Id, EmbeddingModel = "test-model",
+            Ciphertext = _protector.Protect([1f, 0f], _meeting.Member, sampleId, "test-model"),
+        });
+        _engine.Result = new SpeechTranscription(2000, "vi", "test", "test-model",
+            [new SpeechSegment(0, 1000, "SPEAKER_00", "Xin chào")], [new SpeechSpeaker("SPEAKER_00", 1000, [0.61f, 0.79f])]);
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        var voice = Assert.Single(transcript.Speakers);
+        Assert.InRange(voice.SuggestionScore!.Value, 0.6, 0.62);
+        Assert.Equal((_meeting.Member, _meeting.Member), (voice.SuggestedUserId, voice.AssignedUserId));
+        Assert.Null(voice.AssignedById);
+    }
+
+    [Fact]
     public async Task A_finished_run_matches_voices_under_the_consent_lock_names_a_sure_one_and_is_announced_after_the_commit()
     {
         var transcript = Queued();
