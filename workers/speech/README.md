@@ -203,7 +203,11 @@ Các bước xử lý một bản ghi:
      hàng chục mới có các đơn vị đó) và ngày ("ngày hai hai tháng mười một" → ngày 22 tháng 11);
    - từ bốn chữ số đọc rời trở lên là mã hay năm: "hai không hai sáu" → 2026;
    - sau "thứ" một từ giữ nguyên ("thứ hai"); "hai mươi năm" → "20 năm" (25 đọc là "hai mươi lăm");
-   - dấu câu giữa hai từ cắt con số ở đó.
+   - "từ hai hai đến hai bảy" → từ 22 đến 27; "chấm" giữa hai chữ số đơn là phiên bản: "bốn chấm năm" → 4.5;
+     phút một từ sau giờ: "9 giờ mười" → 9 giờ 10, "13 giờ không năm" → 13 giờ 05;
+   - dấu câu giữa hai từ cắt con số ở đó, trừ khi bước dấu câu đặt nhầm giữa một con số: sau "phẩy" ("không phẩy. bảy
+     hai" → 0,72), giữa giờ và phút ("14 giờ. 25" → 14 giờ 25), trước đơn vị đứng một mình cuối dòng ("150. Trang" →
+     150 trang).
 
    Từ 10.000 có dấu chấm phân cách, số bốn chữ số thì không, thập phân dùng dấu phẩy. Từ gộp lấy mốc của từ đầu và độ
    chắc thấp nhất, nên `wordStartsMs`, `wordConfidence` vẫn mỗi từ một số.
