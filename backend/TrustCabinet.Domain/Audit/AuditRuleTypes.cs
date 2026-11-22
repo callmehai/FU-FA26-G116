@@ -69,6 +69,52 @@ public static class AuditActions
     public const string RecordingObjectType = "Recording";
 
     /// <summary>
+    /// ADR-0067 — the retention job deleted audio files under the recordings folder that no recording or sentence points
+    /// at any more (a failed delete, an upload cut off, a crash mid-mix). One row per run, with the count and bytes in the
+    /// details; no actor and no object, since the files never had a row of their own.
+    /// </summary>
+    public const string RecordingOrphanFilesDeleted = "recording.orphan_files_deleted";
+
+    /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for <see cref="RecordingOrphanFilesDeleted"/>.</summary>
+    public const string RecordingStorageObjectType = "RecordingStorage";
+
+    // PO 19/11/2026 — every clean-up job leaves a row, so the log shows the system clears out what it no longer needs.
+    // Like RecordingOrphanFilesDeleted: one row per run and kind, written only when the run removed something, with no
+    // actor (the system did it) and no object id (a run removes many rows); the counts and the cutoff are in the details.
+
+    /// <summary>ADR-0067 — the retention job deleted notifications read over 90 days ago or created over 180 days ago.</summary>
+    public const string NotificationsPurged = "notification.purged";
+
+    public const string NotificationObjectType = "Notification";
+
+    /// <summary>ADR-0067 — the retention job deleted guests' one-time codes a day past their expiry (BR-153).</summary>
+    public const string GuestCodesPurged = "guest.codes_purged";
+
+    public const string GuestVerificationCodeObjectType = "GuestVerificationChallenge";
+
+    /// <summary>
+    /// ADR-0067 — the retention job cleared the body, HTML and calendar attachment of emails sent or given up on over
+    /// 30 days ago. The rows stay: who was sent what subject and when is still the record that it went.
+    /// </summary>
+    public const string EmailBodiesCleared = "email.bodies_cleared";
+
+    public const string EmailObjectType = "EmailMessage";
+
+    /// <summary>
+    /// SCRUM-109, BR-347 — the recording retention job deleted per-mic sentences past the retention period, with their
+    /// audio. A recording past it is recorded one by one as <see cref="RecordingErased"/>; sentences are many and short.
+    /// </summary>
+    public const string SpeechClipsExpired = "speech_clip.expired_erased";
+
+    /// <summary>
+    /// BR-213 — the orphan purge deleted the stored bytes of document files no library or meeting document points at any
+    /// more. The <c>stored_files</c> rows stay, stamped <c>PurgedAt</c>.
+    /// </summary>
+    public const string DocumentOrphanFilesPurged = "document.orphan_files_purged";
+
+    public const string StoredFileObjectType = "StoredFile";
+
+    /// <summary>
     /// ADR-0041 — the Secretary switched the room mic on (a take opened), or a take was saved: appended to the meeting's
     /// room recording, kept as the first one, or dropped because the mic heard nothing. Who closed it is the actor; the
     /// server closing a take left idle has none.
@@ -135,6 +181,13 @@ public static class AuditActions
     /// because the row they describe is gone by the time anyone reads this one.
     /// </summary>
     public const string VoteDraftDeletedOnMeetingEnd = "vote.draft_deleted_on_meeting_end";
+
+    /// <summary>
+    /// ADR-0067 — the same for a meeting that was cancelled (by its organizer or by the system, BR-301): a draft of a
+    /// meeting that will never start can never be opened. The details carry <c>cancelledById</c> instead of
+    /// <c>endedById</c>.
+    /// </summary>
+    public const string VoteDraftDeletedOnMeetingCancel = "vote.draft_deleted_on_meeting_cancel";
 
     /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for the action above; the <c>ObjectId</c> is the vote's id.</summary>
     public const string VoteObjectType = "VotingSession";

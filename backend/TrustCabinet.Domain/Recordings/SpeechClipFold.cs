@@ -8,10 +8,11 @@ namespace TrustCabinet.Domain.Recordings;
 /// and how loud it reached the mic before any levelling. Kept so a sentence one mic overheard from another can be told
 /// apart from the speaker's own (<see cref="SpeechClipFold"/>); never the audio. <c>WordStartsMs</c>: when each of those words
 /// begins, from the sentence's start, for the transcript to follow the voice word by word; null when the worker sent
-/// none (sentences stored before it did).
+/// none (sentences stored before it did). <c>WordConfidence</c>: how sure the recogniser was of each of those words, 0–100 per cent;
+/// null on the same terms.
 /// </summary>
 public sealed record SpeechClipSegment(long StartMs, long EndMs, int Words, double? LevelDbfs,
-    IReadOnlyList<long>? WordStartsMs = null);
+    IReadOnlyList<long>? WordStartsMs = null, IReadOnlyList<int>? WordConfidence = null);
 
 /// <summary>What <see cref="SpeechClipFold"/> reads of one sentence. <c>OffsetMs</c> is its start on the meeting clock.</summary>
 public sealed record FoldClip(Guid Id, Guid SpeakerId, long OffsetMs, long DurationMs, string Text,

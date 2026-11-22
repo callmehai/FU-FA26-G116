@@ -55,14 +55,16 @@ public static class DevelopmentDataSeeder
             FullName = "Trần Chủ Toạ",
             Email = "chutoa@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            RoleId = BuiltInRoles.Chair,
+            // ADR-0075: "Chủ toạ" is a meeting role; the demo chair's system role is Phê duyệt viên.
+            RoleId = BuiltInRoles.Approver,
         };
         var secretary = new User
         {
             FullName = "Nguyễn Thư Ký",
             Email = "thuky@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            RoleId = BuiltInRoles.Secretary,
+            // ADR-0075: "Thư ký" is a meeting role; any Thành viên can be a meeting's Secretary.
+            RoleId = BuiltInRoles.Member,
         };
         var member = new User
         {

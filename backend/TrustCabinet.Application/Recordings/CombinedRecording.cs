@@ -6,12 +6,23 @@ namespace TrustCabinet.Application.Recordings;
 /// <summary>
 /// ADR-0062 — a hybrid meeting heard as one track: the room mic's recording and each online attendee's sentences, laid
 /// on the real clock and summed. Two people speaking at once are heard at once; an online voice also comes back faintly
-/// through the room's speakers, a little late. Every source is 16 kHz mono 16-bit PCM, so mixing is adding samples.
+/// through the room's speakers, a little late. An online meeting (ADR-0069) is mixed the same way from its
+/// attendees' sentences alone. Every source is 16 kHz mono 16-bit PCM, so mixing is adding samples.
 /// </summary>
 public interface ICombinedRecordingService
 {
     /// <summary>Builds or rebuilds the combined recording of one meeting that needs it; false when none does.</summary>
     Task<bool> BuildNextAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// ADR-0067 — audio the combined recording was mixed from is gone: a sentence deleted, a take cut, or the room
+    /// recording erased. Called inside the caller's transaction, before it commits. When <paramref name="rebuild"/> is
+    /// true and the meeting is still inside <see cref="CombinedRecordingRules.Window"/>, the combined recording is marked
+    /// to be mixed again without that audio; otherwise (the room recording itself erased, or past the window, when
+    /// nothing rebuilds it any more) it is erased like any recording. Returns the file to delete once the caller has
+    /// committed, or null when there is none.
+    /// </summary>
+    Task<string?> SourceRemovedAsync(Guid meetingId, bool rebuild, Guid? actorId, CancellationToken ct = default);
 }
 
 public static class CombinedRecordingRules

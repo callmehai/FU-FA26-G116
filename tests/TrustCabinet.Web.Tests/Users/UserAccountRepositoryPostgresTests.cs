@@ -4,6 +4,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Infrastructure.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -43,7 +44,7 @@ public class UserAccountRepositoryPostgresTests : IAsyncLifetime
                 + "`docker compose up -d postgres`.", e);
         }
 
-        _db.Roles.AddRange(ReferenceData.Roles());
+        _db.Roles.AddRange(TestRoles.WithSecretary());
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
     }

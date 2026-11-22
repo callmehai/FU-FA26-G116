@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Recordings;
@@ -358,10 +359,21 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
 
         await db.SpeechClips.Where(c => c.Id == expiring).ExecuteUpdateAsync(u => u.SetProperty(c => c.CreatedAt,
             fixture.Clock.Now.AddDays(-181)));
+        var before = await db.AuditLog.CountAsync(a => a.Action == AuditActions.SpeechClipsExpired);
+        int erased;
         using (var scope = fixture.Host.Services.CreateScope())
-            Assert.True(await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync() >= 1);
+            erased = await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync();
+        Assert.True(erased >= 1);
         Assert.False(File.Exists(files[expiring]));
         Assert.False(await db.SpeechClips.AnyAsync(c => c.Id == expiring));
+        // PO 19/11/2026: one summary row per run that erased something, none for a run that found nothing.
+        var row = await db.AuditLog.AsNoTracking().Where(a => a.Action == AuditActions.SpeechClipsExpired)
+            .OrderByDescending(a => a.OccurredAt).FirstAsync();
+        Assert.Null(row.ActorId);
+        Assert.Equal(erased, System.Text.Json.JsonDocument.Parse(row.Details).RootElement.GetProperty("rows").GetInt32());
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync());
+        Assert.Equal(before + 1, await db.AuditLog.CountAsync(a => a.Action == AuditActions.SpeechClipsExpired));
     }
 
     [Theory]
@@ -551,8 +563,8 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
-            [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5, [40, 200, 360, 560, 760, 960]),
-                new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0, [1300, 1500, 1720, 1980])], []);
+            [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5, [40, 200, 360, 560, 760, 960], [100, 100, 90, 95, 30, 80]),
+                new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0, [1300, 1500, 1720, 1980], [90, 90, 45, 100])], []);
         using var member = fixture.Client(s.Member);
         var clip = (await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 200, "MSG318")).GetProperty("clip");
         long[] words = [40, 200, 360, 560, 760, 960, 1300, 1500, 1720, 1980];
@@ -560,12 +572,15 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         using var secretary = fixture.Client(s.Secretary);
         var line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
         Assert.Equal(words, line.GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
+        Assert.Equal([100, 100, 90, 95, 30, 80, 90, 90, 45, 100],
+            line.GetProperty("wordConfidence").EnumerateArray().Select(w => w.GetInt32()));
 
         // The times were the machine's words': once a person rewrites them, the line is followed as a whole.
         await AssertCode(await secretary.PutAsJsonAsync($"/api/speech-clips/{clip.GetProperty("id").GetGuid()}/text",
             new { text = "Tôi đồng ý với dự thảo, đề nghị biểu quyết ngay." }), 200, "MSG302");
         line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
         Assert.Equal(JsonValueKind.Null, line.GetProperty("wordStartsMs").ValueKind);
+        Assert.Equal(JsonValueKind.Null, line.GetProperty("wordConfidence").ValueKind);
 
         // A stretch the worker sent no times for (an older worker) leaves the whole sentence without: never a guess.
         fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",

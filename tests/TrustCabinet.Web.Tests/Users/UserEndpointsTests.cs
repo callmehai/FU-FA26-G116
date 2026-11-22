@@ -16,6 +16,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Authentication;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -155,7 +156,7 @@ public class UserEndpointsTests : IDisposable
         // The acceptance criterion: only admin_users reaches these endpoints. A Secretary is
         // signed in and carries a real token — it just does not carry this capability.
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), path));
@@ -170,7 +171,7 @@ public class UserEndpointsTests : IDisposable
     {
         var target = GivenUser();
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(
@@ -187,7 +188,7 @@ public class UserEndpointsTests : IDisposable
     [Fact]
     public async Task List_returns_the_accounts_sorted_and_without_secrets()
     {
-        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
+        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary);
         var client = AdminClient();
 
         var response = await client.GetAsync("/api/users");
@@ -201,7 +202,7 @@ public class UserEndpointsTests : IDisposable
         Assert.Equal("Nguyễn Thư Ký", accounts[0].GetProperty("fullName").GetString());
         // The role reads back as its id and its current name (ADR-0008) — no enum string for the
         // frontend to translate.
-        Assert.Equal(BuiltInRoles.Secretary.ToString(), accounts[0].GetProperty("roleId").GetString());
+        Assert.Equal(TestRoles.Secretary.ToString(), accounts[0].GetProperty("roleId").GetString());
         Assert.Equal("Thư ký", accounts[0].GetProperty("roleName").GetString());
         Assert.False(accounts[0].TryGetProperty("role", out _));
         Assert.True(accounts[0].GetProperty("isActive").GetBoolean());
@@ -238,7 +239,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            roleId = BuiltInRoles.Chair,
+            roleId = BuiltInRoles.Approver,
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -267,7 +268,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            roleId = BuiltInRoles.Chair,
+            roleId = BuiltInRoles.Approver,
         });
 
         Assert.Equal(admin.Id, Assert.Single(_factory.Audit.Records).ActorId);
@@ -349,14 +350,14 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            roleId = BuiltInRoles.Chair,
+            roleId = BuiltInRoles.Approver,
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var user = (await JsonOf(response)).GetProperty("user");
-        Assert.Equal(BuiltInRoles.Chair.ToString(), user.GetProperty("roleId").GetString());
-        Assert.Equal("Chủ toạ", user.GetProperty("roleName").GetString());
+        Assert.Equal(BuiltInRoles.Approver.ToString(), user.GetProperty("roleId").GetString());
+        Assert.Equal("Phê duyệt viên", user.GetProperty("roleName").GetString());
     }
 
     // --------------------------------------------------------- UC-06b · PUT /api/users/{id}
@@ -371,7 +372,7 @@ public class UserEndpointsTests : IDisposable
         {
             fullName = "Tên Mới",
             email = "moi@trustcabinet.local",
-            roleId = BuiltInRoles.Secretary,
+            roleId = TestRoles.Secretary,
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -393,7 +394,7 @@ public class UserEndpointsTests : IDisposable
         {
             fullName = target.FullName,
             email = target.Email,
-            roleId = BuiltInRoles.Secretary,
+            roleId = TestRoles.Secretary,
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -640,7 +641,7 @@ public class UserEndpointsTests : IDisposable
     {
         var target = GivenUser();
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);

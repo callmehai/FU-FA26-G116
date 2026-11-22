@@ -26,7 +26,7 @@ public sealed class SpeechClipServiceTests
 
     private SpeechClipService Service() => new(_meetings, _clips, _unitOfWork, _engine, new SpeechClipGate(),
         _publisher, new FakeAuditService(), new FixedClock(Now), Options.Create(new RecordingOptions()), _storage,
-        new FakeRecordingSigner(), NullLogger<SpeechClipService>.Instance);
+        new FakeRecordingSigner(), new FakeCombinedRecordings(), NullLogger<SpeechClipService>.Instance);
 
     private static SpeechClipUpload Upload() => new(Guid.CreateVersion7(), Now.AddSeconds(-2), 1500, "audio/wav", [1, 2, 3]);
 
@@ -50,6 +50,36 @@ public sealed class SpeechClipServiceTests
         Assert.Equal(("ClipAdded", 1), (change.ChangeType, commitsBefore));
         Assert.True(_storage.Files.ContainsKey(clip.AudioPath!));
         Assert.Empty(_storage.Deleted);
+    }
+
+    [Theory]
+    [InlineData("Ừ.")]
+    [InlineData("À. Ừ.")]
+    [InlineData("ờ")]
+    public async Task A_sentence_of_interjections_only_is_not_stored(string heard)
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        _engine.Text = heard;
+
+        var outcome = await Add(meeting, Upload());
+
+        Assert.Equal((SpeechClipFailure.None, null), (outcome.Failure, outcome.Data));
+        Assert.Empty(_clips.Added);
+        Assert.Empty(_storage.Files);
+        Assert.Equal(0, _unitOfWork.Saves);
+    }
+
+    [Theory]
+    [InlineData("Đồng ý.")]
+    [InlineData("Khó nghe.")]
+    public async Task A_short_answer_from_the_speakers_own_mic_is_stored(string heard)
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        _engine.Text = heard;
+
+        await Add(meeting, Upload());
+
+        Assert.Equal(heard, Assert.Single(_clips.Added).Text);
     }
 
     [Fact]

@@ -131,7 +131,7 @@ public class RolePermissionEndpointsTests : IDisposable
     [Fact]
     public async Task A_caller_without_admin_users_is_refused()
     {
-        var client = _factory.ClientFor(GivenUser(BuiltInRoles.Secretary), Capability.MinutesEditor);
+        var client = _factory.ClientFor(GivenUser(TestRoles.Secretary), Capability.VoiceCollector);
 
         var response = await client.GetAsync("/api/roles/capabilities");
 
@@ -145,8 +145,8 @@ public class RolePermissionEndpointsTests : IDisposable
         // opens — an administrator can now take the capability away from a role, and the people
         // holding it must stop being administrators at their next request rather than when their
         // token expires.
-        var caller = GivenUser(BuiltInRoles.Secretary);
-        _factory.Accounts.WithCapabilities(BuiltInRoles.Secretary);
+        var caller = GivenUser(TestRoles.Secretary);
+        _factory.Accounts.WithCapabilities(TestRoles.Secretary);
 
         var client = _factory.ClientFor(caller, Capability.AdminUsers);
 
@@ -173,7 +173,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         // Deliberately not the seeded defaults: asserting the defaults back would pass even if
         // the endpoint returned a constant instead of reading the repository.
-        _factory.Roles.WithCapabilities(BuiltInRoles.Member, Capability.MinutesEditor);
+        _factory.Roles.WithCapabilities(BuiltInRoles.Member, Capability.VoiceCollector);
 
         var response = await AdminClient().GetAsync("/api/roles/capabilities");
 
@@ -194,7 +194,7 @@ public class RolePermissionEndpointsTests : IDisposable
             .Single(r => r.GetProperty("id").GetString() == BuiltInRoles.Member.ToString());
 
         Assert.Equal(
-            "MinutesEditor",
+            "VoiceCollector",
             member.GetProperty("capabilities").EnumerateArray().Single().GetString());
 
         // Roles are rows (ADR-0008): each carries its id, name and whether it is built in, so the
@@ -267,7 +267,7 @@ public class RolePermissionEndpointsTests : IDisposable
 
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { roleId = BuiltInRoles.Member, capabilities = new[] { "MeetingCreator" } });
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "MeetingCreator", "MeetingApprover" } });
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
@@ -362,13 +362,13 @@ public class RolePermissionEndpointsTests : IDisposable
         // "{}" must not strip the role of everything and answer "thành công" — the destructive
         // reading of an absent field, the same trap ChangeUserStatusRequest.IsActive documents.
         var response = await AdminClient().PutAsJsonAsync(
-            "/api/roles/capabilities", new { roleId = BuiltInRoles.Secretary });
+            "/api/roles/capabilities", new { roleId = BuiltInRoles.Approver });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("MSG17", (await JsonOf(response)).GetProperty("code").GetString());
 
         // And nothing was taken away.
-        Assert.NotEmpty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Secretary));
+        Assert.NotEmpty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Approver));
     }
 
     [Fact]
@@ -377,10 +377,10 @@ public class RolePermissionEndpointsTests : IDisposable
         // Distinct from the missing list above: stated explicitly, it is a legitimate request.
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { roleId = BuiltInRoles.Secretary, capabilities = Array.Empty<string>() });
+            new { roleId = BuiltInRoles.Approver, capabilities = Array.Empty<string>() });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Secretary));
+        Assert.Empty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Approver));
     }
 
     [Fact]

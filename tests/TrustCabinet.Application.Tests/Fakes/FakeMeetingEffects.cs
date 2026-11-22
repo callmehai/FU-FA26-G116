@@ -39,6 +39,13 @@ public sealed class FakeMeetingEffects : IAgendaMeetingEnd, ISpeakingMeetingEnd,
         return Task.FromResult<IReadOnlyList<VoteChange>>([]);
     }
 
+    public Task<IReadOnlyList<VoteChange>> DeleteDraftsOnCancelAsync(Guid meetingId, Guid? cancelledById, DateTimeOffset at,
+        CancellationToken ct = default)
+    {
+        Calls.Add("votes.deleteDraftsOnCancel");
+        return Task.FromResult<IReadOnlyList<VoteChange>>([]);
+    }
+
     public Task PublishAsync(AgendaChange change, CancellationToken ct)
     {
         Calls.Add($"agenda.publish:{change.ChangeType}");

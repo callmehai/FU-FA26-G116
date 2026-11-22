@@ -1690,7 +1690,7 @@ export default {
         'qa-fe10-b@ rút đồng ý; Thư ký đọc lại bản gỡ băng',
       ],
       expected:
-        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; "Giữ bản hiện có" thì giữ nguyên, không gửi gì (TRANS_FT16); toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; trong lúc chạy lại chữ cũ vẫn đọc được kèm dòng "Đang chuyển chữ lại cả bản ghi… là bản trước." (TRANS_FT15 E2); khi xong giọng của "Tôi đề nghị…" có gợi ý là B (hoặc được tự gán B, autoAssigned=true, khi điểm ≥ 0,75); ô chọn nêu gợi ý "Khớp giọng nhất: …"/"Máy tự gán vì giọng khớp rõ…" (TRANS_FT27) và đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-365)',
+        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; "Giữ bản hiện có" thì giữ nguyên, không gửi gì (TRANS_FT16); toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; trong lúc chạy lại chữ cũ vẫn đọc được kèm dòng "Đang chuyển chữ lại cả bản ghi… là bản trước." (TRANS_FT15 E2); khi xong giọng của "Tôi đề nghị…" có gợi ý là B (và được tự gán B, autoAssigned=true, vì từ 22/11 mọi gợi ý đều được tự gán); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-365)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)

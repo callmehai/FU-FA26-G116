@@ -9,6 +9,11 @@ TrustCabinet — an AI-assisted paperless meeting system with built-in voice/vid
 Capstone project **SEP490-G116**. The business domain is modelled on AI-eCabinet (SmartMeet), but
 this is an independent .NET implementation with a scope trimmed to fit a capstone.
 
+**Branches: `app` is the main branch** (the repository default since 2026-11-20,
+[ADR-0068](docs/05-decisions/0068-app-la-nhanh-chinh.md)). Branch off `app` and open every PR into `app`; it deploys
+to app.trustcabinet.workspace-hub.space. `main` is the frozen three-project demo — no new work there and no more
+`main` → `app` merges.
+
 **Status: the meeting loop runs end to end, up to the issued minutes.** Sign-in
 (email + password, Google), user and role administration, scheduling, approval and cancellation, agenda,
 participants and attendance, the personal and meeting document libraries with comments, the online room
@@ -125,7 +130,9 @@ global.json                  pins .NET SDK 10.0.401
 ```
 
 Every signed-in screen sits in one shell with one vertical blue sidebar — no app bar, no workspace
-switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
+switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. On a phone (≤ 640px) a top bar
+and a bottom tab bar replace the sidebar, and only the content column scrolls
+([ADR-0070](docs/05-decisions/0070-khung-dien-thoai-thanh-tren-thanh-tab-duoi.md)). See
 [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
 [ADR-0043](docs/05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) for the components taken
 from AI-eCabinet inside it (control sizes, the pinging calls to act, the listing layout, the
@@ -160,10 +167,11 @@ Checks:
 dotnet build TrustCabinet.sln     # build the backend
 cd frontend && npm run build      # tsc -b + vite build, emits into the backend wwwroot
 cd frontend && npm run lint       # oxlint
+cd frontend && npm test           # node --test, frontend/tests/unit (logic that needs no browser)
 dotnet test TrustCabinet.sln      # xunit, tests/TrustCabinet.Web.Tests
 ```
 
-CI runs all four on every pull request, limited to what the PR touches — see
+CI runs all five on every pull request, limited to what the PR touches — see
 [.github/workflows/ci.yml](.github/workflows/ci.yml). A PR that only changes `frontend/` or `docs/`
 runs just the backend tests that read those files; one that only changes README or `deploy/` skips
 both jobs. A new file the backend build or a test reads from outside `backend/` and `tests/` needs
@@ -203,7 +211,7 @@ Vite proxies them; in production the backend serves the frontend. Therefore:
 `IEntityTypeConfiguration`, then `dotnet dotnet-ef migrations add <Name> --project
 backend/TrustCabinet.Infrastructure --startup-project backend/TrustCabinet.Web --output-dir
 Migrations`. Commit the migration together with the updated `ModelSnapshot`. A migration that has
-reached `main` is immutable — correct it with a new one, because teammates have already applied it.
+reached `app` is immutable — correct it with a new one, because teammates have already applied it.
 In Development the app migrates and seeds itself at startup; nothing outside Development ever does.
 The test server runs as `Staging` and migrates as a deploy step, `dotnet TrustCabinet.Web.dll --migrate`,
 after a `pg_dump` backup and before the new version starts ([ADR-0047](docs/05-decisions/0047-server-test-chay-staging-deploy-an-toan.md)).
@@ -251,7 +259,7 @@ adding or changing a message.
   mismatch in the PR.
 - One code = one situation. Reuse a code only for the same situation on another endpoint; never
   give two different situations the same code.
-- Never renumber or reuse a code once it has reached `main`: the FE and the tester match on it.
+- Never renumber or reuse a code once it has reached `app`: the FE and the tester match on it.
   A retired code stays in the catalogue marked as no longer used.
 - Declare codes as named constants at the top of the endpoint file (`private const string
   Msg29Created = "MSG29";`), and match on the code in the FE, never on the message text.
@@ -358,10 +366,10 @@ brings the UC Specification, diagrams and business rules in line with the code. 
   Specification, diagrams or business rules lag behind the code. Do flag a requirement change that
   is **not** noted in the ticket, and docs the author wrote that contradict themselves.
 - **closing a review means closing the tickets.** Every review note names its Jira tickets in the
-  header, and when the PR that carries the review is on `main` each of those tickets gets one
+  header, and when the PR that carries the review is on `app` each of those tickets gets one
   comment (UC/BR/MSG changed, PR + commit, what is left) and a status move. Do not write "đã vào
   main" from the PR page alone: a stacked PR can merge into its base after the base merged into
-  `main` and never reach it (#238). Rule and status mapping:
+  `app` and never reach it (#238). Rule and status mapping:
   [§2.2](docs/DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update).
 
 Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation).

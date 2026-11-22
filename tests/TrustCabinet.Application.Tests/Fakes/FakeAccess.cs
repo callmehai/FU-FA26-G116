@@ -136,6 +136,9 @@ public sealed class FakeAuditService : IAuditService
 {
     public List<string> Actions { get; } = [];
 
+    /// <summary>The details each recorded action carried, in the same order as <see cref="Actions"/>.</summary>
+    public List<object?> Details { get; } = [];
+
     /// <summary>
     /// Thrown by every record, in place of saving. The real one saves whatever the use case staged, so this is where
     /// a refused insert of that staged row surfaces.
@@ -147,6 +150,7 @@ public sealed class FakeAuditService : IAuditService
     {
         if (Fail is { } failure) return Task.FromException(failure);
         Actions.Add(action);
+        Details.Add(details);
         return Task.CompletedTask;
     }
 }

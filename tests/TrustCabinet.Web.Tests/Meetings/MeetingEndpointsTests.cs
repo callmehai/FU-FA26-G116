@@ -18,6 +18,7 @@ using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -77,7 +78,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = email,
             PasswordHash = "test-hash",
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = TestRoles.Secretary,
         };
         _factory.Accounts.WithUser(user);
         return user;

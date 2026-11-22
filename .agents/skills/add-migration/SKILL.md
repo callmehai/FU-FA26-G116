@@ -21,7 +21,7 @@ The database is code-first. Never change a schema by hand.
    dotnet dotnet-ef migrations add <Name> --project backend/TrustCabinet.Infrastructure --startup-project backend/TrustCabinet.Web --output-dir Migrations
    ```
 4. Review the generated `Up` and `Down` and the `ModelSnapshot` diff. They must contain only what you intended. Commit the migration and the updated `ModelSnapshot` together.
-5. **A migration that has reached `main` is immutable.** If `git log origin/main -- <file>` shows it there, do not edit it; correct it with a new migration.
+5. **A migration that has reached `app` is immutable.** If `git log origin/app -- <file>` shows it there, do not edit it; correct it with a new migration.
 6. In Development the app migrates and seeds itself at startup. Nothing outside Development ever does.
 7. Update `docs/02-design/02-erd.md` in the same commit (and `docs/02-design/03-co-so-du-lieu.md` only if the database setup changes).
 

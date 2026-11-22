@@ -19,10 +19,11 @@ public class VoiceSampleConfiguration : IEntityTypeConfiguration<VoiceSample>
         builder.HasOne(s => s.Consent).WithMany().HasForeignKey(s => s.ConsentId).OnDelete(DeleteBehavior.Cascade);
 
         // ADR-0060: a sample the Secretary of a meeting took for the person names both; one the person took names neither.
+        // ADR-0071: one taken by a holder of "Thu giọng mẫu hộ" outside any meeting names only who took it.
         builder.HasOne(s => s.CollectedBy).WithMany().HasForeignKey(s => s.CollectedById).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(s => s.Meeting).WithMany().HasForeignKey(s => s.MeetingId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(s => s.MeetingId);
-        builder.ToTable(t => t.HasCheckConstraint("ck_voice_samples_collected_in_meeting",
-            "(collected_by_id IS NULL) = (meeting_id IS NULL)"));
+        builder.ToTable(t => t.HasCheckConstraint("ck_voice_samples_meeting_has_collector",
+            "meeting_id IS NULL OR collected_by_id IS NOT NULL"));
     }
 }

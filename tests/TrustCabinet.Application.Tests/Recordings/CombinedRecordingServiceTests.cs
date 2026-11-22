@@ -25,7 +25,7 @@ public sealed class CombinedRecordingServiceTests
     public CombinedRecordingServiceTests()
     {
         _publisher = new(_unitOfWork);
-        _recordings.CombinableMeetings.Add(_meetingId);
+        _recordings.CombinableMeetings.Add(new(_meetingId, MeetingMode.Hybrid));
         var roomPath = _storage.Create(".wav");
         _storage.Files[roomPath] = [.. CombinedRecordingRules.WavHeader(), .. new byte[RecordingRules.RoomBytesPerSecond]];
         _room = new Recording
@@ -38,11 +38,12 @@ public sealed class CombinedRecordingServiceTests
         _recordings.Recordings.Add(_room);
         var clipPath = _storage.Create(".wav");
         _storage.Files[clipPath] = CombinedRecordingRules.WavHeader();
-        _clips.Mixable.Add(new CombinedClip(Started.AddMilliseconds(500), 500, clipPath));
+        _clips.Mixable.Add(new CombinedClip(Started.AddMilliseconds(500), 500, clipPath, Started));
         _clips.LastChange = Now.AddHours(-1).AddMinutes(-1);
     }
 
-    private CombinedRecordingService Service() => new(_recordings, _clips, _unitOfWork, _storage, _publisher, new FixedClock(Now),
+    private CombinedRecordingService Service() => new(_recordings, _clips, new FakeMeetingRepository(), _unitOfWork, _storage, _publisher,
+        new FakeAuditService(), new FixedClock(Now),
         Options.Create(new RecordingOptions()), NullLogger<CombinedRecordingService>.Instance);
 
     [Fact]

@@ -25,7 +25,6 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
-import { VoiceCollectionPanel } from '../../voice/VoiceCollectionPanel'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
@@ -34,7 +33,8 @@ import { RecorderCard } from '../../recordings/RecorderCard'
 import { MinutesPanel } from '../../minutes/MinutesPanel'
 import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
-import { useRoomRecorder } from '../../recordings/useRoomRecorder'
+import { useCallFailed } from '../../calls/callFailed'
+import { useHeldRoomMic } from '../../recordings/roomMicContext'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
@@ -72,13 +72,12 @@ type TabId = (typeof TABS)[number]['id']
  * Biên bản when it ends — before that they have nothing in them (nothing is recorded before the start, and minutes are
  * built only once the meeting is over, MSG386/MSG398). The tab still shows, dimmed with a lock, so the bar keeps its
  * shape and says what is coming; Thông tin chung, the roster, the agenda, the documents and the votes are prepared
- * before the meeting and never lock. `earlyRecordings`: the Secretary collecting voice samples for the room's mic
- * does that in Bản ghi before the start (ADR-0060), as eCab opens the tab early to whoever uploads the room's file.
+ * before the meeting and never lock.
  */
-function tabLock(id: TabId, meeting: Meeting, earlyRecordings: boolean): string | null {
+function tabLock(id: TabId, meeting: Meeting): string | null {
   const cancelled = meeting.status === 'Cancelled'
   if (id === 'recordings') {
-    if (meeting.status === 'InProgress' || meeting.status === 'Ended' || earlyRecordings) return null
+    if (meeting.status === 'InProgress' || meeting.status === 'Ended') return null
     return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp bắt đầu'
   }
   if (id === 'minutes' && meeting.status !== 'Ended') return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp kết thúc'
@@ -168,14 +167,7 @@ function MeetingDetail({
   // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
   const onRoster = meeting.myMeetingRole !== null
   const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
-  // ADR-0060: the Secretary trusted with "Thu giọng mẫu hộ" records samples on the room's mic, never in a Secret meeting.
-  const collectsVoices =
-    meeting.mode !== 'Online' &&
-    meeting.myMeetingRole === 'Secretary' &&
-    can('VoiceCollector') &&
-    meeting.sensitivity !== 'Secret' &&
-    meeting.status !== 'Cancelled'
-  const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting, collectsVoices)])) as Record<
+  const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting)])) as Record<
     TabId,
     string | null
   >
@@ -212,15 +204,32 @@ function MeetingDetail({
   const perMic = meeting.mode !== 'InPerson'
   const running = meeting.status === 'InProgress'
   const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online' && onRoster)
-  const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
-  // ADR-0040: an in-person or hybrid meeting has a room, recorded by the Secretary here (as the server's HasRoom).
-  const recordsRoom = meeting.mode !== 'Online' && running && meeting.myMeetingRole === 'Secretary'
+  // ADR-0072: the mic is held above the routes, so going to the call room in this tab and back keeps it on.
+  const room = useHeldRoomMic(meeting.id, running, roomRecordings.reload)
+  const call = useCallRoom(meeting)
+  const callFailed = useCallFailed(meeting.id)
+  // ADR-0040: an in-person meeting's room is recorded by the Secretary here. A hybrid one's switch is the Secretary's
+  // mic in the call room, which the people online hear (ADR-0072): here the card only shows a mic still on, a take
+  // kept on this laptop, or one open elsewhere — unless the call room cannot be used (no LiveKit, unreachable, or the
+  // join failed here), when the card is the switch again, as for an in-person meeting.
+  const callUnusable = call.usable === false || callFailed
+  const recordsRoom =
+    (meeting.mode === 'InPerson' || (meeting.mode === 'Hybrid' && callUnusable)) &&
+    running &&
+    meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
   const showsRecorder =
-    recordsRoom ||
-    room.phase !== 'off' ||
-    room.unfinished !== null ||
-    (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
+    room !== null &&
+    (recordsRoom ||
+      room.phase !== 'off' ||
+      room.unfinished !== null ||
+      (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null))
+  // A take opening or closing: whether the call room's tab of this browser feeds it, so the card says so.
+  const openTake = roomRecordings.open?.id
+  const recheckRoom = room?.recheck
+  useEffect(() => {
+    void recheckRoom?.()
+  }, [recheckRoom, openTake])
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -243,7 +252,7 @@ function MeetingDetail({
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
-  const roomOpen = useCallRoomOpen(meeting)
+  const roomOpen = call.open
   // SCRUM-69: the Chair starts a published meeting and ends a running one.
   const canRun = lifecycleAction(meeting) !== null
   // UC-75: the organizer calls it off any time before it starts.
@@ -453,12 +462,14 @@ function MeetingDetail({
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
           ) : tab === 'attendees' ? (
-            <ParticipantsPanel
-              meetingId={meeting.id}
-              meetingStatus={meeting.status}
-              sensitivity={meeting.sensitivity}
-              onChanged={() => void reload()}
-            />
+            <div className="recordings-tab">
+              <ParticipantsPanel
+                meetingId={meeting.id}
+                meetingStatus={meeting.status}
+                sensitivity={meeting.sensitivity}
+                onChanged={() => void reload()}
+              />
+            </div>
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (
@@ -469,7 +480,6 @@ function MeetingDetail({
             <div className="recordings-tab">
               <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
-              {collectsVoices && <VoiceCollectionPanel meetingId={meeting.id} />}
             </div>
           ) : (
             <MinutesPanel meeting={meeting} />
@@ -487,7 +497,7 @@ function MeetingDetail({
           />
         )}
 
-        {showsRecorder && (
+        {showsRecorder && room && (
           <RecorderCard
             title={meeting.title}
             room={room}
@@ -685,21 +695,29 @@ function DetailSkeleton() {
  * Whether to offer "join the call room" (SCRUM-41). Only an online or hybrid meeting in progress
  * has a room, so nothing is asked otherwise; and the backend answers 404 to someone who is not
  * invited (e.g. the organizer who is not a participant), which simply hides the button.
+ * `usable` (ADR-0072): the room can be joined — LiveKit is configured and the server reached it — or null until known.
  */
-function useCallRoomOpen(meeting: Meeting) {
-  const [open, setOpen] = useState(false)
+function useCallRoom(meeting: Meeting) {
+  const [state, setState] = useState<{ open: boolean; usable: boolean | null }>({ open: false, usable: null })
   const eligible = meeting.mode !== 'InPerson' && meeting.status === 'InProgress'
 
   useEffect(() => {
     if (!eligible) return
     let cancelled = false
     getMeetingCall(meeting.id)
-      .then((call) => !cancelled && setOpen(call.status === 'Open'))
-      .catch(() => !cancelled && setOpen(false))
+      .then(
+        (call) =>
+          !cancelled &&
+          setState({
+            open: call.status === 'Open',
+            usable: call.status === 'Open' && call.available && call.participantCount !== null,
+          }),
+      )
+      .catch(() => !cancelled && setState({ open: false, usable: false }))
     return () => {
       cancelled = true
     }
   }, [eligible, meeting.id])
 
-  return eligible && open
+  return eligible ? state : { open: false, usable: null }
 }

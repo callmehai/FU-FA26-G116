@@ -55,11 +55,12 @@ public sealed class CallRoomService(
         // The room may accept an old ticket after Meeting.End committed. Its connection history
         // ends when the provider confirms closure, not at the earlier business transition time.
         var closedAt = UtcNow;
-        await StoreAsync(async token =>
+        var closedHands = await StoreAsync(async token =>
         {
             var session = await calls.FindActiveRoomSessionAsync(meetingId, token);
-            if (session is not null) await calls.EndSessionAsync(session.Id, closedAt, token);
+            return session is null ? 0 : await calls.EndSessionAsync(session.Id, closedAt, token);
         }, ct);
+        await SpeakingLeftAsync(meetingId, closedHands);
     }
 
     public async Task<CallResult<CallRoomView>> GetRoomAsync(Guid meetingId, CallCaller caller, CancellationToken ct = default)
@@ -251,7 +252,7 @@ public sealed class CallRoomService(
                     {
                         logger.LogInformation("Closing {Room} again: {Identity} joined after it closed", webhook.RoomName, joiner.Identity);
                         await liveKit.DeleteRoomAsync(webhook.RoomName!, ct);
-                        await StoreAsync(token => calls.EndSessionAsync(session.Id, UtcNow, token), ct);
+                        await SpeakingLeftAsync(meetingId, await StoreAsync(token => calls.EndSessionAsync(session.Id, UtcNow, token), ct));
                     }
                     else if (access is null && options.Value.EnforceRoster)
                     {
@@ -344,7 +345,7 @@ public sealed class CallRoomService(
             && (session.MeetingStatus != MeetingStatus.InProgress || session.MeetingMode == MeetingMode.InPerson))
         {
             await liveKit.DeleteRoomAsync(room, ct);
-            await StoreAsync(token => calls.EndSessionAsync(session.SessionId, UtcNow, token), ct);
+            await SpeakingLeftAsync(meetingId, await StoreAsync(token => calls.EndSessionAsync(session.SessionId, UtcNow, token), ct));
             return;
         }
 

@@ -101,7 +101,7 @@ Sequence diagram: [UC01_SignIn.png](../06-sequencediagram/auth/UC01_SignIn.png).
     "fullName": "Nguyễn Thư Ký",
     "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22",
     "roleName": "Thư ký",
-    "capabilities": ["MeetingCreator", "MinutesEditor"]
+    "capabilities": ["MeetingCreator", "MeetingApprover"]
   }
 }
 ```
@@ -529,10 +529,14 @@ TrustCabinet@2026
 
 | Email | Role | Capabilities |
 |---|---|---|
-| `chutoa@trustcabinet.local` | Chair | MeetingCreator, MeetingApprover |
-| `thuky@trustcabinet.local` | Secretary | MeetingCreator, MinutesEditor |
-| `thanhvien@trustcabinet.local` | Member | *(không có — vẫn đăng nhập được)* |
-| `quantri@trustcabinet.local` | Admin | AdminUsers |
+| `chutoa@trustcabinet.local` | Approver (Phê duyệt viên) | MeetingCreator, MeetingApprover |
+| `thuky@trustcabinet.local` | Member (Thành viên) | MeetingCreator |
+| `thanhvien@trustcabinet.local` | Member (Thành viên) | MeetingCreator |
+| `quantri@trustcabinet.local` | Admin (Quản trị viên) | MeetingCreator, VoiceCollector, AdminUsers |
+
+Từ [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md) Chủ toạ và Thư ký chỉ là vai trò trong cuộc họp: hai tài
+khoản `chutoa@`, `thuky@` vẫn làm Chủ toạ, Thư ký ở các cuộc họp mẫu. Trên DB tạo trước ADR-0075, migration chuyển `thuky@`
+(vai trò hệ thống "Thư ký" cũ) sang Phê duyệt viên; DB mới tạo thì `thuky@` là Thành viên.
 
 Chỉ chạy ở Development (xem `MigrateAndSeedDevelopmentAsync`). Công khai mật khẩu này không sao, vì
 nó chỉ tồn tại trong một database toàn cuộc họp bịa.

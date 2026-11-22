@@ -1,3 +1,4 @@
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -28,6 +29,25 @@ class WordStartsTests(unittest.TestCase):
         self.assertIsNone(pipeline.word_starts([" XIN", "CHÀO"], [0.0, 0.2], 2))
         self.assertIsNone(pipeline.word_starts([" XIN", " CHÀO"], [], 2))
         self.assertIsNone(pipeline.word_starts([], [], 0))
+
+
+class WordConfidenceTests(unittest.TestCase):
+    def test_a_word_is_as_sure_as_its_least_sure_token(self):
+        # "THẰNG" came as three tokens; its middle one was a guess.
+        tokens = [" ĐỂ", " TH", "Ằ", "NG", " HUY"]
+        log_probs = [math.log(0.999), math.log(0.61), math.log(0.2), 0.0, math.log(0.975)]
+        self.assertEqual(pipeline.word_confidence(tokens, log_probs, 3), [100, 20, 98])
+
+    def test_a_bare_mark_neither_starts_nor_scores_a_word_on_its_own(self):
+        self.assertEqual(pipeline.word_confidence(["▁", "Ừ", " ĐÂY"], [math.log(0.5), math.log(0.9), 0.0], 2), [90, 100])
+
+    def test_no_scores_when_the_count_does_not_match_the_text(self):
+        self.assertIsNone(pipeline.word_confidence([" XIN", "CHÀO"], [0.0, 0.0], 2))
+        self.assertIsNone(pipeline.word_confidence([" XIN", " CHÀO"], [], 2))
+
+    def test_scores_go_with_the_readable_line_only_while_they_match_its_words(self):
+        self.assertEqual(pipeline.aligned_words("Xin chào.", [90, 40]), [90, 40])
+        self.assertIsNone(pipeline.aligned_words("Xin chào các bạn.", [90, 40]))
 
 
 class WordTimesTests(unittest.TestCase):

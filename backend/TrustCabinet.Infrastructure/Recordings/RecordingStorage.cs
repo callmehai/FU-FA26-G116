@@ -144,6 +144,26 @@ public sealed class LocalRecordingStorage(IOptions<RecordingOptions> options) : 
         File.Delete(Resolve(storagePath));
     }
 
+    public IEnumerable<StoredAudioFile> ListWrittenBefore(DateTimeOffset cutoff)
+    {
+        var root = Root;
+        if (!Directory.Exists(root)) yield break;
+        var prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
+        var before = cutoff.UtcDateTime;
+        var walk = new EnumerationOptions
+        {
+            RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint,
+        };
+        foreach (var path in Directory.EnumerateFiles(root, "*", walk))
+        {
+            var full = Path.GetFullPath(path);
+            if (!full.StartsWith(prefix, StringComparison.Ordinal)) continue;
+            var file = new FileInfo(full);
+            if (file.LinkTarget is not null || file.LastWriteTimeUtc >= before) continue;
+            yield return new(Path.GetRelativePath(root, full).Replace('\\', '/'), file.Length);
+        }
+    }
+
     private string Resolve(string relative)
     {
         var full = Path.GetFullPath(Path.Combine(Root, relative));

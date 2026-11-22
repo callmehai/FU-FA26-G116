@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Entities;
@@ -25,6 +26,8 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal readonly TestClock Clock = new();
     internal readonly FailureInterceptor Failures = new();
     internal readonly FakeSpeechEngine Speech = new();
+    /// <summary>Stands in for ffmpeg (ADR-0069): CI has none, and the conversion itself is tested apart.</summary>
+    internal readonly FakeAudioTranscoder Transcoder = new();
     /// <summary>For a guest's join (SCRUM-129): the call room keeps the recording-notice evidence the guest's mic needs.</summary>
     internal readonly Calls.FakeLiveKitGateway LiveKit = new();
     internal readonly string StorageRoot = Path.Combine(Path.GetTempPath(), $"tc-recordings-{Guid.NewGuid():N}");
@@ -75,6 +78,8 @@ public sealed class RecordingFixture : IAsyncLifetime
                 services.AddSingleton<ISpeechEngine>(fixture.Speech);
                 services.RemoveAll<TrustCabinet.Application.Calls.ILiveKitGateway>();
                 services.AddSingleton<TrustCabinet.Application.Calls.ILiveKitGateway>(fixture.LiveKit);
+                services.RemoveAll<IAudioTranscoder>();
+                services.AddSingleton<IAudioTranscoder>(fixture.Transcoder);
                 services.RemoveAll<IVoiceEmbedder>();
                 services.AddSingleton<IVoiceEmbedder>(fixture.Speech);
                 // Deactivating an account ends its sessions; no Redis for that here.
@@ -106,10 +111,15 @@ public sealed class RecordingFixture : IAsyncLifetime
         /// <summary>What the next enrolment sample embeds to; a test sets one vector per sample it posts.</summary>
         internal float[] NextEmbedding = [1f, 0f, 0f];
         internal Exception? EmbedFailure;
+        /// <summary>Samples that reached the "worker": a refused one must never get this far.</summary>
+        internal int EmbedCalls;
 
         public Task<SpeechEmbedding> EmbedAsync(Stream audio, string contentType, CancellationToken ct)
-            => EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
+        {
+            Interlocked.Increment(ref EmbedCalls);
+            return EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
                 : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
+        }
 
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
             CancellationToken ct, string? context = null)
@@ -123,6 +133,31 @@ public sealed class RecordingFixture : IAsyncLifetime
             LastAudio = copy.ToArray();
             if (During is { } during) await during();
             return Failure is { } failure ? throw failure : Result;
+        }
+    }
+
+    /// <summary>"MP3" is the source's bytes behind an ID3 tag, so a test can tell it was converted, and from what.</summary>
+    internal sealed class FakeAudioTranscoder : IAudioTranscoder
+    {
+        internal static readonly byte[] Tag = "ID3"u8.ToArray();
+        internal bool Available = true;
+        internal bool Fail;
+        internal int Calls;
+
+        public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(Available);
+
+        public async Task<Stream> OpenMp3Async(Stream source, CancellationToken ct)
+        {
+            Calls++;
+            await using (source)
+            {
+                if (Fail) throw new AudioTranscodeException("Injected conversion failure.");
+                var output = new MemoryStream();
+                output.Write(Tag);
+                await source.CopyToAsync(output, ct);
+                output.Position = 0;
+                return output;
+            }
         }
     }
 

@@ -3,14 +3,14 @@
 Bản gỡ băng (SCRUM-31) chia lời nói theo *Người nói 1, 2, 3…*: đó là **tách người nói**
 (*diarization*), chỉ biết hai đoạn là cùng hay khác giọng, không biết là ai. Voice ID trả lời câu
 "ai": mỗi người **tự nguyện** đăng ký giọng mẫu; sau khi gỡ băng, hệ thống so từng giọng trong bản ghi
-với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng khớp rõ thì
-máy tự điền tên, nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
+với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng nào được gợi ý thì
+máy tự điền luôn tên đó (từ 22/11/2026), nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
 ([ADR-0045](../05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md),
 [ADR-0048](../05-decisions/0048-thong-bao-voice-id-1-2-may-tu-dien-ten.md)); Thư ký luôn sửa được tên.
 Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
 
 Mỗi người có **hai bộ giọng mẫu** ([ADR-0060](../05-decisions/0060-thu-ky-thu-voice-id-ho.md)): bộ **tự thu** trên máy
-của mình, và bộ **Thư ký thu hộ** bằng micro phòng họp. Cả hai nằm dưới **một lần đồng ý** Voice ID; rút lại thì xoá cả
+của mình, và bộ **thu hộ** do người có quyền "Thu giọng mẫu hộ" thu, thường bằng micro phòng họp (ADR-0071, ADR-0075). Cả hai nằm dưới **một lần đồng ý** Voice ID; rút lại thì xoá cả
 hai ([ADR-0060](../05-decisions/0060-thu-ky-thu-voice-id-ho.md)). Máy so giọng với cả hai bộ.
 
 ## Dữ liệu sinh trắc học — nghĩa vụ và cách giữ
@@ -30,7 +30,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 
 | Nghĩa vụ | Cách hệ thống giữ |
 |---|---|
-| Đồng ý riêng, rõ ràng, do chính người đó | `voice_consents`: một lần đồng ý riêng, không gộp với đồng ý ghi âm; lưu phiên bản thông báo (`noticeVersion`) và mục đích người đó đã đọc. Một dòng đồng ý cho cả hai bộ mẫu (ADR-0060). Không ai đồng ý thay người khác được — không route `/api/me/voice` nào nhận id người khác, và Thư ký chỉ thu hộ người đã tự đồng ý theo thông báo 1.3 trở lên (thông báo nói rõ Thư ký thu bằng micro phòng họp) |
+| Đồng ý riêng, rõ ràng, do chính người đó | `voice_consents`: một lần đồng ý riêng, không gộp với đồng ý ghi âm; lưu phiên bản thông báo (`noticeVersion`) và mục đích người đó đã đọc. Một dòng đồng ý cho cả hai bộ mẫu (ADR-0060). Không ai đồng ý thay người khác được — không route `/api/me/voice` nào nhận id người khác, và mọi mẫu thu hộ, trong hay ngoài cuộc họp, chỉ thu được người đã tự đồng ý theo thông báo 1.4 trở lên (ADR-0071, ADR-0073). Mỗi lần thu hộ, người thu phải xác nhận đã hỏi và người đó đồng ý cho lần thu này (`personAgreed`, thiếu là `400 MSG483`); nhật ký giữ xác nhận đó, thông báo cho chủ mẫu nói rõ và chỉ cách xoá (ADR-0073) |
 | Nêu mục đích | `Purpose`: *Gợi ý tên người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự, để Thư ký lập biên bản.* |
 | Thông báo đủ trước khi đồng ý | Màn "Giọng nói của tôi" nêu mục đích, thứ được lưu, phạm vi dùng, quyền của người dùng, **bên kiểm soát dữ liệu** (`controller`, lấy từ cấu hình `VoiceId:Controller`; mỗi đơn vị triển khai đặt tên pháp nhân của mình), và ghi rõ đây là dữ liệu cá nhân nhạy cảm. Ô đồng ý không đánh dấu sẵn |
 | Thu thập tối thiểu | Lưu vector đặc trưng giọng (512 số) và, từ thông báo 1.1, **bản ghi giọng mẫu** để chính người đó nghe lại và giữ mẫu rõ ([ADR-0042](../05-decisions/0042-luu-ban-ghi-giong-mau-de-nghe-lai.md)). Mẫu ghi dưới đồng ý 1.0 không lưu bản ghi. Vector của các giọng trong bản ghi họp chỉ dùng để so một lần rồi bỏ, không lưu |
@@ -38,8 +38,8 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 | Rút đồng ý, xoá | `DELETE /api/me/voice/consent`: trong một transaction, xoá **mọi** giọng mẫu, **mọi gợi ý** trỏ tới người đó và **tên máy tự gán** là người đó (ADR-0045); tên Thư ký đã gán giữ nguyên (đó là quyết định của người, không phải dữ liệu sinh trắc). Bản gỡ băng đang chạy dở không ghi lại được gợi ý cho người vừa rút: máy so giọng dưới khoá chia sẻ trên dòng đồng ý, việc rút đồng ý phải chờ nó ghi xong rồi mới xoá ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)) |
 | Người bị vô hiệu hoá tài khoản | Không đăng nhập được nên không tự rút được. Vô hiệu hoá (`PUT /api/users/{id}/status`, `isActive: false`) **kết thúc Voice ID như khi rút đồng ý**, trong cùng transaction: xoá giọng mẫu, gợi ý và tên máy tự gán, đóng dòng đồng ý; người làm trong nhật ký là quản trị viên. Kích hoạt lại không khôi phục gì: người đó phải đồng ý và ghi giọng mẫu lại ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)). Máy cũng không so giọng với tài khoản đã vô hiệu hoá |
 | Giới hạn phạm vi dùng | Chỉ so với người có trong danh sách thành phần hiện tại của **chính cuộc họp đó**; người ngoài cuộc họp có giọng giống đến đâu cũng không được gợi ý |
-| Người khác chạm vào giọng mẫu (ADR-0060) | Chỉ Thư ký **hiện tại** của **chính cuộc họp đó**, có quyền `VoiceCollector` do quản trị viên cấp. Thư ký chỉ thấy, nghe, xoá mẫu thu ở cuộc họp của mình; mỗi lần nghe ghi `voice.sample_played`; mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`. Chủ mẫu thấy mọi mẫu thu hộ kèm cuộc họp và người thu, nghe lại và xoá được |
-| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm `reason`: `withdrawn` khi chính người đó rút, `accountDeactivated` khi quản trị viên vô hiệu hoá tài khoản; số mẫu đã xoá, số gợi ý đã bỏ), `voice.sample_added`, `voice.sample_deleted`, `voice.sample_played` (Thư ký nghe mẫu thu hộ), `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không). Dòng `voice.sample_added` / `voice.sample_deleted` của mẫu thu hộ có `scope: "proxy"` trong `details` |
+| Người khác chạm vào giọng mẫu (ADR-0071, [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md)) | Chỉ người có quyền `VoiceCollector` ("Thu giọng mẫu hộ") do quản trị viên cấp, mặc định chỉ Quản trị viên; đọc lại trong cơ sở dữ liệu mỗi lần gọi. Thư ký cuộc họp không còn thu hộ (trước ADR-0075 Thư ký thu được trong cuộc họp của mình). Người có quyền thấy, nghe, xoá mọi mẫu thu hộ của một người đã đồng ý 1.4 trở lên; mỗi lần thu phải xác nhận người đó đồng ý cho lần thu ấy (ADR-0073); mỗi lần nghe ghi `voice.sample_played`; mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`. Chủ mẫu thấy mọi mẫu thu hộ kèm người thu (và cuộc họp với mẫu thu trước ADR-0075), nghe lại và xoá được |
+| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm `reason`: `withdrawn` khi chính người đó rút, `accountDeactivated` khi quản trị viên vô hiệu hoá tài khoản; số mẫu đã xoá, số gợi ý đã bỏ), `voice.sample_added`, `voice.sample_deleted`, `voice.sample_played` (Thư ký nghe mẫu thu hộ), `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không). Dòng `voice.sample_added` / `voice.sample_deleted` của mẫu thu hộ có `scope: "proxy"` trong `details`; `voice.sample_added` của mẫu thu hộ có thêm `personAgreed: true` (ADR-0073) |
 
 ## Voice ID của chính mình (`/api/me/voice`)
 
@@ -47,9 +47,9 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 
 ```json
 {
-  "consent": { "grantedAt": "…", "noticeVersion": "1.3", "purpose": "Nhận ra người phát biểu …" },
+  "consent": { "grantedAt": "…", "noticeVersion": "1.5", "purpose": "Nhận ra người phát biểu …" },
   "samples": [ { "id": "…", "createdAt": "…", "speechMs": 7200, "playable": true } ],
-  "maxSamples": 5, "noticeVersion": "1.3", "purpose": "Nhận ra người phát biểu …",
+  "maxSamples": 5, "noticeVersion": "1.5", "purpose": "Nhận ra người phát biểu …",
   "controller": "Nhóm đồ án SEP490-G116, đơn vị vận hành bản thử nghiệm TrustCabinet",
   "proxy": {
     "allowed": true,
@@ -60,14 +60,14 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 }
 ```
 
-`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu Thư ký thu hộ, mỗi bộ tối đa 5 mẫu. `proxy.allowed`:
-đồng ý hiện có là theo thông báo 1.3 trở lên, nên Thư ký thu hộ được.
+`samples` ở gốc chỉ là mẫu tự thu; `proxy.samples` là mẫu thu hộ (`meetingId`, `meetingTitle` là `null` với mẫu thu ngoài cuộc họp, ADR-0071), bộ tự thu tối đa 5 mẫu, bộ thu hộ tối đa 50. `proxy.allowed`:
+đồng ý hiện có là theo thông báo 1.4 trở lên, nên người khác thu hộ được (ADR-0073; trước đó 1.3).
 
 `consent` là `null` khi chưa đồng ý hoặc đã rút. `noticeVersion`, `purpose` và `controller` ở gốc là
 thông báo hiện hành mà FE hiện cho người dùng đọc trước khi đồng ý. `consent.noticeVersion` cũ hơn
 thông báo hiện hành thì FE mời đồng ý điều khoản mới. `playable`: bản ghi mẫu được lưu, chủ mẫu nghe lại được.
 
-### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.3" }`
+### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.5" }`
 
 Phải gửi đúng phiên bản thông báo đang hiện (khác → `400 MSG313`, `errors.noticeVersion`), để đồng ý
 luôn gắn với câu chữ người đó đã đọc. Đã đồng ý rồi thì không tạo thêm. Đang đồng ý theo thông báo cũ
@@ -76,7 +76,7 @@ thì **gia hạn ngay dòng đó** lên phiên bản mới: giọng mẫu giữ 
 
 ### `DELETE /api/me/voice/consent`
 
-`200 MSG306`. Xoá mọi mẫu của **cả hai bộ** (tự thu và Thư ký thu hộ, ở mọi cuộc họp), mọi gợi ý và tên máy tự điền trỏ
+`200 MSG306`. Xoá mọi mẫu của **cả hai bộ** (tự thu và thu hộ), mọi gợi ý và tên máy tự điền trỏ
 tới người này. Đồng ý lại sau đó tạo **dòng đồng ý mới**; dòng đã rút giữ nguyên làm bằng chứng.
 
 ### `POST /api/me/voice/samples` — `multipart/form-data`, trường `file`
@@ -105,56 +105,60 @@ từ bộ nhớ, không ghi ra đĩa.
 
 ### `DELETE /api/me/voice/samples/{sampleId}`
 
-`200 MSG311`, bản ghi mẫu bị xoá cùng. Xoá được cả mẫu Thư ký thu hộ cho mình. Mẫu của người khác: `404`.
+`200 MSG311`, bản ghi mẫu bị xoá cùng. Xoá được cả mẫu người khác thu hộ cho mình. Mẫu của người khác: `404`.
 `GET …/audio` cũng nghe được cả mẫu thu hộ của mình.
 
-## Thư ký thu giọng mẫu hộ — ADR-0060
+## Thư ký thu giọng mẫu hộ — ADR-0060 (đã bỏ)
 
-Họp trực tiếp và kết hợp được gỡ băng từ micro phòng họp. Giọng mẫu ghi bằng chính micro đó khớp tốt hơn giọng mẫu mỗi
-người tự ghi trên laptop, nên Thư ký thu hộ mọi người trước hoặc trong buổi họp. Ba lớp chặn:
+Từ [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md) Thư ký cuộc họp không còn thu giọng mẫu hộ: bốn route `/api/meetings/{meetingId}/voice-collection…`
+đã bỏ (trả `404` như mọi URL lạ), mã `MSG477` ngừng dùng, giới hạn 5 mẫu mỗi người thu cũng bỏ. Mẫu Thư ký đã thu trước đó
+vẫn thuộc người được thu, hiện ở mục dưới kèm `meetingId`, `meetingTitle`.
 
-1. Người gọi có quyền **`VoiceCollector`** ("Thu giọng mẫu hộ" trong ma trận phân quyền). Thiếu: `403`.
-2. Người gọi là **Thư ký hiện tại** của **chính cuộc họp đó**, cuộc họp **trực tiếp hoặc kết hợp**, không phải **Mật**,
-   chưa **huỷ**. Kiểm lại ở mỗi lần gọi. Không đạt: `404` không body, như cuộc họp không tồn tại.
-3. Người được thu đã tự **đồng ý Voice ID** theo thông báo **1.3 trở lên** (`POST /api/me/voice/consent`), thông báo
-   nói rõ Thư ký thu bằng micro phòng họp ([ADR-0060](../05-decisions/0060-thu-ky-thu-voice-id-ho.md)). Chưa, hoặc đồng ý
-   theo thông báo cũ hơn: `409 MSG475`.
+## Thu giọng mẫu hộ — ADR-0071, ADR-0075
 
-Mẫu thu hộ thuộc về người được thu: mã hoá gắn với người đó như mẫu tự thu, nằm dưới chính đồng ý Voice ID của họ, họ nghe và
-xoá được. Bản ghi mẫu luôn được lưu (mã hoá) để Thư ký nghe lại kiểm tra.
+Người có quyền **`VoiceCollector`** thu, nghe lại, xoá giọng mẫu thu hộ của **một người** bất kỳ lúc nào, không cần cuộc họp
+([ADR-0071](../05-decisions/0071-thu-giong-mau-ho-bat-ky-luc-nao.md)). FE mở từ nút micro ở dòng người đó trên màn
+*Quản trị → Người dùng*. Mọi route dưới đây:
 
-### `GET /api/meetings/{meetingId}/voice-collection`
+- Chưa đăng nhập `401`. Không có quyền `VoiceCollector` (đọc lại trong cơ sở dữ liệu mỗi lần gọi): `403`.
+- `userId` không tồn tại hoặc tài khoản đã vô hiệu hoá: `404`.
+- Chỉ thu được người đã tự đồng ý Voice ID theo thông báo **1.4 trở lên** (thông báo hiện hành 1.5 chỉ bỏ Thư ký khỏi 1.4,
+  nên đồng ý 1.4 vẫn đủ).
+- Mỗi lần thu phải gửi kèm `personAgreed=true` (người thu đã hỏi và người đó đồng ý cho lần thu này): thiếu là `400 MSG483`.
+
+Tối đa 50 mẫu thu hộ cho một người (ai thu cũng tính). Mẫu mã hoá gắn với người được thu, nằm dưới đồng ý Voice ID của họ;
+bản ghi mẫu luôn được lưu (mã hoá) để người thu nghe lại kiểm tra. Mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`.
+Thu và xoá ghi nhật ký với `scope: "proxy"`, `meetingId: null`.
+
+### `GET /api/users/{userId}/voice-collection`
 
 ```json
 {
-  "canCollect": true,
-  "maxSamples": 5,
-  "people": [
-    { "userId": "…", "fullName": "Nguyễn Văn A", "role": "Member", "consented": true, "sampleCount": 3,
-      "samples": [ { "id": "…", "createdAt": "…", "speechMs": 9100, "collectedByName": "Lê Thư Ký" } ] }
-  ]
+  "userId": "…", "fullName": "Nguyễn Văn A", "consented": true, "canCollect": true,
+  "maxSamples": 50,
+  "samples": [ { "id": "…", "createdAt": "…", "speechMs": 9100, "playable": true,
+                 "meetingId": null, "meetingTitle": null, "collectedByName": "Lê Thư Ký" } ]
 }
 ```
 
-`people`: người trong danh sách thành phần hiện tại (không gồm Khách). `sampleCount`: mọi mẫu thu hộ của người đó, ở mọi
-cuộc họp, để so với giới hạn 5. `samples`: chỉ mẫu thu **ở cuộc họp này**. `canCollect`: cuộc họp đang Đã công bố hoặc
-Đang họp; khi khác (ví dụ đã kết thúc) vẫn xem, nghe, xoá được nhưng không thu thêm.
+`consented`: đồng ý hiện có là theo thông báo 1.4 trở lên. `canCollect`: đã đồng ý và chưa đủ 50 mẫu. (`maxSamplesPerCollector`
+đã bỏ cùng giới hạn 5 mẫu mỗi người thu, ADR-0075.) `samples`: **mọi** mẫu thu hộ của người đó, trong cuộc họp (`meetingId`, `meetingTitle` có giá trị) và
+ngoài cuộc họp, ai thu cũng hiện. Không gồm mẫu người đó tự thu.
 
-### `POST /api/meetings/{meetingId}/voice-collection/{userId}/samples` — `multipart/form-data`, trường `file`
+### `POST /api/users/{userId}/voice-collection/samples` — `multipart/form-data`, trường `file`, `personAgreed`
 
 Kiểm tra tệp và chất lượng như `POST /api/me/voice/samples` (`415 MSG292`, `422 MSG309`, `503 MSG312`). `201 MSG473`,
-`data`: `{ id, createdAt, speechMs, collectedByName }`. Người được thu nhận thông báo `VoiceSampleCollected` (mở
-`/mgmt/my-voice?tab=proxy`). `userId` không phải người trong cuộc họp: `404`. Chưa đồng ý Voice ID theo thông báo 1.3 `409 MSG475`; đủ 5 mẫu
-thu hộ `409 MSG476`; cuộc họp chưa công bố hoặc đã kết thúc `409 MSG477`.
+`data` có dạng một phần tử của `samples` ở trên. Người được thu nhận thông báo `VoiceSampleCollected`. Chưa đồng ý theo
+thông báo 1.4: `409 MSG475`. Thiếu `personAgreed=true`: `400 MSG483`. Đủ 50 mẫu: `409 MSG476`.
 
-### `GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio`
+### `GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio`
 
-Bản ghi mẫu thu ở cuộc họp này, như `GET /api/me/voice/samples/{id}/audio`; mỗi lần nghe ghi `voice.sample_played`. Mẫu
-thu ở cuộc họp khác hoặc mẫu tự thu: `404`.
+Bản ghi một mẫu thu hộ của người này, như `GET /api/me/voice/samples/{id}/audio`; mỗi lần nghe ghi `voice.sample_played`.
+Mẫu người đó tự thu, hoặc mẫu của người khác: `404`.
 
-### `DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}`
+### `DELETE /api/users/{userId}/voice-collection/samples/{sampleId}`
 
-`200 MSG474`. Chỉ mẫu thu ở cuộc họp này; còn lại `404`. Thu lại = xoá rồi thu mẫu mới.
+`200 MSG474`. Xoá được mọi mẫu thu hộ của người này; mẫu tự thu hoặc của người khác: `404`.
 
 ## Gợi ý và gán tên trong bản gỡ băng
 
@@ -182,7 +186,18 @@ họp; người khác nhận `null`. Tên hiển thị của một giọng: `ass
 
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
 và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
-xếp sau ít nhất `VoiceId:SuggestMargin` (0,1). Ngưỡng 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
+xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
+
+> **21/11/2026** ([ADR-0074](../05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)): mọi ngưỡng
+> Voice ID từng bị hạ xuống 0,5 để bớt "Người nói N"; buổi thử cùng ngày cho thấy một tên nhận tới 7 giọng máy, có giọng
+> chỉ hơn người thứ hai 0,02. Nguyên nhân 40 giọng cho 4 người là ngưỡng gom nhóm của máy tách người nói, nay sửa ở worker
+> (0,5 → 0,72). Các ngưỡng ở đây trở lại như đã đo (0,6 / 0,05 / 0,7 / 0,7 / 0,8), riêng tự gán hạ 0,75 → 0,7. Trên hai bản
+> ghi mic phòng của buổi thử, người trong phòng khớp giọng mẫu 0,73–0,88; mọi giọng khác cao nhất 0,66.
+>
+> **22/11/2026** (ADR-0074, bổ sung): tự gán hạ tiếp 0,7 → **0,6**, bằng ngưỡng gợi ý. Bản ghi mic phòng của cuộc họp ngày
+> 22/11 gợi ý đúng cả ba người ở 0,61–0,68, nhưng Thư ký vẫn phải chọn tay từng tên dù ô chọn đã hiện "Khớp giọng nhất".
+
+Ngưỡng cũ 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
 `workers/speech/eval/`). Ở 0,5, 3% thời gian nói bị gợi ý sai người, có cả người chưa đăng ký bị gợi ý
 tên. Ở 0,6, không gợi ý sai lần nào, và 97–98% lời của người đã đăng ký vẫn được gợi ý đúng tên.
 
@@ -206,8 +221,8 @@ máy tách ra: trên server test ngày 03/11/2026, Hải hát hai lượt, bản
 giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đọc, nên ba giọng phụ không được gợi ý ai. Hai người khác
 nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
 
-**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,75) được gán luôn tên
-người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
+**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,6 từ 22/11/2026, bằng
+`SuggestThreshold`, nên **mọi giọng được gợi ý** đều được tự gán) được gán luôn tên người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
 Thư ký gán thì giữ. Máy không gán Khách. Máy chỉ tự gán người có đồng ý từ thông báo 1.2 trở lên (ADR-0048):
@@ -227,8 +242,16 @@ người còn ở bản 1.1 hay 1.0 vẫn chỉ được gợi ý, cho tới khi
 | ≥ 0,75 (máy tự gán) | 20 | 20 |
 
 VIVOS không có lần gợi ý sai nào ở mọi khoảng điểm, nên ngưỡng tự gán lấy theo dữ liệu thật trên server test: người
-lạ 0,645; người thật 0,737–0,938. 0,75 để cách người lạ một khoảng rộng. Ở 0,7, hai giọng bị tách của cùng một người
+lạ 0,645; người thật 0,737–0,938. 0,75 để cách người lạ một khoảng rộng. Ngày 21/11/2026 hạ còn 0,7 (ADR-0074): một trong
+bốn người của phòng *test mic* chỉ khớp 0,73, giọng không phải người trong phòng cao nhất 0,66. Ở 0,7, hai giọng bị tách của cùng một người
 hiện thành hai người nói; Thư ký gán cùng một tên là gộp lại.
+
+Ngày 22/11/2026 hạ tiếp còn 0,6, bằng ngưỡng gợi ý (ADR-0074, bổ sung, PO yêu cầu): cuộc họp thật cùng ngày, bản ghi mic phòng gợi ý
+đúng Lộc 0,61, Hải 0,68, Khánh 0,68 mà không ai được tự gán. Các luật an toàn vẫn giữ, vì chúng nằm ở bước gợi ý: hơn người
+xếp sau 0,05; giọng thứ hai của cùng một người phải giống giọng đầu 0,7 và đạt 0,7 so với giọng mẫu; giọng nhận theo cần giống
+giọng đầu 0,8; chỉ người đồng ý thông báo 1.2 trở lên; không bao giờ là Khách. Đánh đổi: giọng 0,6–0,7 (VIVOS 18/18 đúng người,
+người lạ trên server cao nhất 0,66) giờ hiện sẵn tên thay vì chỉ gợi ý; Thư ký nhận ra tên máy gán qua chú thích "Máy tự gán…"
+ở ô chọn và sửa như thường.
 
 ### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null, "guestId": "…" | null }`
 
@@ -268,8 +291,8 @@ câu mất theo.
 |---|---|---|
 | `EncryptionKey` | rỗng | Base64 của 32 byte ngẫu nhiên. Rỗng (máy dev) thì dẫn xuất bằng HKDF từ `Authentication:SigningKey` với nhãn riêng. Server phải đặt khoá riêng. Đổi khoá thì giọng mẫu cũ không giải mã được — người dùng ghi lại |
 | `SuggestThreshold` | `0.6` | Xem phần *Cách gợi ý* |
-| `SuggestMargin` | `0.1` | |
+| `SuggestMargin` | `0.05` | |
 | `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
 | `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
 | `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
-| `AutoAssignThreshold` | `0.75` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |
+| `AutoAssignThreshold` | `0.6` | Từ điểm này máy tự gán tên, xem *Máy tự gán*. Bằng `SuggestThreshold`: mọi giọng được gợi ý đều được tự gán |

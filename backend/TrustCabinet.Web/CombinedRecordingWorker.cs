@@ -3,7 +3,7 @@ using TrustCabinet.Application.Recordings;
 namespace TrustCabinet.Web;
 
 /// <summary>
-/// ADR-0062 — builds the combined recording of each hybrid meeting once its sources settle after the end, and again
+/// ADR-0062 — builds the combined recording of each hybrid or online meeting (ADR-0069) once its sources settle after the end, and again
 /// when one changes. Every 30 seconds, one meeting at a time, until none is waiting.
 /// </summary>
 public sealed class CombinedRecordingWorker(IServiceScopeFactory scopes, ILogger<CombinedRecordingWorker> logger) : BackgroundService

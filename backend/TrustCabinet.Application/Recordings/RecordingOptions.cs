@@ -30,4 +30,13 @@ public sealed class RecordingOptions
 
     /// <summary>A take no part has reached for this long is saved by the server: the laptop is not coming back.</summary>
     public int IdleTakeHours { get; set; } = 12;
+
+    /// <summary>
+    /// ADR-0069 — the ffmpeg that converts a download to MP3. A bare name is looked up on PATH; the image installs it
+    /// there.
+    /// </summary>
+    public string FfmpegPath { get; set; } = "ffmpeg";
+
+    /// <summary>MP3 bitrate of a download, in kbit/s. Mono speech stays clear at 64: about 29 MB an hour.</summary>
+    public int Mp3Kbps { get; set; } = 64;
 }

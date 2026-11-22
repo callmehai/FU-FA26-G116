@@ -14,7 +14,7 @@ a comment on the Jira ticket. BA then updates the UC Specification, diagrams and
    the commit messages. If none, ask. Read it with the Atlassian tools (`getJiraIssue`; reuse the
    `cloudId` from `getAccessibleAtlassianResources`) together with its existing comments, so you
    do not repeat a note that is already there.
-2. **Find the deviations.** Compare `git diff origin/main...` with the ticket's description and
+2. **Find the deviations.** Compare `git diff origin/app...` with the ticket's description and
    acceptance criteria, and with the UC spec / sequence diagram it links to in `docs/`. A deviation
    is anything the ticket or spec says differently: a field, a status code, a message code, a
    business rule, a screen flow, a removed or added step. Code style is not a deviation.

@@ -11,14 +11,16 @@ import hmac
 import json
 import logging
 import os
+import select
+import socket
 import tempfile
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Protocol
+from typing import Callable, Protocol
 from urllib.parse import parse_qs, urlsplit
 
 from . import pipeline
-from .pipeline import UnreadableAudio
+from .pipeline import Cancelled, UnreadableAudio
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +35,8 @@ class Engine(Protocol):
     model_ids: dict[str, str]
 
     def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
-                        profile: str = "room", context: str | None = None) -> dict: ...
+                        profile: str = "room", context: str | None = None,
+                        cancelled: Callable[[], bool] | None = None) -> dict: ...
 
     def embed_file(self, path: str) -> tuple[bool, dict]: ...
 
@@ -134,7 +137,8 @@ class Handler(BaseHTTPRequestHandler):
                 diarize, speakers, profile = parse_transcribe_query(url.query)
                 context = parse_context(url.query)
                 body_path = self._receive_body()
-                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile, context))
+                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile, context,
+                                                                   self._client_gone))
             else:
                 if url.query:
                     raise Rejected(400, "invalid_parameter", close=True)
@@ -146,6 +150,10 @@ class Handler(BaseHTTPRequestHandler):
                 # The body was never read, so the connection cannot be reused for another request.
                 self.close_connection = True
             self._send(rejection.status, {"error": rejection.error})
+        except Cancelled:
+            # Nobody reads an answer any more: the backend dropped a run a newer version made stale.
+            log.info("caller went away: run stopped")
+            self.close_connection = True
         except UnreadableAudio as error:
             log.info("unreadable audio: %s", error)
             self._send(400, {"error": "unreadable_audio"})
@@ -160,6 +168,14 @@ class Handler(BaseHTTPRequestHandler):
                 except FileNotFoundError:
                     pass
             log.info("%s %s %.2fs", method, url.path, time.monotonic() - started)
+
+    def _client_gone(self) -> bool:
+        """True once the caller closed the connection: readable, yet nothing left to read."""
+        try:
+            readable, _, _ = select.select([self.connection], [], [], 0)
+            return bool(readable) and self.connection.recv(1, socket.MSG_PEEK) == b""
+        except (OSError, ValueError):
+            return True
 
     def _receive_body(self) -> str:
         """Stream the request body into a temporary file and return its path."""

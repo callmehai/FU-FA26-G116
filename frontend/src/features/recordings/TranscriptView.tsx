@@ -10,6 +10,7 @@ import { formatDateTime } from '../../lib/format'
 import type { RecordingTake } from '../../types/recording'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
 import { saveBlob } from '../documents/documentFile'
+import { useMeetingEvents, type MeetingEvent } from '../meetings/useMeetingEvents'
 import { formatDuration } from './format'
 import { LineSpeakerPicker, SpeakerList } from './SpeakerList'
 import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
@@ -24,6 +25,9 @@ import { SpokenWords } from './SpokenWords'
  */
 
 const POLL_MS = 4000
+
+/** A voice named or a line corrected or moved on another screen (team test 21/11/2026): the transcript re-reads. */
+const TRANSCRIPT_EVENTS: readonly MeetingEvent[] = ['transcriptChanged']
 
 const wallClock = new Intl.DateTimeFormat('vi-VN', {
   hour: '2-digit',
@@ -52,6 +56,7 @@ function timeLabel(takes: RecordingTake[] | null | undefined, ms: number) {
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; transcript: Transcript }
 
 export function TranscriptView({
+  meetingId,
   recordingId,
   fileName,
   takes,
@@ -62,6 +67,7 @@ export function TranscriptView({
   onSeek,
   onStatus,
 }: {
+  meetingId: string
   recordingId: string
   /** The recording's file name, to name the saved text after it. */
   fileName: string
@@ -85,6 +91,8 @@ export function TranscriptView({
   // The take (from 1) the Secretary asked to erase, until they confirm.
   const [dropping, setDropping] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
+  // The takes (by index) the reader folded: a meeting of an hour reads as a long list otherwise (team test 21/11/2026).
+  const [folded, setFolded] = useState<ReadonlySet<number>>(() => new Set())
   const generation = useRef(0)
 
   const load = useCallback(async () => {
@@ -106,6 +114,9 @@ export function TranscriptView({
       loads.current++
     }
   }, [load, listedStatus])
+
+  // Re-read in place: the list stays mounted, and keeps where the reader scrolled to.
+  useMeetingEvents(meetingId, () => void load(), TRANSCRIPT_EVENTS)
 
   const status = state.kind === 'loaded' ? state.transcript.status : null
   useEffect(() => {
@@ -289,85 +300,100 @@ export function TranscriptView({
               const tone = who.tone
               // Heard right now: the run's button pauses it.
               const hearing = playing && currentMs >= run[0].startMs && currentMs < run[run.length - 1].endMs
+              const take = marked ? takeAt(marked, run[0].startMs) : 0
+              const startsTake = !!marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== take)
+              const isFolded = !!marked && folded.has(take)
+              // A folded take keeps only its line.
+              if (isFolded && !startsTake) return null
               return (
-                <li key={run[0].id} className="tl-group">
-                  {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
+                <li key={run[0].id} className={isFolded ? 'tl-group is-folded' : 'tl-group'}>
+                  {marked && startsTake && (
                     <TakeLine
                       takes={marked}
-                      index={takeAt(marked, run[0].startMs)}
-                      onDelete={
-                        transcript.canEdit && !running ? () => setDropping(takeAt(marked, run[0].startMs) + 1) : undefined
+                      index={take}
+                      folded={isFolded}
+                      onToggle={() =>
+                        setFolded((was) => {
+                          const next = new Set(was)
+                          if (!next.delete(take)) next.add(take)
+                          return next
+                        })
                       }
+                      onDelete={transcript.canEdit && !running ? () => setDropping(take + 1) : undefined}
                     />
                   )}
-                  <div className="tl-row tl-row-head">
-                    <span className="tl-time">{at(run[0].startMs)}</span>
-                    <span className="tl-rail" aria-hidden="true">
-                      <span className="tl-dot" style={{ background: tone.dot }} />
-                    </span>
-                    <div className="tl-head-row">
-                      {/* As in AI-eCabinet, the name heading a run says who said its first line, and changes that line
-                          only; a whole voice is named from its card above. */}
-                      {transcript.canEdit ? (
-                        <span className="tl-name" style={{ color: tone.ink }}>
-                          <span className="tl-name-pick">
-                            <LineSpeakerPicker
-                              transcript={transcript}
-                              segment={run[0]}
-                              voice={who.voice}
-                              time={at(run[0].startMs)}
-                              onChanged={() => void load()}
-                            />
-                          </span>
+                  {!isFolded && (
+                    <>
+                      <div className="tl-row tl-row-head">
+                        <span className="tl-time">{at(run[0].startMs)}</span>
+                        <span className="tl-rail" aria-hidden="true">
+                          <span className="tl-dot" style={{ background: tone.dot }} />
                         </span>
-                      ) : (
-                        <strong className="tl-name" style={{ color: tone.ink }}>
-                          {who.name}
-                        </strong>
-                      )}
-                      <span className="tl-time-inline">{at(run[0].startMs)}</span>
-                      <button
-                        type="button"
-                        className="tl-play"
-                        onClick={() => (hearing && onPause ? onPause() : onSeek(run[0].startMs))}
-                        aria-label={hearing ? 'Tạm dừng' : `Nghe từ ${at(run[0].startMs)}`}
-                        aria-pressed={hearing}
-                        data-tooltip={hearing ? 'Tạm dừng' : 'Nghe lại'}
-                      >
-                        <Icon name={hearing ? 'pause' : 'play'} size={12} />
-                      </button>
-                  </div>
-                </div>
-                <RunParagraph
-                  run={run}
-                  at={at}
-                  activeId={active}
-                  currentMs={currentMs}
-                  playing={playing}
-                  canEdit={transcript.canEdit}
-                  editing={editing}
-                  onEdit={setEditing}
-                  onDone={(saved) => {
-                    setEditing(null)
-                    if (saved) void load()
-                  }}
-                  onSeek={onSeek}
-                  lineSpeaker={(segment) => (
-                    <LineSpeakerPicker
-                      transcript={transcript}
-                      segment={segment}
-                      voice={speakerOf(segment).voice}
-                      time={at(segment.startMs)}
-                      onChanged={() => void load()}
-                      icon
-                    />
+                        <div className="tl-head-row">
+                          {/* As in AI-eCabinet, the name heading a run says who said its first line, and changes that line
+                              only; a whole voice is named from its card above. */}
+                          {transcript.canEdit ? (
+                            <span className="tl-name" style={{ color: tone.ink }}>
+                              <span className="tl-name-pick">
+                                <LineSpeakerPicker
+                                  transcript={transcript}
+                                  segment={run[0]}
+                                  voice={who.voice}
+                                  time={at(run[0].startMs)}
+                                  onChanged={() => void load()}
+                                />
+                              </span>
+                            </span>
+                          ) : (
+                            <strong className="tl-name" style={{ color: tone.ink }}>
+                              {who.name}
+                            </strong>
+                          )}
+                          <span className="tl-time-inline">{at(run[0].startMs)}</span>
+                          <button
+                            type="button"
+                            className="tl-play"
+                            onClick={() => (hearing && onPause ? onPause() : onSeek(run[0].startMs))}
+                            aria-label={hearing ? 'Tạm dừng' : `Nghe từ ${at(run[0].startMs)}`}
+                            aria-pressed={hearing}
+                            data-tooltip={hearing ? 'Tạm dừng' : 'Nghe lại'}
+                          >
+                            <Icon name={hearing ? 'pause' : 'play'} size={12} />
+                          </button>
+                        </div>
+                      </div>
+                      <RunParagraph
+                        run={run}
+                        at={at}
+                        activeId={active}
+                        currentMs={currentMs}
+                        playing={playing}
+                        canEdit={transcript.canEdit}
+                        editing={editing}
+                        onEdit={setEditing}
+                        onDone={(saved) => {
+                          setEditing(null)
+                          if (saved) void load()
+                        }}
+                        onSeek={onSeek}
+                        lineSpeaker={(segment) => (
+                          <LineSpeakerPicker
+                            transcript={transcript}
+                            segment={segment}
+                            voice={speakerOf(segment).voice}
+                            time={at(segment.startMs)}
+                            onChanged={() => void load()}
+                            icon
+                          />
+                        )}
+                      />
+                    </>
                   )}
-                />
-              </li>
-            )
-          })}
-        </ol>
-      )}
+                </li>
+              )
+            })}
+          </ol>
+        )}
       </div>
     </div>
   )
@@ -388,15 +414,34 @@ function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null, keyO
   return out
 }
 
-/** Where a take of the room mic begins: its number and the clock it ran by. */
-function TakeLine({ takes, index, onDelete }: { takes: RecordingTake[]; index: number; onDelete?: () => void }) {
+/** Where a take of the room mic begins: its number and the clock it ran by; a click folds or opens its lines. */
+function TakeLine({
+  takes,
+  index,
+  folded,
+  onToggle,
+  onDelete,
+}: {
+  takes: RecordingTake[]
+  index: number
+  folded: boolean
+  onToggle: () => void
+  onDelete?: () => void
+}) {
   const take = takes[index]
   const from = Date.parse(take.startedAt)
   return (
     <div className="tl-take">
-      <span role="separator">
+      <button
+        type="button"
+        className="tl-take-toggle"
+        aria-expanded={!folded}
+        onClick={onToggle}
+        data-tooltip={folded ? 'Mở lượt này' : 'Thu gọn lượt này'}
+      >
+        <Icon name={folded ? 'chevronRight' : 'chevronDown'} size={14} />
         Lượt {index + 1} · {wallClock.format(new Date(from))}–{wallClock.format(new Date(from + take.durationMs))}
-      </span>
+      </button>
       {onDelete && (
         <button
           type="button"
@@ -489,6 +534,7 @@ function RunParagraph({
                   <SpokenWords
                     text={segment.text}
                     starts={segment.wordStartsMs}
+                    confidence={segment.wordConfidence}
                     nowMs={active && playing ? currentMs : null}
                   />
                 </span>

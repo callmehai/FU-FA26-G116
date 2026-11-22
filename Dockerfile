@@ -24,6 +24,11 @@ COPY --from=frontend /src/backend/TrustCabinet.Web/wwwroot /app/wwwroot
 
 # 3. Runtime.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
+# ADR-0069: a recording is downloaded as MP3, converted by ffmpeg while it is sent (Recordings:FfmpegPath). Installed
+# before the app is copied, so this layer is cached across releases.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=backend /app ./
 # Recordings are written under the content root (Recordings:StorageRoot). /app belongs to root, so the folder is made

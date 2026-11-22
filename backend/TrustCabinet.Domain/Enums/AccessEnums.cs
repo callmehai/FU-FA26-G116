@@ -12,13 +12,14 @@ public enum Capability
 {
     MeetingCreator,
     MeetingApprover,
-    MinutesEditor,
+    // MinutesEditor was removed by ADR-0075: drafting and editing the minutes belong to the meeting's Secretary (and
+    // approving them to its Chair), decided by meeting role, never by a system capability. The name is not reused.
     AdminUsers,
 
     /// <summary>
-    /// ADR-0060: may record Voice ID samples for the people of a meeting it is the Secretary of, on the room's mic, and
-    /// hear back and delete the ones taken there. Held apart from the Secretary's meeting role because it reaches
-    /// other people's biometric data: an administrator grants it only to Secretaries the organisation trusts with that.
+    /// ADR-0071, ADR-0075: may record any consenting person's Voice ID samples for them, hear back and delete every proxy
+    /// sample. It reaches other people's biometric data, so an administrator grants it sparingly; by default only
+    /// Quản trị viên holds it. A meeting's Secretary has no part in it.
     /// </summary>
     VoiceCollector,
 }

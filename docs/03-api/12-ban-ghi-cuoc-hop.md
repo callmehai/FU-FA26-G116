@@ -28,7 +28,7 @@ Nhận ra **ai** đang nói từ giọng (Voice ID) là chuyện khác: đó là
 |---|---|
 | Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi. Mic phòng hỏi trước lượt đầu của cuộc họp; lượt sau nối vào cùng bản ghi nên không hỏi lại |
 | Nêu mục đích | `consentPurpose` (mặc định *Lập biên bản cuộc họp*) lưu cùng bản ghi |
-| Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào |
+| Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào. Tệp âm thanh không còn dòng nào trỏ tới (xoá tệp lỗi, tải lên bị ngắt, server tắt giữa lúc nối/cắt/trộn) bị job `DataRetentionWorker` xoá sau `Retention:OrphanAudioGraceHours` giờ (mặc định 24), mỗi lần một dòng audit `recording.orphan_files_deleted` ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)) |
 
 Khi xoá, **tệp âm thanh và transcript** bị xoá; dòng `recordings` giữ lại với `Status = Deleted`
 và `DeletedAt`, kèm một dòng nhật ký kiểm toán `recording.erased` (ai xoá, hay do hết hạn). Như vậy
@@ -112,6 +112,11 @@ Theo [ADR-0041](../05-decisions/0041-mic-phong-ghi-tung-luot.md), như AI-eCabin
 Trong khi ghi, trình duyệt gửi tiếng lên từng phần, và giữ phần chưa gửi trong IndexedDB. Tắt mic là lưu lượt: lượt
 được nối vào bản ghi phòng của cuộc họp, rồi cả bản được chuyển chữ lại. Mỗi cuộc họp chỉ một lượt mở.
 
+Lượt mới đến khi lần chuyển chữ của bản cũ còn đang chạy thì lần chạy đó **dừng ngay**, không chạy hết rồi mới bỏ kết
+quả: `TranscriptionService` cứ 5 giây xem bản gỡ băng còn `Processing` không; thấy đã quay về `Pending` (lượt mới,
+xoá lượt, bản ghi bị xoá, chạy lại) thì huỷ request tới worker, worker thấy bên gọi ngắt kết nối và dừng ở bước kế
+tiếp, rồi bản mới nhất được lấy ngay. Trước đây (họp thử 21/11/2026) lần chạy cũ vẫn chiếm worker 7–10 phút.
+
 ### `POST /api/meetings/{meetingId}/recordings/takes` — `{ "consentConfirmed": true, "consentPurpose": "…" }`
 
 Thư ký mở lượt khi cuộc họp `InProgress` và có phòng. `consentConfirmed` chỉ bắt buộc với lượt đầu của cuộc họp
@@ -166,6 +171,14 @@ Không phải Thư ký: `403 MSG295`. Bản ghi không có lượt đó, không 
 Gửi khi lượt được mở, lưu hoặc xoá, khi tệp được lưu hoặc xoá, và khi chuyển chữ xong. Người nhận đọc lại
 `GET …/recordings`.
 
+### Sự kiện hub `speechChanged` với `changeType: "TranscriptChanged"`
+
+Gửi sau khi Thư ký gán tên cho một giọng (`PUT /api/recordings/{recordingId}/speakers/{label}`), sửa chữ một câu
+(`PUT /api/transcript-segments/{segmentId}`) hoặc đổi người nói của một câu (`PUT …/speaker`), khi thay đổi đã lưu.
+Chuyển một câu về đúng giọng nó đang có thì không ghi gì và không gửi. Người nhận đang mở bản gỡ băng đọc lại
+`GET /api/recordings/{recordingId}/transcript`, tại chỗ, không tải lại cả tab (buổi thử 21/11/2026: tên vừa gán không
+hiện trên máy người khác khi chưa tải lại trang). Sự kiện không mang dữ liệu, không nói bản ghi nào.
+
 ### `GET /api/recordings/{recordingId}/playback`
 
 Thẻ `<audio>` không gửi được bearer token, nên FE xin một **link ký sẵn** rồi gán vào `src`:
@@ -183,30 +196,47 @@ Link sống `Recordings:PlaybackUrlMinutes` (mặc định 120 phút), ký HMAC-
 Không cần đăng nhập; trả tệp với `Range` (tua được), `Cache-Control: private, no-store`. Sai chữ ký,
 hết hạn, hoặc bản ghi đã xoá: `404` không body.
 
+Với link tải (`&download=1`) thì trả **MP3** ([ADR-0069](../05-decisions/0069-ban-ghi-tong-hop-hop-truc-tuyen-tai-mp3.md)):
+`Content-Type: audio/mpeg`, `Content-Disposition: attachment` với tên bản ghi đổi đuôi thành `.mp3`. Tệp đang lưu là MP3
+thì gửi nguyên (có `Range`); tệp khác được ffmpeg chuyển ngay khi gửi sang MP3 mono `Recordings:Mp3Kbps` kbit/s, không
+có `Content-Length` hay `Range`. ffmpeg không chạy được hoặc không ra byte nào: `503 MSG482`. Lỗi giữa chừng thì kết nối
+bị cắt (trình duyệt báo tải lỗi).
+
 ### `GET /api/recordings/{recordingId}/download`
 
-Chủ toạ hoặc Thư ký xin link lưu tệp gốc, cùng dạng với `/playback` nhưng link có `&download=1` và
-trả `Content-Disposition: attachment` với tên tệp gốc. Chữ ký của link tải **khác** link nghe (ký thêm
+Chủ toạ hoặc Thư ký xin link lưu bản ghi dạng MP3, cùng dạng với `/playback` nhưng link có `&download=1` và
+trả `Content-Disposition: attachment` với tên `<tên bản ghi>.mp3` (xem `/audio` ở trên). Server không có ffmpeg (hoặc ffmpeg
+thiếu bộ mã hoá MP3) thì từ chối ngay, `503 MSG482`, không ghi nhật ký; tệp đã là MP3 thì không cần ffmpeg. Chữ ký của link tải **khác** link nghe (ký thêm
 `.download`), nên thêm `&download=1` vào link nghe mà mọi người dự đều có chỉ nhận `404`. Ghi nhật ký
-`recording.downloaded` lúc phát link. Danh sách bản ghi có `canDownload` cho từng bản.
+`recording.downloaded` lúc phát link (`details.format = "mp3"`). Danh sách bản ghi có `canDownload` cho từng bản.
 
 ### `DELETE /api/recordings/{recordingId}`
 
 Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
 
-## Bản ghi tổng hợp của họp kết hợp ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5)
+## Bản ghi tổng hợp của họp kết hợp và họp trực tuyến ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5, [ADR-0069](../05-decisions/0069-ban-ghi-tong-hop-hop-truc-tuyen-tai-mp3.md))
 
 Họp kết hợp kết thúc rồi, server trộn bản ghi mic phòng và mọi câu theo micro của người trực tuyến (trừ câu đã loại khỏi
-biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Khoảng lặng dài hơn
+biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Họp trực tuyến cũng vậy,
+chỉ trộn các câu theo micro (không có mic phòng; bản ghi phòng cũ nếu có không được trộn vào). Khoảng lặng dài hơn
 2 giây giữa hai quãng có tiếng rút còn 2 giây; bản dài quá 12 giờ thì không dựng. Tệp nằm trong
 `GET …/recordings` với `source: "Combined"`, tên `ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav`, cùng mục đích, người tạo và thời
-hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi.
+hạn lưu với bản ghi mic phòng (họp trực tuyến: đồng ý là thông báo ghi âm của phòng họp, tính từ giờ bắt đầu; mục đích
+`Lập biên bản cuộc họp`; người tạo là Thư ký, không có thì người tạo cuộc họp); nghe (`/playback`), tải MP3 (`/download`)
+và xoá (`DELETE`) như mọi bản ghi. `retainUntil` là ngày
+sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-347, tính từ lượt đầu), hoặc câu sớm nhất +
+`Recordings:RetentionDays` — bản tổng hợp không sống lâu hơn nguồn ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)).
 
-- Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng, không còn lượt mic phòng
-  đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
+- Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng (họp trực tuyến: ít nhất
+  một câu có tiếng), không còn lượt mic phòng đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
   tối đa 7 ngày).
 - Nguồn đổi về sau thì dựng lại tại chỗ (cùng `id`, tệp mới thay tệp cũ) và gửi `RecordingsChanged`. Thư ký đã xoá thì
   không dựng lại.
+- Tiếng đã xoá không còn trong bản tổng hợp ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): xoá bản ghi mic phòng (Thư ký xoá hay hết hạn)
+  xoá luôn bản tổng hợp trong cùng transaction (audit `recording.erased`, lý do `source_erased`). Xoá một câu hay cắt một
+  lượt ghi trong 8 ngày sau khi họp xong thì bản tổng hợp được trộn lại không có phần đó; quá 8 ngày thì bản tổng hợp bị
+  xoá (lý do `source_removed_after_window`). Bản tổng hợp không còn gì để trộn (họp kết hợp chỉ còn một phía, họp trực tuyến hết câu: mọi câu đã xoá hoặc đã loại)
+  cũng bị xoá.
 - Không có bản gỡ băng: `transcriptStatus` là `"None"`, `POST …/transcribe` trả `409 MSG479`.
 
 ## Cấu hình (`Recordings:*`)
@@ -219,6 +249,8 @@ hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) v
 | `PlaybackUrlMinutes` | `120` | |
 | `RoomPartBytes` | `320000` | Một phần mic phòng: 10 giây PCM 16 kHz |
 | `IdleTakeHours` | `12` | Lượt mic phòng không nhận phần nào lâu hơn thì server tự lưu |
+| `FfmpegPath` | `ffmpeg` (trên PATH) | ffmpeg chuyển bản ghi sang MP3 khi tải (ADR-0069); image cài sẵn |
+| `Mp3Kbps` | `64` | Bitrate MP3 mono khi tải, khoảng 29 MB mỗi giờ |
 
 ## Gỡ băng (SCRUM-31)
 
@@ -233,6 +265,13 @@ trả kết quả không đọc được, database lỗi khi ghi kết quả…)
 thành chữ do lỗi hệ thống. Hãy chạy lại.*, chi tiết ở log, để Thư ký chạy lại được ngay. Chỉ khi app tắt giữa chừng thì
 bản đang `Processing` giữ nguyên và quay về `Pending` ở lần khởi động sau. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
 
+**Câu quá ngắn không ai nhận được thì bỏ** (họp thử 21/11/2026, `ShortLineRules`). Một câu là ngắn khi dưới 10 ký tự,
+hoặc dưới 3 giây mà dưới 20 ký tự (câu nói nhanh mà đủ dài như "Nó có còn phải test là có nền không?" vẫn giữ, PO
+22/11/2026). Câu ngắn bị bỏ khi giọng của nó không khớp giọng mẫu của ai (không có gợi ý tên), hoặc khi cả câu chỉ
+là tiếng đệm ("Ừ.", "À. Ừ.", "Ờm"). Câu dài luôn giữ nguyên. Giọng nào không còn câu nào thì không thành
+"Người nói N", và các nhãn còn lại được đánh số lại theo thứ tự lên tiếng (`SPEAKER_00`, `SPEAKER_01`…), không
+nhảy số.
+
 Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 
 ### `GET /api/recordings/{recordingId}/transcript`
@@ -245,7 +284,7 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,
-      "wordStartsMs": [0, 280, 600, 920, 1200] }
+      "wordStartsMs": [0, 280, 600, 920, 1200], "wordConfidence": [99, 97, 42, 96, 88] }
   ]
 }
 ```
@@ -254,6 +293,17 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
 giờ chia đều thời lượng cho các từ để giả mốc.
+
+Số trong `text` viết bằng chữ số (`2026`, `5,5`, `15%`, `ngày 22 tháng 11`) từ 22/11/2026
+([ADR-0076](../05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)): worker gộp các từ của một con số thành một
+từ, lấy mốc của từ đầu và độ chắc thấp nhất trong các từ gộp, nên `wordStartsMs` và `wordConfidence` vẫn mỗi từ một số.
+Bản gỡ băng cũ giữ chữ như cũ tới khi chuyển chữ lại; câu micro riêng cũng theo cách này.
+
+`wordConfidence`: độ chắc của máy nhận dạng với từng từ trong `text`, theo phần trăm (0–100), mỗi từ một số. Worker
+lấy xác suất của từng token Gipformer trả (`ys_log_probs`), từ nhiều token lấy token kém chắc nhất. FE tô nền vàng
+nhạt (`--word-unsure-bg`) cho từ dưới **40**, để Thư ký biết chỗ cần nghe lại (họp thử 21/11/2026, PO chốt 22/11). Trên
+bản ghi mic phòng của buổi họp thử, mốc 40 đánh dấu 6% số từ; mốc 50 đánh dấu 12%, bắt thêm vài từ sai nhưng cũng nhiều
+từ đúng. `null` theo đúng quy tắc của `wordStartsMs`.
 
 `speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
 thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
@@ -302,8 +352,9 @@ Tên người nói là chủ micro.
   Màn chờ báo trước khi vào phòng rằng cuộc họp được ghi âm và tự xoá sau `retentionDays` ngày (Luật 91/2025,
   Điều 32 khoản 2). Không ai bật micro của người khác được. Người nói rút lại được câu của mình.
 - Backend gửi âm thanh một câu cho worker (`diarize=false&profile=clip`, tối đa 2 câu cùng lúc trên cả server).
-  Câu có chữ thì giữ cả âm thanh vào kho bản ghi để nghe lại (ADR-0039); câu toàn im lặng không tạo dòng nào và
-  không lưu gì. Hồ sơ `clip`
+  Câu có chữ thì giữ cả âm thanh vào kho bản ghi để nghe lại (ADR-0039); câu toàn im lặng, hoặc chỉ toàn tiếng đệm
+  ("Ừ.", "Ờ. Ừm.", họp thử 21/11/2026), không tạo dòng nào và không lưu gì. Câu ngắn có nội dung ("Đồng ý.",
+  "Khó nghe.") vẫn giữ, vì người nói là chủ micro. Hồ sơ `clip`
   chỉ tăng âm tối đa 6 dB (thu cả phòng: 30 dB) và lọc khoảng lặng chặt hơn (VAD 0,5), vì chỗ nhỏ tiếng
   trên micro riêng phần lớn là tiếng người ngồi cạnh lọt vào.
 - **Câu bị lọt tiếng được đánh dấu, không bị ẩn** (như AI-eCabinet, đo ở `workers/speech/eval/bleed.py`).
@@ -352,7 +403,8 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
       "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
       "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] },
-      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false, "wordStartsMs": [40, 200, 360, 560, 760] }
+      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false, "wordStartsMs": [40, 200, 360, 560, 760],
+      "wordConfidence": [98, 99, 35, 90, 97] }
   ]
 }
 ```
@@ -369,6 +421,7 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
 - `wordStartsMs`: mốc bắt đầu của từng từ trong `text`, tính bằng ms từ đầu âm thanh của câu, để FE tô theo từng từ
   khi phát. `null` khi câu lưu trước khi worker trả mốc từ, khi Thư ký đã sửa chữ, và khi người gọi không nhận chữ
   của câu (câu đã bị loại).
+- `wordConfidence`: độ chắc của máy với từng từ trong `text` (0–100), như ở bản gỡ băng; `null` như `wordStartsMs`.
 
 Câu trình duyệt cắt ở chỗ ngắt hơi được chấm câu cùng câu trước của cùng người (kết thúc trong vòng 10 giây,
 chưa bị Thư ký sửa hay bị loại, không quá 60 từ): khi câu sau tới, dấu câu và chữ hoa của câu trước có thể đổi
@@ -387,7 +440,7 @@ Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`
 `clientClipId` do trình duyệt sinh; gửi lại cùng id (mất phản hồi, mạng chập chờn) trả lại câu đã lưu,
 không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
 giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc cuộc họp kết thúc. `200 MSG318` kèm
-`clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
+`clip`, `204` nếu toàn im lặng hoặc chỉ toàn tiếng đệm, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
 `409 MSG320` khi cuộc họp là `InPerson`, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày. Khách: xem mục Khách ở trên.
 
 ### `GET /api/speech-clips/{clipId}/playback`

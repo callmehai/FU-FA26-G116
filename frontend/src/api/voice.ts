@@ -1,4 +1,10 @@
-import type { CollectedSample, VoiceCollection, VoiceMutation, VoiceProfile, VoiceSample } from '../types/voice'
+import type {
+  PersonVoiceCollection,
+  ProxySample,
+  VoiceMutation,
+  VoiceProfile,
+  VoiceSample,
+} from '../types/voice'
 import { api } from './client'
 
 /**
@@ -26,19 +32,24 @@ export const voiceSampleAudio = (sampleId: string) => api.blob(`/api/me/voice/sa
 export const deleteVoiceSample = (sampleId: string) =>
   api.delete<VoiceMutation<VoiceProfile>>(`/api/me/voice/samples/${sampleId}`)
 
-/** The meeting Secretary's view: needs `VoiceCollector` and being this meeting's Secretary, rechecked server-side. */
-export const getVoiceCollection = (meetingId: string) =>
-  api.get<VoiceCollection>(`/api/meetings/${meetingId}/voice-collection`)
+/** ADR-0071 — one person, with no meeting: needs `VoiceCollector`, rechecked server-side (403 without it). */
+export const getPersonVoiceCollection = (userId: string) =>
+  api.get<PersonVoiceCollection>(`/api/users/${userId}/voice-collection`)
 
-export function collectVoiceSample(meetingId: string, userId: string, audio: Blob, fileName: string) {
+/**
+ * `personAgreed`: the collector asked the person, there and then, and they agreed to this take (ADR-0073). The server
+ * refuses a proxy sample without it (400 MSG483); only the dialog's ticked box sets it.
+ */
+export function collectPersonVoiceSample(userId: string, audio: Blob, fileName: string, personAgreed: boolean) {
   const form = new FormData()
   form.append('file', audio, fileName)
-  return api.postForm<VoiceMutation<CollectedSample>>(`/api/meetings/${meetingId}/voice-collection/${userId}/samples`, form)
+  form.append('personAgreed', String(personAgreed))
+  return api.postForm<VoiceMutation<ProxySample>>(`/api/users/${userId}/voice-collection/samples`, form)
 }
 
 /** Every play is audited server-side: the voice is someone else's. */
-export const collectedSampleAudio = (meetingId: string, sampleId: string) =>
-  api.blob(`/api/meetings/${meetingId}/voice-collection/samples/${sampleId}/audio`)
+export const personSampleAudio = (userId: string, sampleId: string) =>
+  api.blob(`/api/users/${userId}/voice-collection/samples/${sampleId}/audio`)
 
-export const deleteCollectedSample = (meetingId: string, sampleId: string) =>
-  api.delete<VoiceMutation<{ id: string }>>(`/api/meetings/${meetingId}/voice-collection/samples/${sampleId}`)
+export const deletePersonSample = (userId: string, sampleId: string) =>
+  api.delete<VoiceMutation<{ id: string }>>(`/api/users/${userId}/voice-collection/samples/${sampleId}`)

@@ -144,6 +144,27 @@ Ghi từ trước SCRUM-16 và cũng hiện trong màn nhật ký (`AuditEventCa
 |---|---|---|---|
 | `call.guest_admitted` | Khách vào phòng họp | Khách / `GuestSession` (SCRUM-59, UC-37 bước 5) | `meetingId`, `invitationId`, `displayName`, `recordingNoticeAcknowledged` (luôn `true`); IP của request ở cột riêng |
 
+Ghi bởi việc dọn dữ liệu định kỳ ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)):
+
+| Mã | Tên trên màn | Người thực hiện / đối tượng | `details` |
+|---|---|---|---|
+| `recording.orphan_files_deleted` | Hệ thống xoá tệp âm thanh không còn bản ghi | Hệ thống / `RecordingStorage`, không có `objectId` | `files`, `bytes`, `graceHours`, `cutoff`; một dòng cho mỗi lần chạy có xoá |
+| `vote.draft_deleted_on_meeting_cancel` | Xoá biểu quyết nháp khi huỷ họp | Hệ thống / `VotingSession` | `meetingId`, `cancelledById` (`null` khi tự huỷ), `reason = "meeting_cancelled"` và nội dung nháp như `vote.draft_deleted_on_meeting_end` |
+| `recording.erased` (đã có) | Xoá âm thanh bản ghi | Người xoá bản ghi nguồn, hoặc hệ thống / `Recording` tổng hợp | `reason` thêm hai giá trị: `source_erased`, `source_removed_after_window` |
+| `notification.purged` | Hệ thống xoá thông báo cũ | Hệ thống / `Notification`, không có `objectId` | `rows`, `readCutoff` (đã đọc, tạo trước mốc này), `cutoff` (mọi thông báo tạo trước mốc này) |
+| `guest.codes_purged` | Hệ thống xoá mã xác minh Khách hết hạn | Hệ thống / `GuestVerificationChallenge`, không có `objectId` | `rows`, `cutoff` (hết hạn trước mốc này) |
+| `email.bodies_cleared` | Hệ thống xoá nội dung email cũ | Hệ thống / `EmailMessage`, không có `objectId` | `rows`, `cutoff` (tạo trước mốc này) |
+| `speech_clip.expired_erased` | Hệ thống xoá câu nói quá hạn lưu | Hệ thống / `SpeechClip`, không có `objectId` | `rows`, `files` (tệp âm thanh), `retentionDays`, `cutoff`; job `RecordingRetentionWorker` (BR-347) |
+| `document.orphan_files_purged` | Hệ thống xoá tệp tài liệu không còn dùng | Hệ thống / `StoredFile`, không có `objectId` | `files`, `bytes`, `cutoff`; job `OrphanFilePurgeWorker` (BR-213), dòng `stored_files` vẫn giữ |
+
+**Mọi job dọn dữ liệu đều để lại dấu vết** (PO 19/11/2026): mỗi lần chạy, mỗi loại dữ liệu **một** dòng tóm tắt, chỉ khi
+lần đó thật sự xoá được gì — lần chạy không xoá gì không ghi, để nhật ký không đầy dòng rỗng mỗi giờ. Người thực hiện là
+Hệ thống (`actor_id = null`), số lượng và mốc thời gian nằm trong `details`. Trên ô lọc, các mã này cùng nhóm
+**Hệ thống dọn dữ liệu**. Các job khác đã có dấu vết riêng: bản ghi hết hạn (`recording.erased`, `reason = "retention"`,
+mỗi bản một dòng), tự huỷ / tự kết thúc cuộc họp (`meeting.auto_cancelled`, `meeting.auto_ended`), lưu lượt ghi bị bỏ
+quên (`recording.take_saved`), xoá bản tổng hợp (`recording.erased`). Job đối soát phòng họp (`CallRoomJanitor`, 30 giây
+một lần) và việc trộn lại bản tổng hợp không xoá dữ liệu nghiệp vụ nên không ghi.
+
 `meeting.<thao tác>` là một trong `meeting.created`, `submitted_for_approval`, `approved`, `rejected`,
 `returned_to_draft`, `published`, `organizer_transferred`, `rescheduled`, `started`, `ended`, `cancelled`,
 `auto_cancelled`, `status_changed`. Dòng này do `TrustCabinetDbContext` tự thêm cho **mỗi** dòng

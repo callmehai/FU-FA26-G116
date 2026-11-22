@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, punctuation, text
+from . import manifest, numbers, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -110,18 +110,21 @@ MIN_REGION_S = 0.5
 # A cluster with less speech than this is not a person but noise, laughter or a cough; its windows
 # join the nearest real speaker. Skipped when the caller states the number of speakers.
 MIN_SPEAKER_S = 2.0
-# Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"): with 3 s
-# windows, 0.5 found the right number of speakers in 17 of 20 synthetic clips (the misses are pairs
-# of near-identical macOS English voices); higher cuts merged real people. SPEECH_CLUSTER_THRESHOLD
+# Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"; ADR-0074). 0.5
+# was tuned on synthetic clips (17 of 20 right) and on real rooms split 4 people into 41 voices (team
+# test 21/11/2026, 15 minutes) and 3 people plus a laptop speaker into 15. On those two recordings 0.72
+# gave 12 and 5 voices, each one person; 0.75 gave 10 and 4; from 0.78 two people of the second room
+# (0.73 alike in that room) became one voice. 0.72 keeps a margin below that. SPEECH_CLUSTER_THRESHOLD
 # overrides it.
-DEFAULT_CLUSTER_THRESHOLD = 0.5
+DEFAULT_CLUSTER_THRESHOLD = 0.72
 # Second pass: two clusters whose whole-voice embeddings (up to SPEAKER_EMBED_MAX_S each) are at
 # least this close are one person the window clustering split. On a real meeting one voice came
 # out as two large clusters at 0.94. Short clusters are unreliable (one person 0.36–0.81, two
-# people up to 0.73), so this merges only when nearly certain: a person split in two is cheaper
-# than two people merged, as the Secretary can name both labels. Skipped when the caller states
-# the number of speakers.
-MERGE_THRESHOLD = 0.85
+# people up to 0.73, and 0.745 on the test server 31/10), so this merges only when nearly certain:
+# a person split in two is cheaper than two people merged, as the Secretary can name both labels.
+# 0.8 (was 0.85, ADR-0074): on the 21/11 rooms one person's halves were 0.75–0.82 alike. Skipped
+# when the caller states the number of speakers.
+MERGE_THRESHOLD = 0.8
 
 # --- Enrolment sample quality gates (POST /v1/embed) ------------------------------------------
 # A voice sample becomes someone's reference voice, so a bad one causes wrong suggestions in
@@ -145,6 +148,14 @@ MIN_CONSISTENCY = 0.40
 
 class UnreadableAudio(Exception):
     """ffmpeg could not decode the upload as audio."""
+
+
+class Cancelled(Exception):
+    """The caller went away (a newer version of the recording is waiting): the run stopped part-way."""
+
+
+def _never() -> bool:
+    return False
 
 
 def decode(path: str | os.PathLike[str]) -> np.ndarray:
@@ -304,6 +315,31 @@ def word_starts(tokens: list[str], timestamps: list[float], words: int) -> list[
     return starts if len(starts) == words else None
 
 
+def word_confidence(tokens: list[str], log_probs: list[float], words: int) -> list[float] | None:
+    """How sure the recogniser was of each word of its text, in per cent (0–100), or None when unknown.
+
+    Gipformer's transducer scores every token it emits (`result.ys_log_probs`, natural log); a word is as sure as its
+    least sure token, so a word with one doubtful syllable reads as doubtful. Should the
+    count not match the words (no scores, an odd token), there are no scores rather than wrong ones.
+    """
+    if not words or len(log_probs) != len(tokens):
+        return None
+    scores: list[float] = []
+    new_word = False
+    for token, log_prob in zip(tokens, log_probs):
+        if token[:1] in WORD_MARKS:
+            new_word = True
+        if not token.lstrip("".join(WORD_MARKS)):
+            continue
+        probability = math.exp(min(0.0, float(log_prob)))
+        if new_word or not scores:
+            scores.append(probability)
+            new_word = False
+        else:
+            scores[-1] = min(scores[-1], probability)
+    return [round(score * 100) for score in scores] if len(scores) == words else None
+
+
 def word_times_ms(start_s: float, end_s: float, starts: list[float] | None) -> list[int] | None:
     """A piece's word starts on the recording's clock, in ms, kept inside the piece and in order."""
     if starts is None:
@@ -329,13 +365,25 @@ def context_words(context: str | None) -> str | None:
     return " ".join(words) if 0 < len(words) <= MAX_CONTEXT_WORDS else None
 
 
-def aligned_words(sentence: str, times: list[int] | None) -> list[int] | None:
-    """The word times of a readable line, only while they still match its words one for one.
+def aligned_words(sentence: str, times: list | None) -> list | None:
+    """The word times (or scores) of a readable line, only while they still match its words one for one.
 
     Punctuation edits words in place and never adds or drops one, so the recogniser's word times
     belong to the words of the punctuated text as well; anything else sends no times at all.
     """
     return times if times is not None and len(times) == len(sentence.split()) else None
+
+
+def line_words(sentence: str, times: list | None, scores: list | None, digits: bool = True
+               ) -> tuple[str, list | None, list | None]:
+    """A readable line as sent: its numbers in digits, and its word times and scores still one per word.
+
+    Punctuation edits words in place, so the recogniser's times and scores are kept while they match the punctuated
+    words. Writing numbers in digits then merges words ("hai mươi ba" → "23"): the merged word starts when its first
+    word starts and is as sure as its least sure word, so the click-to-play and the highlight stay on the right word.
+    """
+    times, scores = aligned_words(sentence, times), aligned_words(sentence, scores)
+    return numbers.normalise_line(sentence, times, scores) if digits else (sentence, times, scores)
 
 
 def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: float = LEVEL_TARGET_DBFS,
@@ -483,6 +531,11 @@ def closest_pair(voices: dict[int, np.ndarray]) -> tuple[float, int, int] | None
 class Engine:
     """The loaded models plus the operations the HTTP server exposes."""
 
+    # Asked between steps of a run (transcribe_file's `cancelled`), so a run nobody waits for stops within a second.
+    _cancelled: Callable[[], bool] = staticmethod(_never)
+    # Numbers written in digits (speech/numbers.py); SPEECH_NUMBERS=0 keeps them in words, to compare with and without.
+    _numbers: bool = True
+
     def __init__(
         self,
         root: Path | None = None,
@@ -546,14 +599,19 @@ class Engine:
             if os.environ.get("SPEECH_PUNCTUATION", "1").lower() not in ("0", "false", "off")
             else None
         )
+        self._numbers = os.environ.get("SPEECH_NUMBERS", "1").lower() not in ("0", "false", "off")
         log.info(
             "models loaded in %.1fs, %d threads, embedding dim %d, cluster threshold %.2f, "
-            "min enrolment consistency %.2f, punctuation %s",
+            "min enrolment consistency %.2f, punctuation %s, numbers in digits %s",
             time.monotonic() - started, threads, self._extractor.dim, self._cluster_threshold,
-            self._min_consistency, "on" if self._punctuator else "off",
+            self._min_consistency, "on" if self._punctuator else "off", "on" if self._numbers else "off",
         )
 
     # --- building blocks (call with the lock held) ---------------------------------------------
+
+    def _check(self) -> None:
+        if self._cancelled():
+            raise Cancelled()
 
     def _speech_segments(self, samples: np.ndarray, config=None) -> list[tuple[int, np.ndarray]]:
         """Voiced stretches as (start sample, samples), padded, each at most MAX_CHUNK_S long."""
@@ -574,11 +632,15 @@ class Engine:
         drain()
         return [(start, samples[start:end]) for start, end in pad_regions(found, samples.size)]
 
-    def _transcribe_pieces(self, pieces: list[np.ndarray]) -> tuple[list[str], list[list[float] | None]]:
-        """The raw text of each piece, and when each of its words begins (seconds into the piece)."""
+    def _transcribe_pieces(self, pieces: list[np.ndarray]
+                           ) -> tuple[list[str], list[list[float] | None], list[list[float] | None]]:
+        """The raw text of each piece, when each of its words begins (seconds into the piece), and how sure the
+        recogniser was of each word."""
         texts: list[str] = []
         timings: list[list[float] | None] = []
+        sureness: list[list[float] | None] = []
         for first in range(0, len(pieces), 8):
+            self._check()
             streams = []
             for piece in pieces[first : first + 8]:
                 stream = self._recognizer.create_stream()
@@ -589,7 +651,9 @@ class Engine:
                 result = stream.result
                 texts.append(result.text)
                 timings.append(word_starts(list(result.tokens), list(result.timestamps), len(result.text.split())))
-        return texts, timings
+                sureness.append(word_confidence(list(result.tokens), list(getattr(result, "ys_log_probs", []) or []),
+                                                len(result.text.split())))
+        return texts, timings, sureness
 
     def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str],
                   context: str | None = None) -> tuple[list[str], str | None]:
@@ -605,6 +669,7 @@ class Engine:
         before = context_words(context)
         restored_context = None
         for number, indices in enumerate(passages(pieces, raws)):
+            self._check()
             lines = [" ".join(raws[i].split()).lower() for i in indices]
             ahead = number == 0 and before is not None
             if ahead:
@@ -654,6 +719,7 @@ class Engine:
             parts[label].append(self._slice(regions, start, end))
         voices = {label: self._voice(audio) for label, audio in parts.items()}
         while (pair := closest_pair(voices)) is not None and pair[0] >= MERGE_THRESHOLD:
+            self._check()
             _, keep, drop = pair
             parts[keep].extend(parts.pop(drop))
             del voices[drop]
@@ -681,7 +747,7 @@ class Engine:
             offset, audio = by_group[group]
             return audio[start - offset : end - offset]
 
-        vectors = np.stack([self._embed(audio_of(*span)) for span in spans])
+        vectors = np.stack([self._checked(self._embed, audio_of(*span)) for span in spans])
         clustering = self._onnx.FastClustering(
             self._onnx.FastClusteringConfig(
                 num_clusters=min(speakers, len(spans)) if speakers else -1,
@@ -701,6 +767,10 @@ class Engine:
         turns = [turn for turn in sorted(turns) if turn[1] - turn[0] >= MIN_TURN_S * SAMPLE_RATE]
         return self._merge_same_voices(regions, turns) if turns and not speakers else turns
 
+    def _checked(self, function, *args):
+        self._check()
+        return function(*args)
+
     @staticmethod
     def _slice(regions: list[tuple[int, np.ndarray]], start: int, end: int) -> np.ndarray:
         for offset, audio in regions:
@@ -711,11 +781,23 @@ class Engine:
     # --- operations ------------------------------------------------------------------------------
 
     def transcribe_file(self, path: str | os.PathLike[str], diarize: bool = True,
-                        speakers: int | None = None, profile: str = "room", context: str | None = None) -> dict:
+                        speakers: int | None = None, profile: str = "room", context: str | None = None,
+                        cancelled: Callable[[], bool] | None = None) -> dict:
+        """`cancelled` is asked between steps; once it says yes the run raises Cancelled instead of going on."""
+        if cancelled is not None and cancelled():
+            raise Cancelled()
         samples = decode(path)
         with self._lock:
             started = time.monotonic()
-            result = self._transcribe(samples, diarize, speakers, profile, context)
+            self._cancelled = cancelled or _never
+            try:
+                self._check()
+                result = self._transcribe(samples, diarize, speakers, profile, context)
+            except Cancelled:
+                log.info("run stopped after %.1fs: the caller went away", time.monotonic() - started)
+                raise
+            finally:
+                self._cancelled = _never
             elapsed = time.monotonic() - started
         audio_s = samples.size / SAMPLE_RATE
         log.info(
@@ -768,23 +850,26 @@ class Engine:
                     for _, _, label, part in pieces:
                         turns_by_label[label].append(part)
 
-        raws, timings = self._transcribe_pieces([piece[3] for piece in pieces])
+        raws, timings, sureness = self._transcribe_pieces([piece[3] for piece in pieces])
         texts, restored_context = self._readable(pieces, raws, context)
         segments = []
-        for (start, end, label, part), sentence, loudness, timing in zip(pieces, texts, levels, timings):
+        for (start, end, label, part), sentence, loudness, timing, sure in zip(pieces, texts, levels, timings, sureness):
             if sentence:
+                sentence, times, scores = line_words(sentence, word_times_ms(start, end, timing), sure, self._numbers)
                 segments.append({
                     "startMs": round(start * 1000),
                     "endMs": round(end * 1000),
                     "speaker": label,
                     "text": sentence,
                     "levelDbfs": None if loudness is None else round(loudness, 1),
-                    "wordStartsMs": aligned_words(sentence, word_times_ms(start, end, timing)),
+                    "wordStartsMs": times,
+                    "wordConfidence": scores,
                 })
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 
         voices = []
         for label in sorted(turns_by_label):
+            self._check()
             turns = turns_by_label[label]
             voices.append({
                 "label": label,

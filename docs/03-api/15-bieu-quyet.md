@@ -235,6 +235,12 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
   `endedById` (Chủ toạ kết thúc họp), `title`, `description`, `isAnonymous`, `eligibleRoles`, `options`,
   `meetingDocumentIds`, `createdById`, `createdAt`. Vote Open và Closed không đổi (BR-189). Kết thúc lỗi thì nháp còn
   nguyên và không có dòng nhật ký nào. Sau commit, mỗi nháp phát một `voteChanged` `DraftDeleted` cho Chair/Secretary.
+- **Nháp bị xoá khi cuộc họp bị huỷ** ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): cuộc họp đã huỷ không bao giờ bắt đầu nên nháp cũng
+  không mở được. Cùng transaction với `Cancel` của người tổ chức và với tự huỷ (BR-301), hệ thống xoá mọi Vote `Draft` như
+  khi kết thúc, mỗi nháp một dòng audit `action = vote.draft_deleted_on_meeting_cancel`, `details` như trên nhưng có
+  `cancelledById` (người huỷ; `null` khi hệ thống tự huỷ) thay cho `endedById`, `reason = "meeting_cancelled"`. Không phát
+  `voteChanged`: trang cuộc họp nhận `MeetingChanged` và đọc lại. Job `DataRetentionWorker` xoá thêm nháp còn sót trong cuộc
+  họp đã huỷ từ trước, cùng audit đó.
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
   (PO 30/10/2026, cùng luật `GuestAccessRules.MeetingOpen` với mọi đường đọc của Khách). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.

@@ -75,6 +75,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
                 services.Remove(combined);
             }
 
+            // And the retention job (ADR-0067): tests call each rule themselves.
+            var dataRetention = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(DataRetentionWorker));
+            if (dataRetention is not null)
+            {
+                services.Remove(dataRetention);
+            }
+
             // And the overdue meeting sweep, which would open a database connection too.
             var overdue = services.SingleOrDefault(descriptor =>
                 descriptor.ServiceType == typeof(IHostedService)

@@ -11,7 +11,7 @@ step and report what you actually ran. Never commit, push or open the PR without
 for that step.
 
 ## 1. Branch
-- Never commit to `main`. If on `main`, create a branch first, named after the ticket
+- Never commit to `app`. If on `app`, create a branch first, named after the ticket
   (`feat/scrum-107-upload-documents-r2`, `fix/...`, `docs/...`).
 - `git status`: list untracked files and ask before staging anything you did not write
   (stray `README-*.txt`, `TestResults/`, local notes).
@@ -20,7 +20,7 @@ for that step.
 ```bash
 dotnet build TrustCabinet.sln -warnaserror
 dotnet test TrustCabinet.sln
-cd frontend && npm run lint && npm run build
+cd frontend && npm run lint && npm test && npm run build
 ```
 - `-warnaserror` is only in CI; a plain local build passes with warnings that fail the PR.
 - Backend tests need the PostgreSQL and Redis from `docker compose up -d`.
@@ -29,7 +29,7 @@ cd frontend && npm run lint && npm run build
 - If a check fails, fix the branch. Do not skip, disable or `--no-verify`.
 
 ## 3. Same-commit docs (from AGENTS.md)
-Check the diff (`git diff origin/main...`) against this table:
+Check the diff (`git diff origin/app...`) against this table:
 
 | The diff touches | Must also change |
 |---|---|

@@ -14,7 +14,7 @@ public sealed class FakeRecordingRepository : IRecordingRepository
     public List<Recording> Recordings { get; } = [];
     public List<Guid> Locked { get; } = [];
     public List<Guid> TranscriptsDeleted { get; } = [];
-    public List<Guid> CombinableMeetings { get; } = [];
+    public List<CombinableMeeting> CombinableMeetings { get; } = [];
 
     public Task<IReadOnlyList<Recording>> ListAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId)
@@ -48,8 +48,8 @@ public sealed class FakeRecordingRepository : IRecordingRepository
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<Guid>>(CombinableMeetings);
+    public Task<IReadOnlyList<CombinableMeeting>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<CombinableMeeting>>(CombinableMeetings);
 
     public Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId).ToArray());
@@ -200,6 +200,8 @@ public sealed class FakeRecordingStorage(FakeUnitOfWork? unitOfWork = null) : IR
         CommitsAtDelete.Add(unitOfWork?.Commits ?? 0);
     }
 
+    public IEnumerable<StoredAudioFile> ListWrittenBefore(DateTimeOffset cutoff) => [];
+
     public Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct) => throw new NotSupportedException();
     public Task<string> CutAsync(string source, long from, long length, CancellationToken ct) => throw new NotSupportedException();
 }
@@ -237,12 +239,31 @@ public sealed class FakeSpeechEngine : ISpeechEngine
     /// <summary>The previous sentence each call was given to read ahead, in order.</summary>
     public List<string?> Contexts { get; } = [];
 
-    public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
+    /// <summary>When set, a call waits for its cancellation instead of answering, after completing this: a long run.</summary>
+    public TaskCompletionSource? Hold { get; set; }
+
+    /// <summary>Whether a held call ended by being cancelled.</summary>
+    public bool Cancelled { get; private set; }
+
+    public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
         string? context = null)
     {
         Contexts.Add(context);
-        return Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
-            : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
+        if (Hold is { } hold)
+        {
+            hold.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                Cancelled = true;
+                throw;
+            }
+        }
+        return await (Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
+            : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], [])));
     }
 }
 
@@ -287,6 +308,9 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
 
     public Task ReloadAsync(Transcript transcript, CancellationToken ct) => Task.CompletedTask;
 
+    public Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct)
+        => Task.FromResult(Transcripts.Any(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing));
+
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
     {
         Transcripts.Single(t => t.Id == transcriptId).Segments.Clear();
@@ -311,4 +335,33 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
 
     public Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<TranscriptPerson>>(Guests);
+}
+
+/// <summary>The combined recording as the services that remove a source see it: each call noted, nothing to erase.</summary>
+public sealed class FakeCombinedRecordings : ICombinedRecordingService
+{
+    public List<(Guid MeetingId, bool Rebuild)> Removed { get; } = [];
+
+    public Task<bool> BuildNextAsync(CancellationToken ct = default) => Task.FromResult(false);
+
+    public Task<string?> SourceRemovedAsync(Guid meetingId, bool rebuild, Guid? actorId, CancellationToken ct = default)
+    {
+        Removed.Add((meetingId, rebuild));
+        return Task.FromResult<string?>(null);
+    }
+}
+
+/// <summary>ffmpeg as the services see it (ADR-0069): there or not; converting is the Web tests' and the real one's.</summary>
+public sealed class FakeAudioTranscoder : IAudioTranscoder
+{
+    public bool Available { get; set; } = true;
+    public int Checks { get; private set; }
+
+    public Task<bool> IsAvailableAsync(CancellationToken ct)
+    {
+        Checks++;
+        return Task.FromResult(Available);
+    }
+
+    public Task<Stream> OpenMp3Async(Stream source, CancellationToken ct) => Task.FromResult(source);
 }

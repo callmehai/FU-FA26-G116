@@ -26,6 +26,7 @@ public static class AuditEventCatalog
     private const string Settings = "Cấu hình";
     private const string CalendarSharing = "Chia sẻ lịch";
     private const string Reports = "Báo cáo";
+    private const string Cleanup = "Hệ thống dọn dữ liệu";
 
     public static IReadOnlyList<AuditEventType> All { get; } =
     [
@@ -75,6 +76,7 @@ public static class AuditEventCatalog
         new(AuditActions.PersonalLibraryRead, "Quản trị đọc kho tài liệu cá nhân", Documents),
 
         new(AuditActions.VoteDraftDeletedOnMeetingEnd, "Xoá biểu quyết nháp khi kết thúc họp", Votes),
+        new(AuditActions.VoteDraftDeletedOnMeetingCancel, "Xoá biểu quyết nháp khi huỷ họp", Votes),
 
         new(AuditActions.MinutesIssued, "Ban hành biên bản", Minutes),
 
@@ -119,6 +121,14 @@ public static class AuditEventCatalog
         new(AuditActions.CalendarShareClosedAfterEndDate, "Đóng chia sẻ lịch đã quá hạn khi có chia sẻ mới", CalendarSharing),
         // SCRUM-38 (BR-438): only the export is recorded, not viewing the report.
         new(AuditActions.ReportExported, "Xuất báo cáo cuộc họp", Reports),
+
+        // PO 19/11/2026: one row per clean-up run that removed something, so the log shows the system clears up itself.
+        new(AuditActions.RecordingOrphanFilesDeleted, "Hệ thống xoá tệp âm thanh không còn bản ghi", Cleanup),
+        new(AuditActions.SpeechClipsExpired, "Hệ thống xoá câu nói quá hạn lưu", Cleanup),
+        new(AuditActions.DocumentOrphanFilesPurged, "Hệ thống xoá tệp tài liệu không còn dùng", Cleanup),
+        new(AuditActions.NotificationsPurged, "Hệ thống xoá thông báo cũ", Cleanup),
+        new(AuditActions.GuestCodesPurged, "Hệ thống xoá mã xác minh Khách hết hạn", Cleanup),
+        new(AuditActions.EmailBodiesCleared, "Hệ thống xoá nội dung email cũ", Cleanup),
     ];
 
     private static readonly Dictionary<string, AuditEventType> ByCode = All.ToDictionary(e => e.Code, StringComparer.Ordinal);

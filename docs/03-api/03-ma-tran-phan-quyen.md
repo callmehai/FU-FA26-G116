@@ -69,7 +69,7 @@ mỗi nhóm chỉ có một tiêu đề trên lưới.
 Hai điểm FE cần lưu ý:
 
 - **Mọi vai trò đều xuất hiện**, kể cả vai trò không có quyền nào (`Member`). Dòng rỗng khác với
-  dòng thiếu. Thứ tự cố định: bốn vai trò mặc định (`Chair`, `Secretary`, `Member`, `Admin`) rồi vai
+  dòng thiếu. Thứ tự cố định: ba vai trò mặc định (`Member`, `Approver`, `Admin`, [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md)) rồi vai
   trò tự tạo theo thời gian tạo — cùng thứ tự với `GET /api/roles`.
 - **Vai trò định danh bằng `id` (Guid)** từ `SCRUM-63` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)).
   Tên hiển thị lấy từ `name`, không còn bảng nhãn ở FE.
@@ -79,7 +79,7 @@ Hai điểm FE cần lưu ý:
 ### `PUT /api/roles/capabilities`
 
 ```json
-{ "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22", "capabilities": ["MeetingCreator", "MinutesEditor"] }
+{ "roleId": "01a0ce78-7202-7945-be13-d2022cf25203", "capabilities": ["MeetingCreator", "MeetingApprover"] }
 ```
 
 **`capabilities` là trạng thái cuối cùng của vai trò, không phải phần thay đổi.** Gửi đủ mọi quyền

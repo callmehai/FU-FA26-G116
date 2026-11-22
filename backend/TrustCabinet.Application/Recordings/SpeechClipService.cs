@@ -35,7 +35,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     ISpeechEngine engine,
     SpeechClipGate gate, ISpeechChangePublisher publisher, IAuditService audit, TimeProvider clock,
     IOptions<RecordingOptions> options, IRecordingStorage storage, ISpeechClipAudioSigner signer,
-    ILogger<SpeechClipService> logger) : ISpeechClipService
+    ICombinedRecordingService combined, ILogger<SpeechClipService> logger) : ISpeechClipService
 {
     public async Task<SpeechClipOutcome> ListAsync(Guid meetingId, Guid actorId, DateTimeOffset? since, CancellationToken ct = default)
     {
@@ -145,8 +145,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         var heard = await TranscribeAsync(upload, before?.Text, ct);
         if (heard is not { } transcribed) return new(SpeechClipFailure.EngineUnavailable);
         var (text, segments, beforeAgain) = transcribed;
-        // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
-        if (text.Length == 0) return new();
+        // Silence, a cough, a door, a lone "Ừ.": nothing worth a line (team test 21/11/2026). The browser drops it;
+        // nothing is stored.
+        if (text.Length == 0 || !ShortLineRules.KeepsClip(text)) return new();
 
         var audioPath = await StoreAudioAsync(upload, ct);
         var kept = false;
@@ -233,7 +234,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     {
         try
         {
-            string? audioPath = null;
+            string? audioPath = null, mixed = null;
             var outcome = await ChangeClipAsync(clipId, actorId, async (clip, meeting, now, token) =>
             {
                 if (clip.SpeakerId != actorId && !RecordingRules.IsSecretary(meeting, actorId))
@@ -242,10 +243,16 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                     new { clip.MeetingId, clip.SpeakerId, clip.GuestInvitationId, byOwner = clip.SpeakerId == actorId }, token);
                 clips.Remove(clip);
                 audioPath = clip.AudioPath;
+                // The sentence is in the meeting's combined recording too: mixed again without it, or erased (ADR-0067).
+                if (clip.AudioPath is not null) mixed = await combined.SourceRemovedAsync(clip.MeetingId, rebuild: true, actorId, token);
                 return new();
             }, "ClipDeleted", ct);
             // After the commit: a failed delete keeps the row, and with it the way to the file.
-            if (outcome.Failure == SpeechClipFailure.None) DeleteAudio(audioPath);
+            if (outcome.Failure == SpeechClipFailure.None)
+            {
+                DeleteAudio(audioPath);
+                DeleteAudio(mixed);
+            }
             return outcome;
         }
         catch (PersistenceException ex)
@@ -311,7 +318,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                 var excluded = r.ExcludedAt is not null;
                 return new SpeechClipView(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded ? "" : r.Text,
                     r.UpdatedAt, r.EditedAt, null, true, excluded, HasAudio: r.HasAudio && !excluded,
-                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true, WordStartsMs: excluded ? null : Words(r));
+                    Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true, WordStartsMs: excluded ? null : Words(r),
+                    WordConfidence: excluded ? null : Scores(r));
             }).ToList();
             var capturing = SpeechClipRules.AcceptsGuest(meeting) && await ReadAsync(token => GuestNoticeConfirmedAsync(guest, token), ct);
             return new(Data: new SpeechClipList(meetingId, capturing, false, now, items, RetentionDays: options.Value.RetentionDays));
@@ -354,7 +362,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
     {
         try
         {
-            string? audioPath = null;
+            string? audioPath = null, mixed = null;
             var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 if (!await GuestAdmittedAsync(guest, guest.MeetingId, token)) return new SpeechClipOutcome(SpeechClipFailure.NotFound);
@@ -364,12 +372,14 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
                 await audit.RecordAsync(AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, clip.Id, actorId: null,
                     new { clip.MeetingId, clip.GuestInvitationId, guestSessionId = guest.SessionId, byOwner = true }, token);
                 clips.Remove(clip);
+                if (clip.AudioPath is not null) mixed = await combined.SourceRemovedAsync(clip.MeetingId, rebuild: true, null, token);
                 await unitOfWork.SaveChangesAsync(token);
                 audioPath = clip.AudioPath;
                 return new();
             }, TransactionMode.ReadCommitted, ct);
             if (outcome.Failure != SpeechClipFailure.None) return outcome;
             DeleteAudio(audioPath);
+            DeleteAudio(mixed);
             await PublishAsync(guest.MeetingId, "ClipDeleted", ct);
             return outcome;
         }
@@ -419,6 +429,10 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             return (audio, await clips.DeleteCreatedBeforeAsync(cutoff, token));
         }, TransactionMode.None, ct);
         foreach (var file in files) DeleteAudio(file);
+        // PO 19/11/2026: one row per run that removed something, with no actor — the retention period did it.
+        if (erased > 0)
+            await audit.RecordAsync(AuditActions.SpeechClipsExpired, AuditActions.SpeechClipObjectType, null, null,
+                new { rows = erased, files = files.Count, retentionDays = options.Value.RetentionDays, cutoff }, ct);
         return erased;
     }
 
@@ -531,7 +545,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             var spoken = result.Segments.Select(s => (Segment: s, Text: s.Text.Trim())).Where(s => s.Text.Length > 0).ToList();
             return (string.Join(' ', spoken.Select(s => s.Text)), [.. spoken.Select(s => new SpeechClipSegment(
                 s.Segment.StartMs, s.Segment.EndMs, s.Text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length,
-                s.Segment.LevelDbfs, WordTimings.Of(s.Text, s.Segment.WordStartsMs)))], context is null ? null : result.Context?.Trim());
+                s.Segment.LevelDbfs, WordTimings.Of(s.Text, s.Segment.WordStartsMs),
+                WordScores.Of(s.Text, s.Segment.WordConfidence)))], context is null ? null : result.Context?.Trim());
         }
         catch (SpeechEngineException ex)
         {
@@ -589,7 +604,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         return new SpeechClipView(row.Id, row.SpeakerId, row.SpeakerName, row.StartedAt, row.DurationMs,
             excluded ? "" : row.Text, row.UpdatedAt, row.EditedAt, row.EditedByName, true, excluded,
             HasAudio: row.HasAudio && !excluded, Peaks: excluded ? null : row.Peaks, SpeakerIsGuest: row.Guest,
-            WordStartsMs: excluded ? null : Words(row));
+            WordStartsMs: excluded ? null : Words(row), WordConfidence: excluded ? null : Scores(row));
     }
 
     /// <summary>Who sends a sentence: a member by their user id, or a guest by their invitation (SCRUM-129).</summary>
@@ -644,10 +659,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
             r.ExclusionReason?.ToString(), officer ? r.ExcludedByName : null,
             mark is null || excluded ? null : Leak(r, mark, byId),
             r.HasAudio && (!excluded || officer), excluded && !officer ? null : r.Peaks, r.Guest,
-            excluded && !officer ? null : Words(r));
+            excluded && !officer ? null : Words(r), excluded && !officer ? null : Scores(r));
     }
 
     private static IReadOnlyList<long>? Words(ClipRow r) => WordTimings.ForClip(r.Text, r.Segments, r.EditedAt is not null);
+
+    private static IReadOnlyList<int>? Scores(ClipRow r) => WordScores.ForClip(r.Text, r.Segments, r.EditedAt is not null);
 
     private static SpeechClipLeak? Leak(ClipRow r, FoldMark mark, Dictionary<Guid, ClipRow> byId)
     {

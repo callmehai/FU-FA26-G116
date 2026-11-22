@@ -14,6 +14,7 @@ public static class RecordingServiceCollectionExtensions
         services.AddOptions<RecordingOptions>().Bind(configuration.GetSection(RecordingOptions.SectionName))
             .PostConfigure(o => o.StorageRoot = Path.GetFullPath(o.StorageRoot, contentRoot));
         services.AddSingleton<IRecordingStorage, LocalRecordingStorage>();
+        services.AddSingleton<IAudioTranscoder, FfmpegAudioTranscoder>();
         services.AddSingleton<IRecordingPlaybackSigner>(provider => new RecordingPlaybackSigner(
             provider.GetRequiredService<IOptions<RecordingOptions>>(),
             Encoding.UTF8.GetBytes(configuration["Authentication:SigningKey"] ?? "")));

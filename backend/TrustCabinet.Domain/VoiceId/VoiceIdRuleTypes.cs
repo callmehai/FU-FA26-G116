@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Entities;
+
 namespace TrustCabinet.Domain.VoiceId;
 
 public static class VoiceIdRules
@@ -8,9 +10,13 @@ public static class VoiceIdRules
     /// 1.1 or later; a person who agreed to 1.0 renews to have it kept. 1.2 (ADR-0048): the machine fills in the name
     /// on a sure match (ADR-0045), only for a person whose consent is to 1.2 or later; for the others it still only
     /// suggests. 1.3 (ADR-0060): the same consent lets the Secretary of a meeting the person attends record their samples
-    /// on the room's mic (ADR-0060); a person who agreed to an earlier notice renews before a Secretary can.
+    /// on the room's mic (ADR-0060); a person who agreed to an earlier notice renews before a Secretary can. 1.4
+    /// (ADR-0071): anyone an administrator gave "Thu giọng mẫu hộ" may record them at any time, with no meeting; a person
+    /// who agreed to 1.3 is still recorded in their meetings, and renews before anyone can outside them. 1.5 (ADR-0075):
+    /// a meeting's Secretary no longer records anyone; only a holder of "Thu giọng mẫu hộ" does, asking the person before
+    /// each take (ADR-0073). Narrower than 1.4, so a consent to 1.4 still allows proxy samples (<see cref="ProxyNoticeVersion"/>).
     /// </summary>
-    public const string NoticeVersion = "1.3";
+    public const string NoticeVersion = "1.5";
 
     /// <summary>The first notice under which a sample's recording is kept.</summary>
     public const string AudioNoticeVersion = "1.1";
@@ -18,16 +24,35 @@ public static class VoiceIdRules
     /// <summary>The first notice under which the machine names a sure match by itself.</summary>
     public const string AutoAssignNoticeVersion = "1.2";
 
-    /// <summary>The first notice under which a meeting's Secretary may record the person's samples (ADR-0060).</summary>
+    /// <summary>The first notice that named a meeting's Secretary recording the person's samples (ADR-0060). History only:
+    /// since 2026-11-22 no proxy sample is taken under it, see <see cref="ProxyNoticeVersion"/>.</summary>
     public const string CollectionNoticeVersion = "1.3";
 
-    public static bool AllowsCollection(string noticeVersion) => string.CompareOrdinal(noticeVersion, CollectionNoticeVersion) >= 0;
+    /// <summary>
+    /// The first notice under which anyone may record the person's samples for them (ADR-0071), in a meeting or not. One
+    /// rule for every proxy sample (2026-11-22, Lộc's report of 21/11): before it a person who agreed to 1.3 was refused
+    /// on the users screen ("has not agreed to the new terms") yet recorded from the meeting screen, which read as a way
+    /// round the consent step. They renew once, on their own "Giọng nói của tôi" page, like every notice bump before.
+    /// </summary>
+    public const string ProxyNoticeVersion = "1.4";
+
+    public static bool AllowsProxyCollection(string noticeVersion)
+        => string.CompareOrdinal(noticeVersion, ProxyNoticeVersion) >= 0;
 
     public const string Purpose =
         "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
-        + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, hoặc do Thư ký cuộc họp tôi dự thu bằng micro phòng họp.";
+        + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, hoặc do người được quản trị viên giao quyền \"Thu giọng mẫu "
+        + "hộ\" thu bất kỳ lúc nào sau khi hỏi ý tôi.";
 
     public const int MaxSamples = 5;
+    /// <summary>
+    /// Proxy samples that may be kept for one person (PO 2026-11-21). ADR-0075 dropped the per-collector share of 5: it
+    /// spread the samples over a meeting's Secretaries, and Secretaries no longer collect.
+    /// </summary>
+    public const int MaxProxySamples = 50;
+
+    /// <summary>True when no more proxy samples may be kept for the person.</summary>
+    public static bool ProxyFull(IReadOnlyCollection<VoiceSample> proxySamples) => proxySamples.Count >= MaxProxySamples;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
 
     public static string RejectionMessage(string reason) => reason switch

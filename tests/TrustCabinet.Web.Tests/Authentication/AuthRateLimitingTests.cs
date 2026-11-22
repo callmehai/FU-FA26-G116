@@ -11,6 +11,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -38,7 +39,7 @@ public class AuthRateLimitingTests
                 FullName = "Nguyễn Thư Ký",
                 Email = Email,
                 PasswordHash = new FakePasswordHasher().Hash(Password),
-                RoleId = BuiltInRoles.Secretary,
+                RoleId = TestRoles.Secretary,
                 IsActive = true,
             };
             builder.ConfigureServices(services =>

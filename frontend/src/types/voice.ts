@@ -24,7 +24,7 @@ export interface VoiceProfile {
   purpose: string
   /** Who controls the voice data; consent is valid only when the person knows (Luật 91/2025, Điều 9.2.b). */
   controller: string
-  /** ADR-0060: the second set, recorded for the person by a meeting's Secretary on the room's mic. */
+  /** ADR-0060, ADR-0071: the second set, recorded for the person by a holder of "Thu giọng mẫu hộ". */
   proxy: ProxyVoiceProfile
 }
 
@@ -37,36 +37,23 @@ export interface ProxyVoiceProfile {
 }
 
 export interface ProxySample extends VoiceSample {
-  meetingId: string
-  meetingTitle: string
+  /** Null for a sample taken outside any meeting by a holder of "Thu giọng mẫu hộ" (ADR-0071). */
+  meetingId: string | null
+  meetingTitle: string | null
   collectedByName: string
 }
 
-/** GET /api/meetings/{id}/voice-collection — what the meeting's Secretary sees (ADR-0060). */
-export interface VoiceCollection {
-  /** Published or InProgress: samples can be added now, not only heard back and deleted. */
-  canCollect: boolean
-  maxSamples: number
-  people: VoiceCollectionPerson[]
-}
-
-export interface VoiceCollectionPerson {
+/** GET /api/users/{userId}/voice-collection — one person, as a holder of "Thu giọng mẫu hộ" sees them (ADR-0071). */
+export interface PersonVoiceCollection {
   userId: string
   fullName: string
-  role: 'Chair' | 'Secretary' | 'Member'
-  /** The person let Secretaries record for them; nothing can be taken without it. */
+  /** Their consent is to notice 1.4 or later, which names recording outside a meeting. */
   consented: boolean
-  /** Every sample Secretaries took for them, in any meeting, against `maxSamples`. */
-  sampleCount: number
-  /** Only the ones taken in this meeting. */
-  samples: CollectedSample[]
-}
-
-export interface CollectedSample {
-  id: string
-  createdAt: string
-  speechMs: number
-  collectedByName: string
+  /** Consented, and their limit of proxy samples is not reached. */
+  canCollect: boolean
+  maxSamples: number
+  /** Every sample anyone took for them, in a meeting or not. */
+  samples: ProxySample[]
 }
 
 export interface VoiceMutation<T> {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { addVoiceSample, grantVoiceConsent } from '../../api/voice'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { VoiceProfile } from '../../types/voice'
@@ -54,12 +55,12 @@ export function ConsentForm({
           <strong>Mục đích:</strong> {profile.purpose}
         </li>
         <li>
-          <strong>Ai thu:</strong> tôi tự thu trên máy mình, hoặc Thư ký cuộc họp tôi dự (người được giao quyền "Thu giọng
-          mẫu hộ") thu bằng micro phòng họp. Mỗi lần Thư ký thu, tôi nhận một thông báo.
+          <strong>Ai thu:</strong> tôi tự thu trên máy mình, hoặc người được quản trị viên giao quyền "Thu giọng mẫu hộ"
+          thu, thường bằng micro phòng họp. Người thu hỏi ý tôi trước mỗi lần thu, và tôi nhận một thông báo sau đó.
         </li>
         <li>
           <strong>Lưu gì:</strong> bản ghi giọng mẫu và đặc trưng giọng (một dãy số), cả hai đã mã hoá. Chỉ tôi nghe lại
-          được mọi mẫu; Thư ký chỉ nghe mẫu thu ở cuộc họp của mình.
+          được mọi mẫu; người có quyền "Thu giọng mẫu hộ" nghe được mẫu thu hộ, mỗi lần nghe đều ghi nhật ký.
         </li>
         <li>
           <strong>Dùng ở đâu:</strong> chỉ so với giọng trong bản ghi các cuộc họp tôi tham dự. Máy gợi ý tên người nói,
@@ -67,7 +68,7 @@ export function ConsentForm({
         </li>
         <li>
           <strong>Quyền của tôi:</strong> xem, nghe và xoá từng giọng mẫu, rút lại đồng ý bất cứ lúc nào ở trang "Giọng
-          nói của tôi"; rút lại thì mọi giọng mẫu (cả mẫu Thư ký thu), gợi ý và tên máy đã điền bị xoá ngay.
+          nói của tôi"; rút lại thì mọi giọng mẫu (cả mẫu thu hộ), gợi ý và tên máy đã điền bị xoá ngay.
         </li>
         <li>
           <strong>Bên kiểm soát dữ liệu:</strong> {profile.controller}
@@ -108,6 +109,7 @@ export function RecordSampleDialog({
   title = 'Ghi giọng mẫu',
   hint = 'Ngồi ở nơi yên tĩnh, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:',
   upload = addVoiceSample,
+  askConsentOf,
 }: {
   passage: string
   onClose: () => void
@@ -115,10 +117,20 @@ export function RecordSampleDialog({
   onStale: () => Promise<void>
   title?: string
   hint?: string
-  /** Where the kept take goes: the caller's own set by default; a Secretary's collection passes its own (ADR-0060). */
-  upload?: (audio: Blob, fileName: string) => Promise<{ message: string }>
+  /**
+   * Where the kept take goes: the caller's own set by default; a collector recording someone else passes its own
+   * (ADR-0060), which receives whether the person agreed to this take (ADR-0073).
+   */
+  upload?: (audio: Blob, fileName: string, personAgreed: boolean) => Promise<{ message: string }>
+  /**
+   * ADR-0073 — recording someone else: their name. Nothing can be recorded until the collector ticks that this person,
+   * there and then, agreed to this take; the tick goes with the upload and the server refuses a sample without it.
+   */
+  askConsentOf?: string
 }) {
   const recorder = useRecorder()
+  const [agreed, setAgreed] = useState(false)
+  const mayRecord = askConsentOf === undefined || agreed
   const [take, setTake] = useState<{ file: RecordedTake; url: string } | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -155,7 +167,7 @@ export function RecordSampleDialog({
     setSaving(true)
     setError(null)
     try {
-      const result = await upload(take.file.blob, `giong-mau.${take.file.extension}`)
+      const result = await upload(take.file.blob, `giong-mau.${take.file.extension}`, mayRecord)
       await onSaved(result.message)
     } catch (failure) {
       if (isApiError(failure, 409)) void onStale()
@@ -197,11 +209,11 @@ export function RecordSampleDialog({
           </button>
         ) : take ? (
           <>
-            <button type="button" className="btn btn-outline" disabled={saving} onClick={record}>
+            <button type="button" className="btn btn-outline" disabled={saving || !mayRecord} onClick={record}>
               <Icon name="undo" size={18} />
               Ghi lại
             </button>
-            <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void save()}>
+            <button type="button" className="btn btn-primary" disabled={saving || !mayRecord} onClick={() => void save()}>
               <Icon name="check" size={18} />
               {saving ? 'Đang kiểm tra…' : 'Lưu giọng mẫu'}
             </button>
@@ -210,7 +222,7 @@ export function RecordSampleDialog({
           <button
             type="button"
             className="btn btn-primary"
-            disabled={recorder.state.kind === 'starting'}
+            disabled={recorder.state.kind === 'starting' || !mayRecord}
             onClick={record}
           >
             <Icon name="mic" size={18} />
@@ -219,6 +231,20 @@ export function RecordSampleDialog({
         )
       }
     >
+      {askConsentOf !== undefined && (
+        <label className="consent-check voice-ask">
+          <input
+            type="checkbox"
+            checked={agreed}
+            disabled={active || saving}
+            onChange={(event) => setAgreed(event.target.checked)}
+          />
+          <span>
+            Đã hỏi, {askConsentOf} đồng ý cho thu giọng mẫu lần này
+            <InfoTip text="Hỏi ý người được thu ngay trước khi ghi. Họ nhận thông báo sau mỗi lần thu, nghe lại và xoá được mẫu ở trang Giọng nói của tôi." />
+          </span>
+        </label>
+      )}
       <p className="field-hint">{hint}</p>
       <blockquote className="voice-passage">{passage}</blockquote>
       {/* Kept in place before and after recording, so the dialog does not grow and jump when "Bắt đầu ghi" is pressed. */}

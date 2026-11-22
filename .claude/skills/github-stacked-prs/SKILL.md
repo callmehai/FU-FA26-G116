@@ -49,7 +49,7 @@ A stack can merge only when each branch contains the tip of the branch below it 
 
 ```bash
 git fetch origin
-git merge-base --is-ancestor origin/main origin/<bottom-branch> && echo ok
+git merge-base --is-ancestor origin/app origin/<bottom-branch> && echo ok
 git merge-base --is-ancestor origin/<bottom-branch> origin/<next-branch> && echo ok
 ```
 
@@ -87,7 +87,7 @@ reset that database.
   A bare number is read **first as a stack number, then as a PR number**. Stack numbers and PR numbers can collide, so
   look at the stack number on the PR page before passing a number. Only open/non-draft is checked up front; branch
   protection is evaluated at merge time and bypass is not supported for stacks. Use the repo's usual merge method (look
-  at `git log origin/main` for "Merge pull request #…" vs squash commits).
+  at `git log origin/app` for "Merge pull request #…" vs squash commits).
 
 Before merging, report to the user anything still unfinished in any layer (open review points, pending checks). One
 click merges every layer, so a gap in the bottom PR ships along with the top one.

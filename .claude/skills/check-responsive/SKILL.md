@@ -18,7 +18,7 @@ was an icon whose meaning lived in a hover tooltip.
 
 | Name | Viewport | Playwright options | What it catches |
 |---|---|---|---|
-| Phone | 390×844 | `isMobile: true, hasTouch: true` | Sidebar is the 72px rail (always collapsed under 720px, ADR-0012); no hover |
+| Phone | 390×844 | `isMobile: true, hasTouch: true` | Top bar and bottom tab bar instead of the sidebar (≤ 640px, ADR-0070); no hover |
 | Small phone | 360×740 | same | Android; also the room's side panel width (ADR-0011) |
 | Narrow laptop | 1200×800 | — | Toolbars must still be one line (frontend-ui-design §4) |
 | Desktop | 1440×900 | — | The default the other specs use |
@@ -84,6 +84,11 @@ With the chrome-devtools MCP, use `emulate` (viewport `390x844x3,mobile,touch`) 
    desktop may be two on a phone; check that picking an option does not make the dialog jump there
    either (frontend-ui-design §3).
 9. **Text** stays at 12px or more and is not cut off without a way to read the rest.
+10. **Nothing moves while scrolling** (ADR-0070): on a phone the document itself never scrolls
+    (`document.scrollingElement.scrollHeight <= innerHeight`) — only `main.content` does; sample element
+    sizes, scroll `main.content`, sample again, and expect no change. Drag sideways with a real touch
+    (`Input.dispatchTouchEvent` over CDP) and expect `scrollX` and `main.content.scrollLeft` to stay 0.
+    Run WebKit (`devices['iPhone 13']`) as well as Chromium: Safari is what the PO holds.
 
 ## 4. Evidence
 
@@ -92,4 +97,4 @@ With the chrome-devtools MCP, use `emulate` (viewport `390x844x3,mobile,touch`) 
 - In the PR's "Tested locally", one line per width with the measured result ("390×844: no sideways
   scroll, 0 clipped elements, dialog 610px of 844px").
 - Fix what the phone run finds before the PR, or say in the PR which problem is left and why
-  (for example, one that was already on `main`).
+  (for example, one that was already on `app`).

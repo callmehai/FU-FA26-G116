@@ -12,7 +12,7 @@ participant ":Recording Storage" as RecordingStorage
 participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
-Actor->RecordingsTab: Download an available room recording
+Actor->RecordingsTab: Download an available room or combined recording as MP3
 activate RecordingsTab
 RecordingsTab->RecordingController: Get a download link for the recording
 activate RecordingController
@@ -66,11 +66,17 @@ else Download allowed
     deactivate Signer
     RecordingService-->RecordingController: Download link
     RecordingController-->RecordingsTab: Download link
-    RecordingsTab->RecordingStorage: Fetch the original file through the download link
+    RecordingsTab->RecordingStorage: Fetch the recording as MP3 through the download link
     activate RecordingStorage
-    RecordingStorage-->RecordingsTab: Original audio file
-    deactivate RecordingStorage
-    RecordingsTab-->Actor: The browser saves the original audio file
+    alt Recording cannot be converted to MP3 - EX-3
+        RecordingStorage-->RecordingsTab: Conversion failed
+        deactivate RecordingStorage
+        RecordingsTab-->Actor: MSG482 - The recording could not be converted to MP3. Please try again later.
+    else Converted (stored MP3 passes through, other formats transcoded)
+        RecordingStorage-->RecordingsTab: MP3 audio
+        deactivate RecordingStorage
+        RecordingsTab-->Actor: The browser saves the MP3 file
+    end
 end
 
 deactivate RecordingService

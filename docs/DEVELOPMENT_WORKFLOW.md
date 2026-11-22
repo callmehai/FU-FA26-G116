@@ -108,21 +108,21 @@ keeps the tracking honest.
   now → what is left. The index in
   [docs/notes/ban-giao-ba-final-review/README.md](notes/ban-giao-ba-final-review/README.md) carries
   the current table; update it in the same commit that changes the state.
-- **Update the ticket when the PR is on `main`** — not when it is opened, not when it is approved:
+- **Update the ticket when the PR is on `app`** — not when it is opened, not when it is approved:
   - post one comment per ticket: which UC / BR / MSG changed, the PR and commit, and what is still
     missing (screen specifications, a follow-up PR);
   - move it: `BA Final Review` → `In Review` for the Tester, and `Done` for a ticket whose whole
     deliverable is the documentation;
-  - if only half is merged (code on `main`, documentation not), leave the status and say which half
+  - if only half is merged (code on `app`, documentation not), leave the status and say which half
     is missing in the comment.
-- **Check that the merge actually reached `main`** before writing "đã vào main":
-  `git log --oneline origin/main` (or open the file on `origin/main`). A stacked PR merged into its
-  base **after** that base was merged into `main` never reaches `main` — that is how PR #238 was
+- **Check that the merge actually reached `app`** before writing "đã vào app":
+  `git log --oneline origin/app` (or open the file on `origin/app`). A stacked PR merged into its
+  base **after** that base was merged into `app` never reaches `app` — that is how PR #238 was
   lost: it merged into `docs/ba-final-review-khach-…` seven seconds after that branch had been
-  merged as #237. The fix is a new PR from the feature branch straight to `main`; never rewrite
-  history for it, and do not comment "đã vào main" until it is merged.
-- **Never mark `Done` while the content is not on `main`.** The ticket is what the Tester and the
-  reviewer read; `main` is what they run.
+  merged as #237. The fix is a new PR from the feature branch straight to `app`; never rewrite
+  history for it, and do not comment "đã vào app" until it is merged.
+- **Never mark `Done` while the content is not on `app`.** The ticket is what the Tester and the
+  reviewer read; `app` is what they run.
 
 
 ---
@@ -160,7 +160,7 @@ After FE integration (Jira `BA Final Review`):
 - Check that specification and diagrams agree with each other and with the code.
 - If a change noted in the ticket is not acceptable as a requirement, reopen it with BE/FE rather
   than documenting around it.
-- When the review PR is merged into `main`, comment the result on **every ticket the note names**
+- When the review PR is merged into `app`, comment the result on **every ticket the note names**
   and move it — §2.2 has the rule and the status mapping. Documentation is not "done" until the
   tickets say so.
 
@@ -250,13 +250,14 @@ A Use Case is Done only when **all** of these hold:
 | Backend build | `dotnet build TrustCabinet.sln` |
 | Backend tests | `dotnet test TrustCabinet.sln` |
 | Frontend lint | `cd frontend && npm run lint` |
+| Frontend unit tests (`frontend/tests/unit`, `node --test`) | `cd frontend && npm test` |
 | Frontend build (includes `tsc -b`) | `cd frontend && npm run build` |
 
-CI runs all four on every pull request, limited to what the PR touches — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
+CI runs all five on every pull request, limited to what the PR touches — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
 
 Branch and PR conventions:
 
-- Branch off `main`, one branch per Use Case or task.
+- Branch off `app`, one branch per Use Case or task.
 - Commit messages in Vietnamese, PR title and description in English, PR review comments in
   Vietnamese. Full table in [AGENTS.md](../AGENTS.md).
 - Open a PR and wait for a review before merging. Do not merge your own PR unreviewed.

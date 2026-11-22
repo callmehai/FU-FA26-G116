@@ -37,8 +37,8 @@ const TRANSCRIPT_POLL_MS = 4000
 type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; data: RecordingList }
 
 /**
- * `existingOnly`: an online meeting has no room to record (ADR-0040) — show recordings made before, if any, and
- * nothing at all otherwise.
+ * `existingOnly`: an online meeting has no room to record (ADR-0040) — show what it has, its combined recording built
+ * after it ends from every mic (ADR-0069) or recordings made before, and nothing at all otherwise.
  */
 export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId: string; existingOnly?: boolean }) {
   const toast = useToast()
@@ -95,7 +95,7 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
   // Nothing to show is the likely answer there: no placeholder that would vanish once the list comes back empty.
-  if (existingOnly && (state.kind === 'loading' || data?.items.length === 0)) return null
+  if (existingOnly && (state.kind === 'loading' || (data?.items.every((r) => r.status === 'Deleted') ?? false))) return null
 
   // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
   const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
@@ -174,7 +174,13 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               recording.status === 'Pending' ? (
                 <OpenTakeRow key={recording.id} take={recording} />
               ) : (
-                <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
+                <RecordingRow
+                  key={recording.id}
+                  meetingId={meetingId}
+                  recording={recording}
+                  online={existingOnly}
+                  onErase={() => setErasing(recording)}
+                />
               ),
             )}
         </ul>
@@ -236,6 +242,12 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   )
 }
 
+/** The name the server saves a download under (ADR-0069): the recording's own, ending in .mp3. */
+function mp3Name(fileName: string) {
+  const stem = fileName.replace(/\.[^./\\]*$/, '').trim()
+  return `${stem || 'ban-ghi'}.mp3`
+}
+
 const SOURCE_LABEL: Record<RecordingSource, string> = {
   BrowserCapture: 'Mic phòng',
   Upload: 'Tải lên',
@@ -269,7 +281,17 @@ function OpenTakeRow({ take }: { take: Recording }) {
   )
 }
 
-function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
+function RecordingRow({
+  meetingId,
+  recording,
+  online,
+  onErase,
+}: {
+  meetingId: string
+  recording: Recording
+  online: boolean
+  onErase: () => void
+}) {
   const deleted = recording.status === 'Deleted'
   // Open from the start: what the machine wrote down is what people come to the tab for.
   const [open, setOpen] = useState(!deleted)
@@ -316,34 +338,42 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   }
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
+  // Where the player was when the file grew, to carry on from there once the longer file is loaded.
+  const resume = useRef<{ ms: number; playing: boolean } | null>(null)
+
   // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired. And
   // again when the file grows (a room-mic take appended, ADR-0041): the player would keep the shorter file it loaded.
+  // Then the player and the transcript stay where they are while the new link comes (team test 21/11/2026: the panel
+  // collapsed to "Đang mở…" and back each time a take was saved, losing where the reader had scrolled).
   useEffect(() => {
     if (!open || deleted) return
     let gone = false
     void Promise.resolve().then(async () => {
       if (gone) return
-      setPlayback({ kind: 'loading' })
+      setPlayback((shown) => (shown?.kind === 'ready' ? shown : { kind: 'loading' }))
       try {
         const url = (await getRecordingPlayback(recording.id)).url
-        if (!gone) setPlayback({ kind: 'ready', url })
+        if (gone) return
+        const element = audio.current
+        if (element?.currentSrc) resume.current = { ms: element.currentTime * 1000, playing: !element.paused }
+        setPlayback({ kind: 'ready', url })
       } catch (error) {
-        if (!gone) setPlayback({ kind: 'error', message: errorMessage(error) })
+        if (!gone) setPlayback((shown) => (shown?.kind === 'ready' ? shown : { kind: 'error', message: errorMessage(error) }))
       }
     })
     return () => {
       gone = true
-      setPlayback(null)
     }
   }, [open, deleted, recording.id, recording.byteSize])
 
   const toast = useToast()
-  // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
+  // A signed link followed by the browser itself: a recording can be hundreds of megabytes. Always saved as MP3
+  // (ADR-0069), converted on the server while it downloads.
   const download = async () => {
     try {
       const link = document.createElement('a')
       link.href = (await getRecordingDownload(recording.id)).url
-      link.download = recording.fileName
+      link.download = mp3Name(recording.fileName)
       document.body.append(link)
       link.click()
       link.remove()
@@ -390,7 +420,11 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           <button
             type="button"
             className="btn btn-outline btn-icon btn-sm"
-            onClick={() => setOpen(!open)}
+            onClick={() => {
+              // A link from this opening may have expired by the next: it is fetched again then.
+              if (open) setPlayback(null)
+              setOpen(!open)
+            }}
             aria-label={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
             aria-expanded={open}
             data-tooltip={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
@@ -402,8 +436,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
               type="button"
               className="btn btn-outline btn-icon btn-sm"
               onClick={() => void download()}
-              aria-label="Tải tệp ghi âm"
-              data-tooltip="Tải tệp ghi âm"
+              aria-label="Tải MP3"
+              data-tooltip="Tải MP3"
             >
               <Icon name="download" size={16} />
             </button>
@@ -438,6 +472,13 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
               const element = e.currentTarget
               if (Number.isFinite(element.duration)) setLengthMs(element.duration * 1000)
               element.playbackRate = speed
+              // The file grew under the player: carry on where it was.
+              const was = resume.current
+              resume.current = null
+              if (was) {
+                element.currentTime = was.ms / 1000
+                if (was.playing) void element.play().catch(() => undefined)
+              }
             }}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
@@ -479,10 +520,13 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           </div>
           {recording.source === 'Combined' ? (
             <p className="field-hint">
-              Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.
+              {online
+                ? 'Mic của từng người họp, ghép theo giờ thật để nghe lại.'
+                : 'Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.'}
             </p>
           ) : (
             <TranscriptView
+              meetingId={meetingId}
               fileName={recording.fileName}
               recordingId={recording.id}
               takes={recording.takes}

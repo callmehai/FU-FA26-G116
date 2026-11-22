@@ -60,17 +60,23 @@ import { useRaisedHandAlerts } from '../../speaking/useRaisedHandAlerts'
 import { useSpeaking, type Speaking } from '../../speaking/useSpeaking'
 import { VoteOpenedNotice } from '../../votes/VoteOpenedNotice'
 import { VotingPanel } from '../../votes/VotingPanel'
+import { ConsentDialog } from '../../recordings/ConsentDialog'
+import { useHeldRoomMic } from '../../recordings/roomMicContext'
+import { isFirstTake, useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { MyClips } from '../../speech/MyClips'
 import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useGuest, useMeetingHome } from '../../guest/guestContext'
-import { showInTab } from '../meetingTabs'
+import { isInstalledApp, showInTab } from '../meetingTabs'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
 import { playCue, setCueOutput } from './roomSounds'
-import { deviceErrorMessage, roomMessage } from './roomSupport'
+import { deviceErrorMessage, roomMessage, sendsRoomMic } from './roomSupport'
+
+/** How long a chat message pops up over the stage while the chat panel is closed. */
+const CHAT_TOAST_MS = 6000
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -127,11 +133,14 @@ export function RoomView({
   room,
   meeting,
   myRole,
+  lobbyMic,
   onLeave,
 }: {
   room: Room
   meeting: Meeting | GuestMeeting
   myRole: MeetingRole
+  /** The mic as the lobby left it, for the room mic of a hybrid meeting's Secretary to open on joining (ADR-0072). */
+  lobbyMic?: LobbyMic
   onLeave: () => Promise<void>
 }) {
   // The role the room was joined with holds only until the roster says otherwise (BR-328).
@@ -145,7 +154,14 @@ export function RoomView({
     <RoomContext.Provider value={room}>
       <RoomRolesContext.Provider value={roleOf}>
         <MyHandContext.Provider value={speaking.mine !== null}>
-          <RoomLayout room={room} meeting={meeting} myRole={currentRole} speaking={speaking} onLeave={onLeave} />
+          <RoomLayout
+            room={room}
+            meeting={meeting}
+            myRole={currentRole}
+            speaking={speaking}
+            lobbyMic={lobbyMic}
+            onLeave={onLeave}
+          />
         </MyHandContext.Provider>
       </RoomRolesContext.Provider>
       <RoomAudioRenderer />
@@ -158,12 +174,14 @@ function RoomLayout({
   meeting,
   myRole,
   speaking,
+  lobbyMic,
   onLeave,
 }: {
   room: Room
   meeting: Meeting | GuestMeeting
   myRole: MeetingRole
   speaking: Speaking
+  lobbyMic?: LobbyMic
   onLeave: () => Promise<void>
 }) {
   // As in Meet, the stage starts with the whole width; the panels open on demand.
@@ -178,6 +196,11 @@ function RoomLayout({
   const chat = useChat()
   const [seenMessages, setSeenMessages] = useState(0)
   const unread = panel === 'chat' ? 0 : chat.chatMessages.length - seenMessages
+  // Someone else's newest message the reader has not seen pops up over the stage while the chat is closed (team
+  // meeting 19/11), until it times out, is closed, or the chat opens.
+  const [hiddenToast, setHiddenToast] = useState<string | null>(null)
+  const incoming = panel === 'chat' ? undefined : chat.chatMessages.slice(seenMessages).findLast((m) => !m.from?.isLocal)
+  const chatToast = incoming && incoming.id !== hiddenToast ? incoming : undefined
   const toast = useToast()
   const selfMuting = useRef(false)
   const { isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled, localParticipant } = useLocalParticipant()
@@ -193,6 +216,9 @@ function RoomLayout({
   const home = useMeetingHome(meeting.id)
   const queued = speaking.data?.canManage ? speaking.data.requests.filter((r) => r.status === 'Queued').length : 0
   useRaisedHandAlerts(speaking, panel === 'speaking')
+  const roomMic = useRoomMicInCall(room, meeting, myRole, lobbyMic)
+  // The one switch: the room mic for a hybrid meeting's Secretary, the call's own mic for everyone else.
+  const micOn = roomMic ? roomMic.on : isMicrophoneEnabled
 
   // Closing the tab while connected asks first; the browser shows its own wording. Once "Rời phòng" has hung up,
   // the tab closes itself without asking.
@@ -264,6 +290,15 @@ function RoomLayout({
     }
   }, [room])
 
+  // Each new pop-up chimes once (the cue itself spaces a burst out) and stays a few seconds.
+  const chatToastId = chatToast?.id
+  useEffect(() => {
+    if (!chatToastId) return
+    playCue('chat')
+    const timer = window.setTimeout(() => setHiddenToast(chatToastId), CHAT_TOAST_MS)
+    return () => window.clearTimeout(timer)
+  }, [chatToastId])
+
   // Meet's shortcuts: ⌘/Ctrl + D for the microphone, ⌘/Ctrl + E for the camera. They override the
   // browser's own (bookmark, search bar) only while in the room.
   const shortcuts = useRef({ mic: () => {}, camera: () => {} })
@@ -289,6 +324,10 @@ function RoomLayout({
   }
 
   async function toggleMic() {
+    if (roomMic) {
+      roomMic.toggle()
+      return
+    }
     selfMuting.current = true
     try {
       await localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)
@@ -349,7 +388,7 @@ function RoomLayout({
           type="button"
           className="room-back"
           aria-label="Trang cuộc họp"
-          data-tooltip="Mở trang cuộc họp, vẫn ở trong phòng"
+          data-tooltip={isInstalledApp() ? 'Rời phòng, về trang cuộc họp' : 'Mở trang cuộc họp, vẫn ở trong phòng'}
           onClick={() => {
             if (!showInTab(home)) setConfirmingLeave(true)
           }}
@@ -365,9 +404,19 @@ function RoomLayout({
         </span>
         {restricted && sensitivity && <SensitivityBadge sensitivity={sensitivity} />}
         {/* SCRUM-109, SCRUM-129: a member's and a guest's own mic alike; a guest confirmed the notice to get here. */}
+        {roomMic?.on && (
+          <span className="room-recording is-static">
+            <Icon name="mic" size={13} />
+            <span className="room-recording-long">Đang ghi cả phòng</span>
+            <span className="room-recording-short" aria-hidden="true">
+              Đang ghi
+            </span>
+          </span>
+        )}
+        {/* The room mic's sound is the room take already: the Secretary's own sentences are not captured again. */}
         <SpeechCapture
           meeting={meeting}
-          micOn={isMicrophoneEnabled}
+          micOn={roomMic ? false : isMicrophoneEnabled}
           deviceId={room.getActiveDevice('audioinput')}
           identity={localParticipant.identity}
           asGuest={guest !== null}
@@ -383,7 +432,7 @@ function RoomLayout({
       <TurnBanner
         meetingId={meeting.id}
         speaking={speaking}
-        micOn={isMicrophoneEnabled}
+        micOn={micOn}
         onMicOn={() => void toggleMic()}
       />
 
@@ -398,6 +447,29 @@ function RoomLayout({
             setPanel('votes')
           }}
         />
+        {chatToast && (
+          <div className="room-chat-toast" role="status">
+            <button
+              type="button"
+              className="room-chat-toast-open"
+              data-tooltip="Mở Chat"
+              onClick={() => togglePanel('chat')}
+            >
+              <Icon name="messageSquare" size={18} />
+              <strong>{chatToast.from?.name || 'Người dự'}</strong>
+              <span>{chatToast.message}</span>
+            </button>
+            <button
+              type="button"
+              className="icon-button icon-button-sm"
+              aria-label="Đóng"
+              data-tooltip="Đóng"
+              onClick={() => setHiddenToast(chatToast.id)}
+            >
+              <Icon name="x" size={16} />
+            </button>
+          </div>
+        )}
         <main className="room-stage" aria-label="Người trong phòng">
           {floating.pip ? (
             // As in Meet: while the call lives in the floating window, the stage says so instead of
@@ -480,7 +552,7 @@ function RoomLayout({
           >
             {tray.shown === 'audio' && (
               <>
-                <DeviceSelect key="audioinput" kind="audioinput" icon="mic" title="Micro" />
+                <DeviceSelect key="audioinput" kind="audioinput" icon="mic" title="Micro" pick={roomMic?.pick} />
                 <DeviceSelect key="audiooutput" kind="audiooutput" icon="volume" title="Loa" />
               </>
             )}
@@ -494,13 +566,14 @@ function RoomLayout({
               onToggle={(event) => tray.toggle('audio', event)}
               onArrowEnter={(event) => tray.onArrowEnter('audio', event)}
               onArrowLeave={tray.onArrowLeave}
-              level={isMicrophoneEnabled && micTrack ? <MicLevel track={micTrack} /> : undefined}
+              level={micOn && micTrack ? <MicLevel track={micTrack} /> : undefined}
             >
               <ControlButton
-                icon={isMicrophoneEnabled ? 'mic' : 'micOff'}
-                label={isMicrophoneEnabled ? 'Tắt micro' : 'Bật micro'}
+                icon={micOn ? 'mic' : 'micOff'}
+                label={roomMic ? (micOn ? 'Tắt mic phòng' : 'Bật mic phòng') : micOn ? 'Tắt micro' : 'Bật micro'}
                 shortcut={`${MOD} + D`}
-                off={!isMicrophoneEnabled}
+                off={!micOn}
+                disabled={roomMic?.busy}
                 onClick={() => void toggleMic()}
               />
             </DeviceSplit>
@@ -580,7 +653,7 @@ function RoomLayout({
         createPortal(
           <PipView
             presenter={presenter}
-            mic={{ on: isMicrophoneEnabled, toggle: () => void toggleMic() }}
+            mic={{ on: micOn, toggle: () => void toggleMic() }}
             camera={{ on: isCameraEnabled, busy: cameraBusy, toggle: () => void toggleCamera() }}
             share={{ on: isScreenShareEnabled, toggle: toggleScreenShare }}
             onLeave={() => void onLeave()}
@@ -588,6 +661,16 @@ function RoomLayout({
           floating.pip.document.body,
         )}
 
+
+      {roomMic?.asking && (
+        <ConsentDialog
+          consent={{ kind: 'record' }}
+          purpose={roomMic.purpose}
+          onPurpose={roomMic.setPurpose}
+          onClose={roomMic.cancel}
+          onConfirm={roomMic.confirm}
+        />
+      )}
 
       {confirmingLeave && (
         <ConfirmDialog
@@ -604,6 +687,114 @@ function RoomLayout({
       )}
     </div>
   )
+}
+
+/** The lobby's mic switch and the mic picked there. */
+export interface LobbyMic {
+  on: boolean
+  deviceId?: string
+}
+
+/**
+ * ADR-0072 — a hybrid meeting's Secretary sits in the room: their call mic is the room mic. One switch opens it as the
+ * room take (ADR-0041, with the notice before the meeting's first take) and sends a copy of the same sound into the
+ * call, so the people online hear the room with no second mic and no second recording. The mic itself is held above
+ * the routes, so it outlives this screen: back on the meeting page in this tab it is still on. Null for everyone else.
+ */
+function useRoomMicInCall(
+  room: Room,
+  meeting: Meeting | GuestMeeting,
+  role: MeetingRole,
+  lobbyMic: LobbyMic | undefined,
+) {
+  const toast = useToast()
+  const sends = sendsRoomMic(meeting, role)
+  const recordings = useRoomRecordings(meeting.id, sends)
+  const held = useHeldRoomMic(meeting.id, undefined, recordings.reload)
+  const mic = sends ? held : null
+  const [asking, setAsking] = useState(false)
+  const [deviceId, setDeviceId] = useState<string | undefined>(() => lobbyMic?.deviceId || undefined)
+  const { localParticipant } = room
+
+  const phase = mic?.phase ?? 'off'
+  const toggle = () => {
+    if (!mic) return
+    if (phase === 'on') mic.stop()
+    else if (phase !== 'off') return
+    // A take this laptop kept from a tab cut off goes on, as the floating card's "Ghi tiếp".
+    else if (mic.unfinished) mic.resumeUnfinished(deviceId)
+    else if (isFirstTake(recordings.list)) setAsking(true)
+    else mic.start(false, deviceId)
+  }
+
+  // Joined with the lobby's mic on: the room mic opens, once the recordings tell whether the notice is due.
+  const opened = useRef(false)
+  const toggleRef = useRef(toggle)
+  useEffect(() => {
+    toggleRef.current = toggle
+  })
+  const ready = mic !== null && recordings.list !== null
+  useEffect(() => {
+    if (opened.current || !ready) return
+    opened.current = true
+    if (lobbyMic?.on && phase === 'off') toggleRef.current()
+  }, [ready, lobbyMic?.on, phase])
+
+  // What went wrong, or why the mic stopped on its own, as the floating card would say it.
+  const error = mic?.error
+  const notice = mic?.notice
+  useEffect(() => {
+    if (error) toast.show(error, 'error')
+  }, [error, toast])
+  useEffect(() => {
+    if (notice) toast.show(notice, 'info')
+  }, [notice, toast])
+
+  // A copy of the room mic is the Secretary's microphone in the call while it is on. The copy is the call's to stop;
+  // the room take keeps the original.
+  const track = phase === 'on' ? (mic?.track ?? null) : null
+  useEffect(() => {
+    if (!track) return
+    const sent = track.clone()
+    let gone = false
+    localParticipant.publishTrack(sent, { source: Track.Source.Microphone, name: 'room-mic' }).then(
+      () => {
+        if (gone) void localParticipant.unpublishTrack(sent).catch(() => undefined)
+      },
+      (failure: unknown) => {
+        sent.stop()
+        if (!gone) toast.show(deviceErrorMessage(failure, 'micro'), 'error')
+      },
+    )
+    return () => {
+      gone = true
+      void localParticipant.unpublishTrack(sent).catch(() => undefined)
+      sent.stop()
+    }
+  }, [track, localParticipant, toast])
+
+  if (!mic) return null
+  return {
+    on: phase === 'on',
+    busy: phase === 'starting' || phase === 'saving',
+    toggle,
+    asking,
+    purpose: mic.purpose,
+    setPurpose: mic.setPurpose,
+    cancel: () => setAsking(false),
+    confirm: () => {
+      setAsking(false)
+      mic.start(true, deviceId)
+    },
+    /** The mic picked in the call's audio settings: the room mic switches to it, and the take goes on. */
+    pick: {
+      activeId: deviceId,
+      onPick: (id: string) => {
+        setDeviceId(id)
+        if (phase === 'on') mic.switchDevice(id)
+      },
+    },
+  }
 }
 
 /**
@@ -1098,10 +1289,46 @@ function FittedTiles({ tiles }: { tiles: TrackReferenceOrPlaceholder[] }) {
   const gap = box.width < 600 ? TILE_GAP_PHONE : TILE_GAP
   const fit = fitTiles(box.width, box.height, tiles.length, gap)
 
+  // Opening or closing a panel, or someone arriving, re-flows the grid (two tiles side by side become a column). Each
+  // tile glides from where it was instead of jumping there (Hải 20/11/2026): FLIP — measure, then animate the
+  // difference away. Skipped for people who asked the system for less motion.
+  const fitRef = useRef<HTMLDivElement>(null)
+  const lastRects = useRef(new Map<string, DOMRect>())
+  const identities = tiles.map((t) => t.participant.identity).join('|')
+  useLayoutEffect(() => {
+    const grid = fitRef.current
+    if (!grid) return
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const ids = identities.split('|')
+    const next = new Map<string, DOMRect>()
+    Array.from(grid.children).forEach((child, i) => {
+      const id = ids[i]
+      if (!id || !(child instanceof HTMLElement)) return
+      const now = child.getBoundingClientRect()
+      next.set(id, now)
+      const before = lastRects.current.get(id)
+      if (still || !before || now.width === 0 || now.height === 0) return
+      const dx = before.left - now.left
+      const dy = before.top - now.top
+      const sx = before.width / now.width
+      const sy = before.height / now.height
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return
+      child.animate(
+        [
+          { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+          { transformOrigin: 'top left', transform: 'none' },
+        ],
+        { duration: 220, easing: 'cubic-bezier(0.2, 0, 0, 1)' },
+      )
+    })
+    lastRects.current = next
+  }, [fit.columns, fit.width, fit.height, gap, identities])
+
   return (
     <div className="room-grid-area" ref={ref}>
       {fit.width > 0 && (
         <div
+          ref={fitRef}
           className="room-grid-fit"
           style={{ gap, width: fit.columns * fit.width + (fit.columns - 1) * gap }}
         >

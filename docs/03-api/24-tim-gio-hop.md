@@ -37,7 +37,7 @@ Mọi trường không gửi (hoặc `null`) dùng mặc định.
 | `workStart`, `workEnd` | `"HH:mm"` | `"08:00"`, `"17:00"` | đúng định dạng 24 giờ, `workEnd > workStart` | `workStart`, `workEnd` |
 | `lunchBreak` | `bool` | `true` | `false` = không có giờ nghỉ trưa | — |
 | `lunchStart`, `lunchEnd` | `"HH:mm"` | `"12:00"`, `"13:00"` | chỉ xét khi `lunchBreak`: `workStart ≤ lunchStart < lunchEnd ≤ workEnd` | `lunchStart`, `lunchEnd` |
-| `bufferMinutes` | `int` | `30` | 0–240, bội 5 — nhãn FE "Cách họp khác" | `bufferMinutes` |
+| `bufferMinutes` | `int` | `30` | 0–240, bội 5 — nhãn FE "Giãn cách họp" (PR #425, trước là "Cách họp khác") | `bufferMinutes` |
 | `stepMinutes` | `int` | `30` | 5–120, bội 5 — nhãn FE "Làm tròn giờ" | `stepMinutes` |
 
 Kiểm chéo: thời lượng phải vừa **một buổi** (không nghỉ trưa: cả ngày làm việc; có nghỉ trưa: buổi sáng hoặc buổi chiều), tính

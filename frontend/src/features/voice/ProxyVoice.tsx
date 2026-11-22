@@ -12,9 +12,10 @@ import { formatDuration } from '../recordings/format'
 import { useSamplePlayer } from './samplePlayer'
 
 /**
- * ADR-0060 — the samples meetings' Secretaries recorded for the person on the room's mic. A second set under the same
- * one Voice ID consent: the Secretary records, the person decides. Everything taken is listed with who took it and
- * where, can be heard back and deleted; turning Voice ID off erases this set with the other.
+ * ADR-0060, ADR-0071 — the samples someone else recorded for the person: a holder of "Thu giọng mẫu hộ" (ADR-0075;
+ * before that also a meeting's Secretary). A second set under the same one Voice ID consent: the collector records,
+ * the person decides. Everything taken is listed with who took it and where, can be heard back and deleted; turning
+ * Voice ID off erases this set with the other.
  */
 export function ProxyTab({
   profile,
@@ -48,17 +49,17 @@ export function ProxyTab({
     <section className="card voice-card" aria-labelledby="voice-proxy-title">
       <div className="voice-status">
         <h2 id="voice-proxy-title" className="card-title">
-          Thư ký thu hộ
+          Người khác thu hộ
         </h2>
         <span className="voice-count">
           {proxy.samples.length}/{proxy.maxSamples}
         </span>
       </div>
       {!proxy.allowed ? (
-        <p className="alert alert-info">Đồng ý điều khoản mới ở trên để Thư ký cuộc họp thu giọng mẫu hộ bạn.</p>
+        <p className="alert alert-info">Đồng ý điều khoản mới ở trên để người khác thu giọng mẫu hộ bạn.</p>
       ) : (
         proxy.samples.length === 0 && (
-          <p className="alert alert-info">Chưa có mẫu nào. Thư ký thu ở cuộc họp trực tiếp hoặc kết hợp bạn dự.</p>
+          <p className="alert alert-info">Chưa có mẫu nào.</p>
         )
       )}
       {proxy.samples.length > 0 && (
@@ -67,7 +68,12 @@ export function ProxyTab({
             <li key={sample.id} className="voice-sample voice-sample-stacked">
               <span className="voice-sample-text">
                 <span className="voice-sample-name">
-                  <Link to={routes.meeting(sample.meetingId)}>{sample.meetingTitle}</Link>
+                  {/* ADR-0071: a sample taken outside any meeting names only who took it. */}
+                  {sample.meetingId ? (
+                    <Link to={routes.meeting(sample.meetingId)}>{sample.meetingTitle}</Link>
+                  ) : (
+                    'Ngoài cuộc họp'
+                  )}
                 </span>
                 <span
                   className="field-hint"

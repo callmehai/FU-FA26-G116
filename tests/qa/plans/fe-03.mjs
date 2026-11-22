@@ -12,11 +12,11 @@
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
 const QA_EMAIL = 'qa-fe03@trustcabinet.local'
-// Fixed ids of the built-in roles (docs/03-api/04-quan-ly-vai-tro.md §2).
+// Fixed ids of the built-in roles (docs/03-api/04-quan-ly-vai-tro.md §2). ADR-0075: no system role Chủ toạ or Thư ký;
+// Phê duyệt viên took Chủ toạ's id.
 const BUILT_IN = {
-  chair: { id: '01a0ce78-7202-7945-be13-d2022cf25203', name: 'Chủ toạ' },
-  secretary: { id: '01a0ce78-7203-7c7f-8326-7a0baebf4c22', name: 'Thư ký' },
   member: { id: '01a0ce78-7204-7558-b181-e908a08e83a3', name: 'Thành viên' },
+  approver: { id: '01a0ce78-7202-7945-be13-d2022cf25203', name: 'Phê duyệt viên' },
   admin: { id: '01a0ce78-7205-7486-b976-d52d428d5451', name: 'Quản trị viên' },
 }
 const UNKNOWN_ID = '01a0ce78-0000-7000-8000-000000000000'
@@ -257,7 +257,7 @@ export default {
         await qa.shot('loi-tai-ma-tran')
         await qa.page.unroute('**/api/roles/capabilities')
         await retry.click()
-        await qa.expect(roleRow(qa, BUILT_IN.secretary.name)).toBeVisible()
+        await qa.expect(roleRow(qa, BUILT_IN.approver.name)).toBeVisible()
         await qa.shot('thu-lai-thanh-cong')
       },
     },
@@ -268,9 +268,9 @@ export default {
       role: 'admin',
       devices: ['desktop', 'phone'],
       title: 'Tạo vai trò có tên, mô tả và một quyền: báo thành công, hiện trong danh sách (0 tài khoản) và ma trận, ghi nhật ký (UC-12a)',
-      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Soạn biên bản"', 'Bấm Tạo vai trò'],
+      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Phê duyệt cuộc họp"', 'Bấm Tạo vai trò'],
       expected:
-        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Soạn biên bản"; nhật ký có "role.created" kèm quyền',
+        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Phê duyệt cuộc họp"; nhật ký có "role.created" kèm quyền',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -282,7 +282,7 @@ export default {
           await qa.expect(dialog).toBeVisible()
           await dialog.getByLabel('Tên vai trò').fill(name)
           await dialog.getByLabel('Mô tả').fill('Vai trò thử của QA')
-          await dialog.getByRole('checkbox', { name: /Soạn biên bản/ }).check()
+          await dialog.getByRole('checkbox', { name: /Phê duyệt cuộc họp/ }).check()
           await settled(qa)
           await qa.shot('form-tao-vai-tro')
           if (qa.device === 'phone') {
@@ -310,15 +310,15 @@ export default {
             const del = await qa.page.getByRole('button', { name: `Xoá vai trò ${name}` }).boundingBox()
             qa.expect(del.x + del.width, 'the edit/delete actions are off screen on a 390px phone').toBeLessThanOrEqual(390)
           }
-          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MinutesEditor'])
+          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MeetingApprover'])
           await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
-          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Soạn biên bản` })).toBeChecked()
+          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Phê duyệt cuộc họp` })).toBeChecked()
           await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Tạo cuộc họp` })).not.toBeChecked()
           await roleRow(qa, name).scrollIntoViewIfNeeded()
           await qa.shot('vai-tro-moi-trong-ma-tran')
           const entries = await audit(qa, api, name, 'role.created')
           qa.expect(entries.length, 'no role.created audit entry').toBe(1)
-          qa.expect(JSON.stringify(entries[0].details)).toContain('MinutesEditor')
+          qa.expect(JSON.stringify(entries[0].details)).toContain('MeetingApprover')
           qa.expect(entries[0].actor.email).toBe('quantri@trustcabinet.local')
         } finally {
           await cleanup(api, created)
@@ -519,7 +519,7 @@ export default {
           qa.expect(caseOnly.body.code).toBe('MSG22')
           qa.expect(caseOnly.body.role.name).toBe(upper)
 
-          const dup = await api.put(`/api/roles/${role.id}`, { name: BUILT_IN.chair.name, description: null })
+          const dup = await api.put(`/api/roles/${role.id}`, { name: BUILT_IN.approver.name, description: null })
           qa.expectStatus(dup, 409)
           qa.expect(dup.body.code).toBe('MSG21')
 
@@ -570,13 +570,13 @@ export default {
           await qa.expect(qa.page.getByRole('button', { name: `Xoá vai trò ${name}` })).toHaveCount(0)
         }
         await qa.shot('vai-tro-mac-dinh-khong-sua-xoa')
-        const secretary = (await rolesList(api)).find((r) => r.id === BUILT_IN.secretary.id)
+        const secretary = (await rolesList(api)).find((r) => r.id === BUILT_IN.approver.id)
         const msg24 = 'Đây là vai trò mặc định của hệ thống, không đổi tên hoặc xoá được. Bạn vẫn sửa được quyền của nó.'
         const put = await api.put(`/api/roles/${secretary.id}`, { name: secretary.name, description: secretary.description })
         qa.expectStatus(put, 409)
         qa.expect(put.body.code).toBe('MSG24')
         qa.expect(put.body.message).toBe(msg24)
-        // Thư ký is held by an account, so even a wrong acceptance here would be stopped by the in-use rule.
+        // Phê duyệt viên is held by an account, so even a wrong acceptance here would be stopped by the in-use rule.
         const del = await api.delete(`/api/roles/${secretary.id}`)
         qa.expectStatus(del, 409)
         qa.expect(del.body.code).toBe('MSG24')
@@ -678,12 +678,12 @@ export default {
       title: 'Cấu hình quyền trên ma trận: tick một ô hiện Lưu/Hoàn tác, Hoàn tác không lưu gì, Lưu báo thành công và ghi nhật ký trước/sau; hai dòng lưu độc lập (UC-11, RBAC_FT05)',
       steps: [
         'Mở tab Ma trận phân quyền',
-        'Tick "Soạn biên bản" ở vai trò [QA], bấm Hoàn tác',
+        'Tick "Phê duyệt cuộc họp" ở vai trò [QA], bấm Hoàn tác',
         'Tick lại, bấm Lưu',
         'Bỏ tick ở dòng đầu, tick dòng vai trò thứ hai, chỉ lưu dòng đầu',
       ],
       expected:
-        'Trên điện thoại tên vai trò vẫn thấy cạnh ô đang tick; Hoàn tác: ô bỏ tick, quyền đã lưu không đổi; Lưu: toast "Cập nhật phân quyền thành công." (MSG16), API trả quyền mới, nhật ký role.permissions.updated có Before [] và After [MinutesEditor]; dòng thứ hai giữ nháp và nút Lưu/Hoàn tác của nó, quyền đã lưu của nó không đổi (RBAC_FT05 E1)',
+        'Trên điện thoại tên vai trò vẫn thấy cạnh ô đang tick; Hoàn tác: ô bỏ tick, quyền đã lưu không đổi; Lưu: toast "Cập nhật phân quyền thành công." (MSG16), API trả quyền mới, nhật ký role.permissions.updated có Before [] và After [MeetingApprover]; dòng thứ hai giữ nháp và nút Lưu/Hoàn tác của nó, quyền đã lưu của nó không đổi (RBAC_FT05 E1)',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -691,7 +691,7 @@ export default {
           const role = await createRole(qa, api, created, 'Ma trận một')
           const roleB = await createRole(qa, api, created, 'Ma trận hai')
           await openMatrix(qa)
-          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Soạn biên bản` })
+          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
           const row = roleRow(qa, role.name)
           await box.scrollIntoViewIfNeeded()
           if (qa.device === 'phone') {
@@ -718,14 +718,14 @@ export default {
           await settled(qa)
           await qa.shot('da-luu-quyen')
           await noSidewaysScroll(qa)
-          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MinutesEditor'])
+          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MeetingApprover'])
           const entries = await audit(qa, api, role.name, 'role.permissions.updated')
           qa.expect(entries.length, 'no role.permissions.updated audit entry').toBe(1)
           qa.expect(entries[0].details.Before ?? entries[0].details.before).toEqual([])
-          qa.expect(entries[0].details.After ?? entries[0].details.after).toEqual(['MinutesEditor'])
+          qa.expect(entries[0].details.After ?? entries[0].details.after).toEqual(['MeetingApprover'])
           // RBAC_FT05 E1: rows save independently — saving row A leaves row B's draft alone.
-          const boxA = qa.page.getByRole('checkbox', { name: `${role.name} — Soạn biên bản`, exact: true })
-          const boxB = qa.page.getByRole('checkbox', { name: `${roleB.name} — Soạn biên bản`, exact: true })
+          const boxA = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp`, exact: true })
+          const boxB = qa.page.getByRole('checkbox', { name: `${roleB.name} — Phê duyệt cuộc họp`, exact: true })
           await boxA.uncheck()
           await boxB.check()
           const rowB = roleRow(qa, roleB.name)
@@ -1132,7 +1132,7 @@ export default {
             await route.continue()
           })
           const row = roleRow(qa, role.name)
-          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Soạn biên bản` })
+          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
           await box.scrollIntoViewIfNeeded()
           await box.check()
           const save = row.locator('button.btn-primary')
@@ -1156,7 +1156,7 @@ export default {
       title: 'Tự lưu quyền của vai trò mình đang mang: báo thành công, phiên và sidebar theo ngay (RBAC_FT09)',
       steps: [
         'Quản trị tạo vai trò [QA] có "Quản trị người dùng" + "Tạo cuộc họp", gán cho qa-fe03@',
-        'qa-fe03@ mở ma trận, tick thêm "Soạn biên bản" ở vai trò mình, bấm Lưu',
+        'qa-fe03@ mở ma trận, tick thêm "Phê duyệt cuộc họp" ở vai trò mình, bấm Lưu',
         'Quản trị trả qa-fe03@ về Thành viên',
       ],
       expected:
@@ -1173,7 +1173,7 @@ export default {
           await qa.expect(qa.page.getByRole('heading', { name: 'Vai trò', exact: true })).toBeVisible()
           await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
           const row = roleRow(qa, role.name)
-          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Soạn biên bản` })
+          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
           await row.scrollIntoViewIfNeeded()
           await box.check()
           await row.locator('button.btn-primary').click()

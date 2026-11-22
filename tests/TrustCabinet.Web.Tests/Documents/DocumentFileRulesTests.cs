@@ -21,6 +21,21 @@ public sealed class DocumentFileRulesTests
     }
 
     [Fact]
+    public async Task A_pdf_that_opens_with_a_line_break_is_still_a_pdf()
+    {
+        // Hải 20/11/2026: CVs from an online builder start "\n%PDF-1.7"; Acrobat, pdf.js and PdfPig open them.
+        foreach (var prefix in new[] { "\n"u8.ToArray(), "\r\n"u8.ToArray(), "  \t\n"u8.ToArray() })
+        {
+            byte[] bytes = [.. prefix, .. SampleFiles.Pdf()];
+            Assert.Equal(DocumentFileRules.PdfContentType, await Detect(bytes));
+            Assert.Equal(1, await Pages(bytes));
+        }
+        // Only whitespace, and not too much of it: anything else in front still fails.
+        Assert.Null(await Detect([.. "x\n"u8.ToArray(), .. SampleFiles.Pdf()]));
+        Assert.Null(await Detect([.. Enumerable.Repeat((byte)'\n', 65), .. SampleFiles.Pdf()]));
+    }
+
+    [Fact]
     public async Task Docx_follows_the_package_rules_not_just_what_word_writes()
     {
         // BOM-prefixed parts with the main type declared per extension: System.IO.Packaging output.

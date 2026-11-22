@@ -31,7 +31,7 @@ public sealed class RoomTakeServiceTests
     }
 
     private RoomTakeService Service() => new(_meetings, _recordings, _unitOfWork, _transcripts, _storage, _audit, _publisher,
-        new FixedClock(Now), Options.Create(new RecordingOptions()), NullLogger<RoomTakeService>.Instance);
+        new FakeCombinedRecordings(), new FixedClock(Now), Options.Create(new RecordingOptions()), NullLogger<RoomTakeService>.Instance);
 
     private Task<RecordingOutcome> Begin(bool consent = true)
         => Service().BeginAsync(_meeting.Meeting.Id, _meeting.Secretary, new RoomTakeStart(consent, null));

@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Seed;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -54,7 +55,7 @@ public class UserRepositoryTests : IAsyncLifetime
 
         // Every account references a role (ADR-0008), and EnsureCreated leaves `roles` empty —
         // the RolesAsData migration is what fills it on a real database.
-        _db.Roles.AddRange(ReferenceData.Roles());
+        _db.Roles.AddRange(TestRoles.WithSecretary());
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
     }
@@ -74,7 +75,7 @@ public class UserRepositoryTests : IAsyncLifetime
             Email = email,
             PasswordHash = passwordHash,
             GoogleSubjectId = googleSubjectId,
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = TestRoles.Secretary,
         };
 
         _db.Users.Add(user);
@@ -259,7 +260,7 @@ public class UserRepositoryTests : IAsyncLifetime
             FullName = "Nguyễn Thư Ký",
             Email = "thuky@trustcabinet.local",
             PasswordHash = "hash",
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = TestRoles.Secretary,
         });
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
@@ -276,19 +277,20 @@ public class UserRepositoryTests : IAsyncLifetime
         // the table empty (ADR-0007, SCRUM-60). This is the same path a real database takes.
         await ReferenceDataSeeder.SeedAsync(_db);
 
-        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(BuiltInRoles.Secretary);
+        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(BuiltInRoles.Admin);
 
         Assert.Contains(Capability.MeetingCreator, capabilities);
-        Assert.Contains(Capability.MinutesEditor, capabilities);
+        Assert.Contains(Capability.VoiceCollector, capabilities);
+        Assert.Contains(Capability.AdminUsers, capabilities);
     }
 
     [Fact]
-    public async Task A_member_has_no_capability()
+    public async Task A_role_with_no_capability_answers_empty()
     {
-        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(BuiltInRoles.Member);
+        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(TestRoles.Attendee);
 
-        // Empty is a legitimate answer, not a missing row — a plain Member attends, reads and
-        // votes, none of which needs a capability.
+        // Empty is a legitimate answer, not a missing row — someone who only attends, reads and
+        // votes needs no capability. (Since ADR-0075 Thành viên creates meetings, so a custom role.)
         Assert.Empty(capabilities);
     }
 }

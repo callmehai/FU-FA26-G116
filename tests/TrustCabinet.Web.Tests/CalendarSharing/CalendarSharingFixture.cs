@@ -18,6 +18,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
@@ -107,8 +108,9 @@ public sealed class CalendarSharingFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Fresh people for one test. Organizer and Organizer2 hold MeetingCreator (Secretary and Chair roles); Owner and
-    /// Owner2 are Members, who own a calendar but may not view one; Locked is a deactivated Member; Admin administers.
+    /// Fresh people for one test. Organizer and Organizer2 hold MeetingCreator (the test-only Secretary role and Phê duyệt
+    /// viên); Owner and Owner2 hold the test-only Attendee role, who own a calendar but may not view one; Locked is a
+    /// deactivated Attendee; Admin administers (and, since ADR-0075, also creates meetings).
     /// </summary>
     internal sealed record People(Guid Organizer, Guid Organizer2, Guid Owner, Guid Owner2, Guid Locked, Guid Admin);
 
@@ -118,6 +120,7 @@ public sealed class CalendarSharingFixture : IAsyncLifetime
         Failures.FailShareRead = false;
         Failures.FailSave = false;
         await using var db = Db();
+        await TestRoles.EnsureAsync(db);
         var tag = Guid.NewGuid().ToString("N")[..8];
         User Person(string name, Guid role, bool active = true) => new()
         {
@@ -126,9 +129,9 @@ public sealed class CalendarSharingFixture : IAsyncLifetime
         };
         var users = new[]
         {
-            Person("Lê Tổ Chức", BuiltInRoles.Secretary), Person("Phạm Chủ Toạ", BuiltInRoles.Chair),
-            Person("Trần Chủ Lịch", BuiltInRoles.Member), Person("Võ Chủ Lịch", BuiltInRoles.Member),
-            Person("Đỗ Đã Khoá", BuiltInRoles.Member, false), Person("Ngô Quản Trị", BuiltInRoles.Admin),
+            Person("Lê Tổ Chức", TestRoles.Secretary), Person("Phạm Chủ Toạ", BuiltInRoles.Approver),
+            Person("Trần Chủ Lịch", TestRoles.Attendee), Person("Võ Chủ Lịch", TestRoles.Attendee),
+            Person("Đỗ Đã Khoá", TestRoles.Attendee, false), Person("Ngô Quản Trị", BuiltInRoles.Admin),
         };
         db.Users.AddRange(users);
         await db.SaveChangesAsync();

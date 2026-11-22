@@ -72,7 +72,11 @@ public sealed class ExportEndpointTests(RecordingFixture fixture) : IClassFixtur
         var saved = await anonymous.GetAsync(url);
         Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
         Assert.Equal("attachment", saved.Content.Headers.ContentDisposition?.DispositionType);
-        Assert.Equal(Audio, await saved.Content.ReadAsByteArrayAsync());
+        // ADR-0069: saved as MP3, converted from the stored WAV on the way out.
+        Assert.Equal("audio/mpeg", saved.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("phien-hop.mp3", saved.Content.Headers.ContentDisposition?.FileNameStar ?? saved.Content.Headers.ContentDisposition?.FileName);
+        byte[] converted = [.. RecordingFixture.FakeAudioTranscoder.Tag, .. Audio];
+        Assert.Equal(converted, await saved.Content.ReadAsByteArrayAsync());
 
         // Every listener gets a playback link; adding the flag to it must not make it a download.
         var playback = (await member.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/playback")).GetProperty("url").GetString()!;
@@ -81,6 +85,64 @@ public sealed class ExportEndpointTests(RecordingFixture fixture) : IClassFixtur
 
         await using var db = fixture.Db();
         Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "recording.downloaded"));
+    }
+
+    [Fact]
+    public async Task An_mp3_is_saved_as_it_is_and_playback_keeps_the_stored_file()
+    {
+        var s = await fixture.Seed();
+        using var secretary = fixture.Client(s.Secretary);
+        byte[] mp3 = [.. "ID3"u8, .. new byte[2048]];
+        var form = new MultipartFormDataContent { { new StringContent("true"), "consentConfirmed" } };
+        var file = new ByteArrayContent(mp3);
+        file.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/mpeg");
+        form.Add(file, "file", "da-nen.mp3");
+        var created = await secretary.PostAsync(s.Url, form);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("recordingId").GetGuid();
+
+        var calls = fixture.Transcoder.Calls;
+        using var anonymous = fixture.Client();
+        var url = (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/download")).GetProperty("url").GetString()!;
+        var saved = await anonymous.GetAsync(url);
+        Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        Assert.Equal("audio/mpeg", saved.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(mp3, await saved.Content.ReadAsByteArrayAsync());
+        Assert.Equal(calls, fixture.Transcoder.Calls);
+
+        // Listening is not saving: the stored file, as it is, with no name to save it under.
+        var played = await anonymous.GetAsync(
+            (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/playback")).GetProperty("url").GetString()!);
+        Assert.Equal(HttpStatusCode.OK, played.StatusCode);
+        Assert.Null(played.Content.Headers.ContentDisposition);
+    }
+
+    [Fact]
+    public async Task A_download_the_server_cannot_convert_to_mp3_is_refused_with_its_code()
+    {
+        var s = await fixture.Seed();
+        var id = await UploadAndTranscribe(s);
+        using var chair = fixture.Client(s.Chair);
+        using var anonymous = fixture.Client();
+        try
+        {
+            // No ffmpeg: the link is not handed out, and nothing is logged as downloaded.
+            fixture.Transcoder.Available = false;
+            await AssertCode(await chair.GetAsync($"/api/recordings/{id}/download"), 503, "MSG482");
+            await using (var db = fixture.Db())
+                Assert.Equal(0, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "recording.downloaded"));
+
+            // ffmpeg there, but the conversion fails before the first byte: an error, not a broken file.
+            fixture.Transcoder.Available = true;
+            var url = (await chair.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/download")).GetProperty("url").GetString()!;
+            fixture.Transcoder.Fail = true;
+            await AssertCode(await anonymous.GetAsync(url), 503, "MSG482");
+        }
+        finally
+        {
+            fixture.Transcoder.Available = true;
+            fixture.Transcoder.Fail = false;
+        }
     }
 
     [Fact]

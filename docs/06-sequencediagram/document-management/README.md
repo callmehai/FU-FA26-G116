@@ -28,7 +28,7 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
 
 **Kho cá nhân và gắn/gỡ (vẽ 27/10/2026, SCRUM-91; `.txt` as-built một phần 28/10).**
 
-- Hạn mức 10 GB toàn hệ thống (ADR-0034, PO 27/10/2026) và giới hạn 10 tệp / 200 MB (BR-319): UC-36, UC-33b AF-1 và UC-33a AF-1
+- Hạn mức 10 GB toàn hệ thống (ADR-0034, PO 27/10/2026) và giới hạn 10 tệp / 100 MB (BR-319; họp 19/11/2026, trước là 200 MB): UC-36, UC-33b AF-1 và UC-33a AF-1
   (tải từ máy) cùng kiểm tổng dung lượng đã lưu (BR-333) và trả `MSG346` khi đầy; UC-36 và UC-33b AF-1 thêm nhánh `MSG288`.
   Sequence vẽ một lần gửi; hàng đợi ở trình duyệt gửi từng tệp một request (ADR-0033, BR-286), không vẽ lại vòng lặp.
 - UC-34b (Quản trị viên đọc kho của tài khoản đã khoá, ADR-0035) vẽ theo code PR #169: kiểm tài khoản đã khoá, ghi nhật ký kiểm toán
@@ -60,8 +60,8 @@ tiến trình con ([ADR-0044](../../05-decisions/0044-server-kiem-cau-truc-va-de
 
 UC-33a AF-1 vẽ ngày 23/10/2026 cho SCRUM-107, chỉ phủ nhánh tải từ máy; boundary là tab Tài liệu, nơi đặt hộp thoại tải lên (khớp `MeetingDocumentsTab` ở class diagram FE-07); luồng chính (chọn từ kho) thuộc SCRUM-58 và sẽ
 thêm vào cùng UC sau. **Cập nhật 27/10/2026 theo code**: kiểm quyền và trạng thái cuộc họp trước (EX-7, EX-1, EX-6), rồi chặn theo
-kích thước khai báo trước khi đọc thân request (EX-8), đọc request rồi kiểm một lượt (đúng một tệp trở lên, ≤ 10 tệp và ≤ 200 MB,
-từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 50 MB — EX-3/EX-8), ghi dòng tệp lưu trữ trước khi đẩy byte,
+kích thước khai báo trước khi đọc thân request (EX-8), đọc request rồi kiểm một lượt (đúng một tệp trở lên, ≤ 10 tệp và ≤ 100 MB,
+từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 10 MB — EX-3/EX-8; họp 19/11/2026, trước là 200 MB / 50 MB), ghi dòng tệp lưu trữ trước khi đẩy byte,
 đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Số trang PDF do server đếm (trước
 02/11/2026 là trình duyệt gửi kèm `pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
 `:File Storage` là kho đối tượng R2 ([ADR-0024](../../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md));
