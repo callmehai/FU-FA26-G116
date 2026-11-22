@@ -223,12 +223,14 @@ họp; người khác nhận `null`. Tên hiển thị của một giọng: `ass
 *Người nói N*.
 
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
-và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,5) **và** hơn người
+và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
 xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
 
-> **21/11/2026:** mọi ngưỡng Voice ID hạ xuống 0,5 (biên 0,05) để máy nhận ra nhiều giọng hơn. Các số đo dưới đây là lý
-> do của các ngưỡng cũ (0,6 / 0,1 / 0,7 / 0,7 / 0,8 / 0,75); ở 0,5 có thể gợi ý và tự gán sai người, Thư ký sửa bằng `PUT`.
-> Vì ngưỡng gợi ý bằng ngưỡng tự gán, mọi giọng được gợi ý đều được máy tự gán (trừ người còn ở thông báo 1.1 trở xuống).
+> **21/11/2026** ([ADR-0074](../05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)): mọi ngưỡng
+> Voice ID từng bị hạ xuống 0,5 để bớt "Người nói N"; buổi thử cùng ngày cho thấy một tên nhận tới 7 giọng máy, có giọng
+> chỉ hơn người thứ hai 0,02. Nguyên nhân 40 giọng cho 4 người là ngưỡng gom nhóm của máy tách người nói, nay sửa ở worker
+> (0,5 → 0,72). Các ngưỡng ở đây trở lại như đã đo (0,6 / 0,05 / 0,7 / 0,7 / 0,8), riêng tự gán hạ 0,75 → 0,7. Trên hai bản
+> ghi mic phòng của buổi thử, người trong phòng khớp giọng mẫu 0,73–0,88; mọi giọng khác cao nhất 0,66.
 
 Ngưỡng cũ 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
 `workers/speech/eval/`). Ở 0,5, 3% thời gian nói bị gợi ý sai người, có cả người chưa đăng ký bị gợi ý
@@ -236,25 +238,25 @@ tên. Ở 0,6, không gợi ý sai lần nào, và 97–98% lời của người
 
 **Một người bị tách làm hai** (như AI-eCabinet): máy tách người nói có thể chia một người thành hai nhãn, nên
 một người được gợi ý cho nhiều giọng. Giọng thứ hai trở đi phải nghe giống giọng được gợi ý chắc nhất
-(cosine giữa hai vector giọng ≥ `VoiceId:SameVoiceThreshold`, 0,5). Thiếu điều kiện này, người chưa đăng ký
+(cosine giữa hai vector giọng ≥ `VoiceId:SameVoiceThreshold`, 0,7). Thiếu điều kiện này, người chưa đăng ký
 có giọng gần một người đã đăng ký bị gợi ý tên (11% lời của họ trên bộ sạch); ở 0,7 không còn trường hợp nào,
 còn lời của người đã đăng ký được gợi ý đúng tăng từ 97% lên 99% (đo lại 29/10/2026, `evaluate.py --rule`).
 Giọng gợi ý kém chắc hơn có `sameAsLabel`: nhãn của giọng chắc hơn (giọng đã được Thư ký gán đúng người đó
 thì nó đứng đầu, gán người khác thì bị loại khỏi nhóm). FE hiện "Cùng giọng với Người nói N" và cho gán cả
 hai trong một lần. Hai giọng đều giữ gợi ý; máy không tự gộp, vì gộp sai là gán nhầm tên người.
 
-Giọng thứ hai trở đi còn phải đạt `VoiceId:SecondVoiceThreshold` (0,5) so với giọng mẫu (ADR-0045). Hai người
+Giọng thứ hai trở đi còn phải đạt `VoiceId:SecondVoiceThreshold` (0,7) so với giọng mẫu (ADR-0045). Hai người
 ngồi chung một mic phòng có thể giống nhau như một người bị tách làm hai: trên server test ngày 31/10/2026, hai người
 khác nhau giống nhau 0,745, một người bị tách làm hai giống nhau 0,777. Điểm so với giọng mẫu thì tách được: người lạ
 0,645, người thật 0,771.
 
-Giọng còn chưa có tên mà giống giọng đầu tiên của một người đã nhận ra từ `VoiceId:InheritVoiceThreshold` (0,5)
+Giọng còn chưa có tên mà giống giọng đầu tiên của một người đã nhận ra từ `VoiceId:InheritVoiceThreshold` (0,8)
 trở lên thì nhận luôn người đó, kèm điểm của giọng đầu, bất kể điểm so với giọng mẫu (ADR-0050). Đó là một người bị
 máy tách ra: trên server test ngày 03/11/2026, Hải hát hai lượt, bản chạy lại cả băng tách giọng Hải thành bốn giọng
 giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đọc, nên ba giọng phụ không được gợi ý ai. Hai người khác
 nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
 
-**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,5) được gán luôn tên
+**Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,7) được gán luôn tên
 người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
@@ -275,7 +277,8 @@ người còn ở bản 1.1 hay 1.0 vẫn chỉ được gợi ý, cho tới khi
 | ≥ 0,75 (máy tự gán) | 20 | 20 |
 
 VIVOS không có lần gợi ý sai nào ở mọi khoảng điểm, nên ngưỡng tự gán lấy theo dữ liệu thật trên server test: người
-lạ 0,645; người thật 0,737–0,938. 0,75 để cách người lạ một khoảng rộng. Ở 0,7, hai giọng bị tách của cùng một người
+lạ 0,645; người thật 0,737–0,938. 0,75 để cách người lạ một khoảng rộng. Ngày 21/11/2026 hạ còn 0,7 (ADR-0074): một trong
+bốn người của phòng *test mic* chỉ khớp 0,73, giọng không phải người trong phòng cao nhất 0,66. Ở 0,7, hai giọng bị tách của cùng một người
 hiện thành hai người nói; Thư ký gán cùng một tên là gộp lại.
 
 ### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null, "guestId": "…" | null }`
@@ -315,9 +318,9 @@ câu mất theo.
 | Khoá | Mặc định | Ghi chú |
 |---|---|---|
 | `EncryptionKey` | rỗng | Base64 của 32 byte ngẫu nhiên. Rỗng (máy dev) thì dẫn xuất bằng HKDF từ `Authentication:SigningKey` với nhãn riêng. Server phải đặt khoá riêng. Đổi khoá thì giọng mẫu cũ không giải mã được — người dùng ghi lại |
-| `SuggestThreshold` | `0.5` | Xem phần *Cách gợi ý* |
+| `SuggestThreshold` | `0.6` | Xem phần *Cách gợi ý* |
 | `SuggestMargin` | `0.05` | |
-| `SameVoiceThreshold` | `0.5` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
-| `SecondVoiceThreshold` | `0.5` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
-| `InheritVoiceThreshold` | `0.5` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
-| `AutoAssignThreshold` | `0.5` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |
+| `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
+| `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
+| `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
+| `AutoAssignThreshold` | `0.7` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |

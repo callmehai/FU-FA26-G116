@@ -110,18 +110,21 @@ MIN_REGION_S = 0.5
 # A cluster with less speech than this is not a person but noise, laughter or a cough; its windows
 # join the nearest real speaker. Skipped when the caller states the number of speakers.
 MIN_SPEAKER_S = 2.0
-# Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"): with 3 s
-# windows, 0.5 found the right number of speakers in 17 of 20 synthetic clips (the misses are pairs
-# of near-identical macOS English voices); higher cuts merged real people. SPEECH_CLUSTER_THRESHOLD
+# Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"; ADR-0074). 0.5
+# was tuned on synthetic clips (17 of 20 right) and on real rooms split 4 people into 41 voices (team
+# test 21/11/2026, 15 minutes) and 3 people plus a laptop speaker into 15. On those two recordings 0.72
+# gave 12 and 5 voices, each one person; 0.75 gave 10 and 4; from 0.78 two people of the second room
+# (0.73 alike in that room) became one voice. 0.72 keeps a margin below that. SPEECH_CLUSTER_THRESHOLD
 # overrides it.
-DEFAULT_CLUSTER_THRESHOLD = 0.5
+DEFAULT_CLUSTER_THRESHOLD = 0.72
 # Second pass: two clusters whose whole-voice embeddings (up to SPEAKER_EMBED_MAX_S each) are at
 # least this close are one person the window clustering split. On a real meeting one voice came
 # out as two large clusters at 0.94. Short clusters are unreliable (one person 0.36–0.81, two
-# people up to 0.73), so this merges only when nearly certain: a person split in two is cheaper
-# than two people merged, as the Secretary can name both labels. Skipped when the caller states
-# the number of speakers.
-MERGE_THRESHOLD = 0.85
+# people up to 0.73, and 0.745 on the test server 31/10), so this merges only when nearly certain:
+# a person split in two is cheaper than two people merged, as the Secretary can name both labels.
+# 0.8 (was 0.85, ADR-0074): on the 21/11 rooms one person's halves were 0.75–0.82 alike. Skipped
+# when the caller states the number of speakers.
+MERGE_THRESHOLD = 0.8
 
 # --- Enrolment sample quality gates (POST /v1/embed) ------------------------------------------
 # A voice sample becomes someone's reference voice, so a bad one causes wrong suggestions in
