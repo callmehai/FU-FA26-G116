@@ -22,7 +22,7 @@ public sealed class RptUnitRound1Wave2Tests
 
     private static ReportService Service(IMeetingReportQuery query, FakeMeetingReportRenderer renderer,
         FakeAuditService audit, FakeUnitOfWork uow, Wave2Logger<ReportService> log)
-        => new(query, renderer, audit, uow, new FixedClock(Now), log);
+        => new(query, new FakeReportFactQuery(), renderer, audit, uow, new FixedClock(Now), log);
 
     [Fact(DisplayName = "ReportService.ExportMeetingReportAsync/UTC002 single-month period exports its own file")]
     [Trait("UTC", "ReportService.ExportMeetingReportAsync/UTC002")]

@@ -22,7 +22,7 @@ public sealed class RptUnitRound1Tests
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly Guid _actor = Guid.CreateVersion7();
 
-    private ReportService Service() => new(_query, _renderer, _audit, _unitOfWork,
+    private ReportService Service() => new(_query, new FakeReportFactQuery(), _renderer, _audit, _unitOfWork,
         new FixedClock(Now), NullLogger<ReportService>.Instance);
 
     [Fact(DisplayName = "ReportService.GetMeetingReportAsync/UTC001 monthly totals with no audit row")]

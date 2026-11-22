@@ -19,28 +19,15 @@ public static class MeetingReportXlsx
     private const int Percent = 2;
     private const int Decimal = 3;
 
-    private static readonly Dictionary<string, string> StatusLabels = new()
-    {
-        ["Draft"] = "Nháp",
-        ["WaitingApproval"] = "Chờ duyệt",
-        ["Rejected"] = "Bị từ chối",
-        ["Approved"] = "Đã duyệt",
-        ["Published"] = "Đã công bố",
-        ["InProgress"] = "Đang diễn ra",
-        ["Ended"] = "Đã kết thúc",
-        ["Cancelled"] = "Đã huỷ",
-    };
-
-    private static readonly Dictionary<string, string> SensitivityLabels = new()
-    {
-        ["Normal"] = "Thường",
-        ["Internal"] = "Nội bộ",
-        ["Secret"] = "Mật",
-    };
-
     private const string NoData = "Chưa có dữ liệu";
 
-    public static byte[] Build(MeetingReport report)
+    public static byte[] Build(MeetingReport report) => Workbook("Báo cáo cuộc họp", Sheet(report));
+
+    /// <summary>
+    /// The parts of a one-sheet workbook around <paramref name="sheet"/>. Shared with <see cref="ReportTableXlsx"/>, so
+    /// both files carry the same styles: plain, bold, a percentage with one decimal and a number with one.
+    /// </summary>
+    internal static byte[] Workbook(string sheetName, string sheet)
     {
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
@@ -61,10 +48,10 @@ public static class MeetingReportXlsx
                 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
                 </Relationships>
                 """);
-            Add(zip, "xl/workbook.xml", """
+            Add(zip, "xl/workbook.xml", $$"""
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-                <sheets><sheet name="Báo cáo cuộc họp" sheetId="1" r:id="rId1"/></sheets>
+                <sheets><sheet name="{{SecurityElement.Escape(sheetName)}}" sheetId="1" r:id="rId1"/></sheets>
                 </workbook>
                 """);
             Add(zip, "xl/_rels/workbook.xml.rels", """
@@ -91,7 +78,7 @@ public static class MeetingReportXlsx
                 </cellXfs>
                 </styleSheet>
                 """);
-            Add(zip, "xl/worksheets/sheet1.xml", Sheet(report));
+            Add(zip, "xl/worksheets/sheet1.xml", sheet);
         }
         return buffer.ToArray();
     }
@@ -110,11 +97,11 @@ public static class MeetingReportXlsx
         rows.AddRange(report.ByMonth.Select(m => new object?[] { Display(m.Month), m.Count }));
         rows.Add([]);
         rows.Add([new Cell("Trạng thái", Bold), new Cell("Số cuộc họp", Bold)]);
-        rows.AddRange(report.ByStatus.Select(s => new object?[] { StatusLabels.GetValueOrDefault(s.Status, s.Status), s.Count }));
+        rows.AddRange(report.ByStatus.Select(s => new object?[] { ReportLabels.MeetingStatus.GetValueOrDefault(s.Status, s.Status), s.Count }));
         rows.Add([]);
         rows.Add([new Cell("Mức độ mật", Bold), new Cell("Số cuộc họp", Bold)]);
         rows.AddRange(report.BySensitivity.Select(s => new object?[]
-            { SensitivityLabels.GetValueOrDefault(s.Sensitivity, s.Sensitivity), s.Count }));
+            { ReportLabels.Sensitivity.GetValueOrDefault(s.Sensitivity, s.Sensitivity), s.Count }));
         rows.Add([]);
         rows.Add([new Cell("Chỉ số", Bold), new Cell("Giá trị", Bold), new Cell("Số cuộc họp được tính", Bold),
             new Cell("Số cuộc họp chưa có dữ liệu", Bold)]);
@@ -127,25 +114,50 @@ public static class MeetingReportXlsx
         rows.Add(["Thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản (giờ)",
             report.MinutesTurnaround.AverageHours is { } hours ? new Cell(hours, Decimal) : NoData,
             report.MinutesTurnaround.Meetings, report.MinutesTurnaround.MeetingsWithoutIssuedMinutes]);
+        rows.Add([]);
+        rows.Add([new Cell("Số liệu chính", Bold), new Cell("Giá trị", Bold)]);
+        rows.Add(["Biểu quyết đã đóng", report.Votes.Closed]);
+        rows.Add(["Biểu quyết thông qua", report.Votes.Passed]);
+        rows.Add(["Biểu quyết không thông qua", report.Votes.NotPassed]);
+        rows.Add(["Biểu quyết hoãn", report.Votes.Deferred]);
+        rows.Add(["Cuộc họp đã ban hành biên bản", report.Minutes.Issued]);
+        rows.Add(["Biên bản chờ duyệt", report.Minutes.WaitingApproval]);
+        rows.Add(["Số bản ghi", report.Recordings.Count]);
+        rows.Add(["Giờ ghi âm", new Cell(report.Recordings.RecordedHours, Decimal)]);
+        rows.Add(["Giờ đã gỡ băng", new Cell(report.Recordings.TranscribedHours, Decimal)]);
 
+        return SheetXml(rows, """<col min="1" max="1" width="62" customWidth="1"/><col min="2" max="2" width="22" customWidth="1"/><col min="3" max="4" width="28" customWidth="1"/>""");
+    }
+
+    /// <summary>A worksheet of <paramref name="rows"/> (an empty row is left blank) with the given column widths.</summary>
+    internal static string SheetXml(List<object?[]> rows, string cols)
+    {
         var data = new StringBuilder();
         for (var r = 0; r < rows.Count; r++)
         {
             if (rows[r].Length == 0) continue;
             data.Append(CultureInfo.InvariantCulture, $"""<row r="{r + 1}">""");
-            for (var c = 0; c < rows[r].Length; c++) data.Append(CellXml(rows[r][c], $"{(char)('A' + c)}{r + 1}"));
+            for (var c = 0; c < rows[r].Length; c++) data.Append(CellXml(rows[r][c], $"{Column(c)}{r + 1}"));
             data.Append("</row>");
         }
         return $"""
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <cols><col min="1" max="1" width="62" customWidth="1"/><col min="2" max="2" width="22" customWidth="1"/><col min="3" max="4" width="28" customWidth="1"/></cols>
+            <cols>{cols}</cols>
             <sheetData>{data}</sheetData>
             </worksheet>
             """;
     }
 
-    private sealed record Cell(object Value, int Style);
+    /// <summary>A, B, … Z, then AA: a report table has at most a handful of columns, but the name never breaks.</summary>
+    private static string Column(int index) => index < 26 ? $"{(char)('A' + index)}" : $"{Column(index / 26 - 1)}{(char)('A' + index % 26)}";
+
+    internal sealed record Cell(object Value, int Style);
+
+    internal const int PlainStyle = Plain;
+    internal const int BoldStyle = Bold;
+    internal const int PercentStyle = Percent;
+    internal const int DecimalStyle = Decimal;
 
     private static string CellXml(object? value, string reference)
     {
