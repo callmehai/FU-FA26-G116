@@ -153,6 +153,7 @@ export function VotingPanel({
     anyTools && 'vote-sheet-tools',
     votes.some((v) => hasStep(v) && hasTools(v)) && 'vote-sheet-both',
     votes.some((v) => v.status !== 'Draft') && 'vote-sheet-turnout',
+    votes.some((v) => v.documentCount > 0) && 'vote-sheet-docs',
     votes.some((v) => v.conclusion || (v.hasVoted && v.status === 'Open')) && 'vote-sheet-outcome',
   ]
     .filter(Boolean)
@@ -500,9 +501,14 @@ function VoteCard({
               </span>
             )
           ) : (
-            // The page counts documents as the Nội dung tab does, in the same outlined chip.
-            <span className="agenda-docs-count">
-              <Badge tone="outline">{vote.documentCount} tài liệu</Badge>
+            // The page counts documents in the Nội dung tab's outlined chip, only when there are some (Hải 23/11/2026):
+            // "0 tài liệu" took the width a long title needs. Its cell stays, empty, so the columns still line up.
+            <span className="agenda-cell vote-cell-docs">
+              {vote.documentCount > 0 && (
+                <span className="agenda-docs-count">
+                  <Badge tone="outline">{vote.documentCount} tài liệu</Badge>
+                </span>
+              )}
             </span>
           )}
         </div>

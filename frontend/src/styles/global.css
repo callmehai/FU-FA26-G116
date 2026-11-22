@@ -3519,6 +3519,7 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
   .vote-sheet .vote-mode { white-space: nowrap; }
   .vote-sheet-turnout .vote-cell-turnout { display: inline-flex; width: 44px; }
   .vote-sheet-outcome .vote-cell-outcome { display: inline-flex; width: 140px; }
+  .vote-sheet-docs .vote-cell-docs { display: inline-flex; width: 84px; }
   .vote-sheet .vote-actions { justify-content: flex-end; }
   .vote-sheet .vote-steps > .btn { min-width: 64px; justify-content: center; }
   .vote-sheet-tools .vote-actions { min-width: 114px; }
