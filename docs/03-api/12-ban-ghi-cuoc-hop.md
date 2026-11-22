@@ -284,7 +284,7 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,
-      "wordStartsMs": [0, 280, 600, 920, 1200] }
+      "wordStartsMs": [0, 280, 600, 920, 1200], "wordConfidence": [99, 97, 42, 96, 88] }
   ]
 }
 ```
@@ -293,6 +293,12 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
 giờ chia đều thời lượng cho các từ để giả mốc.
+
+`wordConfidence`: độ chắc của máy nhận dạng với từng từ trong `text`, theo phần trăm (0–100), mỗi từ một số. Worker
+lấy xác suất của từng token Gipformer trả (`ys_log_probs`), từ nhiều token lấy token kém chắc nhất. FE tô nền vàng
+nhạt (`--word-unsure-bg`) cho từ dưới **50**, để Thư ký biết chỗ cần nghe lại (họp thử 21/11/2026). Trên bản ghi mic
+phòng của buổi họp thử, mốc 50 đánh dấu 12% số từ, gồm phần lớn các từ nhận sai rõ (tiếng Anh, từ vô nghĩa), nhưng
+cũng có từ đúng; 40 chỉ đánh dấu 6% nhưng bỏ sót nhiều từ sai. `null` theo đúng quy tắc của `wordStartsMs`.
 
 `speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
 thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
@@ -392,7 +398,8 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
       "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
       "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] },
-      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false, "wordStartsMs": [40, 200, 360, 560, 760] }
+      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false, "wordStartsMs": [40, 200, 360, 560, 760],
+      "wordConfidence": [98, 99, 35, 90, 97] }
   ]
 }
 ```
@@ -409,6 +416,7 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
 - `wordStartsMs`: mốc bắt đầu của từng từ trong `text`, tính bằng ms từ đầu âm thanh của câu, để FE tô theo từng từ
   khi phát. `null` khi câu lưu trước khi worker trả mốc từ, khi Thư ký đã sửa chữ, và khi người gọi không nhận chữ
   của câu (câu đã bị loại).
+- `wordConfidence`: độ chắc của máy với từng từ trong `text` (0–100), như ở bản gỡ băng; `null` như `wordStartsMs`.
 
 Câu trình duyệt cắt ở chỗ ngắt hơi được chấm câu cùng câu trước của cùng người (kết thúc trong vòng 10 giây,
 chưa bị Thư ký sửa hay bị loại, không quá 60 từ): khi câu sau tới, dấu câu và chữ hoa của câu trước có thể đổi

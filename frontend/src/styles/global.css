@@ -47,6 +47,8 @@
      white. Yellow alone is too faint to read as an icon. */
   --warning-fill: #fcc419;
   --warning-ink: #8a5300;
+  /* A transcript word the recogniser was not sure of: a pale yellow wash, fainter than an overheard-words mark. */
+  --word-unsure-bg: #fff3bf;
   /* Destructive actions, "Mật", the current-time line. */
   --danger: #b4232a;
   --danger-ink: #8e1b21;
@@ -4798,6 +4800,7 @@ audio.recording-player { height: 40px; }
 .tl-say:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .tl-say.is-active, .tl-say.is-active:hover { background: var(--brand-wash); }
 /* A shadow, not padding: the marked word grows no wider, so the line never reflows as the voice moves on. */
+.tl-word-unsure { border-radius: 3px; background: var(--word-unsure-bg); }
 .tl-word.is-now { border-radius: 3px; background: var(--brand-wash-line); box-shadow: 0 0 0 2px var(--brand-wash-line); color: var(--brand-ink); }
 .tl-para .transcript-editor { margin: 4px 0; }
 /* A paragraph begins with a capital even when its first sentence was stored as the end of a cut one (old rows). */

@@ -300,14 +300,15 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
-    public async Task A_line_keeps_the_time_of_each_word_until_the_secretary_corrects_it()
+    public async Task A_line_keeps_the_time_and_sureness_of_each_word_until_the_secretary_corrects_it()
     {
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var before = fixture.Speech.Result;
         fixture.Speech.Result = before with
         {
-            Segments = [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí.", null, [80, 400, 720, 1040, 1300]),
+            Segments = [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí.", null, [80, 400, 720, 1040, 1300],
+                    [99, 97, 42, 90, 88]),
                 // One time short of its words: no timing rather than a wrong one.
                 new(6500, 10900, "SPEAKER_01", "Tôi đề nghị bổ sung kinh phí.", null, [6500, 6800])],
         };
@@ -320,6 +321,9 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
             Assert.Equal([80L, 400, 720, 1040, 1300],
                 segments[0].GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
             Assert.Equal(JsonValueKind.Null, segments[1].GetProperty("wordStartsMs").ValueKind);
+            Assert.Equal([99, 97, 42, 90, 88],
+                segments[0].GetProperty("wordConfidence").EnumerateArray().Select(w => w.GetInt32()));
+            Assert.Equal(JsonValueKind.Null, segments[1].GetProperty("wordConfidence").ValueKind);
 
             using var secretary = fixture.Client(s.Secretary);
             var line = segments[0].GetProperty("id").GetGuid();
@@ -328,7 +332,9 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
             Assert.Equal(JsonValueKind.Null,
                 (await Transcript(member, id)).GetProperty("segments")[0].GetProperty("wordStartsMs").ValueKind);
             await using var db = fixture.Db();
-            Assert.Null((await db.TranscriptSegments.SingleAsync(x => x.Id == line)).WordStartsMs);
+            var stored = await db.TranscriptSegments.SingleAsync(x => x.Id == line);
+            Assert.Null(stored.WordStartsMs);
+            Assert.Null(stored.WordConfidence);
         }
         finally
         {

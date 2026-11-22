@@ -17,6 +17,8 @@ export interface TranscriptSegment {
    * voice word by word while it plays. Null for a line transcribed before word times were kept, or corrected since.
    */
   wordStartsMs?: number[] | null
+  /** How sure the recogniser was of each word, in per cent (0–100); null on the same terms as `wordStartsMs`. */
+  wordConfidence?: number[] | null
 }
 
 /** SCRUM-35 — one voice of the recording: the machine's suggestion and the Secretary's decision. */

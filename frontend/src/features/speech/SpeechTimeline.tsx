@@ -573,6 +573,7 @@ function Sentence({
         <SpokenWords
           text={clip.text}
           starts={clip.wordStartsMs}
+          confidence={clip.wordConfidence}
           nowMs={active && player.playing ? player.offsetMs : null}
           marked={leakWords ? (word) => leakWords.some(([from, to]) => word >= from && word < to) : undefined}
           markClass="tl-leak-words"

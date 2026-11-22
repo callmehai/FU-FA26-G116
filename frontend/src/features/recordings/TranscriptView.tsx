@@ -534,6 +534,7 @@ function RunParagraph({
                   <SpokenWords
                     text={segment.text}
                     starts={segment.wordStartsMs}
+                    confidence={segment.wordConfidence}
                     nowMs={active && playing ? currentMs : null}
                   />
                 </span>

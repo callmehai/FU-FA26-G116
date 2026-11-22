@@ -28,6 +28,13 @@ public class TranscriptSegment : Entity
     public long[]? WordStartsMs { get; set; }
 
     /// <summary>
+    /// How sure the recogniser was of each word of <see cref="Text"/>, 0–100 per cent (its least sure token): a doubtful word is
+    /// marked for the Secretary to check. Null for a line transcribed before the worker sent scores, or whose words no
+    /// longer match them; cleared when someone corrects the text.
+    /// </summary>
+    public int[]? WordConfidence { get; set; }
+
+    /// <summary>
     /// What the diarizer called this voice — "Người nói 1", "Người nói 2". A label within this one
     /// recording and nothing more. A line is said by its voice only: the Secretary moves a line the diarizer gave the
     /// wrong voice to another voice of the recording (a new one for a person no voice is named as), as AI-eCabinet's

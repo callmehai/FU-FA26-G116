@@ -40,7 +40,8 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
             $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}{ahead}", audio, contentType, ct);
         var body = await ReadBodyAsync<TranscribeBody>(response, ct);
         return new(body.DurationMs, body.Language ?? "vi", body.AsrModel ?? "", body.EmbeddingModel ?? "",
-            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs, s.WordStartsMs))],
+            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs, s.WordStartsMs,
+                s.WordConfidence))],
             [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))],
             body.Context);
     }
@@ -118,7 +119,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     private sealed record ErrorBody(string? Error);
     private sealed record EmbedBody(float[]? Embedding, string? Model, long SpeechMs);
     private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text, double? LevelDbfs,
-        long[]? WordStartsMs);
+        long[]? WordStartsMs, int[]? WordConfidence);
     private sealed record SpeakerBody(string? Label, long SpeechMs, float[]? Embedding);
     private sealed record TranscribeBody(long DurationMs, string? Language, string? AsrModel, string? EmbeddingModel,
         SegmentBody[]? Segments, SpeakerBody[]? Speakers, string? Context);

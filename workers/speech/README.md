@@ -98,7 +98,7 @@ Không cần xác thực.
   "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
-    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"]}
+    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"], "wordConfidence": [99, 97, 64, "… một số cho mỗi từ"]}
   ],
   "speakers": [
     {"label": "SPEAKER_00", "speechMs": 11846, "embedding": [-0.051461, 0.011607, "… 512 số, độ dài 1"]}
@@ -117,6 +117,9 @@ Không cần xác thực.
 - `wordStartsMs`: mốc bắt đầu (ms trong bản ghi) của từng từ trong `text`, lấy từ mốc của từng token mà Gipformer
   trả (`result.timestamps`, token mở đầu một từ mang dấu `▁`). Bước dấu câu không thêm bớt từ nên mốc vẫn khớp.
   `null` khi số mốc không khớp số từ: không bao giờ chia đều để đoán.
+- `wordConfidence`: máy nhận dạng chắc đến đâu với từng từ trong `text`, theo phần trăm (0–100). Gipformer trả xác suất
+  (log) của từng token nó chọn (`result.ys_log_probs`); một từ gồm nhiều token lấy token kém chắc nhất. `null` khi số
+  điểm không khớp số từ, như `wordStartsMs`.
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
   bằng viBERT-capu (bước 7 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
   đoạn trước thì bắt đầu bằng chữ thường; đoạn đầu của một lượt nói luôn viết hoa, và một đoạn bị bỏ ngỏ ngay trước
