@@ -48,6 +48,18 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
 
     public Task ReloadAsync(Transcript transcript, CancellationToken ct) => db.Entry(transcript).ReloadAsync(ct);
 
+    public async Task<TranscriptCorrections> ReadCorrectionsAsync(Guid transcriptId, CancellationToken ct)
+    {
+        var lines = await db.TranscriptSegments.AsNoTracking().Where(s => s.TranscriptId == transcriptId).OrderBy(s => s.Position)
+            .Select(s => new PreviousLine(s.StartMs, s.EndMs, s.SpeakerLabel, s.EditedAt == null ? null : s.Text, s.EditedById,
+                s.EditedAt, s.SpeakerAssignedById, s.SpeakerAssignedAt))
+            .ToListAsync(ct);
+        var voices = await db.TranscriptSpeakers.AsNoTracking().Where(s => s.TranscriptId == transcriptId).OrderBy(s => s.Label)
+            .Select(s => new PreviousVoice(s.Label, s.AssignedUserId, s.AssignedGuestId, s.AssignedById, s.AssignedAt))
+            .ToListAsync(ct);
+        return new(lines, voices);
+    }
+
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
 

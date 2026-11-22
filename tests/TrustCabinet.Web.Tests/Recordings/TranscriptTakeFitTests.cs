@@ -44,3 +44,30 @@ public sealed class TranscriptTakeFitTests
         Assert.Equal((6784L, 14284L), TranscriptRules.FitToTake(6784, 14284, [new(0, 8021, At)]));
     }
 }
+
+/// <summary>
+/// The meeting of 22/11/2026: a line cut to its take kept the times of the words said across the cut, so 6 of 664 lines
+/// had words starting before the line or after it ended.
+/// </summary>
+public sealed class TranscriptWordsInLineTests
+{
+    [Fact]
+    public void Words_across_the_cut_start_at_the_line_edge_and_stay_in_order()
+    {
+        Assert.Equal([1000L, 1000, 1500, 2000, 2000], WordTimings.Within([400, 900, 1500, 2600, 3100], 1000, 2000)!);
+    }
+
+    [Fact]
+    public void Words_inside_the_line_are_unchanged_and_no_times_stay_none()
+    {
+        Assert.Equal([1000L, 1200, 1900], WordTimings.Within([1000, 1200, 1900], 1000, 2000)!);
+        Assert.Null(WordTimings.Within(null, 1000, 2000));
+    }
+
+    [Fact]
+    public void A_line_as_read_never_shows_a_word_outside_it()
+    {
+        Assert.Equal([2250L, 9000, 16042], WordTimings.ForLine("một hai ba", [2250, 9000, 18690], false, 2250, 16042));
+        Assert.Null(WordTimings.ForLine("một hai ba", [2250, 9000, 18690], true, 2250, 16042));
+    }
+}

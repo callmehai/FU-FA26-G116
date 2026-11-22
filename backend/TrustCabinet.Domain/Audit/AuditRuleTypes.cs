@@ -148,6 +148,13 @@ public static class AuditActions
     /// <summary>A secretary said who a voice in a recording is — or cleared it. The machine's suggestion travels along.</summary>
     public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
     public const string TranscriptSegmentSpeakerAssigned = "transcript.segment_speaker_assigned";
+
+    /// <summary>
+    /// ADR-0077 — a recording was transcribed again and the system carried the Secretary's hand corrections (names given
+    /// to voices, edited lines, lines moved to another voice) into the new transcript. No actor: the system did it. The
+    /// details count what was carried and list, without their text, the corrections no line of the new run matched.
+    /// </summary>
+    public const string TranscriptCorrectionsCarried = "transcript.corrections_carried";
     public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
 
     /// <summary>SCRUM-109 — the Secretary corrected the machine's text of one per-mic sentence.</summary>

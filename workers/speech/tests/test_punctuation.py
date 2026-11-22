@@ -7,7 +7,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from speech import pipeline  # noqa: E402
-from speech.punctuation import Punctuator, WordPiece, apply_tags, passage  # noqa: E402
+from speech.punctuation import Punctuator, WordPiece, apply_tags, passage, sentence_starts  # noqa: E402
 
 LABELS = ["$KEEP", "$TRANSFORM_CASE_CAPITAL", "$APPEND_,", "$APPEND_.", "$APPEND_?", "$MERGE_SPACE"]
 
@@ -30,7 +30,7 @@ class ScriptedSession:
         return [logits]
 
 
-VOCAB = ["[PAD]", "[UNK]", "xin", "chào", "anh", "nam", "##m", "có", "không"]
+VOCAB = ["[PAD]", "[UNK]", "xin", "chào", "anh", "nam", "##m", "có", "không", "##.", "##,"]
 
 
 def ids(word: str) -> int:
@@ -73,6 +73,31 @@ class PunctuatorTests(unittest.TestCase):
         Punctuator(WordPiece(VOCAB), LABELS, session)("xin chào")
         self.assertEqual(len(session.calls), 1)
 
+    def test_capitals_are_never_read_again(self):
+        # Meeting of 22/11/2026: fed its own capitals back, the tagger capitalised the word after each one, and three
+        # passes turned a line into Title Case. A capitalised word is unknown to this vocabulary, so an [UNK] in any
+        # pass's input would mean a capital went back in.
+        session = ScriptedSession({ids("xin"): "$TRANSFORM_CASE_CAPITAL", ids("chào"): "$APPEND_.",
+                                   ids("[UNK]"): "$TRANSFORM_CASE_CAPITAL"})
+        out = Punctuator(WordPiece(VOCAB), LABELS, session)("xin chào anh nam có không")
+        self.assertGreater(len(session.calls), 1)
+        for call in session.calls:
+            self.assertNotIn(ids("[UNK]"), call["input_ids"][0].tolist())
+        self.assertEqual(out, "Xin chào. Anh nam có không")
+
+    def test_a_capital_from_any_pass_is_kept(self):
+        # "nam" is capitalised only in the second pass, after "chào" got its comma in the first.
+        class Later(ScriptedSession):
+            def run(self, outputs, feeds):
+                logits = super().run(outputs, feeds)
+                if len(self.calls) == 2:
+                    logits[0][0, 4] = 0
+                    logits[0][0, 4, LABELS.index("$TRANSFORM_CASE_CAPITAL")] = 1.0
+                return logits
+
+        session = Later({ids("chào"): "$APPEND_,"})
+        self.assertEqual(Punctuator(WordPiece(VOCAB), LABELS, session)("xin chào anh nam"), "xin chào, anh Nam")
+
     def test_long_text_is_read_in_overlapping_windows_and_keeps_every_word(self):
         session = ScriptedSession({})
         punctuator = Punctuator(WordPiece(VOCAB), LABELS, session, chunk_words=4, context_words=1)
@@ -81,6 +106,15 @@ class PunctuatorTests(unittest.TestCase):
         # Windows start at 0, 3, 6: each one re-reads the last word of the window before.
         starts = [len(call["input_offsets"][0]) - 1 for call in session.calls]
         self.assertEqual(starts, [4, 4, 3])
+
+
+class SentenceStartTests(unittest.TestCase):
+    def test_a_word_after_a_sentence_end_gets_a_capital(self):
+        self.assertEqual(sentence_starts(["ok.", "thế", "à?", "vâng!", "được,", "rồi"]),
+                         ["ok.", "Thế", "à?", "Vâng!", "Được,", "rồi"])
+
+    def test_the_first_word_is_left_to_the_tagger(self):
+        self.assertEqual(sentence_starts(["xin", "chào"]), ["xin", "chào"])
 
 
 class PassageTests(unittest.TestCase):

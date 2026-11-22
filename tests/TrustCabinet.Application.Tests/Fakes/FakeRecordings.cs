@@ -324,6 +324,16 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
     public Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct)
         => Task.FromResult(Transcripts.Any(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing));
 
+    public Task<TranscriptCorrections> ReadCorrectionsAsync(Guid transcriptId, CancellationToken ct)
+    {
+        var transcript = Transcripts.Single(t => t.Id == transcriptId);
+        return Task.FromResult(new TranscriptCorrections(
+            [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new PreviousLine(s.StartMs, s.EndMs, s.SpeakerLabel,
+                s.EditedAt is null ? null : s.Text, s.EditedById, s.EditedAt, s.SpeakerAssignedById, s.SpeakerAssignedAt))],
+            [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new PreviousVoice(s.Label, s.AssignedUserId, s.AssignedGuestId,
+                s.AssignedById, s.AssignedAt))]));
+    }
+
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
     {
         Transcripts.Single(t => t.Id == transcriptId).Segments.Clear();
