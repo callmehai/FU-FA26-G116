@@ -29,7 +29,10 @@
             "Not signed in (no session in this browser).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/02-anon-AC1-desktop-vao-lich-lam-viec.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/04-anon-AC1-phone-vao-lich-lam-viec.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT02",
@@ -40,7 +43,7 @@
             "Click \"Đăng nhập bằng mật khẩu\"."
           ],
           "expected": [
-            "The form shows \"Vui lòng nhập email và mật khẩu.\"",
+            "The form shows \"Vui lòng nhập email.\" under \"Email\" and \"Vui lòng nhập mật khẩu.\" under \"Mật khẩu\", each in its own field.",
             "DevTools > Network shows no POST /api/auth/login.",
             "The page stays on /login."
           ],
@@ -48,7 +51,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Not signed in (no session in this browser)."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC18): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/21-anon-AC18-desktop-form-trong-bao-tung-o.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/22-anon-AC18-phone-form-trong-bao-tung-o.png · Case cũ: E1 đòi một câu gộp «Vui lòng nhập email và mật khẩu.» nhưng FE báo riêng từng ô («Vui lòng nhập email.»/«Vui lòng nhập mật khẩu.») như ResetPasswordPage — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT03",
@@ -68,7 +74,10 @@
             "Not signed in (no session in this browser).",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC2): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/05-anon-AC2-desktop-sai-mat-khau.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/06-anon-AC2-desktop-email-khong-ton-tai.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/07-anon-AC2-phone-sai-mat-khau.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT04",
@@ -87,7 +96,10 @@
             "Not signed in (no session in this browser).",
             "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC3): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/09-anon-AC3-desktop-tai-khoan-vo-hieu-hoa.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/10-anon-AC3-phone-tai-khoan-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT05",
@@ -107,7 +119,10 @@
             "Not signed in (no session in this browser).",
             "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/15-member-AC17-desktop-sidebar-khong-co-quan-tri.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/16-member-AC17-desktop-url-quan-tri-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT06",
@@ -129,7 +144,10 @@
             "Active Secretary account supplied by QA lead.",
             "Sign-in rate limits at their defaults (test server)."
           ],
-          "note": "UC-01 | SCRUM-132 | Manual only"
+          "note": "UC-01 | SCRUM-132 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/10-anon-AC21-desktop-bi-chan-429.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/11-anon-AC21-desktop-het-chan-lai-vao-duoc.png · Kiểm với RateLimiting__SignInPerEmail=5 (đúng cấu hình production; mặc định dev local là 1000).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT07",
@@ -148,7 +166,10 @@
             "Active Secretary account supplied by QA lead.",
             "A meeting the Secretary may view; its link copied."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/08-anon-AC6-desktop-link-cuoc-hop-moi-dang-nhap.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/09-anon-AC6-desktop-vao-dung-chi-tiet-cuoc-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -254,7 +275,10 @@
             "Google sign-in enabled on the build.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-02 | Manual only"
+          "note": "UC-02 | Manual only · Evidence(AC19): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/23-anon-AC19-desktop-google-khong-tai-duoc.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/24-anon-AC19-phone-google-khong-tai-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -279,7 +303,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on /calendar."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/25-member-AC20-desktop-tai-lai-van-phien.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT14",
@@ -313,7 +340,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in with a disposable account supplied by QA lead; an Admin account in a second browser."
           ],
-          "note": "UC-01 | SCRUM-12 | Manual only"
+          "note": "UC-01 | SCRUM-12 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/26-anon-AC22-desktop-giua-phien-ve-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT16",
@@ -329,7 +359,10 @@
             "Not signed in (no session in this browser).",
             "Active Admin account supplied by QA lead."
           ],
-          "note": "UC-01 | Manual only"
+          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/11-anon-AC6-desktop-chua-dang-nhap-ve-login.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/06-anon-AC6-desktop-vao-dung-trang-da-mo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -357,7 +390,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on /calendar."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/11-anon-AC11-desktop-back-khong-mo-lai-trang-cu.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT18",
@@ -373,7 +409,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on /calendar."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT19",
@@ -391,7 +430,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on /calendar."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/20-member-AC12-desktop-khong-dang-xuat-duoc.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/21-member-AC12-phone-khong-dang-xuat-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT20",
@@ -408,7 +450,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on /calendar."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Manual only · Evidence(AC23): tests/qa/out/SCRUM-188/20261121-214545-eb5a3255/01-member-AC23-desktop-tab2-cung-ve-login.png · Tab 2 là trang mới cùng trình duyệt (chung cookie), tương đương tab thứ hai của người dùng.",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT21",
@@ -425,7 +470,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account supplied by QA lead."
           ],
-          "note": "UC-03 | Manual only"
+          "note": "UC-03 | Manual only · Evidence(AC24): tests/qa/out/SCRUM-188/20261121-214545-eb5a3255/02-member-AC24-desktop-trinh-duyet-ve-login-thiet-bi-khac-con.png · Thiết bị B là API client độc lập (cookie refresh riêng).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -650,7 +698,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
           ],
-          "note": "UC-04 EX-1 | Manual only"
+          "note": "UC-04 EX-1 | Manual only · Evidence(AC14+AC25): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/22-anon-AC14-desktop-loi-moi-that-sai-token.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/12-secretary-AC25-desktop-loi-moi-da-thu-hoi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AUTH_FT34",

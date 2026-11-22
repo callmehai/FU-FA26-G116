@@ -7,7 +7,7 @@ Thư mục này chứa bảng ánh xạ giữa AC trong `tests/qa/plans/fe-NN.mj
 - `D` = một AC phủ đủ case; `P` = AC chỉ phủ một phần (ví dụ chỉ nhánh
   API, hoặc thiếu một bước); `N` = chưa có AC nào. Mức xét theo **thân
   hàm `run()` của AC**, không chỉ tiêu đề.
-- Cột `Nhóm` lấy theo `round1-plan.md`: `A` = agent chạy được,
+- Cột `Nhóm` lấy theo `plan-ui.md`: `A` = agent chạy được,
   `AX` = cần chuẩn bị thêm (hai phiên, chèn lỗi, chờ thời gian),
   `H` = người làm. `H*`/`AX*` = case lạ mà plan chưa liệt kê, người
   chạy xác nhận lại (đúng như plan dặn).

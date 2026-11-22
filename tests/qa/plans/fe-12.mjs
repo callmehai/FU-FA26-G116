@@ -22,7 +22,7 @@
 
 import { request as playwrightRequest } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -516,11 +516,15 @@ export default {
         if (ribbon.hidden > 0 && !ribbon.scrolls) qa.expect(ribbon.hidden, 'toolbar buttons fall off the screen with no way to scroll to them').toBe(0)
         if (ribbon.hidden > 0) qa.note(`Điện thoại: ${ribbon.hidden} nút của thanh công cụ nằm ngoài màn hình, vuốt ngang trong thanh để tới`)
         const line = `Thư ký bổ sung: giao Phòng Kế hoạch tổng hợp số liệu ${rand()}.`
+        // The editor streams its content in; place the caret only once the closing line is there,
+        // otherwise the paragraph can land in a half-loaded document (seen on the phone).
+        await qa.expect(editor).toContainText('Cuộc họp kết thúc vào')
         await typeNewParagraph(qa, editor, line)
         await qa.expect(editor).toContainText(line)
         await snap(qa, 'da-go-doan-moi')
         await press(qa, card(qa).getByRole('button', { name: 'Lưu', exact: true }))
         await qa.expect(toast(qa, 'Đã lưu biên bản.')).toBeVisible()
+        await qa.expect(meta(qa)).toContainText('Lưu lần cuối')
         await qa.expect(editor).toHaveCount(0)
         await qa.expect(paper(qa)).toContainText(line)
         await snap(qa, 'da-luu')
@@ -603,6 +607,14 @@ export default {
         await snap(qa, 'menu-tai-xuong')
         const [download] = await Promise.all([qa.page.waitForEvent('download'), menu.getByRole('menuitem', { name: /Word/ }).click()])
         c.fact('tên file Word', download.suggestedFilename() === `Biên bản - ${m.title}.docx`, download.suggestedFilename())
+        // FT19: the Word file holds the same paper — heading, meeting title, sections.
+        const dlPath = join(tmpdir(), `bb-${rand()}.docx`)
+        await download.saveAs(dlPath)
+        const dir = mkdtempSync(join(tmpdir(), 'bbx-'))
+        execFileSync('tar', ['-xf', dlPath, '-C', dir])
+        const xml = await readFile(join(dir, 'word', 'document.xml'), 'utf8')
+        c.fact('Word có BIÊN BẢN', xml.includes('BIÊN BẢN'), xml.slice(0, 120))
+        c.fact('Word có tên cuộc họp', xml.includes(m.title), xml.slice(0, 120))
         const docx = await sec.get(`${R(cur.id)}/export`)
         c.check('docx', docx, 200)
         c.fact('docx content-type', /wordprocessingml/.test(docx.headers['content-type'] ?? ''), docx.headers['content-type'])
@@ -893,6 +905,14 @@ export default {
         await snap(qa, 'thanh-vien-chua-thay-gi')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
+        // FT39: a returned minutes stays hidden from the Member too.
+        const m2 = await fresh(qa, 'api-rejected', 'Ended', 'API bị trả lại')
+        await driveTo(qa, m2.id, 'Rejected')
+        await openMinutes(qa, m2)
+        await qa.expect(card(qa).getByText('Chưa có biên bản ban hành.')).toBeVisible()
+        await qa.expect(paper(qa)).toHaveCount(0)
+        await qa.expect(card(qa).getByRole('button')).toHaveCount(0)
+        await snap(qa, 'thanh-vien-bi-tra-lai-khong-thay')
         const c = checker(qa)
         const st = await minutesState(qa, 'member', m.id)
         c.fact('minutes null', st.minutes === null, JSON.stringify(st.minutes)?.slice(0, 100))
@@ -929,6 +949,10 @@ export default {
         const menu = qa.page.getByRole('menu', { name: 'Tải xuống' })
         await qa.expect(menu).toBeVisible()
         await snap(qa, 'thanh-vien-menu-tai')
+        const [word] = await Promise.all([qa.page.waitForEvent('download'), press(qa, menu.getByRole('menuitem', { name: /Word/ }))])
+        qa.expect(word.suggestedFilename()).toBe(`Biên bản - ${m.title}.docx`)
+        await press(qa, btn(qa, 'Tải xuống'))
+        await qa.expect(menu).toBeVisible()
         const [download] = await Promise.all([qa.page.waitForEvent('download'), press(qa, menu.getByRole('menuitem', { name: /PDF/ }))])
         qa.expect(download.suggestedFilename()).toBe(`Biên bản - ${m.title}.pdf`)
         const c = checker(qa)
@@ -949,7 +973,7 @@ export default {
       title: 'Thư ký tạo bản đính chính từ biên bản đã ban hành; bản cũ giữ nguyên và người khác vẫn đọc bản cũ',
       steps: ['Mở tab Biên bản đã ban hành', 'Bấm "Tạo bản đính chính", xác nhận', 'Thành viên mở tab Biên bản'],
       expected:
-        'Toast "Đã tạo bản đính chính." (MSG432); chip "Bản nháp", ô "Phiên bản biên bản" có Bản gốc (Đã ban hành) và Đính chính 1 (Bản nháp); Sửa, Gửi duyệt có, không có Tạo lại (BR-413); API: bản số 2, supersedesId = bản gốc, nội dung bằng bản gốc; thành viên vẫn đọc bản gốc, history không có bản đính chính, không nhận thông báo nào mới',
+        'Toast "Đã tạo bản đính chính." (MSG432); chip "Đính chính · bản nháp", ô "Phiên bản biên bản" có Bản gốc (Đã ban hành) và Đính chính 1 (Bản nháp); Sửa, Gửi duyệt có, không có Tạo lại (BR-413); API: bản số 2, supersedesId = bản gốc, nội dung bằng bản gốc; thành viên vẫn đọc bản gốc, history không có bản đính chính, không nhận thông báo nào mới',
       async run(qa) {
         const m = await flow(qa)
         const latest = (await minutesState(qa, 'secretary', m.id)).minutes
@@ -963,7 +987,7 @@ export default {
         await snap(qa, 'hoi-dinh-chinh')
         await press(qa, d.getByRole('button', { name: 'Tạo bản đính chính', exact: true }))
         await qa.expect(toast(qa, 'Đã tạo bản đính chính.')).toBeVisible()
-        await qa.expect(badge(qa, 'Bản nháp')).toBeVisible()
+        await qa.expect(badge(qa, 'Đính chính · bản nháp')).toBeVisible()
         await qa.expect(card(qa).getByRole('button', { name: /^Phiên bản biên bản/ })).toBeVisible()
         await qa.expect(btn(qa, 'Tạo lại')).toHaveCount(0)
         await qa.expect(btn(qa, 'Gửi duyệt')).toBeVisible()
@@ -990,6 +1014,14 @@ export default {
         c.check('thành viên GET bản đính chính', await (await client(qa, 'member')).get(R(st.minutes.id)), 404, null)
         if (latest && latest.status !== 'Issued') qa.note(`Trước tiêu chí này biên bản ở trạng thái ${latest.status}; đã đưa về Đã ban hành qua API`)
         c.done()
+        // FT41: readers keep reading the issued text on screen: badge, no version select, no correction sign.
+        await qa.signIn('member')
+        await openMinutes(qa, m)
+        await qa.expect(badge(qa, 'Đã ban hành')).toBeVisible()
+        await qa.expect(paper(qa)).toContainText(ITEM_CONCLUSION)
+        await qa.expect(card(qa).getByRole('button', { name: /^Phiên bản biên bản/ })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thanh-vien-van-doc-ban-hanh')
       },
     },
     {

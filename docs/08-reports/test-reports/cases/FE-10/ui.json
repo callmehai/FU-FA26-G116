@@ -45,7 +45,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Manual only · Evidence(AC23): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/23-secretary-AC23-desktop-dang-nghe-tu-moc-gio.png; tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/24-secretary-AC23-desktop-da-tam-dung.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT03",
@@ -79,7 +82,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab; a recording just queued for transcription; QA lead can slow the speech worker."
           ],
-          "note": "UC-45a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps)"
+          "note": "UC-45a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Upload_queues_speech_to_text_and_the_result_keeps_speakers_and_timestamps) · Evidence(AC2): tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/01-secretary-AC2-desktop-xac-nhan-thong-bao-ghi-am.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/02-secretary-AC2-desktop-dang-chuyen-chu.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/03-secretary-AC2-desktop-chuyen-chu-xong.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/04-secretary-AC2-desktop-tai-lai-van-thay-ban-go-bang.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT05",
@@ -151,7 +157,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-45b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave)"
+          "note": "UC-45b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_finished_transcript_is_saved_as_text_with_the_names_the_secretary_gave) · Evidence(AC7): tests/qa/out/SCRUM-197/20261121-181137-eb5a3255/02-secretary-AC7-desktop-thu-ky-tai-ban-go-bang.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT09",
@@ -169,7 +178,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Member on the \"Bản ghi\" tab of a normal meeting; the Chair on a Secret meeting that has a completed transcript."
           ],
-          "note": "UC-45b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)"
+          "note": "UC-45b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside) · Evidence(AC7+AC3): tests/qa/out/SCRUM-197/20261121-181137-eb5a3255/03-secretary-AC7-desktop-hop-mat-khong-tai.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/06-member-AC3-desktop-thanh-vien-chi-doc.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT10",
@@ -203,7 +215,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant on the \"Bản ghi\" tab of an online meeting with no sentences."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Manual only · Evidence(AC22): tests/qa/out/SCRUM-197/20261121-175952-eb5a3255/19-secretary-AC22-desktop-the-trong-chua-co-cau.png; tests/qa/out/SCRUM-197/20261121-175952-eb5a3255/21-secretary-AC22-phone-the-trong-chua-co-cau.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT12",
@@ -223,7 +238,10 @@
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices.",
             "A user who is not on the roster."
           ],
-          "note": "UC-45a | Manual only"
+          "note": "UC-45a | Manual only · Evidence(AC1+AC8): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/01-secretary-AC1-desktop-ban-go-bang-thu-ky.png; tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/02-secretary-AC1-phone-ban-go-bang-thu-ky.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/01-admin-AC8-desktop-nguoi-ngoai-khong-co-tab-ban-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -248,7 +266,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab; a recording with no transcript."
           ],
-          "note": "UC-45c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_recording_without_a_transcript_can_be_sent_to_speech_to_text)"
+          "note": "UC-45c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_recording_without_a_transcript_can_be_sent_to_speech_to_text) · Evidence(AC2): tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/01-secretary-AC2-desktop-xac-nhan-thong-bao-ghi-am.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/02-secretary-AC2-desktop-dang-chuyen-chu.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/03-secretary-AC2-desktop-chuyen-chu-xong.png; tests/qa/out/SCRUM-197/20261121-181008-eb5a3255/04-secretary-AC2-desktop-tai-lai-van-thay-ban-go-bang.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT14",
@@ -282,7 +303,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Manual only · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/12-secretary-AC18-desktop-canh-bao-chuyen-chu-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT16",
@@ -300,7 +324,10 @@
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices.",
             "At least one line corrected and one voice named."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Manual only · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/12-secretary-AC18-desktop-canh-bao-chuyen-chu-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT17",
@@ -331,7 +358,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair who is not the Secretary (then as a Member) on the \"Bản ghi\" tab."
           ],
-          "note": "UC-45c | Manual only"
+          "note": "UC-45c | Manual only · Evidence(AC3): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/04-member-AC3-desktop-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/05-chair-AC3-desktop-chu-toa-khong-nut-sua.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/06-member-AC3-phone-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/07-chair-AC3-phone-chu-toa-khong-nut-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT19",
@@ -391,7 +421,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed)"
+          "note": "UC-46a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (Secretary_corrects_a_segment_and_the_correction_is_attributed) · Evidence(AC4): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/01-secretary-AC4-desktop-dang-sua-cau.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/02-secretary-AC4-desktop-cau-da-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT22",
@@ -408,7 +441,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Manual only · Evidence(AC4): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/01-secretary-AC4-desktop-dang-sua-cau.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT23",
@@ -426,7 +462,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46a | Manual only"
+          "note": "UC-46a | Manual only · Evidence(AC4): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/01-secretary-AC4-desktop-dang-sua-cau.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT24",
@@ -443,7 +482,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46a | Boundary 8000 | Manual only"
+          "note": "UC-46a | Boundary 8000 | Manual only · Evidence(AC4): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/03-secretary-AC4-desktop-sua-cau-8000-ky-tu.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/06-secretary-AC4-phone-sua-cau-8000-ky-tu.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT25",
@@ -479,7 +521,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
+          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary) · Evidence(AC5): tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/12-secretary-AC5-desktop-chon-ten-giong.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/13-secretary-AC5-desktop-giong-da-co-ten.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/14-member-AC5-desktop-thanh-vien-thay-ten.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT27",
@@ -497,7 +542,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab; a participant with Voice ID consent to notice 1.2 or later whose voice matches."
           ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent)"
+          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent) · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/13-secretary-AC18-desktop-goi-y-khop-giong-nhat.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT28",
@@ -532,7 +580,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
           ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_said_by_someone_no_voice_is_named_as_moves_to_a_new_voice_of_theirs_and_the_next_line_joins_it)"
+          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_line_said_by_someone_no_voice_is_named_as_moves_to_a_new_voice_of_theirs_and_the_next_line_joins_it) · Evidence(AC6): tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/15-secretary-AC6-desktop-chon-nguoi-noi-mot-cau.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/16-secretary-AC6-desktop-cau-da-doi-nguoi-noi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT30",
@@ -566,7 +617,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of an online meeting with a sentence said by a Member."
           ],
-          "note": "UC-46a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
+          "note": "UC-46a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can) · Evidence(AC21): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/07-secretary-AC21-desktop-sua-cau-theo-micro.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/08-secretary-AC21-desktop-cau-theo-micro-da-sua.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/09-member-AC21-desktop-thanh-vien-doc-cau-da-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT32",
@@ -611,7 +665,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair (then as the Secretary) on the \"Bản ghi\" tab of an online meeting with sentences."
           ],
-          "note": "UC-46c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
+          "note": "UC-46c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back) · Evidence(AC9): tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/21-chair-AC9-desktop-truoc-khi-bo-cau.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/22-chair-AC9-desktop-cau-da-bo.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/23-chair-AC9-desktop-cau-da-khoi-phuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT34",
@@ -645,7 +702,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member on the \"Bản ghi\" tab of an online meeting with one excluded sentence."
           ],
-          "note": "UC-46c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)"
+          "note": "UC-46c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary) · Evidence(AC11): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/05-member-AC11-desktop-thanh-vien-thay-cho-trong.png; tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/06-member-AC11-phone-thanh-vien-thay-cho-trong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT36",
@@ -662,7 +722,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab of an online meeting with sentences."
           ],
-          "note": "UC-46d | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back; Deleting_a_sentence_or_its_retention_running_out_erases_its_audio)"
+          "note": "UC-46d | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back; Deleting_a_sentence_or_its_retention_running_out_erases_its_audio) · Evidence(AC21): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/10-secretary-AC21-desktop-xac-nhan-xoa-cau.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/11-secretary-AC21-desktop-cau-da-bi-xoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT37",
@@ -695,7 +758,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member on the \"Bản ghi\" tab; a sentence said by another Member."
           ],
-          "note": "UC-46d | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
+          "note": "UC-46d | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back) · Evidence(AC11): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/05-member-AC11-desktop-thanh-vien-thay-cho-trong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT39",
@@ -894,7 +960,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member on the \"Biên bản\" tab of an InProgress meeting; a user outside the meeting."
           ],
-          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403; Outsider_gets_404_not_403_for_a_meeting_they_are_not_in)"
+          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_member_or_organizer_who_is_not_chair_or_secretary_gets_403; Outsider_gets_404_not_403_for_a_meeting_they_are_not_in) · Evidence(fe-12.AC20+AC23): tests/qa/out/SCRUM-199/20261121-173209-eb5a3255/01-member-AC20-desktop-thanh-vien-the-du-thao.png; tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/25-admin-AC23-desktop-nguoi-ngoai-mo-tab-bien-ban.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1103,7 +1172,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user without Voice ID consent."
           ],
-          "note": "UC-81a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
+          "note": "UC-81a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once) · Evidence(AC12): tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/31-qa-fe10-a-trustcabinet-local-AC12-desktop-thong-bao-truoc-khi-dong-y.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/32-qa-fe10-a-trustcabinet-local-AC12-desktop-da-bat-voice-id.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/33-qa-fe10-a-trustcabinet-local-AC12-phone-thong-bao-truoc-khi-dong-y.png; tests/qa/out/SCRUM-197/20261121-172122-eb5a3255/34-qa-fe10-a-trustcabinet-local-AC12-phone-da-bat-voice-id.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT61",
@@ -1168,7 +1240,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user with exactly 5 own samples."
           ],
-          "note": "UC-81c | Boundary 5 samples | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
+          "note": "UC-81c | Boundary 5 samples | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted) · Evidence(AC13): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/10-qa-fe10-a-trustcabinet-local-AC13-desktop-giong-mau-1.png; tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/11-qa-fe10-a-trustcabinet-local-AC13-desktop-du-5-mau.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT65",
@@ -1198,7 +1273,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user with Voice ID on and two samples."
           ],
-          "note": "UC-81e | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples)"
+          "note": "UC-81e | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_person_deletes_only_their_own_samples) · Evidence(AC14): tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/07-qa-fe10-a-trustcabinet-local-AC14-desktop-tab-thu-ho.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/08-qa-fe10-a-trustcabinet-local-AC14-desktop-xoa-proxy-co-hoi.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/09-qa-fe10-a-trustcabinet-local-AC14-desktop-xoa-self-co-hoi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT67",
@@ -1351,7 +1429,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on a meeting where a sample was recorded."
           ],
-          "note": "UC-81d | UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)"
+          "note": "UC-81d | UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited) · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/08-secretary-AC15-desktop-danh-sach-thu-ho.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/11-secretary-AC15-desktop-da-thu-mau-1.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/12-secretary-AC15-desktop-xac-nhan-xoa-mau-thu-ho.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/13-secretary-AC15-desktop-da-xoa-mau-thu-ho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT76",
@@ -1366,7 +1447,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary; a participant with 5 Secretary samples; an Ended hybrid meeting."
           ],
-          "note": "UC-86 | Boundary 5 samples | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count; Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)"
+          "note": "UC-86 | Boundary 5 samples | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count; Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state) · Evidence(AC16): tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/23-secretary-AC16-desktop-du-5-mau-thu-ho.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/24-secretary-AC16-desktop-hop-da-ket-thuc-khong-thu.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/25-chair-AC16-desktop-chu-toa-khong-co-the-thu-ho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT77",
@@ -1396,7 +1480,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary; a consenting participant; microphone permission granted."
           ],
-          "note": "UC-86 | Manual only"
+          "note": "UC-86 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/10-secretary-AC15-desktop-mau-thu-ho-khong-dat.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1420,7 +1507,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator."
           ],
-          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft)"
+          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Without_a_choice_the_in_house_model_writes_every_draft) · Evidence(AC20): tests/qa/out/SCRUM-197/20261121-180411-eb5a3255/01-admin-AC20-desktop-cau-hinh-ai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT80",
@@ -1451,7 +1541,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator with no key saved."
           ],
-          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key)"
+          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_api_needs_an_https_address_a_model_and_a_key) · Evidence(AC20): tests/qa/out/SCRUM-197/20261121-180411-eb5a3255/02-admin-AC20-desktop-bieu-mau-sai.png; tests/qa/out/SCRUM-197/20261121-180411-eb5a3255/03-admin-AC20-desktop-loi-o-da-xoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT82",
@@ -1483,7 +1576,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator; an API endpoint that refuses the key."
           ],
-          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal)"
+          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal) · Evidence(AC20): tests/qa/out/SCRUM-197/20261121-180411-eb5a3255/04-admin-AC20-desktop-thu-ket-noi-hong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT84",
@@ -1498,7 +1594,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Secretary."
           ],
-          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written)"
+          "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (Only_an_administrator_reads_or_changes_where_drafts_are_written) · Evidence(AC20): tests/qa/out/SCRUM-197/20261121-180411-eb5a3255/05-member-AC20-desktop-thanh-vien-khong-thay-cau-hinh-ai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_FT85",

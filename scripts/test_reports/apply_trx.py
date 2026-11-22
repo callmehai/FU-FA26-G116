@@ -9,7 +9,7 @@ A case whose `note` cites `Automated: <file> (<TestA>; <TestB>)` gets `round<N>`
 
 Only api.json is read. Cases marked N/A, and cases with no `Automated:` note, are never touched.
 Passed means "the cited tests passed"; whether the tests cover every line of Expected is the Phase 0 review
-in round1-api-plan.md, so run this after that review, or filter by --features.
+in round1/plan-api.md, so run this after that review, or filter by --features.
 
   dotnet test TrustCabinet.sln --logger "trx;LogFileName=round1.trx" --results-directory TestResults
   python scripts/test_reports/apply_trx.py TestResults/round1.trx --dry-run

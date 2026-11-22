@@ -30,7 +30,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist."
           ],
-          "note": "UC-14 | BR-24, BR-25 | Manual only"
+          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 violated: Back after create reopens the empty create dialog (see failure shot). E1/E3 verified; E4 reload+no-notif unverified. · Chạy lại 2026-11-22 (AC1, desktop + phone): vẫn Failed, E2 tái hiện — bug xác nhận, theo dõi tại round1/bugs.md (BUG-01).",
+          "round1": "Failed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT02",
@@ -87,7 +90,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-14 | EX-1 | BR-24, BR-25 | Manual only"
+          "note": "UC-14 | EX-1 | BR-24, BR-25 | Manual only · Evidence(AC2): tests/qa/out/FE-04/20261121-164241-eb5a3255/01-secretary-AC2-desktop-loi-thieu-ten-thanh-phan.png; tests/qa/out/FE-04/20261121-164241-eb5a3255/02-secretary-AC2-desktop-loi-thieu-gio-bat-dau.png; tests/qa/out/FE-04/20261121-164241-eb5a3255/03-secretary-AC2-phone-loi-thieu-ten-thanh-phan.png; tests/qa/out/FE-04/20261121-164241-eb5a3255/04-secretary-AC2-phone-loi-thieu-gio-bat-dau.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT05",
@@ -181,7 +187,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Member without MeetingCreator."
           ],
-          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate) · Evidence(AC4+AC28): tests/qa/out/FE-04/20261121-162940-eb5a3255/09-member-AC4-desktop-khong-co-nut-tao.png; tests/qa/out/FE-04/20261121-162940-eb5a3255/10-member-AC4-phone-khong-co-nut-tao.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/01-anon-AC28-desktop-trong-voi-thanh-vien.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/06-anon-AC28-phone-trong-voi-thanh-vien.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT10",
@@ -245,7 +254,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Draft meeting created by the Organizer."
           ],
-          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)"
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields) · Evidence(AC5): tests/qa/out/FE-04/20261121-163753-eb5a3255/12-secretary-AC5-desktop-da-luu-ten-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/14-secretary-AC5-phone-da-luu-ten-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT13",
@@ -263,7 +275,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Draft meeting created by the Organizer."
           ],
-          "note": "UC-15 | Manual only"
+          "note": "UC-15 | Manual only · Evidence(AC5): tests/qa/out/FE-04/20261121-163753-eb5a3255/11-secretary-AC5-desktop-khong-co-thay-doi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/13-secretary-AC5-phone-khong-co-thay-doi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT14",
@@ -281,7 +296,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Rejected meeting created by the Organizer."
           ],
-          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)"
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval) · Evidence(AC6): tests/qa/out/FE-04/20261121-163753-eb5a3255/15-secretary-AC6-desktop-bi-tu-choi-van-giua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT15",
@@ -302,7 +320,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Published meeting created by the Organizer with an invited Member."
           ],
-          "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee)"
+          "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee) · Evidence(AC15): tests/qa/out/FE-04/20261121-163753-eb5a3255/36-secretary-AC15-desktop-form-doi-lich.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/37-secretary-AC15-desktop-da-doi-lich.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/38-secretary-AC15-phone-form-doi-lich.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/39-secretary-AC15-phone-da-doi-lich.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT16",
@@ -320,7 +341,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Published meeting created by the Organizer."
           ],
-          "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)"
+          "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future) · Evidence(AC16-API): ",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT17",
@@ -393,7 +417,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Draft meeting with a Chair; a WaitingApproval meeting of the Organizer."
           ],
-          "note": "UC-15 | BR-28 | Manual only"
+          "note": "UC-15 | BR-28 | Manual only · Evidence(AC7): tests/qa/out/FE-04/20261121-163753-eb5a3255/21-chair-AC7-desktop-chu-toa-khong-nut-sua-nhap.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/27-chair-AC7-phone-chu-toa-khong-nut-sua-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT21",
@@ -437,7 +464,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Meetings today and on other days, a Published one and a Draft."
           ],
-          "note": "UC-17 | BR-29 | Manual only"
+          "note": "UC-17 | BR-29 | Manual only · Evidence(AC23): tests/qa/out/FE-04/20261121-163304-eb5a3255/11-secretary-AC23-desktop-bo-loc-mac-dinh.png; tests/qa/out/FE-04/20261121-163304-eb5a3255/12-secretary-AC23-phone-bo-loc-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT23",
@@ -549,7 +579,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | BR-12 | Manual only"
+          "note": "UC-17 | BR-12 | Manual only · Evidence(AC28): tests/qa/out/FE-04/20261121-164330-eb5a3255/02-anon-AC28-desktop-trong-voi-thu-ky.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/03-anon-AC28-desktop-khong-khop-trang-moi.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/05-anon-AC28-desktop-ngay-yen-tinh.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/07-anon-AC28-phone-trong-voi-thu-ky.png; tests/qa/out/FE-04/20261121-164330-eb5a3255/10-anon-AC28-phone-ngay-yen-tinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT29",
@@ -566,22 +599,29 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Member on the roster of a Published and a Draft meeting."
           ],
-          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers)"
+          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers) · Evidence(AC21+AC24): tests/qa/out/FE-04/20261121-163753-eb5a3255/57-member-AC21-desktop-chi-tiet-da-cong-bo.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/59-member-AC21-desktop-danh-sach-chi-co-cong-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT30",
-          "description": "Verify an invalid filter in the URL is reported and ignored.",
+          "description": "Verify an invalid filter in the URL is ignored.",
           "procedure": [
-            "Go to /mgmt/meetings?status=MinutesIssued."
+            "Go to /mgmt/meetings?status=Khac."
           ],
           "expected": [
-            "The screen shows \"Bộ lọc trên đường dẫn không hợp lệ.\" and falls back to the unfiltered criteria; it does not show a blank page."
+            "The list opens on the unfiltered criteria: the client drops the unknown value silently, with no message, no error screen and no blank page.",
+            "Calling GET /api/meetings?status=Khac directly answers 400/MSG32."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Evidence(AC24): tests/qa/out/FE-04/20261121-164619-eb5a3255/43-secretary-AC24-desktop-loc-sai-bi-loai-bo.png · E1 violated: ?status=Khac is dropped silently (readListState fallback), no on-screen invalid-filter message. API 400/MSG32 verified by AC24. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT31",
@@ -640,7 +680,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A meeting with a Chair, a Secretary and a description."
           ],
-          "note": "UC-16 | BR-29 | Manual only"
+          "note": "UC-16 | BR-29 | Manual only · Evidence(AC21): tests/qa/out/FE-04/20261121-163753-eb5a3255/57-member-AC21-desktop-chi-tiet-da-cong-bo.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/60-member-AC21-phone-chi-tiet-da-cong-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT34",
@@ -658,7 +701,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A meeting that went through the approval cycle twice."
           ],
-          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)"
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline) · Evidence(AC25): tests/qa/out/FE-04/20261121-162940-eb5a3255/87-secretary-AC25-desktop-lich-su-trang-thai.png; tests/qa/out/FE-04/20261121-162940-eb5a3255/88-secretary-AC25-phone-lich-su-trang-thai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT35",
@@ -673,7 +719,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting that was rejected once before publication; a Member on its roster."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant) · Evidence(AC25): tests/qa/out/FE-04/20261121-164619-eb5a3255/44-secretary-AC25-desktop-lich-su-trang-thai.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/45-member-AC25-desktop-lich-su-goc-thanh-vien.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT36",
@@ -689,7 +738,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "An unrelated active account; an existing meeting."
           ],
-          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404) · Evidence(AC21+AC22): tests/qa/out/FE-04/20261121-162940-eb5a3255/70-member-AC21-desktop-nhap-khong-tim-thay.png; tests/qa/out/FE-04/20261121-162940-eb5a3255/73-member-AC21-phone-nhap-khong-tim-thay.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT37",
@@ -788,7 +840,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A ready Draft meeting created by the Organizer; an active Approver."
           ],
-          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification)"
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification) · Evidence(AC8): tests/qa/out/FE-04/20261121-164619-eb5a3255/01-secretary-AC8-desktop-chon-nguoi-duyet.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/02-secretary-AC8-desktop-da-gui-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT42",
@@ -805,7 +860,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A ready Draft meeting."
           ],
-          "note": "UC-18 | EX | Manual only"
+          "note": "UC-18 | EX | Manual only · Evidence(AC8): tests/qa/out/FE-04/20261121-164619-eb5a3255/01-secretary-AC8-desktop-chon-nguoi-duyet.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/02-secretary-AC8-desktop-da-gui-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT43",
@@ -941,7 +999,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting WaitingApproval assigned to the Approver (MeetingApprover, not the Organizer)."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer) · Evidence(AC10): tests/qa/out/FE-04/20261121-164619-eb5a3255/05-chair-AC10-desktop-cho-ban-duyet.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/06-chair-AC10-desktop-xac-nhan-duyet.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/07-chair-AC10-desktop-da-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT50",
@@ -959,7 +1020,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting WaitingApproval assigned to the Approver."
           ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason)"
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason) · Evidence(AC11): tests/qa/out/FE-04/20261121-164619-eb5a3255/11-chair-AC11-desktop-ly-do-trong.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/12-chair-AC11-desktop-da-tu-choi.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/13-secretary-AC11-desktop-nguoi-to-chuc-thay-ly-do.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT51",
@@ -976,7 +1040,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting WaitingApproval assigned to the Approver."
           ],
-          "note": "UC-19 | EX | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001)"
+          "note": "UC-19 | EX | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001) · Evidence(AC11+AC12): tests/qa/out/FE-04/20261121-164619-eb5a3255/11-chair-AC11-desktop-ly-do-trong.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/12-chair-AC11-desktop-da-tu-choi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT52",
@@ -1055,7 +1122,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Approved meeting with one Chair, a Secretary and a Member on the roster."
           ],
-          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner)"
+          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner) · Evidence(AC13): tests/qa/out/FE-04/20261121-164619-eb5a3255/21-secretary-AC13-desktop-da-duyet-cho-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/22-secretary-AC13-desktop-xac-nhan-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/23-secretary-AC13-desktop-da-cong-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT56",
@@ -1121,7 +1191,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Approved meeting with a Chair on its roster."
           ],
-          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85)"
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85) · Evidence(AC10+AC13): tests/qa/out/FE-04/20261121-164619-eb5a3255/07-chair-AC10-desktop-da-duyet.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/23-secretary-AC13-desktop-da-cong-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1147,7 +1220,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting within 15 minutes of its start with one Chair and a Secretary."
           ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)"
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications) · Evidence(AC17): tests/qa/out/FE-04/20261121-164619-eb5a3255/27-chair-AC17-desktop-hoi-bat-dau-som.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/28-chair-AC17-desktop-dang-dien-ra.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/30-chair-AC17-desktop-da-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT61",
@@ -1193,7 +1269,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting; the Organizer is not the Chair."
           ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable) · Evidence(AC18): tests/qa/out/FE-04/20261121-163304-eb5a3255/05-secretary-AC18-desktop-thu-ky-bat-dau-som.png; tests/qa/out/FE-04/20261121-163304-eb5a3255/06-secretary-AC18-desktop-thu-ky-khong-nut-ket-thuc.png; tests/qa/out/FE-04/20261121-163304-eb5a3255/07-member-AC18-desktop-thanh-vien-khong-nut-published.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT64",
@@ -1212,7 +1291,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "InProgress meeting with an agenda item in progress and a Pending one."
           ],
-          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
+          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance) · Evidence(AC17): tests/qa/out/FE-04/20261121-164619-eb5a3255/29-chair-AC17-desktop-xac-nhan-ket-thuc.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/30-chair-AC17-desktop-da-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT65",
@@ -1227,7 +1309,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "InProgress meeting; signed in as the Chair."
           ],
-          "note": "UC-22 | Manual only"
+          "note": "UC-22 | Manual only · Evidence(AC17): tests/qa/out/FE-04/20261121-164619-eb5a3255/31-chair-AC17-desktop-huy-ket-thuc-khong-doi.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/36-chair-AC17-phone-huy-ket-thuc-khong-doi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT66",
@@ -1289,7 +1374,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Published meeting created by the Organizer with an invited Member."
           ],
-          "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)"
+          "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees) · Evidence(AC19): tests/qa/out/FE-04/20261121-164619-eb5a3255/37-secretary-AC19-desktop-ly-do-huy-trong.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/38-secretary-AC19-desktop-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT69",
@@ -1326,7 +1414,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Draft meeting of the Organizer."
           ],
-          "note": "UC-75 | EX-1 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262; Cancel_with_a_reason_over_1000_characters_returns_MSG345)"
+          "note": "UC-75 | EX-1 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262; Cancel_with_a_reason_over_1000_characters_returns_MSG345) · Evidence(AC19+AC20): tests/qa/out/FE-04/20261121-164619-eb5a3255/37-secretary-AC19-desktop-ly-do-huy-trong.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/38-secretary-AC19-desktop-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT71",
@@ -1344,7 +1435,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A Published meeting that the Chair can start in another browser."
           ],
-          "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263)"
+          "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263) · Evidence(AC20): tests/qa/out/FE-04/20261121-163753-eb5a3255/56-secretary-AC20-desktop-dang-dien-ra-khong-nut-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT72",
@@ -1359,7 +1453,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting; the Organizer is a different account."
           ],
-          "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)"
+          "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85) · Evidence(AC19): tests/qa/out/FE-04/20261121-164619-eb5a3255/39-chair-AC19-desktop-chu-toa-khong-nut-huy.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/42-chair-AC19-phone-chu-toa-khong-nut-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MEET_FT73",

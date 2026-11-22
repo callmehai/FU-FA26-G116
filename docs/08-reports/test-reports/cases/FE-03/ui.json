@@ -46,7 +46,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC12): tests/qa/out/FE-03/20261121-223809-eb5a3255/02-admin-AC12-desktop-da-luu-quyen.png; tests/qa/out/FE-03/20261121-223809-eb5a3255/05-admin-AC12-phone-da-luu-quyen.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT03",
@@ -65,7 +68,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC12): tests/qa/out/FE-03/20261121-223809-eb5a3255/02-admin-AC12-desktop-da-luu-quyen.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT04",
@@ -82,7 +88,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC12): tests/qa/out/FE-03/20261121-223809-eb5a3255/01-admin-AC12-desktop-o-da-doi-chua-luu.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT05",
@@ -99,7 +108,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC12): tests/qa/out/FE-03/20261121-223809-eb5a3255/03-admin-AC12-desktop-hai-dong-doc-lap.png; tests/qa/out/FE-03/20261121-223809-eb5a3255/06-admin-AC12-phone-hai-dong-doc-lap.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT06",
@@ -117,7 +129,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Only the \"Quản trị viên\" role holds AdminUsers."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC14): tests/qa/out/FE-03/20261121-221238-eb5a3255/28-admin-AC14-desktop-canh-bao-chong-tu-khoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT07",
@@ -153,7 +168,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC21): tests/qa/out/FE-03/20261121-222446-eb5a3255/12-admin-AC21-desktop-dang-luu-khoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT09",
@@ -171,7 +189,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The Administrator's role holds another capability besides AdminUsers."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC22): tests/qa/out/FE-03/20261121-222446-eb5a3255/13-qa-fe03-trustcabinet-local-AC22-desktop-tu-luu-quyen-minh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT10",
@@ -190,7 +211,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A Member account signed in in a second browser."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC15): tests/qa/out/FE-03/20261121-221238-eb5a3255/30-qa-fe03-trustcabinet-local-AC15-desktop-vai-tro-khong-quyen-nhu-thanh-vien.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/31-qa-fe03-trustcabinet-local-AC15-desktop-duoc-cap-quyen-hien-quan-tri.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/33-qa-fe03-trustcabinet-local-AC15-desktop-vai-tro-404-sau-khi-go.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT11",
@@ -208,7 +232,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC2): tests/qa/out/FE-03/20261121-221238-eb5a3255/05-admin-AC2-desktop-loi-tai-ma-tran.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/06-admin-AC2-desktop-thu-lai-thanh-cong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT12",
@@ -241,7 +268,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC1): tests/qa/out/FE-03/20261121-222446-eb5a3255/04-admin-AC1-phone-the-cong-tac-dien-thoai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -267,7 +297,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role \"Thư ký phó\" with no accounts."
           ],
-          "note": "UC-12 · Manual only"
+          "note": "UC-12 · Manual only · Evidence(AC1): tests/qa/out/FE-03/20261121-222446-eb5a3255/01-admin-AC1-desktop-danh-sach-vai-tro.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT15",
@@ -288,7 +321,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "No role named \"Thư ký phó\" exists."
           ],
-          "note": "UC-12a · Manual only"
+          "note": "UC-12a · Manual only · Evidence(AC3): tests/qa/out/FE-03/20261121-221238-eb5a3255/07-admin-AC3-desktop-form-tao-vai-tro.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/08-admin-AC3-desktop-vai-tro-moi-trong-danh-sach.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/09-admin-AC3-desktop-vai-tro-moi-trong-ma-tran.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT16",
@@ -306,7 +342,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-12a · Manual only"
+          "note": "UC-12a · Manual only · Evidence(AC5): tests/qa/out/FE-03/20261121-221720-eb5a3255/05-admin-AC5-desktop-ten-trong.png; tests/qa/out/FE-03/20261121-221720-eb5a3255/06-admin-AC5-desktop-ten-mo-ta-dai-qua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT17",
@@ -323,7 +362,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role \"Thư ký phó\" with no accounts."
           ],
-          "note": "UC-12a · Manual only"
+          "note": "UC-12a · Manual only · Evidence(AC6): tests/qa/out/FE-03/20261121-221238-eb5a3255/15-admin-AC6-desktop-trung-ten-thu-ky.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT18",
@@ -340,7 +382,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "No role named \"Thư ký phó\" exists."
           ],
-          "note": "UC-12a · Manual only"
+          "note": "UC-12a · Manual only · Evidence(AC23): tests/qa/out/FE-03/20261121-224239-eb5a3255/01-admin-AC23-desktop-ten-gop-khoang-trang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT19",
@@ -359,7 +404,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role \"Thư ký phó\" with no accounts."
           ],
-          "note": "UC-12b · Manual only"
+          "note": "UC-12b · Manual only · Evidence(AC7): tests/qa/out/FE-03/20261121-221238-eb5a3255/16-admin-AC7-desktop-form-sua-dien-san.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/17-admin-AC7-desktop-ten-moi-trong-danh-sach.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT20",
@@ -376,7 +424,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role \"Thư ký phó\" with no accounts."
           ],
-          "note": "UC-12b · Manual only"
+          "note": "UC-12b · Manual only · Evidence(AC8): tests/qa/out/FE-03/20261121-221720-eb5a3255/07-admin-AC8-desktop-sua-trung-ten.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT21",
@@ -392,7 +443,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-12 · Manual only"
+          "note": "UC-12 · Manual only · Evidence(AC9): tests/qa/out/FE-03/20261121-221238-eb5a3255/18-admin-AC9-desktop-vai-tro-mac-dinh-khong-sua-xoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT22",
@@ -410,7 +464,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-12 · Manual only"
+          "note": "UC-12 · Manual only · Evidence(AC24): tests/qa/out/FE-03/20261121-221720-eb5a3255/24-admin-AC24-desktop-hoi-bo-thay-doi-vai-tro.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT23",
@@ -429,7 +486,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role \"Thư ký phó\" with no accounts."
           ],
-          "note": "UC-12c · Manual only"
+          "note": "UC-12c · Manual only · Evidence(AC10): tests/qa/out/FE-03/20261121-221238-eb5a3255/19-admin-AC10-desktop-xac-nhan-xoa.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/20-admin-AC10-desktop-da-xoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT24",
@@ -447,7 +507,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role held by two accounts, one deactivated."
           ],
-          "note": "UC-12c · Manual only"
+          "note": "UC-12c · Manual only · Evidence(AC11): tests/qa/out/FE-03/20261121-221238-eb5a3255/23-admin-AC11-desktop-khong-xoa-duoc-con-nguoi-mang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT25",
@@ -466,7 +529,10 @@
             "A custom role \"Thư ký phó\" with no accounts.",
             "A second Administrator in another browser."
           ],
-          "note": "UC-12c · Manual only"
+          "note": "UC-12c · Manual only · Evidence(AC34): tests/qa/out/FE-03/20261121-221720-eb5a3255/37-admin-AC34-desktop-dem-cu-giua-chung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT26",
@@ -484,7 +550,10 @@
             "A custom role \"Thư ký phó\" with no accounts.",
             "A second Administrator in another browser."
           ],
-          "note": "UC-12c · Manual only"
+          "note": "UC-12c · Manual only · Evidence(AC32): tests/qa/out/FE-03/20261121-221720-eb5a3255/35-admin-AC32-desktop-xoa-da-mat-noi-khac.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT27",
@@ -502,7 +571,10 @@
             "A custom role \"Thư ký phó\" with no accounts.",
             "A second Administrator in another browser."
           ],
-          "note": "UC-12b · Manual only"
+          "note": "UC-12b · Manual only · Evidence(AC33): tests/qa/out/FE-03/20261121-221720-eb5a3255/36-admin-AC33-desktop-sua-da-mat-noi-khac.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT28",
@@ -518,7 +590,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-12 · Manual only"
+          "note": "UC-12 · Manual only · Evidence(AC25): tests/qa/out/FE-03/20261121-221720-eb5a3255/25-admin-AC25-desktop-loi-tai-danh-sach-vai-tro.png; tests/qa/out/FE-03/20261121-221720-eb5a3255/26-admin-AC25-desktop-thu-lai-thanh-cong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -544,7 +619,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Entries from an account, a guest and the system."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC19): tests/qa/out/FE-03/20261121-221238-eb5a3255/46-admin-AC19-desktop-nhat-ky-loc-theo-vai-tro.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/47-admin-AC19-desktop-chi-tiet-chi-doc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT30",
@@ -561,7 +639,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "An audit entry with details, for example a user update."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC19): tests/qa/out/FE-03/20261121-221238-eb5a3255/47-admin-AC19-desktop-chi-tiet-chi-doc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT31",
@@ -577,7 +658,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC19): tests/qa/out/FE-03/20261121-221238-eb5a3255/46-admin-AC19-desktop-nhat-ky-loc-theo-vai-tro.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT32",
@@ -596,7 +680,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Entries from several actors, event types and dates."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC26): tests/qa/out/FE-03/20261121-223403-eb5a3255/07-admin-AC26-desktop-loc-ket-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT33",
@@ -612,7 +699,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC27): tests/qa/out/FE-03/20261121-223726-eb5a3255/07-admin-AC27-desktop-khoang-ngay-nguoc-tren-ui.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT34",
@@ -630,7 +720,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC20): tests/qa/out/FE-03/20261121-221720-eb5a3255/19-admin-AC20-desktop-xoa-bo-loc-thanh-cong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT35",
@@ -647,7 +740,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "More than 20 entries."
           ],
-          "note": "UC-13 · Manual only"
+          "note": "UC-13 · Manual only · Evidence(AC28): tests/qa/out/FE-03/20261121-223916-eb5a3255/01-admin-AC28-desktop-trang-2-giu-bo-loc.png; tests/qa/out/FE-03/20261121-223916-eb5a3255/02-admin-AC28-desktop-tai-lai-giu-trang-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT36",
@@ -662,7 +758,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-13 · MSG469 · Manual only"
+          "note": "UC-13 · MSG469 · Manual only · Evidence(AC23): tests/qa/out/FE-03/20261121-224239-eb5a3255/02-admin-AC23-desktop-vai-tro-moi-trong-loc-nguoi-dung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT37",
@@ -680,7 +779,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "QA lead can make the database read fail."
           ],
-          "note": "UC-13 · MSG470 · Manual only"
+          "note": "UC-13 · MSG470 · Manual only · Evidence(AC29): tests/qa/out/FE-03/20261121-221720-eb5a3255/30-admin-AC29-desktop-loi-tai-nhat-ky.png; tests/qa/out/FE-03/20261121-221720-eb5a3255/31-admin-AC29-desktop-thu-lai-duoc-nhat-ky.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT38",
@@ -696,7 +798,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-13 · UC-06a · Manual only"
+          "note": "UC-13 · UC-06a · Manual only · Evidence(AC35): tests/qa/out/FE-03/20261121-222446-eb5a3255/17-admin-AC35-desktop-viec-noi-khac-hien-vao-nhat-ky.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -719,7 +824,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC30): tests/qa/out/FE-03/20261121-221720-eb5a3255/32-admin-AC30-desktop-du-4-muc-quan-tri.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT40",
@@ -734,7 +842,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account without AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC18): tests/qa/out/FE-03/20261121-221238-eb5a3255/37-secretary-AC18-secretary-desktop-thanh-ben-khong-co-quan-tri.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/38-secretary-AC18-secretary-desktop-404-roles.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT41",
@@ -750,7 +861,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account without AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC18): tests/qa/out/FE-03/20261121-221238-eb5a3255/34-chair-AC18-chair-desktop-thanh-ben-khong-co-quan-tri.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/35-chair-AC18-chair-desktop-404-roles.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT42",
@@ -766,7 +880,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC31): tests/qa/out/FE-03/20261121-221720-eb5a3255/33-anon-AC31-desktop-chua-dang-nhap-ve-login.png; tests/qa/out/FE-03/20261121-221720-eb5a3255/34-anon-AC31-desktop-vao-dung-trang-vai-tro.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT43",
@@ -781,7 +898,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account without AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Evidence(AC16): API-only: xem results.json FE-03 (8 lời gọi 403/401, vai trò đích không đổi)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "RBAC_FT44",
@@ -817,7 +937,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A Member account signed in in a second browser."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Evidence(AC15): tests/qa/out/FE-03/20261121-221238-eb5a3255/31-qa-fe03-trustcabinet-local-AC15-desktop-duoc-cap-quyen-hien-quan-tri.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/32-qa-fe03-trustcabinet-local-AC15-desktop-bi-go-quyen-van-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

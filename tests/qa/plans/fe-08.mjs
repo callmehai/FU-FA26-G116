@@ -519,9 +519,10 @@ export default {
         'chutoa@ vào phòng với micro tắt, camera tắt',
         'Bấm Bật camera, rồi Bật micro',
         'Máy tính: Ctrl+D, Ctrl+E',
+        'thanhvien@ (cửa sổ thứ hai) vào phòng, xem hình của Chủ toạ (ROOM_FT36)',
       ],
       expected:
-        'Bật camera: ô của mình hiện hình, nút thành "Tắt camera". Bật micro: nút thành "Tắt micro". Phím tắt đảo lại cả hai (UC-39a/39b)',
+        'Bật camera: ô của mình hiện hình, nút thành "Tắt camera". Bật micro: nút thành "Tắt micro". Phím tắt đảo lại cả hai (UC-39a/39b). Thành viên ở cửa sổ thứ hai thấy video của Chủ toạ, không chỉ ô của mình (ROOM_FT36)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await setPrefs(qa.context, { mic: false, cam: false })
@@ -538,6 +539,16 @@ export default {
         await press(qa, c.getByRole('button', { name: 'Bật micro' }))
         await qa.expect(c.getByRole('button', { name: 'Tắt micro' })).toBeVisible({ timeout: 10_000 })
         await qa.shot('camera va micro bat')
+        // ROOM_FT36: người kia thấy hình — Thành viên (cửa sổ thứ hai) vào phòng, thấy video của Chủ toạ.
+        const viewer = await person(qa, 'member')
+        await openLobby(qa, m, viewer)
+        await joinRoom(qa, viewer)
+        await viewer.waitForFunction(
+          () => [...document.querySelectorAll('.room-stage video')].some((v) => v.videoWidth > 0),
+          null,
+          { timeout: 20_000 },
+        )
+        await shotOf(qa, viewer, 'nguoi kia thay hinh')
         if (qa.device === 'desktop') {
           await qa.page.locator('.room-stage').click({ position: { x: 5, y: 5 } })
           // ⌘ on a Mac, Ctrl elsewhere, as the room reads navigator.platform.
@@ -558,11 +569,12 @@ export default {
       title: 'Hai người trong phòng: panel Người dự liệt kê người đang kết nối theo vai trò, đánh dấu "(Bạn)", cập nhật khi có người vào/ra',
       steps: [
         'chutoa@ (cửa sổ thứ hai) vào phòng',
+        'thanhvien@ mở màn chờ: thấy "Đang có N người trong phòng" (N ≥ 1, ROOM_FT05)',
         'thanhvien@ vào phòng, mở Người dự',
         'chutoa@ rời phòng',
       ],
       expected:
-        'Panel "Người dự (2)": Chủ toạ đứng trước (Nguyễn Hoàng Thanh Hương · Chủ toạ), rồi "Lê An (Bạn) · Thành viên"; micro của từng người hiện trạng thái; thành viên không có nút Tắt mic. Khi chủ toạ rời, danh sách còn 1 không cần tải lại (UC-40, BR-330)',
+        'Màn chờ của người vào sau hiện "Đang có N người trong phòng" với N ≥ 1 (số đúng bằng số kết nối LiveKit lúc đó; chạy lẻ là 1 — ROOM_FT05). Panel "Người dự (2)": Chủ toạ đứng trước (Trần Chủ Toạ · Chủ toạ), rồi "Lê Thành Viên (Bạn) · Thành viên"; micro của từng người hiện trạng thái; thành viên không có nút Tắt mic. Khi chủ toạ rời, danh sách còn 1 không cần tải lại (UC-40, BR-330)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -571,6 +583,11 @@ export default {
         await joinRoom(qa, chair)
         await setPrefs(qa.context, { mic: false, cam: false })
         await openLobby(qa, m)
+        // ROOM_FT05: màn chờ hiện số người đang trong phòng (N ≥ 1 — chạy lẻ là 1,
+        // chạy nối sau AC khác có thể còn lượt kết nối cũ chưa đối soát nên N > 1).
+        await qa.expect(qa.page.getByText(/Đang có \d+ người trong phòng/)).toBeVisible({ timeout: 15_000 })
+        qa.note(`ROOM_FT05 lobby count: "${await qa.page.getByText(/Đang có \d+ người trong phòng/).innerText()}"`)
+        await qa.shot('man cho thay so nguoi')
         await joinRoom(qa)
         await press(qa, controls(qa.page).getByRole('button', { name: 'Người dự' }))
         const panel = qa.page.getByRole('complementary', { name: 'Người dự' })
@@ -578,8 +595,8 @@ export default {
         const rows = panel.locator('li.room-person')
         await qa.expect(rows.filter({ hasText: u.chair.name })).toBeVisible({ timeout: 20_000 })
         await qa.expect(rows.filter({ hasText: `${u.member.name} (Bạn)` })).toBeVisible()
-        await qa.expect(rows.filter({ hasText: u.chair.name }).getByText('Chủ toạ')).toBeVisible()
-        await qa.expect(rows.filter({ hasText: u.member.name }).getByText('Thành viên')).toBeVisible()
+        await qa.expect(rows.filter({ hasText: u.chair.name }).getByText('Chủ toạ', { exact: true })).toBeVisible()
+        await qa.expect(rows.filter({ hasText: u.member.name }).getByText('Thành viên', { exact: true })).toBeVisible()
         const names = await rows.locator('strong').allInnerTexts()
         qa.expect(names.indexOf(u.chair.name), 'the Chair is listed before the Member').toBeLessThan(
           names.findIndex((n) => n.startsWith(u.member.name)),
@@ -599,14 +616,15 @@ export default {
       id: 'AC7',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Chủ toạ tắt mic một người trong phòng: hai bên nhận đúng câu báo, người bị tắt tự bật lại được',
+      title: 'Chủ toạ tắt mic một người trong phòng: hai bên nhận đúng câu báo, người bị tắt tự bật lại được; không có nút bật hộ, dòng mình không có nút tắt',
       steps: [
         'thanhvien@ vào phòng với micro bật',
-        'chutoa@ (cửa sổ thứ hai) vào phòng, mở Người dự, bấm "Tắt mic" ở dòng của Lê An',
+        'chutoa@ (cửa sổ thứ hai) vào phòng, mở Người dự, bấm "Tắt mic" ở dòng của Thành viên',
         'thanhvien@ bấm Bật micro',
+        'Chủ toạ mở Người dự: dòng mình không có nút tắt (ROOM_FT59); tắt micro Thành viên rồi xem dòng "Micro tắt" không có nút bật hộ (ROOM_FT57)',
       ],
       expected:
-        'Chủ toạ: toast "Đã tắt micro của Lê An." (MSG342). Thành viên: toast "Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu." (MSG339), nút thành Bật micro; bật lại được và chủ toạ thấy micro bật lại, nút Tắt mic hiện lại (UC-41, BR-325)',
+        'Chủ toạ: toast "Đã tắt micro của Lê Thành Viên." (MSG342). Thành viên: toast "Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu." (MSG339), nút thành Bật micro; bật lại được và chủ toạ thấy micro bật lại, nút Tắt mic hiện lại (UC-41, BR-325). Dòng của chính Chủ toạ không có "Tắt mic" (ROOM_FT59). Khi micro Thành viên tắt, dòng chỉ còn icon tắt tiếng (tooltip "Micro tắt", không phải chữ hiện) và không có nút bật micro hộ — tắt một chiều (ROOM_FT57)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -632,6 +650,31 @@ export default {
         await qa.expect(row.getByRole('button', { name: 'Tắt mic' })).toBeVisible({ timeout: 10_000 })
         await noSidewaysScroll(qa)
         await qa.shot('tu bat lai micro')
+        // ROOM_FT59: dòng của chính Chủ toạ không có nút tắt mic (dòng mình ở góc Chủ toạ không gắn "(Bạn)").
+        // Cửa sổ thứ hai luôn là desktop nên bấm trực tiếp, không qua press() (phone dùng tap).
+        // Panel Người dự có thể vẫn mở từ bước tắt mic trước đó — chỉ bấm khi chưa mở.
+        const chairPanel = chair.getByRole('complementary', { name: 'Người dự' })
+        if ((await chairPanel.count()) === 0) await controls(chair).getByRole('button', { name: 'Người dự' }).click()
+        await qa.expect(chairPanel.getByRole('heading', { name: /^Người dự \(\d+\)$/ })).toBeVisible({ timeout: 15_000 })
+        const ownIdx = (await chairPanel.locator('li.room-person strong').allInnerTexts()).findIndex(
+          (n) => n.replace(' (Bạn)', '').trim() === u.chair.name,
+        )
+        qa.expect(ownIdx, 'the Chair finds their own row').toBeGreaterThanOrEqual(0)
+        const ownRow = chairPanel.locator('li.room-person').nth(ownIdx)
+        await qa.expect(ownRow.getByRole('button', { name: 'Tắt mic' })).toHaveCount(0)
+        await qa.expect(ownRow.getByRole('button', { name: 'Bật micro' })).toHaveCount(0)
+        await shotOf(qa, chair, 'dong minh khong nut tat')
+        // ROOM_FT57: micro đang tắt thì dòng chỉ còn icon tắt tiếng (title tooltip "Micro tắt",
+        // không phải chữ hiện), không có nút tắt hay bật hộ.
+        await press(qa, controls(qa.page).getByRole('button', { name: 'Tắt micro' }))
+        await qa.expect(controls(qa.page).getByRole('button', { name: 'Bật micro' })).toBeVisible({ timeout: 10_000 })
+        const memberRow = chairPanel.locator('li.room-person').filter({ hasText: u.member.name })
+        await qa.expect(memberRow.locator('.room-person-mic.is-muted')).toBeVisible({ timeout: 15_000 })
+        qa.expect(await memberRow.locator('.room-person-mic').getAttribute('title'), 'mic tooltip').toBe('Micro tắt')
+        await qa.expect(memberRow.getByRole('button', { name: 'Tắt mic' })).toHaveCount(0)
+        await qa.expect(memberRow.getByRole('button', { name: 'Bật micro' })).toHaveCount(0)
+        if (qa.device === 'desktop') await memberRow.locator('.room-person-mic.is-muted').hover()
+        await qa.shot('dong micro tat khong nut bat ho')
       }),
     },
     {
@@ -846,7 +889,7 @@ export default {
         'chutoa@ cũ thử tắt mic thanhvien@ (API)',
       ],
       expected:
-        'Không cần vào lại: dòng của Lê An thành Chủ toạ, dòng của Nguyễn Hoàng Thanh Hương thành Thành viên, và Lê An có nút Tắt mic ở dòng người kia khi micro người đó bật; chủ toạ cũ tắt mic trả 403 MSG123 (UC-40 AF-2, UC-41 EX-1)',
+        'Không cần vào lại: dòng của Lê Thành Viên thành Chủ toạ, dòng của Trần Chủ Toạ thành Thành viên, và Lê Thành Viên có nút Tắt mic ở dòng người kia khi micro người đó bật; chủ toạ cũ tắt mic trả 403 MSG123 (UC-40 AF-2, UC-41 EX-1). Chủ toạ cũ mở panel: không còn nút Tắt mic ở dòng nào (ROOM_FT60)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'InProgress', 'bàn giao chủ toạ trong phòng')
         const u = await users()
@@ -860,7 +903,7 @@ export default {
         const rows = qa.page.getByRole('complementary', { name: 'Người dự' }).locator('li.room-person')
         const chairRow = rows.filter({ hasText: u.chair.name })
         const meRow = rows.filter({ hasText: `${u.member.name} (Bạn)` })
-        await qa.expect(chairRow.getByText('Chủ toạ')).toBeVisible({ timeout: 20_000 })
+        await qa.expect(chairRow.getByText('Chủ toạ', { exact: true })).toBeVisible({ timeout: 20_000 })
         await qa.expect(chairRow.getByRole('button', { name: 'Tắt mic' })).toHaveCount(0)
         await qa.shot('truoc khi ban giao')
         const { items, etag } = await roster(m)
@@ -883,13 +926,20 @@ export default {
           200,
           'hand over the Chair',
         )
-        await qa.expect(meRow.getByText('Chủ toạ')).toBeVisible({ timeout: 20_000 })
-        await qa.expect(chairRow.getByText('Thành viên')).toBeVisible()
+        await qa.expect(meRow.getByText('Chủ toạ', { exact: true })).toBeVisible({ timeout: 20_000 })
+        await qa.expect(chairRow.getByText('Thành viên', { exact: true })).toBeVisible()
         await qa.expect(chairRow.getByRole('button', { name: 'Tắt mic' })).toBeVisible({ timeout: 15_000 })
         await qa.shot('sau khi ban giao')
         const k = checker(qa)
         k.check('former Chair mutes the new Chair', await post('chair', `/api/meetings/${m.id}/call/participants/${u.member.id}/mute`), 403, 'MSG123')
         k.done()
+        // ROOM_FT60: Chủ toạ cũ mở panel — không còn nút tắt mic ở dòng nào.
+        // (Nút biến mất ngay nên không có đường bấm cũ để hiện câu báo stale-click qua UI; API 403 ở trên.)
+        await press(qa, controls(chair).getByRole('button', { name: 'Người dự' }))
+        const oldPanel = chair.getByRole('complementary', { name: 'Người dự' })
+        await qa.expect(oldPanel.getByRole('heading', { name: /^Người dự \(\d+\)$/ })).toBeVisible({ timeout: 15_000 })
+        await qa.expect(oldPanel.getByRole('button', { name: 'Tắt mic' })).toHaveCount(0)
+        await qa.shot('chu toa cu khong nut tat mic')
       }),
     },
     {
@@ -1033,14 +1083,14 @@ export default {
     {
       id: 'AC18',
       role: 'chair',
-      title: 'API tắt mic: chỉ Chủ toạ hiện tại; người không trong phòng, phòng đã đóng bị từ chối đúng mã',
+      title: 'API tắt mic: chỉ Chủ toạ hiện tại; người trong phòng, vắng mặt, phòng đã đóng bị từ chối đúng mã',
       steps: [
         'thuky@, thanhvien@ gọi POST …/call/participants/{chutoa}/mute',
-        'chutoa@ tắt mic một danh tính không có trong phòng',
+        'chutoa@ tắt mic một danh tính không có trong phòng, và một thành viên trong danh sách nhưng chưa vào phòng (cuộc họp riêng mới)',
         'chutoa@ tắt mic trong cuộc họp đã kết thúc; quantri@ (không trong thành phần) gọi mute',
       ],
       expected:
-        'Thư ký / Thành viên: 403 MSG123. Người không trong phòng: 409 MSG282. Đã kết thúc: 409 MSG117 hoặc 404. quantri@: 404 (UC-41, BR-325, docs/03-api/09)',
+        'Thư ký / Thành viên: 403 MSG123. Người không trong phòng: 409 MSG282; thành viên chưa vào phòng cũng 409 MSG282 (ghi cho ROOM_FT61: câu báo trên màn không hiện qua UI vì dòng người vắng không có nút để bấm). Đã kết thúc: 409 MSG117 hoặc 404. quantri@: 404 (UC-41, BR-325, docs/03-api/09)',
       run: async (qa) => {
         const u = await users()
         const live = await reused(qa, 'live')
@@ -1051,6 +1101,10 @@ export default {
         k.check('secretary mutes chair', await post('secretary', path(live, u.chair.id)), 403, 'MSG123')
         k.check('member mutes chair', await post('member', path(live, u.chair.id)), 403, 'MSG123')
         k.check('chair mutes someone not in the room', await post('chair', path(live, '0199ffff-ffff-7fff-bfff-000000000001')), 409, 'MSG282')
+        // ROOM_FT61 (ghi API): thành viên trong danh sách nhưng chưa từng vào phòng cũng 409 MSG282.
+        const absent = await createAt(qa, 'InProgress', 'tắt mic người chưa vào phòng')
+        k.check('chair mutes a rostered member with no LiveKit connection', await post('chair', path(absent, u.member.id)), 409, 'MSG282')
+        await transition(qa, 'chair', absent.id, 'end')
         const endedRes = await post('chair', path(ended, u.member.id))
         k.fact('chair mutes in an ended meeting: 409 MSG117 (UC-41 EX-5)', endedRes.status === 409 && endedRes.body?.code === 'MSG117', `${endedRes.status} ${JSON.stringify(endedRes.body).slice(0, 120)}`)
         k.check('admin (not on roster) mutes', await post('admin', path(adminOrg, u.member.id)), 404)
@@ -1098,58 +1152,204 @@ export default {
     {
       id: 'AC20',
       role: 'chair',
-      title: 'Giơ tay trong phòng: thành viên giơ tay, Chủ toạ thấy hàng đợi và mời, người được mời thấy "Đến lượt bạn phát biểu"',
+      title: 'Giơ tay trong phòng: hàng đợi trống, giơ tay hai người có thứ tự, mời/bắt đầu/kết thúc lượt, từ chối có xác nhận, hạ tay và rời phòng dọn hàng đợi',
       steps: [
-        'chutoa@ và thanhvien@ (cửa sổ thứ hai) cùng trong phòng',
-        'thanhvien@ bấm Giơ tay',
-        'Chủ toạ mở Phát biểu, bấm Mời ở dòng Lê An',
-        'thanhvien@ hạ tay / kết thúc để dọn hàng đợi',
+        'chutoa@ và thanhvien@ (cửa sổ thứ hai) cùng trong phòng; Chủ toạ mở Phát biểu khi chưa ai giơ tay (ROOM_FT88)',
+        'thanhvien@ bấm Giơ tay; xem panel ở cửa sổ Thành viên (ROOM_FT73)',
+        'thuky@ (cửa sổ thứ ba) cũng giơ tay: hàng đợi có thứ tự, Thành viên không thấy nút Mời/Từ chối (ROOM_FT75)',
+        'Chủ toạ mời Thành viên: dòng "Đã mời", dòng chờ mất nút Mời, API mời tiếp trả 409 MSG459 (ROOM_FT76, ROOM_FT77)',
+        'Chủ toạ từ chối Thư ký: hộp "Từ chối lượt phát biểu", "Để sau" giữ nguyên, "Từ chối" dọn hàng đợi (ROOM_FT78)',
+        'Thành viên bấm Bắt đầu phát biểu rồi Kết thúc phát biểu: "Đang nói"/"Bạn đang nói", xong lượt rời hàng đợi (ROOM_FT76)',
+        'Thành viên giơ tay rồi Hạ tay: hàng đợi hết yêu cầu của mình (ROOM_FT81); giơ tay rồi rời phòng: hàng đợi hết (ROOM_FT82)',
+        'Chủ toạ mời lượt vừa hạ: API trả 409 MSG460 (ghi cho ROOM_FT84)',
       ],
       expected:
-        'Nút Phát biểu của Chủ toạ hiện số 1, bảng liệt kê Lê An; Mời → thành viên thấy dải "Đến lượt bạn phát biểu" với nút Bắt đầu phát biểu; giơ tay không bật micro (UC-79, BR-337, BR-338)',
+        'Trống: "Chưa có ai giơ tay.". Người giơ tay thấy "Bạn đang giơ tay · thứ 1", không có nút Mời; ô của mình có tay "Đang giơ tay" (người khác xem hàng đợi thay vì ô hộ — ROOM_FT73). Hai người: thứ tự "Thứ 1/2", mỗi dòng có Mời + Từ chối ở góc Chủ toạ (ROOM_FT75). Mời: "Đã mời", banner "Đến lượt bạn phát biểu" + "Bắt đầu phát biểu", micro vẫn tắt (BR-338); dòng chờ khác mất nút Mời (ẩn chứ không khoá — chủ ý theo code, ROOM_FT76/77). Từ chối có hộp xác nhận đúng câu (ROOM_FT78). Bắt đầu: "Đang nói"/"Bạn đang nói"; kết thúc: lượt rời hàng đợi, nút về "Giơ tay" (ROOM_FT76). Hạ tay/rời phòng dọn hàng đợi qua API (ROOM_FT81/82). Badge Phát biểu đếm tay chờ; giơ tay không bật micro (UC-79, BR-337, BR-338)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
+        const queueOf = (who) => get(who, `/api/meetings/${m.id}/speaking-requests`)
         // A request left open by an earlier run is closed first, so the queue starts empty.
-        const before = await get('chair', `/api/meetings/${m.id}/speaking-requests`)
+        const before = await queueOf('chair')
         for (const r of before.body?.requests ?? []) {
           if (r.status === 'Speaking' || r.status === 'Invited') await post('chair', `/api/meetings/${m.id}/speaking-requests/${r.id}/finish`)
           else if (r.status === 'Queued') await post('chair', `/api/meetings/${m.id}/speaking-requests/${r.id}/decline`)
         }
+        const myId = async (who) => (await queueOf(who)).body?.myRequestId ?? null
         await setPrefs(qa.context, { mic: false, cam: false })
         await openLobby(qa, m)
         await joinRoom(qa)
+        const speakingButton = controls(qa.page).getByRole('button', { name: 'Phát biểu' })
+        await press(qa, speakingButton)
+        const panel = qa.page.getByRole('complementary', { name: 'Phát biểu' })
+        // ROOM_FT88: hàng đợi trống có chỗ giữ.
+        await qa.expect(panel.getByText('Chưa có ai giơ tay.')).toBeVisible({ timeout: 15_000 })
+        await qa.shot('hang doi trong')
         const member = await person(qa, 'member')
         await openLobby(qa, m, member)
         await joinRoom(qa, member)
-        const hand = controls(member).getByRole('button', { name: 'Giơ tay' })
-        await qa.expect(hand).toBeVisible({ timeout: 15_000 })
-        await qa.expect(async () => {
-          if (await hand.isVisible()) await hand.click()
-          await qa.expect(controls(member).getByRole('button', { name: 'Hạ tay' })).toBeVisible({ timeout: 3_000 })
-        }).toPass({ timeout: 30_000 })
-        const speakingButton = controls(qa.page).getByRole('button', { name: 'Phát biểu' })
+        const raise = async (page) => {
+          const hand = controls(page).getByRole('button', { name: 'Giơ tay' })
+          await qa.expect(hand).toBeVisible({ timeout: 15_000 })
+          await qa.expect(async () => {
+            if (await hand.isVisible()) await hand.click()
+            await qa.expect(controls(page).getByRole('button', { name: 'Hạ tay' })).toBeVisible({ timeout: 3_000 })
+          }).toPass({ timeout: 30_000 })
+        }
+        await raise(member)
         await qa.expect(speakingButton.locator('.room-badge')).toHaveText('1', { timeout: 15_000 })
-        await speakingButton.click()
-        const panel = qa.page.getByRole('complementary', { name: 'Phát biểu' })
-        const row = panel.getByRole('list', { name: 'Hàng đợi phát biểu' }).locator('li').filter({ hasText: u.member.name })
-        await qa.expect(row).toBeVisible()
-        await qa.shot('hang doi phat bieu')
-        await row.getByRole('button', { name: 'Mời' }).click()
+        // ROOM_FT73: góc nhìn người giơ tay — vị trí, không có nút Mời, ô mình có tay.
+        await press(qa, controls(member).getByRole('button', { name: 'Phát biểu' }))
+        const memberPanel = member.getByRole('complementary', { name: 'Phát biểu' })
+        await qa.expect(memberPanel.getByText('Bạn đang giơ tay · thứ 1')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(memberPanel.getByRole('button', { name: 'Mời' })).toHaveCount(0)
+        await qa.expect(member.getByLabel('Đang giơ tay')).toBeVisible({ timeout: 10_000 })
+        qa.note('Ô người khác không hiện tay hộ: chỉ ô của mình có "Đang giơ tay", người khác xem hàng đợi.')
+        await shotOf(qa, member, 'goc nhin nguoi gio tay')
+        // ROOM_FT75: người thứ hai giơ tay — hàng đợi có thứ tự ở cả hai góc nhìn.
+        const secretary = await person(qa, 'secretary')
+        await openLobby(qa, m, secretary)
+        await joinRoom(qa, secretary)
+        await raise(secretary)
+        await qa.expect(speakingButton.locator('.room-badge')).toHaveText('2', { timeout: 15_000 })
+        const list = panel.getByRole('list', { name: 'Hàng đợi phát biểu' })
+        const rows = list.locator('li')
+        const memberRow = () => rows.filter({ hasText: u.member.name })
+        const secRow = () => rows.filter({ hasText: u.secretary.name })
+        const dumpQueue = async (label) => {
+          const q = (await queueOf('chair')).body
+          qa.note(`${label}: ${JSON.stringify((q?.requests ?? []).map((r) => [r.displayName, r.status]))}`)
+        }
+        await qa.expect(rows).toHaveCount(2, { timeout: 15_000 })
+        await qa.expect(memberRow()).toContainText(u.member.name)
+        await qa.expect(secRow()).toContainText(u.secretary.name)
+        await qa.expect(memberRow().getByLabel('Thứ 1')).toBeVisible()
+        await qa.expect(secRow().getByLabel('Thứ 2')).toBeVisible()
+        await qa.expect(memberRow().getByRole('button', { name: 'Mời' })).toBeVisible()
+        await qa.expect(secRow().getByRole('button', { name: 'Mời' })).toBeVisible()
+        await qa.shot('hang doi hai nguoi')
+        await qa.expect(memberPanel.locator('li')).toHaveCount(2, { timeout: 15_000 })
+        await qa.expect(memberPanel.getByRole('button', { name: 'Mời' })).toHaveCount(0)
+        await qa.expect(memberPanel.getByRole('button', { name: 'Từ chối' })).toHaveCount(0)
+        await shotOf(qa, member, 'thanh vien xem hang doi')
+        // ROOM_FT76/77: mời người đầu — "Đã mời"; dòng chờ mất nút Mời (ẩn, không khoá);
+        // API mời lượt thứ hai khi đang có lượt được mời: 409 MSG459.
+        await memberRow().getByRole('button', { name: 'Mời' }).click()
+        await qa.expect(memberRow().getByText('Đã mời')).toBeVisible({ timeout: 15_000 })
+        await qa.expect(secRow().getByRole('button', { name: 'Mời' })).toHaveCount(0)
+        qa.note('Nút Mời ở dòng chờ ẩn hẳn khi đã có lượt được mời (code cố ý hidden, không disabled — lệch câu chữ case FT76/77, giữ nguyên hành vi).')
+        const qIds = (await queueOf('chair')).body?.requests ?? []
+        const secReq = qIds.find((r) => r.displayName === u.secretary.name)
+        const k77 = checker(qa)
+        k77.check('chair invites a second request while one is invited', await post('chair', `/api/meetings/${m.id}/speaking-requests/${secReq.id}/invite`), 409, 'MSG459')
+        k77.done()
         await qa.expect(member.getByText('Đến lượt bạn phát biểu')).toBeVisible({ timeout: 15_000 })
-        await qa.expect(member.getByRole('button', { name: 'Bắt đầu phát biểu' })).toBeVisible()
+        await qa.expect(memberPanel.getByRole('button', { name: 'Bắt đầu phát biểu' })).toBeVisible()
         await qa.expect(controls(member).getByRole('button', { name: 'Bật micro' })).toBeVisible()
+        // Người không phải Chủ toạ tự mời mình: 403 MSG457.
+        const k = checker(qa)
+        k.check('member invites self', await post('member', `/api/meetings/${m.id}/speaking-requests/${await myId('member')}/invite`), 403, 'MSG457')
+        k.done()
         await shotOf(qa, member, 'den luot thanh vien')
-        await controls(member).getByRole('button', { name: 'Hạ tay' }).click().catch(() => undefined)
+        await dumpQueue('sau khi moi lan dau')
+        // ROOM_FT79: rút lời mời — dòng được mời có "Huỷ lời mời".
+        const withdraw = memberRow().getByRole('button', { name: 'Huỷ lời mời' })
+        if ((await withdraw.count()) > 0) {
+          await withdraw.click()
+          await qa.expect(panel.getByRole('dialog').getByText('Từ chối lượt phát biểu')).toBeVisible({ timeout: 10_000 })
+          await qa.shot('hop xac nhan rut loi moi')
+          await press(qa, panel.getByRole('dialog').getByRole('button', { name: 'Từ chối', exact: true }))
+          await qa.expect(member.getByText('Đến lượt bạn phát biểu')).toHaveCount(0, { timeout: 15_000 })
+          await dumpQueue('sau khi rut loi moi')
+          // Sau khi rút: yêu cầu của Thành viên hết, Thư ký vẫn chờ với nút Mời (sàn trống).
+          await qa.expect(memberRow()).toHaveCount(0, { timeout: 15_000 })
+          await qa.expect(secRow().getByRole('button', { name: 'Mời' })).toBeVisible({ timeout: 15_000 })
+          await qa.shot('da rut loi moi')
+          // Mời lại từ đầu: Thành viên giơ tay lại rồi mới mời (hàng đợi có Thư ký + Thành viên).
+          await raise(member)
+          await dumpQueue('sau khi gio tay lai')
+          await qa.expect(rows).toHaveCount(2, { timeout: 15_000 })
+          await qa.expect(memberRow().getByRole('button', { name: 'Mời' })).toBeVisible({ timeout: 15_000 })
+          await qa.expect(speakingButton.locator('.room-badge')).toHaveText('2', { timeout: 15_000 })
+          await memberRow().getByRole('button', { name: 'Mời' }).click()
+          await qa.expect(memberRow().getByText('Đã mời')).toBeVisible({ timeout: 15_000 })
+          await qa.expect(member.getByText('Đến lượt bạn phát biểu')).toBeVisible({ timeout: 15_000 })
+        } else {
+          qa.note('ROOM_FT79: dòng được mời không có nút rút lời mời — để trống, kiểm tay.')
+        }
+        // ROOM_FT78: từ chối có hộp xác nhận — "Để sau" giữ nguyên, "Từ chối" dọn.
+        // (Từ chối trước khi mời để lượt của Thành viên đi hết luồng mời/bắt đầu/kết thúc sau đó.)
+        const secIdBefore = ((await queueOf('chair')).body?.requests ?? []).find((r) => r.displayName === u.secretary.name)?.id ?? null
+        qa.expect(secIdBefore, 'secretary request id before decline').toBeTruthy()
+        await secRow().getByRole('button', { name: 'Từ chối' }).click()
+        const dialog = panel.getByRole('dialog')
+        await qa.expect(dialog.getByText('Từ chối lượt phát biểu')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(dialog.getByText(`Hạ tay của ${u.secretary.name}? Người này có thể giơ tay lại.`)).toBeVisible()
+        await qa.shot('hop xac nhan tu choi')
+        await press(qa, dialog.getByRole('button', { name: 'Để sau' }))
+        await qa.expect(secRow()).toBeVisible({ timeout: 10_000 })
+        await secRow().getByRole('button', { name: 'Từ chối' }).click()
+        await qa.expect(panel.getByRole('dialog')).toBeVisible({ timeout: 10_000 })
+        await press(qa, panel.getByRole('dialog').getByRole('button', { name: 'Từ chối', exact: true }))
+        await qa.expect(secRow()).toHaveCount(0, { timeout: 15_000 })
+        // Server phải hết yêu cầu của Thư ký — không chỉ màn hình hết dòng.
+        await qa.expect.poll(async () => (await queueOf('chair')).body?.requests?.length ?? -1, { timeout: 15_000 }).toBe(1)
+        await dumpQueue('sau khi tu choi thu ky')
+        // Thí nghiệm quyết định: decline lại đúng yêu cầu Thư ký vừa từ chối.
+        // 200 = lần bấm hộp xác nhận không hề gọi API (bug UI); 409/404 = đã huỷ rồi.
+        const secDeclined = (await queueOf('chair')).body
+        qa.note(`sau decline: open=${JSON.stringify((secDeclined?.requests ?? []).map((r) => [r.displayName, r.status]))}`)
+        const reDecline = await post('chair', `/api/meetings/${m.id}/speaking-requests/${secIdBefore}/decline`)
+        qa.note(`ROOM_FT78: decline lại yêu cầu vừa từ chối qua UI: HTTP ${reDecline.status} ${reDecline.body?.code ?? ''} (200 = UI không gọi API).`)
+        await qa.shot('da tu choi mot tay')
+        // Thư ký giơ tay lại để hàng đợi còn người chờ sau khi Thành viên kết thúc (dọn ở cuối AC).
+        await raise(secretary)
+        await qa.expect(rows).toHaveCount(2, { timeout: 15_000 })
+        qa.note(`badge sau khi thu ky gio tay lai: ${await speakingButton.locator('.room-badge').innerText().catch(() => '(không có)')}`)
+        await qa.shot('hang doi lai hai nguoi')
+        // ROOM_FT76: bắt đầu lượt — "Đang nói" hai bên, dòng chờ mất nút Mời; kết thúc — lượt rời hàng đợi.
+        await press(qa, memberPanel.getByRole('button', { name: 'Bắt đầu phát biểu' }))
+        await qa.expect(memberRow().getByText('Đang nói')).toBeVisible({ timeout: 15_000 })
+        await qa.expect(secRow().getByRole('button', { name: 'Mời' })).toHaveCount(0)
+        await qa.expect(memberPanel.getByText('Bạn đang nói')).toBeVisible({ timeout: 10_000 })
+        await qa.shot('dang noi')
+        await press(qa, memberPanel.getByRole('button', { name: 'Kết thúc phát biểu' }))
+        await qa.expect(memberRow()).toHaveCount(0, { timeout: 15_000 })
+        await qa.expect(controls(member).getByRole('button', { name: 'Giơ tay' })).toBeVisible({ timeout: 10_000 })
+        await qa.shot('ket thuc luot')
+        // ROOM_FT81: hạ tay — hết yêu cầu của mình (Thư ký vẫn chờ nên hàng đợi còn).
+        await raise(member)
+        const raisedId = await myId('member')
+        qa.expect(raisedId, 'the raised hand shows up in myRequestId').toBeTruthy()
+        await press(qa, controls(member).getByRole('button', { name: 'Hạ tay' }))
+        await qa.expect(controls(member).getByRole('button', { name: 'Giơ tay' })).toBeVisible({ timeout: 10_000 })
+        await qa.shot('da ha tay')
+        await qa.expect.poll(async () => { const b = (await queueOf('member')).body; return b === undefined ? '(no-body)' : b.myRequestId; }, { timeout: 15_000 }).toBe(null)
+        // ROOM_FT84 (ghi API, không chấm vì câu báo trên màn không dàn dựng được qua UI):
+        // mời lượt vừa hạ — ghi lại mã server trả về.
+        const r84 = await post('chair', `/api/meetings/${m.id}/speaking-requests/${raisedId}/invite`)
+        qa.note(`ROOM_FT84: invite-after-lower trả HTTP ${r84.status} ${r84.body?.code ?? ''} (case đòi câu báo 409 MSG460 trên màn hình).`)
+        // ROOM_FT82: rời phòng hạ tay — hết yêu cầu của mình.
+        await raise(member)
+        await press(qa, controls(member).getByRole('button', { name: 'Rời phòng' }))
+        const leaveDialog = member.getByRole('dialog', { name: 'Rời phòng họp' })
+        await qa.expect(leaveDialog).toBeVisible({ timeout: 10_000 })
+        await press(qa, leaveDialog.getByRole('button', { name: 'Rời phòng' }))
+        await qa.expect.poll(async () => { const b = (await queueOf('member')).body; return b === undefined ? '(no-body)' : b.myRequestId; }, { timeout: 30_000 }).toBe(null)
+        await qa.shot('roi phong da ha tay')
+        // Dọn lượt chờ còn lại của Thư ký để lần chạy sau bắt đầu sạch.
+        const secLeft = ((await queueOf('chair')).body?.requests ?? []).find((r) => r.displayName === u.secretary.name)
+        if (secLeft) ok(qa, await post('chair', `/api/meetings/${m.id}/speaking-requests/${secLeft.id}/decline`), 200, 'decline leftover')
+        await qa.expect.poll(async () => (await queueOf('chair')).body?.requests?.length ?? -1, { timeout: 15_000 }).toBe(0)
       }),
     },
     {
       id: 'AC21',
       role: 'chair',
-      title: 'Chia sẻ màn hình trên máy tính: người trình bày thấy "Bạn đang trình bày cho mọi người", người khác thấy tên người trình bày',
-      steps: ['chutoa@ và thanhvien@ (cửa sổ thứ hai) cùng trong phòng', 'Chủ toạ bấm Chia sẻ màn hình', 'Bấm Dừng chia sẻ'],
+      title: 'Chia sẻ màn hình: Chủ toạ rồi Thành viên trình bày, người kia thấy tên + hình; dừng chia sẻ hết hiệu lực hai bên; Chủ toạ chia sẻ đè (ROOM_FT39)',
+      steps: ['chutoa@ và thanhvien@ (cửa sổ thứ hai) cùng trong phòng', 'Chủ toạ bấm Chia sẻ màn hình, bấm Dừng chia sẻ: cửa sổ Thành viên cũng hết chú thích', 'Thành viên bấm Chia sẻ màn hình (ROOM_FT38)', 'Chủ toạ bấm Chia sẻ màn hình đè (ROOM_FT39)'],
       expected:
-        'Sân khấu hiện màn hình chia sẻ, chú thích "Bạn đang trình bày cho mọi người"; thành viên thấy "Nguyễn Hoàng Thanh Hương đang trình bày"; dừng thì về lưới (UC-39c)',
+        'Sân khấu hiện màn hình chia sẻ, chú thích "Bạn đang trình bày cho mọi người"; bên kia thấy "<tên> đang trình bày" + hình thật; dừng thì hai bên cùng về lưới (UC-39c). Thành viên trình bày được như Chủ toạ (ROOM_FT38). Chủ toạ chia sẻ đè: Thành viên nhận câu "<tên> bắt đầu trình bày, phần chia sẻ của bạn đã dừng." (MSG340), chỉ còn hình của Chủ toạ (ROOM_FT39)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -1178,21 +1378,48 @@ export default {
         await shotOf(qa, member, 'dang trinh bay')
         await controls(qa.page).getByRole('button', { name: 'Dừng chia sẻ' }).click()
         await qa.expect(caption).toHaveCount(0, { timeout: 10_000 })
+        // Dừng chia sẻ phải hết hiệu lực với người xem (không để lại sân khấu đen + chú thích cũ).
+        await qa.expect(member.getByText(`${u.chair.name} đang trình bày`)).toHaveCount(0, { timeout: 15_000 })
+        // ROOM_FT38: Thành viên chia sẻ màn hình, Chủ toạ thấy tên + hình thật.
+        await controls(member).getByRole('button', { name: 'Chia sẻ màn hình' }).click()
+        await qa.expect(qa.page.getByText(`${u.member.name} đang trình bày`)).toBeVisible({ timeout: 15_000 })
+        await qa.page.waitForFunction(
+          () => (document.querySelector('.room-screen video')?.videoWidth ?? 0) > 0,
+          null,
+          { timeout: 20_000 },
+        )
+        await qa.shot('thanh vien trinh bay')
+        // ROOM_FT39 (thử): Chủ toạ chia sẻ đè khi Thành viên đang trình bày.
+        await controls(qa.page).getByRole('button', { name: 'Chia sẻ màn hình' }).click()
+        await qa.expect(qa.page.getByText('Bạn đang trình bày cho mọi người')).toBeVisible({ timeout: 15_000 })
+        await qa.expect(member.getByText(`${u.chair.name} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`)).toBeVisible({ timeout: 15_000 })
+        await qa.expect(member.getByText(`${u.chair.name} đang trình bày`)).toBeVisible({ timeout: 15_000 })
+        await qa.shot('chu toa chiem quyen trinh bay')
+        await controls(qa.page).getByRole('button', { name: 'Dừng chia sẻ' }).click()
+        await qa.expect(qa.page.getByText('Bạn đang trình bày cho mọi người')).toHaveCount(0, { timeout: 10_000 })
       }),
     },
     {
       id: 'AC22',
       role: 'secretary',
-      title: 'Cửa sổ nổi (UC-78): mở thì sân khấu báo "Cuộc họp đang ở cửa sổ nổi", đưa về được, không vào phòng lần hai',
-      steps: ['thuky@ vào phòng', 'Bấm Mở cửa sổ nổi', 'Bấm "Đưa cuộc họp về cửa sổ này"'],
+      devices: ['desktop', 'phone'],
+      title: 'Cửa sổ nổi (UC-78): mở thì sân khấu báo "Cuộc họp đang ở cửa sổ nổi", đưa về được, không vào phòng lần hai; điện thoại không có nút này',
+      steps: ['thuky@ vào phòng', 'Bấm Mở cửa sổ nổi', 'Bấm "Đưa cuộc họp về cửa sổ này"', 'Điện thoại: thanh điều khiển không có "Mở cửa sổ nổi" (ROOM_FT72)'],
       expected:
-        'Sân khấu chính: "Cuộc họp đang ở cửa sổ nổi" với nút đưa về; số người trong phòng không tăng; đưa về thì lưới trở lại (UC-78, BR-332)',
+        'Sân khấu chính: "Cuộc họp đang ở cửa sổ nổi" với nút đưa về; số người trong phòng không tăng; đưa về thì lưới trở lại (UC-78, BR-332). Điện thoại không có nút "Mở cửa sổ nổi" (ROOM_FT72)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await setPrefs(qa.context, { mic: false, cam: false })
         await openLobby(qa, m)
         await joinRoom(qa)
         const pip = controls(qa.page).getByRole('button', { name: 'Mở cửa sổ nổi' })
+        if (qa.device === 'phone') {
+          // ROOM_FT72: điện thoại không có nút cửa sổ nổi.
+          await qa.expect(pip).toHaveCount(0)
+          await noSidewaysScroll(qa)
+          await qa.shot('dien thoai khong nut cua so noi')
+          return
+        }
         if ((await pip.count()) === 0)
           qa.inconclusive(
             'Chromium của bộ chạy không có Document Picture-in-Picture nên nút Mở cửa sổ nổi không hiện (UC-78 AF-3, đúng đặc tả). Kiểm tay khi diễn tập trên Chrome thật: bấm Mở cửa sổ nổi, chuyển tab, rời phòng từ cửa sổ nổi không hỏi xác nhận.',
@@ -1214,6 +1441,180 @@ export default {
         await qa.expect(elsewhere).toHaveCount(0)
         await qa.shot('da dua ve')
       }),
+    },
+    {
+      id: 'AC25',
+      role: 'member',
+      title: 'Chat: phòng mới chưa có tin nhắn, Gửi khoá khi trống, dán 1001 ký tự giữ 1000 và gửi được (ROOM_FT63/65/66)',
+      steps: [
+        'thanhvien@ vào phòng của một cuộc họp riêng đang diễn ra, mở Chat',
+        'Để ô trống / chỉ gõ dấu cách, bấm Enter',
+        'Dán 1001 ký tự rồi Enter',
+      ],
+      expected:
+        'Chưa có tin: "Chưa có tin nhắn nào." và nút Gửi tắt (ROOM_FT63). Ô trống hoặc chỉ dấu cách: Gửi vẫn tắt, Enter không gửi gì (ROOM_FT66). Dán 1001 ký tự: ô giữ đúng 1000 ký tự, đếm "1000/1000", gửi đi được (ROOM_FT65)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'InProgress', 'chat trống')
+        await setPrefs(qa.context, { mic: false, cam: false })
+        await openLobby(qa, m)
+        await joinRoom(qa)
+        await press(qa, controls(qa.page).getByRole('button', { name: 'Chat' }))
+        const panel = qa.page.getByRole('complementary', { name: 'Chat' })
+        const box = panel.getByRole('textbox', { name: 'Tin nhắn' })
+        const send = panel.getByRole('button', { name: 'Gửi' })
+        await qa.expect(panel.getByText('Chưa có tin nhắn nào.')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(send).toBeDisabled()
+        await qa.shot('chat trong nut gui tat')
+        await box.fill('   ')
+        await qa.expect(send).toBeDisabled()
+        await box.press('Enter')
+        await qa.expect(panel.getByText('Chưa có tin nhắn nào.')).toBeVisible({ timeout: 5_000 })
+        await qa.expect(panel.locator('.room-chat-message')).toHaveCount(0)
+        const stamp = Date.now().toString(36)
+        await box.fill(`${'x'.repeat(995)}${stamp}`)
+        qa.expect((await box.inputValue()).length, 'the box keeps 1000 characters').toBe(1000)
+        await qa.expect(panel.getByText('1000/1000')).toBeVisible()
+        await qa.expect(send).toBeEnabled()
+        await qa.shot('dan 1001 ky tu giu 1000')
+        await box.press('Enter')
+        await qa.expect(panel.locator('.room-chat-message.is-mine')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(box).toHaveValue('')
+        await qa.expect(panel.getByText('0/1000')).toBeVisible()
+        await noSidewaysScroll(qa)
+        await qa.shot('da gui tin 1000 ky tu')
+      }),
+    },
+    {
+      id: 'AC26',
+      role: 'secretary',
+      title: 'Ghi chú trong phòng: Thư ký viết tự lưu theo mục, Chủ toạ chỉ đọc, quá 20.000 ký tự bị từ chối, mở tab mới (ROOM_FT89/90/91/94/98)',
+      steps: [
+        'thuky@ vào phòng của một cuộc họp riêng đang diễn ra (có một mục nghị sự), mở Ghi chú',
+        'Chọn "Chung", gõ ghi chú; tải lại trang, vào lại, mở Ghi chú',
+        'Chọn mục nghị sự, gõ ghi chú mục; xem lại "Chung"',
+        'Dán 20.001 ký tự',
+        'chutoa@ (cửa sổ thứ hai) mở Ghi chú',
+        'Bấm "Mở ghi chú ở tab mới", gõ và lưu ở tab đó',
+      ],
+      expected:
+        'Panel có ô chọn "Ghi chú cho" và ô nhập đúng gợi ý; trạng thái "Chưa lưu" → "Đang lưu…" → "Đã lưu ghi chú. (HH:mm)", tải lại vẫn còn (ROOM_FT89). Ghi chú mục lưu riêng, mục có gợi ý "Có ghi chú", "Chung" không đổi (ROOM_FT90). Dán 20.001 ký tự: ô nhập bị maxLength chặn ở 20.000, đếm "20.000/20.000", vẫn lưu được — server 400 MSG419 chỉ tới được qua API trực tiếp (ROOM_FT94: case cũ, E1/E2 qua UI không tới được, xem ghi chú). Chủ toạ đọc được, không có ô nhập (ROOM_FT91). Tab mới cùng ghi chú, lưu được ở đó (ROOM_FT98)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'InProgress', 'ghi chú trong phòng')
+        const item = ok(
+          qa,
+          await post('secretary', `/api/meetings/${m.id}/agenda`, {
+            title: '[QA] FE-08 mục ghi chú', description: '', presenterId: null, presenterGuestInvitationId: null,
+          }),
+          201,
+          'create agenda item',
+        )
+        qa.expect(item.agendaItemId, 'agenda item id').toBeTruthy()
+        await setPrefs(qa.context, { mic: false, cam: false })
+        await openLobby(qa, m)
+        await joinRoom(qa)
+        await press(qa, controls(qa.page).getByRole('button', { name: 'Ghi chú' }))
+        const panel = qa.page.getByRole('complementary', { name: 'Ghi chú' })
+        const picker = panel.getByRole('button', { name: /^Ghi chú cho:/ })
+        const box = panel.getByRole('textbox', { name: 'Nội dung ghi chú' })
+        await qa.expect(picker).toBeVisible({ timeout: 10_000 })
+        await qa.expect(box).toHaveAttribute('placeholder', 'Gõ ghi chú… Dòng bắt đầu bằng “Kết luận:” hoặc “Nhiệm vụ:” vào mục III của biên bản.')
+        const stamp = Date.now().toString(36)
+        await box.fill(`Họp bắt đầu đúng giờ ${stamp}`)
+        await qa.expect(panel.getByText(/Đã lưu ghi chú\. \(\d{2}:\d{2}\)/)).toBeVisible({ timeout: 15_000 })
+        await qa.shot('ghi chu chung da luu')
+        await qa.page.reload()
+        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
+        await joinRoom(qa)
+        await press(qa, controls(qa.page).getByRole('button', { name: 'Ghi chú' }))
+        await qa.expect(box).toHaveValue(`Họp bắt đầu đúng giờ ${stamp}`)
+        await press(qa, picker)
+        await press(qa, qa.page.getByRole('option', { name: /mục ghi chú/ }))
+        await qa.expect(picker).toContainText('mục ghi chú')
+        await box.fill(`Ý kiến mục ${stamp}`)
+        await qa.expect(panel.getByText(/Đã lưu ghi chú\. \(\d{2}:\d{2}\)/)).toBeVisible({ timeout: 15_000 })
+        await qa.shot('ghi chu theo muc')
+        await press(qa, picker)
+        await qa.expect(qa.page.getByRole('option', { name: /Có ghi chú/ }).first()).toBeVisible()
+        await qa.page.keyboard.press('Escape')
+        await press(qa, picker)
+        await press(qa, qa.page.getByRole('option', { name: /^Chung/ }))
+        await qa.expect(box).toHaveValue(`Họp bắt đầu đúng giờ ${stamp}`)
+        await box.fill('y'.repeat(20001))
+        // ROOM_FT94: ô nhập bị maxLength chặn ở 20.000 nên đếm vượt + 400 MSG419 không tới được qua UI;
+        // server vẫn chặn qua API trực tiếp (ghi cho case cũ).
+        qa.expect((await box.inputValue()).length, 'the box is capped at 20000').toBe(20000)
+        await qa.expect(panel.getByText('20.000/20.000')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(panel.getByText(/Đã lưu ghi chú\. \(\d{2}:\d{2}\)/)).toBeVisible({ timeout: 15_000 })
+        await qa.shot('ghi chu bi chan o 20000')
+        const k94 = checker(qa)
+        k94.check(
+          'PUT 20001 chars answers 400 MSG419',
+          await put('secretary', `/api/meetings/${m.id}/notes`, { agendaItemId: null, body: 'z'.repeat(20001), updatedAt: null }),
+          400,
+          'MSG419',
+        )
+        k94.done()
+        const saved = ok(qa, await get('secretary', `/api/meetings/${m.id}/notes`), 200, 'notes after capped save')
+        qa.expect((((saved.notes ?? []).find((n) => n.agendaItemId === null)?.body ?? '').length), 'the capped 20000 chars are saved').toBe(20000)
+        const chair = await person(qa, 'chair')
+        await openLobby(qa, m, chair)
+        await joinRoom(qa, chair)
+        await press(qa, controls(chair).getByRole('button', { name: 'Ghi chú' }))
+        const chairPanel = chair.getByRole('complementary', { name: 'Ghi chú' })
+        await qa.expect(chairPanel.getByText(`Ý kiến mục ${stamp}`)).toBeVisible({ timeout: 15_000 })
+        await qa.expect(chairPanel.getByRole('textbox', { name: 'Nội dung ghi chú' })).toHaveCount(0)
+        await shotOf(qa, chair, 'chu toa chi doc')
+        const [tab] = await Promise.all([
+          qa.page.waitForEvent('popup'),
+          press(qa, panel.getByRole('link', { name: 'Mở ghi chú ở tab mới' })),
+        ])
+        await qa.expect(tab.getByRole('textbox', { name: 'Nội dung ghi chú' })).toHaveValue(/y{100}/, { timeout: 15_000 })
+        await tab.getByRole('textbox', { name: 'Nội dung ghi chú' }).fill(`Họp bắt đầu đúng giờ ${stamp} (sửa ở tab mới)`)
+        await qa.expect(tab.getByText(/Đã lưu ghi chú\. \(\d{2}:\d{2}\)/)).toBeVisible({ timeout: 15_000 })
+        await qa.shot('ghi chu tab moi')
+        await tab.close()
+      }),
+    },
+    {
+      id: 'AC27',
+      role: 'anon',
+      title: 'Chưa đăng nhập mở link phòng: về /login, đăng nhập xong vào thẳng màn chờ (ROOM_FT15)',
+      steps: ['Mở /mgmt/meetings/{id}/room khi chưa đăng nhập', 'Đăng nhập bằng tài khoản Thành viên'],
+      expected: 'Trình duyệt về /login; đăng nhập xong mở thẳng màn chờ "Sẵn sàng tham gia?" của đúng cuộc họp (ROOM_FT15, UC-37)',
+      run: async (qa) => {
+        const m = await reused(qa, 'live')
+        await qa.goto(`/mgmt/meetings/${m.id}/room`)
+        await qa.expect(qa.page).toHaveURL(/\/login/, { timeout: 15_000 })
+        await qa.shot('chua dang nhap ve login')
+        await qa.page.getByLabel('Email').fill(SEED.member)
+        await qa.page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD)
+        await qa.page.getByRole('button', { name: 'Đăng nhập bằng mật khẩu' }).click()
+        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 20_000 })
+        await qa.expect(qa.page.getByText(m.title)).toBeVisible()
+        await noSidewaysScroll(qa)
+        await qa.shot('dang nhap xong vao man cho')
+      },
+    },
+    {
+      id: 'AC28',
+      role: 'chair',
+      title: 'API giơ tay: chưa vào phòng 409 MSG458, họp đã kết thúc 409 MSG117 (ROOM_FT83/85)',
+      steps: [
+        'Cuộc họp riêng đang diễn ra: lấy vé join (không kết nối LiveKit) rồi POST …/speaking-requests',
+        'POST …/speaking-requests trên cuộc họp đã kết thúc',
+      ],
+      expected:
+        'Chưa vào phòng (không có lượt kết nối LiveKit): 409 MSG458 — lần bấm Giơ tay đầu sau khi vào thật thì 200/201 (ROOM_FT83, phủ UI ở AC20). Họp đã kết thúc: 409 MSG117 (ghi cho ROOM_FT85: panel trong phòng không mở được vì phòng đã đóng — case hết hiệu lực).',
+      run: async (qa) => {
+        const k = checker(qa)
+        const m = await createAt(qa, 'InProgress', 'API giơ tay ngoài phòng')
+        const ticket = ok(qa, await post('member', `/api/meetings/${m.id}/call/join`), 200, 'join ticket without LiveKit')
+        k.fact('the join ticket carries a token', typeof ticket.token === 'string')
+        k.check('raise with no LiveKit presence', await post('member', `/api/meetings/${m.id}/speaking-requests`), 409, 'MSG458')
+        await transition(qa, 'chair', m.id, 'end')
+        k.check('raise on an ended meeting', await post('member', `/api/meetings/${m.id}/speaking-requests`), 409, 'MSG117')
+        k.done()
+      },
     },
     {
       id: 'AC23',

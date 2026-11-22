@@ -29,7 +29,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with an agenda and a closed vote; no AI draft and no minutes yet."
           ],
-          "note": "UC-59 | BR-384 | Manual only"
+          "note": "UC-59 | BR-384 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/06-secretary-AC1-phone-to-bien-ban.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT02",
@@ -121,7 +124,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an InProgress meeting whose Secretary has built draft minutes."
           ],
-          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only"
+          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/10-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/12-member-AC12-phone-thanh-vien-chua-thay-gi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT07",
@@ -165,7 +171,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are WaitingApproval; the Chair issues them during the test."
           ],
-          "note": "UC-58 | BR-412 | Manual only"
+          "note": "UC-58 | BR-412 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/09-member-AC13-desktop-thanh-vien-menu-tai.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/11-member-AC13-phone-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/12-member-AC13-phone-thanh-vien-menu-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT09",
@@ -185,7 +194,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes were issued and then corrected (the correction issued too)."
           ],
-          "note": "UC-58 AF-2 | BR-409 | Manual only"
+          "note": "UC-58 AF-2 | BR-409 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/45-member-AC16-desktop-thanh-vien-ds-phien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/46-member-AC16-desktop-thanh-vien-xem-ban-cu.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/47-member-AC16-desktop-thanh-vien-ve-ban-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT10",
@@ -201,7 +213,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of a Secret Ended meeting whose minutes are issued."
           ],
-          "note": "UC-58 EX-4 | BR-390 | Manual only"
+          "note": "UC-58 EX-4 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/52-chair-AC17-phone-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT11",
@@ -263,7 +278,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with draft minutes."
           ],
-          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view."
+          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view. · Evidence(AC3): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/01-secretary-AC3-desktop-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/03-secretary-AC3-desktop-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/04-secretary-AC3-phone-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/06-secretary-AC3-phone-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/07-secretary-AC3-phone-failure.png · E3 violated on phone: the new paragraph lands in the header table (index 215, glued to the header text) instead of after the closing line; desktop saves correctly. Suspected phone-editor quirk — needs a real-device check. · Chạy lại 2026-11-22 (AC3): desktop đạt, phone vẫn lỗi (vị trí 215, kỳ vọng > 1750) — tái hiện lần 3, nghi bug, theo dõi tại round1/bugs.md (SUS-01); cần thử điện thoại thật.",
+          "round1": "Failed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT14",
@@ -298,7 +316,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with draft minutes."
           ],
-          "note": "UC-60 EX-2 | BR-394 | Manual only"
+          "note": "UC-60 EX-2 | BR-394 | Manual only · Evidence(AC4-API): ",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT16",
@@ -353,7 +374,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-60 EX-3 | BR-388 | Manual only"
+          "note": "UC-60 EX-3 | BR-388 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -379,7 +403,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
           ],
-          "note": "UC-60 AF-1 | BR-391 | Manual only"
+          "note": "UC-60 AF-1 | BR-391 | Manual only · Evidence(AC5-Word): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/08-secretary-AC5-desktop-menu-tai-xuong.png · E2 verified by unzipping the downloaded docx (document.xml holds BIÊN BẢN + meeting title); filename assert in AC5 run.",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT20",
@@ -396,7 +423,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
           ],
-          "note": "UC-60 AF-2 | BR-391 | Manual only"
+          "note": "UC-60 AF-2 | BR-391 | Manual only · Evidence(AC5-PDF-env): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/09-secretary-AC5-desktop-failure.png · N/A environmental: every PDF export answers 500 MSG403 on this machine (QuestPDF temp-storage init fails in both backend and testhost; same xunit PDF tests fail in round1-full.trx on this laptop). Word path works. Needs a machine with working QuestPDF temp.",
+          "round1": "N/A",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT21",
@@ -413,7 +443,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of a Normal Ended meeting whose minutes are issued."
           ],
-          "note": "UC-58 AF-3 | BR-412 | Manual only"
+          "note": "UC-58 AF-3 | BR-412 | Manual only · Evidence(AC13-Word+AC12+AC5): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/09-member-AC13-desktop-thanh-vien-menu-tai.png · E1 Word download verified by filename assert + menu shot (PDF attempt in same AC fails environmentally); E2 draft-hidden by AC12 shots + draft-export 404 by AC5 API.",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT22",
@@ -430,7 +463,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Secret InProgress meeting with draft minutes."
           ],
-          "note": "UC-60 EX-6 | BR-390 | Manual only"
+          "note": "UC-60 EX-6 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT23",
@@ -475,7 +511,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting with completed draft minutes (no \"……\" left); the Chair signed in in a second browser."
           ],
-          "note": "UC-61 | BR-404 | BR-411 | Manual only"
+          "note": "UC-61 | BR-404 | BR-411 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT25",
@@ -493,7 +532,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose draft minutes still hold \"……\"."
           ],
-          "note": "UC-61 AF-1 | Manual only"
+          "note": "UC-61 AF-1 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT26",
@@ -562,7 +604,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose minutes the Chair returned with \"Bổ sung kết luận mục 2.\"."
           ],
-          "note": "UC-61 AF-2 | BR-407 | Manual only"
+          "note": "UC-61 AF-2 | BR-407 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/27-secretary-AC9-desktop-thay-ly-do-tra-lai.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/28-secretary-AC9-desktop-gui-duyet-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT30",
@@ -606,7 +651,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-64 | BR-408 | Manual only"
+          "note": "UC-64 | BR-408 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/29-chair-AC11-desktop-hoi-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/30-chair-AC11-desktop-da-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT32",
@@ -684,7 +732,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval; the Secretary signed in in a second browser."
           ],
-          "note": "UC-65 | BR-407 | BR-411 | Manual only"
+          "note": "UC-65 | BR-407 | BR-411 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/21-chair-AC8-desktop-chu-toa-thay-cho-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/23-chair-AC8-desktop-da-tra-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT36",
@@ -700,7 +751,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-65 EX-3 | BR-407 | Manual only"
+          "note": "UC-65 EX-3 | BR-407 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/22-chair-AC8-desktop-thieu-ly-do.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/23-chair-AC8-desktop-da-tra-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT37",
@@ -748,7 +802,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes the Chair returned."
           ],
-          "note": "UC-65 | BR-412 | Manual only"
+          "note": "UC-65 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/11-member-AC12-desktop-thanh-vien-bi-tra-lai-khong-thay.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/13-member-AC12-phone-thanh-vien-bi-tra-lai-khong-thay.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -775,7 +832,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are issued."
           ],
-          "note": "UC-83 | BR-409 | BR-413 | Manual only"
+          "note": "UC-83 | BR-409 | BR-413 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/14-secretary-AC14-desktop-hoi-dinh-chinh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/15-secretary-AC14-desktop-da-tao-dinh-chinh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/16-secretary-AC14-desktop-danh-sach-phien-ban.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT41",
@@ -791,7 +851,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are issued and whose Chair has just created a correction."
           ],
-          "note": "UC-83 | BR-412 | Manual only"
+          "note": "UC-83 | BR-412 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/17-member-AC14-desktop-thanh-vien-van-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/21-member-AC14-phone-thanh-vien-van-doc-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT42",
@@ -843,7 +906,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are issued."
           ],
-          "note": "UC-83 EX-1 | BR-386 | Manual only"
+          "note": "UC-83 EX-1 | BR-386 | Manual only · Evidence(AC13+AC15): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

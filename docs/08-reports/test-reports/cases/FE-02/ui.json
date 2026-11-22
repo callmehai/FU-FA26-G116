@@ -27,7 +27,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "At least 21 accounts including a deactivated one and a Google-only one."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC1): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/01-admin-AC1-desktop-danh-sach.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/02-admin-AC1-desktop-dong-qa-a.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT02",
@@ -44,7 +47,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/01-admin-AC22-desktop-dang-tai-skeleton.png; tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/02-admin-AC22-desktop-loi-tai-danh-sach.png; tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/03-admin-AC22-desktop-thu-lai-thanh-cong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT03",
@@ -83,7 +89,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/01-admin-AC2-desktop-tim-khong-dau.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/05-admin-AC2-phone-tim-khong-dau.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT05",
@@ -101,7 +110,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/04-admin-AC2-desktop-da-xoa-bo-loc.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/08-admin-AC2-phone-da-xoa-bo-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT06",
@@ -120,7 +132,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Enough accounts for a second page at a page size of 20."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/05-admin-AC23-desktop-trang-qua-lon-ve-cuoi.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/06-admin-AC23-desktop-vai-tro-moi-trong-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT07",
@@ -138,7 +153,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "More than 20 accounts."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/03-admin-AC23-desktop-trang-2-co-20-dong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT08",
@@ -155,7 +173,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account without AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC19): tests/qa/out/SCRUM-189/20261121-221106-eb5a3255/01-secretary-AC19-desktop-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT09",
@@ -204,7 +225,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The email is not used."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC3): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/10-admin-AC3-desktop-form-tao.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/11-admin-AC3-desktop-dong-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT11",
@@ -223,7 +247,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC3): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/09-admin-AC3-desktop-mat-khau-hien-sao-chep.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT12",
@@ -241,7 +268,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC4): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/12-admin-AC4-desktop-mat-khau-tao-san.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/13-admin-AC4-desktop-email-sai-dinh-dang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT13",
@@ -259,7 +289,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC4): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/11-admin-AC4-desktop-email-trung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT14",
@@ -278,7 +311,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role without members and a second browser."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC15): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/12-admin-AC15-desktop-vai-tro-khong-ton-tai.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/13-admin-AC15-desktop-tao-vai-tro-khong-ton-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT15",
@@ -296,7 +332,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC24): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/37-admin-AC24-desktop-hoi-bo-thay-doi-tao.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/38-admin-AC24-desktop-bo-thay-doi-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT16",
@@ -342,7 +381,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/19-admin-AC5-desktop-form-sua.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/21-admin-AC5-desktop-da-luu.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT18",
@@ -378,7 +420,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5+AC25): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/20-admin-AC5-desktop-email-trung.png; tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/04-admin-AC25-desktop-doi-email-minh-ve-login.png; tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/05-admin-AC25-desktop-dang-nhap-lai-ve-dung-trang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT20",
@@ -397,7 +442,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC26): tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/06-admin-AC26-desktop-b-bi-doi-email-ve-login.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT21",
@@ -413,7 +461,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/20-admin-AC5-desktop-email-trung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT22",
@@ -431,7 +482,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5+AC24): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/19-admin-AC5-desktop-form-sua.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/38-admin-AC24-desktop-bo-thay-doi-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT23",
@@ -447,7 +501,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC28): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/12-admin-AC28-desktop-sua-dang-tai.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/13-admin-AC28-desktop-sua-loi-tai.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/14-admin-AC28-desktop-sua-thu-lai-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -475,7 +532,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "An active target account."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC7): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/25-admin-AC7-desktop-hoi-lai-vo-hieu-hoa.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/26-admin-AC7-desktop-da-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT25",
@@ -493,7 +553,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC27): tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/07-admin-AC27-desktop-b-bi-vo-hieu-hoa-ve-login.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT26",
@@ -512,7 +575,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A deactivated target account with a password."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC7): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/27-admin-AC7-desktop-da-kich-hoat-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT27",
@@ -528,7 +594,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC8): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/31-admin-AC8-desktop-dong-cua-minh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT28",
@@ -544,7 +613,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC29): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/43-admin-AC29-desktop-huy-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT29",
@@ -563,7 +635,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A second browser signed in as another Administrator."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC8): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/32-admin-AC8-desktop-da-vo-hieu-hoa-tu-truoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT30",
@@ -582,7 +657,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A deactivated account with documents in its personal library."
           ],
-          "note": "UC-06c · SCRUM-113 · Manual only"
+          "note": "UC-06c · SCRUM-113 · Manual only · Evidence(AC31): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/17-admin-AC31-desktop-nut-kho-bi-khoa.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/18-admin-AC31-desktop-kho-cua-tai-khoan-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -608,7 +686,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Evidence(AC13): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/45-admin-AC13-desktop-chon-vai-tro.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/46-admin-AC13-desktop-vai-tro-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT32",
@@ -627,7 +708,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Evidence(AC13+AC14): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/46-admin-AC13-desktop-vai-tro-moi.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/50-qa-fe02-a-trustcabinet-local-AC14-desktop-nhan-thong-bao.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT33",
@@ -679,7 +763,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role without members and a second browser."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Evidence(AC15): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/32-admin-AC15-desktop-vai-tro-khong-ton-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT36",
@@ -696,7 +783,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-08 · UC-12a · Manual only"
+          "note": "UC-08 · UC-12a · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/06-admin-AC23-desktop-vai-tro-moi-trong-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -758,7 +848,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The signed-in Administrator has a password."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Evidence(AC30): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/15-admin-AC30-desktop-canh-bao-tu-dat-cho-minh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT40",
@@ -843,7 +936,10 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito."
           ],
-          "note": "UC-07 · MSG129 · Manual only"
+          "note": "UC-07 · MSG129 · Manual only · Evidence(AC11): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/39-anon-AC11-desktop-khong-co-ma.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/42-anon-AC11-phone-khong-co-ma.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT45",

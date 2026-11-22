@@ -28,7 +28,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/02-chair-AC1-desktop-man-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/04-chair-AC1-phone-man-cho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT02",
@@ -88,7 +91,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37, UC-39d | BR-331 | Manual only"
+          "note": "UC-37, UC-39d | BR-331 | Manual only · Evidence(AC1+AC3): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/02-chair-AC1-desktop-man-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/09-secretary-AC3-desktop-camera-bat-micro-tat.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/11-secretary-AC3-desktop-sau-khi-tai-lai-van-nho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT05",
@@ -106,7 +112,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member accounts of M1; a second browser."
           ],
-          "note": "UC-37 | Manual only"
+          "note": "UC-37 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/01-member-AC6-desktop-man-cho-thay-so-nguoi.png; tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/04-member-AC6-phone-man-cho-thay-so-nguoi.png · Màn chờ hiện đúng số người đang trong phòng lúc chạy (chạy lẻ là 1; chạy nối sau AC khác có thể >1 do lượt kết nối cũ chưa đối soát).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT06",
@@ -124,7 +133,10 @@
             "An Online meeting M1 in status Published; the Member is on the roster.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | BR-143 | MSG117 | Manual only"
+          "note": "UC-37 AF-3 | BR-143 | MSG117 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/50-member-AC14-desktop-phong-published.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/54-member-AC14-phone-phong-published.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT07",
@@ -141,7 +153,10 @@
             "An Online meeting M1 in status Published; Chair and Member on the roster; a second browser.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | MSG117 | Manual only"
+          "note": "UC-37 | MSG117 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/58-member-AC15-desktop-dang-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/59-member-AC15-desktop-tu-mo.png · AX hai phiên: Bắt đầu họp thực hiện qua API vai trò Chủ toạ (POST transitions Start 200) thay cho bấm nút ở phiên thứ hai — cùng chuyển trạng thái và realtime, màn chờ tự mở đã kiểm.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT08",
@@ -157,7 +172,10 @@
             "An Online meeting M1 in status Ended.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG331 | Manual only"
+          "note": "UC-37 AF-3 | MSG331 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/51-member-AC14-desktop-phong-ended.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT09",
@@ -173,7 +191,10 @@
             "An Online meeting M1 cancelled after it was published.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG350 | Manual only"
+          "note": "UC-37 AF-3 | MSG350 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/52-member-AC14-desktop-phong-cancelled.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT10",
@@ -190,7 +211,10 @@
             "An InPerson meeting M1 in status InProgress.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG280 | Manual only"
+          "note": "UC-37 AF-3 | MSG280 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/53-member-AC14-desktop-phong-inperson.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT11",
@@ -245,7 +269,10 @@
             "An InProgress Online meeting M1 whose Organizer is not on the roster.",
             "Organizer account supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/60-admin-AC16-desktop-chi-tiet-adminorganizer.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/61-admin-AC16-desktop-phong-adminorganizer.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT14",
@@ -261,7 +288,10 @@
             "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
             "An active user account that is not on the roster of M1."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/61-admin-AC16-desktop-phong-adminorganizer.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/64-admin-AC16-desktop-id-khong-ton-tai.png · Cùng màn 404 như id không tồn tại; API 404 đã assert trong AC17.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT15",
@@ -277,7 +307,10 @@
             "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
             "User not signed in."
           ],
-          "note": "UC-37 | Manual only"
+          "note": "UC-37 | Manual only · Evidence(AC27): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/04-anon-AC27-desktop-chua-dang-nhap-ve-login.png; tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/05-anon-AC27-desktop-dang-nhap-xong-vao-man-cho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT16",
@@ -295,7 +328,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-328 | MSG329 | Manual only"
+          "note": "UC-37 | BR-328 | MSG329 | Manual only · Evidence(AC10): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/42-member-AC10-desktop-cua-so-cu-bi-dua-ra.png · AX hai phiên: cửa sổ thứ hai cùng trình duyệt (hai context riêng), LiveKit đá kết nối cũ đúng BR-328, tab cũ hiện MSG329 + nút Vào lại.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT17",
@@ -421,7 +457,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | ADR-0056 | Manual only"
+          "note": "UC-37 | ADR-0056 | Manual only · Evidence(AC2): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/05-member-AC2-desktop-thuong-thong-bao-ghi-am.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/06-member-AC2-desktop-mat-thong-bao-ghi-am.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/08-member-AC2-phone-mat-thong-bao-ghi-am.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -450,7 +489,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member is connected to the room."
           ],
-          "note": "UC-38 | Manual only"
+          "note": "UC-38 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/36-secretary-AC9-desktop-hop-thoai-roi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/37-secretary-AC9-desktop-ve-chi-tiet-cuoc-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT25",
@@ -460,7 +502,7 @@
             "Member clicks \"Rời phòng\" then \"Rời phòng\" in the dialog."
           ],
           "expected": [
-            "The button shows \"Đang rời phòng…\"; then the page shows \"Bạn đã rời phòng họp.\" (MSG328) with \"Về trang cuộc họp\" and \"Vào lại\".",
+            "The button shows \"Đang rời phòng…\"; then the page opens /mgmt/meetings/{M1} directly (there is no left screen).",
             "The Chair's room count drops and the Member is no longer in the panel \"Người dự\".",
             "On /mgmt/meetings/{M1} the status is still \"Đang diễn ra\"; the Member's attendance value and role are unchanged (BR-324, BR-330)."
           ],
@@ -470,7 +512,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member and Chair accounts of M1; a second browser."
           ],
-          "note": "UC-38 | BR-324, BR-330 | MSG328 | Manual only"
+          "note": "UC-38 | BR-324, BR-330 | MSG328 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/36-secretary-AC9-desktop-hop-thoai-roi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/37-secretary-AC9-desktop-ve-chi-tiet-cuoc-hop.png · Case cũ: E1 đòi màn hình MSG328 + nút Vào lại, nhưng sản phẩm Rời phòng về thẳng trang chi tiết (không có màn rời phòng). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT26",
@@ -489,17 +534,20 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member has just left the room."
           ],
-          "note": "UC-38 | BR-324 | Manual only"
+          "note": "UC-38 | BR-324 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/37-secretary-AC9-desktop-ve-chi-tiet-cuoc-hop.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/38-secretary-AC9-desktop-vao-lai-duoc-chi-tiet-van-o-tab-cu.png · Vào lại qua link Vào phòng họp ở trang chi tiết (không có nút Vào lại riêng); lobby mở lại và vào phòng được đã assert (tab mới).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT27",
-          "description": "The back arrow in the room header also asks before leaving.",
+          "description": "The \"Trang cuộc họp\" button in the room header opens the meeting without asking.",
           "procedure": [
             "Join as the Member.",
-            "Click the arrow \"Quay lại trang cuộc họp\" in the header."
+            "Click the button \"Trang cuộc họp\" in the header."
           ],
           "expected": [
-            "The dialog \"Rời phòng họp\" appears; \"Ở lại\" keeps the call, \"Rời phòng\" leaves and shows \"Bạn đã rời phòng họp.\"."
+            "The meeting detail opens in a new tab without a dialog and the Member stays connected in the room."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
@@ -508,7 +556,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member is connected."
           ],
-          "note": "UC-38 | Manual only"
+          "note": "UC-38 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/36-secretary-AC9-desktop-hop-thoai-roi-phong.png · Case cũ: E đòi nút mũi tên hiện hộp Rời phòng, nhưng nút Trang cuộc họp mở chi tiết ở tab mới mà không hỏi (PO 19/11, đã assert). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT28",
@@ -527,7 +578,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member, Secretary and Chair accounts of M1; several browsers."
           ],
-          "note": "UC-38 | MSG331 | Manual only"
+          "note": "UC-38 | MSG331 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/43-member-AC11-desktop-dang-trong-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/44-member-AC11-desktop-phong-da-dong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT29",
@@ -546,7 +600,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member connected; Chair or Organizer account in a second browser."
           ],
-          "note": "UC-38 | BR-323 | MSG330 | Manual only"
+          "note": "UC-38 | BR-323 | MSG330 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/47-member-AC12-desktop-bi-dua-ra-khoi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/48-member-AC12-desktop-mo-lai-link-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT30",
@@ -616,7 +673,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A second person is in the room."
           ],
-          "note": "UC-39a | Manual only"
+          "note": "UC-39a | Manual only · Evidence(AC5): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/01-chair-AC5-desktop-camera-va-micro-bat.png; tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/04-chair-AC5-phone-camera-va-micro-bat.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT33",
@@ -635,7 +695,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A computer keyboard."
           ],
-          "note": "UC-39a, UC-39b | Manual only"
+          "note": "UC-39a, UC-39b | Manual only · Evidence(AC5): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/01-chair-AC5-desktop-camera-va-micro-bat.png; tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/03-chair-AC5-desktop-phim-tat-tat-ca-hai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT34",
@@ -689,7 +752,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A second person is in the room."
           ],
-          "note": "UC-39b | Manual only"
+          "note": "UC-39b | Manual only · Evidence(AC5): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/02-chair-AC5-desktop-nguoi-kia-thay-hinh-cua-so-chinh-nguoi-thu-hai.png · AX hai phiên: Thành viên ở cửa sổ thứ hai thấy video của Chủ toạ (videoWidth>0), không chỉ ô của mình.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT37",
@@ -726,7 +792,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member and Chair accounts of M1; a computer browser that can share a screen."
           ],
-          "note": "UC-39c | BR-326 | Manual only"
+          "note": "UC-39c | BR-326 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/20-chair-AC21-desktop-thanh-vien-trinh-bay.png · AX hai phiên: Thành viên trình bày, Chủ toạ thấy tên + hình thật (videoWidth>0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT39",
@@ -744,7 +813,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Two accounts of M1 in two browsers."
           ],
-          "note": "UC-39c | BR-326 | MSG340 | Manual only"
+          "note": "UC-39c | BR-326 | MSG340 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/21-chair-AC21-desktop-chu-toa-chiem-quyen-trinh-bay.png · AX hai phiên: Chủ toạ chia sẻ đè; Thành viên nhận câu MSG340 (đã assert text) và chỉ còn hình Chủ toạ.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT40",
@@ -878,7 +950,10 @@
             "Several devices as above.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-39d | BR-331 | Manual only"
+          "note": "UC-39d | BR-331 | Manual only · Evidence(AC3): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/11-secretary-AC3-desktop-sau-khi-tai-lai-van-nho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/14-secretary-AC3-phone-sau-khi-tai-lai-van-nho.png · AX một phiên: nhớ lựa chọn trình duyệt qua reload; không gửi gì lên server.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT47",
@@ -957,7 +1032,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Three accounts of M1."
           ],
-          "note": "UC-40 | Manual only"
+          "note": "UC-40 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/02-member-AC6-desktop-panel-nguoi-du-hai-nguoi.png; tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/03-member-AC6-desktop-chu-toa-da-roi.png · AX hai phiên (cửa sổ thứ hai cùng trình duyệt): panel liệt kê theo vai trò, Chủ toạ trước, (Bạn), micro từng người; rời phòng cập nhật không tải lại.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT51",
@@ -993,7 +1071,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room; Organizer account in a third browser."
           ],
-          "note": "UC-40 | BR-329 | Manual only"
+          "note": "UC-40 | BR-329 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/16-member-AC13-desktop-truoc-khi-ban-giao.png; tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/17-member-AC13-desktop-sau-khi-ban-giao.png · AX hai phiên + API: bàn giao qua API, panel tự cập nhật không vào lại; Chủ toạ cũ tắt mic 403 MSG123.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT53",
@@ -1053,7 +1134,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member accounts of M1; two browsers."
           ],
-          "note": "UC-41 | BR-325 | MSG339, MSG342 | Manual only"
+          "note": "UC-41 | BR-325 | MSG339, MSG342 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/01-member-AC7-desktop-bi-chu-toa-tat-mic-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/03-member-AC7-desktop-dong-minh-khong-nut-tat-cua-so-chinh-nguoi-thu-hai.png · AX hai phiên (cửa sổ thứ hai cùng trình duyệt).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT56",
@@ -1070,7 +1154,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member has just been muted by the Chair."
           ],
-          "note": "UC-41 | BR-325 | Manual only"
+          "note": "UC-41 | BR-325 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/02-member-AC7-desktop-tu-bat-lai-micro.png · Tự bật lại được, nút Tắt mic hiện lại ở dòng mình.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT57",
@@ -1087,7 +1174,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member with the microphone off in the room."
           ],
-          "note": "UC-41 | BR-325 | Manual only"
+          "note": "UC-41 | BR-325 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/04-member-AC7-desktop-dong-micro-tat-khong-nut-bat-ho.png · Dòng micro tắt chỉ hiện icon (tooltip title Micro tắt, đã assert attribute), không có chữ hiện và không có nút bật micro hộ — tắt một chiều.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT58",
@@ -1104,7 +1194,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Two Members in the room."
           ],
-          "note": "UC-41 | BR-325 | MSG123 | Manual only"
+          "note": "UC-41 | BR-325 | MSG123 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/02-member-AC6-desktop-panel-nguoi-du-hai-nguoi.png · Góc nhìn Thành viên: panel không có nút Tắt mic (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT59",
@@ -1121,7 +1214,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair in the room."
           ],
-          "note": "UC-41 | Manual only"
+          "note": "UC-41 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/03-member-AC7-desktop-dong-minh-khong-nut-tat-cua-so-chinh-nguoi-thu-hai.png · Dòng của chính Chủ toạ (không gắn (Bạn) ở góc Chủ toạ) không có nút Tắt mic/Bật micro.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT60",
@@ -1139,7 +1235,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room; Organizer in a third browser."
           ],
-          "note": "UC-41 | BR-329 | MSG123 | Manual only"
+          "note": "UC-41 | BR-329 | MSG123 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/18-member-AC13-desktop-chu-toa-cu-khong-nut-tat-mic.png · Chủ toạ cũ mở panel: không còn nút Tắt mic ở dòng nào; API 403 MSG123 đã assert. Câu báo stale-click không dàn được qua UI vì nút biến mất ngay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT61",
@@ -1183,7 +1282,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Two accounts of M1 in two browsers."
           ],
-          "note": "UC-42 | BR-327 | Manual only"
+          "note": "UC-42 | BR-327 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/28-chair-AC8-desktop-dem-tin-chua-doc.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/30-chair-AC8-desktop-da-gui.png · AX hai phiên + người thứ ba vào sau (cửa sổ riêng): tin kèm tên + giờ, ô mình hiện Bạn, đếm n/1000.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT63",
@@ -1200,7 +1302,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC25): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/01-member-AC25-desktop-chat-trong-nut-gui-tat.png · Phòng mới: Chưa có tin nhắn nào + nút Gửi tắt (đã assert disabled).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT64",
@@ -1218,7 +1323,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A computer keyboard."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/29-chair-AC8-desktop-dang-go-hai-dong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/30-chair-AC8-desktop-da-gui.png · Shift+Enter xuống dòng, Enter gửi; ô trống lại 0/1000.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT65",
@@ -1235,7 +1343,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC25): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/02-member-AC25-desktop-dan-1001-ky-tu-giu-1000.png; tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/03-member-AC25-desktop-da-gui-tin-1000-ky-tu.png · Dán 1001 ký tự: ô giữ đúng 1000, đếm 1000/1000, gửi được.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT66",
@@ -1252,7 +1363,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC25): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/01-member-AC25-desktop-chat-trong-nut-gui-tat.png · Ô chỉ dấu cách: Gửi vẫn tắt, Enter không gửi gì (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT67",
@@ -1270,7 +1384,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Three accounts of M1."
           ],
-          "note": "UC-42 | BR-327 | Manual only"
+          "note": "UC-42 | BR-327 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/31-chair-AC8-desktop-nguoi-vao-sau-khong-thay-tin-cu-cua-so-chinh-nguoi-thu-hai.png · Người vào sau thấy Chưa có tin nhắn nào.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT68",
@@ -1316,7 +1433,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chrome or Edge on a computer (Document Picture-in-Picture)."
           ],
-          "note": "UC-78 | BR-332 | Manual only"
+          "note": "UC-78 | BR-332 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-195/20261122-031916-eb5a3255/01-secretary-AC22-desktop-dang-o-cua-so-noi.png · Sân khấu báo Cuộc họp đang ở cửa sổ nổi + nút đưa về; số người không tăng (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT70",
@@ -1333,7 +1453,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "The floating window is open."
           ],
-          "note": "UC-78 | BR-332 | Manual only"
+          "note": "UC-78 | BR-332 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-195/20261122-031916-eb5a3255/02-secretary-AC22-desktop-da-dua-ve.png · Đưa về: lưới ô trở lại, hết màn cửa sổ nổi.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT71",
@@ -1367,7 +1490,10 @@
             "Firefox or a phone browser.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-78 | Manual only"
+          "note": "UC-78 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/24-secretary-AC22-phone-dien-thoai-khong-nut-cua-so-noi.png · Điện thoại không có nút Mở cửa sổ nổi (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1396,7 +1522,10 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member is connected; nobody else has a hand up."
           ],
-          "note": "UC-79 | BR-337 | Manual only"
+          "note": "UC-79 | BR-337 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/10-chair-AC20-desktop-goc-nhin-nguoi-gio-tay-cua-so-chinh-nguoi-thu-hai.png · Panel người giơ tay: Bạn đang giơ tay · thứ 1, không nút Mời (đã assert); ô mình có tay Đang giơ tay (người khác xem hàng đợi thay vì ô hộ).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT74",
@@ -1414,7 +1543,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room in two browsers."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png · Chủ toạ nhận toast tên người giơ tay (đã assert text) + badge Phát biểu đếm tay chờ.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT75",
@@ -1433,7 +1565,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and two Members in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/12-chair-AC20-desktop-thanh-vien-xem-hang-doi-cua-so-chinh-nguoi-thu-hai.png · Hai người giơ tay: hàng đợi có thứ tự Thứ 1/2, mỗi dòng có Mời + Từ chối ở góc Chủ toạ; góc Thành viên không có nút Mời/Từ chối (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT76",
@@ -1446,7 +1581,7 @@
           ],
           "expected": [
             "After \"Mời\" the row shows the badge \"Đã mời\"; the Member sees the banner \"Đến lượt bạn phát biểu\" and the microphone is still off (BR-338).",
-            "After starting, the row shows \"Đang nói\" and the Member's panel shows \"Bạn đang nói\"; \"Mời\" is disabled for the others.",
+            "After starting, the row shows \"Đang nói\" and the Member's panel shows \"Bạn đang nói\"; \"Mời\" is hidden for the others.",
             "After finishing, the Member's request leaves the queue and the button returns to \"Giơ tay\"; the speaking time is kept for the minutes."
           ],
           "preconditions": [
@@ -1455,7 +1590,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room in two browsers."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/13-chair-AC20-desktop-den-luot-thanh-vien-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/19-chair-AC20-desktop-dang-noi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/20-chair-AC20-desktop-ket-thuc-luot.png · Mời: badge Đã mời, banner + Bắt đầu phát biểu, micro vẫn tắt (BR-338). Nút Mời ở dòng chờ ẩn hẳn (hidden) thay vì disabled như câu chữ case — chủ ý theo code. Bắt đầu: Đang nói/Bạn đang nói; kết thúc: lượt rời hàng đợi, nút về Giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT77",
@@ -1465,7 +1603,7 @@
             "The Chair looks at the second row."
           ],
           "expected": [
-            "\"Mời\" on the second row is disabled while the first is invited or speaking; the server would answer 409 MSG459 \"Đang có người được mời hoặc đang phát biểu. Hãy kết thúc lượt đó trước.\"."
+            "\"Mời\" on the second row is hidden while the first is invited or speaking; the server would answer 409 MSG459 \"Đang có người được mời hoặc đang phát biểu. Hãy kết thúc lượt đó trước.\"."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
@@ -1473,7 +1611,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and two Members in the room."
           ],
-          "note": "UC-79 | BR-338 | MSG459 | Manual only"
+          "note": "UC-79 | BR-338 | MSG459 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/19-chair-AC20-desktop-dang-noi.png · Đang có lượt được mời/nói: dòng chờ mất nút Mời (ẩn, đã assert count 0); API mời tiếp trả 409 MSG459 (đã assert trong AC).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT78",
@@ -1491,7 +1632,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member with a raised hand."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/16-chair-AC20-desktop-hop-xac-nhan-tu-choi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/17-chair-AC20-desktop-da-tu-choi-mot-tay.png · Hộp Từ chối lượt phát biểu đúng câu Hạ tay của <tên>? Người này có thể giơ tay lại; Để sau giữ nguyên, Từ chối dọn hàng đợi (server đã kiểm qua dump).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT79",
@@ -1508,7 +1652,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/14-chair-AC20-desktop-hop-xac-nhan-rut-loi-moi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/15-chair-AC20-desktop-da-rut-loi-moi.png · Dòng được mời có Huỷ lời mời; xác nhận xong banner biến mất, sàn trống lại (về chờ).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT80",
@@ -1542,7 +1689,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A Member with a raised hand."
           ],
-          "note": "UC-79 | BR-337 | Manual only"
+          "note": "UC-79 | BR-337 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/21-chair-AC20-desktop-da-ha-tay.png · Hạ tay: hết yêu cầu của mình qua API (myRequestId null), nút về Giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT82",
@@ -1559,7 +1709,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A Member with a raised hand and the Chair in the room."
           ],
-          "note": "UC-79 | BR-337 | Manual only"
+          "note": "UC-79 | BR-337 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/22-chair-AC20-desktop-roi-phong-da-ha-tay.png · Rời phòng hạ tay: hết yêu cầu của mình qua API sau khi rời.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT83",
@@ -1576,7 +1729,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | MSG458 | Manual only"
+          "note": "UC-79 | MSG458 | Manual only · Evidence(AC28, API): xem report.html/summary.md của lần chạy · API: join-token không kèm kết nối LiveKit rồi giơ tay trả 409 MSG458 (đã assert); bấm Giơ tay sau khi vào thật 200/201 (AC20). Không chụp màn hình (AC API).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT84",
@@ -1599,17 +1755,20 @@
           "id": "ROOM_FT85",
           "description": "A hand cannot be raised when the meeting is not running.",
           "procedure": [
-            "Open \"Phát biểu\" in a room whose meeting has just ended."
+            "As the Member call POST on the raise-hand endpoint of a meeting that has just ended."
           ],
           "expected": [
-            "The panel says \"Chỉ đăng ký phát biểu khi cuộc họp đang diễn ra.\" and the button \"Giơ tay\" is not shown."
+            "Backend answers 409/MSG117; no hand is added. The room closes at once when the meeting ends, so the panel \"Phát biểu\" cannot be opened."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
             "An Ended meeting M1; a Member who was in the room.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | MSG117 | Manual only"
+          "note": "UC-79 | MSG117 | Manual only · Evidence(AC17, API): xem report.html/summary.md của lần chạy · Case cũ: E đòi panel Phát biểu trong phòng khi họp vừa kết thúc, nhưng phòng đóng ngay (bằng chứng AC11) nên không mở được panel. Server từ chối giơ tay 409 MSG117 (AC28 đã assert). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT86",
@@ -1662,7 +1821,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/09-chair-AC20-desktop-hang-doi-trong.png · Mở Phát biểu khi chưa ai giơ tay: Chưa có ai giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1689,7 +1851,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | BR-399 | MSG415 | Manual only"
+          "note": "UC-82 | BR-399 | MSG415 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/01-secretary-AC26-desktop-ghi-chu-chung-da-luu.png · Ghi chú chung tự lưu (Chưa lưu → Đang lưu… → Đã lưu ghi chú. (HH:mm)), tải lại vẫn còn (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT90",
@@ -1707,7 +1872,10 @@
             "M1 has an agenda with at least two items.",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/02-secretary-AC26-desktop-ghi-chu-theo-muc.png · Ghi chú theo mục nghị sự lưu riêng; mục có gợi ý Có ghi chú; Chung không đổi (đã assert qua lại).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT91",
@@ -1725,7 +1893,10 @@
             "Chair account of M1 supplied by QA lead; signed in.",
             "The Secretary has written a note."
           ],
-          "note": "UC-82 | MSG416 | Manual only"
+          "note": "UC-82 | MSG416 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/04-secretary-AC26-desktop-chu-toa-chi-doc-cua-so-chinh-nguoi-thu-hai.png · Chủ toạ đọc được ghi chú, không có ô nhập (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT92",
@@ -1742,7 +1913,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Manual only · Evidence(AC19): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/70-member-AC19-desktop-bang-noi-dung-hop.png · Thành viên không có nút/bảng Ghi chú (đã assert count 0 desktop + phone).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT93",
@@ -1765,10 +1939,12 @@
           "id": "ROOM_FT94",
           "description": "A note over 20,000 characters is refused.",
           "procedure": [
-            "Paste 20,001 characters into the note."
+            "Paste 20,001 characters into the note.",
+            "Call PUT on the note with 20,001 characters directly."
           ],
           "expected": [
-            "The counter shows the length over 20.000 and the server answers 400 MSG419 \"Ghi chú quá dài, tối đa 20.000 ký tự.\"; the saved note is unchanged."
+            "The input stops at 20.000 characters (counter 20.000/20.000) and the note still saves.",
+            "The direct call answers 400 MSG419 \"Ghi chú quá dài, tối đa 20.000 ký tự.\"; the saved note is unchanged."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
@@ -1776,7 +1952,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | BR-400 | MSG419 | Manual only"
+          "note": "UC-82 | BR-400 | MSG419 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/03-secretary-AC26-desktop-ghi-chu-bi-chan-o-20000.png · Case cũ: ô nhập bị maxLength chặn ở 20.000 (đếm 20.000/20.000, vẫn lưu được) nên đếm vượt + 400 MSG419 không tới được qua UI; server 400 MSG419 chỉ tới được qua API trực tiếp (AC26 đã assert PUT 20001 → 400). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT95",
@@ -1847,7 +2026,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/05-secretary-AC26-desktop-ghi-chu-tab-moi.png · Mở ghi chú ở tab mới: cùng ghi chú, lưu được ở đó (đã assert saved).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

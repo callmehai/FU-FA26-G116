@@ -25,7 +25,8 @@
 //   | Chủ toạ (không VoiceCollector)| xem danh sách thu hộ                          | 403                                    |
 //   | Thành viên (thanhvien@)      | xem bản gỡ băng (không gợi ý, không nút sửa)   | 200, suggested* = null, people = []    |
 //   | Thành viên                   | tải .txt / loại câu / sửa / gán                | 403 MSG355 / MSG353 / MSG295 / MSG295  |
-//   | Quản trị (quantri@, ngoài DS)| bản ghi, bản gỡ băng, câu theo micro, thu hộ   | 404                                    |
+//   | Quản trị (quantri@, ngoài DS)| bản ghi, bản gỡ băng, câu theo micro      | 404                                    |
+//   |                               | thu hộ (thiếu VoiceCollector)      | 403 (đúng luật capability)             |
 //   | Chưa đăng nhập               | bản gỡ băng                                    | 401                                    |
 //   | Ai cũng vậy, cuộc họp Mật    | tải .txt; thu hộ                               | 403 MSG356; 404                        |
 //   | Người dùng nội bộ (chính chủ)| đồng ý, ghi / nghe / xoá mẫu, rút đồng ý       | MSG305, MSG307, 200, MSG311, MSG306    |
@@ -67,6 +68,7 @@ const TITLES = {
   B: 'FE-10 Họp thu giọng mẫu',
   C: 'FE-10 Họp trực tuyến theo micro',
   D: 'FE-10 Họp Mật gỡ băng',
+  E: 'FE-10 Họp trực tuyến trống câu',
 }
 const FILES = { main: 'fe10-hop-chinh.wav', voice: 'fe10-voice-id.wav', secret: 'fe10-hop-mat.wav' }
 const MSG = {
@@ -187,6 +189,21 @@ const wavForm = (buffer, name, extra = {}) => {
   for (const [k, v] of Object.entries(extra)) form.append(k, v)
   return form
 }
+/** Voice samples for the API: opus when the machine has it, else wav.
+ * R1/FE-10 (Windows 22/11/2026): this laptop's backend cannot spool a multipart section over 64 KB
+ * to a temp file (500 UnauthorizedAccessException on ASPNETCORE_*.tmp inside FileBufferingReadStream —
+ * the same family as the FE-12 QuestPDF temp failure), so the QA audio script also writes small
+ * opus files and the plan prefers them; the product accepts audio/ogg (RecordingRules.Extensions),
+ * and machines with a working temp dir keep using wav exactly as before. */
+const sampleForm = (qa, name, fileName) => {
+  const opus = join(AUDIO_DIR, `${name}.opus`)
+  if (existsSync(opus) && readFileSync(opus).length < 65536) {
+    const form = new FormData()
+    form.append('file', new Blob([readFileSync(opus)], { type: 'audio/ogg' }), fileName)
+    return form
+  }
+  return wavForm(audio(qa, name), fileName)
+}
 
 /** Runs every API check, then fails once with all the wrong ones. */
 function checker(qa) {
@@ -244,7 +261,7 @@ async function ensureUser(qa, key) {
 
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z')
 const DAY = 86_400_000
-const HOURS = { A: 8, B: 10, C: 14, D: 16 }
+const HOURS = { A: 8, B: 10, C: 14, D: 16, E: 12 }
 /** A one-hour slot 14 weeks from today, at a different hour (Vietnam time) for each meeting. */
 function slot(key) {
   const day = new Date(Date.now() + 98 * DAY)
@@ -291,6 +308,7 @@ const SPEC = {
   B: { mode: 'InPerson', sensitivity: 'Normal', status: 'Published', guest: true, extra: ['a', 'b'] },
   C: { mode: 'Online', sensitivity: 'Normal', status: 'Ended', guest: false, extra: ['a'] },
   D: { mode: 'InPerson', sensitivity: 'Secret', status: 'Ended', guest: false, extra: [] },
+  E: { mode: 'Online', sensitivity: 'Normal', status: 'InProgress', guest: false, extra: ['a'] },
 }
 const MEETINGS = {}
 /** Meeting `key` (A–D) in its target state with its recordings / sentences, built the first time. */
@@ -455,7 +473,7 @@ async function enrolled(qa, who, samples = 0, reading = 'enrol') {
   }
   for (const s of v.samples.slice(samples)) await as(qa, who).delete(`/api/me/voice/samples/${s.id}`)
   for (let i = v.samples.length; i < samples; i++) {
-    const res = await as(qa, who).form('/api/me/voice/samples', wavForm(audio(qa, reading), 'giong-mau.wav'))
+    const res = await as(qa, who).form('/api/me/voice/samples', sampleForm(qa, reading, 'giong-mau.wav'))
     if (res.status === 503) qa.inconclusive('Máy nhận dạng giọng nói chưa sẵn sàng (503 MSG312).')
     qa.expectStatus(res, 201)
   }
@@ -480,7 +498,7 @@ async function clearCollected(qa, meetingId, userId) {
 async function collect(qa, meetingId, userId) {
   const res = await as(qa, 'secretary').form(
     `/api/meetings/${meetingId}/voice-collection/${userId}/samples`,
-    wavForm(audio(qa, 'enrol'), 'thu-ho.wav'),
+    sampleForm(qa, 'enrol', 'thu-ho.wav'),
   )
   if (res.status === 503) qa.inconclusive('Máy nhận dạng giọng nói chưa sẵn sàng (503 MSG312).')
   return res
@@ -549,7 +567,7 @@ export default {
         'Xem dòng bản ghi "fe10-hop-chinh.wav" và bản gỡ băng dưới nó',
       ],
       expected:
-        'Dòng bản ghi có chip "Có bản gỡ băng"; bản gỡ băng có nhãn "Máy nhận dạng", mỗi câu có mốc giờ và tên người nói (Người nói N hoặc tên đã gán), cột "Người nói" có ít nhất 2 giọng; Thư ký có ô chọn tên và nút sửa; số câu trên màn bằng số câu API trả; không cuộn ngang, không lộ mã MSG',
+        'Dòng bản ghi có chip "Có bản gỡ băng"; bản gỡ băng có nhãn "Máy nhận dạng", mỗi câu có mốc giờ và tên người nói (Người nói N hoặc tên đã gán), cột "Người nói" có ít nhất 2 giọng; Thư ký có ô chọn tên và nút sửa; số câu trên màn bằng số câu API trả; tải lại trang vẫn hiện đủ (TRANS_FT12 E1); không cuộn ngang, không lộ mã MSG',
       async run(qa) {
         const m = await meeting(qa, 'A')
         await clearNames(qa, m.main.id)
@@ -561,6 +579,12 @@ export default {
         await qa.expect(lines(row)).toBeVisible()
         await qa.expect(lines(row).locator('.tl-say')).toHaveCount(t.segments.length)
         qa.expect(t.speakers.length, 'the worker heard one voice only').toBeGreaterThanOrEqual(2)
+        // R1/FE-10 (22/11/2026): TRANS_FT12 E1 — tải lại trang, bản gỡ băng còn nguyên.
+        await qa.page.reload()
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible({ timeout: 15_000 })
+        const again = await transcript(qa, 'secretary', m.main.id)
+        qa.expect(again.segments.length, 'the transcript changed over a reload').toBe(t.segments.length)
+        await qa.expect(lines(recordingRow(qa, FILES.main)).locator('.tl-say')).toHaveCount(t.segments.length)
         const speakers = row.locator('aside.transcript-speakers')
         await qa.expect(speakers.getByRole('heading', { name: /Người nói/ })).toBeVisible()
         await qa.expect(speakers.getByRole('button', { name: /^Tên của Người nói/ })).toHaveCount(t.speakers.length)
@@ -586,7 +610,7 @@ export default {
         'Chờ chuyển chữ xong',
       ],
       expected:
-        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-45c AF-1, UC-45a AF-1, UC-45b EX-3)',
+        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-45c AF-1, UC-45a AF-1, UC-45b EX-3); tải lại trang vẫn hiện đủ (TRANS_FT13 E2)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const c = checker(qa)
@@ -624,6 +648,16 @@ export default {
           await row.scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('chuyen-chu-xong')
+          // R1/FE-10 (22/11/2026): TRANS_FT13 E2 — tải lại trang vẫn thấy bản gỡ băng đã xong.
+          await qa.page.reload()
+          await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible({ timeout: 15_000 })
+          await openRecordings(qa, m)
+          const rowAgain = recordingRow(qa, fileName)
+          await qa.expect(rowAgain.getByText('Có bản gỡ băng')).toBeVisible({ timeout: 30_000 })
+          await qa.expect(lines(rowAgain).locator('.tl-sentence').first()).toBeVisible()
+          await rowAgain.scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('tai-lai-van-thay-ban-go-bang')
           await noRawCodes(qa)
           c.done()
         } finally {
@@ -637,13 +671,14 @@ export default {
       id: 'AC3',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thành viên đọc bản gỡ băng nhưng không thấy gợi ý, không có nút sửa / gán / tải / chạy lại; API từ chối mọi thao tác ghi',
+      title: 'Đọc bản gỡ băng theo vai trò: Thành viên và Chủ toạ đều không thấy gợi ý, nút sửa / gán / chạy lại; API từ chối mọi thao tác ghi',
       steps: [
         'Đăng nhập thanhvien@, mở tab "Bản ghi" của "[QA] FE-10 Họp trực tiếp gỡ băng"',
-        'API (thanhvien@): GET transcript, GET transcript.txt, PUT sửa câu, PUT gán tên, PUT đổi người nói một câu, POST transcribe',
+        'Đăng nhập chutoa@, mở cùng thẻ',
+        'API (thanhvien@): GET transcript, transcript.txt, PUT sửa câu, PUT gán tên, PUT đổi người nói một câu, POST transcribe; API (chutoa@): POST transcribe',
       ],
       expected:
-        'Lời thoại và tên người nói hiện như chữ thường (không ô chọn), không nút "Sửa nội dung", "Tải bản gỡ băng (.txt)", "Chuyển thành chữ lại", "Tải tệp lên"; API: canEdit/canExport false, people [], suggested* null (BR-366); .txt 403 MSG355; sửa / gán / đổi 403 MSG295; transcribe 403',
+        'Thành viên: lời thoại và tên hiện như chữ thường (không ô chọn), không nút "Sửa nội dung", "Tải bản gỡ băng (.txt)", "Chuyển thành chữ lại", "Tải tệp lên"; Chủ toạ: cũng không có các nút sửa/gán/chạy lại (được tải .txt); API: canEdit/canExport false, people [], suggested* null (BR-366); .txt 403 MSG355; sửa / gán / đổi 403 MSG295; transcribe 403 (Member và Chair)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const c = checker(qa)
@@ -677,6 +712,20 @@ export default {
         await qa.shot('thanh-vien-chi-doc')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
+        // R1/FE-10 (22/11/2026): TRANS_FT18 — Chủ toạ cũng không thấy các nút sửa/gán/chạy lại.
+        const rerunChair = await as(qa, 'chair').post(`/api/recordings/${m.main.id}/transcribe`)
+        c.fact('transcribe as Chair is refused', rerunChair.status === 403, `got ${rerunChair.status} ${rerunChair.text.slice(0, 120)}`)
+        await qa.signIn('chair')
+        await openRecordings(qa, m)
+        const chairRow = recordingRow(qa, FILES.main)
+        await qa.expect(lines(chairRow).locator('.tl-say')).toHaveCount(t.segments.length)
+        await qa.expect(chairRow.getByRole('button', { name: /^Tên của/ })).toHaveCount(0)
+        await qa.expect(chairRow.getByRole('button', { name: 'Sửa nội dung' })).toHaveCount(0)
+        await qa.expect(chairRow.getByRole('button', { name: 'Chuyển thành chữ lại' })).toHaveCount(0)
+        await qa.expect(recordingsRegion(qa).getByRole('button', { name: 'Tải tệp lên' })).toHaveCount(0)
+        await chairRow.scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('chu-toa-khong-nut-sua')
         c.done()
       },
     },
@@ -692,7 +741,7 @@ export default {
         'API: PUT câu với chữ toàn khoảng trắng, với 8001 ký tự; Chủ toạ PUT; quantri@ (ngoài danh sách) PUT',
       ],
       expected:
-        'Toast "Đã lưu đoạn gỡ băng."; câu hiện chữ mới kèm "đã sửa"; API: editedByName là Thư ký, editedAt có giá trị; 400 MSG303 hai lần; Chủ toạ 403 MSG295; quantri@ 404; chữ cũ được trả lại sau khi kiểm',
+        'Toast "Đã lưu đoạn gỡ băng."; câu hiện chữ mới kèm "đã sửa"; API: editedByName là Thư ký, editedAt có giá trị; 400 MSG303 hai lần; Chủ toạ 403 MSG295; quantri@ 404; chữ cũ được trả lại sau khi kiểm; Esc và "Huỷ" giữ nguyên câu không gửi gì (TRANS_FT22); ô rỗng khoá nút Lưu, Enter không gửi (TRANS_FT23); ô nhập tối đa 8000 ký tự, lưu đúng 8000 ký tự vẫn đạt (TRANS_FT24)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -706,20 +755,42 @@ export default {
           await openRecordings(qa, m)
           const row = recordingRow(qa, FILES.main)
           // PR #424: one speaker's consecutive sentences read as one paragraph; picking a sentence points the
-          // paragraph's tools at it, and "Sửa nội dung" opens it for editing.
-          const sayOf = qa.page.locator('.tl-say').filter({ hasText: original.slice(0, 20) })
-          const paragraph = lines(row).locator('.tl-sentence').filter({ has: sayOf })
-          const say = paragraph.locator('.tl-say').filter({ hasText: original.slice(0, 20) })
-          await say.scrollIntoViewIfNeeded()
-          await press(qa, say)
-          await press(qa, paragraph.getByRole('button', { name: /^Sửa nội dung/ }))
-          const box = row.getByRole('textbox', { name: 'Nội dung đoạn' })
-          await qa.expect(box).toBeVisible()
-          await box.fill(changed)
+          // paragraph's tools at it, and "Sửa nội dung" opens it for editing. The open editor replaces
+          // the sentence in the DOM, so every open re-queries from the sentence's current text.
+          const editorBox = () => row.getByRole('textbox', { name: 'Nội dung đoạn' })
+          const editorBtn = (name) => row.locator('.transcript-editor').getByRole('button', { name })
+          const openEditor = async () => {
+            const live = (await transcript(qa, 'secretary', m.main.id)).segments.find((s) => s.id === segment.id).text
+            const sOf = qa.page.locator('.tl-say').filter({ hasText: live.slice(0, 20) })
+            const para = lines(row).locator('.tl-sentence').filter({ has: sOf })
+            const s = para.locator('.tl-say').filter({ hasText: live.slice(0, 20) })
+            await s.scrollIntoViewIfNeeded()
+            await press(qa, s)
+            await press(qa, para.getByRole('button', { name: /^Sửa nội dung/ }))
+            await qa.expect(editorBox()).toBeVisible()
+          }
+          await openEditor()
+          // R1/FE-10 (22/11/2026): TRANS_FT22 — Esc và "Huỷ" giữ nguyên câu, không gửi gì.
+          await editorBox().fill(`${changed} nháp`)
+          await editorBox().press('Escape')
+          await qa.expect(editorBox()).toHaveCount(0)
+          await openEditor()
+          await editorBox().fill(`${changed} nháp`)
+          await press(qa, editorBtn('Huỷ'))
+          await qa.expect(editorBox()).toHaveCount(0)
+          // R1/FE-10: TRANS_FT23 — ô rỗng thì nút Lưu khoá, Enter không gửi.
+          await openEditor()
+          await editorBox().fill('')
+          await qa.expect(editorBtn('Lưu')).toBeDisabled()
+          await editorBox().press('Enter')
+          await qa.expect(editorBox()).toBeVisible()
+          await editorBox().fill(changed)
           await settled(qa)
           await qa.shot('dang-sua-cau')
-          await box.press('Enter')
-          await qa.expect(toast(qa, MSG.MSG302)).toBeVisible()
+          await editorBox().press('Enter')
+          // Toast tồn tại dai (phải tự bấm × mới tắt) nên chờ editor đóng mới chắc chắn lần lưu này xong.
+          await qa.expect(row.locator('.transcript-editor')).toHaveCount(0, { timeout: 15_000 })
+          await qa.expect(toast(qa, MSG.MSG302).last()).toBeVisible()
           const edited = lines(row).locator('.tl-sentence').filter({ hasText: 'phần mềm quản lý văn bản' })
           await qa.expect(edited).toBeVisible()
           await qa.expect(edited.getByText('đã sửa')).toBeVisible()
@@ -733,6 +804,17 @@ export default {
           c.check('8001 characters', await sec.put(`/api/transcript-segments/${segment.id}`, { text: 'a'.repeat(8001) }), 400, 'MSG303')
           c.check('Chair edits', await as(qa, 'chair').put(`/api/transcript-segments/${segment.id}`, { text: 'Chủ toạ sửa' }), 403, 'MSG295')
           c.check('outsider edits', await as(qa, 'admin').put(`/api/transcript-segments/${segment.id}`, { text: 'Quản trị sửa' }), 404)
+          // R1/FE-10 (22/11/2026): TRANS_FT24 — ô nhập tối đa 8000 ký tự, lưu đúng 8000 ký tự vẫn đạt.
+          await openEditor()
+          const boxDai = editorBox()
+          await boxDai.fill('a'.repeat(8001))
+          qa.expect((await boxDai.inputValue()).length, 'the editor caps at 8000 characters').toBe(8000)
+          await settled(qa)
+          await qa.shot('sua-cau-8000-ky-tu')
+          await press(qa, editorBtn('Lưu'))
+          await qa.expect(row.locator('.transcript-editor')).toHaveCount(0, { timeout: 15_000 })
+          await qa.expect(toast(qa, MSG.MSG302).last()).toBeVisible()
+          c.fact('8000 characters saved', (await transcript(qa, 'secretary', m.main.id)).segments.find((s) => s.id === segment.id).text.length === 8000)
           await noRawCodes(qa)
           c.done()
         } finally {
@@ -881,13 +963,14 @@ export default {
     {
       id: 'AC7',
       role: 'chair',
-      title: 'Chủ toạ tải bản gỡ băng .txt (đầu tệp, mỗi câu một dòng [HH:MM:SS] Tên: chữ), không có nút sửa; cuộc họp Mật không ai tải được (MSG356)',
+      title: 'Chủ toạ tải bản gỡ băng .txt; Thư ký tải bản đã gán tên (TRANS_FT08); cuộc họp Mật không ai tải được (MSG356)',
       steps: [
         'Đăng nhập chutoa@, mở tab "Bản ghi" của "[QA] FE-10 Họp trực tiếp gỡ băng", bấm "Tải bản gỡ băng (.txt)"',
+        'Thư ký gán tên một giọng (API), tải .txt bằng nút của mình, kiểm tên trong tệp, bỏ gán',
         'Mở tab "Bản ghi" của "[QA] FE-10 Họp Mật gỡ băng"; API GET transcript.txt (Chủ toạ, Thư ký)',
       ],
       expected:
-        'Tệp .txt tải về có tên cuộc họp và các dòng "[00:00:00] Người nói 1: …"; Chủ toạ không có ô chọn tên / nút sửa; họp Mật: không có nút tải, API 403 MSG356 cho cả Chủ toạ và Thư ký',
+        'Tệp .txt tải về có tên cuộc họp và các dòng "[00:00:00] Người nói 1: …"; Chủ toạ không có ô chọn tên / nút sửa; Thư ký tải tệp "<tên bản ghi> - bản gỡ băng.txt", đầu tệp có tên cuộc họp và các dòng mang tên đã gán (TRANS_FT08); họp Mật: không có nút tải, API 403 MSG356 cho cả Chủ toạ và Thư ký',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const d = await meeting(qa, 'D')
@@ -907,6 +990,28 @@ export default {
         c.fact('one line per sentence', /^\[\d\d:\d\d:\d\d\] [^:\n]+: .+/m.test(text), text.slice(0, 400))
         c.fact('the words are there', /ngân sách/i.test(text))
         qa.note(`Đầu tệp: ${text.split('\n').slice(0, 6).join(' | ').slice(0, 300)}`)
+        // R1/FE-10 (22/11/2026): TRANS_FT08 — Thư ký tải bản đã gán tên.
+        const u = await users(qa)
+        const t = await transcript(qa, 'secretary', m.main.id)
+        const label = t.speakers[0].label
+        try {
+          qa.expectStatus(await as(qa, 'secretary').put(`/api/recordings/${m.main.id}/speakers/${label}`, { userId: u.a.id, guestId: null }), 200)
+          await qa.signIn('secretary')
+          await openRecordings(qa, m)
+          const secRow = recordingRow(qa, FILES.main)
+          const secButton = secRow.getByRole('button', { name: 'Tải bản gỡ băng (.txt)' })
+          await secButton.scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('thu-ky-tai-ban-go-bang')
+          const [secDownload] = await Promise.all([qa.page.waitForEvent('download'), secButton.click()])
+          const stext = readFileSync(await secDownload.path(), 'utf8')
+          c.fact('secretary file name', secDownload.suggestedFilename().includes('fe10-hop-chinh') && /bản gỡ băng\.txt$/.test(secDownload.suggestedFilename()), secDownload.suggestedFilename())
+          c.fact('secretary header names the meeting and file', stext.includes(m.title) && stext.includes('Bản gỡ băng — bản ghi'), stext.slice(0, 200))
+          c.fact('the lines carry the name the Secretary gave', new RegExp(`^\\[\\d\\d:\\d\\d:\\d\\d\\] ${esc(u.a.name)}: `, 'm').test(stext), stext.slice(0, 400))
+          qa.note(`Đầu tệp (Thư ký): ${stext.split('\n').slice(0, 6).join(' | ').slice(0, 300)}`)
+        } finally {
+          await clearNames(qa, m.main.id)
+        }
         c.check('Chair, Secret meeting', await as(qa, 'chair').get(`/api/recordings/${d.rec.id}/transcript.txt`), 403, 'MSG356')
         c.check('Secretary, Secret meeting', await as(qa, 'secretary').get(`/api/recordings/${d.rec.id}/transcript.txt`), 403, 'MSG356')
         await openRecordings(qa, d)
@@ -929,7 +1034,7 @@ export default {
         'Đăng nhập quantri@ (không có trong danh sách), mở cuộc họp "[QA] FE-10 Họp trực tiếp gỡ băng" với ?tab=recordings',
         'API (quantri@): recordings, transcript, transcript.txt, speech-clips của cuộc họp trực tuyến, voice-collection; API chưa đăng nhập: transcript',
       ],
-      expected: 'Không có tab "Bản ghi" (mở thẳng link thì về tab khác hoặc trang không tìm thấy); API 404 mọi đường; chưa đăng nhập 401',
+      expected: 'Không có tab "Bản ghi" (mở thẳng link thì về tab khác hoặc trang không tìm thấy); API 404 mọi đường, riêng voice-collection 403 vì quantri@ thiếu quyền "Thu giọng mẫu hộ" (đúng luật 403/404); chưa đăng nhập 401',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const cMeeting = await meeting(qa, 'C')
@@ -942,7 +1047,10 @@ export default {
         c.check('transcript', await api.get(`/api/recordings/${m.main.id}/transcript`), 404)
         c.check('export', await api.get(`/api/recordings/${m.main.id}/transcript.txt`), 404)
         c.check('per-mic sentences', await api.get(`/api/meetings/${cMeeting.id}/speech-clips`), 404)
-        c.check('voice collection (has VoiceCollector, not the Secretary)', await api.get(`/api/meetings/${b.id}/voice-collection`), 404)
+        // R1/FE-10 (22/11/2026): quantri@ chỉ có AdminUsers, không có VoiceCollector (seed chỉ gán
+        // VoiceCollector cho vai trò Thư ký) nên cổng nhóm capability trả 403 — đúng luật 403/404 (endpoint
+        // cố định thiếu capability → 403; tài nguyên không đọc được → 404 như 4 đường trên).
+        c.check('voice collection (no VoiceCollector → 403)', await api.get(`/api/meetings/${b.id}/voice-collection`), 403)
         c.check('anonymous transcript', await as(qa, 'anon').get(`/api/recordings/${m.main.id}/transcript`), 401)
         await qa.goto(`/mgmt/meetings/${m.id}?tab=recordings`)
         await qa.page.waitForLoadState('networkidle').catch(() => undefined)
@@ -1068,7 +1176,7 @@ export default {
         'API: thanhvien@ PUT exclusion, GET speech-clips.txt; Chủ toạ PUT exclusion reason "Noise"; Thư ký bỏ rồi khôi phục',
       ],
       expected:
-        'Ở chỗ câu đã bỏ chỉ có "Câu đã được bỏ khỏi biên bản."; không có nút "Bỏ khỏi biên bản", "Khôi phục", "Tải lời thoại (.txt)"; API thành viên nhận text "" cho câu đó; 403 MSG353; 403 MSG355; 400 MSG354; Thư ký 200 MSG351 rồi 200 MSG352',
+        'Ở chỗ câu đã bỏ chỉ có "Câu đã được bỏ khỏi biên bản."; không có nút "Bỏ khỏi biên bản", "Khôi phục", "Tải lời thoại (.txt)"; API thành viên nhận text "" cho câu đó; 403 MSG353; 403 MSG355; 400 MSG354; Thư ký 200 MSG351 rồi 200 MSG352; Thành viên không thấy nút "Xoá câu" trên câu của người khác, gọi thẳng 403 MSG323 (TRANS_FT38)',
       async run(qa) {
         const cm = await meeting(qa, 'C')
         const u = await users(qa)
@@ -1076,6 +1184,14 @@ export default {
         const target = (await clips(qa, 'chair', cm.id)).items.find((x) => x.speakerId === u.a.id)
         const path = `/api/speech-clips/${target.id}/exclusion`
         try {
+          // R1/FE-10 (22/11/2026): TRANS_FT38 — Thành viên không thấy nút xoá trên câu của người khác.
+          const other = (await clips(qa, 'member', cm.id)).items.find((x) => x.speakerId === u.a.id)
+          qa.expect(other, 'no sentence of "[QA] FE-10 Người nói A"').toBeTruthy()
+          await openRecordings(qa, cm)
+          const otherGroup = qa.page.locator('.tl-sentence').filter({ has: qa.page.locator(`[data-clip="${other.id}"]`) })
+          await otherGroup.scrollIntoViewIfNeeded()
+          await qa.expect(otherGroup.getByRole('button', { name: /^Xoá câu/ })).toHaveCount(0)
+          c.check("Member deletes another person's sentence", await as(qa, 'member').delete(`/api/speech-clips/${other.id}`), 403, 'MSG323')
           c.check('Chair excludes', await as(qa, 'chair').put(path, { excluded: true, reason: 'Other' }), 200, 'MSG351')
           const seen = (await clips(qa, 'member', cm.id)).items.find((x) => x.id === target.id)
           c.fact('a Member gets an empty entry', seen?.excluded === true && seen.text === '' && !seen.hasAudio, JSON.stringify(seen).slice(0, 200))
@@ -1115,7 +1231,7 @@ export default {
         'API: đồng ý với phiên bản thông báo "1.0"; đồng ý lại với phiên bản hiện hành',
       ],
       expected:
-        'Thông báo có Mục đích, Ai thu (gồm Thư ký thu bằng micro phòng họp), Lưu gì, Quyền (rút lại thì xoá cả mẫu Thư ký thu), Bên kiểm soát dữ liệu, câu "dữ liệu cá nhân nhạy cảm"; ô chưa đánh, nút khoá; sau khi bấm: toast "Đã bật nhận diện giọng nói cho tài khoản của bạn.", chip "Đang bật", tab "Tự thu" / "Thư ký thu hộ", nhắc ghi giọng mẫu; API: noticeVersion 1.3; "1.0" 400 MSG313; gọi lại 200 MSG305, vẫn một đồng ý; cuối cùng rút lại, không còn mẫu',
+        'Thông báo có Mục đích, Ai thu (gồm Thư ký thu bằng micro phòng họp), Lưu gì, Dùng ở đâu, Quyền của tôi (rút lại thì xoá cả mẫu Thư ký thu), Bên kiểm soát dữ liệu, câu "dữ liệu cá nhân nhạy cảm"; ô chưa đánh, nút khoá; sau khi bấm: toast "Đã bật nhận diện giọng nói cho tài khoản của bạn.", chip "Đang bật", tab "Tự thu" / "Thư ký thu hộ", nhắc ghi giọng mẫu; API: noticeVersion 1.3; "1.0" 400 MSG313; gọi lại 200 MSG305, vẫn một đồng ý; cuối cùng rút lại, không còn mẫu',
       async run(qa) {
         const u = await users(qa)
         const c = checker(qa)
@@ -1125,7 +1241,7 @@ export default {
           await openMyVoice(qa)
           const card = qa.page.getByRole('region', { name: 'Bật nhận diện giọng nói' })
           await qa.expect(card).toBeVisible()
-          for (const text of ['Mục đích:', 'Ai thu:', 'Lưu gì:', 'Quyền của bạn:', 'Bên kiểm soát dữ liệu:'])
+          for (const text of ['Mục đích:', 'Ai thu:', 'Lưu gì:', 'Dùng ở đâu:', 'Quyền của tôi:', 'Bên kiểm soát dữ liệu:'])
             await qa.expect(card.getByText(text)).toBeVisible()
           await qa.expect(card.getByText(/micro phòng họp/).first()).toBeVisible()
           await qa.expect(card.getByText(/dữ liệu cá nhân nhạy cảm/)).toBeVisible()
@@ -1153,6 +1269,9 @@ export default {
           c.check('stale notice version', await as(qa, 'a').post('/api/me/voice/consent', { noticeVersion: '1.0' }), 400, 'MSG313')
           c.check('consent again', await as(qa, 'a').post('/api/me/voice/consent', { noticeVersion: v.noticeVersion }), 200, 'MSG305')
           c.fact('still the same consent', (await voice(qa, 'a')).consent?.grantedAt === v.consent.grantedAt)
+          await openMyVoice(qa)
+          await qa.expect(qa.page.getByText('Đang bật')).toBeVisible()
+          await noRawCodes(qa)
           c.done()
         } finally {
           await withdrawn(qa, 'a')
@@ -1171,7 +1290,7 @@ export default {
         'API: mẫu 1 giây; tệp văn bản; thanhvien@ nghe / xoá mẫu của A; qa-fe10-b@ (chưa đồng ý) gửi mẫu; gửi tới đủ 5 mẫu rồi mẫu thứ 6',
       ],
       expected:
-        'Không gửi gì trước khi bấm Lưu (có trình phát nghe lại và nút "Ghi lại"); tiếng bíp bị từ chối, hộp thoại báo lý do tiếng Việt (MSG309), không lưu mẫu; mẫu đọc: 201 MSG307, playable, speechMs ≥ 6000, trang hiện "Giọng mẫu 1" và phát được (200); 1 giây 422 MSG309 too_short; văn bản 415 MSG292; người khác 404 / 404; chưa đồng ý 409 MSG308; mẫu thứ 6 409 MSG310 và nút "Ghi giọng mẫu" khoá, "5/5"; cuối cùng rút lại, không còn mẫu',
+        'Không gửi gì trước khi bấm Lưu (có trình phát nghe lại và nút "Ghi lại"); tiếng bíp bị từ chối, hộp thoại báo lý do tiếng Việt (MSG309), không lưu mẫu; mẫu đọc: 201 MSG307, playable, speechMs ≥ 6000, trang hiện "Giọng mẫu 1" và phát được (200); 1 giây 422 MSG309 too_short; văn bản 415 MSG292; người khác 404 / 404; chưa đồng ý 409 MSG308; mẫu thứ 6 409 MSG310, nút "Ghi giọng mẫu" khoá với gợi ý "Đã đủ 5 giọng mẫu — xoá bớt để ghi lại", "5/5"; xoá bớt một mẫu thì nút mở lại, "4/5" (TRANS_FT64); cuối cùng rút lại, không còn mẫu',
       async run(qa) {
         const u = await users(qa)
         const c = checker(qa)
@@ -1214,7 +1333,7 @@ export default {
 
           const a = as(qa, 'a')
           await enrolled(qa, 'a', 0)
-          const saved = await a.form('/api/me/voice/samples', wavForm(audio(qa, 'enrol'), 'giong-mau.wav'))
+          const saved = await a.form('/api/me/voice/samples', sampleForm(qa, 'enrol', 'giong-mau.wav'))
           c.check('a 12-second reading', saved, 201, 'MSG307')
           const sample = saved.body?.data
           c.fact('kept playable, speech counted', sample?.playable === true && sample.speechMs >= 6000, JSON.stringify(sample))
@@ -1226,21 +1345,28 @@ export default {
           c.fact('the owner hears it back', (await heard).status() === 200)
           await settled(qa)
           await qa.shot('giong-mau-1')
-          c.check('1-second sample', await a.form('/api/me/voice/samples', wavForm(audio(qa, 'short'), 'ngan.wav')), 422, 'MSG309')
+          c.check('1-second sample', await a.form('/api/me/voice/samples', sampleForm(qa, 'short', 'ngan.wav')), 422, 'MSG309')
           const textForm = new FormData()
           textForm.append('file', new Blob(['không phải âm thanh'], { type: 'text/plain' }), 'ghi-chu.txt')
           c.check('a text file', await a.form('/api/me/voice/samples', textForm), 415, 'MSG292')
           c.check('someone else plays it', await as(qa, 'member').get(`/api/me/voice/samples/${sample.id}/audio`), 404)
           c.check('someone else deletes it', await as(qa, 'member').delete(`/api/me/voice/samples/${sample.id}`), 404)
-          c.check('without consent', await as(qa, 'b').form('/api/me/voice/samples', wavForm(audio(qa, 'enrol'), 'b.wav')), 409, 'MSG308')
+          c.check('without consent', await as(qa, 'b').form('/api/me/voice/samples', sampleForm(qa, 'enrol', 'b.wav')), 409, 'MSG308')
           for (let i = 2; i <= 5; i++)
-            c.check(`sample ${i}`, await a.form('/api/me/voice/samples', wavForm(audio(qa, 'enrol'), `mau-${i}.wav`)), 201, 'MSG307')
-          c.check('sample 6', await a.form('/api/me/voice/samples', wavForm(audio(qa, 'enrol'), 'mau-6.wav')), 409, 'MSG310')
+            c.check(`sample ${i}`, await a.form('/api/me/voice/samples', sampleForm(qa, 'enrol', `mau-${i}.wav`)), 201, 'MSG307')
+          c.check('sample 6', await a.form('/api/me/voice/samples', sampleForm(qa, 'enrol', 'mau-6.wav')), 409, 'MSG310')
           await openMyVoice(qa)
           await qa.expect(qa.page.locator('.voice-count').first()).toHaveText('5/5')
-          await qa.expect(qa.page.getByRole('button', { name: 'Ghi giọng mẫu' })).toBeDisabled()
+          const full = qa.page.getByRole('button', { name: 'Ghi giọng mẫu' })
+          await qa.expect(full).toBeDisabled()
+          // R1/FE-10 (22/11/2026): TRANS_FT64 — gợi ý khi đã đủ và mở lại nút sau khi xoá bớt.
+          await qa.expect(full).toHaveAttribute('data-tooltip', 'Đã đủ 5 giọng mẫu — xoá bớt để ghi lại')
           await settled(qa)
           await qa.shot('du-5-mau')
+          c.check('delete one to make room', await as(qa, 'a').delete(`/api/me/voice/samples/${sample.id}`), 200, 'MSG311')
+          await openMyVoice(qa)
+          await qa.expect(qa.page.locator('.voice-count').first()).toHaveText('4/5')
+          await qa.expect(qa.page.getByRole('button', { name: 'Ghi giọng mẫu' })).toBeEnabled()
           await noRawCodes(qa)
           c.done()
         } finally {
@@ -1320,7 +1446,7 @@ export default {
         'A: xem thông báo và tab "Thư ký thu hộ"; Thư ký bấm xoá mẫu, xác nhận',
       ],
       expected:
-        'Thẻ "Giọng mẫu cho mic phòng" liệt kê người nội bộ trong danh sách, không có Khách mời; dòng A có "n/5" và nút "Thu"; dòng B "Chưa đồng ý", không nút; hộp thoại "Thu giọng mẫu: …" nhắc dùng micro phòng họp; API 201 MSG473; dòng A hiện "Mẫu 1", nghe được (200); A nhận thông báo VoiceSampleCollected, tab thu hộ có cuộc họp và tên Thư ký; xoá: hộp "Xoá mẫu thu hộ?", toast "Đã xoá giọng mẫu thu hộ.", A không còn mẫu thu hộ',
+        'Thẻ "Giọng mẫu cho mic phòng" liệt kê người nội bộ trong danh sách, không có Khách mời; dòng A có "n/5" và nút "Thu"; dòng B "Chưa đồng ý", không nút; hộp thoại "Thu giọng mẫu: …" nhắc dùng micro phòng họp; tiếng bíp ghi bằng micro giả bị từ chối bằng lời tiếng Việt, hộp thoại ở lại, không lưu mẫu (TRANS_FT78); API 201 MSG473; dòng A hiện "Mẫu 1", nghe được (200); A nhận thông báo VoiceSampleCollected, tab thu hộ có cuộc họp và tên Thư ký; xoá: hộp "Xoá mẫu thu hộ?", toast "Đã xoá giọng mẫu thu hộ.", A không còn mẫu thu hộ',
       async run(qa) {
         const u = await users(qa)
         const b = await meeting(qa, 'B')
@@ -1354,6 +1480,24 @@ export default {
           await qa.expect(dialog.getByText(/micro phòng họp/)).toBeVisible()
           await settled(qa)
           await qa.shot('hop-thoai-thu-ho')
+          // R1/FE-10 (22/11/2026): TRANS_FT78 — tiếng bíp (không phải giọng người) bị từ chối
+          // bằng lời tiếng Việt, hộp thoại ở lại để ghi lại, không lưu mẫu nào.
+          await press(qa, dialog.getByRole('button', { name: 'Bắt đầu ghi' }))
+          await qa.expect(dialog.getByRole('status').filter({ hasText: 'Đang ghi' })).toBeVisible()
+          const proxyStop = dialog.getByRole('button', { name: 'Dừng' })
+          await qa.expect(proxyStop).toBeEnabled({ timeout: 15_000 })
+          await proxyStop.click()
+          await qa.expect(dialog.getByLabel('Nghe lại giọng mẫu vừa ghi')).toBeVisible()
+          const badAnswer = qa.page.waitForResponse(
+            (r) => r.url().includes(`/voice-collection/${u.a.id}/samples`) && r.request().method() === 'POST', { timeout: 60_000 })
+          await press(qa, dialog.getByRole('button', { name: 'Lưu giọng mẫu' }))
+          const badRes = await badAnswer
+          c.fact('a beep collected for someone else is refused', badRes.status() === 422, `HTTP ${badRes.status()}`)
+          await qa.expect(dialog.getByRole('alert')).toBeVisible()
+          const said = await dialog.getByRole('alert').innerText()
+          c.fact('the reason reads in Vietnamese', /giọng|mẫu|tiếng/i.test(said) && !/MSG\d/.test(said), said)
+          await settled(qa)
+          await qa.shot('mau-thu-ho-khong-dat')
           await qa.page.keyboard.press('Escape')
           await qa.expect(dialog).toHaveCount(0)
 
@@ -1405,7 +1549,7 @@ export default {
         'API: danh sách thu hộ của cuộc họp Mật, cuộc họp trực tuyến; thu cho quantri@ (ngoài danh sách); Chủ toạ, Thành viên, quantri@, chưa đăng nhập gọi danh sách; Thư ký nghe / xoá mẫu tự thu của A qua đường thu hộ',
       ],
       expected:
-        'B: 409 MSG475; mẫu thứ 6: 409 MSG476 và dòng A "5/5" không nút "Thu"; cuộc họp kết thúc: thẻ vẫn hiện, ghi "Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.", không nút "Thu", API 409 MSG477; Mật 404, trực tuyến 404, ngoài danh sách 404; Chủ toạ 403, Thành viên 403 (thiếu quyền), quantri@ 404, ẩn danh 401; mẫu tự thu qua đường thu hộ 404; Chủ toạ không thấy thẻ thu hộ (tab Bản ghi của Chủ toạ khoá tới khi cuộc họp bắt đầu)',
+        'B: 409 MSG475; mẫu thứ 6: 409 MSG476 và dòng A "5/5" không nút "Thu"; cuộc họp kết thúc: thẻ vẫn hiện, ghi "Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.", không nút "Thu", API 409 MSG477; Mật 404, trực tuyến 404, ngoài danh sách 404; Chủ toạ 403, Thành viên 403, quantri@ 403 (đều thiếu quyền), ẩn danh 401; mẫu tự thu qua đường thu hộ 404; Chủ toạ không thấy thẻ thu hộ (tab Bản ghi của Chủ toạ khoá tới khi cuộc họp bắt đầu)',
       async run(qa) {
         const u = await users(qa)
         const [a, b, cm, d] = [await meeting(qa, 'A'), await meeting(qa, 'B'), await meeting(qa, 'C'), await meeting(qa, 'D')]
@@ -1445,7 +1589,9 @@ export default {
           else c.check('Chair (no VoiceCollector)', chairList, 403)
           if (caps.member.capabilities.includes('VoiceCollector')) qa.note('thanhvien@ đang có VoiceCollector.')
           else c.check('Member', await as(qa, 'member').get(`/api/meetings/${b.id}/voice-collection`), 403)
-          c.check('admin, not the Secretary', await as(qa, 'admin').get(`/api/meetings/${b.id}/voice-collection`), 404)
+          // R1/FE-10 (22/11/2026): quantri@ thiếu VoiceCollector nên cổng capability trả 403
+          // (đúng luật 403/404) — AC8 kiểm tương tự.
+          c.check('admin, not the Secretary (no VoiceCollector → 403)', await as(qa, 'admin').get(`/api/meetings/${b.id}/voice-collection`), 403)
           c.check('anonymous', await as(qa, 'anon').get(`/api/meetings/${b.id}/voice-collection`), 401)
           const own = mine.samples[0].id
           c.check('self sample through the collection (play)', await sec.get(`/api/meetings/${b.id}/voice-collection/samples/${own}/audio`), 404)
@@ -1539,12 +1685,12 @@ export default {
       title: 'Chuyển chữ lại (hỏi trước, MSG300) so giọng với người đã đồng ý trong cuộc họp: chỉ Thư ký thấy gợi ý "Khớp giọng nhất", giọng khớp rõ được tự gán; người đó rút đồng ý thì gợi ý và tên máy gán bị xoá',
       steps: [
         'qa-fe10-b@ đồng ý 1.3 và ghi 2 giọng mẫu bằng giọng của người nói thứ hai trong bản ghi (giọng Linh hạ tông; giọng Linh gốc không dùng vì thuky@ đã có giọng mẫu nghe như nó, nên máy không phân định được người)',
-        'Thư ký mở bản ghi "fe10-voice-id.wav", bấm "Chuyển thành chữ lại", đọc cảnh báo, bấm "Chuyển lại"; chờ xong',
+        'Thư ký mở bản ghi "fe10-voice-id.wav", bấm "Chuyển thành chữ lại": đọc cảnh báo rồi bấm "Giữ bản hiện có" (giữ nguyên, không gửi gì); mở lại, bấm "Chuyển lại"; chờ xong',
         'Thư ký mở ô tên của giọng nói câu "Tôi đề nghị…"; Thành viên đọc bản gỡ băng (API)',
         'qa-fe10-b@ rút đồng ý; Thư ký đọc lại bản gỡ băng',
       ],
       expected:
-        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; khi xong giọng của "Tôi đề nghị…" có gợi ý là B (hoặc được tự gán B, autoAssigned=true, khi điểm ≥ 0,75); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-365)',
+        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; "Giữ bản hiện có" thì giữ nguyên, không gửi gì (TRANS_FT16); toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; trong lúc chạy lại chữ cũ vẫn đọc được kèm dòng "Đang chuyển chữ lại cả bản ghi… là bản trước." (TRANS_FT15 E2); khi xong giọng của "Tôi đề nghị…" có gợi ý là B (hoặc được tự gán B, autoAssigned=true, khi điểm ≥ 0,75); ô chọn nêu gợi ý "Khớp giọng nhất: …"/"Máy tự gán vì giọng khớp rõ…" (TRANS_FT27) và đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-365)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -1553,6 +1699,16 @@ export default {
         await enrolled(qa, 'b', 2, 'enrol2')
         try {
           await openRecordings(qa, m)
+          const row0 = recordingRow(qa, FILES.voice)
+          // R1/FE-10 (22/11/2026): TRANS_FT16 — huỷ làm lại thì giữ nguyên bản gỡ băng, không gửi gì.
+          await row0.getByRole('button', { name: 'Chuyển thành chữ lại' }).click()
+          const cancelDialog = qa.page.getByRole('dialog', { name: 'Chuyển thành chữ lại?' })
+          await qa.expect(cancelDialog).toBeVisible()
+          await cancelDialog.getByRole('button', { name: 'Giữ bản hiện có' }).click()
+          await qa.expect(cancelDialog).toHaveCount(0)
+          const stayed = await transcript(qa, 'secretary', m.voice.id)
+          c.fact('still Completed, nothing queued', stayed.status === 'Completed', stayed.status)
+          await qa.expect(lines(row0).locator('.tl-say')).toHaveCount(stayed.segments.length)
           const row = recordingRow(qa, FILES.voice)
           const redo = row.getByRole('button', { name: 'Chuyển thành chữ lại' })
           await redo.scrollIntoViewIfNeeded()
@@ -1563,6 +1719,8 @@ export default {
           await qa.shot('canh-bao-chuyen-chu-lai')
           await dialog.getByRole('button', { name: 'Chuyển lại' }).click()
           await qa.expect(toast(qa, MSG.MSG300)).toBeVisible()
+          // R1/FE-10 (22/11/2026): TRANS_FT15 E2 — chữ cũ vẫn đọc được trong lúc chạy lại.
+          await qa.expect(row.getByText('Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.')).toBeVisible({ timeout: 15_000 })
           await waitTranscript(qa, m.voice.id)
           const t = await transcript(qa, 'secretary', m.voice.id)
           const { speaker } = segmentOf(t, /đề nghị|kinh phí/i)
@@ -1580,6 +1738,10 @@ export default {
           const row2 = recordingRow(qa, FILES.voice)
           const trigger = row2.locator('aside.transcript-speakers').getByRole('button', { name: new RegExp(`^Tên của (${esc(speakerName(speaker.label))}|${esc(u.b.name)})`) })
           await trigger.scrollIntoViewIfNeeded()
+          // R1/FE-10 (22/11/2026): TRANS_FT27 — ô chọn nêu gợi ý của máy ("Khớp giọng nhất" / "Máy tự gán").
+          const tip = await trigger.getAttribute('data-tooltip')
+          qa.note(`Gợi ý trên ô tên: ${tip}`)
+          c.fact('the picker names the match on hover', !!tip && (/Khớp giọng nhất: /.test(tip) || /Máy tự gán vì giọng khớp rõ/.test(tip)), tip ?? '(không có gợi ý)')
           await trigger.click()
           const list = qa.page.getByRole('listbox', { name: /^Tên của/ })
           await qa.expect(list.getByRole('option').first()).toContainText(u.b.name)
@@ -1643,6 +1805,314 @@ export default {
         } finally {
           await clearNames(qa, m.main.id)
         }
+      },
+    },
+
+    // ------------------------------------------------------------------------------------------- UC-47 AI settings
+    // R1/FE-10 (22/11/2026): AC mới — TRANS_FT79 (xem), TRANS_FT81 (từng ô sai), TRANS_FT83
+    // (thử kết nối hỏng), TRANS_FT84 (không quyền). Không lưu gì, không gọi API trả phí.
+    {
+      id: 'AC20',
+      role: 'admin',
+      devices: ['desktop', 'phone'],
+      title: 'Quản trị xem "Cấu hình AI", biểu mẫu báo lỗi từng ô (MSG409), thử kết nối hỏng báo đỏ (MSG413); người không quyền thấy 404',
+      steps: [
+        'Đăng nhập quantri@, bấm "Cấu hình AI" ở sidebar (/mgmt/admin/ai)',
+        'Chọn "API", nhập "http://x" vào Địa chỉ API, để trống Mô hình và Khoá, bấm Lưu',
+        'Nhập địa chỉ https không tới được + model + key sai, bấm "Thử kết nối"',
+        'Đăng nhập thanhvien@, mở /mgmt/admin/ai; API của thanhvien@',
+      ],
+      expected:
+        'Trang "Cấu hình AI" ("Máy viết dự thảo biên bản") có "Viết dự thảo bằng" (Máy local/API), dòng "Máy local" + model + chip cấu hình, "Đang dùng …" và gợi ý chỉ họp Thường dùng API; biểu mẫu sai: toast "Cấu hình AI không hợp lệ." (400 MSG409) + từng lỗi ô, gõ lại xoá lỗi, không lưu gì; bấm "Thử kết nối" với địa chỉ không tới được: dòng đỏ lý do (502 MSG413), biểu mẫu giữ nguyên, cấu hình không đổi; thanhvien@: sidebar không có "Cấu hình AI", URL hiện "Không tìm thấy trang", API 403',
+      async run(qa) {
+        const c = checker(qa)
+        const admin = as(qa, 'admin')
+        const before = await admin.get('/api/admin/ai')
+        c.check('read settings', before, 200)
+        qa.note(`Cấu hình AI: mode ${before.body?.mode}, localConfigured ${before.body?.localConfigured}, model local ${before.body?.localModel}`)
+        await qa.signIn('admin')
+        await qa.goto('/mgmt/meetings')
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Cuộc họp' })).toBeVisible({ timeout: 15_000 })
+        const aiLink = qa.page.getByRole('link', { name: 'Cấu hình AI' })
+        if (!(await aiLink.isVisible())) await press(qa, qa.page.getByRole('button', { name: 'Quản trị', exact: true }))
+        await press(qa, aiLink)
+        const form = qa.page.locator('form.ai-settings')
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Cấu hình AI' })).toBeVisible()
+        await qa.expect(form.getByText('Viết dự thảo bằng')).toBeVisible()
+        await qa.expect(form.getByRole('radio', { name: 'Máy local' })).toBeVisible()
+        await qa.expect(form.getByRole('radio', { name: 'API' })).toBeVisible()
+        await qa.expect(form.locator('p.ai-settings-local')).toBeVisible()
+        await qa.expect(form.locator('p.ai-settings-local').getByText(/Đã cấu hình|Chưa cấu hình/)).toBeVisible()
+        await qa.expect(form.getByText(/Đang dùng/)).toBeVisible()
+        await qa.expect(form.locator('button.info-tip')).toHaveAttribute('data-tooltip', /Chỉ cuộc họp Thường dùng API/)
+        await settled(qa)
+        await qa.shot('cau-hinh-ai')
+        await press(qa, form.getByRole('radio', { name: 'API' }))
+        await form.getByLabel('Địa chỉ API').fill('http://x')
+        await form.getByLabel('Mô hình').fill('')
+        await form.getByLabel('Khoá API').fill('')
+        await settled(qa)
+        await qa.shot('bieu-mau-sai')
+        await press(qa, form.getByRole('button', { name: 'Lưu' }))
+        // Toast hiện ở khung chung, ngoài form.
+        await qa.expect(toast(qa, 'Cấu hình AI không hợp lệ.')).toBeVisible()
+        await qa.expect(form.getByText('Địa chỉ API phải là https://… và không quá 500 ký tự.')).toBeVisible()
+        await qa.expect(form.getByText('Nhập tên model.')).toBeVisible()
+        await qa.expect(form.getByText('Nhập key của API.')).toBeVisible()
+        c.check('invalid settings', await admin.put('/api/admin/ai', { mode: 'Api', apiBaseUrl: 'http://x', apiModel: '', apiKey: '' }), 400, 'MSG409')
+        await form.getByLabel('Mô hình').fill('x')
+        await qa.expect(form.getByText('Nhập tên model.')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('loi-o-da-xoa')
+        await form.getByLabel('Địa chỉ API').fill('https://127.0.0.1:9/')
+        await form.getByLabel('Mô hình').fill('khong-co-model')
+        await form.getByLabel('Khoá API').fill('khoa-sai-12345678')
+        const testing = form.getByRole('button', { name: 'Thử kết nối API' })
+        await qa.expect(testing).toBeEnabled()
+        const answer = qa.page.waitForResponse((r) => r.url().endsWith('/api/admin/ai/test') && r.request().method() === 'POST')
+        await press(qa, testing)
+        const res = await answer
+        // "Đang thử…" chỉ thoáng qua khi máy chủ từ chối ngay nên không bắt trạng thái đó.
+        c.fact('unreachable API fails the test', res.status() === 502, `HTTP ${res.status()}`)
+        await qa.expect(form.locator('p.alert-error[role="status"]')).toBeVisible({ timeout: 60_000 })
+        qa.expect(await form.getByLabel('Địa chỉ API').inputValue()).toBe('https://127.0.0.1:9/')
+        qa.expect(await form.getByLabel('Mô hình').inputValue()).toBe('khong-co-model')
+        await settled(qa)
+        await qa.shot('thu-ket-noi-hong')
+        const tested = await admin.post('/api/admin/ai/test', { mode: 'Api', apiBaseUrl: 'https://127.0.0.1:9/', apiModel: 'khong-co-model', apiKey: 'khoa-sai-12345678' })
+        c.check('test call fails 502/MSG413', tested, 502, 'MSG413')
+        const kept = await admin.get('/api/admin/ai')
+        c.fact('nothing saved by trying', JSON.stringify(kept.body) === JSON.stringify(before.body))
+        await qa.signIn('member')
+        await qa.goto('/mgmt/meetings')
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Cuộc họp' })).toBeVisible({ timeout: 15_000 })
+        await qa.expect(qa.page.getByRole('link', { name: 'Cấu hình AI' })).toHaveCount(0)
+        await qa.goto('/mgmt/admin/ai')
+        await qa.expect(qa.page.getByText('Không tìm thấy trang')).toBeVisible({ timeout: 15_000 })
+        await settled(qa)
+        await qa.shot('thanh-vien-khong-thay-cau-hinh-ai')
+        c.check('Member reads settings', await as(qa, 'member').get('/api/admin/ai'), 403)
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+        c.done()
+      },
+    },
+
+    // ------------------------------------------------------------------------------------------- UC-46a/46d per-mic
+    // R1/FE-10 (22/11/2026): AC mới — TRANS_FT31 (Thư ký sửa câu theo micro, Thành viên thấy chữ
+    // đã sửa nhưng không có bút), TRANS_FT36 (Thư ký xoá câu sau khi xác nhận).
+    {
+      id: 'AC21',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Thư ký sửa chữ một câu theo micro (MSG302, "đã sửa" ghi người sửa) và xoá câu sau khi xác nhận (MSG322); Thành viên chỉ đọc',
+      steps: [
+        'Thư ký mở tab "Bản ghi" của "[QA] FE-10 Họp trực tuyến theo micro", bấm bút "Sửa nội dung" ở một câu của Thành viên, đổi chữ, bấm Lưu',
+        'Thành viên mở cùng thẻ',
+        'Thư ký gửi thêm một câu tạm (API), bấm "Xoá câu" ở câu đó: đọc hộp xác nhận, bấm "Giữ lại", rồi bấm lại "Xoá câu" và xác nhận "Xoá câu"',
+      ],
+      expected:
+        'Ô "Nội dung câu" + nút Huỷ/Lưu; Lưu: toast "Đã lưu đoạn gỡ băng.", câu hiện "đã sửa" (gợi ý "Sửa bởi <Thư ký> lúc …"), API editedBy là Thư ký; Thành viên thấy chữ mới + "đã sửa", không có bút "Sửa nội dung" nào; hộp "Xoá câu này?" hiện câu trong ngoặc + "Câu và âm thanh của nó bị xoá khỏi cuộc họp."; "Giữ lại" giữ câu; xác nhận "Xoá câu": toast "Đã xoá câu nói.", câu biến mất, các câu khác còn nguyên',
+      async run(qa) {
+        const cm = await meeting(qa, 'C')
+        const u = await users(qa)
+        const c = checker(qa)
+        const sec = as(qa, 'secretary')
+        const target = (await clips(qa, 'secretary', cm.id)).items.find((x) => x.speakerId === u.member.id && !x.excluded)
+        qa.expect(target, 'no sentence of the Member').toBeTruthy()
+        const original = target.text
+        const changed = `${original.replace(/[.\s]+$/, '')} và phần mềm quản lý văn bản.`
+        try {
+          await openRecordings(qa, cm)
+          const card = qa.page.locator('section.tl-card')
+          await qa.expect(card).toBeVisible()
+          const say = card.locator(`[data-clip="${target.id}"]`)
+          // filter() cần locator page-scope bên trong (card-scope trả 0 — như AC9).
+          const sentence = card.locator('.tl-sentence').filter({ has: qa.page.locator(`[data-clip="${target.id}"]`) })
+          await say.scrollIntoViewIfNeeded()
+          await say.focus()
+          // Công cụ hiện theo câu đã chọn (không cần hover — headless không có chuột).
+          const editBtn = sentence.getByRole('button', { name: /^Sửa nội dung/ })
+          await qa.expect(editBtn).toBeVisible({ timeout: 15_000 })
+          await press(qa, editBtn)
+          const box = card.getByRole('textbox', { name: 'Nội dung câu' })
+          await qa.expect(box).toBeVisible()
+          await box.fill(changed)
+          await settled(qa)
+          await qa.shot('sua-cau-theo-micro')
+          // Mở editor đã thay câu bằng ô nhập (data-clip không còn) nên bấm Lưu theo khung editor.
+          const perMicEditor = () => card.locator('.transcript-editor')
+          await press(qa, perMicEditor().getByRole('button', { name: 'Lưu' }))
+          await qa.expect(perMicEditor()).toHaveCount(0, { timeout: 15_000 })
+          await qa.expect(toast(qa, MSG.MSG302).last()).toBeVisible()
+          const fixed = card.locator('.tl-sentence').filter({ hasText: 'phần mềm quản lý văn bản' })
+          await qa.expect(fixed.getByText('đã sửa')).toBeVisible()
+          await qa.expect(fixed.getByText('đã sửa')).toHaveAttribute('data-tooltip', new RegExp(`Sửa bởi ${esc(u.secretary.name)}`))
+          await settled(qa)
+          await qa.shot('cau-theo-micro-da-sua')
+          const after = (await clips(qa, 'secretary', cm.id)).items.find((x) => x.id === target.id)
+          c.fact('text saved', after.text === changed, after.text)
+          c.fact('editor recorded', after.editedByName === u.secretary.name && !!after.editedAt, `${after.editedByName} ${after.editedAt}`)
+          await noRawCodes(qa)
+
+          await qa.signIn('member')
+          await openRecordings(qa, cm)
+          const cardM = qa.page.locator('section.tl-card')
+          await qa.expect(cardM.locator('.tl-sentence').filter({ hasText: 'phần mềm quản lý văn bản' }).getByText('đã sửa')).toBeVisible()
+          await qa.expect(cardM.getByRole('button', { name: /^Sửa nội dung/ })).toHaveCount(0)
+          await cardM.locator('.tl-sentence').filter({ hasText: 'phần mềm quản lý văn bản' }).scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('thanh-vien-doc-cau-da-sua')
+          await qa.signIn('secretary')
+
+          const temp = await sendClip(qa, 'member', cm.id, 'short')
+          const tempFresh = (await clips(qa, 'secretary', cm.id)).items.find((x) => x.id === temp.id)
+          const tempText = temp.text ?? tempFresh?.text ?? ''
+          qa.expect(tempText, 'the temporary sentence has no text').not.toBe('')
+          await openRecordings(qa, cm)
+          const card2 = qa.page.locator('section.tl-card')
+          const tempSay = card2.locator(`[data-clip="${temp.id}"]`)
+          const tempSentence = card2.locator('.tl-sentence').filter({ has: qa.page.locator(`[data-clip="${temp.id}"]`) })
+          await tempSay.scrollIntoViewIfNeeded()
+          await tempSay.focus()
+          const trashBtn = tempSentence.getByRole('button', { name: /^Xoá câu/ })
+          await qa.expect(trashBtn).toBeVisible({ timeout: 15_000 })
+          await press(qa, trashBtn)
+          const dialog = qa.page.getByRole('dialog', { name: 'Xoá câu này?' })
+          await qa.expect(dialog).toBeVisible()
+          await qa.expect(dialog.getByText(tempText)).toBeVisible()
+          await qa.expect(dialog.getByText('Câu và âm thanh của nó bị xoá khỏi cuộc họp.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('xac-nhan-xoa-cau')
+          await press(qa, dialog.getByRole('button', { name: 'Giữ lại' }))
+          await qa.expect(dialog).toHaveCount(0)
+          await qa.expect(card2.locator(`[data-clip="${temp.id}"]`)).toHaveCount(1)
+          await tempSay.focus()
+          const trashAgain = tempSentence.getByRole('button', { name: /^Xoá câu/ })
+          await qa.expect(trashAgain).toBeVisible({ timeout: 15_000 })
+          await press(qa, trashAgain)
+          await qa.expect(qa.page.getByRole('dialog', { name: 'Xoá câu này?' })).toBeVisible()
+          const gone = qa.page.waitForResponse((r) => r.url().includes(`/api/speech-clips/${temp.id}`) && r.request().method() === 'DELETE')
+          await press(qa, qa.page.getByRole('dialog', { name: 'Xoá câu này?' }).getByRole('button', { name: 'Xoá câu', exact: true }))
+          const deleted = await gone
+          c.fact('deleted as MSG322', deleted.status() === 200, `HTTP ${deleted.status()}`)
+          await qa.expect(toast(qa, 'Đã xoá câu nói.')).toBeVisible()
+          await qa.expect(card2.locator(`[data-clip="${temp.id}"]`)).toHaveCount(0)
+          const left = (await clips(qa, 'secretary', cm.id)).items
+          c.fact('the other sentences are untouched', left.some((x) => x.id === target.id) && !left.some((x) => x.id === temp.id))
+          await settled(qa)
+          await qa.shot('cau-da-bi-xoa')
+          c.done()
+        } finally {
+          const now = (await clips(qa, 'secretary', cm.id)).items.find((x) => x.id === target?.id)
+          if (now && now.text !== original) await sec.put(`/api/speech-clips/${target.id}/text`, { text: original })
+        }
+      },
+    },
+
+    // ------------------------------------------------------------------------------------------- UC-45 empty + silence
+    // R1/FE-10 (22/11/2026): AC mới — TRANS_FT11 (thẻ trống khi chưa có câu nào), TRANS_FT05
+    // (bản ghi im lặng, bản ghi chưa chuyển chữ).
+    {
+      id: 'AC22',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Thẻ trống khi chưa có câu nào (kèm gợi ý lúc đang họp); bản ghi im lặng và bản ghi chưa chuyển chữ có thông điệp riêng',
+      steps: [
+        'Thư ký mở tab "Bản ghi" của "[QA] FE-10 Họp trực tuyến trống câu" (đang họp, không câu nào)',
+        'Tải "fe10-im-lang-<giờ>.wav" (im lặng) lên "[QA] FE-10 Họp trực tiếp gỡ băng" bằng API, chờ chuyển chữ xong',
+      ],
+      expected:
+        'Thẻ hiện "Cuộc họp này chưa có câu nào được ghi" + "Lời nói trong phòng họp trực tuyến hiện ở đây theo từng câu." (đang họp); không nút "Tải lời thoại (.txt)"; bản ghi im lặng tự chuyển chữ rồi hiện "Không nghe thấy lời nói nào trong bản ghi."; dọn bản ghi tạm sau khi kiểm. Ghi nhận: chữ "Bản ghi này chưa được chuyển thành chữ." không tới được qua tải lên — upload luôn tạo transcript Pending (TranscriptionStatus không có None; API chỉ trả None khi thiếu dòng transcript), xem TRANS_FT05',
+      async run(qa) {
+        const c = checker(qa)
+        const em = await meeting(qa, 'E')
+        await openRecordings(qa, em)
+        const card = qa.page.locator('section.tl-card')
+        await qa.expect(card.getByText('Cuộc họp này chưa có câu nào được ghi')).toBeVisible()
+        await qa.expect(card.getByText('Lời nói trong phòng họp trực tuyến hiện ở đây theo từng câu.')).toBeVisible()
+        await qa.expect(card.getByRole('button', { name: 'Tải lời thoại (.txt)' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('the-trong-chua-co-cau')
+
+        const m = await meeting(qa, 'A')
+        const sec = as(qa, 'secretary')
+        const fileName = `fe10-im-lang-${Date.now().toString(36)}.wav`
+        let createdId = null
+        try {
+          const up = await sec.form(
+            `/api/meetings/${m.id}/recordings`,
+            wavForm(audio(qa, 'sil'), fileName, { consentConfirmed: 'true', consentPurpose: 'Lập biên bản cuộc họp (QA FE-10)' }),
+          )
+          qa.expectStatus(up, 201)
+          const list = await sec.get(`/api/meetings/${m.id}/recordings`)
+          createdId = list.body.items.find((r) => r.fileName === fileName)?.id
+          c.fact('the silent recording is listed', !!createdId)
+          await openRecordings(qa, m)
+          const row = recordingRow(qa, fileName)
+          await qa.expect(row).toBeVisible({ timeout: 30_000 })
+          // Upload tự xếp hàng chuyển chữ (transcript Pending từ lúc tạo) nên không qua
+          // trạng thái "chưa được chuyển thành chữ"; chờ xong rồi kiểm thông điệp im lặng.
+          await waitTranscript(qa, createdId)
+          const t = await transcript(qa, 'secretary', createdId)
+          c.fact('no segments heard', t.status === 'Completed' && t.segments.length === 0, `${t.status} ${t.segments.length}`)
+          await row.scrollIntoViewIfNeeded()
+          await qa.expect(row.getByText('Không nghe thấy lời nói nào trong bản ghi.')).toBeVisible({ timeout: 30_000 })
+          await row.scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('ban-ghi-im-lang')
+          await noRawCodes(qa)
+          c.done()
+        } finally {
+          if (createdId) await sec.delete(`/api/recordings/${createdId}`)
+        }
+      },
+    },
+
+    // ------------------------------------------------------------------------------------------- UC-45a playback
+    // R1/FE-10 (22/11/2026): AC mới — TRANS_FT02 (bấm mốc giờ thì nghe từ câu đó, tô sáng câu
+    // đang nghe, Tạm dừng) + TRANS_FT49 E2 (người ngoài cuộc họp mở tab Biên bản thì 404).
+    {
+      id: 'AC23',
+      role: 'secretary',
+      devices: ['desktop'],
+      title: 'Bấm mốc giờ thì nghe từ câu đó (nút thành "Tạm dừng", câu đang nghe tô sáng); người ngoài cuộc họp mở tab Biên bản thì 404',
+      steps: [
+        'Thư ký mở tab "Bản ghi" của "[QA] FE-10 Họp trực tiếp gỡ băng", bấm mốc giờ của lượt thứ hai',
+        'Bấm "Tạm dừng"',
+        'Đăng nhập quantri@, mở /mgmt/meetings/{id}?tab=minutes; API summary của quantri@',
+      ],
+      expected:
+        'Bấm mốc giờ ("Nghe từ <time>"): câu đang nghe mang class tô sáng, nút của lượt thành "Tạm dừng" (aria-pressed true); bấm lại thì dừng, nút về "Nghe từ <time>"; tab Biên bản của người ngoài: "Không tìm thấy trang", API 404',
+      async run(qa) {
+        const m = await meeting(qa, 'A')
+        const c = checker(qa)
+        await openRecordings(qa, m)
+        const row = recordingRow(qa, FILES.main)
+        await qa.expect(lines(row).locator('.tl-say').first()).toBeVisible()
+        const second = lines(row).locator('li.tl-group').nth(1).locator('button.tl-play')
+        await second.scrollIntoViewIfNeeded()
+        await press(qa, second)
+        const pausing = lines(row).locator('li.tl-group').nth(1).locator('button.tl-play')
+        await qa.expect(pausing).toHaveAccessibleName('Tạm dừng', { timeout: 15_000 })
+        await qa.expect(pausing).toHaveAttribute('aria-pressed', 'true')
+        await qa.expect(lines(row).locator('.tl-say.is-active').first()).toBeVisible({ timeout: 15_000 })
+        await row.scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('dang-nghe-tu-moc-gio')
+        await press(qa, pausing)
+        await qa.expect(lines(row).locator('li.tl-group').nth(1).locator('button.tl-play')).toHaveAccessibleName(/^Nghe từ/, { timeout: 15_000 })
+        await settled(qa)
+        await qa.shot('da-tam-dung')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+        await qa.signIn('admin')
+        await qa.goto(`/mgmt/meetings/${m.id}?tab=minutes`)
+        await qa.expect(qa.page.getByText('Không tìm thấy trang')).toBeVisible({ timeout: 15_000 })
+        await settled(qa)
+        await qa.shot('nguoi-ngoai-mo-tab-bien-ban')
+        c.check('outsider summary', await as(qa, 'admin').get(`/api/meetings/${m.id}/summary`), 404)
+        c.done()
       },
     },
   ],

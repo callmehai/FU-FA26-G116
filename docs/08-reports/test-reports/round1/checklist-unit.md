@@ -1,6 +1,6 @@
 # Checklist Round 1 — test đơn vị 5.1 (unit)
 
-Thứ tự làm từ trên xuống. Chạy gần như hoàn toàn bằng máy; người chỉ quyết định ở Bước 0 và duyệt ở Bước 4. Nguồn dữ liệu là `cases/FE-xx/unit/<sheet>.json`; không gõ vào Excel, kết quả ghi vào JSON rồi `build`. Tester Round 1: **Phạm Gia Khánh**. Quy tắc viết UTC: [AGENTS.md](AGENTS.md) mục 6; quy trình build an toàn: cùng file, "Safe rebuild workflow".
+Thứ tự làm từ trên xuống. Chạy gần như hoàn toàn bằng máy; người chỉ quyết định ở Bước 0 và duyệt ở Bước 4. Nguồn dữ liệu là `cases/FE-xx/unit/<sheet>.json`; không gõ vào Excel, kết quả ghi vào JSON rồi `build`. Tester Round 1: **Phạm Gia Khánh**. Quy tắc viết UTC: [AGENTS.md](../AGENTS.md) mục 6; quy trình build an toàn: cùng file, "Safe rebuild workflow".
 
 Người làm: **Khánh** = bạn, **Agent** = agent chạy theo prompt, **Claude** = nhờ Claude viết.
 
@@ -63,7 +63,7 @@ Xong khi: 5.1 không còn case trống ngoài ý muốn.
 
 ## Bước 6 — Đóng vòng
 
-- [ ] Cập nhật [README.md](README.md) và [round1-checklist.md](round1-checklist.md).
+- [ ] Cập nhật [README.md](../README.md) và [checklist.md](checklist.md).
 - [ ] Tổng hợp số liệu: Passed / Failed / N/A / trống.
 - [ ] Commit và mở PR **khi Khánh cho phép**. Không đưa vào: `.vscode/`, file `.bak`, nhiễu CRLF.
 - [ ] Round 2 và 3 dùng lại quy trình với `round2`/`date2`/`tester2` và `round3`/`date3`/`tester3`.

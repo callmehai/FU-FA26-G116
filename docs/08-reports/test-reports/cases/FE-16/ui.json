@@ -25,7 +25,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with Approved, Published and InProgress meetings this week."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 Passed (2026-11-21): AC23+AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/58-secretary-AC23-desktop-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/59-secretary-AC23-desktop-bo-loc-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/70-secretary-AC25-desktop-lich-tuan-hien-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT02",
@@ -42,7 +45,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 · AF-4 | Manual only"
+          "note": "UC-17 · AF-4 | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/73-secretary-AC25-desktop-lich-ca-tuan.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/74-secretary-AC25-desktop-thang-danh-sach-chong-lan.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/75-secretary-AC25-desktop-lich-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT03",
@@ -58,7 +64,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/71-secretary-AC25-desktop-lich-tuan-sau.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/72-secretary-AC25-desktop-lich-ve-hom-nay.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT04",
@@ -74,7 +83,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 · AF-4 | Manual only"
+          "note": "UC-17 · AF-4 | Manual only · Round1 Passed (2026-11-21): AC23: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/62-secretary-AC23-desktop-lich-danh-sach.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/67-secretary-AC23-phone-lich-danh-sach.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT05",
@@ -90,7 +102,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Organizer with meetings in every status."
           ],
-          "note": "UC-17 · AF-4 | Manual only"
+          "note": "UC-17 · AF-4 | Manual only · Round1 Passed (2026-11-21): AC23: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/59-secretary-AC23-desktop-bo-loc-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/64-secretary-AC23-phone-bo-loc-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT06",
@@ -105,7 +120,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A cancelled meeting of the signed-in user in the visible range."
           ],
-          "note": "UC-17 · BR-297 | Manual only"
+          "note": "UC-17 · BR-297 | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/80-secretary-AC25-desktop-lich-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT07",
@@ -122,7 +140,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meetings of several levels (Thường, Nội bộ, Mật) the user takes part in."
           ],
-          "note": "UC-17 · AF-2 | Manual only"
+          "note": "UC-17 · AF-2 | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/76-secretary-AC25-desktop-bo-loc-tuan-lam-viec.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/77-secretary-AC25-desktop-lich-loc-mat.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/78-secretary-AC25-desktop-lich-dat-lai-bo-loc.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/79-secretary-AC25-desktop-lich-loc-mat-sau-tai-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT08",
@@ -137,7 +158,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 · AF-3 | Manual only"
+          "note": "UC-17 · AF-3 | Manual only · Round1 Passed (2026-11-21): AC23: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/58-secretary-AC23-desktop-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/60-secretary-AC23-desktop-xem-moi-cuoc-hop.png — nút sản phẩm là \"Xem mọi cuộc họp\" (case ghi \"Bỏ lọc\"), bấm hiện tất cả (?status=all)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT09",
@@ -154,7 +178,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant of a Published online meeting."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 Passed (2026-11-21): AC26: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/85-secretary-AC26-desktop-xem-nhanh-cuoc-hop.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/86-secretary-AC26-desktop-chi-tiet-tu-lich.png — \"Vào phòng họp\" chỉ khi đang diễn ra, xem FT10/AC26",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT10",
@@ -170,7 +197,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Three meetings of the user at the same time."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 Passed (2026-11-21): AC26: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/83-secretary-AC26-desktop-lich-chong-gio.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/84-secretary-AC26-desktop-danh-sach-chong-gio.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT11",
@@ -188,7 +218,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Member invited to two Published meetings, plus another meeting they are not part of."
           ],
-          "note": "UC-17 · BR-29 · BR-321 | Manual only"
+          "note": "UC-17 · BR-29 · BR-321 | Manual only · AC24: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/68-member-AC24-desktop-lich-thanh-vien.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/69-member-AC24-desktop-danh-sach-thanh-vien.png — E1 đạt (server lọc, không thấy họp chưa công bố); E2 (từ chối từ pop-over rồi biến mất + tải lại) chưa có AC nào kiểm — đề nghị bổ sung AC · Chạy lại 2026-11-22 (AC24): E1 đạt (lần đầu lỗi do ma trận quyền DB dev lệch seed, đã khôi phục); E2 vẫn chưa có AC — Failed vì thiếu AC, không phải bug. · Viết AC34 (tests/qa/plans/fe-16.mjs) kiểm E2: Thành viên bấm Không tham dự trong pop-over, họp biến mất ngay, tải lại và chế độ Danh sách không hiện lại, họp còn lại và họp không liên quan giữ nguyên. Evidence(AC34): tests/qa/out/SCRUM-203/20261122-075728-eb5a3255/03-member-AC34-desktop-hop-xac-nhan-khong-tham-du.png; tests/qa/out/SCRUM-203/20261122-075728-eb5a3255/04-member-AC34-desktop-sau-khi-tu-choi.png; tests/qa/out/SCRUM-203/20261122-075728-eb5a3255/05-member-AC34-desktop-danh-sach-sau-tai-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT12",
@@ -218,7 +251,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 Passed (2026-11-21): AC23+AC6: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/63-secretary-AC23-phone-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/14-chair-AC6-phone-tuan-chia-se-moc-1.png — không cuộn ngang 2 thiết bị; toggle/filter icon-only ở 390px; lưới tuần điện thoại vuốt ngang, lưới tuần chia sẻ có chọn ngày (AC6); +N chạm cùng cơ chế +N đã kiểm desktop, nút chạm đạt 40px ở AC12-phone",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -246,7 +282,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a | Manual only"
+          "note": "UC-84a | Manual only · Round1 Passed (2026-11-21): AC14: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/37-chair-AC14-desktop-xin-xem-lich.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/38-chair-AC14-desktop-da-gui-yeu-cau.png + chuông CalendarShareRequested của admin (assert API)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT15",
@@ -262,7 +301,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a · BR-431 | Boundary: 365 days | Manual only"
+          "note": "UC-84a · BR-431 | Boundary: 365 days | Manual only · Round1 Passed (2026-11-21): AC30: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/102-chair-AC30-desktop-xin-xem-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/103-chair-AC30-desktop-xin-xem-lich-3-thang.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/104-chair-AC30-desktop-loi-ngay-bat-dau.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/105-chair-AC30-desktop-xin-xem-lich-chua-chon-ai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT16",
@@ -277,7 +319,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a | Manual only"
+          "note": "UC-84a | Manual only · Round1 Passed (2026-11-21): AC30: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/102-chair-AC30-desktop-xin-xem-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/103-chair-AC30-desktop-xin-xem-lich-3-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT17",
@@ -294,7 +339,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "B already has a Pending request to A."
           ],
-          "note": "UC-84a · EX-2 · BR-423 | Manual only"
+          "note": "UC-84a · EX-2 · BR-423 | Manual only · Round1 Passed (2026-11-21): AC2 (mờ \"Đã có\", không chọn được): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/04-member-AC2-desktop-da-co-chia-se-bi-lam-mo.png + AC4 (server 409 MSG449 khi gửi cố)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT18",
@@ -309,7 +357,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a | Manual only"
+          "note": "UC-84a | Manual only · Round1 Passed (2026-11-21): AC14: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/37-chair-AC14-desktop-xin-xem-lich.png — \"Không có ai khớp.\" khi tìm không thấy; E2 (\"Chưa có ai để xin xem lịch.\") không dựng được trên DB seed (luôn có tài khoản khác), tiền đề vô nghĩa",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT19",
@@ -325,7 +376,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a · BR-430 | Manual only"
+          "note": "UC-84a · BR-430 | Manual only · Round1 Passed (2026-11-21): AC1: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/01-member-AC1-desktop-chia-se-lich-thanh-vien.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/02-member-AC1-phone-chia-se-lich-thanh-vien.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT20",
@@ -344,7 +398,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84b | Manual only"
+          "note": "UC-84b | Manual only · Round1 Passed (2026-11-21): AC2: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/05-member-AC2-desktop-chon-nguoi-nhan.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/06-member-AC2-desktop-da-chia-se-cho-tra-loi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT21",
@@ -359,7 +416,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84b · EX-1 | Manual only"
+          "note": "UC-84b · EX-1 | Manual only · Round1 Passed (2026-11-21): AC2: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/03-member-AC2-desktop-thanh-vien-khong-duoc-chia-se.png — tìm email Thành viên ra \"Không có ai khớp.\"",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT22",
@@ -377,7 +437,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An administrator account."
           ],
-          "note": "UC-84b · EX-1 | Manual only"
+          "note": "UC-84b · EX-1 | Manual only · Round1 Passed (2026-11-21): AC32: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/108-member-AC32-desktop-chia-se-nguoi-mat-quyen.png — gỡ MeetingCreator khỏi vai trò Chủ toạ giữa chừng: 400 MSG455 trong hộp, hộp ở lại với dữ liệu, trả quyền xong không chia sẻ nào được tạo",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -405,7 +468,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Manual only · Round1 Passed (2026-11-21): AC3: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/07-chair-AC3-desktop-mo-tu-chia-se-focus.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/10-chair-AC3-desktop-dang-chia-se.png — ?share=<id> tô sáng đúng dòng",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT24",
@@ -422,7 +488,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A."
           ],
-          "note": "UC-84c · EX-3 | Manual only"
+          "note": "UC-84c · EX-3 | Manual only · Round1 Passed (2026-11-21): AC15: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/39-admin-AC15-desktop-chap-nhan-vuot-khoang-bi-chan.png — đặt ngày vượt khoảng xin: câu \"Chỉ chọn trong khoảng đã xin\" + nút Đồng ý khoá, không gửi",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT25",
@@ -440,7 +509,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Manual only · Round1 Passed (2026-11-21): AC15: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/40-admin-AC15-desktop-xac-nhan-tu-choi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/42-admin-AC15-desktop-da-tu-choi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT26",
@@ -456,7 +528,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Manual only · Round1 Passed (2026-11-21): AC15: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/41-admin-AC15-desktop-de-sau-giu-nguyen.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT27",
@@ -473,7 +548,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending direct share from A to B."
           ],
-          "note": "UC-84c | Manual only"
+          "note": "UC-84c | Manual only · Round1 Passed (2026-11-21): AC3: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/08-chair-AC3-desktop-cho-ban-tra-loi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/09-chair-AC3-desktop-hop-thoai-nhan-chia-se.png — hộp chỉ hiện mức + thời gian, không sửa",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT28",
@@ -490,7 +568,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A; an administrator."
           ],
-          "note": "UC-84c · EX-5 | Manual only"
+          "note": "UC-84c · EX-5 | Manual only · Round1 Passed (2026-11-21): AC31: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/106-chair-AC31-desktop-nguoi-gui-bi-vo-hieu-hoa.png — vô hiệu hoá người gửi (Thư ký) giữa chừng: dòng \"Tài khoản người gửi đã bị vô hiệu hoá, chỉ từ chối được.\", chỉ nút Từ chối; từ chối xong kích hoạt lại, đăng nhập được",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT29",
@@ -501,14 +582,17 @@
             "Click \"Đồng ý\" in A's dialog."
           ],
           "expected": [
-            "The backend answers 409 MSG450; the dialog closes, a red toast shows \"Không thể thực hiện ở trạng thái hiện tại của chia sẻ.\" and the list reloads without the request."
+            "The backend answers 409 MSG450; the dialog closes, a red toast shows \"Không thể thực hiện ở trạng thái hiện tại của chia sẻ.\" and the list reloads with the closed row kept in place as \"Đã rút\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A; a second browser for B."
           ],
-          "note": "UC-84c · EX-2 | Manual only"
+          "note": "UC-84c · EX-2 | Manual only · AC29: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/100-chair-AC29-desktop-hop-thoai-tra-loi-muon.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/101-chair-AC29-desktop-tra-loi-muon-tai-lai.png — stale→409 MSG450 + toast đỏ + hộp đóng đạt; nhưng E \"danh sách tải lại không còn yêu cầu\" sai so với thiết kế giữ dòng đã đóng tại chỗ (xem FT34): thực tế dòng chuyển \"Đã rút\". · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT30",
@@ -528,7 +612,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84c · AF-1 | Manual only"
+          "note": "UC-84c · AF-1 | Manual only · Round1 Passed (2026-11-21): AC11 (xin đổi): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/22-chair-AC11-desktop-xin-nang-moc-2.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/23-chair-AC11-desktop-dang-cho-chu-lich-duyet.png + AC12 (API từ chối MSG452 giữ nguyên rồi duyệt UI): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/26-member-AC12-desktop-chu-lich-thay-yeu-cau-doi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/27-member-AC12-desktop-dong-y-thay-doi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/28-member-AC12-desktop-da-len-moc-2.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -553,7 +640,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "B has shares in both directions."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Manual only · Round1 Passed (2026-11-21): AC1+AC2+AC3: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/01-member-AC1-desktop-chia-se-lich-thanh-vien.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/06-member-AC2-desktop-da-chia-se-cho-tra-loi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/10-chair-AC3-desktop-dang-chia-se.png — 2 thẻ có đếm, dòng đủ người/chip/mức/khoảng",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT32",
@@ -569,7 +659,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "Shares in each state."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Manual only · Round1 Passed (2026-11-21): AC15 (\"Đã từ chối\"): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/42-admin-AC15-desktop-da-tu-choi.png, AC2 (\"Chờ trả lời\"): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/06-member-AC2-desktop-da-chia-se-cho-tra-loi.png, AC3 (\"Đang chia sẻ\"): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/10-chair-AC3-desktop-dang-chia-se.png, AC19 (\"Đã dừng\" + tip MSG439): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/51-member-AC19-desktop-chia-se-da-dung.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/52-member-AC19-phone-chia-se-da-dung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT33",
@@ -584,7 +677,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/81-secretary-AC25-desktop-chia-se-trong.png — thẻ chủ \"Bạn chưa chia sẻ lịch với ai.\"; dòng thẻ xem \"Chưa ai...\" cùng component empty, chỉ hiện khi không còn chia sẻ nào (kể cả đã kết thúc), DB QA luôn có dòng đã kết thúc",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT34",
@@ -601,7 +697,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A closed share."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Manual only · Round1 Passed (2026-11-21): AC19: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/51-member-AC19-desktop-chia-se-da-dung.png + AC18 (đóng trong phiên vẫn tại chỗ): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/46-chair-AC18-desktop-da-thoi-xem.png + AC29: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/101-chair-AC29-desktop-tra-loi-muon-tai-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT35",
@@ -650,7 +749,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84f · UC-68 | Manual only"
+          "note": "UC-84f · UC-68 | Manual only · Round1 Passed (2026-11-21): AC3: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/07-chair-AC3-desktop-mo-tu-chia-se-focus.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/11-chair-AC3-desktop-chia-se-khong-con.png — ?share lạ: toast \"Chia sẻ này không còn.\" + hết ?share",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT38",
@@ -665,7 +767,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84f | Manual only"
+          "note": "UC-84f | Manual only · Round1 Passed (2026-11-21): AC19-phone chạm (i): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/52-member-AC19-phone-chia-se-da-dung.png + AC12-phone nút chạm ≥40px: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/31-member-AC12-phone-chu-lich-thay-yeu-cau-doi.png + AC18-phone menu \"…\" + không cuộn ngang: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/48-chair-AC18-phone-xac-nhan-thoi-xem.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/50-chair-AC18-phone-tuan-khong-con-nguoi-do.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -692,23 +797,29 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84d | Manual only"
+          "note": "UC-84d | Manual only · Round1 Passed (2026-11-21): AC11: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/22-chair-AC11-desktop-xin-nang-moc-2.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/23-chair-AC11-desktop-dang-cho-chu-lich-duyet.png — nâng mốc + gia hạn 7 ngày, toast MSG454, dòng \"Bạn xin đổi\", API pendingChange",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT40",
-          "description": "Verify sending without a change is refused before the request.",
+          "description": "Verify sending without a change is not possible.",
           "procedure": [
-            "Open \"Xin thay đổi\" and click \"Gửi yêu cầu\" without changing anything."
+            "Open \"Xin thay đổi\" and leave level and dates as they are."
           ],
           "expected": [
-            "The message \"Chọn mức xem cao hơn hoặc ngày kết thúc muộn hơn.\" shows and no request is sent."
+            "The button \"Gửi yêu cầu\" is disabled until the level is raised or the end date is moved later; no request is sent and no message is shown."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84d · EX-3 | Manual only"
+          "note": "UC-84d · EX-3 | Manual only · AC28: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/94-chair-AC28-desktop-xin-thay-doi-khong-doi.png — nút \"Gửi yêu cầu\" bị khoá đúng và không request, nhưng hộp KHÔNG hiện câu \"Chọn mức xem cao hơn hoặc ngày kết thúc muộn hơn.\" khi chưa đổi gì (code: unchanged → error=null). Đề nghị BA quyết định hiện câu hay sửa case · Chạy lại 2026-11-22 (AC28): đạt phần nút khoá, không request; PO chốt giữ app (không hiện câu). · Đã sửa case theo sản phẩm (2026-11-22, PO chọn giữ app): nút khoá, không hiện câu.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT41",
@@ -726,7 +837,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84d · AF-1 | Manual only"
+          "note": "UC-84d · AF-1 | Manual only · Round1 Passed (2026-11-21): AC4 (PATCH 200 MSG442 + bên xem thấy ngày mới) + AC12 (hộp \"Đổi chia sẻ\" hạ Mốc 1, toast, dòng, CalendarShareUpdated cho Chủ toạ): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/29-member-AC12-desktop-doi-chia-se-truc-tiep.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/30-member-AC12-desktop-da-ha-moc-1.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT42",
@@ -743,7 +857,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A pending request from B to A."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Manual only · Round1 Passed (2026-11-21): AC16: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/43-chair-AC16-desktop-xac-nhan-rut.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/44-chair-AC16-desktop-da-rut.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT43",
@@ -759,7 +876,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share with a pending change from B."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Manual only · Round1 Passed (2026-11-21): AC11: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/24-chair-AC11-desktop-rut-yeu-cau-thay-doi.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/25-chair-AC11-desktop-da-rut-yeu-cau-thay-doi.png — hộp \"Rút yêu cầu thay đổi?/Chia sẻ giữ như hiện tại.\", toast MSG438, vẫn \"Đang chia sẻ\", hết \"Bạn xin đổi\"",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT44",
@@ -777,7 +897,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84e · AF-1 | Manual only"
+          "note": "UC-84e · AF-1 | Manual only · Round1 Passed (2026-11-21): AC33: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/109-member-AC33-desktop-xac-nhan-ngung-chia-se.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/110-member-AC33-desktop-da-ngung-chia-se.png — hộp \"Ngừng chia sẻ lịch?\", toast MSG451, dòng \"Đã ngừng\", tuần hết giờ bận, Chủ toạ có CalendarShareEnded, slots NotShared, PATCH sau đó 409 MSG450",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT45",
@@ -793,7 +916,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An Effective share A to B."
           ],
-          "note": "UC-84e | Manual only"
+          "note": "UC-84e | Manual only · Round1 Passed (2026-11-21): AC18: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/45-chair-AC18-desktop-xac-nhan-thoi-xem.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/46-chair-AC18-desktop-da-thoi-xem.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/47-chair-AC18-desktop-tuan-khong-con-nguoi-do.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT46",
@@ -810,7 +936,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "An administrator account; an Effective share A to B."
           ],
-          "note": "UC-84e · BR-424 | Manual only"
+          "note": "UC-84e · BR-424 | Manual only · Round1 Passed (2026-11-21): AC31: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/107-chair-AC31-desktop-mat-quyen-tao-hop.png — mất thẻ xem, bên xem hết thấy chia sẻ, bên chủ thấy \"Đã dừng\" + CalendarShareStopped; trả quyền xong matrix có MeetingCreator",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -836,7 +965,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "Effective shares to B with busy meetings this week."
           ],
-          "note": "UC-85c · BR-427 | Manual only"
+          "note": "UC-85c · BR-427 | Manual only · Round1 Passed (2026-11-21): AC6: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/12-chair-AC6-desktop-tuan-chia-se-moc-1.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/15-chair-AC6-phone-ngay-ngoai-khoang-chua-biet.png — lưới T2–CN, khối bận + tên/giờ, không lộ nội dung, không cuộn ngang; vạch giờ + cuộn tới giờ làm việc theo code (chưa cuộn tay lên 00:00 trong ảnh)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT48",
@@ -852,7 +984,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A share covering only part of the week."
           ],
-          "note": "UC-85c · BR-415 | Manual only"
+          "note": "UC-85c · BR-415 | Manual only · Round1 Passed (2026-11-21): AC6: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/12-chair-AC6-desktop-tuan-chia-se-moc-1.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/13-chair-AC6-desktop-ngay-ngoai-khoang-chua-biet.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/14-chair-AC6-phone-tuan-chia-se-moc-1.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT49",
@@ -868,7 +1003,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A stopped share."
           ],
-          "note": "UC-85c · BR-424 | Manual only"
+          "note": "UC-85c · BR-424 | Manual only · Round1 Passed (2026-11-21): AC19 + AC18: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/51-member-AC19-desktop-chia-se-da-dung.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/47-chair-AC18-desktop-tuan-khong-con-nguoi-do.png — chip \"Đã dừng\" + tip, lưới tuần hết khối",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT50",
@@ -884,7 +1022,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85c | Manual only"
+          "note": "UC-85c | Manual only · Round1 Passed (2026-11-21): AC18: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/47-chair-AC18-desktop-tuan-khong-con-nguoi-do.png — Tuần sau/trước đổi week= trong URL; mở thẳng ?tab=week&week= đã kiểm ở AC6/AC18 (case còn ghi tuần \"09-13/11/2026\" kiểu T2–T6 cũ — thực tế tuần chia sẻ là T2–CN, đề nghị BA sửa)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT51",
@@ -899,7 +1040,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85c · BR-430 | Manual only"
+          "note": "UC-85c · BR-430 | Manual only · Round1 Passed (2026-11-21): AC21: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/53-member-AC21-desktop-tim-gio-404.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/54-member-AC21-desktop-tab-tuan-khong-mo.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/55-member-AC21-phone-tim-gio-404.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/56-member-AC21-phone-tab-tuan-khong-mo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT52",
@@ -914,7 +1058,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85c | Manual only"
+          "note": "UC-85c | Manual only · Round1 Passed (2026-11-21): AC6-phone: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/14-chair-AC6-phone-tuan-chia-se-moc-1.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/15-chair-AC6-phone-ngay-ngoai-khoang-chua-biet.png — chọn ngày bằng radio, giờ bận ghi trong khối, không cuộn ngang",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT53",
@@ -932,7 +1079,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-85c · EX-1 | Manual only"
+          "note": "UC-85c · EX-1 | Manual only · Round1 Passed (2026-11-21): AC25: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/82-secretary-AC25-desktop-tuan-chia-se-trong.png — tab tuần trống, nút \"Xin xem lịch\"; E2 (lỗi tải + Thử lại) cần chèn lỗi backend nên để trống",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -958,7 +1108,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A and C share their calendars with B."
           ],
-          "note": "UC-85a | Manual only"
+          "note": "UC-85a | Manual only · Round1 Passed (2026-11-21): AC7: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/16-chair-AC7-desktop-da-chon-nguoi-du.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/17-chair-AC7-desktop-ket-qua-tim-gio.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/18-chair-AC7-phone-da-chon-nguoi-du.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/19-chair-AC7-phone-ket-qua-tim-gio.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT55",
@@ -973,7 +1126,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85a | Manual only"
+          "note": "UC-85a | Manual only · Round1 Passed (2026-11-21): AC27: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/88-chair-AC27-desktop-tim-gio-thieu-nguoi-du.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT56",
@@ -991,7 +1147,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "C without a share to B."
           ],
-          "note": "UC-85a · BR-416 | Manual only"
+          "note": "UC-85a · BR-416 | Manual only · Round1 Passed (2026-11-21): AC27: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/89-chair-AC27-desktop-nguoi-du-da-chia-se-va-chua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT57",
@@ -1018,13 +1177,16 @@
           ],
           "expected": [
             "The first reads \"Lịch được chia sẻ không phủ khoảng ngày này\" with \"Chọn khoảng ngày nằm trong thời gian chia sẻ, hoặc xin gia hạn chia sẻ.\".",
-            "The second reads \"Không còn khung nào trong khoảng đã chọn\" with \"Thử khoảng ngày khác, thời lượng ngắn hơn hoặc cách cuộc họp khác ít hơn.\"."
+            "The second reads \"Không còn khung nào trong khoảng đã chọn\" with \"Thử khoảng ngày khác, thời lượng ngắn hơn hoặc giãn cách họp ít hơn.\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85a · AF-1 | Manual only"
+          "note": "UC-85a · AF-1 | Manual only · AC27: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/90-chair-AC27-desktop-khoang-ngay-ngoai-chia-se.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/91-chair-AC27-desktop-khoang-ngay-het-khung.png — E1 đạt; E2 tiêu đề đạt nhưng gợi ý sản phẩm \"…giãn cách họp ít hơn.\" khác case \"…cách cuộc họp khác ít hơn.\". · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT59",
@@ -1033,13 +1195,17 @@
             "Set \"Giờ làm việc\" end before start, or no day in \"Ngày trong tuần\", then click \"Tìm giờ\"."
           ],
           "expected": [
-            "The backend answers 400 MSG444 and the wrong fields are marked with the server's sentences; the entered settings stay."
+            "The client blocks the search before any request, marks the wrong field with its own sentence and keeps the entered settings.",
+            "Calling the search directly with the same settings answers 400 MSG444."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85a · EX-1 | Manual only"
+          "note": "UC-85a · EX-1 | Manual only · AC27: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/93-chair-AC27-desktop-ngay-trong-tuan-trong.png + AC10 (API 400 MSG444): case đòi server 400 khi giờ sai/thiếu ngày, nhưng FE chặn ở client bằng câu riêng, không gửi request. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT60",
@@ -1054,7 +1220,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85a · BR-422 | Manual only"
+          "note": "UC-85a · BR-422 | Manual only · Round1 Passed (2026-11-21): AC27: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/92-chair-AC27-desktop-tim-gio-cuoi-tuan.png — tick T7/CN, chia sẻ phủ tới CN, Thứ Bảy có khung",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT61",
@@ -1069,7 +1238,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-85a · BR-430 | Manual only"
+          "note": "UC-85a · BR-430 | Manual only · Round1 Passed (2026-11-21): AC20 (API 403 MSG448 ×5) + AC21 (màn 404 + menu không có \"Tìm giờ họp\"): tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/53-member-AC21-desktop-tim-gio-404.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/55-member-AC21-phone-tim-gio-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1095,7 +1267,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A free slot for A and C."
           ],
-          "note": "UC-85b · BR-429 | Manual only"
+          "note": "UC-85b · BR-429 | Manual only · Round1 Passed (2026-11-21): AC9: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/20-chair-AC9-desktop-hop-thoai-tao-nhap.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/21-chair-AC9-desktop-cuoc-hop-nhap-da-tao.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT63",
@@ -1111,7 +1286,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A slot dialog open."
           ],
-          "note": "UC-85b · BR-429 | Manual only"
+          "note": "UC-85b · BR-429 | Manual only · Round1 Passed (2026-11-21): AC28: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/95-chair-AC28-desktop-doi-chu-toa-trong-hop-thoai.png — đưa Lê An lên đầu, họp tạo ra ghi Chủ toạ Lê An + Thư ký chutoa@ (assert API roster)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT64",
@@ -1127,7 +1305,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A slot dialog open."
           ],
-          "note": "UC-85b | Manual only"
+          "note": "UC-85b | Manual only · Round1 Passed (2026-11-21): AC28: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/96-chair-AC28-desktop-ten-hop-trong-bi-chan.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT65",
@@ -1138,14 +1319,17 @@
             "Click \"Tạo nháp\"."
           ],
           "expected": [
-            "The backend answers 409 MSG446; the dialog shows \"Khung giờ này không còn trống. Hãy chọn khung khác.\" and the page searches again, with the dialog's entries kept where possible; no meeting is created."
+            "The backend answers 409 MSG446; the dialog closes, a red toast shows \"Khung giờ này không còn trống. Hãy chọn khung khác.\" and the page searches again; no meeting is created."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A second browser to give A the meeting."
           ],
-          "note": "UC-85b · EX-1 · BR-428 | Manual only"
+          "note": "UC-85b · EX-1 · BR-428 | Manual only · AC28: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/99-chair-AC28-desktop-khung-bi-chiem-tim-lai.png — case đòi hộp ở lại + hiện câu + giữ entries; sản phẩm đóng hộp, toast đỏ MSG446 \"Khung giờ này không còn trống. Hãy chọn khung khác.\" + tìm lại. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT66",
@@ -1161,7 +1345,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A most-free result."
           ],
-          "note": "UC-85b | Manual only"
+          "note": "UC-85b | Manual only · Round1 Passed (2026-11-21): AC28 (API 201 MSG29 với acceptedBusyUserIds=[Lê An] cho khung bận đã thấy; accepted rỗng → 409 ở AC10)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT67",
@@ -1177,7 +1364,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A slot dialog open."
           ],
-          "note": "UC-85b | Manual only"
+          "note": "UC-85b | Manual only · Round1 Passed (2026-11-21): AC28: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/97-chair-AC28-desktop-xac-nhan-bo-soan.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/98-chair-AC28-desktop-da-bo-soan.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "CAL_FT68",
