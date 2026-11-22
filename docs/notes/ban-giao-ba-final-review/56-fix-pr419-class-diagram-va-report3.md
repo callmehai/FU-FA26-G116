@@ -2,7 +2,7 @@
 
 **Ngày:** 20/11/2026 · **Nhánh:** `docs/report3-uc51-bo-uc82-fe05-class` (PR #419 → `main`, xếp trên #417 đã merge `bd954709`)
 **Người ghi:** agent, theo review `CHANGES_REQUESTED` của Hải ngày 20/11/2026 trên PR #419.
-**Trạng thái:** đã sửa xong 3 điểm chặn + 6 điểm không chặn; chờ Hải re-review.
+**Trạng thái: ✅ XONG (21/11/2026)** — 3 điểm chặn + 6 điểm không chặn đã sửa; Hải duyệt, PR #419 vào `main` 20/11/2026 (`b3d641be`).
 **Nguồn chuẩn:** DOCX trong `docs/08-reports/source/` (snapshot sinh bằng `scripts/sync_reports.py`); class diagram
 trong `docs/07-classdiagram/`, sửa theo code thật.
 

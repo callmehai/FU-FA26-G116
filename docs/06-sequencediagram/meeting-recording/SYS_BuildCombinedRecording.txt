@@ -1,4 +1,4 @@
-title SYS - Build Combined Recording of a Hybrid Meeting (System, DRAFT awaiting approval - no UC number)
+title SYS - Build Combined Recording of a Hybrid or Online Meeting (System, DRAFT awaiting approval - no UC number)
 
 actor "System" as System
 control ":Combined Recording Worker" as Worker
@@ -9,13 +9,13 @@ participant ":Recording Storage" as RecordingStorage
 participant ":Speech Change Publisher" as Publisher
 database ":Database" as Database
 
-System->Worker: Sweep every 30 seconds for a Hybrid Meeting waiting for its combined recording
+System->Worker: Sweep every 30 seconds for a Hybrid or Online Meeting waiting for its combined recording
 activate Worker
 Worker->CombinedService: buildNext()
 activate CombinedService
-CombinedService->RecordingRepository: Get Ended Hybrid Meetings settled for one minute and changed within 8 days
+CombinedService->RecordingRepository: Get Ended Hybrid or Online Meetings settled for one minute and changed within 8 days
 activate RecordingRepository
-RecordingRepository->Database: Retrieve candidate Ended Hybrid Meetings
+RecordingRepository->Database: Retrieve candidate Ended Hybrid or Online Meetings
 activate Database
 Database-->RecordingRepository: Candidate Meetings / None
 deactivate Database
@@ -42,14 +42,14 @@ else A Meeting needs its combined recording
     ClipRepository-->CombinedService: Sentences
     deactivate ClipRepository
 
-    alt Take still streaming, source too new, erased, or one-sided - nothing to build yet
+    alt Take still streaming, source too new, erased, or nothing to mix (Hybrid heard on one side only, Online with no sentence kept) - nothing to build yet
         CombinedService-->Worker: Nothing to do
-    else Sources settled and both room and online sound exist
-        CombinedService->CombinedService: Lay room takes and online sentences on the real clock,\ncut silence over 2 seconds to 2 seconds (BR-456)
+    else Sources settled: room takes (Hybrid only) and online sentences on the real clock
+        CombinedService->CombinedService: Lay room takes (Hybrid only) and online sentences on the real clock,\ncut silence over 2 seconds to 2 seconds (BR-456)
         alt Combined track is longer than 12 hours
             CombinedService-->Worker: Not built
         else Combined track fits
-            CombinedService->RecordingStorage: Mix room and online sound into one WAV file
+            CombinedService->RecordingStorage: Mix the gathered sound into one WAV file
             activate RecordingStorage
             RecordingStorage-->CombinedService: Combined file
             deactivate RecordingStorage

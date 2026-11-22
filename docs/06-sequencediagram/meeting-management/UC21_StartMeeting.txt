@@ -1,6 +1,6 @@
 title UC-21 - Start Meeting
 
-actor "Chair" as Chair
+actor "Chair / Secretary" as Actor
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
@@ -11,11 +11,11 @@ participant ":Meeting Status History Repository" as MeetingStatusHistoryReposito
 control ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Chair->MeetingPage: Start Meeting
+Actor->MeetingPage: Start Meeting
 activate MeetingPage
 MeetingPage->MeetingController: Start Meeting
 activate MeetingController
-MeetingController->MeetingService: startMeeting(meetingId, chairId)
+MeetingController->MeetingService: startMeeting(meetingId, actorId)
 activate MeetingService
 
 MeetingService->MeetingRepository: Get current meeting
@@ -32,7 +32,7 @@ alt Meeting cannot be started - EX-1
     deactivate MeetingService
     MeetingController-->MeetingPage: Return meeting start failure
     deactivate MeetingController
-    MeetingPage-->Chair: MSG112 - This meeting cannot be started
+    MeetingPage-->Actor: MSG112 - This meeting cannot be started
 
 else Meeting is Published
     activate MeetingController
@@ -55,7 +55,7 @@ else Meeting is Published
     UserRepository-->MeetingService: Account eligibility
     deactivate UserRepository
 
-    MeetingService->MeetingService: Revalidate Chair assignment, Published status,
+    MeetingService->MeetingService: Revalidate starter assignment (Chair or Secretary), Published status,
 exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-131)
 
     alt Meeting or role readiness is no longer valid - EX-1
@@ -63,7 +63,7 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
         deactivate MeetingService
         MeetingController-->MeetingPage: Return meeting start failure
         deactivate MeetingController
-        MeetingPage-->Chair: MSG112 - This meeting cannot be started
+        MeetingPage-->Actor: MSG112 - This meeting cannot be started
 
     else Meeting can be started
         activate MeetingController
@@ -82,7 +82,7 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
             deactivate MeetingService
             MeetingController-->MeetingPage: Return meeting start failure
             deactivate MeetingController
-            MeetingPage-->Chair: MSG115 - Unable to start the meeting. Please try again
+            MeetingPage-->Actor: MSG115 - Unable to start the meeting. Please try again
 
         else Meeting status is InProgress
             activate Database
@@ -105,7 +105,7 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
 
             MeetingService->NotificationService: Notify current invited internal participants
 that the Meeting has started,
-except the Chair who started it (BR-164, BR-322)
+except the starter (Chair or Secretary) (BR-164, BR-322)
             activate NotificationService
             NotificationService-->MeetingService: Notifications created / delivery failed
 (failure does not undo the start)
@@ -115,7 +115,7 @@ except the Chair who started it (BR-164, BR-322)
             deactivate MeetingService
             MeetingController-->MeetingPage: MSG110 - Meeting started successfully
             deactivate MeetingController
-            MeetingPage-->Chair: MSG110 - Meeting started successfully
+            MeetingPage-->Actor: MSG110 - Meeting started successfully
         end
     end
 end

@@ -199,7 +199,7 @@ FE-07 cho khớp, giữ nguyên ID, bố cục và các quan hệ khác. Ảnh `
   đưa mục đang bàn lên đầu); `uploadDocuments(..., files, actor)`; `groupDocuments(documents, agenda)` — bỏ
   tham số `votes`.
 - Thêm lớp `<<utility>> DocumentFileRules` (`validateFiles`, `detectContentType`, `uploadFolderName`, giới hạn 10 tệp /
-  200 MB mỗi lần, 50 MB mỗi tệp — BR-319, BR-187), vẽ cạnh phụ thuộc từ controller và service. Đây là lớp thật trong
+  100 MB mỗi lần, 10 MB mỗi tệp — BR-319, BR-187; họp 19/11/2026, trước là 200 MB / 50 MB), vẽ cạnh phụ thuộc từ controller và service. Đây là lớp thật trong
   `TrustCabinet.Domain/Documents`, không phải lớp đề xuất.
 - `MeetingDocumentRepository`: `addStoredFiles`, `findUploadFolder`, `addFolder`, `addUpload` thay cho `addUploads(...)`,
   đúng thứ tự "ghi dòng tệp lưu trữ → đẩy byte → transaction khoá cuộc họp" của ADR-0024 §4.

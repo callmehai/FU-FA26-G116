@@ -138,16 +138,16 @@ else Actor may link documents
                 end
             end
         else Source is Upload from computer - AF-1
-            DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319), at least one file is selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
+            DocumentService->DocumentService: Check at most 10 files totalling at most 100 MB (BR-319), at least one file is selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 10 MB\n(BR-187, BR-214, BR-215)
 
             alt Any file is invalid - EX-3 of UC-33a
-                DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-                DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-                DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-            else Submission has more than 10 files or more than 200 MB - EX-8 of UC-33a
-                DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-                DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-                DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+                DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
+                DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
+                DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
+            else Submission has more than 10 files or more than 100 MB - EX-8 of UC-33a
+                DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
+                DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
+                DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
 
             else Every file is valid
                 DocumentService->MeetingDocumentRepository: Get the total size of all stored document files (BR-333)
