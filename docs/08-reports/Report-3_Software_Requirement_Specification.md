@@ -686,7 +686,7 @@ A person's consent to Voice ID: the system may keep voice samples and use them t
 
 Entity 34: VoiceSample
 
-One enrolment sample of a person's voice, kept only encrypted, used to suggest that person's name for a voice in the meetings they attend. The recording itself is kept too, encrypted, so its owner can hear it back. Erased with every other sample when the person withdraws consent. A sample the person recorded stands alone; a sample a Secretary recorded carries the Meeting where it was recorded and the Secretary who recorded it.
+One enrolment sample of a person's voice, kept only encrypted, used to suggest that person's name for a voice in the meetings they attend. The recording itself is kept too, encrypted, so its owner can hear it back. Erased with every other sample when the person withdraws consent. A sample the person recorded stands alone; a collected sample carries the collector granted the Voice sample collection permission (the Meeting is kept only for samples collected at a Meeting before ADR-0075).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -698,8 +698,8 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | 6 | SpeechMs | bigint |  | No | How much speech the sample held after silence was cut, in milliseconds. |
 | 7 | AudioCiphertext | bytea |  | Yes | The recording as uploaded, encrypted the same way; null for a sample taken before it was kept. |
 | 8 | AudioContentType | string |  | Yes | Media type of the recording, to play it back as it was sent. |
-| 9 | CollectedById | uuid | FK | Yes | Secretary who recorded this sample for the person; null for a sample the person recorded. |
-| 10 | MeetingId | uuid | FK | Yes | Meeting where a Secretary recorded this sample; null for a sample the person recorded. |
+| 9 | CollectedById | uuid | FK | Yes | Holder of the Voice sample collection permission who collected this sample for the person; null for a sample the person recorded. |
+| 10 | MeetingId | uuid | FK | Yes | Only kept for a sample collected at a Meeting before ADR-0075; null for every new sample (ask BE whether this column stays). |
 
 #### 3.3 Data Business Rules
 
@@ -4841,7 +4841,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-461 | Text typed into a note that has not reached the system yet is kept on the device it was typed on and sent when the connection returns. For a Secret Meeting it is kept only until the page is closed. | UC-82 | SCRUM-30 / review #271 | Agenda Management |
 | BR-462 | An AI draft may be asked for only when the Meeting has at least one recorded sentence; agenda items and closed votes alone give the model nothing to summarise. | UC-47 | SCRUM-36 | Meeting Summary |
 | BR-463 | A room-mic passage is left out of the transcript when it is short (fewer than 10 characters, or shorter than 3 seconds and fewer than 20 characters) and either no enrolled voice matched it or it holds only filler words; a voice left with no passage is hidden, and the remaining voices are numbered without gaps. | UC-45a | PR #467 / SCRUM-31 — drop short unattributable room-mic lines | Transcription |
-| BR-464 | A per-microphone sentence holding only filler words is not stored, like silence. | UC-80, UC-39a | PR #467 / SCRUM-109 — filler-only per-mic sentences | Transcription |
+| BR-464 | A per-microphone sentence holding only filler words is not stored, like silence. | UC-80 | PR #467 / SCRUM-109 — filler-only per-mic sentences | Transcription |
 | BR-465 | Words the recogniser was unsure of (below 40% confidence) are flagged on the transcript, with per-word confidence kept; the flags on a passage are cleared when the Secretary corrects that passage. | UC-45a, UC-46a | PR #468 — uncertain-word marks | Transcription |
 | BR-466 | The transcript writes numbers in digits under the Vietnamese ITN rules (multi-word quantities become digits; common one-word quantities in ordinary speech keep their words); an earlier transcript keeps its words until transcription runs again. | UC-45a, UC-45c | PR #476 / ADR-0076 — write numbers in digits | Transcription |
 
