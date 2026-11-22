@@ -13,6 +13,9 @@ public sealed class FakeCallRepository : ICallRepository
     public Dictionary<Guid, CallRoomAccess> Access { get; } = [];
     public CallSession? ActiveSession { get; set; }
 
+    /// <summary>The active meeting-room sessions the reconciliation job lists.</summary>
+    public List<ActiveRoomSession> Sessions { get; } = [];
+
     /// <summary>How many raised hands a leave or the end of the session closes (BR-337).</summary>
     public int ClosedHands { get; set; }
 
@@ -54,7 +57,7 @@ public sealed class FakeCallRepository : ICallRepository
         => Answer("end-session", ClosedHands);
 
     public Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default)
-        => Answer<IReadOnlyList<ActiveRoomSession>>("list-sessions", []);
+        => Answer<IReadOnlyList<ActiveRoomSession>>("list-sessions", Sessions.ToArray());
 
     private Task<T> Answer<T>(string name, T answer)
     {

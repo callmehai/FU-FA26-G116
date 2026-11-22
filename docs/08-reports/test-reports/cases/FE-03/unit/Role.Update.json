@@ -15,49 +15,14 @@
             "Custom role \"Thư ký phó\" held by 3 accounts."
           ],
           "return": "RoleResult Success (MSG22) with the new name and description and userCount 3; capabilities and sessions are untouched.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "id: <random Guid with no role>; valid request.",
-          "log": "N/A",
-          "note": "UC-12b",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers."
-          ],
-          "return": "RoleResult Failure(NotFound) (HTTP 404, no message code).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "id: that role; Name: \"Quản trị cấp cao\".",
-          "log": "N/A",
-          "note": "UC-12b · MSG24",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Built-in role \"Quản trị viên\"."
-          ],
-          "return": "RoleResult Failure(BuiltInRole) (MSG24); the role is unchanged.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "id: built-in role; Name: \"\".",
-          "log": "N/A",
-          "note": "UC-12b · MSG24",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Built-in role and a blank name submitted."
-          ],
-          "return": "RoleResult Failure(BuiltInRole) (MSG24): the built-in check comes before field validation.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "Name: \"\"; Description: null.",
           "log": "N/A",
           "note": "UC-12b · MSG20",
@@ -66,89 +31,14 @@
             "Custom role exists."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\".",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "Name: 65 characters.",
-          "log": "N/A",
-          "note": "UC-12b · MSG20",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role exists."
-          ],
-          "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được vượt quá 64 ký tự.\".",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "Name: 64 characters.",
-          "log": "Audit row RoleUpdated.",
-          "note": "UC-12b · MSG22",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role exists."
-          ],
-          "return": "RoleResult Success (MSG22).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "Name valid; Description: 257 characters.",
-          "log": "N/A",
-          "note": "UC-12b · MSG20",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role exists."
-          ],
-          "return": "RoleResult InvalidInformation (MSG20) with errors[description] = \"Mô tả không được vượt quá 256 ký tự.\".",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "Name: \"Thư ký phó\"; Description: \"Hỗ trợ\" (identical).",
-          "log": "N/A",
-          "note": "UC-12b · MSG22",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role \"Thư ký phó\" with description \"Hỗ trợ\"."
-          ],
-          "return": "RoleResult Success (MSG22) with the current data; nothing is written and no audit row is added.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "Name: \"THƯ KÝ PHÓ\" (only the letter case changes).",
-          "log": "Audit row RoleUpdated.",
-          "note": "UC-12b · MSG22",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role \"Thư ký phó\"."
-          ],
-          "return": "RoleResult Success (MSG22): re-casing the role's own name is a change, not a duplicate.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "Name: \"Thư ký phó\"; Description: \"   \" (blank).",
-          "log": "Audit row RoleUpdated.",
-          "note": "UC-12b · MSG22",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Custom role \"Thư ký phó\" with description \"Hỗ trợ\"."
-          ],
-          "return": "RoleResult Success (MSG22); the description is cleared to null and the change is audited.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
+          "id": "UTC003",
           "inputs": "id: custom role; Name: \"thành viên\".",
           "log": "N/A",
           "note": "UC-12b · MSG21",
@@ -157,37 +47,30 @@
             "Another role \"Thành viên\" exists."
           ],
           "return": "RoleResult Failure(DuplicateName) (MSG21); the role keeps its name.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "Valid rename.",
-          "log": "Log \"Role update rejected: name already taken (unique index).\"",
-          "note": "UC-12b · MSG21",
+          "id": "UTC004",
+          "inputs": "id: that role; Name: \"Quản trị cấp cao\".",
+          "log": "N/A",
+          "note": "UC-12b · MSG24",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
-            "The name is free when checked, but a concurrent request takes it before the save."
+            "Built-in role \"Quản trị viên\"."
           ],
-          "return": "RoleResult Failure(DuplicateName) (MSG21); no audit row.",
-          "type": "Abnormal"
+          "return": "RoleResult Failure(BuiltInRole) (MSG24); the role is unchanged.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "Valid rename.",
-          "log": "Log \"Role update rejected: the role no longer exists.\"",
-          "note": "UC-12b",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "The role is deleted by another administrator between reading and saving."
-          ],
-          "return": "RoleResult Failure(NotFound) (HTTP 404): the save matches no row; the client refreshes its list.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
+          "id": "UTC005",
           "inputs": "Valid rename.",
           "log": "Error log \"Role update failed to save.\"",
           "note": "UC-12b · MSG27",
@@ -196,7 +79,26 @@
             "The database refuses the save (connection lost or timeout)."
           ],
           "return": "RoleResult Failure(SaveFailed) (MSG27); the role keeps its previous data.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "Name: 64 characters.",
+          "log": "Audit row RoleUpdated.",
+          "note": "UC-12b · MSG22",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Custom role exists."
+          ],
+          "return": "RoleResult Success (MSG22).",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/Access/RoleService.cs",

@@ -6,7 +6,7 @@ Precondition: Guest session in a meeting in progress.
 
 ## SpeechClipService.DeleteForGuestAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:350`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:361`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

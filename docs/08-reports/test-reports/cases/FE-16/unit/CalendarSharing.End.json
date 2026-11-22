@@ -22,23 +22,13 @@
           "exception": "N/A",
           "log": "Notification CalendarShareEnded queued for Binh; audit calendar_share.ended.",
           "type": "Normal",
-          "note": "UC-84e · MSG451"
+          "note": "UC-84e · MSG451",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending."
-          ],
-          "inputs": "actor: Binh (viewer).",
-          "return": "Success Ended (MSG451); the notification goes to An.",
-          "exception": "N/A",
-          "log": "Notification CalendarShareEnded queued for An; audit calendar_share.ended.",
-          "type": "Normal",
-          "note": "UC-84e · MSG451"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share Level1, 2026-11-18 to 2026-12-18; Binh asked for Level2 until 2026-12-30 (pending change)."
@@ -48,10 +38,13 @@
           "exception": "N/A",
           "log": "Share closed with no pending change; notification queued for An; audit calendar_share.ended.",
           "type": "Boundary",
-          "note": "UC-84e · MSG451"
+          "note": "UC-84e · MSG451",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
@@ -61,36 +54,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84e · MSG450"
+          "note": "UC-84e · MSG450",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Share Stopped."
-          ],
-          "inputs": "actor: An.",
-          "return": "Failure NotAllowed (MSG450).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e · BR-424 · MSG450"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Share Ended."
-          ],
-          "inputs": "actor: Binh.",
-          "return": "Failure NotAllowed (MSG450).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e · MSG450"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending."
@@ -100,35 +70,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84e"
+          "note": "UC-84e",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer."
-          ],
-          "inputs": "actor: An; shareId: an id that does not exist.",
-          "return": "Failure NotFound (404).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share whose end date 2026-11-17 has passed."
-          ],
-          "inputs": "actor: An.",
-          "return": "Failure NotAllowed (MSG450); nothing written.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e · BR-425 · MSG450"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC005",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share whose end date is today 2026-11-18."
@@ -138,24 +86,13 @@
           "exception": "N/A",
           "log": "Notification queued for Binh; audit calendar_share.ended.",
           "type": "Boundary",
-          "note": "UC-84e · BR-425 · MSG451"
+          "note": "UC-84e · BR-425 · MSG451",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending.",
-            "Binh lost the Meeting Organizer right without a hook."
-          ],
-          "inputs": "actor: An.",
-          "return": "Failure NotAllowed (MSG450); the share is stopped, not ended.",
-          "exception": "N/A",
-          "log": "Share status Stopped; notifications for both; audit calendar_share.stopped (reason viewerLostMeetingCreator).",
-          "type": "Abnormal",
-          "note": "UC-84e · BR-424 · MSG450"
-        },
-        {
-          "id": "UTC012",
+          "id": "UTC006",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending.",
@@ -166,7 +103,10 @@
           "exception": "N/A",
           "log": "Unit of work changes discarded; error logged.",
           "type": "Abnormal",
-          "note": "UC-84e · MSG447"
+          "note": "UC-84e · MSG447",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

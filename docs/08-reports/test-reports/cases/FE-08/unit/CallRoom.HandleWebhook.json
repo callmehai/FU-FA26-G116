@@ -9,7 +9,7 @@
       "method": "CallRoomService.HandleWebhookAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-      "line": 226,
+      "line": 227,
       "cases": [
         {
           "id": "UTC001",
@@ -22,49 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Meeting InProgress with mode Online and an active room session.",
-            "A participant_joined event arrives with a valid guest identity."
-          ],
-          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: \"guest-{sessionId}\".",
-          "return": "One open visit is recorded under that guest session (no user id); the session stays active.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37 · UC-04"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Meeting already Ended; its room session was closed.",
-            "A participant_joined event arrives from a ticket that outlived the meeting."
-          ],
-          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: a current participant.",
-          "return": "The visit is still recorded as evidence, then the recreated room is deleted again and the session ended at once instead of at the next reconciliation.",
-          "exception": "N/A",
-          "log": "Closing {Room} again: {Identity} joined after it closed.",
-          "type": "Normal",
-          "note": "UC-37 · BR-143"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Roster enforcement is on; the joiner was just removed from the participants.",
-            "A participant_joined event arrives with that member identity."
-          ],
-          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: the removed member.",
-          "return": "The visit is recorded, then that person is taken out of the room at once instead of at the next reconciliation.",
-          "exception": "N/A",
-          "log": "Removing {Identity} from {Room}: room access ended.",
-          "type": "Normal",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress with an active session and an open visit; the leaver holds the floor of the speaking queue."
           ],
@@ -73,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-38 · UC-79 · BR-337"
+          "note": "UC-38 · UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Meeting InProgress with an active session and two open visits."
           ],
@@ -85,10 +52,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; two members share their screen at once (one presenter at a time)."
           ],
@@ -97,10 +67,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-39c · BR-326"
+          "note": "UC-39c · BR-326",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Any event arrives for a room that is not a meeting room."
           ],
@@ -109,10 +82,13 @@
           "exception": "N/A",
           "log": "Ignoring webhook {Event} for room {Room}.",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC006",
           "preconditions": [
             "A participant_joined event arrives with an identity that is neither a user id nor a guest identity."
           ],
@@ -121,7 +97,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

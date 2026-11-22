@@ -9,7 +9,7 @@
       "method": "TranscriptionService.AssignSpeakerAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-      "line": 188,
+      "line": 197,
       "cases": [
         {
           "id": "UTC001",
@@ -22,35 +22,13 @@
           "exception": "N/A",
           "log": "Saved: assigned user, assigner and time; audit row records the naming and whether it accepts the machine suggestion.",
           "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316"
+          "note": "UC-46b · BR-368 · MSG316",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Voice SPEAKER_00 is named as a member; actor is the current secretary."
-          ],
-          "inputs": "recordingId: a transcribed recording; label: \"SPEAKER_00\"; userId: null; guestId: null; actorId: the current secretary.",
-          "return": "Success (MSG316); the name is cleared from the voice.",
-          "exception": "N/A",
-          "log": "Saved: assigned user and guest cleared; audit row records the clearing.",
-          "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Voice SPEAKER_01 exists; actor is the current secretary.",
-            "An invited guest of the meeting matches the guest id."
-          ],
-          "inputs": "recordingId: a transcribed recording; label: \"SPEAKER_01\"; userId: null; guestId: an invited guest; actorId: the current secretary.",
-          "return": "Success with the voice and the guest name (MSG316).",
-          "exception": "N/A",
-          "log": "Saved: assigned guest, assigner and time; audit row records the naming.",
-          "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "No voice with the label exists on the recording; actor is the current secretary."
           ],
@@ -59,22 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b"
+          "note": "UC-46b",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Voice SPEAKER_00 exists; actor is the current secretary."
-          ],
-          "inputs": "recordingId: a transcribed recording; label: \"SPEAKER_00\"; userId: a meeting member; guestId: an invited guest; actorId: the current secretary.",
-          "return": "Failure InvalidSpeaker (MSG317 \"Người được gán phải có trong danh sách cuộc họp.\"); a voice is named as one user or one guest, never both.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46b · BR-368 · MSG317"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Voice SPEAKER_00 exists; actor is the current secretary.",
             "The user id belongs to nobody on the meeting roster."
@@ -84,10 +53,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · BR-368 · MSG317"
+          "note": "UC-46b · BR-368 · MSG317",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Voice SPEAKER_00 exists; actor takes part in the meeting but is not the secretary."
           ],
@@ -96,7 +68,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · MSG295"
+          "note": "UC-46b · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

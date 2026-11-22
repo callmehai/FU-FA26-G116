@@ -15,7 +15,10 @@
             "No account uses the email thuky@trustcabinet.local."
           ],
           "return": "UserResult Success (MSG07) with the new account: active, role \"Thành viên\"; the password is stored only as a hash.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -28,7 +31,10 @@
             "No account uses the email thuky@trustcabinet.local."
           ],
           "return": "UserResult Success (MSG07); name and email are saved trimmed.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -40,23 +46,14 @@
             "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; nothing is saved.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "FullName: \"   \" (spaces); Email valid; Password valid; RoleId valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "FullName: 200 characters; Email valid; Password valid; RoleId valid.",
           "log": "Account row added; audit row UserCreated.",
           "note": "UC-06a · BR-14 · MSG07",
@@ -64,11 +61,14 @@
             "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
           ],
           "return": "UserResult Success (MSG07): 200 characters is within the limit.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "FullName: 201 characters; Email valid; Password valid; RoleId valid.",
           "log": "N/A",
           "note": "UC-06a · BR-14 · MSG09",
@@ -76,144 +76,14 @@
             "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
           ],
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "FullName: \"Nguyễn Thư Ký\"; Email: \"\"; Password valid; RoleId valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không được để trống.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "Email: \"khong-co-a-cong\" (no @); other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "Email: \"a b@x.vn\" (contains a space); other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "Email: \"user@host\" (no dot after the @); other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "Email: 256 characters in the form \"<local>@example.com\"; other fields valid.",
-          "log": "Account row added; audit row UserCreated.",
-          "note": "UC-06a · BR-14 · MSG07",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult Success (MSG07): 256 characters is within the limit.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "Email: 257 characters in the form \"<local>@example.com\"; other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "Password: \"MatKhau@12\" (11 characters); other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[password] = \"Mật khẩu phải có ít nhất 12 ký tự.\".",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "Password: \"MatKhau@123!\" (12 characters); other fields valid.",
-          "log": "Account row added; audit row UserCreated.",
-          "note": "UC-06a · BR-14 · MSG07",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult Success (MSG07): 12 characters is the minimum.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "Password: null; other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[password] = \"Mật khẩu phải có ít nhất 12 ký tự.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "RoleId: 00000000-0000-0000-0000-000000000001; other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist.",
-            "No role has the id 00000000-0000-0000-0000-000000000001."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[roleId] = \"Vai trò không tồn tại.\".",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC017",
-          "inputs": "FullName: \"\"; Email: \"abc\"; Password: \"ngan\"; RoleId: unknown.",
-          "log": "N/A",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors for fullName, email, password and roleId at once.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC018",
+          "id": "UTC006",
           "inputs": "Email: \"THUKY@trustcabinet.local\" (different case); other fields valid.",
           "log": "N/A",
           "note": "UC-06a · BR-13 · MSG08",
@@ -222,33 +92,10 @@
             "An account with email thuky@trustcabinet.local already exists."
           ],
           "return": "UserResult Failure(DuplicateEmail) (MSG08): the email is unique regardless of case; nothing saved.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC019",
-          "inputs": "Email: \"thuky@trustcabinet.local\"; other fields valid.",
-          "log": "Log \"Create rejected: email already taken (unique index).\"",
-          "note": "UC-06a · BR-13 · MSG08",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist.",
-            "Email is free when checked, but a concurrent request inserts the same email before this save."
-          ],
-          "return": "UserResult Failure(DuplicateEmail) (MSG08): the unique index violation is answered like the duplicate check; no audit row.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC020",
-          "inputs": "RoleId: the deleted role; other fields valid.",
-          "log": "Log \"Create rejected: the chosen role was deleted meanwhile.\"",
-          "note": "UC-06a · BR-14 · MSG09",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist.",
-            "The chosen role is deleted by another administrator after it was read and before the insert."
-          ],
-          "return": "UserResult InvalidInformation (MSG09) with errors[roleId] = \"Vai trò không tồn tại.\"; no account is created.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/Users/UserService.cs",

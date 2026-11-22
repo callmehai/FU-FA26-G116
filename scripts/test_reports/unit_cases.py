@@ -20,6 +20,7 @@ Usage (from the repository root):
   python scripts/test_reports/unit_cases.py sync-back  # merge executed Round/Test date/Tester cells from the old workbook back into the JSON (by UTC id)
   python scripts/test_reports/unit_cases.py build      # dry-run: check, then print the diff old workbook vs JSON (writes nothing)
   python scripts/test_reports/unit_cases.py build --overwrite  # check + md + workbook from templates/unit-template.xlsx (backs the old file up first)
+  python scripts/test_reports/unit_cases.py apply-trx --trx <run.trx> [--round 1] [--dry-run] [--features FE-04 FE-12]
 
 The workbook is output: never edit it in Excel, edit the JSON and build again.
 JSON is the source of truth and the template is the frame: build always regenerates from the
@@ -27,6 +28,12 @@ template, never patches cells into an old workbook. `build` without flags writes
 `build --overwrite` writes, after copying the old file to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`.
 `sync-back` only fills Round/Test date/Tester cells that are non-empty and not Pending;
 description/procedure/expected and every other standard field are never overwritten from Excel.
+`apply-trx` imports one `dotnet test --logger trx` run into round N (`--round`, default 1):
+each UTC is matched by the xUnit Trait `UTC` with value `<Class.Method>/<UTCnnn>`
+(exact trait value first, test display name containing the same string as fallback),
+and only `roundN`/`dateN`/`testerN` are written. A flaky UTC (Passed and Failed in
+one run) or an environment failure (paths, permissions, sockets) is left Pending,
+never Failed.
 """
 import argparse
 import datetime
@@ -892,6 +899,237 @@ def cmd_sync_back(_):
     return 0
 
 
+# ---------------------------------------------------------------- apply-trx: import one TRX run into round N
+
+#: Who the imported results are attributed to.
+APPLY_TRX_TESTER = 'Phạm Gia Khánh'
+#: `<Class.Method>/<UTCnnn>` as carried by the xUnit Trait `UTC` (and, when the
+#: runner strips traits, by the test display name containing the same string).
+UTC_KEY = re.compile(r'([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+)/(UTC\d{3})')
+#: Failure text that blames the machine, not the code: missing paths, denied
+#: writes, busy files, dead sockets. Such a result never becomes Failed.
+ENV_FAILURE = re.compile(
+    r'UnauthorizedAccess|DirectoryNotFound|FileNotFound|EndOfStream|IOException|'
+    r'Access to the path|Access is denied|denied|being used by another process|'
+    r'No such file or directory|PathTooLong|Socket|HttpRequest|connection was refused|'
+    r'Connection refused|timed out|Timeout|OutOfMemory', re.IGNORECASE)
+
+
+def _local(tag):
+    return tag.rsplit('}', 1)[-1]
+
+
+def _read_json_raw(path):
+    """(data, newline) of a case JSON, keeping the file's line endings: CRLF stays CRLF."""
+    raw = path.read_bytes()
+    return json.loads(raw.decode('utf-8-sig')), '\r\n' if b'\r\n' in raw else '\n'
+
+
+def _write_json_raw(path, data, newline):
+    text = json.dumps(data, ensure_ascii=False, indent=2) + '\n'
+    if newline == '\r\n':
+        text = text.replace('\n', '\r\n')
+    path.write_bytes(text.encode('utf-8'))
+
+
+def parse_trx(path):
+    """One TRX run -> (run date ISO, [result dicts]).
+
+    A result carries its outcome, its failure text, the traits/categories of
+    its test definition, and the qualified test name. The UTC key
+    `<Class.Method>/<UTCnnn>` matches a trait value first; when the runner
+    stripped the traits it matches a test name containing the same string.
+    """
+    import xml.etree.ElementTree as ET
+    root = ET.parse(path).getroot()
+    defs = {}
+    for ut in root.iter():
+        if _local(ut.tag) != 'UnitTest':
+            continue
+        info = {'traits': [], 'className': '', 'method': ''}
+        for el in ut.iter():
+            name = _local(el.tag)
+            if name == 'TestMethod':
+                info['className'] = (el.get('className') or '').split(',')[0]
+                info['method'] = (el.get('name') or '').split('(')[0]
+            elif name in ('TestCategoryItem', 'Trait', 'Property'):
+                for attr in ('TestCategory', 'value', 'Value'):
+                    v = el.get(attr)
+                    if v:
+                        info['traits'].append(v)
+        uid = ut.get('id') or ut.get('testId')
+        if uid:
+            defs[uid] = info
+    run_date = ''
+    for el in root.iter():
+        if _local(el.tag) == 'Times':
+            for attr in ('start', 'creation', 'finish'):
+                if re.match(r'\d{4}-\d{2}-\d{2}', el.get(attr) or ''):
+                    run_date = el.get(attr)[:10]
+                    break
+            break
+    results = []
+    for res in root.iter():
+        if _local(res.tag) != 'UnitTestResult':
+            continue
+        info = defs.get(res.get('testId') or '', {})
+        message, stack = '', ''
+        for el in res.iter():
+            name = _local(el.tag)
+            if name == 'Message' and not message:
+                message = (el.text or '').strip()
+            elif name == 'StackTrace' and not stack:
+                stack = (el.text or '').strip()
+        results.append({'testName': res.get('testName') or '', 'outcome': res.get('outcome') or 'Unknown',
+                        'message': message, 'stack': stack, 'traits': info.get('traits', []),
+                        'qualified': f"{info.get('className', '')}.{info.get('method', '')}".strip('.')})
+    return run_date, results
+
+
+def _suffix_key(candidate, index):
+    """The longest dotted suffix of `<a.b.c>/UTCnnn` that is a UTC key.
+
+    TRX test names are fully qualified (`Ns.Class.Method`), while the index
+    holds `Class.Method/UTCnnn`, so `Ns.Class.Method/UTC001` must resolve to
+    `Class.Method/UTC001`.
+    """
+    left, sep, utc = candidate.partition('/')
+    if not sep:
+        return None
+    parts = left.split('.')
+    for i in range(len(parts)):
+        key = '.'.join(parts[i:]) + '/' + utc
+        if key in index:
+            return key
+    return None
+
+
+def _match_key(res, index):
+    """(key, via) for one TRX result, or (None, ''). A trait value wins over the test name."""
+    for trait in res['traits']:
+        v = (trait or '').strip()
+        if v in index:
+            return v, 'trait'
+        key = _suffix_key(v, index)
+        if key is not None:
+            return key, 'trait'
+    hay = f"{res['qualified']} {res['testName']}"
+    for m in UTC_KEY.finditer(hay):
+        key = _suffix_key(m.group(0), index)
+        if key is not None:
+            return key, 'name'
+    return None, ''
+
+
+def _decide(results):
+    """One UTC's TRX results -> (status or None, reason). None leaves the case Pending."""
+    passed = [r for r in results if r['outcome'] == 'Passed']
+    failed = [r for r in results if r['outcome'] in ('Failed', 'Error', 'Timeout', 'Aborted')]
+    if failed and passed:
+        return None, 'flaky: Passed and Failed in one run, left Pending'
+    if failed:
+        text = '\n'.join(((r['message'] or '') + '\n' + (r['stack'] or '')) for r in failed)
+        if ENV_FAILURE.search(text):
+            return None, 'environment failure (path/permission/socket), left Pending'
+        return 'Failed', ''
+    if passed and len(passed) == len(results):
+        return 'Passed', ''
+    kinds = sorted({r['outcome'] for r in results}) or ['none']
+    return None, f"no decisive result ({', '.join(kinds)}), left Pending"
+
+
+def cmd_apply_trx(args):
+    """Merge one `dotnet test --logger trx` run into round N of the unit JSON.
+
+    Only `roundN`/`dateN`/`testerN` are written; description, inputs, expected
+    and every other field are never touched. A case whose TRX results are
+    mixed (flaky across reruns) or fail with an environment signature
+    (paths, permissions, sockets) is left Pending, never Failed.
+    """
+    if not args.trx or not Path(args.trx).is_file():
+        sys.exit(f'trx not found: {args.trx or "(missing --trx)"}')
+    if args.round not in (1, 2, 3):
+        sys.exit(f'--round must be 1, 2 or 3, got {args.round!r}')
+    m = manifest()
+    known = sorted({e['feature'] for e in m['sheets']})
+    wanted = set(args.features or [])
+    unknown = sorted(wanted - set(known))
+    if unknown:
+        sys.exit(f'unknown feature(s): {unknown}; known: {known}')
+    rk, dk, tk = f'round{args.round}', f'date{args.round}', f'tester{args.round}'
+    docs, index, sheets = {}, {}, {}
+    for entry in m['sheets']:
+        if wanted and entry['feature'] not in wanted:
+            continue
+        path = case_file(entry)
+        if not path.exists():
+            print(f"SKIP {entry['feature']}/{entry['sheet']}: {path.relative_to(ROOT)} missing (run scaffold)")
+            continue
+        data, newline = _read_json_raw(path)
+        docs[path] = [data, newline]
+        sheets[path] = f"{entry['feature']}/{entry['sheet']}"
+        for mo in data.get('methods', []):
+            for c in mo.get('cases', []):
+                index.setdefault(f"{mo['method']}/{c.get('id')}", []).append((path, c))
+    run_date, results = parse_trx(args.trx)
+    date = args.date or run_date or datetime.date.today().isoformat()
+    if args.date:
+        try:
+            datetime.date.fromisoformat(date)
+        except ValueError:
+            sys.exit(f'--date must be YYYY-MM-DD, got {args.date!r}')
+    by_key = {}
+    unmatched = 0
+    for res in results:
+        key, via = _match_key(res, index)
+        if key is None:
+            unmatched += 1
+            continue
+        bundle = by_key.setdefault(key, {'via': via, 'results': []})
+        bundle['results'].append(res)
+        if via == 'trait':
+            bundle['via'] = 'trait'
+    changed = skipped = 0
+    per_feature, touched = {}, set()
+    dupes = sorted(k for k, v in index.items() if len(v) > 1)
+    for key in sorted(by_key):
+        bundle = by_key[key]
+        locs = index[key]
+        status, reason = _decide(bundle['results'])
+        n = len(bundle['results'])
+        where = ', '.join(sheets[p] for p in dict.fromkeys(p for p, _ in locs))
+        if status is None:
+            print(f'SKIP {key} [{where}; via {bundle["via"]}, {n} result(s)]: {reason}')
+            skipped += 1
+            continue
+        if all(c.get(rk) == status and c.get(dk) == date and c.get(tk) == args.tester for _, c in locs):
+            print(f'KEEP {key} [{where}]: already {rk}={status} {dk}={date}')
+            continue
+        if not args.dry_run:
+            for _, c in locs:
+                c[rk], c[dk], c[tk] = status, date, args.tester
+        touched.update(p for p, _ in locs)
+        changed += 1
+        for path, _ in locs:
+            fe = sheets[path].split('/')[0]
+            per_feature[fe] = per_feature.get(fe, 0) + 1
+        print(f'SET {key} [{where}; via {bundle["via"]}, {n} result(s)] -> {status}')
+    missing = sum(1 for k in index if k not in by_key)
+    if not args.dry_run:
+        for path in sorted(touched):
+            _write_json_raw(path, *docs[path])
+    scope = sorted(wanted) or ['all']
+    print(f'apply-trx round {args.round} (scope={scope}, {dk}={date}, tester={args.tester}): '
+          f'{changed} case(s) in {len(touched)} file(s) set {dict(sorted(per_feature.items()))}; '
+          f'{skipped} skipped (left Pending); {unmatched} TRX result(s) matched no UTC; '
+          f'{missing} UTC(s) in scope have no TRX result'
+          + ('; dry-run, nothing written' if args.dry_run else ''))
+    for key in dupes:
+        if key in by_key:
+            print(f'WARN duplicate UTC key in {len(index[key])} sheet(s), all set: {key}')
+    return 0
+
+
 def _json_counts(m):
     """sheet -> (case count, {ids}) from the JSON."""
     out = {}
@@ -979,12 +1217,25 @@ def cmd_build(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', choices=('scaffold', 'check', 'relink', 'inventory', 'md', 'sync-back', 'build'))
+    parser.add_argument('command', choices=('scaffold', 'check', 'relink', 'inventory', 'md', 'sync-back', 'build',
+                                             'apply-trx'))
     parser.add_argument('--overwrite', action='store_true',
                         help='build only: back the old workbook up to <name>.bak-<YYYYMMDD-HHMMSS>.xlsx and write it (default is a dry-run diff)')
+    parser.add_argument('--trx', default='',
+                        help='apply-trx only: the .trx file of one `dotnet test --logger trx` run')
+    parser.add_argument('--round', type=int, default=1,
+                        help='apply-trx only: which round to write (1, 2 or 3; default 1)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='apply-trx only: print what would change, write nothing')
+    parser.add_argument('--features', nargs='*', default=[],
+                        help='apply-trx only: only these features, e.g. --features FE-04 FE-12 (default: all)')
+    parser.add_argument('--tester', default=APPLY_TRX_TESTER,
+                        help='apply-trx only: tester name written to testerN')
+    parser.add_argument('--date', default='',
+                        help='apply-trx only: run date as YYYY-MM-DD (default: the TRX run date, else today)')
     args = parser.parse_args()
     return {'scaffold': cmd_scaffold, 'check': cmd_check, 'relink': cmd_relink, 'inventory': cmd_inventory,
-            'md': cmd_md, 'sync-back': cmd_sync_back, 'build': cmd_build}[args.command](args) or 0
+            'md': cmd_md, 'sync-back': cmd_sync_back, 'build': cmd_build, 'apply-trx': cmd_apply_trx}[args.command](args) or 0
 
 
 if __name__ == '__main__':

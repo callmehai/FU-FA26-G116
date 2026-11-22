@@ -6,7 +6,7 @@ Precondition: Room provider events as input.
 
 ## CallRoomService.EnforceRoomAccessAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:319`
+Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:320`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

@@ -9,7 +9,7 @@
       "method": "SharedCalendarService.ReadWeekAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/CalendarSharing/SharedCalendarService.cs",
-      "line": 25,
+      "line": 28,
       "cases": [
         {
           "id": "UTC001",
@@ -20,11 +20,14 @@
             "An chairs an Approved Normal meeting on Monday 2026-11-16 from 09:00 to 11:00."
           ],
           "inputs": "actor: Binh; week: null (the current week).",
-          "return": "Week 2026-11-16 to 2026-11-20, dayStart \"08:00\", dayEnd \"17:00\"; people [An with Level1 and its dates]; Monday known true with busy [\"2026-11-16T09:00:00+07:00\" to \"2026-11-16T11:00:00+07:00\"]; other days known true with no busy. Nothing about any meeting is disclosed.",
+          "return": "Week 2026-11-16 (Monday) to 2026-11-22 (Sunday), dayStart \"00:00\", dayEnd \"24:00\"; people [An with Level1 and its dates]; Monday known true with busy [\"2026-11-16T09:00:00+07:00\" to \"2026-11-16T11:00:00+07:00\"]; the other six days known true with no busy. Nothing about any meeting is disclosed.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85c · BR-419 · BR-420"
+          "note": "UC-85c · BR-419 · BR-420 · Deviation: code now shows the whole week (Monday to Sunday) and the whole day (00:00–24:00), not Monday to Friday 08:00–17:00",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -39,67 +42,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85c · BR-424 · MSG439"
+          "note": "UC-85c · BR-424 · MSG439",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer; An is an active user.",
-            "Share from An to Binh ended 2026-11-10 (before today); a second Effective share from Cuong to Binh covers November."
-          ],
-          "inputs": "actor: Binh; week: null (the current week).",
-          "return": "People [Cuong only]; the share past its end date is left out with no notice or state change.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-85c · BR-425"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer; An was deactivated.",
-            "Share from An to Binh is still Effective in the database (Level1, 2026-11-09 to 2026-12-09).",
-            "An is busy every weekday."
-          ],
-          "inputs": "actor: Binh; week: null (the current week).",
-          "return": "People [An with status Stopped, Level1 and its dates, days empty]; no busy is shown.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-85c · BR-424"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer; An is an active user.",
-            "Effective Level1 share from An to Binh, 2026-11-18 to 2026-11-20 (shorter than the week)."
-          ],
-          "inputs": "actor: Binh; week: null (the current week, Monday 2026-11-16 to Friday 2026-11-20).",
-          "return": "Monday 2026-11-16 and Tuesday 2026-11-17 known false with busy []; Wednesday to Friday known true. An unknown day is never drawn as free.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-85c · BR-415"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer; An is an active user.",
-            "Two open shares from An to Binh: an older Level2 and a newer Level1, both covering November."
-          ],
-          "inputs": "actor: Binh; week: null (the current week).",
-          "return": "People [An once, with the newest share only (Level1)]; the older share is not listed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-85c"
-        },
-        {
-          "id": "UTC007",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "Binh is an active user without the Meeting Organizer right."
@@ -109,10 +58,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85c · BR-430 · MSG448"
+          "note": "UC-85c · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "Binh is an active Meeting Organizer.",
@@ -123,33 +75,26 @@
           "exception": "N/A",
           "log": "Error logged with the actor id.",
           "type": "Abnormal",
-          "note": "UC-85c · MSG453"
+          "note": "UC-85c · MSG453",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC005",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "Binh is an active Meeting Organizer; An is an active user with an Effective share covering November."
           ],
           "inputs": "actor: Binh; week: 2026-11-22 (a Sunday).",
-          "return": "Week 2026-11-16 (Monday) to 2026-11-20 (Friday); a Sunday belongs to the week starting the Monday before.",
+          "return": "Week 2026-11-16 (Monday) to 2026-11-22 (Sunday); a Sunday belongs to the week starting the Monday before.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85c"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer with no share from anyone."
-          ],
-          "inputs": "actor: Binh; week: null (the current week).",
-          "return": "Week 2026-11-16 to 2026-11-20 with people []; the week dates are still returned.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-85c"
+          "note": "UC-85c · Deviation: week now ends Sunday 2026-11-22, not Friday 2026-11-20",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
