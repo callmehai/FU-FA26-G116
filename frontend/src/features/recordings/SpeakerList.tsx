@@ -37,33 +37,22 @@ export function SpeakerList({ transcript, onChanged }: { transcript: Transcript;
       <ul className="speaker-list">
         {[...voices.values()].map((voice) => {
           const spoke = formatDuration(voice.speechMs)
+          // A voice no one is named as yet reads quieter than a person, by its text alone: no box of its own.
+          const unnamed = !assignedOf(voice.speaker)
           return (
-            <li key={voice.speaker.label} className="speaker-row">
-              <span className="speaker-who">
-                {transcript.canEdit ? (
-                  <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
-                ) : (
-                  <span className="speaker-name">
-                    <span
-                      className="select-dot"
-                      style={{ background: speakerColor(voice.speaker.label) }}
-                      aria-hidden="true"
-                    />
-                    {voiceName(voice.speaker)}
-                  </span>
-                )}
-                {/* Words, not a "people" icon nobody read right (team test 21/11/2026): the machine heard this person
-                    as several voices, folded into one card, and the time is all of them. */}
-                {voice.labels.length > 1 && (
+            <li key={voice.speaker.label} className={unnamed ? 'speaker-row is-unnamed' : 'speaker-row'}>
+              {transcript.canEdit ? (
+                <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
+              ) : (
+                <span className="speaker-name">
                   <span
-                    className="speaker-same"
-                    tabIndex={0}
-                    data-tooltip={`Máy nghe thành ${voice.labels.length} giọng khác nhau, đã gộp vì là cùng một người. Thời gian nói là tổng của cả ${voice.labels.length}.`}
-                  >
-                    {voice.labels.length} giọng
-                  </span>
-                )}
-              </span>
+                    className="select-dot"
+                    style={{ background: speakerColor(voice.speaker.label) }}
+                    aria-hidden="true"
+                  />
+                  {voiceName(voice.speaker)}
+                </span>
+              )}
               <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
                 {spoke}
               </span>
