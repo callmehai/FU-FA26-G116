@@ -47,11 +47,13 @@ public sealed class VoiceIdOptions
 
     /// <summary>
     /// Score at which the machine names a voice itself instead of waiting for the Secretary (PO 01/11/2026). The
-    /// Secretary can still change or remove the name; the machine never names a guest, who has no enrolled voice. 0.7
-    /// (was 0.75, ADR-0074): one of the four people of the 21/11 room scored 0.73, a stranger at most 0.645 (31/10) and
-    /// 0.66 (21/11), and VIVOS named nobody wrongly from 0.6 up.
+    /// Secretary can still change or remove the name; the machine never names a guest, who has no enrolled voice.
+    /// Equal to <see cref="SuggestThreshold"/> since 22/11/2026 (ADR-0074, was 0.7, before that 0.75): every voice the
+    /// machine suggests is named, as a suggestion already passed the margin over the runner-up and, for a second voice
+    /// of the same person, <see cref="SameVoiceThreshold"/> and <see cref="SecondVoiceThreshold"/>. On the 22/11 room
+    /// recording the three people were suggested right at 0.61–0.68 and each had to be picked by hand at 0.7.
     /// </summary>
-    public double AutoAssignThreshold { get; set; } = 0.7;
+    public double AutoAssignThreshold { get; set; } = 0.6;
 
     /// <summary>
     /// The organisation that controls the voice data, named in the consent notice: consent is valid only when the person

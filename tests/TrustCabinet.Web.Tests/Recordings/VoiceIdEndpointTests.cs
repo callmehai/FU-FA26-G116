@@ -405,7 +405,7 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.True(speakers["SPEAKER_00"].GetProperty("suggestionScore").GetDouble() > 0.9);
         Assert.Equal(s.Member, speakers["SPEAKER_01"].GetProperty("suggestedUserId").GetGuid());
         Assert.Equal(JsonValueKind.Null, speakers["SPEAKER_02"].GetProperty("suggestedUserId").ValueKind);
-        // Both matches are sure, so the machine named them itself (PO 01/11/2026); the stranger's voice stays unnamed.
+        // Both voices are suggested, so the machine named them itself (PO 01/11/2026); the stranger's voice stays unnamed.
         Assert.Equal(s.Secretary, speakers["SPEAKER_00"].GetProperty("assignedUserId").GetGuid());
         Assert.True(speakers["SPEAKER_00"].GetProperty("autoAssigned").GetBoolean());
         Assert.Equal(s.Member, speakers["SPEAKER_01"].GetProperty("assignedUserId").GetGuid());
@@ -439,21 +439,27 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
     }
 
     [Fact]
-    public async Task Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent()
+    public async Task Every_suggested_match_is_named_by_the_machine_and_the_name_goes_with_the_consent()
     {
         var s = await fixture.Seed();
         await Enrol(s.Secretary, 1, 0, 0);
         await Enrol(s.Member, 0, 1, 0);
-        // Member at 0.995: named at once. Secretary at 0.66: over the suggestion threshold, under the sure one.
+        // Member at 0.995. Secretary at 0.66, just over the suggestion threshold: named too since 22/11 (ADR-0074), as
+        // the 22/11 room recording's three people were suggested right at 0.61–0.68.
         var id = await UploadAndTranscribe(s, new("SPEAKER_00", 30000, [0.66f, 0.15f, 0.736f]), new("SPEAKER_01", 20000, [0f, 1f, 0.1f]));
 
         await using var db = fixture.Db();
         var fair = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_00");
         Assert.Equal(s.Secretary, fair.SuggestedUserId);
-        Assert.Null(fair.AssignedUserId);
+        Assert.InRange(fair.SuggestionScore!.Value, 0.6, 0.7);
+        Assert.Equal(s.Secretary, fair.AssignedUserId);
+        Assert.Null(fair.AssignedById);
         var sure = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_01");
         Assert.Equal(s.Member, sure.AssignedUserId);
         Assert.Null(sure.AssignedById);
+        using var secretary = fixture.Client(s.Secretary);
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/transcript");
+        Assert.All(transcript.GetProperty("speakers").EnumerateArray(), v => Assert.True(v.GetProperty("autoAssigned").GetBoolean()));
 
         // The machine's name came from the voice, so it goes when the person withdraws consent; the voice reads as
         // changed then, so a minutes draft that named them by it reads as behind.
@@ -467,16 +473,8 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.Null(sure.AssignedAt);
         Assert.Null(sure.SuggestedUserId);
         Assert.Equal(withdrawnAt, sure.UpdatedAt);
-
-        // A voice only suggested as someone keeps its stamp when they withdraw: no draft reads a suggestion.
-        var fairStamp = fair.UpdatedAt;
-        using var secretary = fixture.Client(s.Secretary);
-        fixture.Clock.Now = withdrawnAt.AddMinutes(1);
-        try { await AssertCode(await secretary.DeleteAsync("/api/me/voice/consent"), 200, "MSG306"); }
-        finally { fixture.Clock.Now = new(2026, 10, 23, 8, 0, 0, TimeSpan.Zero); }
         await db.Entry(fair).ReloadAsync();
-        Assert.Null(fair.SuggestedUserId);
-        Assert.Equal(fairStamp, fair.UpdatedAt);
+        Assert.Equal(s.Secretary, fair.AssignedUserId);
     }
 
     [Fact]
@@ -498,6 +496,17 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         var named = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == after && x.Label == "SPEAKER_00");
         Assert.Equal(s.Member, named.AssignedUserId);
         Assert.Null(named.AssignedById);
+
+        // A voice only suggested as someone keeps its stamp when they withdraw: no draft reads a suggestion.
+        var suggestedStamp = suggested.UpdatedAt;
+        fixture.Clock.Now = fixture.Clock.Now.AddMinutes(1);
+        try { await AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306"); }
+        finally { fixture.Clock.Now = new(2026, 10, 23, 8, 0, 0, TimeSpan.Zero); }
+        await db.Entry(suggested).ReloadAsync();
+        Assert.Null(suggested.SuggestedUserId);
+        Assert.Equal(suggestedStamp, suggested.UpdatedAt);
+        await db.Entry(named).ReloadAsync();
+        Assert.Null(named.AssignedUserId);
     }
 
     [Fact]

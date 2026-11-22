@@ -4,7 +4,7 @@
 - **Ngày:** 2026-11-22
 - **Người quyết định:** chờ PO duyệt
 - **Thay:** việc hạ mọi ngưỡng `VoiceId:*` xuống 0,5 (biên 0,05) ngày 21/11/2026 (PR #463, không có ADR). Đổi ngưỡng tự gán
-  0,75 của [ADR-0045](0045-may-tu-gan-ten-khi-giong-khop-ro.md) thành 0,7. Giữ ngưỡng 0,8 của
+  0,75 của [ADR-0045](0045-may-tu-gan-ten-khi-giong-khop-ro.md) thành 0,7, rồi 0,6 ngày 22/11 (xem *Bổ sung 22/11/2026*). Giữ ngưỡng 0,8 của
   [ADR-0050](0050-giong-gan-trung-nhan-cung-ten.md).
 
 ## Bối cảnh
@@ -63,7 +63,7 @@ của chính anh 0,39–0,40, nên không được gợi ý ai: đúng, vì tên
 2. Backend `VoiceId:*`: `SuggestThreshold` 0,6, `SuggestMargin` 0,05, `SameVoiceThreshold` 0,7, `SecondVoiceThreshold` 0,7,
    `InheritVoiceThreshold` 0,8, như các số đo VIVOS và ADR-0045/0050. `AutoAssignThreshold` **0,7** (trước là 0,75): Hải ở
    *test mic* chỉ khớp 0,73, giọng không phải người trong phòng cao nhất 0,66 (21/11) và 0,645 (31/10), VIVOS không gợi ý
-   sai lần nào từ 0,6.
+   sai lần nào từ 0,6. Ngày 22/11 hạ tiếp còn **0,6** (xem *Bổ sung 22/11/2026*).
 
 ## Hệ quả
 
@@ -73,6 +73,24 @@ của chính anh 0,39–0,40, nên không được gợi ý ai: đúng, vì tên
 - Hai bản ghi, mười mấy phút: chưa đủ để chắc chắn. Ngưỡng gom nhóm không đổi đều theo một chiều (0,65 cũng gộp Khánh vào
   Hải, 0,7 thì không). Cần đo lại sau buổi thử kế tiếp, bằng cùng cách: bản ghi phòng, điểm tính trong container app.
 - Bản gỡ băng cũ giữ nguyên. Chạy lại chuyển chữ (`POST /api/recordings/{id}/transcribe`) thì dùng ngưỡng mới.
+
+## Bổ sung 22/11/2026: mọi giọng được gợi ý đều được tự gán
+
+Cuộc họp thật ngày 22/11/2026 trên server app: bản ghi mic phòng gợi ý đúng cả ba người, Hoàng Đức Lộc 0,6059, Trần Việt Hải
+0,68, Gia Khánh 0,6823, nhưng không ai đạt 0,7 nên Thư ký phải chọn tay từng tên, dù ô chọn đã đưa đúng người lên đầu với nhãn
+"Khớp giọng nhất". PO (Hải) yêu cầu: máy đã gợi ý ai thì điền luôn tên người đó.
+
+- `AutoAssignThreshold` 0,7 → **0,6**, bằng `SuggestThreshold`. Một giọng được gợi ý thì được tự gán (`autoAssigned: true`),
+  Thư ký sửa hay bỏ tên như trước.
+- Các luật an toàn không đổi, vì chúng nằm ở bước gợi ý nên vẫn chặn cả việc tự gán: hơn người xếp sau 0,05; giọng thứ hai
+  của cùng một người phải giống giọng đầu 0,7 và đạt 0,7 so với giọng mẫu; giọng nhận theo cần giống giọng đầu 0,8; chỉ tự gán
+  người đồng ý thông báo 1.2 trở lên (ADR-0048), không bao giờ là Khách.
+- Đánh đổi: giọng 0,6–0,7 trước chỉ được gợi ý, nay hiện sẵn tên. VIVOS gợi ý đúng 18/18 giọng ở khoảng đó; người lạ trên
+  server cao nhất 0,645 (31/10) và 0,66 (21/11), nên một tên sai vẫn có thể xảy ra ở khoảng sát 0,6. Tên máy gán vẫn được
+  đánh dấu ("Máy tự gán…" ở ô chọn, nhật ký `automatic: true`) để Thư ký soát lại; tên đó mất khi người được gán rút đồng ý.
+- Lời thông báo đồng ý 1.2 ("tự điền tên tôi khi giọng khớp rõ") giữ nguyên: một giọng chỉ được gợi ý khi vừa qua ngưỡng vừa
+  hơn hẳn người xếp sau, nên vẫn là khớp rõ. Không cần phiên bản thông báo mới.
+- `VoiceId:AutoAssignThreshold` vẫn đặt riêng được (cao hơn 0,6) nếu buổi thử sau cho thấy tên sai.
 
 ## Nghĩa vụ theo Luật 91/2025/QH15
 

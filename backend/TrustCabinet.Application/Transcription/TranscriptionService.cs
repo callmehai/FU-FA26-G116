@@ -514,9 +514,10 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     };
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
-                // A sure match names the voice at once (PO 01/11/2026): no assigner marks the machine's name, which
-                // the Secretary may still change, and which goes when that person withdraws Voice ID consent. Only
-                // for someone who agreed to that (notice 1.2, ADR-0048); the others are suggested, as they agreed.
+                // A match names the voice at once (PO 01/11/2026; every suggestion by default since 22/11, ADR-0074): no
+                // assigner marks the machine's name, which the Secretary may still change, and which goes when that
+                // person withdraws Voice ID consent. Only for someone who agreed to that (notice 1.2, ADR-0048); the
+                // others are suggested, as they agreed.
                 var sure = voiceOptions.Value.AutoAssignThreshold;
                 var speakers = result.Speakers.Where(sp => labels.ContainsKey(sp.Label)).Select(sp =>
                 {
