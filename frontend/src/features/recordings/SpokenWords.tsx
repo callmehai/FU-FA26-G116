@@ -9,8 +9,11 @@
  * yellow wash, so the Secretary knows where to listen again before correcting the line.
  */
 
-/** Below this sureness (per cent) a word is washed as doubtful: about one word in eight on the team's room recording. */
-const DOUBTFUL_WORD = 50
+/**
+ * Below this sureness (per cent) a word is washed as doubtful: 6 % of the words of the team's room recording (PO 22/11/2026;
+ * 50 marked 12 %, too many correct words among them).
+ */
+const DOUBTFUL_WORD = 40
 
 /** The word being said at `ms`: the last one starting at or before it, or -1 before the first. */
 function wordAt(starts: readonly number[], ms: number) {

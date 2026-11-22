@@ -296,9 +296,9 @@ giờ chia đều thời lượng cho các từ để giả mốc.
 
 `wordConfidence`: độ chắc của máy nhận dạng với từng từ trong `text`, theo phần trăm (0–100), mỗi từ một số. Worker
 lấy xác suất của từng token Gipformer trả (`ys_log_probs`), từ nhiều token lấy token kém chắc nhất. FE tô nền vàng
-nhạt (`--word-unsure-bg`) cho từ dưới **50**, để Thư ký biết chỗ cần nghe lại (họp thử 21/11/2026). Trên bản ghi mic
-phòng của buổi họp thử, mốc 50 đánh dấu 12% số từ, gồm phần lớn các từ nhận sai rõ (tiếng Anh, từ vô nghĩa), nhưng
-cũng có từ đúng; 40 chỉ đánh dấu 6% nhưng bỏ sót nhiều từ sai. `null` theo đúng quy tắc của `wordStartsMs`.
+nhạt (`--word-unsure-bg`) cho từ dưới **40**, để Thư ký biết chỗ cần nghe lại (họp thử 21/11/2026, PO chốt 22/11). Trên
+bản ghi mic phòng của buổi họp thử, mốc 40 đánh dấu 6% số từ; mốc 50 đánh dấu 12%, bắt thêm vài từ sai nhưng cũng nhiều
+từ đúng. `null` theo đúng quy tắc của `wordStartsMs`.
 
 `speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
 thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
