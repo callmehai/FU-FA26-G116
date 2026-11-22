@@ -38,9 +38,14 @@ export const deleteVoiceSample = (sampleId: string) =>
 export const getVoiceCollection = (meetingId: string) =>
   api.get<VoiceCollection>(`/api/meetings/${meetingId}/voice-collection`)
 
-export function collectVoiceSample(meetingId: string, userId: string, audio: Blob, fileName: string) {
+/**
+ * `personAgreed`: the collector asked the person, there and then, and they agreed to this take (ADR-0073). The server
+ * refuses a proxy sample without it (400 MSG483); only the dialog's ticked box sets it.
+ */
+export function collectVoiceSample(meetingId: string, userId: string, audio: Blob, fileName: string, personAgreed: boolean) {
   const form = new FormData()
   form.append('file', audio, fileName)
+  form.append('personAgreed', String(personAgreed))
   return api.postForm<VoiceMutation<CollectedSample>>(`/api/meetings/${meetingId}/voice-collection/${userId}/samples`, form)
 }
 
@@ -55,9 +60,11 @@ export const deleteCollectedSample = (meetingId: string, sampleId: string) =>
 export const getPersonVoiceCollection = (userId: string) =>
   api.get<PersonVoiceCollection>(`/api/users/${userId}/voice-collection`)
 
-export function collectPersonVoiceSample(userId: string, audio: Blob, fileName: string) {
+/** `personAgreed` as in `collectVoiceSample` (ADR-0073). */
+export function collectPersonVoiceSample(userId: string, audio: Blob, fileName: string, personAgreed: boolean) {
   const form = new FormData()
   form.append('file', audio, fileName)
+  form.append('personAgreed', String(personAgreed))
   return api.postForm<VoiceMutation<ProxySample>>(`/api/users/${userId}/voice-collection/samples`, form)
 }
 

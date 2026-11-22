@@ -17,14 +17,17 @@ namespace TrustCabinet.Application.VoiceId;
 /// <summary>
 /// ADR-0060 — the Secretary of an in-person or hybrid meeting records Voice ID samples for its people on the room's mic.
 ///
-/// Three locks keep this to people who trust the Secretary with their voice:
+/// Four locks keep this to people who trust the Secretary with their voice:
 /// <list type="bullet">
 /// <item>the caller holds <see cref="Capability.VoiceCollector"/>, or — PO 2026-11-21 — is a meeting Secretary without
 /// it, who may then act only while the meeting is Published or InProgress: a stand-in for that one meeting, with no
 /// standing right over the samples once it ends;</item>
 /// <item>the caller is the Secretary of this very meeting, now — checked here on every call, so a Secretary replaced
 /// mid-meeting loses it at once; anyone else is answered as if the meeting did not exist;</item>
-/// <item>the person has their own standing consent, to a notice that names this (ADR-0060), which only they can give.</item>
+/// <item>the person has their own standing consent, to a notice that names this, which only they can give: notice 1.4 or
+/// later on both ways in (ADR-0073);</item>
+/// <item>the person agreed to this very take: the collector confirms it with each upload (<c>personAgreed</c>), the audit
+/// row keeps the confirmation, and the person's notice says so, with the way to delete the sample (ADR-0073).</item>
 /// </list>
 /// A sample is bound to the person and encrypted exactly as one they took themself; the Secretary sees, hears and deletes
 /// only the samples taken in their meeting, each play is audited, and the person is told each time one is taken.
@@ -39,6 +42,13 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
     : IVoiceCollectionService
 {
     private const string NotificationTargetType = "VoiceSample";
+
+    /// <summary>
+    /// Ends the note the person gets for each proxy sample: the collector said they agreed to this take, and the person is
+    /// the one who can tell whether that is true. Deleting is one click away, on their own page.
+    /// </summary>
+    private const string AskedNote = "Người thu đã xác nhận bạn đồng ý cho lần thu này. Nếu bạn không đồng ý, hãy xoá mẫu ở trang "
+        + "Giọng nói của tôi.";
 
     /// <summary>Samples can be taken while the people are gathered or about to be: Published or InProgress.</summary>
     public static bool CanCollect(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
@@ -55,7 +65,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
                     .GroupBy(p => p.UserId).Select(g => g.OrderBy(p => p.Role).First()).ToArray();
                 var ids = people.Select(p => p.UserId).ToArray();
                 var consented = (await repository.ListConsentNoticesAsync(ids, token))
-                    .Where(c => VoiceIdRules.AllowsCollection(c.NoticeVersion)).Select(c => c.UserId).ToHashSet();
+                    .Where(c => VoiceIdRules.AllowsProxyCollection(c.NoticeVersion)).Select(c => c.UserId).ToHashSet();
                 var samples = await repository.ListCollectedSamplesAsync(ids, token);
                 var list = people
                     .OrderBy(p => p.Role).ThenBy(p => p.User.FullName, StringComparer.CurrentCulture)
@@ -79,7 +89,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
     }
 
     public async Task<VoiceOutcome> AddAsync(Guid meetingId, Guid actorId, Guid userId, Stream audio, string contentType,
-        CancellationToken ct = default)
+        bool personAgreed, CancellationToken ct = default)
     {
         Meeting? meeting;
         try
@@ -91,8 +101,10 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             if (!meeting.Participants.Any(p => p.UserId == userId && ParticipantRules.Active(p))) return new(VoiceFailure.NotFound);
             // Checked before the audio goes to the worker, then again under the lock before anything is kept.
             if (await ReadAsync(token => repository.FindActiveConsentAsync(userId, false, token), ct) is not { } given
-                || !VoiceIdRules.AllowsCollection(given.NoticeVersion))
+                || !VoiceIdRules.AllowsProxyCollection(given.NoticeVersion))
                 return new(VoiceFailure.NoConsent);
+            // The standing consent says who may record them; this take is recorded only when they said yes to it, now.
+            if (!personAgreed) return new(VoiceFailure.NotConfirmed);
             if (VoiceIdRules.ProxyFull(await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct), actorId))
                 return new(VoiceFailure.LimitReached);
         }
@@ -130,7 +142,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             {
                 // The same row lock a withdrawal takes: a sample is never kept after the person said no.
                 var consent = await repository.FindActiveConsentAsync(userId, true, token);
-                if (consent is null || !VoiceIdRules.AllowsCollection(consent.NoticeVersion))
+                if (consent is null || !VoiceIdRules.AllowsProxyCollection(consent.NoticeVersion))
                     return new VoiceOutcome(VoiceFailure.NoConsent);
                 // The Secretary, and the meeting's state, again: either may have changed while the worker listened.
                 var current = await ManagedAsync(meetingId, actorId, token);
@@ -156,11 +168,11 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
                     Id = Guid.CreateVersion7(), UserId = userId, Type = NotificationType.VoiceSampleCollected,
                     Title = "Thư ký đã thu giọng mẫu của bạn",
                     Body = Clip($"{secretary} đã thu giọng mẫu Voice ID của bạn ở cuộc họp \"{current.Title}\". "
-                        + "Bạn nghe lại hoặc xoá được ở trang Giọng nói của tôi."),
+                        + AskedNote),
                     TargetType = NotificationTargetType, TargetId = id, CreatedAt = now, UpdatedAt = now,
                 });
                 await audit.RecordAsync(AuditActions.VoiceSampleAdded, AuditActions.VoiceSampleObjectType, id, actorId,
-                    new { scope = "proxy", userId, meetingId, embedding.Model, embedding.SpeechMs }, token);
+                    new { scope = "proxy", userId, meetingId, embedding.Model, embedding.SpeechMs, personAgreed }, token);
                 await unitOfWork.SaveChangesAsync(token);
                 return new VoiceOutcome(Data: new CollectedSampleView(id, now, embedding.SpeechMs, secretary));
             }, TransactionMode.ReadCommitted, ct);
@@ -226,7 +238,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             {
                 if (await PersonAsync(userId, token) is not { } person) return new VoiceOutcome(VoiceFailure.NotFound);
                 var consent = await repository.FindActiveConsentAsync(userId, false, token);
-                var consented = consent is not null && VoiceIdRules.AllowsAnytimeCollection(consent.NoticeVersion);
+                var consented = consent is not null && VoiceIdRules.AllowsProxyCollection(consent.NoticeVersion);
                 var samples = await repository.ListProxySamplesAsync(userId, token);
                 return new(Data: new PersonVoiceCollectionView(userId, person.FullName, consented,
                     consented && !VoiceIdRules.ProxyFull(samples, actorId), VoiceIdRules.MaxProxySamples,
@@ -243,15 +255,17 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
     }
 
     public async Task<VoiceOutcome> AddForPersonAsync(Guid actorId, Guid userId, Stream audio, string contentType,
-        CancellationToken ct = default)
+        bool personAgreed, CancellationToken ct = default)
     {
         try
         {
             if (await ReadAsync(token => PersonAsync(userId, token), ct) is null) return new(VoiceFailure.NotFound);
             // Checked before the audio goes to the worker, then again under the lock before anything is kept.
             if (await ReadAsync(token => repository.FindActiveConsentAsync(userId, false, token), ct) is not { } given
-                || !VoiceIdRules.AllowsAnytimeCollection(given.NoticeVersion))
+                || !VoiceIdRules.AllowsProxyCollection(given.NoticeVersion))
                 return new(VoiceFailure.NoConsent);
+            // The standing consent says who may record them; this take is recorded only when they said yes to it, now.
+            if (!personAgreed) return new(VoiceFailure.NotConfirmed);
             if (VoiceIdRules.ProxyFull(await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct), actorId))
                 return new(VoiceFailure.LimitReached);
         }
@@ -289,7 +303,7 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
             {
                 // The same row lock a withdrawal takes: a sample is never kept after the person said no.
                 var consent = await repository.FindActiveConsentAsync(userId, true, token);
-                if (consent is null || !VoiceIdRules.AllowsAnytimeCollection(consent.NoticeVersion))
+                if (consent is null || !VoiceIdRules.AllowsProxyCollection(consent.NoticeVersion))
                     return new VoiceOutcome(VoiceFailure.NoConsent);
                 if (await PersonAsync(userId, token) is null) return new(VoiceFailure.NotFound);
                 if (VoiceIdRules.ProxyFull(await repository.ListProxySamplesAsync(userId, token), actorId))
@@ -310,11 +324,11 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
                     Id = Guid.CreateVersion7(), UserId = userId, Type = NotificationType.VoiceSampleCollected,
                     Title = "Có người đã thu giọng mẫu của bạn",
                     Body = Clip($"{collector} đã thu giọng mẫu Voice ID của bạn. "
-                        + "Bạn nghe lại hoặc xoá được ở trang Giọng nói của tôi."),
+                        + AskedNote),
                     TargetType = NotificationTargetType, TargetId = id, CreatedAt = now, UpdatedAt = now,
                 });
                 await audit.RecordAsync(AuditActions.VoiceSampleAdded, AuditActions.VoiceSampleObjectType, id, actorId,
-                    new { scope = "proxy", userId, meetingId = (Guid?)null, embedding.Model, embedding.SpeechMs }, token);
+                    new { scope = "proxy", userId, meetingId = (Guid?)null, embedding.Model, embedding.SpeechMs, personAgreed }, token);
                 await unitOfWork.SaveChangesAsync(token);
                 return new VoiceOutcome(Data: new ProxySampleView(id, now, embedding.SpeechMs, true, null, null, collector));
             }, TransactionMode.ReadCommitted, ct);

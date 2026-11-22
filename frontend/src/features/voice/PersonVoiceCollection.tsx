@@ -134,7 +134,8 @@ export function PersonVoiceCollection({ userId }: { userId: string }) {
           title={`Thu giọng mẫu: ${data.fullName}`}
           hint="Mời người này ngồi chỗ quen thuộc, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:"
           passage={PASSAGES[data.samples.length % PASSAGES.length]}
-          upload={(audio, fileName) => collectPersonVoiceSample(userId, audio, fileName)}
+          askConsentOf={data.fullName}
+          upload={(audio, fileName, personAgreed) => collectPersonVoiceSample(userId, audio, fileName, personAgreed)}
           onClose={() => setRecording(false)}
           onSaved={async (message) => {
             setRecording(false)

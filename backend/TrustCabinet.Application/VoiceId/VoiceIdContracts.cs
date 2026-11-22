@@ -10,6 +10,8 @@ public enum VoiceFailure
     None, Inactive, NotFound, NoConsent, LimitReached, Rejected, Invalid, EngineUnavailable, ReadFailed, SaveFailed,
     /// <summary>ADR-0060: the meeting is not one whose Secretary may record samples now (state, mode or sensitivity).</summary>
     NotCollectable,
+    /// <summary>A proxy sample sent without the collector confirming that the person agreed to this take, there and then.</summary>
+    NotConfirmed,
 }
 
 public sealed record VoiceOutcome(VoiceFailure Failure = VoiceFailure.None, object? Data = null,
@@ -27,8 +29,8 @@ public sealed record VoiceProfile(VoiceConsentView? Consent, IReadOnlyList<Voice
     string NoticeVersion, string Purpose, string Controller, ProxyVoiceProfile Proxy);
 
 /// <summary>ADR-0060 — the samples meetings' Secretaries recorded for the person, as the person sees them.</summary>
-/// <param name="Allowed">The person's consent is to a notice that names Secretaries recording on the room's mic
-/// (<see cref="VoiceIdRules.CollectionNoticeVersion"/>): without it no Secretary can record them.</param>
+/// <param name="Allowed">The person's consent is to a notice that names others recording them
+/// (<see cref="VoiceIdRules.ProxyNoticeVersion"/>): without it nobody can record them.</param>
 public sealed record ProxyVoiceProfile(bool Allowed, IReadOnlyList<ProxySampleView> Samples, int MaxSamples);
 
 /// <summary>One sample someone took for the person: where, by whom, so nothing is taken out of their sight.</summary>
@@ -53,7 +55,8 @@ public interface IVoiceIdService
 }
 
 /// <summary>A participant of the meeting as its Secretary sees them for collecting samples (ADR-0060).</summary>
-/// <param name="Consented">Whether their consent covers Secretaries recording them (ADR-0060); without it nothing can be
+/// <param name="Consented">Whether their consent covers others recording them (notice
+/// <see cref="VoiceIdRules.ProxyNoticeVersion"/> or later, the same rule as outside a meeting); without it nothing can be
 /// taken.</param>
 /// <param name="SampleCount">All the samples Secretaries took for them, in any meeting, against the limit.</param>
 /// <param name="Samples">Only the ones taken in this meeting: the Secretary manages nothing taken elsewhere.</param>
@@ -78,14 +81,15 @@ public sealed record PersonVoiceCollectionView(Guid UserId, string FullName, boo
 /// the mic the meeting will be transcribed from. Every call requires the caller to hold <see cref="Capability.VoiceCollector"/>
 /// (checked by the endpoint) and to be the Secretary of that very meeting (checked here, on every call); anything else is
 /// answered like a meeting that does not exist. A sample is the participant's own data and needs their own standing
-/// consent, to a notice that names this (<see cref="VoiceIdRules.CollectionNoticeVersion"/>): a Secretary can never
-/// consent for them.
+/// consent, to a notice that names this (<see cref="VoiceIdRules.ProxyNoticeVersion"/>): a Secretary can never consent for
+/// them. Each take also needs <c>personAgreed</c>: the collector confirms the person, there in the room, agreed to this
+/// one (2026-11-22); without it nothing reaches the speech worker.
 /// </summary>
 public interface IVoiceCollectionService
 {
     Task<VoiceOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
     Task<VoiceOutcome> AddAsync(Guid meetingId, Guid actorId, Guid userId, Stream audio, string contentType,
-        CancellationToken ct = default);
+        bool personAgreed, CancellationToken ct = default);
     /// <summary>A sample taken in this meeting, for its Secretary to check; every play is audited.</summary>
     Task<VoiceSampleAudio?> AudioAsync(Guid meetingId, Guid actorId, Guid sampleId, CancellationToken ct = default);
     Task<VoiceOutcome> DeleteAsync(Guid meetingId, Guid actorId, Guid sampleId, CancellationToken ct = default);
@@ -94,7 +98,7 @@ public interface IVoiceCollectionService
     // only an active account whose own consent is to notice 1.4 or later. Anything else is a person who does not exist.
     Task<VoiceOutcome> GetPersonAsync(Guid actorId, Guid userId, CancellationToken ct = default);
     Task<VoiceOutcome> AddForPersonAsync(Guid actorId, Guid userId, Stream audio, string contentType,
-        CancellationToken ct = default);
+        bool personAgreed, CancellationToken ct = default);
     /// <summary>Any sample someone took for the person; every play is audited.</summary>
     Task<VoiceSampleAudio?> PersonAudioAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default);
     Task<VoiceOutcome> DeletePersonSampleAsync(Guid actorId, Guid userId, Guid sampleId, CancellationToken ct = default);

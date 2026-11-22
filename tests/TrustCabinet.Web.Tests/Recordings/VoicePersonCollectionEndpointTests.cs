@@ -20,6 +20,7 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
     private const string Msg474Deleted = "MSG474";
     private const string Msg475NoProxyConsent = "MSG475";
     private const string Msg476Limit = "MSG476";
+    private const string Msg483NotConfirmed = "MSG483";
 
     private static string Url(Guid userId) => $"/api/users/{userId}/voice-collection";
 
@@ -106,7 +107,7 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
         var (s, collector) = await Arrange();
         // No Voice ID at all.
         await VoiceCollection.AssertCode(await collector.PostAsync($"{Url(s.Member)}/samples", VoiceCollection.Sample()), 409, Msg475NoProxyConsent);
-        // A consent to 1.3 covers a meeting's Secretary on the room's mic, not this.
+        // A consent to 1.3 does not cover this (nor, since ADR-0073, a meeting's Secretary).
         await AgreeTo(s.Member, VoiceIdRules.CollectionNoticeVersion);
         await VoiceCollection.AssertCode(await collector.PostAsync($"{Url(s.Member)}/samples", VoiceCollection.Sample()), 409, Msg475NoProxyConsent);
         var view = await collector.GetFromJsonAsync<JsonElement>(Url(s.Member));
@@ -124,6 +125,27 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
         Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member || x.UserId == s.Chair));
         Assert.False(await db.Notifications.AnyAsync(n => n.Type == NotificationType.VoiceSampleCollected
             && (n.UserId == s.Member || n.UserId == s.Chair)));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    public async Task ADR_0073_a_take_without_the_persons_agreement_to_it_is_refused_before_the_worker_hears_it(string? personAgreed)
+    {
+        var (s, collector) = await Arrange();
+        await VoiceCollection.Agree(fixture, s.Member);
+        var embedded = fixture.Speech.EmbedCalls;
+
+        await VoiceCollection.AssertCode(await collector.PostAsync($"{Url(s.Member)}/samples",
+            VoiceCollection.Sample(personAgreed: personAgreed)), 400, Msg483NotConfirmed);
+
+        Assert.Equal(embedded, fixture.Speech.EmbedCalls);
+        await using var db = fixture.Db();
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
+
+        var id = await Collect(collector, s.Member);
+        var audit = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceSampleAdded && a.ObjectId == id);
+        Assert.Contains("\"personAgreed\":true", audit.Details.Replace(" ", ""));
     }
 
     [Fact]
