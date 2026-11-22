@@ -6,7 +6,7 @@ Precondition: No database needed; pure rules.
 
 ## RecordingRules.Export
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingContracts.cs:247`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingContracts.cs:296`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

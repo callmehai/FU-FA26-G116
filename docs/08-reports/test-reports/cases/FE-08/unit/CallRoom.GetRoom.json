@@ -9,7 +9,7 @@
       "method": "CallRoomService.GetRoomAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-      "line": 65,
+      "line": 66,
       "cases": [
         {
           "id": "UTC001",

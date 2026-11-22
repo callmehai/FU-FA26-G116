@@ -6,7 +6,7 @@ Precondition: Existing clips.
 
 ## SpeechClipService.EditAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:195`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:199`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

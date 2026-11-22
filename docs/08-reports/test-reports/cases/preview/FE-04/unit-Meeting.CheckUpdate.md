@@ -6,7 +6,7 @@ Precondition: Meeting in a known status; organizer actor.
 
 ## MeetingService.CheckUpdateAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:180`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:182`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

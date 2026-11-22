@@ -6,7 +6,7 @@ Precondition: Queued summary job; language model replaced.
 
 ## SummaryService.ProcessNextAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:170`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:187`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

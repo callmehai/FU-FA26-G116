@@ -64,7 +64,7 @@ public sealed class PartUnitRound1Tests
     private ParticipantService ParticipantService() => new(
         _participants, _meetings, _effects, _stager, _speaking, _audit, _unitOfWork,
         _effects, new FakeCallerContext(), new FixedClock(Now), _participantLogger,
-        _effects, _effects, new NoCallerAccounts());
+        _effects, _effects);
 
     private AttendanceService AttendanceService() => new(
         _attendance, _participants, _effects, _effects, new FakeCallerContext(),

@@ -6,7 +6,7 @@ Precondition: Meeting in progress; storage recorder.
 
 ## RoomTakeService.CompleteAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/RoomTakeService.cs:135`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/RoomTakeService.cs:136`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

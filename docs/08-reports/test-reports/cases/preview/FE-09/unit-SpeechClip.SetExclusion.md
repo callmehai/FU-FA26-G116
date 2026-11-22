@@ -6,7 +6,7 @@ Precondition: Existing clips.
 
 ## SpeechClipService.SetExclusionAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:255`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:265`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

@@ -6,7 +6,7 @@ Precondition: Meeting with participants; file storage recorder.
 
 ## RecordingService.AddAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:61`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:63`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

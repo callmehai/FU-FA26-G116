@@ -79,7 +79,7 @@ public sealed class RbacUnitRound1Tests
         var service = new RoleService(roles, _unitOfWork, audit, new FakeAdministratorInvariantGuard(), logger);
 
         var result = await service.CreateAsync(
-            new NewRole("Thư ký phó", "Hỗ trợ thư ký", ["MeetingCreator", "MinutesEditor"]), _actorId);
+            new NewRole("Thư ký phó", "Hỗ trợ thư ký", ["MeetingCreator", "VoiceCollector"]), _actorId);
 
         Assert.Equal(RoleOutcome.Success, result.Outcome); // Return
         Assert.Equal("Thư ký phó", result.Role!.Name);
@@ -93,7 +93,7 @@ public sealed class RbacUnitRound1Tests
         Assert.Equal(result.Role.Id, row.ObjectId);
         Assert.Contains("Thư ký phó", row.Details);
         Assert.Contains("MeetingCreator", row.Details);
-        Assert.Contains("MinutesEditor", row.Details);
+        Assert.Contains("VoiceCollector", row.Details);
         var log = Assert.Single(logger.Entries); // Log Message
         Assert.Equal(LogLevel.Information, log.Level);
         Assert.Contains("created by", log.Message);
@@ -513,11 +513,11 @@ public sealed class RbacUnitRound1Tests
         publisher.OnPublish = () => commitsWhenTold = _unitOfWork.Commits;
 
         var result = await PermissionService(roles, audit, publisher, shares, logger)
-            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.MinutesEditor], _actorId);
+            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.VoiceCollector], _actorId);
 
         Assert.True(result.Succeeded); // Return
         var row = Assert.Single(result.Matrix!.Roles, r => r.Id == secretary.Id);
-        Assert.True(new[] { Capability.MeetingCreator, Capability.MinutesEditor }.Order().SequenceEqual(row.Capabilities));
+        Assert.True(new[] { Capability.MeetingCreator, Capability.VoiceCollector }.Order().SequenceEqual(row.Capabilities));
         Assert.Equal([holder1, holder2], publisher.Told);
         Assert.Equal(1, commitsWhenTold);
         Assert.Single(audit.Rows, r => r.Action == AuditActions.RolePermissionsUpdated);
@@ -601,7 +601,7 @@ public sealed class RbacUnitRound1Tests
         _unitOfWork.FailNextSave = new PersistenceUnavailableException();
 
         var result = await PermissionService(roles, audit, publisher, shares, logger)
-            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.MinutesEditor], _actorId);
+            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.VoiceCollector], _actorId);
 
         Assert.Equal(RolePermissionOutcome.SaveFailed, result.Outcome); // Return
         Assert.Empty(audit.Rows);
@@ -664,7 +664,7 @@ public sealed class RbacUnitRound1Tests
         publisher.Fail = new InvalidOperationException("hub unavailable");
 
         var result = await PermissionService(roles, audit, publisher, shares, logger)
-            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.MinutesEditor], _actorId);
+            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.VoiceCollector], _actorId);
 
         Assert.True(result.Succeeded); // Return
         Assert.Single(audit.Rows);

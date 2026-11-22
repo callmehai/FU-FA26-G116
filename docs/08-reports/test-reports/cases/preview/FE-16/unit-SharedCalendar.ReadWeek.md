@@ -6,7 +6,7 @@ Precondition: An open share.
 
 ## SharedCalendarService.ReadWeekAsync
 
-Layer: Application · `backend/TrustCabinet.Application/CalendarSharing/SharedCalendarService.cs:25`
+Layer: Application · `backend/TrustCabinet.Application/CalendarSharing/SharedCalendarService.cs:28`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

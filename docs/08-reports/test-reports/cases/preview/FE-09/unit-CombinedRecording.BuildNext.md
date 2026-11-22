@@ -6,7 +6,7 @@ Precondition: Meeting with clips; storage recorder.
 
 ## CombinedRecordingService.BuildNextAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs:39`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs:53`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

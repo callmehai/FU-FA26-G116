@@ -9,7 +9,7 @@
       "method": "MeetingService.GetSubmissionReadinessAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 373,
+      "line": 375,
       "cases": [
         {
           "exception": "N/A",

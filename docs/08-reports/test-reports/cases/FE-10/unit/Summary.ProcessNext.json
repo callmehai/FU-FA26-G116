@@ -9,7 +9,7 @@
       "method": "SummaryService.ProcessNextAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 170,
+      "line": 187,
       "cases": [
         {
           "id": "UTC001",

@@ -6,7 +6,7 @@ Precondition: Minutes draft exists; editor actor.
 
 ## MinutesService.SaveAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:98`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:107`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

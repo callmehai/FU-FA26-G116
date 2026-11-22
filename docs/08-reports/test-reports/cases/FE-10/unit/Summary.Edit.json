@@ -9,7 +9,7 @@
       "method": "SummaryService.EditAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 108,
+      "line": 125,
       "cases": [
         {
           "id": "UTC001",

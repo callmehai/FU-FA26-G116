@@ -9,7 +9,7 @@
       "method": "MinutesService.ReturnAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 253,
+      "line": 265,
       "cases": [
         {
           "id": "UTC001",

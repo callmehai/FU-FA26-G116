@@ -6,7 +6,7 @@ Precondition: Meeting rows seeded; actor with known capability and relationship.
 
 ## MeetingService.GetSubmissionReadinessAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:373`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:375`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

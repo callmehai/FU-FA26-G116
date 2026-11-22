@@ -9,7 +9,7 @@
       "method": "MeetingLifecycleService.TransitionAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs",
-      "line": 33,
+      "line": 34,
       "cases": [
         {
           "exception": "N/A",

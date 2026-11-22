@@ -6,7 +6,7 @@ Precondition: Meeting in progress or ended; secretary actor.
 
 ## MinutesService.CreateAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:50`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:59`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

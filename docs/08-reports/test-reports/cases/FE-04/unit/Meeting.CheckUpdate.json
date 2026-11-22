@@ -9,7 +9,7 @@
       "method": "MeetingService.CheckUpdateAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 180,
+      "line": 182,
       "cases": [
         {
           "exception": "N/A",

@@ -6,7 +6,7 @@ Precondition: Minutes in the needed status; approver and secretary actors.
 
 ## MinutesService.CorrectAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:274`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/MinutesService.cs:286`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

@@ -6,7 +6,7 @@ Precondition: Published meeting with one chair and at least one secretary for St
 
 ## MeetingLifecycleService.TransitionAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs:33`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs:34`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

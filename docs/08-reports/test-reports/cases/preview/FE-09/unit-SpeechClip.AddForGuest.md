@@ -6,7 +6,7 @@ Precondition: Guest session in a meeting in progress.
 
 ## SpeechClipService.AddForGuestAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:341`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:352`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

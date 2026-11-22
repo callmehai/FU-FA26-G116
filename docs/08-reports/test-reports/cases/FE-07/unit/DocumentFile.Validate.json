@@ -8,7 +8,7 @@
     {
       "method": "DocumentFileRules.ValidateAsync",
       "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
-      "line": 88,
+      "line": 94,
       "cases": [
         {
           "id": "UTC001",

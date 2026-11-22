@@ -6,7 +6,7 @@ Precondition: Recording rows seeded.
 
 ## RecordingService.DownloadAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:131`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:133`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

@@ -8,7 +8,7 @@
     {
       "method": "MeetingService.CreateAsync",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 22,
+      "line": 24,
       "cases": [
         {
           "exception": "N/A",

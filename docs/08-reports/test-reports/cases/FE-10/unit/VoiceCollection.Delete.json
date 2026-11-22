@@ -2,24 +2,24 @@
   "feature": "FE-10",
   "module": "TRANS",
   "sheet": "VoiceCollection.Delete",
-  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
-  "precondition": "Meeting with participants and consent.",
+  "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
+  "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
   "methods": [
     {
-      "method": "VoiceCollectionService.DeleteAsync",
+      "method": "VoiceCollectionService.DeletePersonSampleAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-      "line": 190,
+      "line": 176,
       "cases": [
         {
           "id": "UTC001",
           "preconditions": [
-            "A sample was collected at the meeting; actor is its current secretary."
+            "A proxy sample exists for the active person."
           ],
-          "inputs": "meetingId: the meeting; actorId: its current secretary; sampleId: a sample collected there.",
+          "inputs": "actorId: the collector; userId: the person; sampleId: a proxy sample of the person.",
           "return": "Success with the sample id (MSG474 \"Đã xoá giọng mẫu thu hộ.\").",
           "exception": "N/A",
-          "log": "Saved: sample removed; audit row records the deletion with the meeting scope.",
+          "log": "Saved: sample removed; audit row records the deletion with the proxy scope.",
           "type": "Normal",
           "note": "UC-86d · BR-452 · MSG474",
           "round1": "Passed",
@@ -29,10 +29,10 @@
         {
           "id": "UTC002",
           "preconditions": [
-            "The sample is one the person recorded themself; actor is a secretary."
+            "The sample is one the person recorded themself."
           ],
-          "inputs": "meetingId: a meeting; actorId: its current secretary; sampleId: the person own self-recorded sample.",
-          "return": "Failure NotFound; a secretary never touches the person own set.",
+          "inputs": "actorId: the collector; userId: the person; sampleId: the person own self-recorded sample.",
+          "return": "Failure NotFound; a collector never touches the person own set.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
@@ -44,14 +44,14 @@
         {
           "id": "UTC003",
           "preconditions": [
-            "A sample was collected at the meeting; actor takes part but is not the secretary."
+            "The person account is deactivated; a proxy sample still exists."
           ],
-          "inputs": "meetingId: the meeting; actorId: a member who is not the secretary; sampleId: a sample collected there.",
-          "return": "Failure NotFound; answered as if the meeting does not exist.",
+          "inputs": "actorId: the collector; userId: a deactivated person; sampleId: a proxy sample of that person.",
+          "return": "Failure NotFound; answered as if the sample does not exist.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86d · BR-450",
+          "note": "UC-86d · ADR-0049",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"

@@ -9,7 +9,7 @@
       "method": "MinutesService.GetRevisionAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 172,
+      "line": 184,
       "cases": [
         {
           "id": "UTC001",

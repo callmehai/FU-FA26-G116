@@ -6,7 +6,7 @@ Precondition: Meeting in the required start status with a valid roster; actor wi
 
 ## MeetingService.TransitionAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:418`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:420`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

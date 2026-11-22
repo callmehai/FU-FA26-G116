@@ -9,7 +9,7 @@
       "method": "SpeechClipService.PlaybackForGuestAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 380,
+      "line": 393,
       "cases": [
         {
           "id": "UTC001",

@@ -9,7 +9,7 @@
       "method": "RoomTakeService.AppendAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-      "line": 95,
+      "line": 96,
       "cases": [
         {
           "id": "UTC001",

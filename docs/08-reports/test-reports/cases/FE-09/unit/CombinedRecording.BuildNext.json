@@ -9,7 +9,7 @@
       "method": "CombinedRecordingService.BuildNextAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs",
-      "line": 39,
+      "line": 53,
       "cases": [
         {
           "id": "UTC001",

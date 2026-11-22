@@ -1090,10 +1090,10 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
     {
         var f = MakeVoiceSvc();
 
-        var outcome = await f.Service.GrantAsync(f.User, "1.4");
+        var outcome = await f.Service.GrantAsync(f.User, VoiceIdRules.NoticeVersion);
 
         Assert.Equal(VoiceFailure.None, outcome.Failure);
-        Assert.Equal("1.4", Assert.Single(f.Repository.Consents).NoticeVersion);
+        Assert.Equal(VoiceIdRules.NoticeVersion, Assert.Single(f.Repository.Consents).NoticeVersion);
         Assert.Equal([AuditActions.VoiceConsentGranted], f.Audit.Actions);
         Assert.Equal((1, 1), (f.Uow.Commits, f.Uow.Saves));
         Assert.NotNull(Assert.IsType<VoiceProfile>(outcome.Data).Consent);
@@ -1108,10 +1108,10 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         var consent = Consented(f, "1.2");
         OwnSample(f, consent);
 
-        var outcome = await f.Service.GrantAsync(f.User, "1.4");
+        var outcome = await f.Service.GrantAsync(f.User, VoiceIdRules.NoticeVersion);
 
         Assert.Equal(VoiceFailure.None, outcome.Failure);
-        Assert.Equal("1.4", Assert.Single(f.Repository.Consents).NoticeVersion);
+        Assert.Equal(VoiceIdRules.NoticeVersion, Assert.Single(f.Repository.Consents).NoticeVersion);
         Assert.Single(f.Repository.Samples);
         Assert.Equal([AuditActions.VoiceConsentRenewed], f.Audit.Actions);
     }
@@ -1152,7 +1152,7 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         var f = MakeVoiceSvc();
         f.Uow.FailNextSave = new UniqueConflictException(UniqueConflict.Unknown);
 
-        var outcome = await f.Service.GrantAsync(f.User, "1.4");
+        var outcome = await f.Service.GrantAsync(f.User, VoiceIdRules.NoticeVersion);
 
         Assert.Equal(VoiceFailure.None, outcome.Failure);
         Assert.IsType<VoiceProfile>(outcome.Data);
@@ -1433,57 +1433,55 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
 
     private sealed record CollectSvc(FakeVoiceIdRepository Repository, FakeNotificationRepository Notifications,
         FakeUnitOfWork Uow, FakeVoiceEmbedder Embedder, FakeVoiceprintProtector Protector, FakeAuditService Audit,
-        ICallerAccountQuery Callers, T1Logger<VoiceCollectionService> Log, VoiceCollectionService Service,
-        Meeting Meeting, Guid Secretary, Guid Member);
+        ListCallerAccounts Callers, T1Logger<VoiceCollectionService> Log, VoiceCollectionService Service,
+        Guid Collector, Guid Person);
 
-    private static CollectSvc CollectionSvc(MeetingStatus status = MeetingStatus.Published, ICallerAccountQuery? callers = null)
+    private static CollectSvc CollectionSvc()
     {
-        var (inner, meeting, _, secretary, member) = NewMeeting(MeetingMode.InPerson, status);
         var repository = new FakeVoiceIdRepository();
-        repository.Meetings.Add(meeting);
         var notifications = new FakeNotificationRepository();
         var uow = new FakeUnitOfWork();
         var embedder = new FakeVoiceEmbedder();
         var protector = new FakeVoiceprintProtector();
         var audit = new FakeAuditService();
-        var accounts = callers ?? new ListCallerAccounts();
+        var accounts = new ListCallerAccounts();
+        var collector = Guid.CreateVersion7();
+        var person = Guid.CreateVersion7();
+        accounts.Users.Add(new User { Id = collector, FullName = "Quản trị viên", Email = "qt@trustcabinet.local", IsActive = true });
+        accounts.Users.Add(new User { Id = person, FullName = "Người được thu", Email = "nt@trustcabinet.local", IsActive = true });
         var log = new T1Logger<VoiceCollectionService>();
         var service = new VoiceCollectionService(repository, notifications, uow, embedder, protector, audit,
             new FixedClock(Now), accounts, log);
-        return new(repository, notifications, uow, embedder, protector, audit, accounts, log, service, meeting, secretary, member);
+        return new(repository, notifications, uow, embedder, protector, audit, accounts, log, service, collector, person);
     }
 
-    private static VoiceConsent CollectionConsent(CollectSvc f, string notice = VoiceIdRules.CollectionNoticeVersion)
+    private static VoiceConsent CollectionConsent(CollectSvc f, string notice = VoiceIdRules.ProxyNoticeVersion)
     {
         var consent = new VoiceConsent
         {
-            UserId = f.Member, GrantedAt = Now.AddDays(-1), NoticeVersion = notice, Purpose = VoiceIdRules.Purpose,
+            UserId = f.Person, GrantedAt = Now.AddDays(-1), NoticeVersion = notice, Purpose = VoiceIdRules.Purpose,
         };
         f.Repository.Consents.Add(consent);
         return consent;
     }
 
-    private static VoiceSample ProxySample(CollectSvc f, VoiceConsent consent, int count, Guid? collector = null)
+    private static VoiceSample ProxySample(CollectSvc f, VoiceConsent consent, int count)
     {
         var sample = new VoiceSample
         {
-            UserId = f.Member, ConsentId = consent.Id, EmbeddingModel = "test-model", Ciphertext = [0xE0],
+            UserId = f.Person, ConsentId = consent.Id, EmbeddingModel = "test-model", Ciphertext = [0xE0],
             AudioCiphertext = [7, 0xA0], AudioContentType = "audio/webm",
-            CollectedById = collector ?? f.Secretary, CollectedBy = new User
-            {
-                Id = collector ?? f.Secretary, FullName = "Thư ký", Email = "tk@trustcabinet.local", IsActive = true,
-            },
-            MeetingId = f.Meeting.Id, SpeechMs = 3000, CreatedAt = Now.AddMinutes(-count), UpdatedAt = Now,
+            CollectedById = f.Collector, SpeechMs = 3000, CreatedAt = Now.AddMinutes(-count), UpdatedAt = Now,
         };
         f.Repository.Samples.Add(sample);
         return sample;
     }
 
-    private static Task<VoiceOutcome> Collect(CollectSvc f, Guid? actor = null) => f.Service.AddAsync(
-        f.Meeting.Id, actor ?? f.Secretary, f.Member, new MemoryStream([1, 2, 3]), "audio/webm");
+    private static Task<VoiceOutcome> Collect(CollectSvc f, bool personAgreed = true) => f.Service.AddForPersonAsync(
+        f.Collector, f.Person, new MemoryStream([1, 2, 3]), "audio/webm", personAgreed);
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC001: a sample and the notice are kept together")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC001")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC001: a sample and the notice are kept together")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC001")]
     [Trait("Trait", "UTC")]
     public async Task Collect_a_sample_and_the_notice_are_kept_together()
     {
@@ -1497,15 +1495,15 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(VoiceFailure.None, outcome.Failure);
         Assert.Equal(3, f.Repository.Samples.Count);
         var added = f.Repository.Samples[^1];
-        Assert.Equal((f.Member, f.Secretary, (Guid?)f.Meeting.Id), (added.UserId, added.CollectedById, added.MeetingId));
+        Assert.Equal((f.Person, f.Collector, (Guid?)null), (added.UserId, added.CollectedById, added.MeetingId));
         var notice = Assert.Single(f.Notifications.Added);
-        Assert.Equal((f.Member, NotificationType.VoiceSampleCollected), (notice.UserId, notice.Type));
+        Assert.Equal((f.Person, NotificationType.VoiceSampleCollected), (notice.UserId, notice.Type));
         Assert.Equal([AuditActions.VoiceSampleAdded], f.Audit.Actions);
         Assert.Equal((1, 1), (f.Uow.Commits, f.Uow.Saves));
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC002: without consent no audio reaches the worker")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC002")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC002: without consent no audio reaches the worker")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC002")]
     [Trait("Trait", "UTC")]
     public async Task Collect_without_consent_no_audio_reaches_the_worker()
     {
@@ -1518,47 +1516,40 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Notifications.Added);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC003: five samples by the secretary is the limit")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC003")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC003: the proxy sample limit refuses another")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task Collect_five_samples_by_the_secretary_is_the_limit()
+    public async Task Collect_the_proxy_sample_limit_refuses_another()
     {
         var f = CollectionSvc();
         var consent = CollectionConsent(f);
-        for (var i = 0; i < 5; i++) ProxySample(f, consent, i);
+        for (var i = 0; i < VoiceIdRules.MaxProxySamples; i++) ProxySample(f, consent, i);
 
         var outcome = await Collect(f);
 
         Assert.Equal(VoiceFailure.LimitReached, outcome.Failure);
         Assert.Equal(0, f.Embedder.Calls);
-        Assert.Equal(5, f.Repository.Samples.Count);
+        Assert.Equal(VoiceIdRules.MaxProxySamples, f.Repository.Samples.Count);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC004: an Ended meeting collects nothing more")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC004")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC004: a take the person did not agree to is not kept")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task Collect_an_ended_meeting_collects_nothing_more()
+    public async Task Collect_a_take_the_person_did_not_agree_to_is_not_kept()
     {
-        var collectorRole = Guid.CreateVersion7();
-        var accounts = new CollectorAccounts(
-        [
-            new User { Id = Guid.CreateVersion7(), FullName = "Thư ký", Email = "tk@trustcabinet.local", IsActive = true, RoleId = collectorRole },
-        ], collectorRole);
-        var f = CollectionSvc(MeetingStatus.Ended, accounts);
-        var secretary = f.Repository.Meetings[0].Participants
-            .Single(p => p.Role == MeetingRole.Secretary);
-        accounts.Users[0].Id = secretary.UserId;
+        var f = CollectionSvc();
         CollectionConsent(f);
 
-        var outcome = await f.Service.AddAsync(f.Meeting.Id, secretary.UserId, f.Member, new MemoryStream([1, 2, 3]), "audio/webm");
+        var outcome = await Collect(f, personAgreed: false);
 
-        Assert.Equal(VoiceFailure.NotCollectable, outcome.Failure);
+        Assert.Equal(VoiceFailure.NotConfirmed, outcome.Failure);
         Assert.Equal(0, f.Embedder.Calls);
         Assert.Empty(f.Repository.Samples);
+        Assert.Empty(f.Notifications.Added);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC005: a too-short sample is rejected with guidance")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC005")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC005: a too-short sample is rejected with guidance")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Collect_a_too_short_sample_is_rejected_with_guidance()
     {
@@ -1573,8 +1564,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Repository.Samples);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddAsync/UTC006: a down worker is engine unavailable with a warning")]
-    [Trait("UTC", "VoiceCollectionService.AddAsync/UTC006")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC006: a down worker is engine unavailable with a warning")]
+    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task Collect_a_down_worker_is_engine_unavailable_with_a_warning()
     {
@@ -1589,79 +1580,56 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Repository.Samples);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AudioAsync/UTC001: hearing a sample is audited before its bytes")]
-    [Trait("UTC", "VoiceCollectionService.AudioAsync/UTC001")]
+    [Fact(DisplayName = "VoiceCollectionService.PersonAudioAsync/UTC001: hearing a sample is audited before its bytes")]
+    [Trait("UTC", "VoiceCollectionService.PersonAudioAsync/UTC001")]
     [Trait("Trait", "UTC")]
     public async Task Audio_hearing_a_sample_is_audited_before_its_bytes()
     {
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
 
-        var audio = await f.Service.AudioAsync(f.Meeting.Id, f.Secretary, sample.Id);
+        var audio = await f.Service.PersonAudioAsync(f.Collector, f.Person, sample.Id);
 
         Assert.Equal([7], Assert.IsType<VoiceSampleAudio>(audio).Bytes);
         Assert.Equal([AuditActions.VoiceSamplePlayed], f.Audit.Actions);
         Assert.Equal(1, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AudioAsync/UTC002: a secretary hears only their own meeting samples")]
-    [Trait("UTC", "VoiceCollectionService.AudioAsync/UTC002")]
+    [Fact(DisplayName = "VoiceCollectionService.PersonAudioAsync/UTC002: the person's own recording is out of reach")]
+    [Trait("UTC", "VoiceCollectionService.PersonAudioAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task Audio_a_secretary_hears_only_their_own_meeting_samples()
+    public async Task Audio_the_persons_own_recording_is_out_of_reach()
     {
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
-        sample.MeetingId = Guid.CreateVersion7();
+        sample.CollectedById = null;
 
-        Assert.Null(await f.Service.AudioAsync(f.Meeting.Id, f.Secretary, sample.Id));
+        Assert.Null(await f.Service.PersonAudioAsync(f.Collector, f.Person, sample.Id));
         Assert.Empty(f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AudioAsync/UTC003: a non-secretary hears nothing")]
-    [Trait("UTC", "VoiceCollectionService.AudioAsync/UTC003")]
+    [Fact(DisplayName = "VoiceCollectionService.PersonAudioAsync/UTC003: a deactivated person's samples are not heard")]
+    [Trait("UTC", "VoiceCollectionService.PersonAudioAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task Audio_a_non_secretary_hears_nothing()
+    public async Task Audio_a_deactivated_persons_samples_are_not_heard()
     {
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
+        f.Callers.Users.Single(u => u.Id == f.Person).IsActive = false;
 
-        Assert.Null(await f.Service.AudioAsync(f.Meeting.Id, f.Member, sample.Id));
+        Assert.Null(await f.Service.PersonAudioAsync(f.Collector, f.Person, sample.Id));
         Assert.Empty(f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.CanCollect/UTC001: a Published gathering may take samples")]
-    [Trait("UTC", "VoiceCollectionService.CanCollect/UTC001")]
+    [Fact(DisplayName = "VoiceCollectionService.DeletePersonSampleAsync/UTC001: deleting a proxy sample removes it")]
+    [Trait("UTC", "VoiceCollectionService.DeletePersonSampleAsync/UTC001")]
     [Trait("Trait", "UTC")]
-    public void CanCollect_a_published_gathering_may_take_samples()
-    {
-        Assert.True(VoiceCollectionService.CanCollect(MeetingStatus.Published));
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.CanCollect/UTC002: an Ended gathering is over")]
-    [Trait("UTC", "VoiceCollectionService.CanCollect/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void CanCollect_an_ended_gathering_is_over()
-    {
-        Assert.False(VoiceCollectionService.CanCollect(MeetingStatus.Ended));
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.CanCollect/UTC003: a Cancelled gathering takes nothing")]
-    [Trait("UTC", "VoiceCollectionService.CanCollect/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void CanCollect_a_cancelled_gathering_takes_nothing()
-    {
-        Assert.False(VoiceCollectionService.CanCollect(MeetingStatus.Cancelled));
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.DeleteAsync/UTC001: deleting a sample taken here removes it")]
-    [Trait("UTC", "VoiceCollectionService.DeleteAsync/UTC001")]
-    [Trait("Trait", "UTC")]
-    public async Task Delete_deleting_a_sample_taken_here_removes_it()
+    public async Task Delete_deleting_a_proxy_sample_removes_it()
     {
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
 
-        var outcome = await f.Service.DeleteAsync(f.Meeting.Id, f.Secretary, sample.Id);
+        var outcome = await f.Service.DeletePersonSampleAsync(f.Collector, f.Person, sample.Id);
 
         Assert.Equal(VoiceFailure.None, outcome.Failure);
         Assert.Empty(f.Repository.Samples);
@@ -1669,8 +1637,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(1, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.DeleteAsync/UTC002: a self-recorded sample is out of reach")]
-    [Trait("UTC", "VoiceCollectionService.DeleteAsync/UTC002")]
+    [Fact(DisplayName = "VoiceCollectionService.DeletePersonSampleAsync/UTC002: a self-recorded sample is out of reach")]
+    [Trait("UTC", "VoiceCollectionService.DeletePersonSampleAsync/UTC002")]
     [Trait("Trait", "UTC")]
     public async Task Delete_a_self_recorded_sample_is_out_of_reach()
     {
@@ -1678,37 +1646,29 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         var consent = CollectionConsent(f);
         var own = new VoiceSample
         {
-            UserId = f.Member, ConsentId = consent.Id, EmbeddingModel = "test-model", Ciphertext = [0xE0],
+            UserId = f.Person, ConsentId = consent.Id, EmbeddingModel = "test-model", Ciphertext = [0xE0],
             CreatedAt = Now, UpdatedAt = Now,
         };
         f.Repository.Samples.Add(own);
 
-        var outcome = await f.Service.DeleteAsync(f.Meeting.Id, f.Secretary, own.Id);
+        var outcome = await f.Service.DeletePersonSampleAsync(f.Collector, f.Person, own.Id);
 
         Assert.Equal(VoiceFailure.NotFound, outcome.Failure);
         Assert.Single(f.Repository.Samples);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.DeleteAsync/UTC003: a non-secretary deletes nothing")]
-    [Trait("UTC", "VoiceCollectionService.DeleteAsync/UTC003")]
+    [Fact(DisplayName = "VoiceCollectionService.DeletePersonSampleAsync/UTC003: a deactivated person's sample is not found")]
+    [Trait("UTC", "VoiceCollectionService.DeletePersonSampleAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task Delete_a_non_secretary_deletes_nothing()
+    public async Task Delete_a_deactivated_persons_sample_is_not_found()
     {
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
+        f.Callers.Users.Single(u => u.Id == f.Person).IsActive = false;
 
-        var outcome = await f.Service.DeleteAsync(f.Meeting.Id, f.Member, sample.Id);
+        var outcome = await f.Service.DeletePersonSampleAsync(f.Collector, f.Person, sample.Id);
 
         Assert.Equal(VoiceFailure.NotFound, outcome.Failure);
         Assert.Single(f.Repository.Samples);
     }
-}
-
-/// <summary>Accounts with one capability-holding role, for the Ended-meeting UTC. Local to Round 1 (FE-10).</summary>
-internal sealed class CollectorAccounts(List<User> users, Guid collectorRole) : ICallerAccountQuery
-{
-    public List<User> Users { get; } = users;
-    public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(Users.SingleOrDefault(u => u.Id == id));
-    public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(Guid roleId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyCollection<Capability>>(roleId == collectorRole ? [Capability.VoiceCollector] : []);
 }

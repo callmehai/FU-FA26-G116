@@ -9,7 +9,7 @@
       "method": "MeetingService.GetHistoryAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 739,
+      "line": 744,
       "cases": [
         {
           "exception": "N/A",

@@ -6,7 +6,7 @@ Precondition: Recordings with ages; clock replaced.
 
 ## RecordingService.EraseAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:160`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingService.cs:165`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

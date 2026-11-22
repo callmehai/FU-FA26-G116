@@ -6,7 +6,7 @@ Precondition: Active user who may read the meeting; candidate files with names a
 
 ## DocumentFileRules.ValidateAsync
 
-Layer: Domain · `backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs:88`
+Layer: Domain · `backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs:94`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

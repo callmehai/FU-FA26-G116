@@ -6,7 +6,7 @@ Precondition: Meeting in progress; chair actor.
 
 ## CallRoomService.MuteAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:167`
+Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:168`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

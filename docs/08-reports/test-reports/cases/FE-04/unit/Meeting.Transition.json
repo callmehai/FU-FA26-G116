@@ -130,7 +130,7 @@
         }
       ],
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 418,
+      "line": 420,
       "method": "MeetingService.TransitionAsync",
       "layer": "Application"
     }

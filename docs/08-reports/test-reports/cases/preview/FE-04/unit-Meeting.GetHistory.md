@@ -6,7 +6,7 @@ Precondition: Meeting with status history rows.
 
 ## MeetingService.GetHistoryAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:739`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:744`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

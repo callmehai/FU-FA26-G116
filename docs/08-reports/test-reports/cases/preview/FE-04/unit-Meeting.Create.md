@@ -6,7 +6,7 @@ Precondition: Organizer with meeting-creation capability; valid timestamps with 
 
 ## MeetingService.CreateAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:22`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingService.cs:24`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

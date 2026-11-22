@@ -9,7 +9,7 @@
       "method": "TranscriptionService.AssignSpeakerAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-      "line": 188,
+      "line": 197,
       "cases": [
         {
           "id": "UTC001",

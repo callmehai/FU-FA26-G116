@@ -9,7 +9,7 @@
       "method": "SpeechClipService.DeleteForGuestAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 350,
+      "line": 361,
       "cases": [
         {
           "id": "UTC001",

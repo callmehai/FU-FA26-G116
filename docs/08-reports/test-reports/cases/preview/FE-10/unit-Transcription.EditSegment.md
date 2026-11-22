@@ -6,7 +6,7 @@ Precondition: Transcript with segments; editor actor.
 
 ## TranscriptionService.EditSegmentAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Transcription/TranscriptionService.cs:152`
+Layer: Application · `backend/TrustCabinet.Application/Transcription/TranscriptionService.cs:154`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

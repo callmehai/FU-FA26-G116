@@ -10,9 +10,9 @@
 
 | Chỉ số | Giá trị |
 |---|---|
-| Hàm được kiểm thử (sheet) | 150 |
-| Unit Test Case (UTC) | 821 |
-| Passed | 821 |
+| Hàm được kiểm thử (sheet) | 149 |
+| Unit Test Case (UTC) | 818 |
+| Passed | 818 |
 | Failed | 0 |
 | Pending | 0 |
 
@@ -31,13 +31,13 @@ Không có lỗi sản phẩm. Mọi UTC đều có test tự động và đạt
 | FE-07 Tài liệu | 68 | 68 | 0 | 0 |
 | FE-08 Phòng họp | 56 | 56 | 0 | 0 |
 | FE-09 Ghi âm | 109 | 109 | 0 | 0 |
-| FE-10 Phiên âm | 87 | 87 | 0 | 0 |
+| FE-10 Phiên âm | 84 | 84 | 0 | 0 |
 | FE-11 Biểu quyết | 33 | 33 | 0 | 0 |
 | FE-12 Biên bản | 66 | 66 | 0 | 0 |
 | FE-13 Thông báo | 56 | 56 | 0 | 0 |
 | FE-15 Báo cáo | 10 | 10 | 0 | 0 |
 | FE-16 Lịch | 70 | 70 | 0 | 0 |
-| **Tổng** | **821** | **821** | **0** | **0** |
+| **Tổng** | **818** | **818** | **0** | **0** |
 
 Mỗi sheet có tối đa 6 UTC (hàm xử lý trạng thái, quyền, biểu quyết, biên bản, xung đột lịch tối đa 8), mỗi hàm có ít nhất 1 UTC. Mỗi sheet có đúng 1 ca Normal cho luồng chính, mỗi mã lỗi MSG một ca Abnormal đại diện, Boundary chỉ giữ giới hạn số cụ thể trong code.
 
@@ -65,7 +65,8 @@ Mỗi sheet có tối đa 6 UTC (hàm xử lý trạng thái, quyền, biểu qu
 | Summary.Request | Chỉ tạo được dự thảo khi cuộc họp đã kết thúc; thêm ca "chưa có lời nói" (MSG481) |
 | Recording.Download | Thêm ca MP3 không khả dụng (MSG482) |
 | SpeechClip.Add | Từ chối trước khi ghi âm, không phát sinh tệp cần xóa |
-| VoiceId.Grant | Phiên bản thông báo đồng ý 1.3 → 1.4 (ADR-0071) |
+| VoiceId.Grant | Phiên bản thông báo đồng ý 1.3 → 1.5 (ADR-0071, ADR-0075) |
+| VoiceCollection.Add, Audio, Delete | Thu giọng theo người (người dùng có quyền Thu giọng mẫu hộ, tối đa 50 mẫu/người, phải xác nhận người được thu đồng ý — MSG483); bỏ hàm CanCollect và nhánh theo cuộc họp (ADR-0075) |
 | DocumentFile.Validate | Giới hạn tệp 10 MB, tổng 100 MB; thêm ca PDF có xuống dòng trước chữ ký |
 | CallRoom.CloseMeetingRoom, CallRoom.Reconcile | Đóng phòng cũng đóng yêu cầu phát biểu đang mở |
 | Minutes (Create, Save, Submit, Approve, Return, Correct) | Thành công kèm thông báo thời gian thực |
@@ -87,4 +88,4 @@ Không có lỗi sản phẩm. Trên máy chạy (Windows), 7 test của `TrustC
 - `MeetingDocument.Upload/UTC001`: tên thư mục tải lên được kiểm ở `MeetingDocumentAttacherTests`.
 - Tên người dùng trong các assert là giá trị giả lập, chỉ kiểm cấu trúc và nhãn.
 - Chưa có UTC: `ParticipantService.ReadAsync` (nhánh người thu giọng), `ReadersAsync(includeFormer=true)`, một số nhánh phụ của biểu quyết.
-- Kế hoạch (`functions.json`) vẫn ghim mã nguồn ở commit `7286680a`; các hàm public mới thêm sau đó (lưu giữ dữ liệu, thu giọng theo người, thời gian từng từ…) chưa có sheet.
+- Kế hoạch (`functions.json`) ghim mã nguồn ở commit `8c59d3cd` (đã gộp `app`); các hàm public mới thêm sau kế hoạch (lưu giữ dữ liệu, thời gian từng từ, rút gọn dòng ngắn…) nằm trong danh sách bỏ qua, chưa có sheet.

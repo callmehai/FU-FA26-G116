@@ -78,7 +78,7 @@ public sealed class PasswordVerifyJwtRound1Tests
         FullName = "Nguyễn Thư Ký",
         Email = "thuky@trustcabinet.local",
         PasswordHash = "khong-lien-quan",
-        RoleId = BuiltInRoles.Secretary,
+        RoleId = BuiltInRoles.Member,
     };
 
     private static JwtTokenIssuer NewIssuer(AuthenticationOptions? options = null)
@@ -99,16 +99,16 @@ public sealed class PasswordVerifyJwtRound1Tests
     public void CreateAccessToken_UTC001()
     {
         // Return: signed HS256 JWT with sub, jti, email, ClaimTypes.Name and one "cap" claim
-        // per capability (MeetingCreator, MinutesEditor); no role claim; iss/aud "TrustCabinet".
+        // per capability (MeetingCreator, VoiceCollector); no role claim; iss/aud "TrustCabinet".
         // Exception: N/A. Log: N/A.
         var issuer = NewIssuer();
-        var token = Parse(issuer.CreateAccessToken(Secretary, [Capability.MeetingCreator, Capability.MinutesEditor]));
+        var token = Parse(issuer.CreateAccessToken(Secretary, [Capability.MeetingCreator, Capability.VoiceCollector]));
 
         Assert.Equal(Secretary.Id.ToString(), token.Claims.First(c => c.Type == "sub").Value);
         Assert.Equal(Secretary.Email, token.Claims.First(c => c.Type == "email").Value);
         Assert.Equal("Nguyễn Thư Ký", token.Claims.First(c => c.Type == ClaimTypes.Name).Value);
         Assert.Equal(
-            ["MeetingCreator", "MinutesEditor"],
+            ["MeetingCreator", "VoiceCollector"],
             token.Claims.Where(c => c.Type == ITokenIssuer.CapabilityClaim).Select(c => c.Value).ToArray());
         // No role claim: authorization reads capabilities, and a role can be renamed while the
         // token is alive (ADR-0008).
@@ -118,7 +118,7 @@ public sealed class PasswordVerifyJwtRound1Tests
         Assert.Equal(SecurityAlgorithms.HmacSha256, token.SignatureAlgorithm);
 
         // jti is unique per token.
-        var other = Parse(issuer.CreateAccessToken(Secretary, [Capability.MeetingCreator, Capability.MinutesEditor]));
+        var other = Parse(issuer.CreateAccessToken(Secretary, [Capability.MeetingCreator, Capability.VoiceCollector]));
         Assert.NotEqual(
             token.Claims.First(c => c.Type == "jti").Value,
             other.Claims.First(c => c.Type == "jti").Value);

@@ -6,7 +6,7 @@ Precondition: Meeting with a transcript.
 
 ## SummaryService.RequestAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:64`
+Layer: Application · `backend/TrustCabinet.Application/Summaries/SummaryService.cs:81`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

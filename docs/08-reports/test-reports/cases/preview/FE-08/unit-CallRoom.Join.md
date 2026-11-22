@@ -6,7 +6,7 @@ Precondition: Meeting and participants seeded; LiveKit replaced by a recorder.
 
 ## CallRoomService.JoinAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:102`
+Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:103`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

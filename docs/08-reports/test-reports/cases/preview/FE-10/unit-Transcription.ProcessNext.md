@@ -6,7 +6,7 @@ Precondition: Transcription job queued; speech worker replaced.
 
 ## TranscriptionService.ProcessNextAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Transcription/TranscriptionService.cs:334`
+Layer: Application · `backend/TrustCabinet.Application/Transcription/TranscriptionService.cs:374`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
