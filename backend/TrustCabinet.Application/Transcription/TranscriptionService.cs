@@ -56,7 +56,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                     [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                         s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName,
-                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null),
+                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null, s.StartMs, s.EndMs),
                         WordScores.ForLine(s.Text, s.WordConfidence, s.EditedAt is not null)))],
                     [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
@@ -129,7 +129,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 var names = transcript.Speakers.ToDictionary(s => s.Label, AssignedName);
                 var now = clock.GetUtcNow();
                 var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
-                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
+                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(
+                        TranscriptText.LineTime(s.StartMs, recording.Takes),
                         names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
                 await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
                     new { recording.MeetingId, segments = transcript.Segments.Count }, token);
@@ -527,7 +528,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         Text = edited ? s.Before!.Text!
                             : text.Length > TranscriptRules.MaxSegmentText ? text[..TranscriptRules.MaxSegmentText] : text,
                         // The machine's word times belonged to the words it wrote, not to the Secretary's.
-                        WordStartsMs = edited || text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(text, s.Segment.WordStartsMs),
+                        WordStartsMs = edited || text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Within(WordTimings.Of(text, s.Segment.WordStartsMs), s.StartMs, s.EndMs),
                         WordConfidence = edited || text.Length > TranscriptRules.MaxSegmentText ? null : WordScores.Of(text, s.Segment.WordConfidence),
                         EditedById = edited ? s.Before!.EditedById : null, EditedAt = edited ? s.Before!.EditedAt : null,
                         SpeakerLabel = s.Segment.Speaker is null ? "" : labels[s.Segment.Speaker], CreatedAt = now, UpdatedAt = now,

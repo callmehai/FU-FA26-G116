@@ -307,7 +307,9 @@ phòng được chuyển chữ lại cả tệp sau mỗi lượt (5 phút một
 `wordStartsMs`: mốc bắt đầu (ms tính từ đầu bản ghi) của từng từ trong `text`, mỗi từ một mốc, do worker đo từ
 mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
-giờ chia đều thời lượng cho các từ để giả mốc.
+giờ chia đều thời lượng cho các từ để giả mốc. Mốc luôn nằm trong `[startMs, endMs]` của đoạn, không giảm dần: đoạn của
+bản ghi mic phòng bị cắt theo lượt ghi chứa phần lớn của nó (hoặc theo chỗ một lượt bị xoá), còn worker đo mốc trên cả
+quãng nó nghe, nên từ nói vắt qua chỗ cắt được đặt ở mép đoạn thay vì nằm ngoài đoạn (buổi họp 22/11/2026, 6/664 đoạn).
 
 Số trong `text` viết bằng chữ số (`2026`, `5,5`, `15%`, `ngày 22 tháng 11`) từ 22/11/2026
 ([ADR-0076](../05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)): worker gộp các từ của một con số thành một
@@ -338,8 +340,11 @@ khớp (xem *Chuyển chữ lại giữ phần sửa tay* ở trên). FE vẫn h
 ### `GET /api/recordings/{recordingId}/transcript.txt`
 
 Chủ toạ hoặc Thư ký lưu bản gỡ băng đã xong thành tệp `.txt` (UTF-8): đầu tệp ghi tên cuộc họp, nguồn, giờ
-bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, giờ tính từ đầu
-bản ghi, tên là tên Thư ký đã gán hoặc *Người nói N*. Chưa xong: `409 MSG357`. Response `transcript` có
+bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, tên là tên Thư ký đã
+gán hoặc *Người nói N*. Giờ của bản ghi mic phòng là giờ thật (giờ Việt Nam) lúc câu được nói: giờ bắt đầu của lượt
+ghi chứa đoạn cộng với vị trí của đoạn trong lượt đó, như tệp câu micro riêng; trước 22/11/2026 là vị trí trong âm
+thanh ghép, lệch khỏi giờ thật thêm mỗi quãng nghỉ giữa hai lượt ghi. Tệp tải lên không biết giờ thật nên vẫn ghi vị
+trí tính từ đầu tệp. Chưa xong: `409 MSG357`. Response `transcript` có
 `canExport`.
 
 ### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
