@@ -25,7 +25,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user who can read meetings in the last twelve months."
           ],
-          "note": "UC-70a | BR-432 | Manual only"
+          "note": "UC-70a | BR-432 | Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/02-member-AC2-desktop-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/04-member-AC2-phone-bao-cao-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT02",
@@ -43,7 +46,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Organizer with meetings in 01/2026–03/2026."
           ],
-          "note": "UC-70a | BR-434 BR-437 | Manual only"
+          "note": "UC-70a | BR-434 BR-437 | Manual only · Round1 Passed (2026-11-22): AC2+AC4: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/02-member-AC2-desktop-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/06-qa-fe15-reporter-trustcabinet-local-AC4-desktop-so-lieu-thang-xa.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT03",
@@ -60,7 +66,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Organizer with Ended meetings, some with attendance and issued minutes."
           ],
-          "note": "UC-70a | BR-435 BR-436 | Manual only"
+          "note": "UC-70a | BR-435 BR-436 | Manual only · Round1 Passed (2026-11-22): AC2+AC4: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/03-member-AC2-desktop-giai-thich-ty-le-tham-du.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/06-qa-fe15-reporter-trustcabinet-local-AC4-desktop-so-lieu-thang-xa.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT04",
@@ -78,7 +87,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70a | BR-433 | Manual only"
+          "note": "UC-70a | BR-433 | Manual only · Round1 Passed (2026-11-22): AC6: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/08-secretary-AC6-desktop-khoang-ba-thang.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/09-secretary-AC6-phone-khoang-ba-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT05",
@@ -94,7 +106,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70a | BR-433 | Manual only"
+          "note": "UC-70a | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/12-secretary-AC7-desktop-chon-tu-thang-sau-den-thang-dau-kia-chay-theo.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/16-secretary-AC7-phone-chon-tu-thang-sau-den-thang-dau-kia-chay-theo.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT06",
@@ -110,7 +125,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70a | BR-433 | Manual only"
+          "note": "UC-70a | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-133151-39c00e3b/04-secretary-AC7-desktop-chon-tu-thang-xa-den-thang-co-lai-24-thang.png; tests/qa/out/SCRUM-202/20261122-133151-39c00e3b/09-secretary-AC7-phone-chon-tu-thang-xa-den-thang-co-lai-24-thang.png Bước chọn ô \"Từ tháng\" xa đã thêm vào AC7 (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT07",
@@ -126,7 +144,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70a EX-1 | BR-433 | Manual only"
+          "note": "UC-70a EX-1 | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/10-secretary-AC7-desktop-bat-dau-sau-ket-thuc.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/11-secretary-AC7-desktop-qua-24-thang.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/14-secretary-AC7-phone-bat-dau-sau-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT08",
@@ -141,13 +162,16 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70a | BR-433 | Manual only"
+          "note": "UC-70a | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/13-secretary-AC7-desktop-url-sai-dang-dung-mac-dinh.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/17-secretary-AC7-phone-url-sai-dang-dung-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT09",
           "description": "Period with no readable meeting shows the empty message.",
           "procedure": [
-            "Open /mgmt/reports?from=2026-01&to=2026-12."
+            "Sign in as an account that can read no meeting in the period (for example a Member who is on none of the meetings) and open /mgmt/reports?from=2027-05&to=2027-06."
           ],
           "expected": [
             "Backend answers 200 with \"total\": 0; the page shows \"Không có cuộc họp nào bạn xem được trong khoảng này.\" (MSG466, produced by the frontend) instead of the tables.",
@@ -157,14 +181,17 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an account that created no meeting and is on none."
           ],
-          "note": "UC-70a AF-2 | MSG466 | Manual only"
+          "note": "UC-70a AF-2 | MSG466 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC9: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/19-qa-fe15-reporter-trustcabinet-local-AC9-desktop-khoang-trong-msg466.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/21-qa-fe15-reporter-trustcabinet-local-AC9-phone-khoang-trong-msg466.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT10",
           "description": "Report shows an error with a retry button when the backend fails.",
           "procedure": [
-            "Open /mgmt/reports while QA lead has the database stopped.",
-            "Ask QA lead to start the database, then click \"Thử lại\"."
+            "Open /mgmt/reports while the report request fails (QA lead stops the database, or the response is overridden with 500/MSG464 in the browser).",
+            "Restore the backend, then click \"Thử lại\"."
           ],
           "expected": [
             "Backend answers 500/MSG464; a red alert \"Không tải được báo cáo. Vui lòng thử lại.\" with the button \"Thử lại\" replaces the figures.",
@@ -174,7 +201,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "QA lead can stop and start the database of the test build."
           ],
-          "note": "UC-70a EX-2 | MSG464 | Manual only"
+          "note": "UC-70a EX-2 | MSG464 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/23-secretary-AC11-desktop-msg464-thu-lai.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/26-secretary-AC11-phone-msg464-thu-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT11",
@@ -191,7 +221,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Two accounts supplied by QA lead in two browsers; A has Draft meetings B cannot read."
           ],
-          "note": "UC-70a | BR-432 | Manual only"
+          "note": "UC-70a | BR-432 | Manual only · Round1 Passed (2026-11-22): AC5: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/report.html",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT12",
@@ -223,7 +256,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "No active session."
           ],
-          "note": "UC-70a | Manual only"
+          "note": "UC-70a | Manual only · Round1 Passed (2026-11-22): AC1: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/01-anon-AC1-desktop-chua-dang-nhap-ve-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -250,7 +286,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Organizer with meetings in 02/2026–03/2026; Excel on the tester machine."
           ],
-          "note": "UC-70b | BR-437 BR-438 | Manual only"
+          "note": "UC-70b | BR-437 BR-438 | Manual only · Round1 Passed (2026-11-22): AC10: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/22-qa-fe15-reporter-trustcabinet-local-AC10-desktop-sau-khi-xuat-excel.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT15",
@@ -265,40 +304,49 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user."
           ],
-          "note": "UC-70b EX-1 | BR-433 | Manual only"
+          "note": "UC-70b EX-1 | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/10-secretary-AC7-desktop-bat-dau-sau-ket-thuc.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/14-secretary-AC7-phone-bat-dau-sau-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT16",
           "description": "Export failure shows an error toast and no file is saved.",
           "procedure": [
             "Open /mgmt/reports.",
-            "Ask QA lead to stop the database, then click \"Xuất Excel\"."
+            "Make the export request fail (QA lead stops the database, or the response is overridden with 500/MSG465 in the browser), then click \"Xuất Excel\"."
           ],
           "expected": [
-            "Backend answers 500/MSG465; a toast \"Không xuất được báo cáo. Vui lòng thử lại.\" appears, no file is downloaded and no audit row is written.",
+            "Backend answers 500/MSG465; a toast \"Không xuất được báo cáo. Vui lòng thử lại.\" appears and no file is downloaded.",
             "The button returns to \"Xuất Excel\" and the page stays on /mgmt/reports."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Report loaded; QA lead can stop the database of the test build."
           ],
-          "note": "UC-70b EX-2 | MSG465 | Manual only"
+          "note": "UC-70b EX-2 | MSG465 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/24-secretary-AC11-desktop-msg465-toast.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/27-secretary-AC11-phone-msg465-toast.png Lỗi 500 giả lập trong trình duyệt nên mệnh đề \"không ghi audit\" không kiểm được và đã bỏ khỏi expected.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RPT_FT17",
           "description": "Excel export works for a period with no readable meeting.",
           "procedure": [
-            "Open /mgmt/reports?from=2026-01&to=2026-12 with an account that can read no meeting.",
+            "Sign in as an account that can read no meeting in the period and open /mgmt/reports?from=2027-05&to=2027-06.",
             "Click \"Xuất Excel\"."
           ],
           "expected": [
-            "A file bao-cao-cuoc-hop_2026-01_2026-12.xlsx is saved with total 0, every row 0 and the averages \"Chưa có dữ liệu\"."
+            "A file bao-cao-cuoc-hop_2027-05_2027-06.xlsx is saved with total 0, every row 0 and the averages \"Chưa có dữ liệu\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an account that created no meeting and is on none."
           ],
-          "note": "UC-70b | BR-438 | Manual only"
+          "note": "UC-70b | BR-438 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC9: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/21-qa-fe15-reporter-trustcabinet-local-AC9-phone-khoang-trong-msg466.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/report.html",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     }

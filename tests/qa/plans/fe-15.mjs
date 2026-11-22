@@ -7,7 +7,7 @@
 // Other QA agents create meetings in parallel, so a number on a seed account's report is only ever compared with the API
 // response the page itself received, or with the same API read just before. Exact figures are checked on an account of
 // the plan's own, which no other agent knows about:
-// - "[QA] FE-15 người xem báo cáo" (qa-fe15-reporter@trustcabinet.local, built-in role Thư ký) organizes every FE-15
+// - "[QA] FE-15 người xem báo cáo" (qa-fe15-reporter@trustcabinet.local, built-in role Thành viên (ADR-0075 bỏ vai trò Thư ký)) organizes every FE-15
 //   meeting, all on one day 15 weeks from today (Vietnam time), with chutoa@ as Chair and approver, itself as Secretary
 //   and thanhvien@ as Member: one meeting in each of the 8 statuses, mixed sensitivities, varied hours; the Ended one
 //   has attendance taken (Chair and Secretary present, Member absent). Reused across runs, never cancelled.
@@ -167,7 +167,7 @@ async function reporterMeetings(qa, month) {
 }
 
 async function createMeeting(qa, spec) {
-  await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+  await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
   const rep = await me(qa, REPORTER)
   const chair = await me(qa, 'chair')
   const member = await me(qa, 'member')
@@ -487,12 +487,12 @@ export default {
       role: 'admin',
       title: 'Chuẩn bị dữ liệu [QA] FE-15 (qua API)',
       steps: [
-        `Tìm hoặc tạo tài khoản ${REPORTER} (vai trò Thư ký)`,
+        `Tìm hoặc tạo tài khoản ${REPORTER} (vai trò Thành viên)`,
         `Tài khoản đó tổ chức 8 cuộc họp [QA] FE-15 ngày ${FAR}, mỗi cuộc một trạng thái; cuộc Đã kết thúc có điểm danh 2 có mặt, 1 vắng`,
       ],
       expected: 'Đủ 8 cuộc họp đúng trạng thái, chutoa@ là Chủ toạ và người duyệt, thanhvien@ là Thành viên',
       async run(qa) {
-        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
         await prepareAll(qa)
         for (const s of STATUSES) qa.note(`${s}: ${made[s].title} · ${made[s].sensitivity} · ${made[s].id}`)
       },
@@ -700,7 +700,7 @@ export default {
       expected:
         'Người tổ chức: total +1, tháng +1, Draft +1, Secret +1, các nhóm khác giữ nguyên. Quản trị (All-in-one, không tham dự) và Thành viên (chưa công bố): không đổi — Quản trị không thấy toàn hệ thống (BR-432, PO Q1). Sau huỷ: Draft −1, Cancelled +1, total giữ nguyên (BR-434: đã huỷ vẫn đếm)',
       async run(qa) {
-        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
         const read = (who) => report(qa, who, FAR_MONTH, FAR_MONTH)
         const diff = (a, b) => {
           const out = { total: b.total - a.total }
@@ -776,9 +776,10 @@ export default {
         'thuky@ mở /mgmt/reports?from=2026-06&to=2026-01',
         `Mở /mgmt/reports?from=${addMonths(NOW_MONTH, -24)}&to=${NOW_MONTH} (25 tháng)`,
         `Từ khoảng đúng ${monthLabel(P6.from)} – ${monthLabel(P6.to)}, chọn Từ tháng = Tháng ${monthLabel(NOW_MONTH)} (sau Đến tháng) bằng ô chọn`,
+        `Từ khoảng 12 tháng đến ${monthLabel(NOW_MONTH)}, chọn Từ tháng = Tháng ${monthLabel(addMonths(NOW_MONTH, -30))} (khoảng thành 31 tháng) bằng ô chọn`,
         'Mở /mgmt/reports?from=2026-13&to=abc',
       ],
-      expected: `URL sai: câu "${MSG463}" (role alert), không có bảng số liệu, không request /api/reports, nút Xuất Excel bị khoá; ô chọn: Đến tháng chạy theo thành Tháng ${monthLabel(NOW_MONTH)}, số liệu tải lại, không báo lỗi (followPeriod); URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
+      expected: `Ô chọn Từ tháng xa: Đến tháng co lại thành 24 tháng, số liệu tải lại 24 dòng tháng, không báo lỗi (RPT_FT06); URL sai: câu "${MSG463}" (role alert), không có bảng số liệu, không request /api/reports, nút Xuất Excel bị khoá; ô chọn: Đến tháng chạy theo thành Tháng ${monthLabel(NOW_MONTH)}, số liệu tải lại, không báo lỗi (followPeriod); URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
       async run(qa) {
         const seen = watchReports(qa)
         const expectInvalid = async (slug) => {
@@ -812,6 +813,27 @@ export default {
         await qa.expect(exportButton(qa)).toBeEnabled()
         await settled(qa)
         await qa.shot('chon-tu-thang-sau-den-thang-dau-kia-chay-theo')
+        await noSidewaysScroll(qa)
+
+        // RPT_FT06: a start month 30 months back would make 31 months, so the end month moves to keep it at 24 (BR-433).
+        const far = addMonths(NOW_MONTH, -30)
+        const capped = addMonths(far, 23)
+        await qa.goto(`/mgmt/reports?from=${addMonths(NOW_MONTH, -11)}&to=${NOW_MONTH}`)
+        await lastReport(qa, seen, (x) => x.from === addMonths(NOW_MONTH, -11))
+        seen.length = 0
+        await press(qa, qa.page.getByRole('button', { name: /^Từ tháng:/ }))
+        await press(qa, qa.page.getByRole('listbox', { name: 'Từ tháng' }).getByRole('option', { name: `Tháng ${monthLabel(far)}` }))
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/reports\\?from=${far}&to=${capped}$`))
+        const cappedRep = await lastReport(qa, seen, (x) => x.from === far && x.to === capped)
+        // this account may have no meeting that long ago: either the figures or the empty message (MSG466) is fine
+        await qa.expect(qa.page.locator('.page-header-desc')).toBeVisible()
+        qa.expect(problems(cappedRep, far, capped)).toEqual([])
+        qa.expect(cappedRep.byMonth.length).toBe(24)
+        await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('button', { name: `Đến tháng: Tháng ${monthLabel(capped)}` })).toBeVisible()
+        await qa.expect(exportButton(qa)).toBeEnabled()
+        await settled(qa)
+        await qa.shot('chon-tu-thang-xa-den-thang-co-lai-24-thang')
         await noSidewaysScroll(qa)
 
         await qa.goto('/mgmt/reports?from=2026-13&to=abc')

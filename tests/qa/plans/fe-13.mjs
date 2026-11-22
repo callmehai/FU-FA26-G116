@@ -15,10 +15,15 @@
 //   reused across runs (one Published meeting that is rescheduled to produce fresh notifications, one whose roster
 //   qa-fe13-a@ joins and leaves); a criterion whose event is one-way (approve, publish, start, cancel, minutes) creates
 //   its own.
+// AC20–AC33 (Round 1, 2026-11-22) add: the 99+ badge and row times (thuky@ is read only), paging, list-load errors by
+// route interception, Escape/outside click, phone layout, signed-out bell, a failed single mark, per-account mark all,
+// two tabs, same-page open, a failed read on open, hub duplicate/reconnect through a WebSocket proxy, a role change
+// mid-session (qa-fe13-b@, restored) and the late-invitee reminder (bell + read-only look at the mail queue in Postgres).
 // Email: no endpoint exposes the outbox (email_messages / meeting_invitation_dispatches), so delivery is INCONCLUSIVE
 // with the manual step written in the criterion.
 
 import { expect } from '@playwright/test'
+import { execFileSync } from 'node:child_process'
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
 const SEED = {
@@ -376,6 +381,71 @@ async function openPanel(qa) {
   await qa.expect(panel(qa)).toBeVisible()
   await qa.expect(rows(qa).first().or(panel(qa).getByText('Chưa có thông báo nào'))).toBeVisible()
   await qa.expect(panel(qa).locator('.notif-skeleton')).toHaveCount(0)
+}
+
+/** A copy of `qa` aimed at another tab of the same browser context (the helpers above only read qa.page and qa.device). */
+const tabOf = (qa, page) => ({ ...qa, page })
+
+const JSON_500 = { status: 500, contentType: 'application/json', body: JSON.stringify({ code: 'MSG40', message: 'Không thể tải thông báo. Vui lòng thử lại.' }) }
+/** Makes GET /api/notifications (the list, not the count) fail like the backend's own MSG40; returns a function that lifts it. */
+async function failList(qa) {
+  const handler = (route) => (route.request().method() === 'GET' ? route.fulfill(JSON_500) : route.fallback())
+  const match = (url) => url.pathname === '/api/notifications'
+  await qa.page.route(match, handler)
+  return () => qa.page.unroute(match, handler)
+}
+
+/**
+ * Puts a proxy in front of the notification hub's WebSocket so a criterion can drop the connection, keep it down
+ * (a closed socket for every reconnect attempt) and push each message to the page twice. Install before the page opens.
+ */
+async function hubProxy(qa, { twice = false } = {}) {
+  const state = { blocked: false, sockets: [], opened: 0 }
+  // SignalR falls back to long polling when the socket fails, so the negotiate / polling requests are held down too.
+  await qa.page.route(
+    (u) => u.pathname.startsWith('/hubs/notifications'),
+    (route) => (state.blocked ? route.abort('connectionrefused') : route.fallback()),
+  )
+  await qa.page.routeWebSocket(/\/hubs\/notifications/, (ws) => {
+    if (state.blocked) {
+      ws.close()
+      return
+    }
+    state.opened += 1
+    const server = ws.connectToServer()
+    state.sockets.push(ws)
+    ws.onMessage((m) => server.send(m))
+    server.onMessage((m) => {
+      ws.send(m)
+      if (twice && typeof m === 'string' && m.includes('"target":"notificationReceived"')) ws.send(m)
+    })
+    ws.onClose((code, reason) => server.close({ code, reason }).catch(() => undefined))
+    server.onClose((code, reason) => ws.close({ code, reason }).catch(() => undefined))
+  })
+  return {
+    state,
+    drop() {
+      state.blocked = true
+      for (const s of state.sockets) s.close({ code: 1011 }).catch(() => undefined)
+      state.sockets = []
+    },
+    restore() {
+      state.blocked = false
+    },
+  }
+}
+/** Rows as "title | body" in on-screen order, to compare the panel with what the API returns. */
+async function panelTexts(qa) {
+  return rows(qa).evaluateAll((els) =>
+    els.map((el) => `${el.querySelector('.notif-title')?.textContent?.replace('Chưa đọc: ', '')} | ${el.querySelector('.notif-text')?.textContent ?? ''}`),
+  )
+}
+const apiTexts = (items) => items.map((n) => `${n.title} | ${n.body ?? ''}`)
+/** Gives `who` at least one unread notification (a calendar-share request thuky@ then withdraws). */
+async function ensureUnread(qa, who) {
+  if ((await unread(who)) > 0) return
+  const share = await requestShare(qa, who)
+  await post('secretary', `/api/calendar/shares/${share.id}/withdraw`)
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -737,6 +807,11 @@ export default {
           const t = await get('a', `/api/notifications/${a[0].id}/target`)
           if (c.check('target', t, 200)) c.fact('url', t.body.url === `/mgmt/meetings/${m.id}`, t.body.url)
         }
+        // The Organizer's own panel: nothing about the meeting they just published (NOTI_FT27).
+        await home(qa)
+        await openPanel(qa)
+        c.fact('panel của thuky@ không có lời mời của cuộc họp vừa công bố', (await rows(qa).filter({ hasText: m.title }).filter({ hasText: 'Bạn được mời tham dự' }).count()) === 0)
+        await qa.shot('panel-nguoi-cong-bo-khong-co-loi-moi')
         c.done()
       },
     },
@@ -949,7 +1024,8 @@ export default {
         await press(qa, row.locator('button.notif-open'))
         await qa.expect(qa.page).toHaveURL(new RegExp(`/calendar/sharing\\?share=${share.id}$`))
         await qa.expect(qa.page.locator(`#share-${share.id}`)).toBeVisible()
-        await qa.expect(qa.page.locator(`#share-${share.id}`)).toContainText('Trần Việt Hải')
+        const requester = (await get('secretary', '/api/auth/me')).body.fullName
+        await qa.expect(qa.page.locator(`#share-${share.id}`)).toContainText(requester)
         await qa.shot('mo-trang-chia-se')
         const bs = await seen('secretary')
         c.check('qa-fe13-a@ từ chối', await post('a', `/api/calendar/shares/${share.id}/decline`), 200, 'MSG437')
@@ -981,6 +1057,509 @@ export default {
         qa.inconclusive(
           'Không có endpoint nào đọc hàng đợi thư (email_messages, meeting_invitation_dispatches) và tài khoản QA dùng @trustcabinet.local nên không có hộp mail. Kiểm tay (chỉ đọc): select to_address, subject, status, delivery_state, created_at from email_messages where subject like \'%[QA] FE-13%\' order by created_at desc — mong đợi: mỗi "[QA] FE-13 Công bố …" có thư cho chutoa@, thuky@, qa-fe13-a@; mỗi "[QA] FE-13 Huỷ đã công bố …" có thư huỷ cho cùng ba người; "[QA] FE-13 Huỷ chờ duyệt …" không có thư. Gửi thật: công bố một cuộc họp có một người dùng email thật, xem hộp thư (có .ics, link /mgmt/meetings/{id}).',
         )
+      },
+    },
+    {
+      id: 'AC20',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Hơn 99 thông báo chưa đọc: chuông "99+", chip "99+ mới"; mỗi dòng có giờ tương đối và giờ chính xác khi rê chuột',
+      steps: [
+        'thuky@ (tài khoản seed đang có hơn 99 thông báo chưa đọc; chỉ xem, không đánh dấu) mở /mgmt/meetings',
+        'Bấm chuông',
+        'Rê chuột vào giờ của dòng đầu',
+      ],
+      expected:
+        'Badge "99+", nhãn "Thông báo, N chưa đọc"; panel có chip "99+ mới"; mỗi dòng có giờ tương đối ("Vừa xong", "N phút trước", "N giờ trước", "Hôm qua lúc …") và tooltip là ngày giờ đầy đủ (UC-66)',
+      async run(qa) {
+        const count = await unread('secretary')
+        if (count <= 99) qa.inconclusive(`thuky@ chỉ có ${count} chưa đọc, cần hơn 99; tạo thêm thông báo cho thuky@ rồi chạy lại`)
+        await home(qa)
+        await qa.expect(bell(qa).locator('.notif-badge')).toHaveText('99+')
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(count))
+        await qa.shot('chuong-99-cong')
+        await openPanel(qa)
+        await qa.expect(panel(qa).locator('h2 .badge')).toHaveText('99+ mới')
+        const time = rows(qa).first().locator('time.notif-time')
+        const text = (await time.innerText()).trim()
+        qa.expect(text, 'relative time').toMatch(/^(Vừa xong|\d+ phút trước|\d+ giờ trước|Hôm qua lúc .+|\d{2}:\d{2} \d{2}\/\d{2}\/\d{4})$/)
+        const tip = await time.getAttribute('data-tooltip')
+        qa.expect(tip, 'exact time tooltip').toMatch(/^\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}$/)
+        qa.note(`giờ tương đối "${text}", tooltip "${tip}"`)
+        if (qa.device === 'desktop') {
+          await time.hover()
+          await qa.page.waitForTimeout(900)
+        }
+        await qa.shot('panel-99-cong-gio-tuong-doi')
+        await panelFits(qa)
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
+      id: 'AC21',
+      role: QA.b.email,
+      devices: ['desktop', 'phone'],
+      title: 'Phân trang danh sách: "Xem thông báo cũ hơn" nối thêm dòng, hiện "Đang tải…", không lặp, nút biến mất ở trang cuối',
+      steps: ['qa-fe13-b@ (đã có hơn 20 thông báo, tất cả đã đọc sau AC3) mở chuông', 'Bấm "Xem thông báo cũ hơn" cho tới khi hết'],
+      expected:
+        'Lần bấm đầu: nút "Đang tải…" rồi dòng được nối thêm (API ?page=2&pageSize=20 → 200); cuối cùng số dòng = tổng số thông báo của API, không lặp, nút biến mất',
+      async run(qa) {
+        const list = ok(qa, await get('b', '/api/notifications?page=1&pageSize=20'), 200)
+        if (list.totalCount <= 20) qa.inconclusive(`qa-fe13-b@ chỉ có ${list.totalCount} thông báo; chạy AC3 trước`)
+        await qa.page.route(
+          (u) => u.pathname === '/api/notifications' && u.searchParams.get('page') === '2',
+          async (route) => {
+            await new Promise((r) => setTimeout(r, 1200))
+            await route.fallback()
+          },
+        )
+        await home(qa)
+        await openPanel(qa)
+        await qa.expect(rows(qa)).toHaveCount(20)
+        const more = panel(qa).getByRole('button', { name: /Xem thông báo cũ hơn|Đang tải/ })
+        const page2 = qa.page.waitForResponse((r) => new URL(r.url()).pathname === '/api/notifications' && r.url().includes('page=2'))
+        await press(qa, more)
+        await qa.expect(more).toHaveText('Đang tải…')
+        await qa.shot('dang-tai-trang-2')
+        qa.expect((await page2).status()).toBe(200)
+        await qa.expect(rows(qa)).toHaveCount(Math.min(40, list.totalCount))
+        await qa.shot('da-noi-them-dong')
+        for (let i = 0; i < 40 && (await panel(qa).getByRole('button', { name: 'Xem thông báo cũ hơn' }).count()) > 0; i += 1) {
+          await press(qa, panel(qa).getByRole('button', { name: 'Xem thông báo cũ hơn' }))
+          await qa.page.waitForTimeout(1500)
+        }
+        await qa.expect(panel(qa).getByRole('button', { name: /Xem thông báo cũ hơn|Đang tải/ })).toHaveCount(0)
+        const total = ok(qa, await get('b', '/api/notifications?page=1&pageSize=1'), 200).totalCount
+        await qa.expect(rows(qa)).toHaveCount(total)
+        qa.note(`${total} dòng = totalCount`)
+        await qa.shot('trang-cuoi-het-nut')
+      },
+    },
+    {
+      id: 'AC22',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Lỗi tải danh sách: lần đầu báo lỗi kèm "Thử lại"; lần làm mới sau giữ danh sách cũ và báo "Không làm mới được danh sách."',
+      steps: [
+        'Chặn GET /api/notifications trả 500 MSG40 (chèn lỗi bằng trình duyệt), qa-fe13-a@ mở chuông lần đầu',
+        'Bỏ chặn, bấm "Thử lại"',
+        'Đóng panel, chặn lại, mở lại chuông',
+      ],
+      expected:
+        'Lần đầu: "Không thể tải thông báo. Vui lòng thử lại." và nút "Thử lại"; bấm Thử lại thì danh sách hiện; lần sau: các dòng cũ vẫn hiện, một dòng "Không làm mới được danh sách." kèm "Thử lại" ở trên (UC-66 EX-1)',
+      async run(qa) {
+        await freshForA(qa)
+        await home(qa)
+        const lift = await failList(qa)
+        await press(qa, bell(qa))
+        await qa.expect(panel(qa).getByText('Không thể tải thông báo. Vui lòng thử lại.')).toBeVisible()
+        const retry = panel(qa).getByRole('button', { name: 'Thử lại' })
+        await qa.expect(retry).toBeVisible()
+        await qa.expect(rows(qa)).toHaveCount(0)
+        await panelFits(qa)
+        await qa.shot('loi-tai-lan-dau-co-thu-lai')
+        await lift()
+        await press(qa, retry)
+        await qa.expect(rows(qa).first()).toBeVisible()
+        await qa.shot('thu-lai-thanh-cong')
+        const shown = await rows(qa).count()
+        await press(qa, bell(qa))
+        await qa.expect(panel(qa)).toHaveCount(0)
+        const lift2 = await failList(qa)
+        await press(qa, bell(qa))
+        await qa.expect(panel(qa).getByText('Không làm mới được danh sách.')).toBeVisible()
+        await qa.expect(rows(qa)).toHaveCount(shown)
+        await qa.expect(panel(qa).getByRole('button', { name: 'Thử lại' })).toBeVisible()
+        await noSidewaysScroll(qa)
+        await qa.shot('lam-moi-loi-giu-danh-sach-cu')
+        await lift2()
+      },
+    },
+    {
+      id: 'AC23',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Panel không chặn trang: Escape đóng và trả tiêu điểm về chuông; bấm ra ngoài đóng; trang phía sau vẫn nhận thao tác',
+      steps: [
+        'Mở chuông, bấm vào ô "Tìm cuộc họp…" của trang (desktop) hoặc vùng trống thanh trên (điện thoại)',
+        'Mở chuông, nhấn Escape',
+      ],
+      expected: 'Bấm ngoài đóng panel và trên desktop ô tìm kiếm phía sau nhận ngay chữ vừa gõ (không có lớp phủ chặn); Escape đóng panel, bàn phím về nút chuông',
+      async run(qa) {
+        await ensureUnread(qa, 'a')
+        await home(qa)
+        await openPanel(qa)
+        if (qa.device === 'desktop') {
+          const search = qa.page.getByPlaceholder('Tìm cuộc họp…')
+          await search.click()
+          await qa.page.keyboard.type('xyz')
+          await qa.expect(search).toHaveValue('xyz')
+          await qa.expect(panel(qa)).toHaveCount(0)
+          await qa.shot('bam-ngoai-dong-va-trang-sau-nhan-thao-tac')
+        } else {
+          await qa.page.touchscreen.tap(225, 28)
+          await qa.expect(panel(qa)).toHaveCount(0)
+          await qa.shot('cham-ngoai-dong-panel')
+        }
+        await openPanel(qa)
+        await qa.shot('panel-dang-mo')
+        await qa.page.keyboard.press('Escape')
+        await qa.expect(panel(qa)).toHaveCount(0)
+        await qa.expect(bell(qa)).toBeFocused()
+        await qa.shot('escape-dong-focus-ve-chuong')
+      },
+    },
+    {
+      id: 'AC24',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Panel vừa màn hình điện thoại: nút "Đọc hết" thay "Đánh dấu tất cả đã đọc", nút ✓ từng dòng luôn hiện; desktop dùng chữ đầy đủ',
+      steps: ['qa-fe13-a@ có thông báo chưa đọc, mở chuông ở 390px (cảm ứng) và 1440px'],
+      expected:
+        'Điện thoại: panel trải hết chiều ngang, nút ghi "Đọc hết", nút ✓ hiện không cần rê chuột, trang không cuộn ngang; desktop: nút ghi "Đánh dấu tất cả đã đọc"',
+      async run(qa) {
+        await freshForA(qa)
+        await home(qa)
+        await openPanel(qa)
+        const full = panel(qa).locator('.notif-mark-all-label')
+        const short = panel(qa).locator('.notif-mark-all-short')
+        const mark = panel(qa).locator('button.notif-mark').first()
+        await qa.expect(mark).toBeVisible()
+        if (qa.device === 'phone') {
+          await qa.expect(short).toBeVisible()
+          // The long label stays for screen readers, clipped to one pixel.
+          qa.expect((await full.boundingBox()).width, 'the long label is still drawn').toBeLessThanOrEqual(2)
+          qa.expect(await mark.evaluate((el) => getComputedStyle(el).opacity), 'check hidden until hover').toBe('1')
+          const box = await panel(qa).boundingBox()
+          qa.expect(box.width, 'panel width on phone').toBeGreaterThan(qa.page.viewportSize().width - 40)
+        } else {
+          await qa.expect(full).toBeVisible()
+          await qa.expect(short).toBeHidden()
+        }
+        await panelFits(qa)
+        await noSidewaysScroll(qa)
+        await qa.shot('nut-doc-het-va-nut-tick')
+      },
+    },
+    {
+      id: 'AC25',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Chưa đăng nhập: /calendar chuyển về /login, không có chuông, không có yêu cầu nào tới /api/notifications hay hub',
+      steps: ['Mở /calendar khi chưa có phiên'],
+      expected: 'Về /login; không thấy chuông hay panel; không có request /api/notifications hoặc /hubs/notifications nào',
+      async run(qa) {
+        const seenUrls = []
+        qa.page.on('request', (r) => {
+          if (/^\/(api|hubs)\/notifications(\/|$)/.test(new URL(r.url()).pathname)) seenUrls.push(r.url())
+        })
+        qa.page.on('websocket', (ws) => {
+          if (ws.url().includes('/hubs/notifications')) seenUrls.push(ws.url())
+        })
+        await qa.goto('/calendar')
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        await qa.expect(bell(qa)).toHaveCount(0)
+        await qa.expect(panel(qa)).toHaveCount(0)
+        qa.expect(seenUrls, 'requests to notifications while signed out').toEqual([])
+        await qa.shot('ve-login-khong-chuong')
+      },
+    },
+    {
+      id: 'AC26',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Đánh dấu một dòng bị lỗi: dòng hết tô rồi tô lại, số chưa đọc trở về, toast đỏ báo lỗi, dữ liệu vẫn chưa đọc',
+      steps: ['qa-fe13-a@ mở chuông', 'Chặn POST /api/notifications/{id}/read (trả 500, chậm 1,5 giây) rồi bấm ✓ trên dòng đầu'],
+      expected:
+        'Ngay sau khi bấm dòng hết tô và chuông giảm 1; sau khi lỗi dòng tô lại, chuông về số cũ, toast đỏ "Máy chủ đang gặp sự cố. Vui lòng thử lại sau."; API: vẫn chưa đọc',
+      async run(qa) {
+        const { n } = await freshForA(qa)
+        const before = await unread('a')
+        await home(qa)
+        await openPanel(qa)
+        await qa.page.route(
+          (u) => /\/api\/notifications\/[^/]+\/read$/.test(u.pathname),
+          async (route) => {
+            await new Promise((r) => setTimeout(r, 1500))
+            await route.fulfill({ status: 500, contentType: 'application/json', body: '{}' })
+          },
+        )
+        const first = rows(qa).first()
+        await press(qa, first.locator('button.notif-mark'))
+        await qa.expect(first).not.toHaveClass(/notif-item-unread/)
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before - 1))
+        await qa.shot('truoc-khi-loi-dong-da-doc-tam')
+        await qa.expect(first).toHaveClass(/notif-item-unread/, { timeout: 8000 })
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before))
+        await qa.expect(toast(qa, 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.')).toBeVisible()
+        await qa.shot('sau-loi-dong-to-lai-toast-do')
+        const now = (await latest('a', 20)).find((x) => x.id === n.id)
+        qa.expect(now?.isRead, 'the notification was marked read despite the failure').toBe(false)
+      },
+    },
+    {
+      id: 'AC27',
+      role: QA.b.email,
+      devices: ['desktop', 'phone'],
+      title: 'Đánh dấu tất cả đã đọc chỉ ảnh hưởng tài khoản của mình: tài khoản khác giữ nguyên số chưa đọc và dòng chưa đọc',
+      steps: ['qa-fe13-b@ bấm "Đánh dấu tất cả đã đọc"', 'Đăng nhập qa-fe13-a@ (phiên khác) mở chuông'],
+      expected: 'qa-fe13-b@ về 0; qa-fe13-a@ giữ nguyên số chưa đọc trước đó, các dòng chưa đọc vẫn tô (UC-67b, BR-47)',
+      async run(qa) {
+        await freshForA(qa)
+        await ensureUnread(qa, 'b')
+        const aBefore = await unread('a')
+        await home(qa)
+        await openPanel(qa)
+        await press(qa, panel(qa).getByRole('button', { name: 'Đánh dấu tất cả đã đọc' }))
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', 'Thông báo')
+        await qa.shot('b-da-doc-het')
+        qa.expect(await unread('b')).toBe(0)
+        qa.expect(await unread('a'), 'qa-fe13-a@ unread changed by qa-fe13-b@').toBe(aBefore)
+        await qa.signIn(QA.a.email)
+        await home(qa)
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(aBefore))
+        await openPanel(qa)
+        await qa.expect(panel(qa).locator('li.notif-item-unread').first()).toBeVisible()
+        await qa.shot('a-van-con-chua-doc')
+      },
+    },
+    {
+      id: 'AC28',
+      role: QA.b.email,
+      devices: ['desktop'],
+      title: 'Hai tab cùng tài khoản: tab này đánh dấu hết, tab kia mở chuông thì đọc lại trang 1 và thấy tất cả đã đọc',
+      steps: ['Mở hai tab cho qa-fe13-b@ (có thông báo chưa đọc)', 'Tab 1 bấm "Đánh dấu tất cả đã đọc"', 'Tab 2 mở chuông'],
+      expected: 'Tab 2 đọc lại trang 1 khi mở: mọi dòng đã đọc, chip và badge biến mất, nút "Đánh dấu tất cả đã đọc" tắt',
+      async run(qa) {
+        await ensureUnread(qa, 'b')
+        await home(qa)
+        const tab1 = await qa.context.newPage()
+        const other = tabOf(qa, tab1)
+        await tab1.goto(`${qa.base}/mgmt/meetings`)
+        await qa.expect(bell(other)).toBeVisible()
+        await openPanel(other)
+        await press(other, panel(other).getByRole('button', { name: 'Đánh dấu tất cả đã đọc' }))
+        await qa.expect(panel(other).locator('li.notif-item-unread')).toHaveCount(0)
+        qa.expect(await unread('b')).toBe(0)
+        await qa.shot('tab-2-truoc-khi-mo-chuong')
+        await openPanel(qa)
+        await qa.expect(panel(qa).locator('li.notif-item-unread')).toHaveCount(0)
+        await qa.expect(panel(qa).locator('h2 .badge')).toHaveCount(0)
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', 'Thông báo')
+        await qa.expect(panel(qa).getByRole('button', { name: 'Đánh dấu tất cả đã đọc' })).toBeDisabled()
+        await qa.shot('tab-2-thay-tat-ca-da-doc')
+        await tab1.close()
+      },
+    },
+    {
+      id: 'AC29',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Bấm thông báo của trang đang đứng: ở nguyên URL, trang đọc lại dữ liệu, không chồng lịch sử (Back về trang trước đó)',
+      steps: [
+        'thuky@ dời lịch hai lần để qa-fe13-a@ có hai thông báo cùng cuộc họp',
+        'qa-fe13-a@ từ /mgmt/meetings mở chuông, bấm dòng đầu (vào trang cuộc họp)',
+        'Mở chuông, bấm dòng thứ hai của cùng cuộc họp',
+        'Nhấn Back một lần',
+      ],
+      expected: 'Lần hai URL vẫn là /mgmt/meetings/{id} và trang gọi lại GET /api/meetings/{id}; Back về /mgmt/meetings chứ không về một bản trùng của trang cuộc họp',
+      async run(qa) {
+        const { m } = await freshForA(qa)
+        await reschedule(qa, m)
+        await home(qa)
+        const calls = []
+        qa.page.on('request', (r) => {
+          if (r.method() === 'GET' && new URL(r.url()).pathname === `/api/meetings/${m.id}`) calls.push(Date.now())
+        })
+        await openPanel(qa)
+        await press(qa, rows(qa).filter({ hasText: m.title }).first().locator('button.notif-open'))
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`))
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
+        const afterFirst = calls.length
+        await openPanel(qa)
+        await press(qa, rows(qa).filter({ hasText: m.title }).nth(1).locator('button.notif-open'))
+        await qa.expect(panel(qa)).toHaveCount(0)
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`))
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
+        await qa.page.waitForTimeout(1000)
+        await qa.shot('o-nguyen-trang-cuoc-hop')
+        qa.expect(calls.length, 'the meeting page did not re-read its data').toBeGreaterThan(afterFirst)
+        await qa.page.goBack()
+        await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings$/)
+        await qa.shot('back-ve-trang-truoc')
+      },
+    },
+    {
+      id: 'AC30',
+      role: QA.a.email,
+      devices: ['desktop', 'phone'],
+      title: 'Đánh dấu đã đọc bị lỗi khi bấm vào thông báo: vẫn tới được cuộc họp, mở lại chuông thì dòng còn chưa đọc',
+      steps: ['Chặn POST /api/notifications/{id}/read (500), giữ GET /{id}/target', 'qa-fe13-a@ bấm dòng chưa đọc đầu tiên', 'Mở lại chuông'],
+      expected: 'Trình duyệt vẫn tới /mgmt/meetings/{id}, trang cuộc họp hiện; mở lại chuông: dòng đó còn chưa đọc (UC-68, BR-53)',
+      async run(qa) {
+        const { m, n } = await freshForA(qa)
+        await home(qa)
+        await qa.page.route(
+          (u) => /\/api\/notifications\/[^/]+\/read$/.test(u.pathname),
+          (route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
+        )
+        await openPanel(qa)
+        await press(qa, rows(qa).first().locator('button.notif-open'))
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`))
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
+        await qa.shot('van-toi-trang-cuoc-hop')
+        await openPanel(qa)
+        await qa.expect(rows(qa).first()).toHaveClass(/notif-item-unread/)
+        await qa.shot('mo-lai-chuong-con-chua-doc')
+        qa.expect((await latest('a', 20)).find((x) => x.id === n.id)?.isRead).toBe(false)
+      },
+    },
+    {
+      id: 'AC31',
+      role: QA.a.email,
+      devices: ['desktop'],
+      title: 'Realtime: thông báo đẩy hai lần chỉ hiện một dòng/một toast; mất kết nối hub rồi nối lại thì đọc lại số và danh sách, có cả thông báo tới lúc mất mạng',
+      steps: [
+        'Đặt proxy trước WebSocket của hub, gửi mỗi tin hai lần; panel đóng, thuky@ dời lịch',
+        'Mở chuông, so với API',
+        'Cắt WebSocket (không cho nối lại), thuky@ dời lịch hai lần, rồi cho nối lại',
+      ],
+      expected:
+        'Một toast duy nhất và badge +1 dù tin đến hai lần; danh sách khớp API từng dòng; sau khi nối lại, không tải lại trang, badge và đầu danh sách có cả hai thông báo đến lúc mất kết nối (UC-66)',
+      async run(qa) {
+        const m = await mainMeeting(qa)
+        const hub = await hubProxy(qa, { twice: true })
+        await home(qa)
+        await expect.poll(() => hub.state.opened, { timeout: 20_000 }).toBeGreaterThan(0)
+        await qa.page.waitForTimeout(1500)
+        await qa.page.evaluate(() => {
+          window.__qaNoReload = true
+        })
+        const before = await unread('a')
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before))
+        await reschedule(qa, m)
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before + 1), { timeout: 20_000 })
+        await qa.page.waitForTimeout(1500)
+        qa.expect(await qa.page.locator('.toast-stack').getByText('Cuộc họp đã dời lịch —', { exact: false }).count(), 'toasts for one notification pushed twice').toBe(1)
+        await qa.shot('mot-toast-du-day-hai-lan')
+        await openPanel(qa)
+        qa.expect(await panelTexts(qa)).toEqual(apiTexts((await latest('a', 20)).slice(0, await rows(qa).count())))
+        await qa.expect(rows(qa).first()).toContainText(m.title)
+        await qa.shot('panel-khop-api')
+        // The connection drops and stays down while two notifications arrive.
+        hub.drop()
+        await qa.page.waitForTimeout(1500)
+        await reschedule(qa, m)
+        await reschedule(qa, m)
+        await qa.page.waitForTimeout(3000)
+        qa.expect(await unread('a')).toBe(before + 3)
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before + 1))
+        await qa.shot('mat-ket-noi-chua-thay-hai-thong-bao-moi')
+        hub.restore()
+        await qa.expect(bell(qa)).toHaveAttribute('aria-label', bellLabel(before + 3), { timeout: 60_000 })
+        await expect
+          .poll(async () => (await panelTexts(qa)).join('\n'), { timeout: 30_000 })
+          .toBe(apiTexts((await latest('a', 20)).slice(0, await rows(qa).count())).join('\n'))
+        qa.expect(await qa.page.evaluate(() => window.__qaNoReload), 'the page reloaded').toBe(true)
+        await qa.shot('noi-lai-co-du-thong-bao')
+      },
+    },
+    {
+      id: 'AC32',
+      role: QA.b.email,
+      devices: ['desktop'],
+      title: 'Quản trị đổi vai trò giữa phiên: toast "Quyền truy cập của bạn vừa được cập nhật." và tên vai trò đổi theo, không phải đăng nhập lại',
+      steps: ['qa-fe13-b@ đang mở /mgmt/meetings', 'quantri@ đổi vai trò của qa-fe13-b@ (PUT /api/users/{id})', 'Đổi trả lại Thành viên'],
+      expected: 'Toast info "Quyền truy cập của bạn vừa được cập nhật."; vai trò ở góc dưới thanh bên đổi sang vai trò mới, vẫn ở trang cũ, không về /login',
+      async run(qa) {
+        const roles = (await get('admin', '/api/roles')).body
+        const member = roles.find((r) => r.isBuiltIn && r.isDefault)
+        const next = roles.find((r) => r.id !== member.id)
+        const user = (await get('admin', '/api/users')).body.find((u) => u.email === QA.b.email)
+        const putRole = (roleId) => put('admin', `/api/users/${user.id}`, { fullName: user.fullName, email: user.email, roleId })
+        const hub = qa.page.waitForEvent('websocket', { predicate: (ws) => ws.url().includes('/hubs/notifications'), timeout: 20_000 })
+        await home(qa)
+        const ws = await hub
+        await ws.waitForEvent('framereceived', { timeout: 20_000 })
+        await qa.page.waitForTimeout(1000)
+        const roleLabel = qa.page.locator('.account-summary-role').first()
+        await qa.expect(roleLabel).toHaveText(member.name)
+        try {
+          ok(qa, await putRole(next.id), 200, 'đổi vai trò')
+          await qa.expect(toast(qa, 'Quyền truy cập của bạn vừa được cập nhật.')).toBeVisible({ timeout: 20_000 })
+          await qa.expect(roleLabel).toHaveText(next.name)
+          await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings$/)
+          await qa.shot('toast-quyen-va-vai-tro-moi')
+        } finally {
+          await putRole(member.id)
+        }
+      },
+    },
+    {
+      id: 'AC33',
+      role: QA.b.email,
+      devices: ['desktop'],
+      title: 'Nhắc họp: người thêm sau khi cửa sổ 15 phút đã mở vẫn được chuông nhắc, nhưng không có thêm thư "sắp bắt đầu"',
+      steps: [
+        'thuky@ tạo và công bố cuộc họp bắt đầu sau 10 phút (qa-fe13-a@ dự họp)',
+        'Chờ vòng nhắc (≤ 5 giây) cho qa-fe13-a@',
+        'thuky@ thêm qa-fe13-b@ vào thành phần, chờ vòng nhắc',
+        'Đọc hàng đợi thư trong database (chỉ đọc)',
+      ],
+      expected:
+        'qa-fe13-b@ nhận "Bạn được mời họp" rồi "Cuộc họp sắp bắt đầu" trên chuông; hàng đợi thư có thư mời của qa-fe13-b@ nhưng không có thư "Cuộc họp sắp bắt đầu" cho qa-fe13-b@ (BR-303, PO 15/11/2026)',
+      async run(qa) {
+        const c = checker(qa)
+        const start = Date.now() + 10 * MINUTE
+        const res = await post('secretary', '/api/meetings', {
+          title: qa.name(`FE-13 Nhắc họp ${rand()}`),
+          plannedStartTime: iso(start),
+          plannedEndTime: iso(start + 45 * MINUTE),
+          mode: 'InPerson',
+          location: 'Phòng họp QA',
+          onlineLink: null,
+          sensitivity: 'Normal',
+          description: 'Cuộc họp do bộ kiểm thử QA FE-13 tạo.',
+          participants: await roster(),
+        })
+        const id = ok(qa, res, 201, 'create').meeting.id
+        for (const s of STEPS.Published) await step(qa, id, s)
+        const poll = async (who, type) => {
+          for (let i = 0; i < 12; i += 1) {
+            const got = (await latest(who, 30)).filter((n) => n.type === type && n.meetingId === id)
+            if (got.length) return got
+            await new Promise((r) => setTimeout(r, 2000))
+          }
+          return []
+        }
+        const aReminder = await poll('a', 'MeetingStartingSoon')
+        c.fact('qa-fe13-a@ nhận một "sắp bắt đầu"', aReminder.length === 1, String(aReminder.length))
+        const { etag } = await participants({ id })
+        ok(qa, await post('secretary', `/api/meetings/${id}/participants`, { userIds: [await idOf('b')], role: 'Member' }, { 'If-Match': etag }), 201, 'add b')
+        const bReminder = await poll('b', 'MeetingStartingSoon')
+        c.fact('qa-fe13-b@ nhận chuông "sắp bắt đầu"', bReminder.length === 1, String(bReminder.length))
+        c.fact('qa-fe13-b@ nhận chuông lời mời', (await latest('b', 30)).some((n) => n.type === 'MeetingInvited' && n.meetingId === id))
+        await new Promise((r) => setTimeout(r, 12_000))
+        const psql = (sql) => {
+          try {
+            return execFileSync('docker', ['exec', 'trustcabinet-postgres', 'psql', '-U', 'trustcabinet', '-d', 'trustcabinet', '-At', '-F', '|', '-c', sql], { encoding: 'utf8' })
+          } catch (error) {
+            return qa.inconclusive(`Không đọc được database (cần docker, container trustcabinet-postgres): ${error.message.slice(0, 120)}`)
+          }
+        }
+        // Email sending is off on this machine, so an invitation waits as a Pending dispatch rather than an email_messages row.
+        const dispatches = psql(
+          `select u.email, d.event_kind, d.state from meeting_invitation_dispatches d join meeting_participants p on p.id = d.participant_id join users u on u.id = p.user_id where d.meeting_id = '${id}' order by d.created_at`,
+        )
+        const mail = psql(`select to_address, subject from email_messages where meeting_id = '${id}' order by created_at`)
+        qa.note(`meeting_invitation_dispatches:\n${dispatches}\nemail_messages:\n${mail}`)
+        c.fact('thư mời của qa-fe13-b@ đã vào hàng đợi (dispatch Invitation)', dispatches.split('\n').some((l) => l.startsWith(`${QA.b.email}|Invitation`)), dispatches)
+        c.fact('không có thư "Cuộc họp sắp bắt đầu" cho qa-fe13-b@', !mail.split('\n').some((l) => l.startsWith(QA.b.email) && l.includes('sắp bắt đầu')), mail)
+        await home(qa)
+        await openPanel(qa)
+        await qa.shot('chuong-b-moi-va-nhac')
+        await post('secretary', `/api/meetings/${id}/transitions`, { action: 'Cancel', reason: 'QA FE-13: dọn dẹp.' })
+        c.done()
       },
     },
   ],
