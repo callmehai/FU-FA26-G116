@@ -517,12 +517,12 @@ function VoteCard({
           </span>
           <span className="agenda-cell vote-cell-outcome">
             {vote.hasVoted && vote.status === 'Open' && (
-              <span className="vote-fact vote-voted" tabIndex={0} data-tooltip="Đã bỏ phiếu">
+              <span className="vote-fact vote-voted">
                 <Icon name="check" size={14} />
-                <span className="vote-outcome-text">Đã bỏ phiếu</span>
+                Đã bỏ phiếu
               </span>
             )}
-            {vote.conclusion && <ConclusionChip value={vote.conclusion.value} tip />}
+            {vote.conclusion && <ConclusionChip value={vote.conclusion.value} />}
           </span>
           {room ? (
             vote.documentCount > 0 && (
@@ -908,18 +908,13 @@ function Result({ detail }: { detail: VoteDetail }) {
   )
 }
 
-/** `tip`: on the row, where a tight bar keeps the icon only, the words also come on hover and focus. */
-function ConclusionChip({ value, tip = false }: { value: VoteConclusionValue; tip?: boolean }) {
+function ConclusionChip({ value }: { value: VoteConclusionValue }) {
   const tone = value === 'Passed' ? 'status-emerald' : value === 'NotPassed' ? 'status-red' : 'status-amber'
   const icon = value === 'Passed' ? 'checkCircle' : value === 'NotPassed' ? 'xCircle' : 'clock'
   return (
-    <span
-      className={`status ${tone} vote-conclusion-chip`}
-      tabIndex={tip ? 0 : undefined}
-      data-tooltip={tip ? VOTE_CONCLUSION_LABEL[value] : undefined}
-    >
+    <span className={`status ${tone} vote-conclusion-chip`}>
       <Icon name={icon} size={14} />
-      <span className="vote-outcome-text">{VOTE_CONCLUSION_LABEL[value]}</span>
+      {VOTE_CONCLUSION_LABEL[value]}
     </span>
   )
 }

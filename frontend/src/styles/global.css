@@ -3509,11 +3509,11 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
 }
-/* A vote's own cells on the page's one line: fixed widths, so the modes, turnouts and outcomes form columns as the
-   agenda's states and counts do; a row without the fact keeps the empty cell. The actions are one right-aligned group
-   as wide as the widest row's (a draft's Mở and three icons, the open vote's Đóng phiếu), so the facts do not slide
-   right on a closed vote that has none. */
-@container (min-width: 641px) {
+/* A wide card (≥ 960px, a 1920 screen) draws each vote on one line, as the agenda: the facts in fixed cells, so the
+   modes, turnouts, outcomes and counts form columns down the card; a row without the fact keeps the empty cell. The
+   actions are one right-aligned group as wide as the widest row's (a draft's Mở and three icons, the open vote's Đóng
+   phiếu), so the facts do not slide right on a closed vote that has none. */
+@container (min-width: 960px) {
   .vote-sheet .agenda-cell-status { width: 80px; }
   .vote-sheet .vote-cell-mode { display: inline-flex; width: 108px; }
   .vote-sheet .vote-mode { white-space: nowrap; }
@@ -3530,13 +3530,15 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
     .vote-sheet-both .vote-actions { min-width: 202px; }
   }
 }
-/* Between a phone and the wide columns the bar is tight: the mode drops its icon (its word says it), the outcome keeps
-   its icon and its words go to the tooltip. */
+/* A narrower card (641–959px: a 1440 screen beside the Lịch sử column) has no room for a vote's facts beside a long
+   title: they go on the line under it, as below 640px, so the title keeps nearly the whole width and the conclusion its
+   words (Hải 23/11/2026). The agenda keeps its single line there: its items carry fewer facts. */
 @container (min-width: 641px) and (max-width: 959px) {
-  .vote-sheet .vote-cell-mode { width: 92px; }
-  .vote-sheet .vote-mode > svg:first-child { display: none; }
-  .vote-sheet-outcome .vote-cell-outcome { width: 32px; }
-  .vote-meta .vote-outcome-text { display: none; }
+  .vote-sheet .agenda-head { flex-wrap: wrap; }
+  .vote-sheet .agenda-break { display: block; }
+  .vote-sheet .agenda-meta { flex: 0 1 auto; flex-wrap: wrap; order: 0; padding-left: calc(var(--agenda-indent) - var(--agenda-pad)); }
+  .vote-sheet .agenda-actions { order: 0; }
+  .vote-sheet .agenda-cell-status { display: contents; }
 }
 /* The room's panel (and a phone): the icons (attach, edit, delete) take the card's top-right corner beside the title,
    the same place on every card however the title wraps (Khánh 19/11/2026); the facts go under it, ending in the step
