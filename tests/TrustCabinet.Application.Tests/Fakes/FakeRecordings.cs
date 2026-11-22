@@ -239,12 +239,31 @@ public sealed class FakeSpeechEngine : ISpeechEngine
     /// <summary>The previous sentence each call was given to read ahead, in order.</summary>
     public List<string?> Contexts { get; } = [];
 
-    public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
+    /// <summary>When set, a call waits for its cancellation instead of answering, after completing this: a long run.</summary>
+    public TaskCompletionSource? Hold { get; set; }
+
+    /// <summary>Whether a held call ended by being cancelled.</summary>
+    public bool Cancelled { get; private set; }
+
+    public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
         string? context = null)
     {
         Contexts.Add(context);
-        return Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
-            : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
+        if (Hold is { } hold)
+        {
+            hold.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                Cancelled = true;
+                throw;
+            }
+        }
+        return await (Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
+            : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], [])));
     }
 }
 
@@ -288,6 +307,9 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
         => Task.FromResult(Transcripts.SingleOrDefault(t => t.Id == transcriptId));
 
     public Task ReloadAsync(Transcript transcript, CancellationToken ct) => Task.CompletedTask;
+
+    public Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct)
+        => Task.FromResult(Transcripts.Any(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing));
 
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
     {

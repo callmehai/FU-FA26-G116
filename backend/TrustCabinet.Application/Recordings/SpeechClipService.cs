@@ -145,8 +145,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRe
         var heard = await TranscribeAsync(upload, before?.Text, ct);
         if (heard is not { } transcribed) return new(SpeechClipFailure.EngineUnavailable);
         var (text, segments, beforeAgain) = transcribed;
-        // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
-        if (text.Length == 0) return new();
+        // Silence, a cough, a door, a lone "Ừ.": nothing worth a line (team test 21/11/2026). The browser drops it;
+        // nothing is stored.
+        if (text.Length == 0 || !ShortLineRules.KeepsClip(text)) return new();
 
         var audioPath = await StoreAudioAsync(upload, ct);
         var kept = false;

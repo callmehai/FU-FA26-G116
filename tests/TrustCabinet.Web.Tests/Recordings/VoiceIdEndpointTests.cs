@@ -208,8 +208,8 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         var id = (await (await secretary.PostAsync(s.Url, form)).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("recordingId").GetGuid();
         fixture.Speech.Failure = null;
         fixture.Speech.Result = new(40000, "vi", "gipformer-1.5-68m-int8@abc123def456", Model,
-            [new(0, 9000, "SPEAKER_00", "Câu một."), new(10000, 19000, "SPEAKER_00", "Câu hai, của người khác."),
-                new(20000, 29000, "SPEAKER_00", "Câu ba."), new(30000, 34000, "SPEAKER_01", "Câu bốn.")],
+            [new(0, 9000, "SPEAKER_00", "Câu thứ nhất."), new(10000, 19000, "SPEAKER_00", "Câu hai, của người khác."),
+                new(20000, 29000, "SPEAKER_00", "Câu thứ ba đây."), new(30000, 34000, "SPEAKER_01", "Câu thứ tư đây.")],
             // The diarizer measures speech its own way: the second voice spoke 6 s over a 4 s line.
             [new("SPEAKER_00", 27000, [0f, 0f, 1f]), new("SPEAKER_01", 6000, [0f, 1f, 0f])]);
         await ProcessAll();
@@ -262,7 +262,7 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
 
         var text = await (await secretary.GetAsync($"/api/recordings/{id}/transcript.txt")).Content.ReadAsStringAsync();
         Assert.Contains("Recording test 2: Câu hai, của người khác.", text);
-        Assert.Contains("Recording test 1: Câu một.", text);
+        Assert.Contains("Recording test 1: Câu thứ nhất.", text);
         await using var db = fixture.Db();
         var row = await db.TranscriptSpeakers.SingleAsync(v => v.Transcript.RecordingId == id && v.Label == "SPEAKER_02");
         Assert.Equal(s.Secretary, row.AssignedById);
@@ -307,9 +307,11 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.Equal(s.Secretary, voices["SPEAKER_01"].GetProperty("assignedUserId").GetGuid());
 
         // A label of another recording, or none of this one, is not a voice of it.
-        var other = await UploadAndTranscribe(s, new SpeechSpeaker("SPEAKER_07", 9000, [1f, 0f, 0f]));
-        Assert.Equal("SPEAKER_07", (await Read(secretary, other)).Labels.Single());
-        Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(secretary, lines[0], new { label = "SPEAKER_07" })).StatusCode);
+        // The other recording's voices are numbered from SPEAKER_00 in the order they speak; its third has no namesake here.
+        var other = await UploadAndTranscribe(s, new SpeechSpeaker("SPEAKER_04", 9000, [1f, 0f, 0f]),
+            new SpeechSpeaker("SPEAKER_05", 9000, [0f, 1f, 0f]), new SpeechSpeaker("SPEAKER_07", 9000, [0f, 0f, 1f]));
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_02"], (await Read(secretary, other)).Labels);
+        Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(secretary, lines[0], new { label = "SPEAKER_02" })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(secretary, Guid.NewGuid(), new { label = "SPEAKER_00" })).StatusCode);
         await using var db = fixture.Db();
         Assert.Equal(4, await db.AuditLog.CountAsync(a => a.Action == AuditActions.TranscriptSegmentSpeakerAssigned && a.ObjectId == id));

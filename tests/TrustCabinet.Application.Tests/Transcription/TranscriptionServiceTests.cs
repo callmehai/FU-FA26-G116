@@ -46,7 +46,7 @@ public sealed class TranscriptionServiceTests
 
     private TranscriptionService Service() => new(_meetings, _recordings, _transcripts, _unitOfWork, _storage, _engine, _voices,
         _protector, Options.Create(new VoiceIdOptions()), _audit, _publisher, new FixedClock(Now),
-        NullLogger<TranscriptionService>.Instance);
+        NullLogger<TranscriptionService>.Instance) { StaleCheckEvery = TimeSpan.FromMilliseconds(20) };
 
     private Transcript Queued(TranscriptStatus status = TranscriptStatus.Pending)
     {
@@ -131,6 +131,88 @@ public sealed class TranscriptionServiceTests
         Assert.Equal([TransactionMode.None, TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
         Assert.Equal(1, Assert.Single(_publisher.Published).CommitsBefore);
+    }
+
+    [Fact]
+    public async Task Short_lines_no_enrolled_voice_matched_are_left_out_and_the_voices_left_are_numbered_again()
+    {
+        var transcript = Queued();
+        var consent = new VoiceConsent
+        {
+            UserId = _meeting.Member, GrantedAt = Now.AddDays(-1), NoticeVersion = VoiceIdRules.NoticeVersion, Purpose = VoiceIdRules.Purpose,
+        };
+        _voices.Consents.Add(consent);
+        var sampleId = Guid.CreateVersion7();
+        _voices.Samples.Add(new VoiceSample
+        {
+            Id = sampleId, UserId = _meeting.Member, ConsentId = consent.Id, EmbeddingModel = "test-model",
+            Ciphertext = _protector.Protect([1f, 0f], _meeting.Member, sampleId, "test-model"),
+        });
+        _engine.Result = new SpeechTranscription(30000, "vi", "test", "test-model",
+        [
+            new SpeechSegment(0, 1000, "SPEAKER_00", "Ừ."),
+            new SpeechSegment(1000, 5000, "SPEAKER_01", "Kính thưa các đồng chí, hôm nay chúng ta họp."),
+            new SpeechSegment(5000, 6000, "SPEAKER_00", "Đồng ý."),
+            new SpeechSegment(6000, 7500, "SPEAKER_02", "Đến tối là kín mịn."),
+            new SpeechSegment(7500, 9000, "SPEAKER_02", "Nó có còn phải test là có nền không?"),
+            new SpeechSegment(9000, 12000, "SPEAKER_02", "Tiếp theo là phần báo cáo của phòng tài chính."),
+            new SpeechSegment(12000, 13000, "SPEAKER_01", "À."),
+        ],
+        [
+            new SpeechSpeaker("SPEAKER_00", 2000, [0f, 1f]), new SpeechSpeaker("SPEAKER_01", 5000, [1f, 0f]),
+            new SpeechSpeaker("SPEAKER_02", 6000, [-1f, 0f]),
+        ]);
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        // SPEAKER_00 matched nobody and said only short lines: gone. SPEAKER_01 is the member, so their short "À." goes
+        // only for being an interjection; SPEAKER_02's long lines stay (a quick one of 20+ characters too), its short
+        // one does not.
+        Assert.Equal(
+            [("SPEAKER_00", "Kính thưa các đồng chí, hôm nay chúng ta họp."), ("SPEAKER_01", "Nó có còn phải test là có nền không?"),
+                ("SPEAKER_01", "Tiếp theo là phần báo cáo của phòng tài chính.")],
+            transcript.Segments.OrderBy(s => s.Position).Select(s => (s.SpeakerLabel, s.Text)));
+        Assert.Equal([1, 2, 3], transcript.Segments.Select(s => s.Position).Order());
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01"], transcript.Speakers.Select(s => s.Label).Order());
+        Assert.Equal(_meeting.Member, transcript.Speakers.Single(s => s.Label == "SPEAKER_00").SuggestedUserId);
+        Assert.Null(transcript.Speakers.Single(s => s.Label == "SPEAKER_01").SuggestedUserId);
+    }
+
+    [Fact]
+    public async Task A_run_made_stale_by_a_newer_take_is_stopped_and_the_transcript_waits_for_the_next_one()
+    {
+        var transcript = Queued();
+        var started = new TaskCompletionSource();
+        _engine.Hold = started;
+        var run = Task.Run(() => Service().ProcessNextAsync());
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        // RoomTakeService appends the take and queues the whole recording again.
+        transcript.Status = TranscriptStatus.Pending;
+
+        Assert.True(await run.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.True(_engine.Cancelled);
+        Assert.Equal(TranscriptStatus.Pending, transcript.Status);
+        Assert.Equal(0, _unitOfWork.Saves);
+        Assert.Empty(_publisher.Published);
+    }
+
+    [Fact]
+    public async Task A_run_still_current_is_not_stopped_by_its_watch()
+    {
+        var transcript = Queued();
+        var started = new TaskCompletionSource();
+        _engine.Hold = started;
+        using var shutdown = new CancellationTokenSource();
+
+        var run = Task.Run(() => Service().ProcessNextAsync(shutdown.Token));
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await Task.Delay(200);
+
+        Assert.False(run.IsCompleted);
+        Assert.False(_engine.Cancelled);
+        await shutdown.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run);
+        Assert.Equal(TranscriptStatus.Processing, transcript.Status);
     }
 
     [Fact]

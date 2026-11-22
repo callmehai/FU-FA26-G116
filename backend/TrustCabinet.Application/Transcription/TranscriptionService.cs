@@ -396,20 +396,72 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         if (transcript is null) return;
         var recording = transcript.Recording;
         SpeechTranscription result;
+        // Cancelled when the run goes stale: a room-mic take was appended meanwhile (ADR-0041), the recording was
+        // erased, or the transcript was queued again. The worker stops on the dropped connection, and the newer version
+        // is claimed next instead of waiting behind minutes of work whose result would be thrown away.
+        using var stale = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        using var stopWatching = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var watch = WatchAsync(transcriptId, stale, stopWatching.Token);
         try
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
             await using var audio = storage.OpenRead(recording.StoragePath);
-            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, ct);
+            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException && stale.IsCancellationRequested && !ct.IsCancellationRequested)
+        {
+            logger.LogInformation("Transcription of recording {RecordingId} stopped: a newer version waits", recording.Id);
+            return;
         }
         catch (Exception ex) when (ex is SpeechEngineException or FileNotFoundException or DirectoryNotFoundException)
         {
             var message = ex is SpeechEngineException speech ? speech.UserMessage : "Tệp âm thanh không còn trên máy chủ.";
             logger.LogWarning(ex, "Transcription of recording {RecordingId} failed: {Reason}", recording.Id, message);
+            await StopAsync(stopWatching, watch);
             await FinishAsync(transcriptId, null, message, ct);
             return;
         }
+        finally
+        {
+            // The watch shares this scope's storage: it must be over before anything else reads or writes.
+            await StopAsync(stopWatching, watch);
+        }
         await FinishAsync(transcriptId, result, null, ct);
+    }
+
+    /// <summary>How often a running transcript checks that it is still the version to make.</summary>
+    internal TimeSpan StaleCheckEvery { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Cancels <paramref name="stale"/> once the transcript is no longer Processing: whatever moved it (a new take, an
+    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away.
+    /// </summary>
+    private async Task WatchAsync(Guid transcriptId, CancellationTokenSource stale, CancellationToken ct)
+    {
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(StaleCheckEvery, clock, ct);
+                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct)) continue;
+                await stale.CancelAsync();
+                return;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (PersistenceException ex)
+        {
+            // Not being able to look is no reason to stop: the result is checked again before it is written.
+            logger.LogWarning(ex.InnerException ?? ex, "Could not check whether transcript {TranscriptId} is stale", transcriptId);
+        }
+    }
+
+    private static async Task StopAsync(CancellationTokenSource stopWatching, Task watch)
+    {
+        if (!stopWatching.IsCancellationRequested) await stopWatching.CancelAsync();
+        await watch;
     }
 
     /// <summary>
@@ -442,8 +494,13 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 // Matched before anything is deleted: it locks the consents it reads, and a withdrawal holding one of
                 // them may be waiting on the speaker rows deleted below.
                 var (suggestions, nameable) = await SuggestSpeakersAsync(recording.MeetingId, result, token);
+                // A short line no enrolled voice matched, or one of interjections only, is left out (team test
+                // 21/11/2026), and a voice left with no line goes with it: the rest are numbered again without gaps.
+                var lines = result.Segments.Where(s => s.Text.Length > 0 && ShortLineRules.KeepsRoomLine(s.Text,
+                    s.EndMs - s.StartMs, s.Speaker is not null && suggestions.ContainsKey(s.Speaker))).ToList();
+                var labels = ShortLineRules.Renumber(lines.Select(s => s.Speaker));
                 await transcripts.DeleteSegmentsAsync(transcriptId, token);
-                transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
+                transcripts.AddSegments(lines.Select((s, i) =>
                 {
                     var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs, s.EndMs, recording.Takes);
                     return new TranscriptSegment
@@ -451,7 +508,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
                         Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
                         WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(s.Text, s.WordStartsMs),
-                        SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
+                        SpeakerLabel = s.Speaker is null ? "" : labels[s.Speaker], CreatedAt = now, UpdatedAt = now,
                     };
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
@@ -459,13 +516,13 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 // the Secretary may still change, and which goes when that person withdraws Voice ID consent. Only
                 // for someone who agreed to that (notice 1.2, ADR-0048); the others are suggested, as they agreed.
                 var sure = voiceOptions.Value.AutoAssignThreshold;
-                var speakers = result.Speakers.Select(sp =>
+                var speakers = result.Speakers.Where(sp => labels.ContainsKey(sp.Label)).Select(sp =>
                 {
                     var guess = suggestions.GetValueOrDefault(sp.Label);
                     var named = guess is not null && guess.Score >= sure && nameable.Contains(guess.UserId);
                     return new TranscriptSpeaker
                     {
-                        TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
+                        TranscriptId = transcriptId, Label = labels[sp.Label], SpeechMs = sp.SpeechMs,
                         SuggestedUserId = guess?.UserId, SuggestionScore = guess?.Score,
                         AssignedUserId = named ? guess!.UserId : null, AssignedAt = named ? now : null,
                         CreatedAt = now, UpdatedAt = now,

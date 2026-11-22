@@ -4,12 +4,13 @@ import os
 import socket
 import sys
 import threading
+import time
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from speech.pipeline import UnreadableAudio  # noqa: E402
+from speech.pipeline import Cancelled, UnreadableAudio  # noqa: E402
 from speech.server import SpeechServer, parse_context, parse_transcribe_query, Rejected  # noqa: E402
 
 
@@ -21,12 +22,23 @@ class FakeEngine:
         self.fail_with = None
         self.embed_result = (True, {"embedding": [1.0], "model": "emb@1"})
 
-    def transcribe_file(self, path, diarize=True, speakers=None, profile="room", context=None):
+        self.wait_for_cancel = False
+        self.saw_cancel = threading.Event()
+
+    def transcribe_file(self, path, diarize=True, speakers=None, profile="room", context=None, cancelled=None):
         self.calls.append(("transcribe", Path(path).read_bytes(), diarize, speakers, path))
         self.profile = profile
         self.context = context
         if self.fail_with:
             raise self.fail_with
+        if self.wait_for_cancel:
+            # A long run: it asks between steps, as pipeline.Engine does, until its caller is gone.
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                if cancelled is not None and cancelled():
+                    self.saw_cancel.set()
+                    raise Cancelled()
+                time.sleep(0.01)
         return {"durationMs": 1, "segments": [], "speakers": []}
 
     def embed_file(self, path):
@@ -142,6 +154,21 @@ class OpenServerTests(ServerTests):
 
     def test_embed_takes_no_query(self):
         self.assertEqual(self.request("POST", "/v1/embed?x=1", b"a"), (400, {"error": "invalid_parameter"}))
+
+
+    def test_a_run_whose_caller_hung_up_is_stopped(self):
+        self.engine.wait_for_cancel = True
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.sendall(b"POST /v1/transcribe HTTP/1.1\r\nHost: x\r\nContent-Length: 3\r\n\r\nabc")
+            deadline = time.monotonic() + 5
+            while not self.engine.calls and time.monotonic() < deadline:
+                time.sleep(0.01)
+        self.assertTrue(self.engine.saw_cancel.wait(3))
+
+    def test_a_caller_still_waiting_gets_its_answer(self):
+        status, body = self.request("POST", "/v1/transcribe", body=b"abc")
+        self.assertEqual(status, 200)
+        self.assertFalse(self.engine.saw_cancel.is_set())
 
 
 class AuthenticatedServerTests(ServerTests):
