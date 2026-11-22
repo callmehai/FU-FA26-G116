@@ -189,7 +189,9 @@ Các bước xử lý một bản ghi:
 6. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
    bằng nhau.
 7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
-   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Các đoạn liền nhau của cùng một người, cách nhau
+   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Model luôn đọc chữ thường: chữ hoa nó gắn được giữ riêng và
+   chỉ đặt vào ở cuối, cộng thêm chữ hoa cho từ đầu mỗi câu (sau `.` `?` `!`). Đọc lại chính chữ hoa của mình, model
+   viết hoa luôn từ kế tiếp, và sau ba lần cả dòng thành Viết Hoa Như Tiêu Đề (buổi họp 22/11/2026). Các đoạn liền nhau của cùng một người, cách nhau
    không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
    chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
    lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
