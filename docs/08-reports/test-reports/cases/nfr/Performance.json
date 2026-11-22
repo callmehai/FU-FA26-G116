@@ -1,0 +1,39 @@
+{
+  "sheet": "Performance",
+  "cases": [
+    {
+      "id": "TC-PERF-001",
+      "requirement": "Page load time",
+      "scenario": "Initial load of the application after sign-in (one user, empty cache)",
+      "tool": "Manual (browser DevTools, Network tab, cache disabled)",
+      "target": "≤ 3 s to the meeting list being usable",
+      "condition": "Internal network ≥ 10 Mbps; measure 5 times, record the slowest",
+      "note": "Load with many users is TC-PERF-004"
+    },
+    {
+      "id": "TC-PERF-002",
+      "requirement": "Document upload and preview",
+      "scenario": "Upload a 10 MB PDF to a meeting and open its preview",
+      "tool": "Manual (browser DevTools)",
+      "target": "Listed ≤ 5 s after transfer; preview opens ≤ 3 s",
+      "condition": "One upload at a time; transfer time excluded"
+    },
+    {
+      "id": "TC-PERF-003",
+      "requirement": "Notification and real-time update latency",
+      "scenario": "Approver receives the in-app notification after the Organizer submits a meeting",
+      "tool": "Manual (two browsers side by side, stopwatch)",
+      "target": "≤ 10 s from \"Gửi duyệt\" to the bell count changing",
+      "condition": "Approver's browser already open and connected"
+    },
+    {
+      "id": "TC-PERF-004",
+      "requirement": "Concurrent users",
+      "scenario": "System stays responsive with many users browsing at once",
+      "tool": "k6 (if available) / Manual",
+      "target": "100 concurrent users, error rate < 1%, 95% of API requests ≤ 1 s",
+      "condition": "Single-server Docker deployment as on the test server",
+      "note": "A formal load test may be deferred; record it as Skip with the reason if not run"
+    }
+  ]
+}

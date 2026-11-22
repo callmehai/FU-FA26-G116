@@ -1,0 +1,48 @@
+{
+  "sheet": "Security",
+  "cases": [
+    {
+      "id": "TC-SEC-001",
+      "requirement": "Authentication required",
+      "scenario": "Signed-out visitor cannot open a signed-in screen or call the API",
+      "role": "No session",
+      "given": "A fresh browser with no session; a meeting exists",
+      "when": "Open /mgmt/meetings directly; then call GET /api/meetings from the same browser",
+      "then": "The browser lands on the sign-in page; the API answers 401 and returns no meeting data",
+      "priority": "Critical",
+      "note": "Spot-check on any two other signed-in screens as well"
+    },
+    {
+      "id": "TC-SEC-002",
+      "requirement": "Sign-in rate limiting",
+      "scenario": "Repeated wrong passwords for one email are throttled",
+      "role": "No session",
+      "given": "An active account; no sign-in attempts in the last minute",
+      "when": "Submit a wrong password 6 times within 60 seconds for that email",
+      "then": "From the 6th attempt the form shows \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" (MSG414, HTTP 429 with Retry-After); after the window passes the correct password signs in",
+      "priority": "High",
+      "note": "SCRUM-132 · MSG414"
+    },
+    {
+      "id": "TC-SEC-003",
+      "requirement": "Role-based access control and least privilege",
+      "scenario": "Member cannot read a meeting they are not invited to by guessing its URL",
+      "role": "Member (not a participant)",
+      "given": "A published meeting of which Member D is not a participant; its URL copied from the Organizer's browser",
+      "when": "Signed in as Member D, open the copied URL; then call GET /api/meetings/{id}",
+      "then": "The page shows the same not-found screen as an unknown URL; the API answers 404, not 403, and the meeting does not appear in Member D's list",
+      "priority": "Critical",
+      "note": "404 hides that the row exists (AGENTS.md 403/404 rule)"
+    },
+    {
+      "id": "TC-SEC-004",
+      "requirement": "Document security levels",
+      "scenario": "Secret document is not reachable through a guessed download link",
+      "role": "Member (other)",
+      "given": "A Secret document attached to a meeting Member D is not on; its download link copied from an authorised browser",
+      "when": "Signed in as Member D, open the copied link",
+      "then": "No file bytes are returned (404); the attempt does not appear as a successful access in the audit log",
+      "priority": "Critical"
+    }
+  ]
+}

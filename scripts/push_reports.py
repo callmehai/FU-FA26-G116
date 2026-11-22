@@ -110,10 +110,15 @@ TARGETS: dict[str, tuple[str, Path, Path | None]] = {
         None,
     ),
     # Local "System Test" is the Drive "System Test_FRs"; local "Acceptance Test" is the
-    # Drive "5.5 Acceptance Test Scripts". Drive 5.4 (System Test_NFRs) has no local source.
+    # Drive "5.5 Acceptance Test Scripts". Local "System Test_NFRs" is Drive 5.4.
     "5.3": (
         "1a8pRvfEquTioVXf6XRXf0iiBukVWEXzQ",
-        TEST_DIR / "Report5.3_System_Test.xlsx",
+        TEST_DIR / "Report5.3_System_Test_FRs.xlsx",
+        None,
+    ),
+    "5.4": (
+        "1Y_i_wnKfyc1qUXSjnaJFwvavjtFvsOyj",
+        TEST_DIR / "Report5.4_System_Test_NFRs.xlsx",
         None,
     ),
     "5.5": (

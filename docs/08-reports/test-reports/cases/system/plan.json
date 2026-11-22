@@ -1,7 +1,7 @@
 {
   "project": "TrustCabinet",
   "projectCode": "SEP490-G116",
-  "file": "Report5.3_System_Test.xlsx",
+  "file": "Report5.3_System_Test_FRs.xlsx",
   "title": "SYSTEM TEST REPORT DOCUMENT",
   "environment": "1. TrustCabinet test server (Staging build of app) or local build of the same commit\n2. Database: PostgreSQL 17\n3. LiveKit server, speech worker, local language model for the AI steps\n4. Google Chrome (latest) and Microsoft Edge on desktop; Chrome on an Android phone (390px)\n5. Mailbox the tester can read for invitation and notification emails",
   "note": "Round 1 = first full system run. Pending = not run yet; N/A = workflow step not applicable to this build.",

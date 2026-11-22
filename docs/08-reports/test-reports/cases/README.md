@@ -13,7 +13,8 @@ cách chia việc: [AGENTS.md](../AGENTS.md).
 | `FE-xx/ui.json` | Case UI của Feature → `Report5.2_Integration_Test.xlsx` |
 | `FE-xx/api.json` | Case API của Feature → `Report5.2.2_Integration_Test_API_Test.xlsx` |
 | `FE-xx/unit/<sheet>.json` | Các dòng UTC của một sheet unit → `Report5.1_Unit_Test.xlsx` |
-| `system/` | Nguồn của `Report5.3_System_Test.xlsx` (workflow end-to-end) — có README riêng: [system/README.md](system/README.md) |
+| `system/` | Nguồn của `Report5.3_System_Test_FRs.xlsx` (workflow end-to-end) — có README riêng: [system/README.md](system/README.md) |
+| `nfr/` | Nguồn của `Report5.4_System_Test_NFRs.xlsx` (yêu cầu phi chức năng) — có README riêng: [nfr/README.md](nfr/README.md) |
 | `preview/FE-xx/` | Bản Markdown sinh ra để đọc trong PR — không sửa tay |
 
 Sinh lại, tại thư mục gốc repository (đóng Excel trước):

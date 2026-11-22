@@ -211,9 +211,8 @@ tương ứng, giữ nguyên file ID và URL.
 | 7 | `Report-7_Final Project Document.docx` | [Report 7 – Final Project Document](https://docs.google.com/document/d/1jXB0xKyxTkIQ7X_qodNX7H0MWYnGo8Fi/edit) |
 
 Report 5 còn có các workbook kiểm thử riêng; chúng không phải file đích của DOCX Report 5.0. Bản nguồn
-nằm ở `test-reports/`; `push_reports.py tests` đẩy cả bộ. Tên local và tên Drive lệch nhau ở hai chỗ:
-`Report5.3_System_Test.xlsx` đi vào 5.3 (FRs), `Report5.4_Acceptance_Test.xlsx` đi vào 5.5. Drive 5.4
-(NFRs) chưa có bản nguồn nên không bị ghi. Drive 5.1 vốn là `.xls`; khi đẩy, file được đổi sang `.xlsx`
+nằm ở `test-reports/`; `push_reports.py tests` đẩy cả bộ. Tên local và tên Drive lệch nhau ở một chỗ:
+`Report5.4_Acceptance_Test.xlsx` đi vào 5.5. Drive 5.1 vốn là `.xls`; khi đẩy, file được đổi sang `.xlsx`
 (ID/link giữ nguyên). Report 5.2.2 chưa có trên Drive nên được tạo mới trong thư mục Docs:
 
 | Report | Tên file trên Drive | Link Drive |
