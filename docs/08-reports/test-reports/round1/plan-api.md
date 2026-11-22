@@ -333,14 +333,14 @@ Tổng: 259 case nhóm B1, 42 case nhóm B2.
 - TRANS_API_IT135: Verify GET /api/me/voice/samples/{sampleId}/audio answers 404 for an unknown id and 401 without a token.
 - TRANS_API_IT137: Verify DELETE /api/me/voice/samples/{sampleId} frees a place under the limit of 5. _[ngoài]_
 - TRANS_API_IT140: Verify DELETE /api/me/voice/samples/{sampleId} without a token answers 401.
-- TRANS_API_IT152: Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples applies the same quality checks as a person's own sample. _[ngoài]_
-- TRANS_API_IT153: Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples answers 503 when the speech worker is not running. _[chèn lỗi · ngoài]_
-- TRANS_API_IT164: Verify GET /api/admin/ai without a token answers 401.
-- TRANS_API_IT165: Verify GET /api/admin/ai refuses an Administrator whose role lost AdminUsers after the token was issued. _[thời gian]_
-- TRANS_API_IT170: Verify PUT /api/admin/ai refuses a missing address when the API is chosen and an invalid mode.
-- TRANS_API_IT171: Verify PUT /api/admin/ai refuses a key with spaces or outside 8 to 500 characters and a model name with spaces or over 100 characters.
-- TRANS_API_IT172: Verify PUT /api/admin/ai refuses removing the key while the API is in use.
-- TRANS_API_IT178: Verify POST /api/admin/ai/test reports the in-house machine as not configured or not answering. _[ngoài]_
+- TRANS_API_IT151: Verify POST /api/users/{userId}/voice-collection/samples applies the same quality checks as a person's own sample. _[ngoài]_
+- TRANS_API_IT152: Verify POST /api/users/{userId}/voice-collection/samples answers 503 when the speech worker is not running. _[chèn lỗi · ngoài]_
+- TRANS_API_IT162: Verify GET /api/admin/ai without a token answers 401.
+- TRANS_API_IT163: Verify GET /api/admin/ai refuses an Administrator whose role lost AdminUsers after the token was issued. _[thời gian]_
+- TRANS_API_IT168: Verify PUT /api/admin/ai refuses a missing address when the API is chosen and an invalid mode.
+- TRANS_API_IT169: Verify PUT /api/admin/ai refuses a key with spaces or outside 8 to 500 characters and a model name with spaces or over 100 characters.
+- TRANS_API_IT170: Verify PUT /api/admin/ai refuses removing the key while the API is in use.
+- TRANS_API_IT176: Verify POST /api/admin/ai/test reports the in-house machine as not configured or not answering. _[ngoài]_
 
 **FE-11 Voting** (15)
 

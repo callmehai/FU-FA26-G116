@@ -528,7 +528,7 @@
         },
         {
           "id": "TRANS_FT27",
-          "description": "Verify the machine's guess leads the picker as \"Khớp giọng nhất\" and a sure match is named automatically.",
+          "description": "Verify the machine's guess leads the picker as \"Khớp giọng nhất\" and a suggested match is named automatically.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
             "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
@@ -542,10 +542,7 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on the \"Bản ghi\" tab; a participant with Voice ID consent to notice 1.2 or later whose voice matches."
           ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent) · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/13-secretary-AC18-desktop-goi-y-khop-giong-nhat.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Every_suggested_match_is_named_by_the_machine_and_the_name_goes_with_the_consent) · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/13-secretary-AC18-desktop-goi-y-khop-giong-nhat.png"
         },
         {
           "id": "TRANS_FT28",
@@ -1297,19 +1294,19 @@
         },
         {
           "id": "TRANS_FT68",
-          "description": "Verify the tab \"Thư ký thu hộ\" lists what Secretaries recorded and lets the person hear and delete it.",
+          "description": "Verify the card \"Người khác thu hộ\" lists what collectors recorded and lets the person hear and delete it.",
           "procedure": [
-            "Open \"/mgmt/my-voice?tab=proxy\" (or click the notification \"Thư ký đã thu giọng mẫu của bạn\")."
+            "Open \"/mgmt/my-voice\" (or click the notification about a sample recorded for you)."
           ],
           "expected": [
-            "The tab \"Thư ký thu hộ\" shows each sample with the meeting title as a link, \"<Secretary> · <date>\" (tooltip with length and time) and buttons \"Nghe lại mẫu thu hộ 1\" and \"Xoá mẫu thu hộ 1\"; deleting asks \"Xoá mẫu thu hộ?\" — \"Mẫu này bị xoá hẳn, không lấy lại được.\"",
-            "With no sample: \"Chưa có mẫu nào. Thư ký thu ở cuộc họp trực tiếp hoặc kết hợp bạn dự.\"; without the new notice: \"Đồng ý điều khoản mới ở trên để Thư ký cuộc họp thu giọng mẫu hộ bạn.\""
+            "The card \"Người khác thu hộ\" shows \"<n>/50\" and each sample with \"Ngoài cuộc họp\", \"<collector> · <date>\" (tooltip with length and time) and buttons \"Nghe lại mẫu thu hộ 1\" and \"Xoá mẫu thu hộ 1\"; deleting asks \"Xoá mẫu thu hộ?\" — \"Mẫu này bị xoá hẳn, không lấy lại được.\"",
+            "With no sample: \"Chưa có mẫu nào.\"; without the new notice: \"Đồng ý điều khoản mới ở trên để người khác thu giọng mẫu hộ bạn.\""
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a participant whose Secretary recorded a sample."
+            "Signed in as a person whose consent is to the current notice and for whom a collector recorded a sample."
           ],
-          "note": "UC-81a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
           "id": "TRANS_FT69",
@@ -1318,14 +1315,14 @@
             "Open \"/mgmt/my-voice\" and click \"Xem và đồng ý\" in the notice \"Điều khoản Voice ID đã thay đổi.\""
           ],
           "expected": [
-            "The dialog \"Điều khoản Voice ID mới\" lists what changed (for example \"Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.\") and \"Chưa đồng ý thì mọi thứ giữ như cũ.\"",
+            "The dialog \"Điều khoản Voice ID mới\" lists what changed (for example \"Thư ký cuộc họp không còn thu giọng mẫu hộ. Người thu hộ hỏi ý bạn trước mỗi lần thu.\") and \"Chưa đồng ý thì mọi thứ giữ như cũ.\"",
             "\"Đồng ý điều khoản mới\" renews the consent (200/MSG305) keeping the samples; \"Để sau\" changes nothing."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user whose consent is to notice 1.2."
           ],
-          "note": "UC-81b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed)"
         },
         {
           "id": "TRANS_FT70",
@@ -1367,56 +1364,56 @@
       "cases": [
         {
           "id": "TRANS_FT72",
-          "description": "Verify the Secretary with the capability sees the panel on the \"Bản ghi\" tab of an in-person or hybrid meeting.",
+          "description": "Verify an account with \"Thu giọng mẫu hộ\" opens one person's voice collection from the user list.",
           "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\"."
+            "Open \"/mgmt/users\" and click \"Quản lý giọng nói thu hộ của <name>\" on a row."
           ],
           "expected": [
-            "The card \"Giọng mẫu cho mic phòng\" lists each active participant with a \"<n>/5\" count when they have consented or the word \"Chưa đồng ý\" (tooltip \"Người này chưa bật Voice ID, hoặc chưa đồng ý điều khoản mới, ở trang Giọng nói của tôi\") and a \"Thu\" button only for those who can be recorded.",
-            "The info tip explains that only people who turned Voice ID on themselves can be recorded."
+            "The dialog \"Giọng nói thu hộ: <name>\" shows \"<n>/50 mẫu thu hộ\" (tooltip \"Mọi mẫu thu hộ của người này\"), the button \"Thu\" only when the person has agreed to the current notice, and each sample as \"Ngoài cuộc họp\" or its meeting with \"<collector> · <date>\".",
+            "For a person who has not agreed: \"Người này chưa đồng ý điều khoản Voice ID mới. Họ bật ở trang Giọng nói của tôi.\" and no \"Thu\" button."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary holding \"Thu giọng mẫu hộ\" on a Published or InProgress hybrid meeting with one consenting and one non-consenting participant."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\" (Quản trị viên by default); one consenting and one non-consenting user."
           ],
-          "note": "UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_list_shows_the_active_people_their_consent_their_count_and_only_this_meetings_samples)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
           "id": "TRANS_FT73",
-          "description": "Verify the panel is hidden from everyone but the meeting's Secretary and for online or Secret meetings.",
+          "description": "Verify the voice collection is hidden from accounts without \"Thu giọng mẫu hộ\".",
           "procedure": [
-            "Open the \"Bản ghi\" tab as the Chair, as a Secretary whose role lacks \"Thu giọng mẫu hộ\", and as the Secretary of an Online meeting and of a Secret meeting."
+            "Open \"/mgmt/users\" as an account that has \"Quản lý người dùng\" but not \"Thu giọng mẫu hộ\" (and as a Chair or a Secretary)."
           ],
           "expected": [
-            "No card \"Giọng mẫu cho mic phòng\" appears in any of these; a direct request answers 403 (no capability) or 404 (not this meeting's Secretary, no room mic, Secret)."
+            "No button \"Quản lý giọng nói thu hộ của <name>\" and no column of it appears; a direct API request answers 403 with the capability missing and 401 when not signed in."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair of a hybrid meeting; a Secretary without the capability; Secretaries of an Online meeting and a Secret meeting."
+            "An account with \"Quản lý người dùng\" but without \"Thu giọng mẫu hộ\"; a Chair and a Secretary account."
           ],
-          "note": "UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_meeting_without_a_room_mic_a_secret_one_or_a_cancelled_one_is_not_found)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         },
         {
           "id": "TRANS_FT74",
-          "description": "Verify the Secretary records a participant on the room's mic.",
+          "description": "Verify the collector records a person who agreed, with no meeting involved.",
           "procedure": [
-            "On the \"Bản ghi\" tab click \"Thu\" beside a consenting participant.",
+            "In the dialog click \"Thu\", tick \"Đã hỏi, <name> đồng ý cho thu giọng mẫu lần này\".",
             "Click \"Bắt đầu ghi\", let them read the passage for at least 8 seconds, click \"Dừng\", listen, and click \"Lưu giọng mẫu\"."
           ],
           "expected": [
-            "The dialog is titled \"Thu giọng mẫu: <name>\" with the hint \"Dùng micro phòng họp. Mời người này ngồi chỗ quen thuộc, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:\".",
-            "A toast shows \"Đã lưu giọng mẫu thu hộ.\" (201/MSG473); the person's list shows \"Mẫu 1\" with length and date and the count rises.",
-            "The participant (second browser) receives a notification \"Thư ký đã thu giọng mẫu của bạn\" and sees the sample on the tab \"Thư ký thu hộ\" of \"/mgmt/my-voice\"."
+            "The dialog is titled \"Thu giọng mẫu: <name>\" with the hint about the room microphone; \"Lưu giọng mẫu\" stays off until the box is ticked.",
+            "A toast shows \"Đã lưu giọng mẫu thu hộ.\" (201/MSG473); the list shows the new sample as \"Ngoài cuộc họp\" and the count rises.",
+            "The person (second browser) receives a notification about it and sees the sample in the card \"Người khác thu hộ\" of \"/mgmt/my-voice\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary holding \"Thu giọng mẫu hộ\" on a Published or InProgress hybrid meeting; a consenting participant in a second browser; microphone permission granted; the speech worker running."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a consenting person in a second browser; microphone permission granted; the speech worker running."
           ],
-          "note": "UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_sample_is_the_persons_own_kept_encrypted_audited_and_they_are_told)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (A_collector_records_a_consenting_person_with_no_meeting_and_the_person_is_told_and_sees_it)"
         },
         {
           "id": "TRANS_FT75",
-          "description": "Verify the Secretary hears and deletes a sample taken in this meeting.",
+          "description": "Verify the collector hears and deletes any sample taken for the person.",
           "procedure": [
             "Click \"Nghe lại mẫu 1 của <name>\".",
             "Click \"Xoá mẫu 1 của <name>\" and confirm."
@@ -1427,63 +1424,54 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on a meeting where a sample was recorded."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a person with at least one proxy sample."
           ],
-          "note": "UC-81d | UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited) · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/08-secretary-AC15-desktop-danh-sach-thu-ho.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/11-secretary-AC15-desktop-da-thu-mau-1.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/12-secretary-AC15-desktop-xac-nhan-xoa-mau-thu-ho.png; tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/13-secretary-AC15-desktop-da-xoa-mau-thu-ho.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
           "id": "TRANS_FT76",
-          "description": "Verify \"Thu\" is not offered at the limit or after the meeting is over.",
+          "description": "Verify \"Thu\" is refused at the limit of 50 proxy samples.",
           "procedure": [
-            "Look at a participant with 5 Secretary samples, then at the same panel of an Ended meeting."
+            "Open the dialog of a person who already has 50 proxy samples and try to record one more."
           ],
           "expected": [
-            "No \"Thu\" button beside the person with \"5/5\"; for an Ended meeting the notice reads \"Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.\" and no \"Thu\" button appears (409/MSG476 and 409/MSG477 on direct calls)."
+            "The count reads \"50/50 mẫu thu hộ\"; the take is refused with 409/MSG476 and nothing is stored. No rule ties the take to a meeting, so a Published, Ended or missing meeting changes nothing."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; a participant with 5 Secretary samples; an Ended hybrid meeting."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a person with 50 proxy samples."
           ],
-          "note": "UC-86 | Boundary 5 samples | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count; Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state) · Evidence(AC16): tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/23-secretary-AC16-desktop-du-5-mau-thu-ho.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/24-secretary-AC16-desktop-hop-da-ket-thuc-khong-thu.png; tests/qa/out/SCRUM-197/20261121-172919-eb5a3255/25-chair-AC16-desktop-chu-toa-khong-co-the-thu-ho.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0075_one_collector_may_take_all_fifty_proxy_samples_and_no_more)"
         },
         {
           "id": "TRANS_FT77",
-          "description": "Verify a participant who withdrew meanwhile cannot be recorded and the dialog says why.",
+          "description": "Verify a person who withdrew meanwhile cannot be recorded and the dialog says why.",
           "procedure": [
-            "Open \"Thu\" for a participant, and while the dialog is open the participant turns Voice ID off in a second browser; then click \"Lưu giọng mẫu\"."
+            "Open \"Thu\" for a person, and while the dialog is open the person turns Voice ID off in a second browser; then click \"Lưu giọng mẫu\"."
           ],
           "expected": [
-            "The dialog shows \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\" (409/MSG475), the list refreshes and the participant now reads \"Chưa đồng ý\"; nothing is stored."
+            "The dialog shows \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\" (409/MSG475), the list refreshes and the person now reads as not agreed; nothing is stored."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; a consenting participant in a second browser."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a consenting person in a second browser."
           ],
-          "note": "UC-86 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_FT78",
           "description": "Verify a rejected take shows the reason in the dialog.",
           "procedure": [
-            "Record a take that is too short or too quiet for a participant and click \"Lưu giọng mẫu\"."
+            "Record a take that is too short or too quiet for a person and click \"Lưu giọng mẫu\"."
           ],
           "expected": [
             "The dialog shows the message of the reason (for example \"Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.\", 422/MSG309) and stays open for \"Ghi lại\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; a consenting participant; microphone permission granted."
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a consenting person; microphone permission granted."
           ],
-          "note": "UC-86 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/10-secretary-AC15-desktop-mau-thu-ho-khong-dat.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/10-secretary-AC15-desktop-mau-thu-ho-khong-dat.png"
         }
       ]
     },

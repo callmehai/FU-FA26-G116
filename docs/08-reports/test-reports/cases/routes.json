@@ -117,10 +117,6 @@
   "POST /api/meetings/{meetingId}/summary",
   "PUT /api/meetings/{meetingId}/summary",
   "POST /api/meetings/{meetingId}/summary/review",
-  "GET /api/meetings/{meetingId}/voice-collection",
-  "DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}",
-  "GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio",
-  "POST /api/meetings/{meetingId}/voice-collection/{userId}/samples",
   "GET /api/meetings/{meetingId}/votes",
   "POST /api/meetings/{meetingId}/votes",
   "DELETE /api/meetings/{meetingId}/votes/{voteId}",
@@ -179,5 +175,9 @@
   "POST /api/users/{id}/password-reset",
   "PUT /api/users/{id}/status",
   "GET /api/users/{userId}/library",
-  "GET /api/users/{userId}/library/documents/{documentId}/content"
+  "GET /api/users/{userId}/library/documents/{documentId}/content",
+  "GET /api/users/{userId}/voice-collection",
+  "POST /api/users/{userId}/voice-collection/samples",
+  "GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio",
+  "DELETE /api/users/{userId}/voice-collection/samples/{sampleId}"
 ]

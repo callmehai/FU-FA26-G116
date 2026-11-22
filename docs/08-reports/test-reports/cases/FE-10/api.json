@@ -1381,26 +1381,23 @@
         },
         {
           "id": "TRANS_API_IT63",
-          "description": "Verify a name the machine filled in on a sure match can still be replaced by the Secretary.",
+          "description": "Verify a name the machine filled in on a suggested match can still be replaced by the person who edits the transcript.",
           "procedure": [
-            "Sign in as the meeting Secretary (POST /api/auth/login) and keep the access token.",
+            "Sign in as an account allowed to edit the transcript (POST /api/auth/login) and keep the access token.",
             "Send GET /api/recordings/{recordingId}/transcript and note a speaker with \"autoAssigned\": true.",
             "Send PUT /api/recordings/{recordingId}/speakers/<that label>\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"userId\": \"<another participantId>\" }"
           ],
           "expected": [
             "Step 2: the speaker has \"autoAssigned\": true and \"assignedName\" of the matched person.",
-            "Step 3: HTTP 200 \"MSG316\"; afterwards \"autoAssigned\" is false and \"assignedName\" is the Secretary's choice."
+            "Step 3: HTTP 200 \"MSG316\"; afterwards \"autoAssigned\" is false and \"assignedName\" is the editor's choice."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
-            "A participant whose Voice ID consent is to notice 1.2 or later and whose voice matches surely.",
-            "Active Secretary account of that meeting supplied by QA lead."
+            "A participant whose Voice ID consent is to notice 1.2 or later and whose voice has a suggested match (score 0.6 or higher, ADR-0074).",
+            "Active account allowed to edit the transcript, supplied by QA lead."
           ],
-          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-46b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Every_suggested_match_is_named_by_the_machine_and_the_name_goes_with_the_consent)"
         }
       ]
     },
@@ -2203,24 +2200,21 @@
         },
         {
           "id": "TRANS_API_IT99",
-          "description": "Verify GET /api/me/voice shows the samples Secretaries recorded for the caller in a separate set.",
+          "description": "Verify GET /api/me/voice shows the samples a collector recorded for the caller in a separate set.",
           "procedure": [
-            "Sign in as the participant whose Secretary recorded a sample (POST /api/auth/login) and keep the access token.",
+            "Sign in as the person a collector recorded a sample for (POST /api/auth/login) and keep the access token.",
             "Send GET /api/me/voice\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
             "HTTP 200 OK.",
-            "\"proxy\": { \"allowed\": true, \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"playable\": true, \"meetingId\", \"meetingTitle\", \"collectedByName\" } ], \"maxSamples\": 5 }.",
-            "\"samples\" (the own set) does not contain the Secretary's recording."
+            "\"proxy\": { \"allowed\": true, \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"playable\": true, \"meetingId\": null, \"meetingTitle\": null, \"collectedByName\" } ], \"maxSamples\": 50 }.",
+            "\"samples\" (the own set) does not contain the collector's recording."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A participant with consent to notice 1.3 and one sample taken by a Secretary in a hybrid meeting."
+            "A person with consent to the current notice (1.5) and one sample taken by a holder of \"Thu giọng mẫu hộ\"."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
           "id": "TRANS_API_IT100",
@@ -2230,16 +2224,13 @@
             "Send GET /api/me/voice\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
-            "HTTP 200 OK with \"consent.noticeVersion\": \"1.2\" while \"noticeVersion\" is \"1.3\" and \"proxy.allowed\": false: no Secretary can record this person until they agree to 1.3."
+            "HTTP 200 OK with \"consent.noticeVersion\": \"1.2\" while \"noticeVersion\" is \"1.5\" and \"proxy.allowed\": false: nobody can record this person until they agree to the current notice."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A user whose standing consent was given to notice 1.2 (QA lead seeds it)."
           ],
-          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed)"
         },
         {
           "id": "TRANS_API_IT101",
@@ -2359,22 +2350,19 @@
           "description": "Verify POST /api/me/voice/consent renews an older consent in place and keeps the samples.",
           "procedure": [
             "Sign in as the user whose consent is to notice 1.2 with two samples (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.3\" }",
+            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.5\" }",
             "Send GET /api/me/voice."
           ],
           "expected": [
             "Step 2: HTTP 200 OK \"MSG305\".",
-            "Step 3: \"consent.noticeVersion\" is \"1.3\", \"samples\" still has two entries and \"proxy.allowed\" is true.",
+            "Step 3: \"consent.noticeVersion\" is \"1.5\", \"samples\" still has two entries and \"proxy.allowed\" is true.",
             "An audit row \"VoiceConsentRenewed\" keeps both versions (\"from\" and \"to\") as evidence."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A user whose standing consent is to notice 1.2 with two samples (QA lead seeds it)."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed; One_consent_covers_both_sets)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed; One_consent_covers_both_sets)"
         },
         {
           "id": "TRANS_API_IT107",
@@ -2508,11 +2496,11 @@
         },
         {
           "id": "TRANS_API_IT113",
-          "description": "Verify after withdrawal no sample can be added by the person or by a Secretary.",
+          "description": "Verify after withdrawal no sample can be added by the person or by a collector.",
           "procedure": [
             "Sign in as the user who has just withdrawn (POST /api/auth/login) and keep the access token.",
             "Send POST /api/me/voice/samples with a valid audio file\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data",
-            "As the Secretary send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples with a valid audio file."
+            "As a holder of \"Thu giọng mẫu hộ\" send POST /api/users/{userId}/voice-collection/samples with a valid audio file and personAgreed=true."
           ],
           "expected": [
             "Step 2: HTTP 409, body { \"code\": \"MSG308\", \"message\": \"Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu.\" }.",
@@ -2520,12 +2508,9 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A user who withdrew; a Secretary of a hybrid meeting that the user attends."
+            "A user who withdrew; an account holding \"Thu giọng mẫu hộ\"."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_API_IT114",
@@ -2921,7 +2906,7 @@
         },
         {
           "id": "TRANS_API_IT132",
-          "description": "Verify GET /api/me/voice/samples/{sampleId}/audio lets the person hear a sample a Secretary recorded.",
+          "description": "Verify GET /api/me/voice/samples/{sampleId}/audio lets the person hear a sample a collector recorded.",
           "procedure": [
             "Sign in as the person the Secretary recorded (POST /api/auth/login) and keep the access token.",
             "Send GET /api/me/voice/samples/{proxySampleId}/audio\nHeaders: Authorization: Bearer <accessToken>"
@@ -2931,32 +2916,26 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A participant with a Secretary-recorded sample (\"playable\": true)."
+            "A person with a collector-recorded sample (\"playable\": true)."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
           "id": "TRANS_API_IT133",
-          "description": "Verify GET /api/me/voice/samples/{sampleId}/audio answers 404 for someone else's sample.",
+          "description": "Verify GET /api/me/voice/samples/{sampleId}/audio answers 404 for someone else's sample, even to the collector who took it.",
           "procedure": [
             "Sign in as the another user (POST /api/auth/login) and keep the access token.",
             "Send GET /api/me/voice/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>",
-            "Sign in as the Secretary who recorded the proxy sample and send the same request for it."
+            "Sign in as the collector who recorded the proxy sample and send the same request for it."
           ],
           "expected": [
-            "Both steps: HTTP 404 Not Found with no body, exactly as for a sample that does not exist: the Secretary hears it only through the meeting's voice-collection route."
+            "Both steps: HTTP 404 Not Found with no body, exactly as for a sample that does not exist: the collector hears it only through /api/users/{userId}/voice-collection."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A sample owned by another user and a sample recorded by this Secretary for another person."
+            "A sample owned by another user and a sample recorded by this collector for another person."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
           "id": "TRANS_API_IT134",
@@ -3052,25 +3031,22 @@
         },
         {
           "id": "TRANS_API_IT138",
-          "description": "Verify DELETE /api/me/voice/samples/{sampleId} also deletes a sample a Secretary recorded.",
+          "description": "Verify DELETE /api/me/voice/samples/{sampleId} also deletes a sample a collector recorded.",
           "procedure": [
-            "Sign in as the person the Secretary recorded (POST /api/auth/login) and keep the access token.",
+            "Sign in as the person a collector recorded for (POST /api/auth/login) and keep the access token.",
             "Send DELETE /api/me/voice/samples/{proxySampleId}\nHeaders: Authorization: Bearer <accessToken>",
-            "As the Secretary send GET /api/meetings/{meetingId}/voice-collection."
+            "As the collector send GET /api/users/{userId}/voice-collection."
           ],
           "expected": [
             "Step 2: HTTP 200 \"MSG311\" and \"proxy.samples\" no longer lists it.",
-            "Step 3: the person's \"sampleCount\" is one lower and the sample is gone from that meeting.",
-            "The audit row has scope \"proxy\" with the meeting and the Secretary."
+            "Step 3: the person's sample list no longer shows it.",
+            "The audit row has scope \"proxy\" with the collector's id."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A participant with a Secretary-recorded sample."
+            "A person with a collector-recorded sample."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
           "id": "TRANS_API_IT139",
@@ -3113,116 +3089,91 @@
       ]
     },
     {
-      "title": "GET /api/meetings/{meetingId}/voice-collection",
+      "title": "GET /api/users/{userId}/voice-collection",
       "uc": [
-        "UC-81c"
+        "UC-86"
       ],
       "cases": [
         {
           "id": "TRANS_API_IT141",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection lists the people, their consent and only this meeting's samples.",
+          "description": "Verify GET /api/users/{userId}/voice-collection lists the person's consent and every proxy sample taken for them, not their own.",
           "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
             "HTTP 200 OK.",
-            "Body: { \"canCollect\": true, \"maxSamples\": 5, \"people\": [ { \"userId\", \"fullName\", \"role\", \"consented\", \"sampleCount\", \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"collectedByName\" } ] } ] }.",
-            "\"consented\" is true only for a person whose consent is to notice 1.3; \"sampleCount\" counts the person's Secretary samples in every meeting while \"samples\" lists only those recorded in this meeting."
+            "Body: { \"consented\": true, \"canCollect\": true, \"maxSamples\": 50, \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"collectedByName\", \"meetingId\" } ] }.",
+            "\"samples\" lists every sample taken for the person by someone else, oldest first: one taken in a meeting before the Secretary role was removed (\"meetingId\" set) and one taken with no meeting (\"meetingId\": null).",
+            "The person's own samples are not listed."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "One participant consented to notice 1.3, one has not agreed."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "The person holds a sample taken in a meeting, a sample taken with no meeting, and a sample they recorded themself."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_list_shows_the_active_people_their_consent_their_count_and_only_this_meetings_samples)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0071 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
           "id": "TRANS_API_IT142",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection still lists people when the meeting can no longer collect.",
+          "description": "Verify GET /api/users/{userId}/voice-collection says a person cannot be recorded when they have not agreed to the proxy notice.",
           "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection for a person with no Voice ID consent.",
+            "Repeat for a person whose consent is to notice 1.3."
           ],
           "expected": [
-            "HTTP 200 OK with \"canCollect\": false for a meeting that is Ended (the screen then shows \"Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.\"); the samples can still be heard and deleted."
+            "Both steps: HTTP 200 OK with \"consented\": false and \"canCollect\": false.",
+            "Nothing is offered to record: the person has to agree on their own \"Giọng nói của tôi\" page first."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "The same meeting in status Ended."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with no Voice ID consent, and one whose consent is to notice 1.3."
           ],
-          "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_API_IT143",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection answers 403 without the VoiceCollector capability, even to the meeting's Secretary.",
+          "description": "Verify GET /api/users/{userId}/voice-collection answers 404 for a person who does not exist or is deactivated.",
           "procedure": [
-            "Sign in as the Secretary whose role lost the \"Thu giọng mẫu hộ\" capability (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection with a random {userId}.",
+            "Send it with the {userId} of a deactivated account."
           ],
           "expected": [
-            "HTTP 403 Forbidden with no list."
+            "Both steps: HTTP 404 Not Found with no body."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "The Secretary's role does not hold VoiceCollector (QA lead removes it in the role matrix)."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A deactivated account that agreed to Voice ID."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_API_IT144",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection answers 404 for a collector who is not the current Secretary of that meeting.",
+          "description": "Verify GET /api/users/{userId}/voice-collection answers 403 without the VoiceCollector capability, even to a former Secretary.",
           "procedure": [
-            "Sign in as the user who holds VoiceCollector but is only a Member or Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as an account whose role does not hold VoiceCollector, including a former Secretary of a meeting (POST /api/auth/login), and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>",
+            "Repeat with a token issued while the role still held the capability, after QA lead removed it."
           ],
           "expected": [
-            "HTTP 404 Not Found with no body: the meeting is answered as if it did not exist, and a Secretary replaced during the meeting loses access at once."
+            "Both steps: HTTP 403 Forbidden with no list: the capability is re-read from the database, not from the token."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "An account with VoiceCollector that is not the meeting's Secretary."
+            "An account without VoiceCollector, and one whose role lost it after the token was issued (QA lead removes it in the role matrix)."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         },
         {
           "id": "TRANS_API_IT145",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection answers 404 for an online-only, Secret or cancelled meeting.",
+          "description": "Verify GET /api/users/{userId}/voice-collection without a token answers 401.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection\nHeaders: Authorization: Bearer <accessToken>"
-          ],
-          "expected": [
-            "HTTP 404 Not Found for each of: an Online meeting (no room mic), a meeting marked Secret, and a Cancelled meeting."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Three meetings with that Secretary: Online, Secret, Cancelled."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_meeting_without_a_room_mic_a_secret_one_or_a_cancelled_one_is_not_found)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_API_IT146",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection without a token answers 401.",
-          "procedure": [
-            "Send GET /api/meetings/{meetingId}/voice-collection with no Authorization header."
+            "Send GET /api/users/{userId}/voice-collection with no Authorization header."
           ],
           "expected": [
             "HTTP 401 Unauthorized."
@@ -3230,138 +3181,128 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200)."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Not_signed_in_gets_401)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         }
       ]
     },
     {
-      "title": "POST /api/meetings/{meetingId}/voice-collection/{userId}/samples",
+      "title": "POST /api/users/{userId}/voice-collection/samples",
       "uc": [
-        "UC-81c"
+        "UC-86"
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT147",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples lets the Secretary record a consenting participant on the room's mic.",
+          "id": "TRANS_API_IT146",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples lets a collector record a consenting person with no meeting and tells the person.",
           "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a recording of the participant reading the passage."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a recording of the person reading the passage; form field \"personAgreed\" = true.",
+            "Sign in as the person and send GET /api/me/voice."
           ],
           "expected": [
-            "HTTP 201 Created.",
+            "Step 2: HTTP 201 Created.",
             "Body: { \"code\": \"MSG473\", \"message\": \"Đã lưu giọng mẫu thu hộ.\", \"data\": { \"id\", \"createdAt\", \"speechMs\", \"collectedByName\" } }.",
-            "The sample is the person's own, stored encrypted with its recording; an audit row \"VoiceSampleAdded\" has scope \"proxy\", the person and the meeting.",
-            "The participant receives a notification \"Thư ký đã thu giọng mẫu của bạn\" and sees the sample on the \"Thư ký thu hộ\" tab."
+            "The sample belongs to the person, is stored encrypted with its recording, names the collector and has no meeting; an audit row \"VoiceSampleAdded\" has scope \"proxy\" and \"personAgreed\": true; the person receives a notification that a sample was taken.",
+            "Step 3: the sample is in the person's \"proxy\" set with \"meetingId\" and \"meetingTitle\" null."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A participant whose consent is to notice 1.3 and who has fewer than 5 Secretary samples.",
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "The speech worker is running."
           ],
-          "note": "UC-81c | UC-86 | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_sample_is_the_persons_own_kept_encrypted_audited_and_they_are_told)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0071 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (A_collector_records_a_consenting_person_with_no_meeting_and_the_person_is_told_and_sees_it)"
+        },
+        {
+          "id": "TRANS_API_IT147",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples refuses a person who has not agreed to the proxy notice.",
+          "procedure": [
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording and \"personAgreed\" = true, for a person with no Voice ID consent.",
+            "Repeat for a person whose consent is to notice 1.3."
+          ],
+          "expected": [
+            "Both steps: HTTP 409 Conflict.",
+            "Body: { \"code\": \"MSG475\", \"message\": \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\" }.",
+            "Nothing is stored and no notification is sent: a collector can never consent for the person."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with no Voice ID consent, and one whose consent is to notice 1.3.",
+            "The speech worker is running."
+          ],
+          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_API_IT148",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples refuses a person who has not agreed to the new notice.",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples answers 404 for a person who does not exist or is deactivated.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording and \"personAgreed\" = true, with a random {userId}.",
+            "Send it with the {userId} of a deactivated account."
           ],
           "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG475\", \"message\": \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\" }.",
-            "Nothing is stored; a Secretary can never consent for the person. The same answer applies to someone who agreed only to notice 1.2 or earlier."
+            "Both steps: HTTP 404 Not Found with no body; no sample and no notification."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A participant with no Voice ID consent, and one whose consent is to notice 1.2.",
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A deactivated account that agreed to Voice ID.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
         },
         {
           "id": "TRANS_API_IT149",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples answers 404 for someone who is not a participant of the meeting.",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples refuses a take the person did not agree to, before the speech worker hears it.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording, with {userId} of a user not on the roster, then of a Guest invitation id."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording with no \"personAgreed\" field.",
+            "Repeat with \"personAgreed\" = false.",
+            "Repeat with \"personAgreed\" = true."
           ],
           "expected": [
-            "Both steps: HTTP 404 Not Found with no body: only people of the meeting with an account can be recorded."
+            "Steps 2 and 3: HTTP 400 Bad Request, { \"code\": \"MSG483\", \"message\": \"Hãy hỏi ý người được thu và xác nhận họ đồng ý cho lần thu này trước khi lưu giọng mẫu.\" }; nothing is stored and the speech worker is not called.",
+            "Step 4: HTTP 201 Created, and the audit row of the sample has \"personAgreed\": true."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A user not on the roster who has Voice ID on."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "The speech worker is running."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0073_a_take_without_the_persons_agreement_to_it_is_refused_before_the_worker_hears_it)"
         },
         {
           "id": "TRANS_API_IT150",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples refuses a sixth Secretary sample for one person.",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples refuses a 51st proxy sample for one person.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording and \"personAgreed\" = true, for a person who holds 49 proxy samples.",
+            "Send the same request again.",
+            "Send GET /api/users/{userId}/voice-collection."
           ],
           "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG476\", \"message\": \"Người này đã đủ 5 giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại.\" }.",
-            "The 5 are counted over every meeting; the person's own samples are not counted."
+            "Step 2: HTTP 201 Created (the 50th).",
+            "Step 3: HTTP 409 Conflict, { \"code\": \"MSG476\", \"message\": \"Đã đủ 50 giọng mẫu thu hộ cho người này. Xoá bớt rồi thu lại.\" }; the person still holds 50.",
+            "Step 4: \"canCollect\": false.",
+            "One collector may take all 50: there is no share per collector."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A participant who already holds 5 Secretary samples (in this or other meetings).",
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later, holding 49 proxy samples.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0075 | Boundary 50 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0075_one_collector_may_take_all_fifty_proxy_samples_and_no_more)"
         },
         {
           "id": "TRANS_API_IT151",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples refuses recording once the meeting is over.",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples applies the same quality checks as a person's own sample.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG477\", \"message\": \"Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp.\" }.",
-            "The same answer applies to a Draft or Ended meeting; only Published and InProgress accept a sample."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "The meeting in status Ended and one in Draft, both Hybrid.",
-            "A consenting participant.",
-            "The speech worker is running."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Samples_are_taken_only_while_the_meeting_is_published_or_in_progress_but_listed_in_any_live_state)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_API_IT152",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples applies the same quality checks as a person's own sample.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a recording with under 6 seconds of speech.",
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a recording with under 6 seconds of speech and \"personAgreed\" = true.",
             "Send it with a .pdf file.",
             "Send it with no file."
           ],
@@ -3373,21 +3314,18 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A consenting participant.",
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_pass_the_same_quality_checks)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_pass_the_same_quality_checks)"
         },
         {
-          "id": "TRANS_API_IT153",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples answers 503 when the speech worker is not running.",
+          "id": "TRANS_API_IT152",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples answers 503 when the speech worker is not running.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Stop the speech worker, then send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Stop the speech worker, then send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording and \"personAgreed\" = true."
           ],
           "expected": [
             "HTTP 503, body { \"code\": \"MSG312\", \"message\": \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\" }.",
@@ -3395,209 +3333,155 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A consenting participant; QA lead can stop the speech worker."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "QA lead can stop the speech worker."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_are_refused_when_the_worker_is_down)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Proxy_samples_are_refused_when_the_worker_is_down)"
         },
         {
-          "id": "TRANS_API_IT154",
-          "description": "Verify two Secretaries recording the last place at once keep the limit of 5.",
+          "id": "TRANS_API_IT153",
+          "description": "Verify POST /api/users/{userId}/voice-collection/samples is refused without a token and without the VoiceCollector capability.",
           "procedure": [
-            "Sign in as two Secretaries (two meetings) who both record the same participant who has 4 Secretary samples.",
-            "Send both POST requests at the same moment."
+            "Send POST /api/users/{userId}/voice-collection/samples with no Authorization header.",
+            "Sign in as an account whose role does not hold VoiceCollector, including a former Secretary of a meeting (POST /api/auth/login), and keep the access token.",
+            "Send POST /api/users/{userId}/voice-collection/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: a valid recording and \"personAgreed\" = true."
           ],
           "expected": [
-            "One answers 201 \"MSG473\" and the other 409 \"MSG476\"; the person ends with exactly 5 Secretary samples.",
-            "The requests may be handled in any order: the case passes whichever one wins."
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 3: HTTP 403 Forbidden.",
+            "No sample is stored in either case."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A participant with 4 Secretary samples and a Secretary account in each of two hybrid meetings the person attends.",
-            "The speech worker is running."
+            "A person who agreed to Voice ID, and an account without VoiceCollector."
           ],
-          "note": "UC-86 | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Two_secretaries_recording_the_last_place_at_once_keep_the_limit)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_API_IT155",
-          "description": "Verify POST /api/meetings/{meetingId}/voice-collection/{userId}/samples is refused for a collector who is not the meeting's Secretary and for a role without the capability.",
-          "procedure": [
-            "Sign in as the Chair who holds no VoiceCollector (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/voice-collection/{userId}/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording.",
-            "Repeat as a user who holds VoiceCollector but is only a Member of the meeting.",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "Step 2: HTTP 403 Forbidden (capability missing).",
-            "Step 3: HTTP 404 Not Found (not this meeting's Secretary).",
-            "Step 4: HTTP 401 Unauthorized.",
-            "No sample is stored in any case."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403; Not_signed_in_gets_401)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         }
       ]
     },
     {
-      "title": "GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio",
+      "title": "GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio",
       "uc": [
-        "UC-81d"
+        "UC-86"
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT156",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio lets the Secretary check a sample recorded in the meeting and audits the play.",
+          "id": "TRANS_API_IT154",
+          "description": "Verify GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio lets the collector hear any proxy sample of the person and audits the play.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>\nwith the id of a sample taken by another collector."
           ],
           "expected": [
             "HTTP 200 OK with the audio and Cache-Control: no-store.",
-            "An audit row \"VoiceSamplePlayed\" is written (with the person and the meeting) before the audio is sent: someone else's biometric sample was heard."
+            "An audit row \"VoiceSamplePlayed\" names the collector and the sample: someone else's biometric sample was heard."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample the Secretary recorded in this meeting."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "A proxy sample of the person taken by another collector."
           ],
-          "note": "UC-81d | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
-          "id": "TRANS_API_IT157",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio answers 404 for a sample from another meeting or the person's own set.",
+          "id": "TRANS_API_IT155",
+          "description": "Verify GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio answers 404 for the person's own sample.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection/samples/{sampleOfAnotherMeeting}/audio\nHeaders: Authorization: Bearer <accessToken>",
-            "Send GET /api/meetings/{meetingId}/voice-collection/samples/{ownSampleId}/audio (a sample the person recorded themself)."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>\nwith the id of a sample the person recorded themself."
           ],
           "expected": [
-            "Both steps: HTTP 404 Not Found with no body; the Secretary hears nothing that was not recorded in their meeting."
+            "HTTP 404 Not Found with no body: a collector hears only proxy samples."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample recorded in another meeting; a participant's own sample."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "A sample the person recorded themself."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
-          "id": "TRANS_API_IT158",
-          "description": "Verify GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio is refused to non-Secretaries and without a token.",
+          "id": "TRANS_API_IT156",
+          "description": "Verify GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio answers 403 without the VoiceCollector capability.",
           "procedure": [
-            "Sign in as the Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>",
-            "Repeat as a user with VoiceCollector who is not the Secretary of the meeting.",
-            "Repeat with no Authorization header."
+            "Sign in as an account whose role does not hold VoiceCollector, including a former Secretary of a meeting (POST /api/auth/login), and keep the access token.",
+            "Send GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
-            "Step 2: HTTP 403 Forbidden (no capability).",
-            "Step 3: HTTP 404 Not Found.",
-            "Step 4: HTTP 401 Unauthorized."
+            "HTTP 403 Forbidden with no audio and no audit row."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample recorded in this meeting."
+            "A proxy sample of the person, and an account without VoiceCollector."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         }
       ]
     },
     {
-      "title": "DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}",
+      "title": "DELETE /api/users/{userId}/voice-collection/samples/{sampleId}",
       "uc": [
-        "UC-81e"
+        "UC-86"
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT159",
-          "description": "Verify DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId} deletes a sample recorded in the meeting and frees a place.",
+          "id": "TRANS_API_IT157",
+          "description": "Verify DELETE /api/users/{userId}/voice-collection/samples/{sampleId} deletes a proxy sample of the person.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}\nHeaders: Authorization: Bearer <accessToken>",
-            "Send GET /api/meetings/{meetingId}/voice-collection."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/users/{userId}/voice-collection/samples/{sampleId}\nHeaders: Authorization: Bearer <accessToken>\nwith the id of a proxy sample.",
+            "Send GET /api/users/{userId}/voice-collection."
           ],
           "expected": [
             "Step 2: HTTP 200 OK, body { \"code\": \"MSG474\", \"message\": \"Đã xoá giọng mẫu thu hộ.\", \"data\": { \"id\": \"<sampleId>\" } }.",
-            "Step 3: the sample is not listed and the person's \"sampleCount\" is one lower, so a new sample can be recorded.",
-            "An audit row \"VoiceSampleDeleted\" has scope \"proxy\", the person, the meeting and the Secretary."
+            "Step 3: the sample is no longer listed; the person's other samples are untouched.",
+            "An audit row \"VoiceSampleDeleted\" names the collector and the sample."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample the Secretary recorded in this meeting."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "A proxy sample of the person."
           ],
-          "note": "UC-81e | UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited; Deleting_frees_a_place_under_the_limit)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
-          "id": "TRANS_API_IT160",
-          "description": "Verify DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId} answers 404 for another meeting's sample or the person's own.",
+          "id": "TRANS_API_IT158",
+          "description": "Verify DELETE /api/users/{userId}/voice-collection/samples/{sampleId} answers 404 for the person's own sample and for a sample asked for under another person.",
           "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleOfAnotherMeeting}\nHeaders: Authorization: Bearer <accessToken>",
-            "Send it for a sample the person recorded themself."
+            "Sign in as the collector (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/users/{userId}/voice-collection/samples/{sampleId}\nHeaders: Authorization: Bearer <accessToken>\nwith the id of a sample the person recorded themself.",
+            "Send it with the id of a proxy sample but the {userId} of another person."
           ],
           "expected": [
             "Both steps: HTTP 404 Not Found with no body; both samples still exist."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample recorded in another meeting; a participant's own sample."
+            "An active account whose role holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), in no meeting with the person.",
+            "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
+            "A sample the person recorded themself, and a proxy sample of the person."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (The_secretary_hears_and_deletes_only_samples_taken_in_their_meeting_and_each_play_is_audited)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
-          "id": "TRANS_API_IT161",
-          "description": "Verify DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId} is refused to non-Secretaries and without a token.",
+          "id": "TRANS_API_IT159",
+          "description": "Verify DELETE /api/users/{userId}/voice-collection/samples/{sampleId} answers 403 without the VoiceCollector capability.",
           "procedure": [
-            "Sign in as the Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}\nHeaders: Authorization: Bearer <accessToken>",
-            "Repeat as a user with VoiceCollector who is not the Secretary of the meeting.",
-            "Repeat with no Authorization header."
+            "Sign in as an account whose role does not hold VoiceCollector, including a former Secretary of a meeting (POST /api/auth/login), and keep the access token.",
+            "Send DELETE /api/users/{userId}/voice-collection/samples/{sampleId}\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
-            "Step 2: HTTP 403 Forbidden.",
-            "Step 3: HTTP 404 Not Found.",
-            "Step 4: HTTP 401 Unauthorized.",
-            "The sample is not deleted."
+            "HTTP 403 Forbidden; the sample is not deleted."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Hybrid or InPerson meeting in status Published or InProgress with a Secretary who holds the \"Thu giọng mẫu hộ\" capability (VoiceCollector), a Chair and a Member on its roster.",
-            "A sample recorded in this meeting."
+            "A proxy sample of the person, and an account without VoiceCollector."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceCollectionEndpointTests.cs (Without_the_capability_even_the_meetings_secretary_gets_403; A_collector_who_is_not_the_current_secretary_of_that_meeting_gets_404_not_403)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
         }
       ]
     },
@@ -3608,7 +3492,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT162",
+          "id": "TRANS_API_IT160",
           "description": "Verify GET /api/admin/ai returns the in-house model by default and never the API key.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3630,7 +3514,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT163",
+          "id": "TRANS_API_IT161",
           "description": "Verify GET /api/admin/ai answers 403 for a user without the AdminUsers capability.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -3649,7 +3533,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT164",
+          "id": "TRANS_API_IT162",
           "description": "Verify GET /api/admin/ai without a token answers 401.",
           "procedure": [
             "Send GET /api/admin/ai with no Authorization header."
@@ -3666,7 +3550,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT165",
+          "id": "TRANS_API_IT163",
           "description": "Verify GET /api/admin/ai refuses an Administrator whose role lost AdminUsers after the token was issued.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3695,7 +3579,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT166",
+          "id": "TRANS_API_IT164",
           "description": "Verify PUT /api/admin/ai saves the in-house model as the writer.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3716,7 +3600,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT167",
+          "id": "TRANS_API_IT165",
           "description": "Verify PUT /api/admin/ai saves an API with its key and returns only the key's last four characters.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3737,7 +3621,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT168",
+          "id": "TRANS_API_IT166",
           "description": "Verify PUT /api/admin/ai keeps the stored key when apiKey is null and removes it when apiKey is empty.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3760,7 +3644,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT169",
+          "id": "TRANS_API_IT167",
           "description": "Verify PUT /api/admin/ai refuses an API address that is not https, a missing model or a missing key.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3782,7 +3666,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT170",
+          "id": "TRANS_API_IT168",
           "description": "Verify PUT /api/admin/ai refuses a missing address when the API is chosen and an invalid mode.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3803,7 +3687,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT171",
+          "id": "TRANS_API_IT169",
           "description": "Verify PUT /api/admin/ai refuses a key with spaces or outside 8 to 500 characters and a model name with spaces or over 100 characters.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3825,7 +3709,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT172",
+          "id": "TRANS_API_IT170",
           "description": "Verify PUT /api/admin/ai refuses removing the key while the API is in use.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3845,7 +3729,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT173",
+          "id": "TRANS_API_IT171",
           "description": "Verify an Internal or Secret meeting stays on the in-house model after PUT /api/admin/ai chooses the API.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3867,7 +3751,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT174",
+          "id": "TRANS_API_IT172",
           "description": "Verify PUT /api/admin/ai answers 403 for a user without AdminUsers and 401 without a token.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -3896,7 +3780,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT175",
+          "id": "TRANS_API_IT173",
           "description": "Verify POST /api/admin/ai/test reaches the in-house model and saves nothing.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3918,7 +3802,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT176",
+          "id": "TRANS_API_IT174",
           "description": "Verify POST /api/admin/ai/test calls the API with the form and falls back to the stored key.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3940,7 +3824,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT177",
+          "id": "TRANS_API_IT175",
           "description": "Verify POST /api/admin/ai/test reports the API's refusal as 502 with its reason.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3962,7 +3846,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT178",
+          "id": "TRANS_API_IT176",
           "description": "Verify POST /api/admin/ai/test reports the in-house machine as not configured or not answering.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -3982,7 +3866,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT179",
+          "id": "TRANS_API_IT177",
           "description": "Verify POST /api/admin/ai/test refuses an invalid form before calling anything.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -4004,7 +3888,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT180",
+          "id": "TRANS_API_IT178",
           "description": "Verify POST /api/admin/ai/test asks for the key again when the stored key can no longer be read.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
@@ -4025,7 +3909,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT181",
+          "id": "TRANS_API_IT179",
           "description": "Verify POST /api/admin/ai/test answers 403 for a user without AdminUsers and 401 without a token.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
