@@ -1,5 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { castBallot, closeVote, deleteVote, detachVoteDocument, openVote, recordVoteConclusion } from '../../api/votes'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
@@ -101,7 +102,7 @@ export function VotingPanel({
         <VoteSkeleton />
       ) : (
         // Shaped like the loaded tab: the same white card around the bars, so nothing jumps into a frame.
-        <section className="list-panel vote-panel">
+        <section className="card agenda-sheet vote-panel vote-sheet">
           <VoteSkeleton />
         </section>
       ),
@@ -137,8 +138,28 @@ export function VotingPanel({
     </div>
   )
 
+  // On the page the votes are drawn as the Nội dung tab's items (Khánh 22/11/2026): one card of grey bars, one line
+  // each, the facts in fixed cells. Every row keeps room for what only some rows have (the turnout, the outcome, the
+  // actions), so the cells line up down the card as the agenda's presenters and counts do. The actions share one
+  // right-aligned group as wide as the widest row's: a draft's Mở and icons, or the open vote's Đóng phiếu.
+  const hasStep = (v: VoteSummary) => v.actions.canOpen || v.actions.canClose
+  const hasTools = (v: VoteSummary) =>
+    v.actions.canEdit || v.actions.canDelete || (!!meeting && v.actions.canAttachDocuments)
+  const anySteps = votes.some(hasStep)
+  const anyTools = votes.some(hasTools)
+  const sheetClass = [
+    'card agenda-sheet vote-panel vote-sheet',
+    anySteps && 'vote-sheet-steps',
+    anyTools && 'vote-sheet-tools',
+    votes.some((v) => hasStep(v) && hasTools(v)) && 'vote-sheet-both',
+    votes.some((v) => v.status !== 'Draft') && 'vote-sheet-turnout',
+    votes.some((v) => v.conclusion || (v.hasVoted && v.status === 'Open')) && 'vote-sheet-outcome',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   const panel = (
-    <section className={room ? 'vote-panel vote-panel-room' : 'list-panel vote-panel'} aria-label="Biểu quyết">
+    <section className={room ? 'vote-panel vote-panel-room' : sheetClass} aria-label="Biểu quyết">
       {room && toolbar}
 
       {state.kind === 'error' && (
@@ -159,11 +180,13 @@ export function VotingPanel({
           {permissions.canManageDraft && <small>Tạo biểu quyết để chuẩn bị trước, mở khi đang họp.</small>}
         </div>
       ) : (
-        <ol className="vote-list">
+        <ol className="agenda-list vote-list">
           {votes.map((vote) => (
             <VoteCard
               key={vote.id}
               meetingId={meetingId}
+              room={room}
+              holdActions={!room && (anySteps || anyTools)}
               vote={vote}
               stamp={data.serverTime}
               expanded={isOpen(vote)}
@@ -324,6 +347,8 @@ export function VotingPanel({
 
 function VoteCard({
   meetingId,
+  room,
+  holdActions,
   vote,
   stamp,
   expanded,
@@ -338,6 +363,10 @@ function VoteCard({
   onDetach,
 }: {
   meetingId: string
+  /** The call room's narrow panel: the documents as a paperclip count, no empty slots. */
+  room: boolean
+  /** The page's sheet has a step or icons on some row: this one keeps the actions' width, even with none of its own. */
+  holdActions: boolean
   vote: VoteSummary
   /** The list's `serverTime`: the detail re-reads whenever the list did. */
   stamp: string
@@ -356,23 +385,34 @@ function VoteCard({
 }) {
   const { actions } = vote
   const bodyId = `vote-body-${vote.id}`
-  const classes = ['vote-item']
+  // Drawn with the agenda item's classes, so a vote row is an agenda row: the same bar, title, cells and actions at
+  // every width (Khánh 22/11/2026). `agenda-item-open` is the agenda's "unfolded"; `vote-item-open` is a vote that
+  // takes ballots.
+  const classes = ['agenda-item', 'vote-item']
   if (vote.status === 'Open') classes.push('vote-item-open')
   if (vote.status === 'Draft') classes.push('vote-item-draft')
+  if (expanded) classes.push('agenda-item-open')
+  const hasActions = actions.canOpen || actions.canEdit || actions.canDelete || actions.canClose || !!onAttach
 
   return (
     <li className={classes.join(' ')}>
-      <div className="vote-head">
-        <button type="button" className="vote-title" aria-expanded={expanded} aria-controls={bodyId} onClick={onToggle}>
+      <div className="agenda-head vote-head">
+        <button
+          type="button"
+          className="agenda-title vote-title"
+          aria-expanded={expanded}
+          aria-controls={bodyId}
+          onClick={onToggle}
+        >
           <Icon name={expanded ? 'chevronDown' : 'chevronRight'} size={16} />
           <span>{vote.title}</span>
         </button>
 
-        {(actions.canOpen || actions.canEdit || actions.canDelete || actions.canClose || onAttach) && (
-          <div className="row-actions vote-actions">
-            {/* As on an agenda item: the icons stay in the card's top-right corner, the step goes under the title
-                with the facts on a narrow panel (Khánh 19/11/2026). */}
-            <span className="vote-steps">
+        {(hasActions || holdActions) && (
+          <div className="row-actions agenda-actions vote-actions">
+            {/* As on an agenda item: one group on a wide panel; on a narrow one the icons stay in the card's top-right
+                corner and the step goes under the title with the facts (Khánh 19/11/2026). */}
+            <span className="agenda-steps vote-steps">
               {actions.canOpen && (
                 <button type="button" className="btn btn-primary btn-sm" onClick={onOpen}>
                   <Icon name="play" size={16} />
@@ -386,7 +426,7 @@ function VoteCard({
                 </button>
               )}
             </span>
-            <span className="vote-tools">
+            <span className="agenda-tools vote-tools">
               {onAttach && <AttachMenu title={vote.title} onPick={onAttach} />}
               {actions.canEdit && (
                 <button
@@ -414,33 +454,55 @@ function VoteCard({
           </div>
         )}
 
-        <span className="vote-break" aria-hidden="true" />
-        <div className="vote-meta">
-          <VoteStatusChip vote={vote} />
-          <span className="vote-fact">
-            <Icon name={vote.isAnonymous ? 'lock' : 'globe'} size={14} />
-            {vote.isAnonymous ? 'Kín' : 'Công khai'}
-            <InfoTip
-              text={vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'}
-            />
+        {/* The facts go on a second line under the title, unless the panel is wide enough for one. */}
+        <span className="agenda-break vote-break" aria-hidden="true" />
+        <div className="agenda-meta vote-meta">
+          <span className="agenda-cell agenda-cell-status">
+            <VoteStatusChip vote={vote} />
           </span>
-          {vote.status !== 'Draft' && (
-            <span className="vote-fact vote-turnout-text" tabIndex={0} data-tooltip="Đã bỏ phiếu / người đủ điều kiện">
-              <Icon name="users" size={14} />
-              {vote.receiptCount}/{vote.eligibleCount}
+          <span className="agenda-cell vote-cell-mode">
+            <span className="vote-fact vote-mode">
+              <Icon name={vote.isAnonymous ? 'lock' : 'globe'} size={14} />
+              {vote.isAnonymous ? 'Kín' : 'Công khai'}
+              <InfoTip
+                text={
+                  vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'
+                }
+              />
             </span>
-          )}
-          {vote.hasVoted && vote.status === 'Open' && (
-            <span className="vote-fact vote-voted">
-              <Icon name="check" size={14} />
-              Đã bỏ phiếu
-            </span>
-          )}
-          {vote.conclusion && <ConclusionChip value={vote.conclusion.value} />}
-          {vote.documentCount > 0 && (
-            <span className="vote-fact" tabIndex={0} data-tooltip="Tài liệu của biểu quyết">
-              <Icon name="paperclip" size={14} />
-              {vote.documentCount}
+          </span>
+          <span className="agenda-cell vote-cell-turnout">
+            {vote.status !== 'Draft' && (
+              <span
+                className="vote-fact vote-turnout-text"
+                tabIndex={0}
+                data-tooltip="Đã bỏ phiếu / người đủ điều kiện"
+              >
+                <Icon name="users" size={14} />
+                {vote.receiptCount}/{vote.eligibleCount}
+              </span>
+            )}
+          </span>
+          <span className="agenda-cell vote-cell-outcome">
+            {vote.hasVoted && vote.status === 'Open' && (
+              <span className="vote-fact vote-voted" tabIndex={0} data-tooltip="Đã bỏ phiếu">
+                <Icon name="check" size={14} />
+                <span className="vote-outcome-text">Đã bỏ phiếu</span>
+              </span>
+            )}
+            {vote.conclusion && <ConclusionChip value={vote.conclusion.value} tip />}
+          </span>
+          {room ? (
+            vote.documentCount > 0 && (
+              <span className="vote-fact" tabIndex={0} data-tooltip="Tài liệu của biểu quyết">
+                <Icon name="paperclip" size={14} />
+                {vote.documentCount}
+              </span>
+            )
+          ) : (
+            // The page counts documents as the Nội dung tab does, in the same outlined chip.
+            <span className="agenda-docs-count">
+              <Badge tone="outline">{vote.documentCount} tài liệu</Badge>
             </span>
           )}
         </div>
@@ -799,13 +861,18 @@ function Result({ detail }: { detail: VoteDetail }) {
   )
 }
 
-function ConclusionChip({ value }: { value: VoteConclusionValue }) {
+/** `tip`: on the row, where a tight bar keeps the icon only, the words also come on hover and focus. */
+function ConclusionChip({ value, tip = false }: { value: VoteConclusionValue; tip?: boolean }) {
   const tone = value === 'Passed' ? 'status-emerald' : value === 'NotPassed' ? 'status-red' : 'status-amber'
   const icon = value === 'Passed' ? 'checkCircle' : value === 'NotPassed' ? 'xCircle' : 'clock'
   return (
-    <span className={`status ${tone} vote-conclusion-chip`}>
+    <span
+      className={`status ${tone} vote-conclusion-chip`}
+      tabIndex={tip ? 0 : undefined}
+      data-tooltip={tip ? VOTE_CONCLUSION_LABEL[value] : undefined}
+    >
       <Icon name={icon} size={14} />
-      {VOTE_CONCLUSION_LABEL[value]}
+      <span className="vote-outcome-text">{VOTE_CONCLUSION_LABEL[value]}</span>
     </span>
   )
 }
@@ -913,10 +980,10 @@ export function VoteStatusChip({ vote }: { vote: Pick<VoteSummary, 'status'> }) 
 /** Shaped like the loaded list, so nothing jumps when it arrives. */
 function VoteSkeleton() {
   return (
-    <ol className="vote-list" aria-busy="true" aria-label="Đang tải biểu quyết">
+    <ol className="agenda-list vote-list" aria-busy="true" aria-label="Đang tải biểu quyết">
       {Array.from({ length: 2 }, (_, i) => (
-        <li key={i} className="vote-item">
-          <div className="vote-head">
+        <li key={i} className="agenda-item vote-item">
+          <div className="agenda-head vote-head">
             <span className="skeleton vote-skeleton" />
           </div>
         </li>
