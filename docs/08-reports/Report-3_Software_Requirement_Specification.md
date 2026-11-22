@@ -699,7 +699,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | 7 | AudioCiphertext | bytea |  | Yes | The recording as uploaded, encrypted the same way; null for a sample taken before it was kept. |
 | 8 | AudioContentType | string |  | Yes | Media type of the recording, to play it back as it was sent. |
 | 9 | CollectedById | uuid | FK | Yes | Holder of the Voice sample collection permission who collected this sample for the person; null for a sample the person recorded. |
-| 10 | MeetingId | uuid | FK | Yes | Only kept for a sample collected at a Meeting before ADR-0075; null for every new sample (ask BE whether this column stays). |
+| 10 | MeetingId | uuid | FK | Yes | Only kept for a sample collected at a Meeting before ADR-0075; null for every new sample. |
 
 #### 3.3 Data Business Rules
 
