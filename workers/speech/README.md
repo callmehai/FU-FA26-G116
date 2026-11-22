@@ -58,7 +58,7 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_MODELS_DIR` | `~/.cache/trustcabinet-speech/models` (image: `/models`) | Thư mục model |
 | `SPEECH_API_KEY` | trống | Nếu đặt, mọi route trừ `/health` phải có `Authorization: Bearer <key>` |
 | `SPEECH_THREADS` | `min(4, số CPU)` | Số luồng cho mỗi model |
-| `SPEECH_CLUSTER_THRESHOLD` | `0.5` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
+| `SPEECH_CLUSTER_THRESHOLD` | `0.72` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_MIN_CONSISTENCY` | `0.40` | Ngưỡng "chỉ một người nói" của mẫu giọng, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_CLIP_MAX_GAIN_DB` | `6` | Mức tăng âm tối đa của hồ sơ `clip` |
 | `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
@@ -175,7 +175,7 @@ Các bước xử lý một bản ghi:
    - Một khung lẻ khác nhãn với cả hai khung bên cạnh thì lấy theo nhãn của chúng.
    - Các khung liền nhau cùng nhãn ghép thành một lượt nói.
    - **Gộp lần hai**: mỗi nhóm được tạo một vector giọng tổng thể (tối đa 30 giây âm thanh của
-     nhóm). Hai nhóm có cosine từ 0.85 trở lên là cùng một người bị tách đôi, nên được gộp lại,
+     nhóm). Hai nhóm có cosine từ 0.8 trở lên là cùng một người bị tách đôi, nên được gộp lại,
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
 5. **Bỏ chỗ gần như im lặng** (chỉ hồ sơ `room`): đoạn nào khi đến micro (trước bước tăng âm) vừa
    nhỏ hơn −45 dBFS vừa nhỏ hơn trung vị các đoạn của bản ghi từ 25 dB trở lên thì bị bỏ trước khi
@@ -294,11 +294,12 @@ còn giọng mẫu để sạch. Gợi ý theo luật của backend (`SpeakerMat
 
 "Người lạ" là người nói nhưng không có trong danh sách được gợi ý. Ở 0.5 thì người lạ bị gọi bằng tên
 người khác; ở 0.6 thì không, và cũng không bỏ sót thêm ai. Từ 0.65 trở lên, bộ "khác kênh" bắt đầu bỏ
-sót người. Vì vậy backend từng mặc định dùng `VoiceId:SuggestThreshold = 0.6`; từ 21/11/2026 mọi ngưỡng `VoiceId:*` hạ xuống 0.5 (biên 0.05).
+sót người. Vì vậy backend mặc định dùng `VoiceId:SuggestThreshold = 0.6`. Ngày 21/11/2026 mọi ngưỡng `VoiceId:*` bị hạ
+xuống 0.5 rồi được trả lại sau buổi thử cùng ngày ([ADR-0074](../../docs/05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)).
 
-Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold` (từng là 0.7), và từ `VoiceId:AutoAssignThreshold`
-(từng là 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
-chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold` (từng là 0.8) thì nhận người đó
+Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold = 0.7`, và từ `VoiceId:AutoAssignThreshold =
+0.7` (trước 21/11 là 0.75) máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
+chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold = 0.8` thì nhận người đó
 ([ADR-0050](../../docs/05-decisions/0050-giong-gan-trung-nhan-cung-ten.md), đo bằng `evaluate.py --inherit`). Số đo và lý do
 chọn nằm trong [13-nhan-dien-giong-noi.md](../../docs/03-api/13-nhan-dien-giong-noi.md#gợi-ý-và-gán-tên-trong-bản-gỡ-băng).
 
@@ -333,6 +334,27 @@ hợp. Khung 3 giây cho vector ổn định hơn: hai khung liền nhau của c
 thì vector không còn tin được: hai nhóm cùng một người chỉ đạt 0.36–0.81, trong khi hai người
 khác nhau có cặp tới 0.73. Ngưỡng 0.85 vì vậy chỉ gộp khi gần như chắc chắn. Tách thừa một người
 thành hai nhãn ít hại hơn gộp nhầm hai người: thư ký gán được cả hai nhãn cho cùng một người.
+
+**Phòng họp thật của nhóm, 21/11/2026** ([ADR-0074](../../docs/05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)).
+Hai bản ghi mic phòng của buổi thử: *test mic* (15 phút, 4 người cùng phòng, có tiếng quán cà phê) và *họp kết hợp*
+(9 phút, 3 người cùng phòng, người thứ tư nói qua loa laptop). Ở ngưỡng cũ 0.5 / 0.85, máy ra 41 và 15 giọng, đúng như
+trên server. Đo lại bằng chính code worker, chỉ bỏ bước chuyển chữ (`tune.py`, không nằm trong repo vì bản ghi là dữ liệu
+cá nhân); "đúng người" là mỗi giọng chỉ gồm lời của một người, đối chiếu theo thời gian với cấu hình có điểm giọng mẫu:
+
+| Gom nhóm / gộp lần hai | *test mic*: số giọng (≥ 10 giây) | *họp kết hợp*: số giọng (≥ 10 giây) | Ghi chú |
+|---|---|---|---|
+| 0.5 / 0.85 (cũ) | 41 (14) | 15 (3) | |
+| 0.6 / 0.8 | 19 (8) | 8 (3) | |
+| 0.7 / 0.8 | 14 (7) | 6 (5) | *test mic* có một giọng trộn lời Lộc và Hải |
+| **0.72 / 0.8** | **12 (6)** | **5 (4)** | mỗi giọng một người; người tách đôi là Lộc, Trường Huy |
+| 0.75 / 0.8 | 10 (6) | 4 (4) | mỗi giọng một người |
+| 0.78 / 0.8 | 9 (6) | 3 (3) | *họp kết hợp*: Khánh bị gộp vào Hải |
+| 0.8 / 0.85 | 9 (7) | 4 (4) | *họp kết hợp*: Khánh bị gộp vào Hải |
+
+Ngưỡng gom nhóm không đổi đều theo một chiều: 0.65 cũng gộp Khánh vào Hải ở *họp kết hợp*, trong khi 0.7–0.75 thì không.
+Chọn 0.72, cách chỗ gộp nhầm người ở 0.78 một khoảng. Trong phòng đó, giọng Khánh và Hải giống nhau 0.73; hai nửa của
+cùng một người giống nhau 0.75–0.82, nên gộp lần hai hạ từ 0.85 xuống 0.8 (vẫn trên mức 0.745 của hai người khác nhau đo
+ngày 31/10). Người bị tách đôi dưới 0.8 vẫn hiện hai giọng; Thư ký gán cùng tên là gộp lại. Đo lại trên buổi thử sau.
 
 Ba đoạn tổng hợp còn sai đều là các cặp giọng nữ tiếng Anh của macOS (Samantha, Karen, Moira),
 gần như giống hệt nhau.
