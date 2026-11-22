@@ -49,11 +49,9 @@ public sealed record ParticipantContext(Guid MeetingId, string Status, string Re
 // Email is null when a Guest reads the roster, except on the Guest's own row (PO 01/11/2026, SCRUM-116).
 public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, string? Email, string? Role,
     Guid? UserId, bool? IsActive, string? InvitedName, string? SelfDeclaredDisplayName, string? SelfDeclaredJobTitle,
-    string Response, DateTimeOffset? RespondedAt, bool? VoiceCollector = null);
+    string Response, DateTimeOffset? RespondedAt);
 public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision);
-// VoiceCollector: the person's system role may record proxy Voice ID samples (ADR-0060). A meeting Secretary without it
-// records only in that meeting while it is open (PO 2026-11-21), so the roster screens warn when one is chosen.
-public sealed record ParticipantOption(Guid Id, string FullName, string Email, bool VoiceCollector = false);
+public sealed record ParticipantOption(Guid Id, string FullName, string Email);
 public sealed record ChairHandoverCandidate(Guid ParticipantId, Guid UserId, string FullName, string Email);
 public sealed record ChairHandoverCandidatePage(IReadOnlyList<ChairHandoverCandidate> Items, int Total,
     int EligibleTotal, int Page, int PageSize, string Revision);

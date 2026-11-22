@@ -70,7 +70,8 @@ function resetUnavailableReason(account: UserAccount) {
  */
 export function UsersPage() {
   const { user: me, reloadSession, can } = useAuth()
-  // ADR-0060: a Secretary trusted with "Thu giọng mẫu hộ" records, hears back and deletes one person's room-mic samples.
+  // ADR-0071, ADR-0075: a holder of "Thu giọng mẫu hộ" (Quản trị viên by default) records, hears back and deletes one
+  // person's proxy samples.
   const [collectFor, setCollectFor] = useState<UserAccount | null>(null)
   const toast = useToast()
   const handleAccessLost = useAccessLost()

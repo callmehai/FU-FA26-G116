@@ -27,14 +27,10 @@ public static class PermissionCatalog
                 "Phê duyệt cuộc họp",
                 "Phê duyệt hoặc từ chối cuộc họp do người khác tạo.",
                 "Cuộc họp"),
-            [Capability.MinutesEditor] = (
-                "Soạn biên bản",
-                "Soạn và chỉnh sửa biên bản cuộc họp trước khi ban hành.",
-                "Biên bản"),
             [Capability.VoiceCollector] = (
                 "Thu giọng mẫu hộ",
-                "Khi là Thư ký của cuộc họp, ghi giọng mẫu Voice ID cho người dự bằng micro phòng họp, nghe lại và xoá các mẫu đã thu.",
-                "Cuộc họp"),
+                "Thu giọng mẫu Voice ID hộ người đã đồng ý (hỏi ý họ mỗi lần thu), nghe lại và xoá mọi mẫu thu hộ của họ.",
+                "Quản trị"),
             [Capability.AdminUsers] = (
                 "Quản trị người dùng",
                 "Quản lý tài khoản người dùng và ma trận phân quyền.",

@@ -28,6 +28,12 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
     /// <summary>The migration just before RolesAsData: roles are still enum names in text columns.</summary>
     private const string BeforeRolesAsData = "20260922103215_FixAttendanceDefault";
 
+    // The four roles RolesAsData created, as it created them. ADR-0075 later turned Chair into Phê duyệt viên and removed
+    // Secretary, so BuiltInRoles no longer names them; this test is about that older migration, run only up to it.
+    private static readonly Guid Chair = new("01a0ce78-7202-7945-be13-d2022cf25203");
+    private static readonly Guid Secretary = new("01a0ce78-7203-7c7f-8326-7a0baebf4c22");
+    private static readonly Guid[] RolesAsDataOrder = [Chair, Secretary, BuiltInRoles.Member, BuiltInRoles.Admin];
+
     private TrustCabinetDbContext _db = null!;
 
     public async Task InitializeAsync()
@@ -94,8 +100,8 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
         Assert.Equal(
             new Dictionary<string, Guid>
             {
-                ["chutoa@x.vn"] = BuiltInRoles.Chair,
-                ["thuky@x.vn"] = BuiltInRoles.Secretary,
+                ["chutoa@x.vn"] = Chair,
+                ["thuky@x.vn"] = Secretary,
                 ["thanhvien@x.vn"] = BuiltInRoles.Member,
                 ["quantri@x.vn"] = BuiltInRoles.Admin,
                 ["danghi@x.vn"] = BuiltInRoles.Admin,
@@ -119,15 +125,15 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
 
         Assert.Equal(
             [
-                new Grant(BuiltInRoles.Chair, "MeetingApprover"),
-                new Grant(BuiltInRoles.Chair, "MeetingCreator"),
-                new Grant(BuiltInRoles.Secretary, "AdminUsers"),
-                new Grant(BuiltInRoles.Secretary, "MeetingCreator"),
-                new Grant(BuiltInRoles.Secretary, "MinutesEditor"),
+                new Grant(Chair, "MeetingApprover"),
+                new Grant(Chair, "MeetingCreator"),
+                new Grant(Secretary, "AdminUsers"),
+                new Grant(Secretary, "MeetingCreator"),
+                new Grant(Secretary, "MinutesEditor"),
                 new Grant(BuiltInRoles.Admin, "AdminUsers"),
             ],
             grants
-                .OrderBy(g => BuiltInRoles.SortKey(g.RoleId))
+                .OrderBy(g => Array.IndexOf(RolesAsDataOrder, g.RoleId))
                 .ThenBy(g => g.Capability, StringComparer.Ordinal));
     }
 
@@ -139,7 +145,7 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
         var roles = await _db.Roles.OrderBy(r => r.Name).ToArrayAsync();
 
         Assert.Equal(
-            BuiltInRoles.All.Order(),
+            RolesAsDataOrder.Order(),
             roles.Select(r => r.Id).Order());
         Assert.All(roles, r => Assert.True(r.IsBuiltIn));
         Assert.Equal(

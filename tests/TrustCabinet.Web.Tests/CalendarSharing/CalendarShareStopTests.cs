@@ -4,6 +4,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using static TrustCabinet.Web.Tests.CalendarSharing.CalendarSharingFixture;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
@@ -66,7 +67,7 @@ public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFix
             var organizer2 = await db.Users.FindAsync(p.Organizer2);
             await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer2}", new
             {
-                fullName = organizer2!.FullName, email = organizer2.Email, roleId = BuiltInRoles.Member.ToString(),
+                fullName = organizer2!.FullName, email = organizer2.Email, roleId = TestRoles.Attendee.ToString(),
             }), 200, "MSG10");
         }
 
@@ -97,14 +98,14 @@ public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFix
         // Secretary → Chair keeps MeetingCreator: nothing stops.
         await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer}", new
         {
-            fullName = organizer!.FullName, email = organizer.Email, roleId = BuiltInRoles.Chair.ToString(),
+            fullName = organizer!.FullName, email = organizer.Email, roleId = BuiltInRoles.Approver.ToString(),
         }), 200, "MSG10");
         Assert.Equal(CalendarShareStatus.Effective, (await f.Share(viewing)).Status);
 
         // Chair → Member loses it: what they view stops, what they own does not.
         await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer}", new
         {
-            fullName = organizer.FullName, email = organizer.Email, roleId = BuiltInRoles.Member.ToString(),
+            fullName = organizer.FullName, email = organizer.Email, roleId = TestRoles.Attendee.ToString(),
         }), 200, "MSG10");
         Assert.Equal(CalendarShareStatus.Stopped, (await f.Share(viewing)).Status);
         Assert.Equal(CalendarShareStatus.Effective, (await f.Share(owning)).Status);
@@ -114,7 +115,7 @@ public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFix
         // Getting the right back restarts nothing.
         await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer}", new
         {
-            fullName = organizer.FullName, email = organizer.Email, roleId = BuiltInRoles.Secretary.ToString(),
+            fullName = organizer.FullName, email = organizer.Email, roleId = TestRoles.Secretary.ToString(),
         }), 200, "MSG10");
         Assert.Equal(CalendarShareStatus.Stopped, (await f.Share(viewing)).Status);
     }
@@ -138,13 +139,13 @@ public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFix
         // Unchanged rights stop nothing.
         await AssertCode(await admin.PutAsJsonAsync("/api/roles/capabilities", new
         {
-            roleId = role.Id.ToString(), capabilities = new[] { "MeetingCreator", "MinutesEditor" },
+            roleId = role.Id.ToString(), capabilities = new[] { "MeetingCreator", "VoiceCollector" },
         }), 200, "MSG16");
         Assert.Equal(CalendarShareStatus.Effective, (await f.Share(viewing)).Status);
 
         await AssertCode(await admin.PutAsJsonAsync("/api/roles/capabilities", new
         {
-            roleId = role.Id.ToString(), capabilities = new[] { "MinutesEditor" },
+            roleId = role.Id.ToString(), capabilities = new[] { "VoiceCollector" },
         }), 200, "MSG16");
         Assert.Equal(CalendarShareStatus.Stopped, (await f.Share(viewing)).Status);
         AssertStoppedNotice(await f.NotificationsOf(p.Owner));

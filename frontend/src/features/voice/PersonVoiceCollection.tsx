@@ -70,7 +70,7 @@ export function PersonVoiceCollection({ userId }: { userId: string }) {
       <div className="voice-person-head">
         <span
           className="voice-person-count"
-          data-tooltip={`Mọi mẫu thu hộ của người này. Mỗi người thu tối đa ${data.maxSamplesPerCollector} mẫu.`}
+          data-tooltip="Mọi mẫu thu hộ của người này"
           tabIndex={0}
         >
           {data.samples.length}/{data.maxSamples} mẫu thu hộ
@@ -132,7 +132,7 @@ export function PersonVoiceCollection({ userId }: { userId: string }) {
       {recording && (
         <RecordSampleDialog
           title={`Thu giọng mẫu: ${data.fullName}`}
-          hint="Mời người này ngồi chỗ quen thuộc, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:"
+          hint="Nên dùng micro phòng họp. Mời người này ngồi chỗ quen thuộc, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:"
           passage={PASSAGES[data.samples.length % PASSAGES.length]}
           askConsentOf={data.fullName}
           upload={(audio, fileName, personAgreed) => collectPersonVoiceSample(userId, audio, fileName, personAgreed)}

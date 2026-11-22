@@ -108,40 +108,40 @@ public class RoleRepositoryTests : IAsyncLifetime
     public async Task List_counts_every_holder_including_deactivated_ones_in_display_order()
     {
         var deputy = await CreateRoleAsync("Thư ký phó");
-        await AddUserAsync(BuiltInRoles.Chair);
-        await AddUserAsync(BuiltInRoles.Chair, isActive: false);
+        await AddUserAsync(BuiltInRoles.Approver);
+        await AddUserAsync(BuiltInRoles.Approver, isActive: false);
         await AddUserAsync(deputy, isActive: false);
 
         var list = await new RoleRepository(_db).ListAsync();
 
         Assert.Equal([.. BuiltInRoles.All, deputy], list.Select(r => r.Id));
-        Assert.Equal(2, list.Single(r => r.Id == BuiltInRoles.Chair).UserCount);
+        Assert.Equal(2, list.Single(r => r.Id == BuiltInRoles.Approver).UserCount);
         Assert.Equal(1, list.Single(r => r.Id == deputy).UserCount);
         Assert.Equal(0, list.Single(r => r.Id == BuiltInRoles.Admin).UserCount);
     }
 
     [Theory]
-    [InlineData("THƯ KÝ")]
-    [InlineData("thư ký")]
-    [InlineData("Thư Ký")]
+    [InlineData("PHÊ DUYỆT VIÊN")]
+    [InlineData("phê duyệt viên")]
+    [InlineData("Phê Duyệt Viên")]
     public async Task Names_are_compared_without_regard_to_case_including_vietnamese(string name)
     {
         var repository = new RoleRepository(_db);
 
         Assert.True(await repository.NameExistsAsync(name));
-        Assert.False(await repository.NameExistsAsync(name, exceptId: BuiltInRoles.Secretary));
+        Assert.False(await repository.NameExistsAsync(name, exceptId: BuiltInRoles.Approver));
     }
 
     [Fact]
     public async Task Create_stores_the_role_and_its_capabilities_in_one_go()
     {
-        var id = await CreateRoleAsync("Thư ký phó", "MinutesEditor", "MeetingCreator");
+        var id = await CreateRoleAsync("Thư ký phó", "VoiceCollector", "MeetingCreator");
 
         var role = await _db.Roles.SingleAsync(r => r.Id == id);
         Assert.False(role.IsBuiltIn);
 
         Assert.Equal(
-            [Capability.MeetingCreator, Capability.MinutesEditor],
+            [Capability.MeetingCreator, Capability.VoiceCollector],
             await _db.RoleCapabilities.Where(rc => rc.RoleId == id)
                 .Select(rc => rc.Capability).OrderBy(c => c).ToArrayAsync());
     }
@@ -154,7 +154,7 @@ public class RoleRepositoryTests : IAsyncLifetime
         await CreateRoleAsync("Thư ký phó");
 
         var result = await ServiceOver(_db, new NameCheckMisses(new RoleRepository(_db)))
-            .CreateAsync(new NewRole("THƯ KÝ PHÓ", null, ["MinutesEditor"]), Guid.CreateVersion7());
+            .CreateAsync(new NewRole("THƯ KÝ PHÓ", null, ["VoiceCollector"]), Guid.CreateVersion7());
 
         Assert.Equal(RoleOutcome.DuplicateName, result.Outcome);
 
@@ -182,7 +182,7 @@ public class RoleRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Deleting_a_role_takes_its_capabilities_with_it()
     {
-        var deputy = await CreateRoleAsync("Thư ký phó", "MinutesEditor", "MeetingCreator");
+        var deputy = await CreateRoleAsync("Thư ký phó", "VoiceCollector", "MeetingCreator");
 
         var result = await ServiceOver(_db).DeleteAsync(deputy, Guid.CreateVersion7());
 
@@ -215,7 +215,7 @@ public class RoleRepositoryTests : IAsyncLifetime
         // nobody — as it did when the request looked — but an account now holds the role. The
         // RESTRICT foreign key refuses the delete; the answer is MSG25 with the real count, not a
         // 500, and the role and its capabilities are still there.
-        var deputy = await CreateRoleAsync("Thư ký phó", "MinutesEditor");
+        var deputy = await CreateRoleAsync("Thư ký phó", "VoiceCollector");
         await AddUserAsync(deputy);
 
         var result = await ServiceOver(_db, new FirstCountMisses(new RoleRepository(_db)))

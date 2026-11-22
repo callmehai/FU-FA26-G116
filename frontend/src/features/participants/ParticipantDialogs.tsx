@@ -22,7 +22,6 @@ import {
   type ParticipantRow,
 } from '../../types/participant'
 import { isRefusal, type DialogOutcome } from './outcome'
-import { tempSecretaryNote } from './roster'
 import { Person } from './Person'
 
 /** Participant endpoints list each field's messages; the first one is enough under the field. */
@@ -151,7 +150,6 @@ export function AddParticipantsDialog({
   }
 
   const close = () => !pending && onClose()
-  const addNote = tempSecretaryNote([...selected.values()].filter((o) => !o.voiceCollector).map((o) => o.fullName))
 
   return (
     <Dialog
@@ -212,7 +210,6 @@ export function AddParticipantsDialog({
       <div className="pick-role">
         <RolePicker value={role} roles={['Secretary', 'Member'] as const} onChange={setRole} />
       </div>
-      {role === 'Secretary' && addNote && <p className="alert alert-error">{addNote}</p>}
       {error && (
         <p className="alert alert-error dialog-error" role="alert">
           {error}
@@ -463,9 +460,6 @@ export function ChangeRoleDialog({
                 : `${ROLE_DESCRIPTION.Chair} ${selfSteppingDown ? 'Bạn' : (chair?.displayName ?? 'Chủ toạ hiện tại')} sẽ thành Thành viên.`,
           }}
         />
-        {role === 'Secretary' && row.voiceCollector === false && (
-          <p className="alert alert-error">{tempSecretaryNote([row.displayName])}</p>
-        )}
         {error && (
           <p className="alert alert-error dialog-error" role="alert">
             {error}

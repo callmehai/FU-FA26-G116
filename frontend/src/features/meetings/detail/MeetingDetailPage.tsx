@@ -25,7 +25,6 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
-import { VoiceCollectionPanel } from '../../voice/VoiceCollectionPanel'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
@@ -73,13 +72,12 @@ type TabId = (typeof TABS)[number]['id']
  * Biên bản when it ends — before that they have nothing in them (nothing is recorded before the start, and minutes are
  * built only once the meeting is over, MSG386/MSG398). The tab still shows, dimmed with a lock, so the bar keeps its
  * shape and says what is coming; Thông tin chung, the roster, the agenda, the documents and the votes are prepared
- * before the meeting and never lock. `earlyRecordings`: the Secretary collecting voice samples for the room's mic
- * does that in Bản ghi before the start (ADR-0060), as eCab opens the tab early to whoever uploads the room's file.
+ * before the meeting and never lock.
  */
-function tabLock(id: TabId, meeting: Meeting, earlyRecordings: boolean): string | null {
+function tabLock(id: TabId, meeting: Meeting): string | null {
   const cancelled = meeting.status === 'Cancelled'
   if (id === 'recordings') {
-    if (meeting.status === 'InProgress' || meeting.status === 'Ended' || earlyRecordings) return null
+    if (meeting.status === 'InProgress' || meeting.status === 'Ended') return null
     return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp bắt đầu'
   }
   if (id === 'minutes' && meeting.status !== 'Ended') return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp kết thúc'
@@ -169,15 +167,7 @@ function MeetingDetail({
   // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
   const onRoster = meeting.myMeetingRole !== null
   const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
-  // ADR-0060: the Secretary trusted with "Thu giọng mẫu hộ" records samples on the room's mic, never in a Secret meeting.
-  const collectsVoices =
-    meeting.mode !== 'Online' &&
-    meeting.myMeetingRole === 'Secretary' &&
-    // PO 2026-11-21: a Secretary without the system capability records only while this meeting is open.
-    (can('VoiceCollector') || meeting.status === 'Published' || meeting.status === 'InProgress') &&
-    meeting.sensitivity !== 'Secret' &&
-    meeting.status !== 'Cancelled'
-  const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting, collectsVoices)])) as Record<
+  const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting)])) as Record<
     TabId,
     string | null
   >
@@ -479,7 +469,6 @@ function MeetingDetail({
                 sensitivity={meeting.sensitivity}
                 onChanged={() => void reload()}
               />
-              {collectsVoices && <VoiceCollectionPanel meetingId={meeting.id} />}
             </div>
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
@@ -491,7 +480,6 @@ function MeetingDetail({
             <div className="recordings-tab">
               <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
-              {collectsVoices && <VoiceCollectionPanel meetingId={meeting.id} />}
             </div>
           ) : (
             <MinutesPanel meeting={meeting} />

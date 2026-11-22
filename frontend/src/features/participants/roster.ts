@@ -6,14 +6,6 @@ export interface RosterEntry {
   fullName: string
   email: string
   role: MeetingRole
-  /** The system role may record proxy Voice ID samples; a Secretary without it only in this meeting (PO 2026-11-21). */
-  voiceCollector?: boolean
-}
-
-/** Red note under a Secretary pick whose system role lacks "Thu giọng mẫu hộ" (PO 2026-11-21). */
-export function tempSecretaryNote(names: string[]): string | null {
-  if (names.length === 0) return null
-  return `${names.join(', ')} không có vai trò Thư ký hệ thống: chỉ thu giọng mẫu hộ được trong cuộc họp này khi đang mở, họp xong là hết quyền với các mẫu đã thu.`
 }
 
 /** The backend's limit on the roster sent with a new meeting. */

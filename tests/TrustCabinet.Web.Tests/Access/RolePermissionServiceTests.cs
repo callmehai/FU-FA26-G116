@@ -41,14 +41,15 @@ public class RolePermissionServiceTests
     [Fact]
     public async Task Matrix_lists_every_role_even_one_with_no_capabilities()
     {
+        // A role holding nothing still has to appear: the screen draws a grid, and a missing role would be a missing
+        // row rather than an empty one. Since ADR-0075 every built-in role holds something, so this one is custom.
+        var empty = new Role { Name = "Khách mời thường xuyên" };
+        _roles.WithRole(empty);
+
         var matrix = await NewService().GetMatrixAsync();
 
-        // Member holds nothing, and still has to appear: the screen draws a grid, and a missing
-        // role would be a missing row rather than an empty one.
-        Assert.Equal(BuiltInRoles.All.Count, matrix.Roles.Count);
-
-        var member = matrix.Roles.Single(r => r.Id == BuiltInRoles.Member);
-        Assert.Empty(member.Capabilities);
+        Assert.Equal(BuiltInRoles.All.Count + 1, matrix.Roles.Count);
+        Assert.Empty(matrix.Roles.Single(r => r.Id == empty.Id).Capabilities);
     }
 
     [Fact]
@@ -71,7 +72,7 @@ public class RolePermissionServiceTests
         Assert.False(deputy.IsBuiltIn);
         Assert.Empty(deputy.Capabilities);
 
-        Assert.All(matrix.Roles.Take(4), r => Assert.True(r.IsBuiltIn));
+        Assert.All(matrix.Roles.Take(BuiltInRoles.All.Count), r => Assert.True(r.IsBuiltIn));
     }
 
     [Fact]
@@ -79,12 +80,13 @@ public class RolePermissionServiceTests
     {
         var matrix = await NewService().GetMatrixAsync();
 
-        var admin = matrix.Roles.Single(r => r.Id == BuiltInRoles.Admin);
-        Assert.Equal([Capability.AdminUsers], admin.Capabilities);
-
-        var secretary = matrix.Roles.Single(r => r.Id == BuiltInRoles.Secretary);
-        Assert.Contains(Capability.MinutesEditor, secretary.Capabilities);
-        Assert.Contains(Capability.MeetingCreator, secretary.Capabilities);
+        // ADR-0075: the three built-in roles and what each carries.
+        Assert.Equal([Capability.MeetingCreator],
+            matrix.Roles.Single(r => r.Id == BuiltInRoles.Member).Capabilities.Order());
+        Assert.Equal([Capability.MeetingCreator, Capability.MeetingApprover],
+            matrix.Roles.Single(r => r.Id == BuiltInRoles.Approver).Capabilities.Order());
+        Assert.Equal([Capability.MeetingCreator, Capability.AdminUsers, Capability.VoiceCollector],
+            matrix.Roles.Single(r => r.Id == BuiltInRoles.Admin).Capabilities.Order());
     }
 
     [Fact]
@@ -104,30 +106,30 @@ public class RolePermissionServiceTests
     public async Task Update_saves_the_requested_capabilities()
     {
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+            BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal([Capability.MeetingCreator], _roles.CapabilitiesOf(BuiltInRoles.Member));
+        Assert.Equal([Capability.MeetingCreator, Capability.MeetingApprover], _roles.CapabilitiesOf(BuiltInRoles.Member).Order());
 
         var member = result.Matrix!.Roles.Single(r => r.Id == BuiltInRoles.Member);
-        Assert.Equal([Capability.MeetingCreator], member.Capabilities);
+        Assert.Equal([Capability.MeetingCreator, Capability.MeetingApprover], member.Capabilities.Order());
     }
 
     [Fact]
     public async Task Update_can_remove_every_capability_from_a_role()
     {
-        // Legitimate: a secretary who may no longer create meetings. Only AdminUsers is protected,
+        // Legitimate: an approver who may no longer create or approve meetings. Only AdminUsers is protected,
         // and only as the last holder of it.
-        var result = await NewService().UpdateAsync(BuiltInRoles.Secretary, [], _actorId);
+        var result = await NewService().UpdateAsync(BuiltInRoles.Approver, [], _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Empty(_roles.CapabilitiesOf(BuiltInRoles.Secretary));
+        Assert.Empty(_roles.CapabilitiesOf(BuiltInRoles.Approver));
     }
 
     [Fact]
     public async Task Update_records_the_change_with_before_and_after()
     {
-        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         var record = Assert.Single(_audit.Records);
         Assert.Equal(AuditActions.RolePermissionsUpdated, record.Action);
@@ -146,13 +148,12 @@ public class RolePermissionServiceTests
         // travels in the details, since a role can be renamed later.
         Assert.Equal(BuiltInRoles.Member, record.ObjectId);
 
-        // Before was empty and after holds exactly the granted capability.
+        // Before holds the default (ADR-0075), after the default and the granted capability.
         using var parsed = JsonDocument.Parse(details);
         Assert.Equal("Thành viên", parsed.RootElement.GetProperty("Name").GetString());
-        Assert.Empty(parsed.RootElement.GetProperty("Before").EnumerateArray());
-        Assert.Equal(
-            "MeetingCreator",
-            parsed.RootElement.GetProperty("After").EnumerateArray().Single().GetString());
+        Assert.Equal(["MeetingCreator"], parsed.RootElement.GetProperty("Before").EnumerateArray().Select(e => e.GetString()));
+        Assert.Equal(["MeetingApprover", "MeetingCreator"],
+            parsed.RootElement.GetProperty("After").EnumerateArray().Select(e => e.GetString()).Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -161,9 +162,9 @@ public class RolePermissionServiceTests
         var affected = Guid.CreateVersion7();
         var untouched = Guid.CreateVersion7();
         _roles.WithActiveUser(BuiltInRoles.Member, affected);
-        _roles.WithActiveUser(BuiltInRoles.Chair, untouched);
+        _roles.WithActiveUser(BuiltInRoles.Approver, untouched);
 
-        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         // Capabilities travel inside the access token: told, the browser refreshes now instead of
         // carrying the old set until the token is close to expiring.
@@ -174,13 +175,13 @@ public class RolePermissionServiceTests
     [Fact]
     public async Task Update_tells_the_role_when_a_capability_is_taken_away_too()
     {
-        var secretary = Guid.CreateVersion7();
-        _roles.WithActiveUser(BuiltInRoles.Secretary, secretary);
+        var approver = Guid.CreateVersion7();
+        _roles.WithActiveUser(BuiltInRoles.Approver, approver);
 
-        await NewService().UpdateAsync(BuiltInRoles.Secretary, [], _actorId);
+        await NewService().UpdateAsync(BuiltInRoles.Approver, [], _actorId);
 
         // The server already refuses the lost capability; the push lets the menu drop it too.
-        Assert.Equal([secretary], _publisher.Notified);
+        Assert.Equal([approver], _publisher.Notified);
     }
 
     [Fact]
@@ -195,7 +196,7 @@ public class RolePermissionServiceTests
             Assert.False(_invariant.IsInsideWrite, "Accounts were told while the lock was held.");
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+            BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(2, _publisher.Notified.Count);
@@ -210,7 +211,7 @@ public class RolePermissionServiceTests
         _publisher.OnPublish = () => throw new InvalidOperationException("Hub khong phan hoi");
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+            BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Single(_audit.Records);
@@ -223,7 +224,7 @@ public class RolePermissionServiceTests
         // still able to administer?", and they used to take different locks — so a matrix edit and
         // a deactivation could each remove the last administrator at the same time, neither
         // seeing the other. They now queue behind one name.
-        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         Assert.Equal(1, _invariant.WriteCount);
     }
@@ -235,7 +236,7 @@ public class RolePermissionServiceTests
         _roles.WithActiveUser(BuiltInRoles.Admin, member);
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Admin, [Capability.AdminUsers], _actorId);
+            BuiltInRoles.Admin, [Capability.AdminUsers, Capability.MeetingCreator, Capability.VoiceCollector], _actorId);
 
         // Answered as success — the system is in the state asked for — but nothing happened, so
         // there is no audit row for a change that was not made and nobody told their capabilities
@@ -251,7 +252,7 @@ public class RolePermissionServiceTests
     {
         var result = await NewService().UpdateAsync(
             BuiltInRoles.Member,
-            [Capability.MeetingCreator, Capability.MeetingCreator],
+            [Capability.MeetingApprover, Capability.MeetingApprover],
             _actorId);
 
         Assert.True(result.Succeeded);
@@ -259,7 +260,7 @@ public class RolePermissionServiceTests
         // Stored once, because the service de-duplicates before writing. That it *must* is
         // enforced by the composite primary key in PostgreSQL, which this fake does not have —
         // RolePermissionRepositoryTests covers the real table.
-        Assert.Equal([Capability.MeetingCreator], _roles.CapabilitiesOf(BuiltInRoles.Member));
+        Assert.Equal([Capability.MeetingApprover], _roles.CapabilitiesOf(BuiltInRoles.Member));
     }
 
     // ------------------------------------------- UC-11 · MSG17, invalid permission configuration
@@ -280,7 +281,8 @@ public class RolePermissionServiceTests
 
         // And nothing was written.
         Assert.Equal(0, _roles.SaveCount);
-        Assert.Equal([Capability.AdminUsers], _roles.CapabilitiesOf(BuiltInRoles.Admin));
+        Assert.Equal([Capability.MeetingCreator, Capability.AdminUsers, Capability.VoiceCollector],
+            _roles.CapabilitiesOf(BuiltInRoles.Admin).Order());
         Assert.Empty(_audit.Records);
     }
 
@@ -289,8 +291,8 @@ public class RolePermissionServiceTests
     {
         // The point of the table is that the capability can be re-pointed without a deployment.
         // Legitimate — as long as somebody actually holds the destination role.
-        _roles.WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor, Capability.AdminUsers);
-        _roles.WithActiveUser(BuiltInRoles.Secretary, Guid.CreateVersion7());
+        _roles.WithCapabilities(BuiltInRoles.Approver, Capability.MeetingCreator, Capability.AdminUsers);
+        _roles.WithActiveUser(BuiltInRoles.Approver, Guid.CreateVersion7());
 
         var result = await NewService().UpdateAsync(BuiltInRoles.Admin, [], _actorId);
 
@@ -325,7 +327,7 @@ public class RolePermissionServiceTests
         _roles.WithNoUsers();
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Secretary, [Capability.MinutesEditor], _actorId);
+            BuiltInRoles.Approver, [Capability.MeetingCreator], _actorId);
 
         Assert.Equal(RolePermissionOutcome.InvalidConfiguration, result.Outcome);
         Assert.Contains("adminUsers", result.Errors!.Keys);
@@ -336,13 +338,13 @@ public class RolePermissionServiceTests
     {
         // The safe direction of the same rule: adding a second administering role is fine, and
         // must not be mistaken for the lock-out case by a rule that only counts.
-        _roles.WithActiveUser(BuiltInRoles.Secretary, Guid.CreateVersion7());
+        _roles.WithActiveUser(BuiltInRoles.Approver, Guid.CreateVersion7());
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Secretary, [Capability.AdminUsers], _actorId);
+            BuiltInRoles.Approver, [Capability.AdminUsers], _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Contains(Capability.AdminUsers, _roles.CapabilitiesOf(BuiltInRoles.Secretary));
+        Assert.Contains(Capability.AdminUsers, _roles.CapabilitiesOf(BuiltInRoles.Approver));
     }
 
     [Fact]
@@ -365,10 +367,10 @@ public class RolePermissionServiceTests
         _roles.WithRole(deputy);
 
         var result = await NewService().UpdateAsync(
-            deputy.Id, [Capability.MinutesEditor], _actorId);
+            deputy.Id, [Capability.VoiceCollector], _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal([Capability.MinutesEditor], _roles.CapabilitiesOf(deputy.Id));
+        Assert.Equal([Capability.VoiceCollector], _roles.CapabilitiesOf(deputy.Id));
         Assert.Equal(deputy.Id, Assert.Single(_audit.Records).ObjectId);
     }
 
@@ -408,14 +410,14 @@ public class RolePermissionServiceTests
         _roles.NextSaveThrows = new DbUpdateException("the database said no");
 
         var result = await NewService().UpdateAsync(
-            BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
+            BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingApprover], _actorId);
 
         Assert.Equal(RolePermissionOutcome.SaveFailed, result.Outcome);
         Assert.Null(result.Matrix);
 
         // Nothing changed, nothing recorded, nobody told — the diagram's failure branch stops
         // before all three.
-        Assert.Empty(_roles.CapabilitiesOf(BuiltInRoles.Member));
+        Assert.Equal([Capability.MeetingCreator], _roles.CapabilitiesOf(BuiltInRoles.Member));
         Assert.Empty(_audit.Records);
         Assert.Empty(_publisher.Notified);
     }

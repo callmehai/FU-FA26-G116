@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -32,7 +33,7 @@ public class JwtTokenIssuerTests
         FullName = "Nguyễn Thư Ký",
         Email = "thuky@trustcabinet.local",
         PasswordHash = "khong-lien-quan",
-        RoleId = BuiltInRoles.Secretary,
+        RoleId = TestRoles.Secretary,
     };
 
     private static JwtTokenIssuer NewIssuer(AuthenticationOptions? options = null)
@@ -56,7 +57,7 @@ public class JwtTokenIssuerTests
     public void The_access_token_carries_one_claim_per_capability()
     {
         var token = Parse(NewIssuer().CreateAccessToken(
-            Secretary, [Capability.MeetingCreator, Capability.MinutesEditor]));
+            Secretary, [Capability.MeetingCreator, Capability.VoiceCollector]));
 
         var capabilities = token.Claims
             .Where(c => c.Type == ITokenIssuer.CapabilityClaim)
@@ -65,7 +66,7 @@ public class JwtTokenIssuerTests
 
         // Separate claims rather than one joined string, so an authorization policy can match a
         // single value without parsing.
-        Assert.Equal(["MeetingCreator", "MinutesEditor"], capabilities);
+        Assert.Equal(["MeetingCreator", "VoiceCollector"], capabilities);
     }
 
     [Fact]

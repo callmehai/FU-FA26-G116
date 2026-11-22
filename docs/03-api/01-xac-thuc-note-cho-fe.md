@@ -61,7 +61,7 @@ Backend trả `role` và `capabilities` theo **PascalCase**, còn
 | | Backend trả về (thật) | FE đang khai |
 |---|---|---|
 | `role` | `"Secretary"` | `'secretary'` |
-| `capabilities` | `["MeetingCreator", "MinutesEditor"]` | `['meeting_creator', 'minutes_editor']` |
+| `capabilities` | `["MeetingCreator", "MeetingApprover"]` | `['meeting_creator', 'meeting_approver']` |
 
 Không khớp thì `ROLE_CAPABILITIES[role]` trả `undefined`, `can()` luôn `false`, sidebar trống rỗng
 và **mọi route có `RequireCapability` render ra 404**. Nhìn y như backend cấp sai quyền, trong khi
@@ -254,7 +254,7 @@ response login:
 ```json
 { "id":"...", "email":"...", "fullName":"...",
   "roleId":"01a0ce78-7203-7c7f-8326-7a0baebf4c22", "roleName":"Thư ký",
-  "capabilities":["MeetingCreator","MinutesEditor"] }
+  "capabilities":["MeetingCreator","MeetingApprover"] }
 ```
 
 Đọc trực tiếp từ claim trong token, không truy vấn database — nên gọi nó khi khởi động app là rẻ.
@@ -299,12 +299,13 @@ Mật khẩu chung (chỉ môi trường Development): `TrustCabinet@2026`
 
 | Email | `roleName` trả về | `capabilities` trả về |
 |---|---|---|
-| `chutoa@trustcabinet.local` | `Chủ toạ` | `["MeetingCreator","MeetingApprover"]` |
-| `thuky@trustcabinet.local` | `Thư ký` | `["MeetingCreator","MinutesEditor"]` |
-| `thanhvien@trustcabinet.local` | `Thành viên` | `[]` |
-| `quantri@trustcabinet.local` | `Quản trị viên` | `["AdminUsers"]` |
+| `chutoa@trustcabinet.local` | `Phê duyệt viên` | `["MeetingCreator","MeetingApprover"]` |
+| `thuky@trustcabinet.local` | `Thành viên` (DB tạo trước ADR-0075: `Phê duyệt viên`) | `["MeetingCreator"]` |
+| `thanhvien@trustcabinet.local` | `Thành viên` | `["MeetingCreator"]` |
+| `quantri@trustcabinet.local` | `Quản trị viên` | `["MeetingCreator","VoiceCollector","AdminUsers"]` |
 
-**`Member` có `capabilities` rỗng nhưng vẫn đăng nhập được bình thường** — đó là chủ ý (thành viên
+Từ [ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md) Thành viên có `MeetingCreator`. Một vai trò tự tạo
+vẫn có thể **không có quyền nào**: `capabilities` rỗng nhưng vẫn đăng nhập được bình thường — đó là chủ ý (thành viên
 dự họp, đọc tài liệu, biểu quyết, không cần capability nào). Đừng coi mảng rỗng là lỗi hoặc là
 "chưa có quyền vào hệ thống".
 

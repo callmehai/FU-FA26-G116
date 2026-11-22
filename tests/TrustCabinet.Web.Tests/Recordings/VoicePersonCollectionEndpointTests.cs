@@ -10,7 +10,7 @@ using TrustCabinet.Domain.VoiceId;
 namespace TrustCabinet.Web.Tests.Recordings;
 
 /// <summary>
-/// ADR-0071 — a holder of "Thu giọng mẫu hộ" records one person at any time, with no meeting: only with the capability,
+/// ADR-0071, ADR-0075 — a holder of "Thu giọng mẫu hộ" records one person at any time, with no meeting: only with the capability,
 /// only for an active person whose own consent is to notice 1.4 or later; they see, hear and delete every proxy sample
 /// of that person, each play audited, and the person is told each time.
 /// </summary>
@@ -153,11 +153,13 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
     {
         var (s, collector) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
-        // One taken in a meeting by its Secretary, one by this collector with no meeting, and the person's own.
-        await VoiceCollection.SetMeeting(fixture, s.MeetingId, MeetingStatus.InProgress, mode: MeetingMode.InPerson);
+        // One a meeting's Secretary took in the meeting before ADR-0075 (its meeting kept), one by this collector with no
+        // meeting, and the person's own.
         await VoiceCollection.MakeCollectors(fixture, s.Secretary);
         using var secretary = VoiceCollection.Client(fixture, s.Secretary, Capability.VoiceCollector);
-        var inMeeting = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        var inMeeting = await VoiceCollection.Collect(fixture, secretary, s.Member);
+        await using (var legacy = fixture.Db())
+            await legacy.VoiceSamples.Where(x => x.Id == inMeeting).ExecuteUpdateAsync(u => u.SetProperty(x => x.MeetingId, s.MeetingId));
         var outside = await Collect(collector, s.Member);
         using var member = fixture.Client(s.Member);
         var own = (await VoiceCollection.AssertCode(await member.PostAsync("/api/me/voice/samples", VoiceCollection.Sample()), 201, "MSG307"))
@@ -192,15 +194,28 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
     }
 
     [Fact]
-    public async Task One_collector_takes_at_most_five_proxy_samples_of_a_person()
+    public async Task ADR_0075_one_collector_may_take_all_fifty_proxy_samples_and_no_more()
     {
+        // The per-collector share of 5 went with the meeting Secretaries (ADR-0075); the person's limit of 50 stays.
         var (s, collector) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
-        for (var i = 0; i < VoiceIdRules.MaxProxySamplesPerCollector; i++) await Collect(collector, s.Member);
+        await using (var seed = fixture.Db())
+        {
+            var consent = await seed.VoiceConsents.SingleAsync(c => c.UserId == s.Member && c.WithdrawnAt == null);
+            for (var i = 0; i < VoiceIdRules.MaxProxySamples - 1; i++)
+                seed.VoiceSamples.Add(new()
+                {
+                    UserId = s.Member, ConsentId = consent.Id, EmbeddingModel = "eres2net-base-200k@0123456789ab", Ciphertext = [1],
+                    CollectedById = s.Outsider, CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
+                });
+            await seed.SaveChangesAsync();
+        }
+        Assert.True((await collector.GetFromJsonAsync<JsonElement>(Url(s.Member))).GetProperty("canCollect").GetBoolean());
+        await Collect(collector, s.Member);
 
         await VoiceCollection.AssertCode(await collector.PostAsync($"{Url(s.Member)}/samples", VoiceCollection.Sample()), 409, Msg476Limit);
         Assert.False((await collector.GetFromJsonAsync<JsonElement>(Url(s.Member))).GetProperty("canCollect").GetBoolean());
         await using var db = fixture.Db();
-        Assert.Equal(VoiceIdRules.MaxProxySamplesPerCollector, await db.VoiceSamples.CountAsync(x => x.UserId == s.Member));
+        Assert.Equal(VoiceIdRules.MaxProxySamples, await db.VoiceSamples.CountAsync(x => x.UserId == s.Member));
     }
 }

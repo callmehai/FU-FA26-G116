@@ -3,6 +3,7 @@ using Npgsql;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -1035,7 +1036,7 @@ public sealed class MeetingWorkflowServiceTests
             case "member": secretary.Role = MeetingRole.Member; break;
             case "globalSecretary":
                 secretary.Role = MeetingRole.Member;
-                secretary.User.RoleId = TrustCabinet.Domain.Access.BuiltInRoles.Secretary;
+                secretary.User.RoleId = TrustCabinet.Web.Tests.Access.TestRoles.Secretary;
                 break;
             case "otherMeeting": secretary.MeetingId = Guid.CreateVersion7(); break;
             case "delegated": secretary.Response = InvitationResponse.Delegated; break;

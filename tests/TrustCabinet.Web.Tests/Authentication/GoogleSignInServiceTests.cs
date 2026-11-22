@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Web.Tests.Users;
 using TrustCabinet.Web.Tests.Persistence;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -44,7 +45,7 @@ public class GoogleSignInServiceTests
             Email = GoogleEmail,
             PasswordHash = null,
             GoogleSubjectId = googleSubjectId,
-            RoleId = role ?? BuiltInRoles.Secretary,
+            RoleId = role ?? TestRoles.Secretary,
             IsActive = isActive,
         };
 
@@ -54,13 +55,13 @@ public class GoogleSignInServiceTests
     public async Task A_linked_active_account_signs_in()
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
         Assert.Equal(GoogleSignInOutcome.Success, result.Outcome);
         Assert.True(result.Succeeded);
-        Assert.Equal([Capability.MinutesEditor], result.Capabilities);
+        Assert.Equal([Capability.VoiceCollector], result.Capabilities);
         // BR-444: the method, and nothing of the ID token.
         var record = Assert.Single(_audit.Records);
         Assert.Equal((AuditActions.SignedIn, result.User!.Id), (record.Action, record.ActorId));
@@ -71,7 +72,7 @@ public class GoogleSignInServiceTests
     public async Task Google_sign_in_issues_the_same_token_pair_as_a_password_sign_in()
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -88,7 +89,7 @@ public class GoogleSignInServiceTests
         user.PasswordHash = new FakePasswordHasher().Hash("MatKhau@2026");
 
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(user).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
         var service = NewService();
 
         Assert.Equal(
@@ -122,7 +123,7 @@ public class GoogleSignInServiceTests
     public async Task A_token_that_does_not_verify_is_rejected(string idToken)
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(idToken);
 
@@ -163,7 +164,7 @@ public class GoogleSignInServiceTests
         // An administrator created the account with this Gmail; nobody has linked it (ADR-0009).
         var user = NewGoogleUser(googleSubjectId: null);
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail.ToUpperInvariant());
-        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(user).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -182,7 +183,7 @@ public class GoogleSignInServiceTests
         // address does not get the previous owner's account.
         _google.WithValidToken(IdToken, "sub-cua-nguoi-khac", GoogleEmail);
         var user = NewGoogleUser();
-        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(user).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -196,7 +197,7 @@ public class GoogleSignInServiceTests
     {
         var user = NewGoogleUser(googleSubjectId: null, isActive: false);
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(user).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -218,7 +219,7 @@ public class GoogleSignInServiceTests
         // nothing about the account's state.
         _google.WithValidToken(IdToken, "sub-cua-nguoi-khac", GoogleEmail);
         _users.WithUser(NewGoogleUser(isActive: false))
-            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -232,7 +233,7 @@ public class GoogleSignInServiceTests
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
         _users.WithUser(NewGoogleUser(isActive: false))
-            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
@@ -261,7 +262,7 @@ public class GoogleSignInServiceTests
     [Fact]
     public async Task A_google_only_account_cannot_be_signed_into_with_a_password()
     {
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         // PasswordHash is null. The password path must treat that as "no password matches",
         // not throw and not somehow succeed on an empty credential.
@@ -276,7 +277,7 @@ public class GoogleSignInServiceTests
     public async Task A_session_started_with_google_refreshes_like_any_other()
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
         var service = NewService();
 
         var signIn = await service.SignInWithGoogleAsync(IdToken);
@@ -292,7 +293,7 @@ public class GoogleSignInServiceTests
     public async Task Signing_out_of_a_google_session_destroys_it_server_side()
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
         var service = NewService();
 
         var signIn = await service.SignInWithGoogleAsync(IdToken);
@@ -309,7 +310,7 @@ public class GoogleSignInServiceTests
     {
         _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
         var user = NewGoogleUser();
-        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _users.WithUser(user).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
         var service = NewService();
 
         var signIn = await service.SignInWithGoogleAsync(IdToken);

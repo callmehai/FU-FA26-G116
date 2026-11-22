@@ -6,7 +6,8 @@
  * database records; the backend returns their IDs and display names. Which role carries which
  * capability lives in `role_capabilities`, and must never be hardcoded here.
  */
-export type Capability = 'MeetingCreator' | 'MeetingApprover' | 'MinutesEditor' | 'AdminUsers' | 'VoiceCollector'
+// ADR-0075: no 'MinutesEditor' — the minutes follow the meeting's Secretary and Chair, not a system capability.
+export type Capability = 'MeetingCreator' | 'MeetingApprover' | 'AdminUsers' | 'VoiceCollector'
 
 /** The signed-in user — GET /api/auth/me, and the `user` of every sign-in response. */
 export interface CurrentUser {

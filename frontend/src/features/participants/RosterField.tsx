@@ -5,7 +5,7 @@ import { Select } from '../../components/Select'
 import { errorMessage } from '../../lib/errors'
 import { MEETING_ROLES, MEETING_ROLE_LABEL, type MeetingRole, type ParticipantOption } from '../../types/participant'
 import { Person } from './Person'
-import { tempSecretaryNote, type RosterEntry } from './roster'
+import type { RosterEntry } from './roster'
 
 /** Matches shown under the search box: enough to pick from, short enough to scan. */
 const SHOWN = 8
@@ -114,9 +114,6 @@ export function RosterField({
 
 
   const picked = new Set(value.map((p) => p.userId))
-  const tempNote = tempSecretaryNote(
-    value.filter((p) => p.role === 'Secretary' && p.voiceCollector === false).map((p) => p.fullName),
-  )
   const matches = result.kind === 'loaded' ? result.items : []
 
   /** In, or out again if already in; the matches stay open for the next pick. */
@@ -125,16 +122,7 @@ export function RosterField({
     onChange(
       picked.has(option.id)
         ? value.filter((p) => p.userId !== option.id)
-        : [
-            ...value,
-            {
-              userId: option.id,
-              fullName: option.fullName,
-              email: option.email,
-              role: 'Member',
-              voiceCollector: option.voiceCollector,
-            },
-          ],
+        : [...value, { userId: option.id, fullName: option.fullName, email: option.email, role: 'Member' }],
     )
   }
 
@@ -282,7 +270,6 @@ export function RosterField({
           {demoted}
         </small>
       )}
-      {tempNote && <p className="alert alert-error">{tempNote}</p>}
     </div>
   )
 }

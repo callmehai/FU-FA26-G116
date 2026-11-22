@@ -55,30 +55,9 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
             .ExecuteUpdateAsync(u => u.SetProperty(s => s.SuggestedUserId, (Guid?)null).SetProperty(s => s.SuggestionScore, (double?)null), ct);
     }
 
-    public async Task<IReadOnlyList<VoiceConsentNotice>> ListConsentNoticesAsync(Guid[] userIds, CancellationToken ct)
-        => (await db.VoiceConsents.AsNoTracking()
-                .Where(c => userIds.Contains(c.UserId) && c.WithdrawnAt == null)
-                .Select(c => new { c.UserId, c.NoticeVersion }).ToListAsync(ct))
-            .Select(c => new VoiceConsentNotice(c.UserId, c.NoticeVersion)).ToList();
-
-    public async Task<IReadOnlyList<CollectedSampleRow>> ListCollectedSamplesAsync(Guid[] userIds, CancellationToken ct)
-        => await db.VoiceSamples.AsNoTracking()
-            .Where(s => userIds.Contains(s.UserId) && s.CollectedById != null)
-            .Select(s => new CollectedSampleRow(s.Id, s.UserId, s.MeetingId, s.CreatedAt, s.SpeechMs, s.CollectedBy!.FullName))
-            .ToListAsync(ct);
-
-    public Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct)
-        => (tracked ? db.VoiceSamples : db.VoiceSamples.AsNoTracking())
-            .SingleOrDefaultAsync(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null, ct);
-
     public Task<VoiceSample?> FindProxySampleAsync(Guid userId, Guid sampleId, bool tracked, CancellationToken ct)
         => (tracked ? db.VoiceSamples : db.VoiceSamples.AsNoTracking())
             .SingleOrDefaultAsync(s => s.Id == sampleId && s.UserId == userId && s.CollectedById != null, ct);
-
-    public Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct)
-        => db.Meetings.AsNoTracking().AsSplitQuery()
-            .Include(m => m.Participants).ThenInclude(p => p.User)
-            .SingleOrDefaultAsync(m => m.Id == meetingId, ct);
 
     public void Add(VoiceConsent consent) => db.VoiceConsents.Add(consent);
     public void Add(VoiceSample sample) => db.VoiceSamples.Add(sample);
