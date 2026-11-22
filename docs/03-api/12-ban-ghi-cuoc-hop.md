@@ -292,7 +292,9 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 `wordStartsMs`: mốc bắt đầu (ms tính từ đầu bản ghi) của từng từ trong `text`, mỗi từ một mốc, do worker đo từ
 mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
-giờ chia đều thời lượng cho các từ để giả mốc.
+giờ chia đều thời lượng cho các từ để giả mốc. Mốc luôn nằm trong `[startMs, endMs]` của đoạn, không giảm dần: đoạn của
+bản ghi mic phòng bị cắt theo lượt ghi chứa phần lớn của nó (hoặc theo chỗ một lượt bị xoá), còn worker đo mốc trên cả
+quãng nó nghe, nên từ nói vắt qua chỗ cắt được đặt ở mép đoạn thay vì nằm ngoài đoạn (buổi họp 22/11/2026, 6/664 đoạn).
 
 Số trong `text` viết bằng chữ số (`2026`, `5,5`, `15%`, `ngày 22 tháng 11`) từ 22/11/2026
 ([ADR-0076](../05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)): worker gộp các từ của một con số thành một
