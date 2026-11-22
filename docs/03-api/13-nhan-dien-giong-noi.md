@@ -256,7 +256,8 @@ người lạ trên server cao nhất 0,66) giờ hiện sẵn tên thay vì ch�
 ### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null, "guestId": "…" | null }`
 
 Thư ký gán tên thật (một lần áp dụng cho mọi đoạn của giọng đó): một người dùng (`userId`) hoặc một Khách của cuộc
-họp (`guestId`), không cả hai; cả hai `null` là bỏ gán. Người được gán phải là thành phần hiện tại của cuộc họp, Khách
+họp (`guestId`), không cả hai; cả hai `null` là bỏ gán. Tên (và việc bỏ gán) đi theo giọng sang các lần chuyển chữ lại,
+thắng tên máy tự gán ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). Người được gán phải là thành phần hiện tại của cuộc họp, Khách
 phải có lời mời của cuộc họp này chưa bị thu hồi, gửi cả hai cũng vậy (`400 MSG317`). Response có `assignedGuestId`. Không phải Thư ký: `403 MSG295`. Nhãn
 không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 
@@ -271,6 +272,8 @@ AI-eCabinet, câu được **chuyển sang một giọng khác** của bản ghi
   sau của cùng người vào lại giọng ấy, không thêm thẻ.
 - `label`: câu chuyển về một giọng có sẵn của **bản ghi này** (ví dụ giọng câu bị lấy nhầm khỏi). Nhãn không thuộc bản
   ghi này (của bản ghi khác hay không có): `404`.
+- Câu được đánh dấu là Thư ký chuyển (`SpeakerAssignedById`, `SpeakerAssignedAt`), để lần chuyển chữ lại chuyển câu khớp
+  với nó thêm lần nữa ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)).
 
 Gửi đúng một trong ba trường; gửi nhiều hơn hoặc không gửi gì: `400 MSG317`. Cùng điều kiện với gán giọng: người dùng là
 thành phần hiện tại, Khách có lời mời chưa thu hồi (`400 MSG317`); không phải Thư ký `403 MSG295`; câu không tồn tại hay

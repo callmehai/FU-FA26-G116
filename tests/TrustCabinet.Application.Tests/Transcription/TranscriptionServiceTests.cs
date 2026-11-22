@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
@@ -369,5 +370,175 @@ public sealed class TranscriptionServiceTests
         Assert.Equal(TranscriptStatus.Processing, transcript.Status);
         Assert.Equal(0, _unitOfWork.Saves);
         Assert.Empty(_publisher.Published);
+    }
+
+    // ADR-0077 — a re-run (a room recording after every take) keeps what the Secretary corrected by hand. The old run heard
+    // 20 s: someone at 0–10 s, the presenter at 10–20 s, named by hand. The new run also heard the next take, 20–30 s.
+    private static readonly DateTimeOffset NamedAt = Now.AddMinutes(-30);
+
+    private Transcript Corrected()
+    {
+        var transcript = Queued();
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 0, EndMs = 10_000, Text = "Mời anh trình bày.", SpeakerLabel = "SPEAKER_00",
+        });
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 2, StartMs = 10_000, EndMs = 20_000, Text = "Kính thưa các đồng chí.", SpeakerLabel = "SPEAKER_01",
+        });
+        transcript.Speakers.Add(new TranscriptSpeaker { TranscriptId = transcript.Id, Label = "SPEAKER_00", SpeechMs = 10_000 });
+        transcript.Speakers.Add(new TranscriptSpeaker
+        {
+            TranscriptId = transcript.Id, Label = "SPEAKER_01", SpeechMs = 10_000, AssignedUserId = _meeting.Member,
+            AssignedById = _meeting.Secretary, AssignedAt = NamedAt,
+        });
+        return transcript;
+    }
+
+    /// <summary>The new run numbers the voices the other way round: the presenter, heard first this time, is SPEAKER_00.</summary>
+    private static SpeechTranscription Rerun(string embeddingModel = "", params SpeechSegment[] extra) => new(30_000, "vi", "test",
+        embeddingModel,
+        [
+            new SpeechSegment(0, 3_000, "B", "Vâng, tôi xin phép trình bày."), new SpeechSegment(3_000, 10_000, "A", "Mời anh trình bày ạ."),
+            new SpeechSegment(10_000, 20_000, "B", "Kính thưa các đồng chí."), new SpeechSegment(20_000, 30_000, "B", "Phần tiếp theo."),
+            .. extra,
+        ],
+        [new SpeechSpeaker("A", 7_000, [0f, 1f]), new SpeechSpeaker("B", 23_000, [1f, 0f])]);
+
+    private static TranscriptSpeaker Voice(Transcript transcript, string label) => transcript.Speakers.Single(s => s.Label == label);
+
+    [Fact]
+    public async Task A_name_given_by_hand_follows_its_voice_into_the_next_run_under_a_new_label()
+    {
+        var transcript = Corrected();
+        _engine.Result = Rerun();
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        Assert.Equal(TranscriptStatus.Completed, transcript.Status);
+        var presenter = Voice(transcript, "SPEAKER_00");
+        Assert.Equal((_meeting.Member, _meeting.Secretary, NamedAt), (presenter.AssignedUserId, presenter.AssignedById, presenter.AssignedAt));
+        Assert.Null(Voice(transcript, "SPEAKER_01").AssignedUserId);
+        Assert.Equal([AuditActions.TranscriptCorrectionsCarried], _audit.Actions);
+    }
+
+    [Fact]
+    public async Task The_machines_name_for_a_voice_does_not_replace_the_one_given_by_hand()
+    {
+        var transcript = Corrected();
+        // The Secretary enrolled, and the machine is sure the presenter is them.
+        var consent = new VoiceConsent
+        {
+            UserId = _meeting.Secretary, GrantedAt = Now.AddDays(-1), NoticeVersion = VoiceIdRules.NoticeVersion, Purpose = VoiceIdRules.Purpose,
+        };
+        _voices.Consents.Add(consent);
+        var sampleId = Guid.CreateVersion7();
+        _voices.Samples.Add(new VoiceSample
+        {
+            Id = sampleId, UserId = _meeting.Secretary, ConsentId = consent.Id, EmbeddingModel = "test-model",
+            Ciphertext = _protector.Protect([1f, 0f], _meeting.Secretary, sampleId, "test-model"),
+        });
+        _engine.Result = Rerun("test-model");
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        var presenter = Voice(transcript, "SPEAKER_00");
+        // Still suggested, for the Secretary to see, but the name is the one they gave.
+        Assert.Equal(_meeting.Secretary, presenter.SuggestedUserId);
+        Assert.Equal((_meeting.Member, _meeting.Secretary), (presenter.AssignedUserId, presenter.AssignedById));
+        Assert.DoesNotContain(AuditActions.TranscriptSpeakerAssigned, _audit.Actions);
+    }
+
+    [Fact]
+    public async Task A_name_the_machine_gave_someone_whose_consent_ended_is_not_carried()
+    {
+        var transcript = Corrected();
+        // The machine had named the presenter; the member then withdrew Voice ID consent, which erased their samples.
+        var presenter = Voice(transcript, "SPEAKER_01");
+        (presenter.AssignedById, presenter.AssignedAt, presenter.SuggestedUserId) = (null, null, _meeting.Member);
+        _voices.Consents.Add(new VoiceConsent
+        {
+            UserId = _meeting.Member, GrantedAt = Now.AddDays(-1), WithdrawnAt = Now.AddMinutes(-1), NoticeVersion = VoiceIdRules.NoticeVersion,
+            Purpose = VoiceIdRules.Purpose,
+        });
+        _engine.Result = Rerun("test-model");
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        Assert.All(transcript.Speakers, s => Assert.Null(s.AssignedUserId));
+        Assert.All(transcript.Speakers, s => Assert.Null(s.SuggestedUserId));
+        Assert.Empty(_audit.Actions);
+    }
+
+    [Fact]
+    public async Task A_line_edited_by_hand_keeps_its_text_on_the_new_line_at_the_same_place()
+    {
+        var transcript = Corrected();
+        var line = transcript.Segments.Single(s => s.Position == 2);
+        (line.Text, line.EditedById, line.EditedAt) = ("Kính thưa các đồng chí lãnh đạo.", _meeting.Secretary, NamedAt);
+        _engine.Result = Rerun();
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        var carried = transcript.Segments.Single(s => s.StartMs == 10_000);
+        Assert.Equal(("Kính thưa các đồng chí lãnh đạo.", _meeting.Secretary, NamedAt), (carried.Text, carried.EditedById, carried.EditedAt));
+        // The machine's word times were for its own words.
+        Assert.Null(carried.WordStartsMs);
+        Assert.Equal("Phần tiếp theo.", transcript.Segments.Single(s => s.StartMs == 20_000).Text);
+    }
+
+    [Fact]
+    public async Task An_edited_line_no_new_line_matches_is_recorded_in_the_audit_log_without_its_text()
+    {
+        var transcript = Corrected();
+        var line = transcript.Segments.Single(s => s.Position == 2);
+        (line.Text, line.EditedById, line.EditedAt) = ("Nội dung đã sửa tay.", _meeting.Secretary, NamedAt);
+        // This run cut the stretch differently: 10–14 s and 14–20 s, neither close to the old line.
+        _engine.Result = new SpeechTranscription(30_000, "vi", "test", "",
+            [
+                new SpeechSegment(0, 10_000, "A", "Mời anh trình bày ạ."), new SpeechSegment(10_000, 14_000, "B", "Kính thưa các đồng chí."),
+                new SpeechSegment(14_000, 20_000, "B", "Hôm nay chúng ta họp."),
+            ],
+            [new SpeechSpeaker("A", 10_000, [0f, 1f]), new SpeechSpeaker("B", 10_000, [1f, 0f])]);
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        Assert.DoesNotContain(transcript.Segments, s => s.EditedAt is not null);
+        Assert.Equal([AuditActions.TranscriptCorrectionsCarried], _audit.Actions);
+        var details = JsonSerializer.Serialize(Assert.Single(_audit.Details));
+        using var json = JsonDocument.Parse(details);
+        var unplaced = Assert.Single(json.RootElement.GetProperty("UnplacedEdits").EnumerateArray());
+        Assert.Equal((10_000L, 20_000L), (unplaced.GetProperty("StartMs").GetInt64(), unplaced.GetProperty("EndMs").GetInt64()));
+        Assert.Equal(0, json.RootElement.GetProperty("Edits").GetInt32());
+        // The name still follows the voice; the text itself stays out of the log, which outlives the recording.
+        Assert.Equal(_meeting.Member, Voice(transcript, "SPEAKER_01").AssignedUserId);
+        Assert.DoesNotContain("sửa tay", details);
+    }
+
+    [Fact]
+    public async Task A_line_moved_to_a_person_by_hand_is_moved_again_and_kept_even_when_short()
+    {
+        var transcript = Corrected();
+        // The Secretary moved a short "Đồng ý." to themselves, which made them a voice of their own.
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 3, StartMs = 25_000, EndMs = 26_000, Text = "Đồng ý.", SpeakerLabel = "SPEAKER_02",
+            SpeakerAssignedById = _meeting.Secretary, SpeakerAssignedAt = NamedAt,
+        });
+        transcript.Speakers.Add(new TranscriptSpeaker
+        {
+            TranscriptId = transcript.Id, Label = "SPEAKER_02", SpeechMs = 1_000, AssignedUserId = _meeting.Secretary,
+            AssignedById = _meeting.Secretary, AssignedAt = NamedAt,
+        });
+        _engine.Result = Rerun("", new SpeechSegment(25_100, 26_000, "A", "Đồng ý."));
+
+        Assert.True(await Service().ProcessNextAsync());
+
+        var moved = transcript.Segments.Single(s => s.StartMs == 25_100);
+        var theirs = Voice(transcript, moved.SpeakerLabel);
+        Assert.Equal(("SPEAKER_02", _meeting.Secretary, 900L), (theirs.Label, theirs.AssignedUserId, theirs.SpeechMs));
+        Assert.Equal((_meeting.Secretary, NamedAt), (moved.SpeakerAssignedById, moved.SpeakerAssignedAt));
+        Assert.Equal(7_000 - 900L, Voice(transcript, "SPEAKER_01").SpeechMs);
     }
 }

@@ -323,7 +323,9 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
 
     /// <summary>
     /// Takes the erased take's lines out and moves the later ones up by its length; edits, names and positions stay. A
-    /// transcript still being made is made again from the shorter file instead: its result would place lines wrongly.
+    /// transcript still being made is made again from the shorter file as well: its result would place lines wrongly.
+    /// Its lines of the last finished run are cut all the same, so the run that replaces them finds the Secretary's
+    /// corrections where the shorter file has them (ADR-0077).
     /// </summary>
     private static int CutTranscript(Transcript transcript, RecordingTake gone, DateTimeOffset now)
     {
@@ -333,7 +335,6 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             transcript.Status = TranscriptStatus.Pending;
             transcript.ErrorMessage = "";
             transcript.ProgressPercent = 0;
-            return 0;
         }
         var start = gone.OffsetMs;
         var end = gone.OffsetMs + gone.DurationMs;
