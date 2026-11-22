@@ -176,6 +176,7 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               ) : (
                 <RecordingRow
                   key={recording.id}
+                  meetingId={meetingId}
                   recording={recording}
                   online={existingOnly}
                   onErase={() => setErasing(recording)}
@@ -281,10 +282,12 @@ function OpenTakeRow({ take }: { take: Recording }) {
 }
 
 function RecordingRow({
+  meetingId,
   recording,
   online,
   onErase,
 }: {
+  meetingId: string
   recording: Recording
   online: boolean
   onErase: () => void
@@ -335,24 +338,31 @@ function RecordingRow({
   }
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
+  // Where the player was when the file grew, to carry on from there once the longer file is loaded.
+  const resume = useRef<{ ms: number; playing: boolean } | null>(null)
+
   // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired. And
   // again when the file grows (a room-mic take appended, ADR-0041): the player would keep the shorter file it loaded.
+  // Then the player and the transcript stay where they are while the new link comes (team test 21/11/2026: the panel
+  // collapsed to "Đang mở…" and back each time a take was saved, losing where the reader had scrolled).
   useEffect(() => {
     if (!open || deleted) return
     let gone = false
     void Promise.resolve().then(async () => {
       if (gone) return
-      setPlayback({ kind: 'loading' })
+      setPlayback((shown) => (shown?.kind === 'ready' ? shown : { kind: 'loading' }))
       try {
         const url = (await getRecordingPlayback(recording.id)).url
-        if (!gone) setPlayback({ kind: 'ready', url })
+        if (gone) return
+        const element = audio.current
+        if (element?.currentSrc) resume.current = { ms: element.currentTime * 1000, playing: !element.paused }
+        setPlayback({ kind: 'ready', url })
       } catch (error) {
-        if (!gone) setPlayback({ kind: 'error', message: errorMessage(error) })
+        if (!gone) setPlayback((shown) => (shown?.kind === 'ready' ? shown : { kind: 'error', message: errorMessage(error) }))
       }
     })
     return () => {
       gone = true
-      setPlayback(null)
     }
   }, [open, deleted, recording.id, recording.byteSize])
 
@@ -410,7 +420,11 @@ function RecordingRow({
           <button
             type="button"
             className="btn btn-outline btn-icon btn-sm"
-            onClick={() => setOpen(!open)}
+            onClick={() => {
+              // A link from this opening may have expired by the next: it is fetched again then.
+              if (open) setPlayback(null)
+              setOpen(!open)
+            }}
             aria-label={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
             aria-expanded={open}
             data-tooltip={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
@@ -458,6 +472,13 @@ function RecordingRow({
               const element = e.currentTarget
               if (Number.isFinite(element.duration)) setLengthMs(element.duration * 1000)
               element.playbackRate = speed
+              // The file grew under the player: carry on where it was.
+              const was = resume.current
+              resume.current = null
+              if (was) {
+                element.currentTime = was.ms / 1000
+                if (was.playing) void element.play().catch(() => undefined)
+              }
             }}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
@@ -505,6 +526,7 @@ function RecordingRow({
             </p>
           ) : (
             <TranscriptView
+              meetingId={meetingId}
               fileName={recording.fileName}
               recordingId={recording.id}
               takes={recording.takes}

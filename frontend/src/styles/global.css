@@ -3961,9 +3961,12 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 .room-pager { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; }
 .room-pager .icon-button { color: #fff; }
 .room-pager .icon-button:hover:not(:disabled) { background: var(--stage-tile); }
-.room-presenting { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: 12px; }
+/* One row the stage's height: the shared screen never sets it. An implicit row grew to the video's own height, so a
+   16:10 screen on a wide stage ran under the control bar until a side panel narrowed it (team test 21/11/2026). */
+.room-presenting { flex: 1; min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 248px; grid-template-rows: minmax(0, 1fr); gap: 12px; }
 .room-screen { position: relative; margin: 0; min-height: 0; border-radius: 12px; background: #000; overflow: hidden; display: grid; }
-.room-screen-video { width: 100%; height: 100%; object-fit: contain; }
+/* Fills the box it is given, the whole screen letterboxed inside it, whatever its shape. */
+.room-screen-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 /* Beside a shared screen the cameras are small 16:9 tiles centred in a column, as in Meet —
    never stretched to the column's full height. */
 .room-filmstrip { min-width: 0; min-height: 0; display: flex; }
@@ -4748,6 +4751,11 @@ audio.recording-player { height: 40px; }
 .tl-take { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .tl-take::after { flex: 1; height: 1px; background: var(--control-line); content: ''; }
 .tl-take-delete { order: 1; margin: -6px 0; }
+/* The take's number and clock fold or open its lines. */
+.tl-take-toggle { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; margin: -6px 0 -6px -6px; padding: 0 8px 0 4px; border: 0; border-radius: var(--radius); background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.tl-take-toggle:hover { background: var(--brand-wash); color: var(--brand); }
+.tl-group.is-folded .tl-take { padding-bottom: 6px; }
+@media (pointer: coarse) { .tl-take-toggle { min-height: 40px; margin-block: -10px; } }
 .tl-group:last-child .tl-row-head:last-child .tl-rail::before { display: none; }
 .tl-dot { position: relative; width: 10px; height: 10px; margin-top: 11px; border-radius: 50%; background: var(--control-line); }
 .tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
@@ -4951,8 +4959,9 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
 /* As AI-eCabinet's voice cards: one bordered card a voice, the name (its picker) on the left and the speaking time
    pinned to the right of the same line. A name too long for the card wraps inside its own column (PO 03/11/2026: a
    name is never cut), so the time never drops under it. */
-/* Each card as wide as its name, several to a line, each line filled: a long name gets the width it needs instead of
-   wrapping in a narrow column, and only a name wider than the whole line wraps. */
+/* Each card as wide as its name and time, several to a line: a long name gets the width it needs instead of wrapping
+   in a narrow column, and only a name wider than the whole line wraps. Cards are not stretched to fill a line (team
+   test 21/11/2026: a lone card on the last line ran across the whole card, as wide as a field). */
 .speaker-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 0; padding: 0; list-style: none; }
 /* The voices and the lines, laid out as the per-mic record (.tl-body-split): beside them on a wide card, the cards
    one under another in a 260px column; above them, side by side, when narrower. 800px here is the per-mic 880px of
@@ -4966,8 +4975,8 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
   .transcript-body.is-split .speaker-row { flex: none; min-width: 0; }
 }
 .speaker-row {
-  flex: 1 1 auto; min-width: min(100%, 220px); max-width: 100%;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-width: 0; min-height: 42px;
+  flex: 0 1 auto; min-width: 0; max-width: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 42px;
   padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
   font-size: 14px;
 }
@@ -4990,7 +4999,7 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
 @media (pointer: coarse) { .speaker-row .select-trigger, .tl-name-pick .select-trigger { min-height: 40px; } }
 .speaker-row .select-text, .tl-name-pick .select-text { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
-.speaker-same { display: inline-flex; flex: none; color: var(--chip-amber-fg); }
+.speaker-same { flex: none; padding: 0 6px; border-radius: 4px; background: var(--chip-slate-bg); color: var(--chip-slate-fg); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------

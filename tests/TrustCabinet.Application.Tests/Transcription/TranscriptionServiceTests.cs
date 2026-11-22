@@ -173,6 +173,33 @@ public sealed class TranscriptionServiceTests
         Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
         Assert.Equal([AuditActions.TranscriptSpeakerAssigned], _audit.Actions);
+        // Every open Bản ghi tab of the meeting re-reads, once the name is committed.
+        var (change, commitsBefore) = Assert.Single(_publisher.Published);
+        Assert.Equal((_meeting.Meeting.Id, RecordingRules.TranscriptChanged, 1), (change.MeetingId, change.ChangeType, commitsBefore));
+    }
+
+    [Fact]
+    public async Task Naming_a_voice_someone_else_may_not_name_tells_nobody()
+    {
+        Spoken();
+
+        var outcome = await Service().AssignSpeakerAsync(_recording.Id, "SPEAKER_00", _meeting.Member, null, _meeting.Member);
+
+        Assert.Equal(TranscriptFailure.Forbidden, outcome.Failure);
+        Assert.Empty(_publisher.Published);
+    }
+
+    [Fact]
+    public async Task Correcting_a_line_is_announced_to_the_meeting()
+    {
+        var (transcript, segment, _) = Spoken();
+        segment.Transcript = transcript;
+
+        var outcome = await Service().EditSegmentAsync(segment.Id, _meeting.Secretary, "Xin chào các đồng chí");
+
+        Assert.Equal(TranscriptFailure.None, outcome.Failure);
+        var (change, _) = Assert.Single(_publisher.Published);
+        Assert.Equal((_meeting.Meeting.Id, RecordingRules.TranscriptChanged), (change.MeetingId, change.ChangeType));
     }
 
     [Fact]
@@ -190,6 +217,20 @@ public sealed class TranscriptionServiceTests
         Assert.Equal([TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
         Assert.Equal([AuditActions.TranscriptSegmentSpeakerAssigned], _audit.Actions);
+        var (change, commitsBefore) = Assert.Single(_publisher.Published);
+        Assert.Equal((RecordingRules.TranscriptChanged, 1), (change.ChangeType, commitsBefore));
+    }
+
+    [Fact]
+    public async Task Moving_a_line_to_the_voice_it_already_has_writes_and_tells_nothing()
+    {
+        var (_, segment, _) = Spoken();
+
+        var outcome = await Service().AssignSegmentSpeakerAsync(segment.Id, null, null, "SPEAKER_00", _meeting.Secretary);
+
+        Assert.Equal(TranscriptFailure.None, outcome.Failure);
+        Assert.Equal(0, _unitOfWork.Saves);
+        Assert.Empty(_publisher.Published);
     }
 
     [Fact]

@@ -17,7 +17,8 @@ import type { VoteChangedEvent } from '../../types/vote'
  * `documentsChanged` follows an upload (SCRUM-21). The per-mic transcript (SCRUM-109) says `speechChanged` for a
  * sentence added or corrected, which a read of what changed since the last one catches, and `speechRemoved` for a
  * sentence taken back or the capture mode changed, which only a full read shows. The room recordings (ADR-0041) say
- * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done. Votes
+ * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done, and
+ * `transcriptChanged` when the Secretary names a voice of a transcript or corrects or moves one of its lines. Votes
  * (SCRUM-28) say `voteChanged` for any change, and `voteOpened` as well when the Chair opens one, so the call room
  * can tell everyone. `voteListChanged` is every vote change but a ballot or a conclusion: what a list of the votes and
  * their documents shows (UC-32a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
@@ -40,6 +41,7 @@ export type MeetingEvent =
   | 'speechChanged'
   | 'speechRemoved'
   | 'recordingsChanged'
+  | 'transcriptChanged'
   | 'voteChanged'
   | 'voteOpened'
   | 'voteListChanged'
@@ -117,9 +119,11 @@ function open(meetingId: string): Channel {
     notify(
       event.changeType === 'RecordingsChanged'
         ? 'recordingsChanged'
-        : event.changeType === 'ClipDeleted'
-          ? 'speechRemoved'
-          : 'speechChanged',
+        : event.changeType === 'TranscriptChanged'
+          ? 'transcriptChanged'
+          : event.changeType === 'ClipDeleted'
+            ? 'speechRemoved'
+            : 'speechChanged',
     )
   })
   connection.on('voteChanged', (event: VoteChangedEvent) => {
