@@ -535,7 +535,7 @@ stale content.
 - Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
   SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
 - Màn danh sách mở **không lọc** (mọi trạng thái, mọi thời điểm), như AI-eCabinet. PO bỏ việc mở sẵn thẻ
-  **Họp hôm nay** (PR #287) ngày 20/11/2026: ngày không có họp thì danh sách trống, người xem tưởng mất cuộc họp.
+  **Họp hôm nay** (PR #430) ngày 20/11/2026: ngày không có họp thì danh sách trống, người xem tưởng mất cuộc họp.
   Đường dẫn không có `when` là mọi thời điểm; `when=all`, `status=all` của link cũ vẫn đọc là bỏ lọc. Bộ lọc **Thời điểm** chỉ có
   các lựa chọn sẵn như AI-eCabinet: Hôm nay, Tuần này (Thứ Hai–Chủ Nhật) gửi `from`/`to` theo múi
   giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.

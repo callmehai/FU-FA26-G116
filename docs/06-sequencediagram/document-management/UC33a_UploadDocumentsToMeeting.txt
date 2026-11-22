@@ -49,22 +49,22 @@ else Meeting is cancelled - EX-10
 else Actor may add documents
     DocumentController->DocumentController: Check the declared request size before reading the submission\n(EX-8, BR-319)
 
-    alt Declared request is larger than 201 MB - EX-8
-        DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-        DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+    alt Declared request is larger than 101 MB - EX-8
+        DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
+        DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
 
     else Declared request is within the limit
-        DocumentService->DocumentService: Read the submission and check it is a well-formed request with at least one file,\nat most 10 files totalling at most 200 MB, and that every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\nand that every PDF opens without a password and has at least one page; a separate process reads its structure\nand counts its pages, and a crash or a 15-second overrun counts as invalid (ADR-0044)\n(BR-187, BR-214, BR-215, BR-319)
+        DocumentService->DocumentService: Read the submission and check it is a well-formed request with at least one file,\nat most 10 files totalling at most 100 MB, and that every file has a usable name,\na .pdf or .docx extension matching its content and at most 10 MB\nand that every PDF opens without a password and has at least one page; a separate process reads its structure\nand counts its pages, and a crash or a 15-second overrun counts as invalid (ADR-0044)\n(BR-187, BR-214, BR-215, BR-319)
 
-        alt Any file is invalid (format, name, or size over 50 MB) - EX-3
-            DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-            DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-            DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+        alt Any file is invalid (format, name, or size over 10 MB) - EX-3
+            DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
+            DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
+            DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 10 MB.
 
         else File count or total size exceeds limit - EX-8
-            DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-            DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-            DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+            DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
+            DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
+            DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 100 MB in total.
 
         else Every file is valid
             DocumentService->MeetingDocumentRepository: Get the total size of all stored document files (BR-333)
