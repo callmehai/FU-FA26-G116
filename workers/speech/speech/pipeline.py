@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, punctuation, text
+from . import manifest, numbers, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -374,6 +374,18 @@ def aligned_words(sentence: str, times: list | None) -> list | None:
     return times if times is not None and len(times) == len(sentence.split()) else None
 
 
+def line_words(sentence: str, times: list | None, scores: list | None, digits: bool = True
+               ) -> tuple[str, list | None, list | None]:
+    """A readable line as sent: its numbers in digits, and its word times and scores still one per word.
+
+    Punctuation edits words in place, so the recogniser's times and scores are kept while they match the punctuated
+    words. Writing numbers in digits then merges words ("hai mươi ba" → "23"): the merged word starts when its first
+    word starts and is as sure as its least sure word, so the click-to-play and the highlight stay on the right word.
+    """
+    times, scores = aligned_words(sentence, times), aligned_words(sentence, scores)
+    return numbers.normalise_line(sentence, times, scores) if digits else (sentence, times, scores)
+
+
 def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: float = LEVEL_TARGET_DBFS,
           max_gain_db: float = LEVEL_MAX_GAIN_DB) -> np.ndarray:
     """The recording with a slowly varying gain applied, computed per 10 ms frame (see LEVEL_*)."""
@@ -521,6 +533,8 @@ class Engine:
 
     # Asked between steps of a run (transcribe_file's `cancelled`), so a run nobody waits for stops within a second.
     _cancelled: Callable[[], bool] = staticmethod(_never)
+    # Numbers written in digits (speech/numbers.py); SPEECH_NUMBERS=0 keeps them in words, to compare with and without.
+    _numbers: bool = True
 
     def __init__(
         self,
@@ -585,11 +599,12 @@ class Engine:
             if os.environ.get("SPEECH_PUNCTUATION", "1").lower() not in ("0", "false", "off")
             else None
         )
+        self._numbers = os.environ.get("SPEECH_NUMBERS", "1").lower() not in ("0", "false", "off")
         log.info(
             "models loaded in %.1fs, %d threads, embedding dim %d, cluster threshold %.2f, "
-            "min enrolment consistency %.2f, punctuation %s",
+            "min enrolment consistency %.2f, punctuation %s, numbers in digits %s",
             time.monotonic() - started, threads, self._extractor.dim, self._cluster_threshold,
-            self._min_consistency, "on" if self._punctuator else "off",
+            self._min_consistency, "on" if self._punctuator else "off", "on" if self._numbers else "off",
         )
 
     # --- building blocks (call with the lock held) ---------------------------------------------
@@ -840,14 +855,15 @@ class Engine:
         segments = []
         for (start, end, label, part), sentence, loudness, timing, sure in zip(pieces, texts, levels, timings, sureness):
             if sentence:
+                sentence, times, scores = line_words(sentence, word_times_ms(start, end, timing), sure, self._numbers)
                 segments.append({
                     "startMs": round(start * 1000),
                     "endMs": round(end * 1000),
                     "speaker": label,
                     "text": sentence,
                     "levelDbfs": None if loudness is None else round(loudness, 1),
-                    "wordStartsMs": aligned_words(sentence, word_times_ms(start, end, timing)),
-                    "wordConfidence": aligned_words(sentence, sure),
+                    "wordStartsMs": times,
+                    "wordConfidence": scores,
                 })
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 
