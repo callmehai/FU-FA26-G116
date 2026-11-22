@@ -14,7 +14,7 @@ cả `DocumentReadConfirmation`, bản trước chưa vẽ), cộng 2 bảng k�
 `GuestVerificationChallenge`. Hình chưa đưa vào Report 3: §I.3.2 của Report 3 liệt kê 34 thực thể
 (thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142; hai cột thu hộ
 của `voice_samples` đã vào Entity 34). Góc nhìn Chen (không thuộc tính) ở
-[../chen/](../chen/README.md) là mô hình đích 34 thực thể.
+[../chen/](../chen/README.md) là cùng mô hình, 36 thực thể.
 
 ## Cách đọc
 
