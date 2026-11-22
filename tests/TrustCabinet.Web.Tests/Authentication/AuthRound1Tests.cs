@@ -95,7 +95,7 @@ public sealed class AuthRound1Tests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = email,
             PasswordHash = new FakePasswordHasher().Hash(password),
-            RoleId = role ?? BuiltInRoles.Secretary,
+            RoleId = role ?? BuiltInRoles.Approver,
             IsActive = isActive,
         };
 
@@ -199,8 +199,8 @@ public sealed class AuthRound1Tests : IDisposable
         var client = NewClient();
         var refreshToken = await SignInForRefreshToken(client);
 
-        _factory.Users.WithCapabilities(BuiltInRoles.Secretary);
-        _factory.Accounts.WithCapabilities(BuiltInRoles.Secretary);
+        _factory.Users.WithCapabilities(BuiltInRoles.Approver);
+        _factory.Accounts.WithCapabilities(BuiltInRoles.Approver);
 
         var response = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
 
@@ -255,10 +255,10 @@ public sealed class AuthRound1Tests : IDisposable
             Email = gmail,
             PasswordHash = null,
             GoogleSubjectId = null,
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = BuiltInRoles.Approver,
             IsActive = false,
         };
-        _factory.Users.WithUser(user).WithCapabilities(user.RoleId, Capability.MinutesEditor);
+        _factory.Users.WithUser(user).WithCapabilities(user.RoleId, Capability.MeetingApprover);
         _factory.Google.WithValidToken("id-token-mot", "google-sub-1", gmail);
 
         var refused = await _factory.CreateClient().PostAsJsonAsync(
@@ -286,7 +286,7 @@ public sealed class AuthRound1Tests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = Email,
             PasswordHash = new FakePasswordHasher().Hash(Password),
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = BuiltInRoles.Approver,
             IsActive = true,
         };
         factory.Users.WithUser(user).WithCapabilities(user.RoleId, Capability.MeetingCreator);
@@ -355,7 +355,7 @@ public sealed class AuthRound1Tests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = Email,
             PasswordHash = new FakePasswordHasher().Hash(Password),
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = BuiltInRoles.Approver,
             IsActive = true,
         };
         factory.Users.WithUser(user).WithCapabilities(user.RoleId, Capability.MeetingCreator);
@@ -454,7 +454,7 @@ public sealed class AuthReuseRound1Tests : IDisposable
             FullName = "Người Dùng Lại",
             Email = Email,
             PasswordHash = new FakePasswordHasher().Hash(Password),
-            RoleId = BuiltInRoles.Secretary,
+            RoleId = BuiltInRoles.Approver,
             IsActive = true,
         };
         _factory.Users.WithUser(user).WithCapabilities(user.RoleId, Capability.MeetingCreator);

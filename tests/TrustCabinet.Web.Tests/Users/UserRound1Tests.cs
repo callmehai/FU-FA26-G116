@@ -122,8 +122,7 @@ public class UserRound1Tests : IDisposable
     private static Capability[] DefaultCaps(Guid role)
     {
         if (role == BuiltInRoles.Admin) return [Capability.AdminUsers];
-        if (role == BuiltInRoles.Secretary) return [Capability.MeetingCreator, Capability.MinutesEditor];
-        if (role == BuiltInRoles.Chair) return [Capability.MeetingCreator, Capability.MeetingApprover];
+        if (role == BuiltInRoles.Approver) return [Capability.MeetingCreator, Capability.MeetingApprover];
         return [];
     }
 
@@ -177,7 +176,7 @@ public class UserRound1Tests : IDisposable
     {
         var target = GivenUser();
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Approver),
             Capability.MeetingCreator);
 
         var response = await client.GetAsync($"/api/users/{target.Id}");
@@ -257,7 +256,7 @@ public class UserRound1Tests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            roleId = BuiltInRoles.Chair,
+            roleId = BuiltInRoles.Approver,
         });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -392,7 +391,7 @@ public class UserRound1Tests : IDisposable
         {
             fullName = target.FullName,
             email = target.Email,
-            roleId = BuiltInRoles.Secretary,
+            roleId = BuiltInRoles.Approver,
         });
         Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
 
@@ -408,7 +407,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
         var capabilities = (await JsonOf(meResponse)).GetProperty("capabilities")
             .EnumerateArray().Select(c => c.GetString()).ToArray();
-        Assert.Contains("MinutesEditor", capabilities);
+        Assert.Contains("MeetingApprover", capabilities);
     }
 
     // USER_API_IT54, step 3 (second half): after the reset the new password signs in and the
