@@ -579,23 +579,23 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     public async Task Proxy_samples_pass_the_same_quality_checks()
     {
         // TRANS_API_IT152.
-        var s = await fixture.Seed(MeetingStatus.Published, MeetingMode.Hybrid);
-        await VoiceCollection.MakeCollectors(fixture, s.Secretary);
+        var s = await fixture.Seed(MeetingStatus.Ended);
+        await VoiceCollection.MakeCollectors(fixture, s.Outsider);
         await VoiceCollection.Agree(fixture, s.Member);
-        using var secretary = VoiceCollection.Client(fixture, s.Secretary, Capability.VoiceCollector);
+        using var secretary = VoiceCollection.Client(fixture, s.Outsider, Capability.VoiceCollector);
         try
         {
             fixture.Speech.EmbedFailure = new VoiceSampleRejectedException("too_short");
             var short_ = await AssertCode(
-                await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()),
+                await secretary.PostAsync($"{VoiceCollection.Url(s.Member)}/samples", VoiceCollection.Sample()),
                 422, "MSG309");
             Assert.Equal("too_short", short_.GetProperty("reason").GetString());
             fixture.Speech.EmbedFailure = null;
-            var unsupported = await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples",
+            var unsupported = await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.Member)}/samples",
                 VoiceCollection.Sample("application/pdf")), 415, "MSG292");
             Assert.Equal("Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.",
                 unsupported.GetProperty("message").GetString());
-            var missing = await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples",
+            var missing = await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.Member)}/samples",
                 new MultipartFormDataContent { { new StringContent("thu-ho"), "note" } }), 400, "MSG313");
             Assert.Equal("Chưa có tệp giọng mẫu.", missing.GetProperty("message").GetString());
         }
@@ -611,16 +611,16 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     public async Task Proxy_samples_are_refused_when_the_worker_is_down()
     {
         // TRANS_API_IT153: nothing is stored and nobody is told.
-        var s = await fixture.Seed(MeetingStatus.Published, MeetingMode.Hybrid);
-        await VoiceCollection.MakeCollectors(fixture, s.Secretary);
+        var s = await fixture.Seed(MeetingStatus.Ended);
+        await VoiceCollection.MakeCollectors(fixture, s.Outsider);
         await VoiceCollection.Agree(fixture, s.Member);
         await using var db = fixture.Db();
-        var before = await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId);
+        var before = await db.Notifications.CountAsync(n => n.UserId == s.Member && n.Type == NotificationType.VoiceSampleCollected);
         fixture.Speech.EmbedFailure = new SpeechEngineException("Không kết nối được máy chủ nhận dạng giọng nói.");
         try
         {
-            using var secretary = VoiceCollection.Client(fixture, s.Secretary, Capability.VoiceCollector);
-            await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples",
+            using var secretary = VoiceCollection.Client(fixture, s.Outsider, Capability.VoiceCollector);
+            await AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.Member)}/samples",
                 VoiceCollection.Sample()), 503, "MSG312");
         }
         finally
@@ -628,6 +628,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
             fixture.Speech.EmbedFailure = null;
         }
         Assert.Equal(0, await db.VoiceSamples.CountAsync(x => x.UserId == s.Member));
-        Assert.Equal(before, await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
+        Assert.Equal(before, await db.Notifications.CountAsync(n => n.UserId == s.Member && n.Type == NotificationType.VoiceSampleCollected));
     }
 }
