@@ -19,4 +19,39 @@ export interface MeetingReport {
   duration: { averageMinutes: number | null; meetings: number; meetingsWithoutTimes: number }
   /** BR-436: actual end to the first issue of the minutes, null when none is issued yet. */
   minutesTurnaround: { averageHours: number | null; meetings: number; meetingsWithoutIssuedMinutes: number }
+  /** Closed votes the viewer may see, and how they were concluded. */
+  votes: { closed: number; passed: number; notPassed: number; deferred: number }
+  /** Meetings whose minutes were issued; revisions waiting for approval (only those the viewer runs, BR-412). */
+  minutes: { issued: number; waitingApproval: number }
+  /** Recordings the viewer may list: how many, hours playable (a combined recording counted once), hours transcribed. */
+  recordings: { count: number; recordedHours: number; transcribedHours: number }
+}
+
+/** The main tables the report query reads (supervisor review 22/11/2026). */
+export type ReportEntity = 'meetings' | 'participants' | 'votes' | 'documents' | 'minutes' | 'recordings'
+
+/** `count`, `percent` (a fraction: 0.87 is 87 %), `hours` or `megabytes`. */
+export type ReportFormat = 'count' | 'percent' | 'hours' | 'megabytes'
+
+/**
+ * `GET /api/reports/query` — one main table grouped, filtered, sorted and cut to the top groups. `groups` is how many
+ * groups there were before the cut; `total` covers every row that passed the filters. A row's `key` is the value it is
+ * grouped on: a month "yyyy-MM", an enum name, a user id, "guest:<invitation id>" or a meeting id; `None` when there is
+ * nothing (no Chair, no conclusion, no transcript). Contract: docs/03-api/22-bao-cao-thong-ke.md.
+ */
+export interface ReportTable {
+  entity: ReportEntity
+  entityLabel: string
+  groupBy: string
+  groupLabel: string
+  sort: string
+  top: number | null
+  from: string
+  to: string
+  generatedAt: string
+  filters: { key: string; label: string; value: string; valueLabel: string }[]
+  columns: { key: string; label: string; format: ReportFormat }[]
+  groups: number
+  total: Record<string, number | null>
+  rows: { rank: number; key: string; label: string; values: Record<string, number | null> }[]
 }

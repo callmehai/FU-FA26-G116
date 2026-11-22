@@ -120,8 +120,9 @@ public static class AuditEventCatalog
         new(AuditActions.CalendarShareEnded, "Ngừng chia sẻ lịch", CalendarSharing),
         new(AuditActions.CalendarShareStopped, "Dừng chia sẻ lịch (mất quyền hoặc vô hiệu hoá)", CalendarSharing),
         new(AuditActions.CalendarShareClosedAfterEndDate, "Đóng chia sẻ lịch đã quá hạn khi có chia sẻ mới", CalendarSharing),
-        // SCRUM-38 (BR-438): only the export is recorded, not viewing the report.
-        new(AuditActions.ReportExported, "Xuất báo cáo cuộc họp", Reports),
+        // SCRUM-38 (BR-438): only the export is recorded, not viewing the report — the meeting report or a report query
+        // table (details.report names which).
+        new(AuditActions.ReportExported, "Xuất báo cáo", Reports),
 
         // PO 19/11/2026: one row per clean-up run that removed something, so the log shows the system clears up itself.
         new(AuditActions.RecordingOrphanFilesDeleted, "Hệ thống xoá tệp âm thanh không còn bản ghi", Cleanup),

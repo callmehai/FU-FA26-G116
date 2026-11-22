@@ -5785,41 +5785,77 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .notes-entry .card-title { margin: 0; }
 .dialog-lg .notes-text-input { min-height: min(420px, 50dvh); }
 
-/* ---------- Báo cáo (SCRUM-38) ----------
-   The figures are numbers in tables, never a row of KPI tiles: two columns of cards, each a heading over a table.
-   Counts are right-aligned in tabular figures so they line up; a zero is muted, not hidden. */
+/* ---------- Báo cáo (SCRUM-38, supervisor review 22/11/2026) ----------
+   Two parts. The band: the figures a manager reads first, plain numbers in one row inside one card — not a row of KPI
+   tiles, no icons, no colour. The query: the comboboxes that pick the table, the grouping, the cut and the filters,
+   over one table whose numbers are right-aligned in tabular figures; a zero is muted, not hidden. */
 .report-toolbar { gap: 8px; }
 .report-toolbar .select { min-width: 168px; }
 .report-toolbar-word { color: var(--muted-ink); }
 .report-generated { margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
 .report-period-error { margin: -8px 0 16px; }
-.report-grid { display: grid; flex: none; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
-.report-column { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.report-card { padding: 0; overflow: hidden; }
-.report-card-title { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 16px; }
-.report-card .table-card { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
-.report-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
-.report-table .cell-zero { color: var(--faint-ink); }
-.report-table td.report-metric { width: 55%; white-space: normal; }
-.report-metric .info-tip { vertical-align: middle; }
-.report-table td.report-value { white-space: normal; }
-.report-value strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
-.report-basis { display: inline-block; margin-left: 8px; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
-.report-table .report-bar-cell { width: 45%; padding-left: 0; }
+
+.report-band { flex: none; margin-bottom: 16px; padding: 16px 0; }
+.report-figures { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0; }
+.report-figure { min-width: 0; padding: 0 16px; border-left: 1px solid var(--line-soft); }
+.report-figure:first-child { border-left: none; }
+.report-figure dt { color: var(--muted-ink); font-size: 13px; }
+.report-figure dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin: 4px 0 0; }
+.report-figure strong { color: var(--ink); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.report-figure strong .value-empty { font-size: 14px; }
+.report-figure-extra { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.report-figure .skeleton { display: block; height: 44px; }
+
+.report-query { flex: none; padding: 0; overflow: hidden; }
+.report-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); align-items: end; gap: 12px; padding: 16px; border-bottom: 1px solid var(--line); }
+.report-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.report-field > span { color: var(--label-ink); font-size: 13px; }
+.report-field .select { min-width: 0; }
+.report-clear { justify-self: start; }
+.report-table-card { border-radius: 0; }
+.report-result .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+.report-result th.cell-num .sort-button { margin-left: auto; }
+.report-result .cell-zero { color: var(--faint-ink); }
+.report-result .report-rank { width: 40px; color: var(--label-ink); font-variant-numeric: tabular-nums; }
+.report-result td.report-group { white-space: normal; min-width: 160px; font-weight: 500; }
+.report-meeting { color: var(--ink); }
+.report-meeting:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+.report-result .report-bar-cell { width: 18%; min-width: 96px; padding-left: 0; }
 .report-bar { display: block; height: 8px; min-width: 4px; border-radius: 4px; background: var(--brand); }
+.report-result tfoot td, .report-result tfoot th { border-top: 1px solid var(--line); border-bottom: none; background: var(--surface-head); font-weight: 600; }
+.report-result tfoot th { padding-top: 12px; padding-bottom: 12px; color: var(--ink); font-size: 14px; letter-spacing: 0; text-align: left; text-transform: none; }
+.report-cut { margin: 0; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted-ink); font-size: 13px; }
 .report-skeleton { display: flex; flex-direction: column; gap: 18px; padding: 20px 16px; }
-.report-empty { flex: none; padding: 56px 16px; text-align: center; }
-.report-empty .empty-title { margin: 0; color: var(--muted-ink); }
-@media (max-width: 1100px) {
-  .report-grid { grid-template-columns: minmax(0, 1fr); }
+.report-query-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 16px; color: var(--muted-ink); text-align: center; }
+.report-query-empty p { margin: 0; }
+.report-query-alert { margin: 16px; }
+@media (max-width: 1400px) {
+  .report-figures { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 16px; }
+  .report-figure:nth-child(4n + 1) { border-left: none; }
 }
 @media (max-width: 720px) {
   /* "Từ [tháng]" and "đến [tháng]" each on a line of their own, the pickers as wide as the column. */
   .report-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr); }
   .report-toolbar .select { min-width: 0; }
   .report-generated { grid-column: 1 / -1; margin-left: 0; }
-  .report-basis { display: block; margin-left: 0; }
-  .report-table .report-bar-cell { width: 35%; }
+  .report-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report-figure, .report-figure:nth-child(4n + 1) { border-left: none; }
+  .report-figure:nth-child(even) { border-left: 1px solid var(--line-soft); }
+  .report-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* A row becomes a block: rank and group on the first line, then every figure with its name, two to a line. The
+     header row is gone, so sorting is the group header's job on a wider screen only. */
+  .report-result thead { display: none; }
+  .report-result tr { display: grid; grid-template-columns: 32px repeat(2, minmax(0, 1fr)); padding: 10px 12px; border-bottom: 1px solid #e9ecf1; }
+  .report-result tbody tr:last-child { border-bottom: none; }
+  .report-result td, .report-result tfoot td, .report-result tfoot th { padding: 2px 0; border: none; background: none; }
+  .report-result tfoot tr { border-top: 1px solid var(--line); background: var(--surface-head); }
+  .report-result tfoot th { height: auto; padding: 2px 0; }
+  .report-result .report-rank { width: auto; }
+  .report-result td.report-group, .report-result th.report-group { grid-column: 2 / -1; min-width: 0; }
+  .report-result td.cell-num { display: flex; justify-content: space-between; gap: 8px; grid-column: span 1; padding-right: 12px; text-align: left; }
+  .report-result td.cell-num:nth-child(odd) { grid-column: 2; }
+  .report-result td.cell-num::before { content: attr(data-label); color: var(--muted-ink); font-size: 13px; }
+  .report-result .report-bar-cell { display: none; }
 }
 
 /* ---------- Chia sẻ lịch (SCRUM-142) ----------
