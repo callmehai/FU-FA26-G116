@@ -1,60 +1,50 @@
 title UC-86c - Play Collected Voice Sample
 
-actor "Secretary" as Secretary
-boundary "Meeting Detail Page" as MeetingPage
+actor "VoiceCollector" as Collector
+boundary "Users Page" as UsersPage
 control ":Voice Collection Controller" as CollectionController
 control ":Voice Collection Service" as CollectionService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Voice ID Repository" as VoiceRepository
 participant ":Voiceprint Protector" as Protector
 participant ":Audit Service" as AuditService
 database ":Database" as Database
 
-Secretary->MeetingPage: Play a sample recorded at this Meeting
-activate MeetingPage
+Collector->UsersPage: Play a sample collected for the person
+activate UsersPage
 
-MeetingPage->CollectionController: Get the collected sample recording
+UsersPage->CollectionController: Get the collected sample recording
 activate CollectionController
 
-CollectionController->CollectionService: audio(meetingId, actorId, sampleId)
+CollectionController->CollectionService: audio(userId, actorId, sampleId)
 activate CollectionService
 
-CollectionService->MeetingRepository: Get the Meeting with its current Secretary (BR-450, BR-451)
-activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting with participants
-activate Database
-Database-->MeetingRepository: Meeting with participants / Not found
-deactivate Database
-MeetingRepository-->CollectionService: Meeting with participants / Not found
-deactivate MeetingRepository
-
-alt No access: not the current Secretary, or the Meeting fails its conditions - EX-1
+alt No access: no Voice sample collection permission - EX-1
     CollectionService-->CollectionController: Not found
     deactivate CollectionService
 
-    CollectionController-->MeetingPage: Return failure
+    CollectionController-->UsersPage: Return failure
     deactivate CollectionController
 
-    MeetingPage-->Secretary: Show the Meeting as not found
+    UsersPage-->Collector: Show the sample as not found
 else Access granted
-    CollectionService->VoiceRepository: Get the sample recorded at this Meeting by a Secretary (BR-452)
+    CollectionService->VoiceRepository: Get the sample collected for the person (BR-452)
     activate VoiceRepository
-    VoiceRepository->Database: Retrieve proxy sample of this Meeting
+    VoiceRepository->Database: Retrieve collected sample of the person
     activate Database
     Database-->VoiceRepository: Sample / None
     deactivate Database
     VoiceRepository-->CollectionService: Sample / None
     deactivate VoiceRepository
 
-    alt Sample was recorded at another Meeting, or recorded by the person - EX-1
+    alt Sample does not exist, or was recorded by the person - EX-1
         CollectionService-->CollectionController: Not found
         deactivate CollectionService
 
-        CollectionController-->MeetingPage: Return failure
+        CollectionController-->UsersPage: Return failure
         deactivate CollectionController
 
-        MeetingPage-->Secretary: Show the sample as not found
-    else Sample recorded at this Meeting
+        UsersPage-->Collector: Show the sample as not found
+    else Collected sample exists
         CollectionService->Protector: Unprotect the sample recording (BR-364)
         activate Protector
         Protector-->CollectionService: Sample recording / Cannot be unprotected
@@ -64,10 +54,10 @@ else Access granted
             CollectionService-->CollectionController: No sample recording
             deactivate CollectionService
 
-            CollectionController-->MeetingPage: No sample recording
+            CollectionController-->UsersPage: No sample recording
             deactivate CollectionController
 
-            MeetingPage-->Secretary: Show the sample as not playable
+            UsersPage-->Collector: Show the sample as not playable
         else Recording available
             CollectionService->AuditService: Record the playback of someone else's sample (BR-453)
             activate AuditService
@@ -77,12 +67,12 @@ else Access granted
             CollectionService-->CollectionController: Sample recording, not cached
             deactivate CollectionService
 
-            CollectionController-->MeetingPage: Sample recording, not cached
+            CollectionController-->UsersPage: Sample recording, not cached
             deactivate CollectionController
 
-            MeetingPage-->Secretary: Play the sample
+            UsersPage-->Collector: Play the sample
         end
     end
 end
 
-deactivate MeetingPage
+deactivate UsersPage
