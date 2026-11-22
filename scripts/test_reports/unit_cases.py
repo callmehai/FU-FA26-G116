@@ -629,19 +629,6 @@ def build_book(m):
         for hidden_col in ('J', 'K', 'M', 'N', 'T'):
             ws.column_dimensions[hidden_col].hidden = True
         ws['B2'] = entry['module']
-        layers = sorted({mo.get('layer', '') for mo in entry['methods']})
-        header = [('F2', 'Method', ', '.join(mo['method'] for mo in entry['methods'])),
-                  ('F3', 'Layer', ' / '.join(layers)),
-                  ('F4', 'Code under test', ', '.join(f"{mo['file'].split('/', 2)[-1]}:{mo['line']}" for mo in entry['methods'])
-                   + f" @ {source(m).sha[:12]}"),
-                  ('F5', 'Created By', m['cover']['creator']), ('F6', 'Executed By', ''),
-                  ('F7', 'Test requirement', entry.get('description', ''))]
-        for ref, label, value in header:
-            row = int(ref[1:])
-            ws[ref], ws[f'H{row}'] = label, value
-            ws[ref]._style, ws[f'H{row}']._style = copy(ws['A2']._style), copy(ws['B2']._style)
-            ws.merge_cells(f'H{row}:O{row}')
-            ws[f'H{row}'].alignment = copy(ws['B3'].alignment)
         ws['B3'] = '=COUNTIF(A:A,"UTC*")'
         ws['B4'], ws['C4'], ws['D4'] = 'Passed', 'Failed', 'Pending'
         for r, col in ((5, 'F'), (6, 'I'), (7, 'L')):

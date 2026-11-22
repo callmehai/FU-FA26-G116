@@ -14,6 +14,14 @@ N={'w':W,'r':R}
 # name has to be matched here. It never reaches a generated report.
 TEMPLATE_PROJECT='ACCE'
 
+
+def system_cases():
+    """Report 5.3 cases, read from cases/system/WF-xx.json (scripts/test_reports/system_cases.py owns them)."""
+    folder=Path(__file__).resolve().parents[2]/'docs/08-reports/test-reports/cases/system'
+    return [dict(level='SYS',status=c.get('round1') or 'Pending')
+            for f in sorted(folder.glob('WF-*.json'))
+            for g in json.loads(f.read_text(encoding='utf-8'))['groups'] for c in g['cases']]
+
 def serialize(root):return E.tostring(root,xml_declaration=True,encoding='UTF-8',standalone=True)
 def text_set(element,text):
     nodes=element.findall('.//w:t',N)
@@ -116,26 +124,26 @@ def make_document(reference,destination,tests,manual,meta,build):
         288:'2.1.1 Component Test',289:'Table 2.1.1 Component Test',290:'2.1.2 API Test',291:'Table 2.1.2 API Test',292:'2.1.3 GUI Test',293:'Table 2.1.3 GUI Test',294:'2.1.4 Regression Test',295:'Table 2.1.4 Regression Test',
         314:'View Unit Test Case at: Report5.1_Unit_Test.xlsx',317:'View Integration Test Case at: Report5.2_Integration_Test.xlsx',
         318:'View API Test Case at: Report5.2.2_Integration_Test_API_Test.xlsx. Execution evidence: no verified TRX imported for this export.',
-        321:'View System Test Case at: Report5.3_System_Test.xlsx',322:'System execution evidence: pending manual execution; SYS-09 is Blocked by missing UI/workflow prerequisites.',
+        321:'View System Test Case at: Report5.3_System_Test.xlsx',322:'System test workflows follow the business flows BF-01 to BF-04; results are recorded per round in the workbook.',
         325:'View Acceptance Test Case at: Report5.4_Acceptance_Test.xlsx',326:'Representative-user demo recording: not collected.',327:'Customer feedback: not collected. Record actual responses in Customers Feedbacks after a UAT session.',
         331:'Refer: Report5.1_Unit_Test.xlsx. '+str(meta['classification'].get('UNIT',0))+' definitions; results are NotRun without verified evidence. Code coverage has not been measured.',
         334:'Refer: Report5.2_Integration_Test.xlsx and Report5.2.2_Integration_Test_API_Test.xlsx. '+str(meta['classification'].get('INTEGRATION',0))+' non-HTTP definitions, '+str(meta['classification'].get('API',0))+' API definitions and 20 manual UI scenarios.',
-        337:'Refer: Report5.3_System_Test.xlsx. Nine designed workflows: eight NotRun and one Blocked; no completed execution is claimed.',
+        337:'Refer: Report5.3_System_Test.xlsx.',
         341:'Refer: Report5.4_Acceptance_Test.xlsx. Eight proposed acceptance criteria; zero customer responses; stakeholder sign-off is pending.',
     }
     for index,text in replacements.items():text_set(pp[index],text)
     text_set(pp[29],f'This plan documents the current TrustCabinet implementation (SEP490-G116), test designs and evidence requirements. The inventory contains {len(tests)} xUnit definitions. Execution status: '+', '.join(f'{key}={value}' for key,value in meta['status'].items())+'. Verified evidence: '+('available.' if meta['evidenceVerified'] else 'not supplied.'))
     for idx,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test.xlsx'),(341,'UAT','Report5.4_Acceptance_Test.xlsx')]:
-        cases=[t for t in tests+manual if t['level']==level];counts=Counter(t['status'] for t in cases)
+        cases=system_cases() if level=='SYS' else [t for t in tests+manual if t['level']==level];counts=Counter(t['status'] for t in cases)
         text_set(pp[idx],'Refer: '+filename+'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else 'Code coverage is not measured by these counts.'))
     # Empty hyperlink labels are replaced by raw URLs when Word refreshes fields.
     # Retain the original linked-filename pattern instead of leaving empty labels.
     for index,prefix,label in [(314,'View Unit Test Case at: ','Report5.1_Unit_Test.xlsx'),(317,'View Integration Test Case at: ','Report5.2_Integration_Test.xlsx'),(318,'View API Test Case at: ','Report5.2.2_Integration_Test_API_Test.xlsx'),(321,'View System Test Case at: ','Report5.3_System_Test.xlsx'),(325,'View Acceptance Test Case at: ','Report5.4_Acceptance_Test.xlsx')]:linked_text(pp[index],prefix,label)
-    linked_text(pp[322],'System test files: ','Drive folder','; manual execution evidence is pending. SYS-09 is Blocked by missing workflow prerequisites.')
+    linked_text(pp[322],'System test files: ','Drive folder','; one sheet per end-to-end workflow (BF-01 to BF-04 and the cross-feature flows), results recorded per round.')
     for index in (326,327):
         for link in pp[index].findall('.//w:hyperlink',N):link.getparent().remove(link)
     for index,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test.xlsx'),(341,'UAT','Report5.4_Acceptance_Test.xlsx')]:
-        cases=[c for c in tests+manual if c['level']==level];counts=Counter(c['status'] for c in cases)
+        cases=system_cases() if level=='SYS' else [c for c in tests+manual if c['level']==level];counts=Counter(c['status'] for c in cases)
         linked_text(pp[index],'Refer: ',filename,'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else ''))
     linked_text(pp[334],'Refer: ','Report5.2_Integration_Test.xlsx',f" and Report5.2.2_Integration_Test_API_Test.xlsx. {meta['classification'].get('INTEGRATION',0)} non-HTTP definitions, {meta['classification'].get('API',0)} API definitions and 20 manual UI scenarios.")
     # Remove the other team's change history; retain all row and cell formatting.

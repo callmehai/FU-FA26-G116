@@ -1,0 +1,21 @@
+{
+  "workflow": "WF-06",
+  "groups": [
+    {
+      "title": "Consent to Voice ID",
+      "cases": []
+    },
+    {
+      "title": "Collect Sample on Behalf",
+      "cases": []
+    },
+    {
+      "title": "Speaker Attribution in Transcript",
+      "cases": []
+    },
+    {
+      "title": "Withdraw Consent and Delete",
+      "cases": []
+    }
+  ]
+}

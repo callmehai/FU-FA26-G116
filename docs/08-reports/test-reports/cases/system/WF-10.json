@@ -1,0 +1,21 @@
+{
+  "workflow": "WF-10",
+  "groups": [
+    {
+      "title": "Meeting List Filtering",
+      "cases": []
+    },
+    {
+      "title": "Direct URL to Others' Meeting",
+      "cases": []
+    },
+    {
+      "title": "Documents and Minutes of Others",
+      "cases": []
+    },
+    {
+      "title": "Guest Scope",
+      "cases": []
+    }
+  ]
+}

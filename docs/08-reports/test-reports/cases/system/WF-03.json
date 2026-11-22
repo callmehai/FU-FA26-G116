@@ -1,0 +1,33 @@
+{
+  "workflow": "WF-03",
+  "groups": [
+    {
+      "title": "Start Meeting",
+      "cases": []
+    },
+    {
+      "title": "Record Attendance",
+      "cases": []
+    },
+    {
+      "title": "Run Agenda Items",
+      "cases": []
+    },
+    {
+      "title": "Open Vote and Confirm Documents Read",
+      "cases": []
+    },
+    {
+      "title": "Cast and Close Vote",
+      "cases": []
+    },
+    {
+      "title": "Record Conclusion",
+      "cases": []
+    },
+    {
+      "title": "End Meeting",
+      "cases": []
+    }
+  ]
+}

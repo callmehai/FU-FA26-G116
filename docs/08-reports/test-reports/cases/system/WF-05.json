@@ -1,0 +1,25 @@
+{
+  "workflow": "WF-05",
+  "groups": [
+    {
+      "title": "Join Online Room",
+      "cases": []
+    },
+    {
+      "title": "Guest Joins by Link",
+      "cases": []
+    },
+    {
+      "title": "Register to Speak",
+      "cases": []
+    },
+    {
+      "title": "Record in Room",
+      "cases": []
+    },
+    {
+      "title": "Leave and Room Closes",
+      "cases": []
+    }
+  ]
+}

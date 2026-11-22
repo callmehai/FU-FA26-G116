@@ -157,7 +157,7 @@ class Template:
         elif 'Acceptance' in self.path.name:
             limits={'Cover':20,'Statistics':22,'Customer Feedback Statistics':28,'Customers Feedbacks':6}
         else:
-            limits={'Cover':20,'Test Cases':9,'Test Statistics':40,'WorkFlow1' if 'System' in self.path.name else 'Authentication':12}
+            limits={'Cover':20,'Test Cases':9,'Test Statistics':40,'Authentication':12}
         for s in self.workbook.find(tag('sheets')):
             if s.get('name') not in limits:continue
             path=targets[s.get('{'+R+'}id')]
@@ -372,63 +372,6 @@ def unit_book(path,cases,meta):
     st.row(rate_patterns[126],r+3,25);st.put('B'+str(r+3),'Test successful coverage');st.put('D'+str(r+3),f'=IFERROR(C{r}*100/I{r},0)',passed*100/len(cases) if cases else 0);st.put('E'+str(r+3),'%')
     for offset,label,sourcecol,pattern in [(4,'Normal case','F',127),(5,'Abnormal case','G',128),(6,'Boundary case','H',129)]:
         st.row(rate_patterns[pattern],r+offset,25);st.put('B'+str(r+offset),label);st.put('D'+str(r+offset),f'=IFERROR({sourcecol}{r}*100/I{r},0)',0);st.put('E'+str(r+offset),'%')
-    return t
-
-
-def table_book(path,cases,meta,title,system=False):
-    t=Template(path);cover(t,title,meta['date']);li=t.add('Test Cases');li.keep(9);li.clear(9)
-    li.put('D3','TrustCabinet');li.put('D4','SEP490-G116');li.put('D5','.NET 10 / xUnit; PostgreSQL / Redis; Chrome / Edge for manual UI workflows.');li.height(5,65)
-    st=t.add('Test Statistics')
-    subtotal_row=int(re.search(r'\d+',next(a for a,v in st.values.items() if v=='Sub total'))[0]);total_pattern=deepcopy(st.data.find(f"{tag('row')}[@r='{subtotal_row}']"))
-    rate_rows={label:int(re.search(r'\d+',next(a for a,v in st.values.items() if v==label))[0]) for label in ['Test coverage','Test successful coverage']}
-    rate_patterns={label:deepcopy(st.data.find(f"{tag('row')}[@r='{row}']")) for label,row in rate_rows.items()}
-    labelcol=re.match('[A-Z]+',next(a for a,v in st.values.items() if v=='Test coverage'))[0]
-    valuecol=re.match('[A-Z]+',next(a for a in st.formulas if int(re.search(r'\d+',a)[0])==rate_rows['Test coverage']))[0]
-    percentcol=re.match('[A-Z]+',next(a for a,v in st.values.items() if v=='%' and int(re.search(r'\d+',a)[0])==rate_rows['Test coverage']))[0]
-    st.keep(11);st.clear(11)
-    st.put('C3','TrustCabinet');st.put('C4','SEP490-G116');st.put('C5','SEP490-G116_Test_Report_v1');st.put('C6','Round 1. Pending: NotRun/Blocked/Partial. N/A: Skipped.');st.height(6,60)
-    for addr in ('G5','H5'):
-        if addr in st.values:st.put(addr,meta['date'])
-    for addr,value in list(st.values.items()):
-        if value=='TienTM':st.put(addr,'TrustCabinet Team')
-    groups=defaultdict(list)
-    for c in cases:groups[c['module'] if system or c.get('automation')!='Manual' else 'UI '+c['module']].append(c)
-    for i,(group,items) in enumerate(sorted(groups.items()),1):
-        name=re.sub(r'[:*?/\\\[\]]','-',group)[:31]
-        s=t.add('WorkFlow1' if system else 'Authentication',name);s.keep(12);s.clear(11)
-        s.put('B2',items[0]['title'] if system else group);s.put('B3','Source-reviewed '+('end-to-end workflow' if system else 'integration test definitions')+'; record results only after execution.');s.height(3,42)
-        s.put('B4',len(items));s.put('P2','Passed');s.put('P3','Failed');s.put('P4','NotRun');s.put('P5','Skipped')
-        old=s.root.find(tag('mergeCells'))
-        if old is not None:
-            for m in list(old):
-                if max(map(int,re.findall(r'\d+',m.get('ref'))))>=11:old.remove(m)
-        row=11
-        for c in items:
-            s.row(12,row,24);s.merge(f'A{row}:O{row}');s.put('A'+str(row),c['title'] if system else c['className']);row+=1
-            fields=[c['id'],c['title'],c['steps'],c['expected'],c['precondition'],c['status'],c['executedAt'],c['tester'],'','','','','','',c['source']+':'+str(c['line'])+ ('\n'+c['actual'] if c['actual'] else '')+ ('\nEvidence: '+c['evidence'] if c['evidence'] else '')]
-            parts=[pieces(v,40 if k in [1,2,3,4] else 27,10 if k in [1,2,3,4] else 5) for k,v in enumerate(fields)]
-            for n in range(max(map(len,parts))):
-                s.row(12,row,180)
-                for k,values in enumerate(parts):
-                    value=values[n] if n<len(values) else ''
-                    if n and k in [0,5,6,7,8,9,10,11,12,13]:value=''
-                    s.put(col(k+1)+str(row),value)
-                maxlines=max(len(v[n].splitlines()) for v in parts if n<len(v));s.height(row,max(80,20+18*maxlines));row+=1
-        last=row-1
-        for rr,cc in [(6,'F'),(7,'I'),(8,'L')]:
-            for addr,formula in [(f'B{rr}',f'=COUNTIF({cc}12:{cc}{last},"Passed")'),(f'C{rr}',f'=COUNTIF({cc}12:{cc}{last},"Failed")'),(f'E{rr}',f'=COUNTIF({cc}12:{cc}{last},"Skipped")'),(f'D{rr}',f'=B4-B{rr}-C{rr}-E{rr}')]:
-                status={'B':'Passed','C':'Failed','E':'Skipped'}.get(addr[0]);cache=sum(c['status']==status for c in items) if status and rr==6 else (len(items)-sum(c['status'] in {'Passed','Failed','Skipped'} for c in items) if rr==6 and addr[0]=='D' else len(items) if addr[0]=='D' else 0);s.put(addr,formula,cache)
-        r=i+8;li.row(9,r,85)
-        for a,v in zip('BCDEF',[i,items[0]['title'] if system else group,name,f'{len(items)} definitions / scenarios',items[0]['precondition'] if system else 'See each case and its source fixture.']):li.put(a+str(r),v)
-        li.link('D'+str(r),name)
-        r=i+10;st.row(11,r,45);st.put('B'+str(r),i);st.put('C'+str(r),name)
-        st.link('C'+str(r),name)
-        for a,target in zip('DEFGH',['B6','C6','D6','E6','B4']):st.put(a+str(r),f"='{name}'!{target}",s.values.get(target,s.caches.get(target,0)))
-    total=len(groups)+11;st.row(total_pattern,total,25);st.put('C'+str(total),'Sub total')
-    for a in 'DEFGH':st.put(a+str(total),f'=SUM({a}11:{a}{total-1})',sum(st.caches.get(a+str(j),0) for j in range(11,total)))
-    denominator=sum(c['status']!='Skipped' for c in cases)
-    for offset,label,formula,value in [(2,'Test coverage',f'=IFERROR((D{total}+E{total})*100/(H{total}-G{total}),0)',sum(c['status'] in {'Passed','Failed'} for c in cases)),(3,'Test successful coverage',f'=IFERROR(D{total}*100/(H{total}-G{total}),0)',sum(c['status']=='Passed' for c in cases))]:
-        st.row(rate_patterns[label],total+offset,25);st.put(labelcol+str(total+offset),label);st.put(valuecol+str(total+offset),formula,value*100/denominator if denominator else 0);st.put(percentcol+str(total+offset),'%')
     return t
 
 

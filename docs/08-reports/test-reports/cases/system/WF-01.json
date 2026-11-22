@@ -1,0 +1,29 @@
+{
+  "workflow": "WF-01",
+  "groups": [
+    {
+      "title": "Create Account and Assign Role",
+      "cases": []
+    },
+    {
+      "title": "First Sign-in by Password",
+      "cases": []
+    },
+    {
+      "title": "Sign-in with Google",
+      "cases": []
+    },
+    {
+      "title": "Change Role Capabilities",
+      "cases": []
+    },
+    {
+      "title": "Deactivate and Reactivate Account",
+      "cases": []
+    },
+    {
+      "title": "Sign-in Rate Limit",
+      "cases": []
+    }
+  ]
+}

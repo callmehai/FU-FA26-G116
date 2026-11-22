@@ -11,7 +11,7 @@ from lxml import etree as E
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts/test_reports'))
 from manual_cases import scenarios
-from template_workbooks import unit_book,table_book,uat_book
+from template_workbooks import uat_book
 from template_document import make_document,refresh_cached_toc
 # Report 5.1 (Unit) is no longer generated here: it is built from
 # docs/08-reports/test-reports/cases/FE-xx/unit/*.json by scripts/test_reports/unit_cases.py build.
@@ -19,7 +19,10 @@ from template_document import make_document,refresh_cached_toc
 # Report 5.2 (Integration) and 5.2.2 (API) are no longer generated here: they are built from
 # docs/08-reports/test-reports/cases/FE-xx/{ui,api}.json by scripts/test_reports/integration_cases.py build.
 # This script leaves both workbooks untouched; their tests stay in inventory.json, marked by level.
-FILES={'SYSTEM':'Report5.3_System_Test.xlsx','UAT':'Report5.4_Acceptance_Test.xlsx'}
+# Report 5.3 (System) is no longer generated here: it is built from
+# docs/08-reports/test-reports/cases/system/*.json by scripts/test_reports/system_cases.py build.
+# This script leaves the workbook untouched; Report 5.0 reads its case counts from that folder.
+FILES={'UAT':'Report5.4_Acceptance_Test.xlsx'}
 TEMPLATES={**FILES,'DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
 
 
@@ -121,8 +124,7 @@ def main():
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     meta=dict(project='TrustCabinet',projectCode='SEP490-G116',date=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).strftime('%Y-%m-%d'),generatedAt=datetime.now(timezone.utc).isoformat(),commit=commit,sourceDigest=fingerprint,evidenceVerified=verified,testMethods=len(tests),classification=dict(Counter(c['level'] for c in tests)),status=dict(Counter(c['status'] for c in tests)),manualCases=dict(Counter(c['level'] for c in manual)),executions=len(results),templates={name:digest(a.template_dir/name) for name in TEMPLATES.values()})
     books={}
-    # Report 5.1 comes from unit_cases.py build, 5.2 / 5.2.2 from integration_cases.py build.
-    books['SYSTEM']=table_book(a.template_dir/TEMPLATES['SYSTEM'],[c for c in manual if c['level']=='SYS'],meta,'SYSTEM TEST REPORT DOCUMENT',True)
+    # Report 5.1 comes from unit_cases.py build, 5.2 / 5.2.2 from integration_cases.py build, 5.3 from system_cases.py build.
     books['UAT']=uat_book(a.template_dir/TEMPLATES['UAT'],[c for c in manual if c['level']=='UAT'],meta)
     specs=build/'authoring.json';write_json(specs,[book.spec(FILES[k]) for k,book in books.items()]);authored=build/'authored'
     subprocess.run([a.node,str(ROOT/'scripts/test_reports/author_workbooks.mjs'),str(specs),str(authored),str(a.artifact_module)],cwd=ROOT,check=True)

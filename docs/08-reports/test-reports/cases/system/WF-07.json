@@ -1,0 +1,17 @@
+{
+  "workflow": "WF-07",
+  "groups": [
+    {
+      "title": "Reschedule Published Meeting",
+      "cases": []
+    },
+    {
+      "title": "Hand Over Chair",
+      "cases": []
+    },
+    {
+      "title": "Cancel Meeting",
+      "cases": []
+    }
+  ]
+}

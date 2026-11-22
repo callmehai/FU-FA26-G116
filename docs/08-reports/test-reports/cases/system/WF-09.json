@@ -1,0 +1,17 @@
+{
+  "workflow": "WF-09",
+  "groups": [
+    {
+      "title": "Real-time Bell",
+      "cases": []
+    },
+    {
+      "title": "Email Notifications",
+      "cases": []
+    },
+    {
+      "title": "Calendar Month and Week",
+      "cases": []
+    }
+  ]
+}

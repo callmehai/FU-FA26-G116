@@ -11,7 +11,7 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.1_Unit_Test.xlsx` | Test unit theo hàng: mỗi production function một sheet, mỗi sheet các nhóm `Class.Method` và các dòng `UTCnnn`; sinh từ `cases/FE-xx/unit/` |
 | `Report5.2_Integration_Test.xlsx` | Test tích hợp qua giao diện, mỗi Feature một sheet; sinh từ `cases/FE-xx/ui.json` |
 | `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
-| `Report5.3_System_Test.xlsx` | Các workflow kiểm thử toàn hệ thống; bảng ba vòng theo mẫu |
+| `Report5.3_System_Test.xlsx` | Mười workflow end-to-end (WorkFlow1 → WorkFlow10) theo BF-01 → BF-04; sinh từ `cases/system/` bằng `scripts/test_reports/system_cases.py` — xem [cases/system/README.md](cases/system/README.md) |
 | `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
 **5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-16), test case nghiệp vụ.** Nguồn là JSON trong
@@ -51,7 +51,7 @@ Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feat
 | FE-16 | Calendar | 68 | 98 |
 | | **Tổng** | **875** | **1537** |
 
-`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
+`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3; nó chỉ sinh 5.0 và 5.4. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
 Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
@@ -103,7 +103,7 @@ Microsoft Word dùng để tự động xuất PDF, lấy số trang và cập n
 Các file mẫu gốc chỉ được đọc và không được đưa vào repository.
 
 Roslyn đọc cú pháp C# để lấy test method, dữ liệu Theory, fixture, assertion và vị trí source
-cho 5.0/5.3/5.4. Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC.
+cho 5.0/5.4. Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC.
 Workbook 5.1 mới không đếm định nghĩa test method và không suy số method thành code coverage:
 mỗi UTC là một hành vi của production function, gọi trực tiếp. Dữ liệu kiểm thử và đoạn code
 trích nguyên văn có thể chứa chuỗi tiếng Việt của sản phẩm; phần diễn giải báo cáo là tiếng Anh.

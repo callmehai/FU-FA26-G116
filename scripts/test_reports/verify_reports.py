@@ -67,7 +67,7 @@ def verify(directory,templates):
     # Report 5.2 / 5.2.2 are checked by scripts/test_reports/integration_cases.py check, not here.
     here={t['id'] for t in inventory if t.get('level') not in {'UNIT','INTEGRATION','API','UI'}}
     assert here<=covered,'Missing test IDs: '+str(here-covered)
-    assert reports['Report5.3_System_Test.xlsx']==manifest['manualCases']['SYS']
+    # Report 5.3 is checked by scripts/test_reports/system_cases.py check, not here.
     print(json.dumps(dict(verifiedFiles=len(manifest['files']),testMethods=len(tests),tracedIDs=len(covered),summaryCounts=reports,referenceTemplatesUnchanged=True,sourceStylesPreserved=True),indent=2))
 
 if __name__=='__main__':

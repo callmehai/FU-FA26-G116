@@ -1,0 +1,37 @@
+{
+  "workflow": "WF-04",
+  "groups": [
+    {
+      "title": "Upload Audio and Transcribe",
+      "cases": []
+    },
+    {
+      "title": "Edit Transcript",
+      "cases": []
+    },
+    {
+      "title": "AI Summary",
+      "cases": []
+    },
+    {
+      "title": "AI Draft Minutes",
+      "cases": []
+    },
+    {
+      "title": "Submit Minutes",
+      "cases": []
+    },
+    {
+      "title": "Return and Correct",
+      "cases": []
+    },
+    {
+      "title": "Approve and Issue",
+      "cases": []
+    },
+    {
+      "title": "Read Issued Minutes",
+      "cases": []
+    }
+  ]
+}

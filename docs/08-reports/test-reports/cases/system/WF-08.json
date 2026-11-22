@@ -1,0 +1,21 @@
+{
+  "workflow": "WF-08",
+  "groups": [
+    {
+      "title": "Personal Library",
+      "cases": []
+    },
+    {
+      "title": "Attach to Meeting",
+      "cases": []
+    },
+    {
+      "title": "Comment on Document",
+      "cases": []
+    },
+    {
+      "title": "Sensitivity Limits Readers",
+      "cases": []
+    }
+  ]
+}
