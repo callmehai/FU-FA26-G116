@@ -1442,6 +1442,24 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
+    [Fact(DisplayName = "SpeechClipService.AddForGuestAsync/UTC004: revoked between check and store is refused and the audio deleted")]
+    [Trait("UTC", "SpeechClipService.AddForGuestAsync/UTC004")]
+    [Trait("Trait", "UTC")]
+    public async Task AddForGuest_revoked_between_check_and_store_is_refused_and_the_audio_deleted()
+    {
+        var f = MakeClipSvc();
+        var guest = GuestSession(f, Guid.CreateVersion7(), admitted: true, notice: true);
+        // The first admission check (before the sentence is transcribed) passes; the one inside the store finds it revoked.
+        f.ClipsInner.RevokeAdmissionAfterChecks = 1;
+
+        var outcome = await f.Service.AddForGuestAsync(guest, f.Meeting.Id, ClipUpload());
+
+        Assert.Equal(SpeechClipFailure.NotCapturing, outcome.Failure);
+        Assert.Empty(f.ClipsInner.Added);
+        Assert.Empty(f.Files.Files);
+        Assert.Empty(f.Publisher.Published);
+    }
+
     private static SpeechClip MemberClip(ClipSvc f, Guid speaker, bool audio, bool excluded = false)
     {
         var clip = new SpeechClip

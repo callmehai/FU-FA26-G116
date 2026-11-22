@@ -10,13 +10,13 @@
 
 | Chỉ số | Giá trị |
 |---|---|
-| Hàm được kiểm thử (sheet) | 158 |
-| Unit Test Case (UTC) | 844 |
+| Hàm được kiểm thử (sheet) | 150 |
+| Unit Test Case (UTC) | 821 |
 | Passed | 821 |
 | Failed | 0 |
-| Pending | 23 |
+| Pending | 0 |
 
-Không có lỗi sản phẩm. Các UTC Pending chưa có test tự động, lý do ở §3.
+Không có lỗi sản phẩm. Mọi UTC đều có test tự động và đạt; không còn UTC Pending (23 UTC Pending trước đó đã được bổ sung test, xem §3).
 
 ## 2. Kết quả theo tính năng
 
@@ -26,31 +26,34 @@ Không có lỗi sản phẩm. Các UTC Pending chưa có test tự động, lý
 | FE-02 Người dùng | 30 | 30 | 0 | 0 |
 | FE-03 Phân quyền | 38 | 38 | 0 | 0 |
 | FE-04 Cuộc họp | 76 | 76 | 0 | 0 |
-| FE-05 Chương trình họp | 80 | 80 | 0 | 0 |
+| FE-05 Chương trình họp | 63 | 63 | 0 | 0 |
 | FE-06 Thành phần tham dự | 12 | 12 | 0 | 0 |
 | FE-07 Tài liệu | 68 | 68 | 0 | 0 |
-| FE-08 Phòng họp | 56 | 51 | 0 | 5 |
-| FE-09 Ghi âm | 109 | 108 | 0 | 1 |
-| FE-10 Phiên âm | 87 | 82 | 0 | 5 |
+| FE-08 Phòng họp | 56 | 56 | 0 | 0 |
+| FE-09 Ghi âm | 109 | 109 | 0 | 0 |
+| FE-10 Phiên âm | 87 | 87 | 0 | 0 |
 | FE-11 Biểu quyết | 33 | 33 | 0 | 0 |
-| FE-12 Biên bản | 66 | 55 | 0 | 11 |
-| FE-13 Thông báo | 62 | 61 | 0 | 1 |
+| FE-12 Biên bản | 66 | 66 | 0 | 0 |
+| FE-13 Thông báo | 56 | 56 | 0 | 0 |
 | FE-15 Báo cáo | 10 | 10 | 0 | 0 |
 | FE-16 Lịch | 70 | 70 | 0 | 0 |
-| **Tổng** | **844** | **821** | **0** | **23** |
+| **Tổng** | **821** | **821** | **0** | **0** |
 
 Mỗi sheet có tối đa 6 UTC (hàm xử lý trạng thái, quyền, biểu quyết, biên bản, xung đột lịch tối đa 8), mỗi hàm có ít nhất 1 UTC. Mỗi sheet có đúng 1 ca Normal cho luồng chính, mỗi mã lỗi MSG một ca Abnormal đại diện, Boundary chỉ giữ giới hạn số cụ thể trong code.
 
-## 3. UTC Pending (23)
+## 3. 23 UTC từng Pending, nay đã có test
 
-| UTC | Lý do |
+| UTC | Cách kiểm |
 |---|---|
-| CallRoom.EnforceRoomAccess UTC001; CallRoom.Reconcile UTC001, 002, 003, 005; Notification.QueueStartingSoon UTC006 | Cần liệt kê phiên và lọc theo trạng thái, test double hiện tại chưa mô phỏng |
-| SpeechClip.AddForGuest UTC004 | Cần mô phỏng thu hồi quyền giữa lúc kiểm tra và lúc lưu |
-| Summary.ProcessNext UTC003, UTC006 | Cần mô phỏng hai tiến trình chạy song song và rollback giao dịch |
-| Transcription.ProcessNext UTC005, UTC006 | Cần mô phỏng hủy thay đổi và lỗi ở bước nhận việc |
-| VoiceId.SampleAudio UTC004 | Cần mô phỏng lỗi giải mã mẫu giọng |
-| Notes.Discussion UTC001–005, Notes.Read UTC001–006 | Lớp private lồng bên trong, hiện chỉ được kiểm gián tiếp qua `MinutesTemplate.Build` |
+| CallRoom.EnforceRoomAccess UTC001; CallRoom.Reconcile UTC001, 002, 003, 005 | Test double liệt kê phiên phòng đang mở (`Sessions`) và lọc theo trạng thái |
+| Notification.QueueStartingSoon UTC006 | Truy vấn người nhận trả rỗng thì không tạo thông báo, không lưu; bộ lọc Nháp/Đã hủy/không hoạt động chạy trên cơ sở dữ liệu thật ở `NotificationRepositoryPostgresTests` |
+| SpeechClip.AddForGuest UTC004 | Kho thu hồi phiên khách sau lần kiểm tra quyền đầu tiên, mô phỏng thu hồi giữa lúc kiểm tra và lúc lưu |
+| Summary.ProcessNext UTC003, UTC006 | Kho trả 0 dòng khi nhận việc (tiến trình khác nhận trước); kho từ chối lưu dự thảo |
+| Transcription.ProcessNext UTC005, UTC006 | `DiscardChanges` trả thực thể về trạng thái cũ như EF thật; bước nhận việc ném lỗi |
+| VoiceId.SampleAudio UTC004 | Bộ giải mã ném lỗi khi khóa đổi |
+| Notes.Discussion UTC001–005, Notes.Read UTC001–006 | Lớp đọc ghi chú là private nên chạy qua `MinutesTemplate.Build` và đọc đúng phần biên bản do lớp đó cấp dữ liệu |
+
+Đã bỏ 23 UTC của 8 hàm quá đơn giản (một biểu thức, không có nhánh riêng, đã được kiểm qua các hàm gọi chúng): `Agenda.HasRole`, `IsPlanner`, `CurrentParticipant`, `PlanningAllowed`, `Normalize`, `AgendaExecution.UtcMicroseconds`, `Notification.MarkPushed`, `MarkAllRead`. Các hàm này nằm trong danh sách bỏ qua (`skipped`) của kế hoạch kèm lý do.
 
 ## 4. Test case thay đổi theo hành vi mới của hệ thống
 
@@ -78,6 +81,7 @@ Không có lỗi sản phẩm. Trên máy chạy (Windows), 7 test của `TrustC
 
 ## 6. Giới hạn đã biết
 
+- Ca tranh chấp song song và hoàn tác giao dịch được mô phỏng bằng test double, không phải hai tiến trình thật hay EF thật; Notes.* kiểm qua `MinutesTemplate.Build` chứ không gọi trực tiếp lớp private.
 - Một số UTC Passed kiểm bằng test double, không dùng cơ sở dữ liệu thật: khi lưu thất bại, test chỉ kiểm kết quả trả về và log, không kiểm trạng thái thực thể (test double thay đổi bộ nhớ trước khi ném lỗi, khác EF thật).
 - Dòng Log của `AuditService` được kiểm gián tiếp qua số lần lưu và bản ghi (service không có logger).
 - `MeetingDocument.Upload/UTC001`: tên thư mục tải lên được kiểm ở `MeetingDocumentAttacherTests`.

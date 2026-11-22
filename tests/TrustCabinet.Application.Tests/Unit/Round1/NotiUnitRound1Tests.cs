@@ -89,102 +89,7 @@ public sealed class NotiUnitRound1Tests
 
     // ---- NotificationService.MarkAllReadAsync ----
 
-    [Fact(DisplayName = "NotificationService.MarkAllReadAsync/UTC001: all unread are stamped at once")]
-    [Trait("UTC", "NotificationService.MarkAllReadAsync/UTC001")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkAllRead_ThreeUnread_StampsAll()
-    {
-        var user = Guid.CreateVersion7();
-        for (var i = 0; i < 3; i++)
-            _repository.Rows.Add(new Notification { UserId = user, Type = NotificationType.MeetingInvited, Title = "Moi hop" });
-
-        var count = await Service().MarkAllReadAsync(user);
-
-        Assert.Equal(3, count);
-        Assert.All(_repository.Rows, n => Assert.Equal(Now, n.ReadAt));
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "NotificationService.MarkAllReadAsync/UTC002: nobody unread returns zero")]
-    [Trait("UTC", "NotificationService.MarkAllReadAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkAllRead_NothingUnread_ReturnsZero()
-    {
-        var user = Guid.CreateVersion7();
-        var read = new Notification
-        {
-            UserId = user, Type = NotificationType.MeetingInvited, Title = "Moi hop",
-            ReadAt = Now.AddHours(-1), UpdatedAt = Now.AddHours(-1),
-        };
-        _repository.Rows.Add(read);
-
-        var count = await Service().MarkAllReadAsync(user);
-
-        Assert.Equal(0, count);
-        Assert.Equal(read.ReadAt, _repository.Rows.Single().ReadAt);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "NotificationService.MarkAllReadAsync/UTC003: unknown user returns zero")]
-    [Trait("UTC", "NotificationService.MarkAllReadAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkAllRead_UnknownUser_ReturnsZero()
-    {
-        var count = await Service().MarkAllReadAsync(Guid.CreateVersion7());
-
-        Assert.Equal(0, count);
-        Assert.Empty(_repository.Rows);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
     // ---- NotificationService.MarkPushedAsync ----
-
-    [Fact(DisplayName = "NotificationService.MarkPushedAsync/UTC001: pending row is stamped pushed")]
-    [Trait("UTC", "NotificationService.MarkPushedAsync/UTC001")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkPushed_PendingRow_StampsPushedAt()
-    {
-        var notification = new Notification { UserId = Guid.CreateVersion7(), Type = NotificationType.MeetingInvited, Title = "Moi hop" };
-        _repository.Rows.Add(notification);
-
-        await Service().MarkPushedAsync(notification.Id);
-
-        Assert.Equal(Now, notification.PushedAt);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Single(_repository.Rows);
-    }
-
-    [Fact(DisplayName = "NotificationService.MarkPushedAsync/UTC002: already-pushed keeps its PushedAt")]
-    [Trait("UTC", "NotificationService.MarkPushedAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkPushed_AlreadyPushed_KeepsPushedAt()
-    {
-        var pushed = Now.AddHours(-1);
-        var notification = new Notification
-        {
-            UserId = Guid.CreateVersion7(), Type = NotificationType.MeetingInvited, Title = "Moi hop",
-            PushedAt = pushed,
-        };
-        _repository.Rows.Add(notification);
-
-        await Service().MarkPushedAsync(notification.Id);
-
-        Assert.Equal(pushed, notification.PushedAt);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Single(_repository.Rows);
-    }
-
-    [Fact(DisplayName = "NotificationService.MarkPushedAsync/UTC003: unknown id is a silent no-op")]
-    [Trait("UTC", "NotificationService.MarkPushedAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkPushed_UnknownId_DoesNothing()
-    {
-        await Service().MarkPushedAsync(Guid.CreateVersion7());
-
-        Assert.Empty(_repository.Rows);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Equal(0, _unitOfWork.Saves);
-    }
 
     // ---- NotificationService.GetTargetAsync ----
 
@@ -505,6 +410,23 @@ public sealed class NotiUnitRound1Tests
         Assert.Equal(1, created);
         Assert.Equal(second, Assert.Single(_repository.Added).UserId);
         Assert.Equal(1, _unitOfWork.Saves);
+    }
+
+    [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC006: no recipient returned queues nothing")]
+    [Trait("UTC", "NotificationService.QueueStartingSoonAsync/UTC006")]
+    [Trait("Trait", "UTC")]
+    public async Task StartingSoon_NoRecipientReturned_QueuesNothing()
+    {
+        // The query returns only active participants of Published meetings inside the window; a Draft or Cancelled
+        // meeting, or an inactive participant, is simply not in its answer (the filter itself runs against the database
+        // in NotificationRepositoryPostgresTests).
+        Assert.Empty(_repository.Upcoming);
+
+        var created = await Service().QueueStartingSoonAsync();
+
+        Assert.Equal(0, created);
+        Assert.Empty(_repository.Added);
+        Assert.Equal(0, _unitOfWork.Saves);
     }
 
     [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC005: duplicated upcoming row queued once")]

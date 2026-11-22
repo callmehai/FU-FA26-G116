@@ -67,7 +67,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · MSG320"
+          "note": "UC-04 · MSG320 · Revocation is simulated by the store dropping the guest session after its first admission check (the check before the sentence is transcribed), so the check inside the store finds it gone.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

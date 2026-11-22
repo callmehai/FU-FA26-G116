@@ -584,38 +584,6 @@
       "sheet": "Agenda.Validate"
     },
     {
-      "description": "Planning-allowed rule: the meeting statuses in which the agenda may change.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 12,
-          "method": "AgendaRules.PlanningAllowed",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.PlanningAllowed"
-    },
-    {
-      "description": "Planner rule: the chair and the secretary plan the agenda.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 23,
-          "method": "AgendaRules.IsPlanner",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.IsPlanner"
-    },
-    {
       "description": "Conclusion-permission rule: who may record a conclusion, and when.",
       "feature": "FE-05",
       "methods": [
@@ -648,22 +616,6 @@
       "sheet": "Agenda.Actions"
     },
     {
-      "description": "Input normalization: trimming the title and defaulting the description.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 26,
-          "method": "AgendaRules.Normalize",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.Normalize"
-    },
-    {
       "description": "Order-version rule: the hash identifying the current item order.",
       "feature": "FE-05",
       "methods": [
@@ -680,38 +632,6 @@
       "sheet": "Agenda.OrderVersion"
     },
     {
-      "description": "Current-participant rule: roster membership that is still current.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 16,
-          "method": "AgendaRules.CurrentParticipant",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.CurrentParticipant"
-    },
-    {
-      "description": "Role rule: whether the actor holds a role as a current participant.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 18,
-          "method": "AgendaRules.HasRole",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "Agenda.HasRole"
-    },
-    {
       "description": "Completing a running item: wrong state or time refuses; success stamps the end.",
       "feature": "FE-05",
       "methods": [
@@ -726,22 +646,6 @@
       "module": "AGENDA",
       "precondition": "No database needed; pure rules.",
       "sheet": "AgendaExecution.TryComplete"
-    },
-    {
-      "description": "Microsecond truncation: timestamps are normalized to whole microseconds.",
-      "feature": "FE-05",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
-          "line": 71,
-          "method": "AgendaExecution.UtcMicroseconds",
-          "layer": "Domain"
-        }
-      ],
-      "module": "AGENDA",
-      "precondition": "No database needed; pure rules.",
-      "sheet": "AgendaExecution.UtcMicroseconds"
     },
     {
       "description": "Creating an agenda item: a planner adds a titled item while planning is allowed.",
@@ -2223,22 +2127,6 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
-          "line": 71,
-          "method": "NotificationService.MarkAllReadAsync",
-          "layer": "Application"
-        }
-      ],
-      "module": "NOTI",
-      "precondition": "Notifications of two users.",
-      "sheet": "Notification.MarkAllRead"
-    },
-    {
-      "description": "Marking notifications read and resolving a notification target.",
-      "feature": "FE-13",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
           "line": 75,
           "method": "NotificationService.GetTargetAsync",
           "layer": "Application"
@@ -2263,22 +2151,6 @@
       "module": "NOTI",
       "precondition": "Notifications with push state.",
       "sheet": "Notification.PendingPush"
-    },
-    {
-      "description": "Pending push selection and marking pushed.",
-      "feature": "FE-13",
-      "methods": [
-        {
-          "decides": null,
-          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
-          "line": 169,
-          "method": "NotificationService.MarkPushedAsync",
-          "layer": "Application"
-        }
-      ],
-      "module": "NOTI",
-      "precondition": "Notifications with push state.",
-      "sheet": "Notification.MarkPushed"
     },
     {
       "description": "Invitation dispatch worker: pick the next staged event and send.",
@@ -4049,6 +3921,54 @@
       "class": "SearchText",
       "method": "SearchText.Contains",
       "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure contains check over Fold (null-safe), no MSGnn; no dedicated sheet."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.PlanningAllowed",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.CurrentParticipant",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.HasRole",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.IsPlanner",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaRules",
+      "method": "AgendaRules.Normalize",
+      "reason": "One-line predicate or trim with no branch of its own; every Agenda.* sheet that calls it covers it."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "class": "AgendaExecution",
+      "method": "AgendaExecution.UtcMicroseconds",
+      "reason": "One tick-truncation expression; its result shows in AgendaExecution.TryComplete."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "class": "NotificationService",
+      "method": "NotificationService.MarkAllReadAsync",
+      "reason": "Forwards to the notification store with no decision of its own."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "class": "NotificationService",
+      "method": "NotificationService.MarkPushedAsync",
+      "reason": "Forwards to the notification store with no decision of its own."
     }
   ],
   "source": {

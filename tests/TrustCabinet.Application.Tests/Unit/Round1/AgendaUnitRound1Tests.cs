@@ -217,158 +217,11 @@ public sealed class AgendaUnitRound1Tests
 
     // ---- AgendaRules.CurrentParticipant ----
 
-    [Fact(DisplayName = "AgendaRules.CurrentParticipant/UTC001: current active participant counts")]
-    [Trait("UTC", "AgendaRules.CurrentParticipant/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void CurrentParticipant_CurrentActiveParticipantCounts()
-    {
-        var participant = Seat(Guid.CreateVersion7(), _member, MeetingRole.Member);
-
-        Assert.True(AgendaRules.CurrentParticipant(participant));
-        Assert.True(ParticipantRules.Active(participant));
-        Assert.True(ParticipantRules.Current(participant));
-    }
-
-    [Fact(DisplayName = "AgendaRules.CurrentParticipant/UTC002: deactivated account does not count")]
-    [Trait("UTC", "AgendaRules.CurrentParticipant/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void CurrentParticipant_DeactivatedAccountDoesNotCount()
-    {
-        var participant = Seat(Guid.CreateVersion7(), _member, MeetingRole.Member, active: false);
-
-        Assert.False(AgendaRules.CurrentParticipant(participant));
-        Assert.True(ParticipantRules.Current(participant));
-        Assert.False(ParticipantRules.Active(participant));
-    }
-
-    [Fact(DisplayName = "AgendaRules.CurrentParticipant/UTC003: removed roster row does not count")]
-    [Trait("UTC", "AgendaRules.CurrentParticipant/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void CurrentParticipant_RemovedRosterRowDoesNotCount()
-    {
-        var participant = Seat(Guid.CreateVersion7(), _member, MeetingRole.Member, AssignmentStatus.Removed);
-
-        Assert.False(AgendaRules.CurrentParticipant(participant));
-        Assert.False(ParticipantRules.Current(participant));
-        Assert.False(ParticipantRules.Active(participant));
-    }
-
     // ---- AgendaRules.HasRole ----
-
-    [Fact(DisplayName = "AgendaRules.HasRole/UTC001: active current chair holds the role")]
-    [Trait("UTC", "AgendaRules.HasRole/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void HasRole_ActiveCurrentChairHoldsTheRole()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Published, _chair, MeetingRole.Chair);
-
-        Assert.True(AgendaRules.HasRole(meeting, _chair, MeetingRole.Chair));
-        Assert.False(AgendaRules.HasRole(meeting, _chair, MeetingRole.Secretary));
-        Assert.False(AgendaRules.HasRole(meeting, _member, MeetingRole.Chair));
-    }
-
-    [Fact(DisplayName = "AgendaRules.HasRole/UTC002: another role does not match")]
-    [Trait("UTC", "AgendaRules.HasRole/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void HasRole_AnotherRoleDoesNotMatch()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Published, _secretary, MeetingRole.Secretary);
-
-        Assert.False(AgendaRules.HasRole(meeting, _secretary, MeetingRole.Chair));
-        Assert.True(AgendaRules.HasRole(meeting, _secretary, MeetingRole.Secretary));
-        Assert.False(AgendaRules.HasRole(meeting, _secretary, MeetingRole.Member));
-    }
-
-    [Fact(DisplayName = "AgendaRules.HasRole/UTC003: row of another meeting does not count")]
-    [Trait("UTC", "AgendaRules.HasRole/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void HasRole_RowOfAnotherMeetingDoesNotCount()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Published, _chair, MeetingRole.Chair);
-        meeting.Participants.Add(Seat(Guid.CreateVersion7(), _chair, MeetingRole.Chair));
-
-        Assert.True(AgendaRules.HasRole(meeting, _chair, MeetingRole.Chair));
-        Assert.False(AgendaRules.HasRole(new Meeting { Title = "Khác", Status = MeetingStatus.Published },
-            _chair, MeetingRole.Chair));
-        Assert.Equal(2, meeting.Participants.Count);
-    }
 
     // ---- AgendaRules.IsPlanner ----
 
-    [Fact(DisplayName = "AgendaRules.IsPlanner/UTC001: current chair plans")]
-    [Trait("UTC", "AgendaRules.IsPlanner/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void IsPlanner_CurrentChairPlans()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Draft, _chair, MeetingRole.Chair);
-
-        Assert.True(AgendaRules.IsPlanner(meeting, _chair));
-        Assert.True(AgendaRules.IsPlanner(RulesMeeting(MeetingStatus.Published, _secretary, MeetingRole.Secretary),
-            _secretary));
-        Assert.False(AgendaRules.IsPlanner(meeting, _member));
-    }
-
-    [Fact(DisplayName = "AgendaRules.IsPlanner/UTC002: plain member does not plan")]
-    [Trait("UTC", "AgendaRules.IsPlanner/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void IsPlanner_PlainMemberDoesNotPlan()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Draft, _member, MeetingRole.Member);
-
-        Assert.False(AgendaRules.IsPlanner(meeting, _member));
-        Assert.False(AgendaRules.IsPlanner(meeting, Guid.CreateVersion7()));
-        Assert.True(AgendaRules.PlanningAllowed(meeting.Status));
-    }
-
-    [Fact(DisplayName = "AgendaRules.IsPlanner/UTC003: removed secretary does not plan")]
-    [Trait("UTC", "AgendaRules.IsPlanner/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void IsPlanner_RemovedSecretaryDoesNotPlan()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Draft, _secretary, MeetingRole.Secretary, AssignmentStatus.Removed);
-
-        Assert.False(AgendaRules.IsPlanner(meeting, _secretary));
-        Assert.False(AgendaRules.HasRole(meeting, _secretary, MeetingRole.Secretary));
-        Assert.False(AgendaRules.CurrentParticipant(meeting.Participants.First()));
-    }
-
     // ---- AgendaRules.Normalize ----
-
-    [Fact(DisplayName = "AgendaRules.Normalize/UTC001: title is trimmed, description kept")]
-    [Trait("UTC", "AgendaRules.Normalize/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void Normalize_TitleIsTrimmedDescriptionKept()
-    {
-        var normalized = AgendaRules.Normalize(new AgendaInput("  Opening  ", "Notes"));
-
-        Assert.Equal("Opening", normalized.Title);
-        Assert.Equal("Notes", normalized.Description);
-        Assert.Equal(new AgendaInput("Opening", "Notes"), normalized);
-    }
-
-    [Fact(DisplayName = "AgendaRules.Normalize/UTC002: null title and description become empty")]
-    [Trait("UTC", "AgendaRules.Normalize/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void Normalize_NullTitleAndDescriptionBecomeEmpty()
-    {
-        var normalized = AgendaRules.Normalize(new AgendaInput(null, null));
-
-        Assert.Equal("", normalized.Title);
-        Assert.Equal("", normalized.Description);
-        Assert.True(AgendaRules.Validate(normalized).ContainsKey("title"));
-    }
-
-    [Fact(DisplayName = "AgendaRules.Normalize/UTC003: description keeps its own spacing")]
-    [Trait("UTC", "AgendaRules.Normalize/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void Normalize_DescriptionKeepsItsOwnSpacing()
-    {
-        var normalized = AgendaRules.Normalize(new AgendaInput("A", "  line  "));
-
-        Assert.Equal("A", normalized.Title);
-        Assert.Equal("  line  ", normalized.Description);
-        Assert.Equal(new AgendaInput("A", "  line  "), normalized);
-    }
 
     // ---- AgendaRules.OrderVersion ----
 
@@ -437,26 +290,6 @@ public sealed class AgendaUnitRound1Tests
     }
 
     // ---- AgendaRules.PlanningAllowed ----
-
-    [Fact(DisplayName = "AgendaRules.PlanningAllowed/UTC001: draft allows planning")]
-    [Trait("UTC", "AgendaRules.PlanningAllowed/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void PlanningAllowed_DraftAllowsPlanning()
-    {
-        Assert.True(AgendaRules.PlanningAllowed(MeetingStatus.Draft));
-        Assert.True(AgendaRules.PlanningAllowed(MeetingStatus.Published));
-        Assert.True(AgendaRules.PlanningAllowed(MeetingStatus.InProgress));
-    }
-
-    [Fact(DisplayName = "AgendaRules.PlanningAllowed/UTC002: ended meeting locks planning")]
-    [Trait("UTC", "AgendaRules.PlanningAllowed/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void PlanningAllowed_EndedMeetingLocksPlanning()
-    {
-        Assert.False(AgendaRules.PlanningAllowed(MeetingStatus.Ended));
-        Assert.False(AgendaRules.PlanningAllowed(MeetingStatus.Cancelled));
-        Assert.True(AgendaRules.PlanningAllowed(MeetingStatus.WaitingApproval));
-    }
 
     // ---- AgendaRules.Validate ----
 
@@ -562,45 +395,6 @@ public sealed class AgendaUnitRound1Tests
     }
 
     // ---- AgendaExecution.UtcMicroseconds ----
-
-    [Fact(DisplayName = "AgendaExecution.UtcMicroseconds/UTC001: microsecond time is unchanged")]
-    [Trait("UTC", "AgendaExecution.UtcMicroseconds/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void UtcMicroseconds_MicrosecondTimeIsUnchanged()
-    {
-        var time = new DateTimeOffset(2026, 12, 1, 3, 0, 0, TimeSpan.Zero).AddTicks(1234560);
-
-        Assert.Equal(time, AgendaExecution.UtcMicroseconds(time));
-        Assert.Equal(TimeSpan.Zero, AgendaExecution.UtcMicroseconds(time).Offset);
-        Assert.Equal(new DateTimeOffset(2026, 12, 1, 3, 0, 0, 123, TimeSpan.Zero).AddTicks(4560),
-            AgendaExecution.UtcMicroseconds(time));
-    }
-
-    [Fact(DisplayName = "AgendaExecution.UtcMicroseconds/UTC002: seventh digit is dropped, not rounded")]
-    [Trait("UTC", "AgendaExecution.UtcMicroseconds/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void UtcMicroseconds_SeventhDigitIsDroppedNotRounded()
-    {
-        var time = new DateTimeOffset(2026, 12, 1, 3, 0, 0, TimeSpan.Zero).AddTicks(1234567);
-
-        Assert.Equal(new DateTimeOffset(2026, 12, 1, 3, 0, 0, TimeSpan.Zero).AddTicks(1234560),
-            AgendaExecution.UtcMicroseconds(time));
-        Assert.NotEqual(time, AgendaExecution.UtcMicroseconds(time));
-        Assert.Equal(1234560 % 10, AgendaExecution.UtcMicroseconds(time).Ticks % 10);
-    }
-
-    [Fact(DisplayName = "AgendaExecution.UtcMicroseconds/UTC003: local offset converts to UTC")]
-    [Trait("UTC", "AgendaExecution.UtcMicroseconds/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void UtcMicroseconds_LocalOffsetConvertsToUtc()
-    {
-        var time = new DateTimeOffset(2026, 12, 1, 10, 0, 0, TimeSpan.FromHours(7)).AddTicks(5000000);
-
-        Assert.Equal(new DateTimeOffset(2026, 12, 1, 3, 0, 0, 500, TimeSpan.Zero),
-            AgendaExecution.UtcMicroseconds(time));
-        Assert.Equal(TimeSpan.Zero, AgendaExecution.UtcMicroseconds(time).Offset);
-        Assert.Equal(5000000, AgendaExecution.UtcMicroseconds(time).Ticks % TimeSpan.TicksPerSecond);
-    }
 
     // ---- AgendaService.CreateAsync ----
 

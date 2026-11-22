@@ -193,6 +193,51 @@ public sealed class TransUnitRound1Tests
         Assert.Single(f.Publisher.Published);
     }
 
+    [Fact(DisplayName = "TranscriptionService.ProcessNextAsync/UTC005: a failed write discards the staged result and fails the transcript")]
+    [Trait("UTC", "TranscriptionService.ProcessNextAsync/UTC005")]
+    [Trait("Trait", "UTC")]
+    public async Task ProcessNext_a_failed_write_discards_the_staged_result_and_fails_the_transcript()
+    {
+        var f = TranscriptionSvc();
+        var transcript = QueuedTranscript(f);
+        f.Engine.Result = new SpeechTranscription(2000, "vi", "test", "test-model",
+            [new SpeechSegment(0, 1000, "SPEAKER_00", "Xin chào")], [new SpeechSpeaker("SPEAKER_00", 1000, [1f, 0f])]);
+        f.Uow.FailNextSave = new PersistenceUnavailableException();
+        // What EF Core does on DiscardChanges: the entities the failed write touched go back to what the store holds.
+        f.Uow.OnDiscard = () =>
+        {
+            transcript.Status = TranscriptStatus.Processing;
+            transcript.CompletedAt = null;
+            transcript.ProgressPercent = 0;
+            transcript.Segments.Clear();
+            transcript.Speakers.Clear();
+        };
+
+        Assert.True(await f.Service.ProcessNextAsync());
+
+        Assert.Equal(1, f.Uow.Discards);
+        Assert.Equal(TranscriptStatus.Failed, transcript.Status);
+        Assert.Equal(TranscriptionService.UnexpectedFailureMessage, transcript.ErrorMessage);
+        Assert.Empty(transcript.Segments);
+        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(transcript.Id.ToString()));
+    }
+
+    [Fact(DisplayName = "TranscriptionService.ProcessNextAsync/UTC006: a failed claim reaches the caller and claims nothing")]
+    [Trait("UTC", "TranscriptionService.ProcessNextAsync/UTC006")]
+    [Trait("Trait", "UTC")]
+    public async Task ProcessNext_a_failed_claim_reaches_the_caller_and_claims_nothing()
+    {
+        var f = TranscriptionSvc();
+        var transcript = QueuedTranscript(f);
+        f.Transcripts.ClaimFails = new PersistenceUnavailableException();
+
+        await Assert.ThrowsAsync<PersistenceUnavailableException>(() => f.Service.ProcessNextAsync());
+
+        Assert.Equal(TranscriptStatus.Pending, transcript.Status);
+        Assert.Empty(f.Log.Entries);
+        Assert.Empty(f.Publisher.Published);
+    }
+
     [Fact(DisplayName = "TranscriptionService.EditSegmentAsync/UTC001: the Secretary corrects a line")]
     [Trait("UTC", "TranscriptionService.EditSegmentAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -922,6 +967,47 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Summaries.Rows);
     }
 
+    [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC003: a draft claimed first by another worker is left to it")]
+    [Trait("UTC", "SummaryService.ProcessNextAsync/UTC003")]
+    [Trait("Trait", "UTC")]
+    public async Task ProcessNext_a_draft_claimed_first_by_another_worker_is_left_to_it()
+    {
+        var f = SummarySvc();
+        f.Summaries.Rows.Add(new MeetingSummary
+        {
+            MeetingId = f.Meeting.Id, Status = SummaryStatus.Queued, RequestedById = f.Chair, RequestedAt = Now,
+        });
+        f.Summaries.LoseClaims = true;
+
+        Assert.True(await f.Service.ProcessNextAsync());
+
+        var row = Assert.Single(f.Summaries.Rows);
+        Assert.Equal(SummaryStatus.Running, row.Status);
+        Assert.True(string.IsNullOrEmpty(row.Content));
+        Assert.True(string.IsNullOrEmpty(row.Model));
+        Assert.Empty(f.Log.Entries);
+    }
+
+    [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC006: a store that rejects the draft fails it and frees the queue")]
+    [Trait("UTC", "SummaryService.ProcessNextAsync/UTC006")]
+    [Trait("Trait", "UTC")]
+    public async Task ProcessNext_a_store_that_rejects_the_draft_fails_it_and_frees_the_queue()
+    {
+        var f = SummarySvc();
+        f.Summaries.Rows.Add(new MeetingSummary
+        {
+            MeetingId = f.Meeting.Id, Status = SummaryStatus.Queued, RequestedById = f.Chair, RequestedAt = Now,
+        });
+        f.Summaries.StoreDraftFails = new PersistenceUnavailableException();
+
+        Assert.True(await f.Service.ProcessNextAsync());
+
+        var row = Assert.Single(f.Summaries.Rows);
+        Assert.Equal(SummaryStatus.Failed, row.Status);
+        Assert.Equal("Không lưu được dự thảo. Vui lòng thử lại.", row.ErrorMessage);
+        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(f.Meeting.Id.ToString()));
+    }
+
     [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC004: a refusing model fails the draft with its message")]
     [Trait("UTC", "SummaryService.ProcessNextAsync/UTC004")]
     [Trait("Trait", "UTC")]
@@ -1252,6 +1338,22 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
 
         Assert.Equal([7], Assert.IsType<VoiceSampleAudio>(audio).Bytes);
         Assert.Equal("audio/webm", Assert.IsType<VoiceSampleAudio>(audio).ContentType);
+    }
+
+    [Fact(DisplayName = "VoiceIdService.SampleAudioAsync/UTC004: a recording that no longer decrypts is not heard")]
+    [Trait("UTC", "VoiceIdService.SampleAudioAsync/UTC004")]
+    [Trait("Trait", "UTC")]
+    public async Task SampleAudio_a_recording_that_no_longer_decrypts_is_not_heard()
+    {
+        var f = MakeVoiceSvc();
+        var sample = OwnSample(f, Consented(f));
+        sample.AudioCiphertext = [7, 0xA0];
+        sample.AudioContentType = "audio/webm";
+        f.Protector.AudioUnreadable = true;
+
+        Assert.Null(await f.Service.SampleAudioAsync(f.User, sample.Id));
+
+        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains(sample.Id.ToString()));
     }
 
     [Fact(DisplayName = "VoiceIdService.SampleAudioAsync/UTC002: someone else sample reads as not found")]

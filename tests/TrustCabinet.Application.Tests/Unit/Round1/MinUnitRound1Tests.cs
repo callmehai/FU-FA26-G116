@@ -961,6 +961,153 @@ public sealed class MinUnitRound1Tests
         Assert.Contains($"### 1. {new string('y', 149)}", text);
     }
 
+    // Notes.Discussion and Notes.Read are the private reader inside MinutesTemplate. They cannot be called, so each UTC
+    // drives MinutesTemplate.Build with no draft and reads the section the reader feeds.
+
+    private static readonly Guid ReportItem = Guid.CreateVersion7();
+    private static readonly Guid BudgetItem = Guid.CreateVersion7();
+
+    private static IReadOnlyList<AgendaFacts> TwoItems() =>
+    [
+        new(ReportItem, "Báo cáo", null, null, null, null),
+        new(BudgetItem, "Ngân sách", null, null, null, null),
+    ];
+
+    private static string BuildWithNotes(params MinutesNote[] notes)
+        => MinutesTemplate.Build(TemplateRecords(agenda: TwoItems(), notes: notes), null, Hanoi).Replace("\r\n", "\n", StringComparison.Ordinal);
+
+    /// <summary>The text between two headings of the built minutes.</summary>
+    private static string Between(string text, string from, string to)
+    {
+        var start = text.IndexOf(from, StringComparison.Ordinal) + from.Length;
+        return text[start..text.IndexOf(to, start, StringComparison.Ordinal)];
+    }
+
+    private static string SectionTwo(string text) => Between(text, SummaryWriter.DiscussionHeading, SummaryWriter.ConclusionsHeading);
+
+    [Fact(DisplayName = "Notes.Discussion/UTC001: the meeting-wide note comes before the first item")]
+    [Trait("UTC", "Notes.Discussion/UTC001")]
+    [Trait("Trait", "UTC")]
+    public void NotesDiscussion_MeetingWideNote_OpensSectionTwo()
+    {
+        var section = SectionTwo(BuildWithNotes(new MinutesNote(null, "Mở đầu")));
+
+        Assert.Equal("Mở đầu", section[..section.IndexOf("### 1.", StringComparison.Ordinal)].Trim());
+    }
+
+    [Fact(DisplayName = "Notes.Discussion/UTC002: unmarked lines of an item stay under it in note order")]
+    [Trait("UTC", "Notes.Discussion/UTC002")]
+    [Trait("Trait", "UTC")]
+    public void NotesDiscussion_UnmarkedLines_StayUnderTheirItemInOrder()
+    {
+        var section = SectionTwo(BuildWithNotes(new MinutesNote(ReportItem, "Dòng một\nDòng hai")));
+
+        var item = Between(section, "### 1. Báo cáo", "### 2. Ngân sách");
+        Assert.Equal(["Dòng một", "Dòng hai"], item.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
+    [Fact(DisplayName = "Notes.Discussion/UTC003: a marked line leaves the item's discussion for section III")]
+    [Trait("UTC", "Notes.Discussion/UTC003")]
+    [Trait("Trait", "UTC")]
+    public void NotesDiscussion_OnlyMarkedLine_LeavesTheItemEmpty()
+    {
+        var text = BuildWithNotes(new MinutesNote(ReportItem, "Kết luận: Duyệt"));
+
+        var item = Between(SectionTwo(text), "### 1. Báo cáo", "### 2. Ngân sách");
+        Assert.DoesNotContain("Duyệt", item);
+        Assert.Contains("- Báo cáo: Duyệt", text);
+    }
+
+    [Fact(DisplayName = "Notes.Discussion/UTC004: a note on an unknown item shows nowhere")]
+    [Trait("UTC", "Notes.Discussion/UTC004")]
+    [Trait("Trait", "UTC")]
+    public void NotesDiscussion_UnknownItem_ReadsEmpty()
+    {
+        var text = BuildWithNotes(new MinutesNote(Guid.CreateVersion7(), "Ghi chú lạc"));
+
+        Assert.DoesNotContain("Ghi chú lạc", text);
+        Assert.Contains($"### 1. Báo cáo\n{MinutesTemplate.Blank}", text.Replace("\r\n", "\n"));
+    }
+
+    [Fact(DisplayName = "Notes.Discussion/UTC005: with no meeting-wide note section II starts at the first item")]
+    [Trait("UTC", "Notes.Discussion/UTC005")]
+    [Trait("Trait", "UTC")]
+    public void NotesDiscussion_NoMeetingWideNote_SectionStartsAtFirstItem()
+    {
+        var section = SectionTwo(BuildWithNotes(new MinutesNote(ReportItem, "Ý kiến riêng")));
+
+        Assert.StartsWith("### 1. Báo cáo", section.Trim());
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC001: meeting-wide note first, then items in agenda order")]
+    [Trait("UTC", "Notes.Read/UTC001")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_OutOfOrderNotes_AreSortedForTheTemplate()
+    {
+        var section = SectionTwo(BuildWithNotes(new MinutesNote(BudgetItem, "Chốt giá"), new MinutesNote(null, "Mở đầu")));
+
+        Assert.True(section.IndexOf("Mở đầu", StringComparison.Ordinal) < section.IndexOf("### 1. Báo cáo", StringComparison.Ordinal));
+        Assert.Contains("Chốt giá", Between(section + "\n#END", "### 2. Ngân sách", "#END"));
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC002: a Kết luận line becomes a conclusion prefixed with its item")]
+    [Trait("UTC", "Notes.Read/UTC002")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_ConclusionLine_GoesToSectionThree()
+    {
+        var text = BuildWithNotes(new MinutesNote(ReportItem, "Kết luận: Duyệt"));
+
+        Assert.Contains("- Báo cáo: Duyệt", Between(text, SummaryWriter.ChairHeading, SummaryWriter.TasksHeading));
+        Assert.DoesNotContain("Kết luận", Between(SectionTwo(text), "### 1. Báo cáo", "### 2. Ngân sách"));
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC003: a Nhiệm vụ line of the meeting-wide note has no item prefix")]
+    [Trait("UTC", "Notes.Read/UTC003")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_TaskLine_GoesUnderTasksWithoutPrefix()
+    {
+        var text = BuildWithNotes(new MinutesNote(null, "Nhiệm vụ: Gửi biên bản"));
+
+        var tasks = text[text.IndexOf(SummaryWriter.TasksHeading, StringComparison.Ordinal)..];
+        Assert.Contains("\n- Gửi biên bản", tasks);
+        Assert.DoesNotContain(": Gửi biên bản", tasks);
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC004: a mark with nothing after the colon stays a discussion line")]
+    [Trait("UTC", "Notes.Read/UTC004")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_EmptyConclusion_StaysInTheItem()
+    {
+        var text = BuildWithNotes(new MinutesNote(ReportItem, "Kết luận:"));
+
+        Assert.Contains("Kết luận:", Between(SectionTwo(text), "### 1. Báo cáo", "### 2. Ngân sách"));
+        Assert.Equal(MinutesTemplate.Blank, Between(text, SummaryWriter.ChairHeading, SummaryWriter.TasksHeading).Replace("###", "").Trim());
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC005: a note on an item no longer in the agenda is skipped")]
+    [Trait("UTC", "Notes.Read/UTC005")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_StrayItemNote_IsSkipped()
+    {
+        var text = BuildWithNotes(new MinutesNote(Guid.CreateVersion7(), "Kết luận: Không còn mục"), new MinutesNote(Guid.CreateVersion7(), "Dòng lạc"));
+
+        Assert.DoesNotContain("Không còn mục", text);
+        Assert.DoesNotContain("Dòng lạc", text);
+    }
+
+    [Fact(DisplayName = "Notes.Read/UTC006: heading and signature marks in a note line are stripped")]
+    [Trait("UTC", "Notes.Read/UTC006")]
+    [Trait("Trait", "UTC")]
+    public void NotesRead_HeadingAndSignatureMarks_AreStripped()
+    {
+        var text = BuildWithNotes(new MinutesNote(ReportItem, "## Tiêu đề\n@@ x | y")).Replace("\r\n", "\n");
+
+        Assert.Contains("\nTiêu đề\n", text);
+        Assert.Contains("\nx | y\n", text);
+        Assert.DoesNotContain("## Tiêu đề", text);
+        Assert.DoesNotContain("@@ x", text);
+    }
+
     /// <summary>Captures what the service logs, so a test can assert the log line of its UTC.</summary>
     private sealed class FakeRound1Logger<T> : ILogger<T>
     {

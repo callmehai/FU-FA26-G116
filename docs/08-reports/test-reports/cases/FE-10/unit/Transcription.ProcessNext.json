@@ -82,7 +82,10 @@
           "exception": "N/A",
           "log": "Error logged with the transcript id; staged changes discarded.",
           "type": "Abnormal",
-          "note": "UC-45c · Pending: needs the live speech worker plus a real store failure while writing the result"
+          "note": "UC-45c · The failed write is a store that throws on save; DiscardChanges is observed to run once and what it staged is put back, as the real context does.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC006",
@@ -94,7 +97,10 @@
           "exception": "The storage failure is not caught here; the caller answers it.",
           "log": "No log line here; the failure reaches the caller as is.",
           "type": "Abnormal",
-          "note": "UC-45c"
+          "note": "UC-45c",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

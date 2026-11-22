@@ -112,5 +112,9 @@ public sealed class FakeVoiceprintProtector : IVoiceprintProtector
 
     public byte[] ProtectAudio(byte[] audio, Guid userId, Guid sampleId) => [.. audio, 0xA0];
 
-    public byte[] UnprotectAudio(byte[] ciphertext, Guid userId, Guid sampleId) => ciphertext[..^1];
+    /// <summary>The key changed: no kept recording decrypts any more.</summary>
+    public bool AudioUnreadable { get; set; }
+
+    public byte[] UnprotectAudio(byte[] ciphertext, Guid userId, Guid sampleId)
+        => AudioUnreadable ? throw new CryptographicException("key changed") : ciphertext[..^1];
 }

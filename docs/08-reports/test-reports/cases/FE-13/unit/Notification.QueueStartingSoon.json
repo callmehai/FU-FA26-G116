@@ -88,14 +88,17 @@
         {
           "id": "UTC006",
           "preconditions": [
-            "The meeting is Draft or Cancelled, or the participant is inactive."
+            "The meeting is Draft or Cancelled, or the participant is inactive: the recipient query leaves them out, so it returns no row."
           ],
-          "inputs": "Clock 03:00Z.",
-          "return": "0: only active participants of Published meetings are returned.",
+          "inputs": "Clock 03:00Z; the recipient query returns nothing.",
+          "return": "0; nothing is queued and nothing is saved.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-303"
+          "note": "BR-303 · The Draft/Cancelled/inactive filter is the query's own and runs against the database in NotificationRepositoryPostgresTests; this case covers what the service does with an empty answer.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Application"

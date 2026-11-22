@@ -40,8 +40,8 @@ public sealed class RoomUnitRound1Tests
         _calls.Access[_member] = new(_meeting, MeetingStatus.InProgress, MeetingMode.Online, MeetingRole.Member, "Thanh vien");
     }
 
-    private CallRoomService Room() => new(_calls, _unitOfWork, _liveKit,
-        Options.Create(new LiveKitOptions { TokenTtlMinutes = 10 }), _audit, _roomLog,
+    private CallRoomService Room(bool enforceRoster = true) => new(_calls, _unitOfWork, _liveKit,
+        Options.Create(new LiveKitOptions { TokenTtlMinutes = 10, EnforceRoster = enforceRoster }), _audit, _roomLog,
         timeProvider: new FixedClock(Now), speaking: _speaking);
 
     private string RoomName => CallRoomNames.ForMeeting(_meeting);
@@ -411,6 +411,27 @@ public sealed class RoomUnitRound1Tests
 
     // ---- CallRoomService.EnforceRoomAccessAsync ----
 
+    [Fact(DisplayName = "CallRoomService.EnforceRoomAccessAsync/UTC001: removed participant is taken out at once")]
+    [Trait("UTC", "CallRoomService.EnforceRoomAccessAsync/UTC001")]
+    [Trait("Trait", "UTC")]
+    public async Task EnforceRoomAccess_ActiveSession_RemovesWhoLostAccess()
+    {
+        var outsider = Guid.CreateVersion7();
+        _calls.Sessions.Add(new(Guid.CreateVersion7(), _meeting, MeetingStatus.InProgress, MeetingMode.Online,
+            new HashSet<CallMember> { CallMember.User(_chair), CallMember.User(outsider) }));
+        _liveKit.Rooms[RoomName] =
+        [
+            new RoomParticipant(_chair.ToString("D"), "Chu tri", Now, []),
+            new RoomParticipant(outsider.ToString("D"), "Bi go", Now, []),
+        ];
+
+        await Room().EnforceRoomAccessAsync(_meeting);
+
+        Assert.Contains(_liveKit.Calls, c => c == $"remove:{outsider:D}");
+        Assert.DoesNotContain(_liveKit.Calls, c => c == $"remove:{_chair:D}");
+        Assert.Contains(_roomLog.Messages, m => m.Contains(outsider.ToString("D")) && m.Contains("no longer allowed in"));
+    }
+
     [Fact(DisplayName = "CallRoomService.EnforceRoomAccessAsync/UTC002: no session calls nothing")]
     [Trait("UTC", "CallRoomService.EnforceRoomAccessAsync/UTC002")]
     [Trait("Trait", "UTC")]
@@ -533,6 +554,79 @@ public sealed class RoomUnitRound1Tests
     }
 
     // ---- CallRoomService.ReconcileAsync ----
+
+    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC001: ended sitting closes the room and open hands")]
+    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC001")]
+    [Trait("Trait", "UTC")]
+    public async Task Reconcile_SittingEnded_DeletesRoomEndsSessionClosesHands()
+    {
+        var session = Guid.CreateVersion7();
+        _calls.Sessions.Add(new(session, _meeting, MeetingStatus.Ended, MeetingMode.Online, new HashSet<CallMember>()));
+        _calls.ClosedHands = 2;
+        _liveKit.Rooms[RoomName] = [];
+
+        await Room().ReconcileAsync();
+
+        Assert.Contains(_liveKit.Calls, c => c == $"delete:{RoomName}");
+        Assert.Contains(_calls.Calls, c => c == "end-session");
+        var left = Assert.Single(_speaking.Published);
+        Assert.Equal(_meeting, left.Change.MeetingId);
+        Assert.Equal("Left", left.Change.ChangeType);
+    }
+
+    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC002: person without access is removed, allowed keep their visits")]
+    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC002")]
+    [Trait("Trait", "UTC")]
+    public async Task Reconcile_PersonNoLongerAllowed_RemovedOthersUntouched()
+    {
+        var outsider = Guid.CreateVersion7();
+        _calls.Sessions.Add(new(Guid.CreateVersion7(), _meeting, MeetingStatus.InProgress, MeetingMode.Online,
+            new HashSet<CallMember> { CallMember.User(_chair) }));
+        _liveKit.Rooms[RoomName] =
+        [
+            new RoomParticipant(_chair.ToString("D"), "Chu tri", Now, []),
+            new RoomParticipant(outsider.ToString("D"), "Nguoi la", Now, []),
+        ];
+
+        await Room().ReconcileAsync();
+
+        Assert.Contains(_liveKit.Calls, c => c == $"remove:{outsider:D}");
+        Assert.DoesNotContain(_liveKit.Calls, c => c == $"remove:{_chair:D}");
+        Assert.DoesNotContain(_calls.Calls, c => c is "leave" or "join" or "end-session");
+        Assert.Contains(_roomLog.Messages, m => m.Contains("Removing") && m.Contains(RoomName) && m.Contains("no longer allowed in"));
+    }
+
+    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC003: lost joins create one session from the earliest join")]
+    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC003")]
+    [Trait("Trait", "UTC")]
+    public async Task Reconcile_NoSessionButAllowedMembers_CreatesSessionAndRecordsVisits()
+    {
+        _liveKit.Rooms[RoomName] =
+        [
+            new RoomParticipant(_member.ToString("D"), "Thanh vien", Now.AddMinutes(-1), []),
+            new RoomParticipant(_chair.ToString("D"), "Chu tri", Now.AddMinutes(-5), []),
+        ];
+
+        await Room().ReconcileAsync();
+
+        Assert.Equal(1, _calls.Calls.Count(c => c == "ensure-session"));
+        Assert.Equal(Now.AddMinutes(-5), _calls.ActiveSession!.StartedAt);
+        Assert.Equal(2, _calls.Calls.Count(c => c == "join"));
+        Assert.DoesNotContain(_liveKit.Calls, c => c.StartsWith("delete:") || c.StartsWith("remove:"));
+    }
+
+    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC005: roster enforcement off keeps the synthetic room")]
+    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC005")]
+    [Trait("Trait", "UTC")]
+    public async Task Reconcile_EnforcementOff_KeepsSyntheticRoom()
+    {
+        _liveKit.Rooms[RoomName] = [new RoomParticipant("load-test-1", "Synthetic", Now, [])];
+
+        await Room(enforceRoster: false).ReconcileAsync();
+
+        Assert.DoesNotContain(_liveKit.Calls, c => c.StartsWith("delete:") || c.StartsWith("remove:"));
+        Assert.DoesNotContain(_calls.Calls, c => c is "ensure-session" or "join");
+    }
 
     [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC004: orphan room is deleted")]
     [Trait("UTC", "CallRoomService.ReconcileAsync/UTC004")]
