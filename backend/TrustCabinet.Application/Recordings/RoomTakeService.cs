@@ -8,6 +8,7 @@ using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Application.Recordings;
 
@@ -350,7 +351,11 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             }
             // A line running on past the take's start ends where the take began, or later by what is left after it.
             else if (segment.EndMs > start)
+            {
                 segment.EndMs = segment.EndMs > end ? segment.EndMs - gone.DurationMs : start;
+                // Its words said in the erased take now start where it ends, not after it.
+                segment.WordStartsMs = WordTimings.Within(segment.WordStartsMs, segment.StartMs, segment.EndMs);
+            }
         }
         var spoke = transcript.Segments.GroupBy(s => s.SpeakerLabel).ToDictionary(g => g.Key, g => g.Sum(s => s.EndMs - s.StartMs));
         foreach (var speaker in transcript.Speakers.ToList())

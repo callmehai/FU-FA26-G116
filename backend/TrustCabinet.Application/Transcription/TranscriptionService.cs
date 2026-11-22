@@ -56,7 +56,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                     [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                         s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName,
-                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null),
+                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null, s.StartMs, s.EndMs),
                         WordScores.ForLine(s.Text, s.WordConfidence, s.EditedAt is not null)))],
                     [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
@@ -509,7 +509,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     {
                         TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
                         Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
-                        WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(s.Text, s.WordStartsMs),
+                        WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Within(WordTimings.Of(s.Text, s.WordStartsMs), startMs, endMs),
                         WordConfidence = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordScores.Of(s.Text, s.WordConfidence),
                         SpeakerLabel = s.Speaker is null ? "" : labels[s.Speaker], CreatedAt = now, UpdatedAt = now,
                     };
