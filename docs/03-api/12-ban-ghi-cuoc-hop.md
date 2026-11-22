@@ -166,6 +166,14 @@ Không phải Thư ký: `403 MSG295`. Bản ghi không có lượt đó, không 
 Gửi khi lượt được mở, lưu hoặc xoá, khi tệp được lưu hoặc xoá, và khi chuyển chữ xong. Người nhận đọc lại
 `GET …/recordings`.
 
+### Sự kiện hub `speechChanged` với `changeType: "TranscriptChanged"`
+
+Gửi sau khi Thư ký gán tên cho một giọng (`PUT /api/recordings/{recordingId}/speakers/{label}`), sửa chữ một câu
+(`PUT /api/transcript-segments/{segmentId}`) hoặc đổi người nói của một câu (`PUT …/speaker`), khi thay đổi đã lưu.
+Chuyển một câu về đúng giọng nó đang có thì không ghi gì và không gửi. Người nhận đang mở bản gỡ băng đọc lại
+`GET /api/recordings/{recordingId}/transcript`, tại chỗ, không tải lại cả tab (buổi thử 21/11/2026: tên vừa gán không
+hiện trên máy người khác khi chưa tải lại trang). Sự kiện không mang dữ liệu, không nói bản ghi nào.
+
 ### `GET /api/recordings/{recordingId}/playback`
 
 Thẻ `<audio>` không gửi được bearer token, nên FE xin một **link ký sẵn** rồi gán vào `src`:

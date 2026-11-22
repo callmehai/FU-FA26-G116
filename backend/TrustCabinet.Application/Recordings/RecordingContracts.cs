@@ -211,6 +211,9 @@ public static class RecordingRules
     /// <summary>The hub's change type for "the meeting's recordings changed": a take opened or saved, a file kept or erased, a transcript done.</summary>
     public const string RecordingsChanged = "RecordingsChanged";
 
+    /// <summary>The hub's change type for "a recording's transcript was corrected": a voice named, a line's words or speaker changed.</summary>
+    public const string TranscriptChanged = "TranscriptChanged";
+
     /// <summary>Containers browsers record to and phones/recorders save as. The worker decodes them all with ffmpeg.</summary>
     public static readonly IReadOnlyDictionary<string, string> Extensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {

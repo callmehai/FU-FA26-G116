@@ -152,9 +152,11 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
 
     public async Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
-            return await ReadAsync(async token =>
+            outcome = await ReadAsync(async token =>
             {
                 var segment = await transcripts.FindSegmentAsync(segmentId, token);
                 if (segment is null) return new TranscriptOutcome(TranscriptFailure.NotFound);
@@ -178,6 +180,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 segment.EditedAt = now;
                 segment.UpdatedAt = now;
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = recording.MeetingId;
                 return new(Data: new { segmentId, text = trimmed, editedAt = now });
             }, ct);
         }
@@ -186,16 +189,20 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             logger.LogError(ex.InnerException ?? ex, "Failed to edit transcript segment {SegmentId}", segmentId);
             return new(TranscriptFailure.SaveFailed);
         }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
     }
 
     public async Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid? guestId,
         Guid actorId, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
             // Under the recording's lock, as a line moved to a person: naming a voice and giving that person a new voice
             // at the same moment would otherwise leave two voices with one name.
-            return await unitOfWork.ExecuteAsync(async token =>
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
                 if (recording is null || meeting is null) return new TranscriptOutcome(failure);
@@ -218,6 +225,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     actorId, new { recordingId, label, userId, guestId, suggestedUserId = speaker.SuggestedUserId,
                         acceptedSuggestion = userId is not null && userId == speaker.SuggestedUserId }, token);
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = meeting.Id;
                 return new(Data: new TranscriptSpeakerView(speaker.Label, speaker.SpeechMs, speaker.SuggestedUserId,
                     speaker.SuggestedUser?.FullName, speaker.SuggestionScore, userId, person?.User.FullName ?? guest?.FullName,
                     AssignedGuestId: guestId));
@@ -228,18 +236,22 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             logger.LogError(ex.InnerException ?? ex, "Failed to name speaker {Label} of {RecordingId}", label, recordingId);
             return new(TranscriptFailure.SaveFailed);
         }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
     }
 
     public async Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, string? label,
         Guid actorId, CancellationToken ct = default)
     {
+        Guid? meetingId = null;
+        TranscriptOutcome outcome;
         try
         {
             // Only the recording's id before the lock: a line read now and tracked would be handed back unchanged by the
             // read after it, so a move that waited on another one of the same line would undo the wrong voice's time.
             if (await ReadAsync(token => transcripts.FindSegmentRecordingAsync(segmentId, token), ct) is not { } recordingId)
                 return new(TranscriptFailure.NotFound);
-            return await unitOfWork.ExecuteAsync(async token =>
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 // The recording's row is locked: moves on one recording run one after another, each reading what the one
                 // before it wrote, and two of them never take the same free label.
@@ -308,6 +320,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     actorId, new { recording.MeetingId, segmentId, segment.Position, previousLabel = from, speakerLabel = target,
                         userId, guestId, newVoice = created is not null }, token);
                 await unitOfWork.SaveChangesAsync(token);
+                meetingId = meeting.Id;
                 return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = created is not null });
             }, TransactionMode.ReadCommitted, ct);
         }
@@ -315,6 +328,29 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             logger.LogError(ex.InnerException ?? ex, "Failed to move transcript segment {SegmentId} to another voice", segmentId);
             return new(TranscriptFailure.SaveFailed);
+        }
+        await AnnounceCorrectionAsync(outcome, meetingId, ct);
+        return outcome;
+    }
+
+    /// <summary>
+    /// Tells the meeting a transcript was corrected, once it is committed, so every open Bản ghi tab re-reads it (team
+    /// test 21/11/2026: a name the Secretary gave a voice reached nobody else before a reload). Only a change that wrote
+    /// something: a failure, or a move that changed nothing, leaves <paramref name="meetingId"/> unset.
+    /// </summary>
+    private async Task AnnounceCorrectionAsync(TranscriptOutcome outcome, Guid? meetingId, CancellationToken ct)
+    {
+        if (outcome.Failure != TranscriptFailure.None || meetingId is not { } id) return;
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await publisher.PublishAsync(new(Guid.CreateVersion7(), id, RecordingRules.TranscriptChanged, clock.GetUtcNow()),
+                timeout.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Could not publish the corrected transcript of {MeetingId}", id);
         }
     }
 

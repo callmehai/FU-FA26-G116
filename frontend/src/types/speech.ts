@@ -79,7 +79,10 @@ export interface SpeechMessage {
 export interface SpeechChangedEvent {
   eventId: string
   meetingId: string
-  /** `RecordingsChanged`: a room-mic take opened or was saved, a file was kept or erased, a transcript finished. */
-  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted' | 'RecordingsChanged'
+  /**
+   * `RecordingsChanged`: a room-mic take opened or was saved, a file was kept or erased, a transcript finished.
+   * `TranscriptChanged`: the Secretary named a voice of a recording's transcript, or corrected or moved one of its lines.
+   */
+  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted' | 'RecordingsChanged' | 'TranscriptChanged'
   occurredAt: string
 }
