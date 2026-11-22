@@ -34,6 +34,13 @@ public static class VoiceIdEndpoints
     private const string Msg475NoProxyConsent = "MSG475";
     private const string Msg476ProxySampleLimit = "MSG476";
     private const string Msg477NotCollectable = "MSG477";
+    private const string Msg483NotConfirmed = "MSG483";
+
+    /// <summary>
+    /// The form field a proxy upload carries when the collector confirms the person agreed to this take (ADR-0073). Any
+    /// value but <c>true</c> is no confirmation.
+    /// </summary>
+    internal const string PersonAgreedField = "personAgreed";
 
     internal sealed record ConsentBody(string? NoticeVersion);
 
@@ -109,7 +116,8 @@ public static class VoiceIdEndpoints
         var (audio, type, refused) = await ReadSampleAsync(context, ct);
         if (refused is not null) return refused;
         await using (audio)
-            return Map(await service.AddForPersonAsync(CapabilityGate.GatedUserId(context.User), userId, audio!, type!, ct),
+            return Map(await service.AddForPersonAsync(CapabilityGate.GatedUserId(context.User), userId, audio!, type!,
+                    PersonAgreed(context), ct),
                 Msg473ProxySampleAdded, "Đã lưu giọng mẫu thu hộ.", created: true, collection: true);
     }
 
@@ -119,9 +127,14 @@ public static class VoiceIdEndpoints
         var (audio, type, refused) = await ReadSampleAsync(context, ct);
         if (refused is not null) return refused;
         await using (audio)
-            return Map(await service.AddAsync(meetingId, CapabilityGate.GatedUserId(context.User), userId, audio!, type!, ct),
+            return Map(await service.AddAsync(meetingId, CapabilityGate.GatedUserId(context.User), userId, audio!, type!,
+                    PersonAgreed(context), ct),
                 Msg473ProxySampleAdded, "Đã lưu giọng mẫu thu hộ.", created: true, collection: true);
     }
+
+    /// <summary>The form was already read by <see cref="ReadSampleAsync"/>; only an explicit <c>true</c> counts.</summary>
+    private static bool PersonAgreed(HttpContext context)
+        => bool.TryParse(context.Request.Form[PersonAgreedField].ToString(), out var agreed) && agreed;
 
     /// <summary>One short recording in a multipart form, read into memory: a sample is at most a minute of speech.</summary>
     private static async Task<IResult> AddSampleAsync(HttpContext context, IVoiceIdService service, CancellationToken ct)
@@ -180,6 +193,8 @@ public static class VoiceIdEndpoints
                     "Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi."),
                 VoiceFailure.LimitReached when collection => (409, Msg476ProxySampleLimit,
                     $"Đã đủ giọng mẫu thu hộ cho người này: mỗi Thư ký thu tối đa {VoiceIdRules.MaxProxySamplesPerCollector} mẫu, tổng {VoiceIdRules.MaxProxySamples} mẫu. Xoá bớt rồi thu lại."),
+                VoiceFailure.NotConfirmed => (400, Msg483NotConfirmed,
+                    "Hãy hỏi ý người được thu và xác nhận họ đồng ý cho lần thu này trước khi lưu giọng mẫu."),
                 VoiceFailure.NotCollectable => (409, Msg477NotCollectable,
                     "Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp."),
                 VoiceFailure.NoConsent => (409, Msg308NoConsent, "Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu."),
@@ -189,7 +204,10 @@ public static class VoiceIdEndpoints
                 VoiceFailure.ReadFailed => (500, Msg314ReadFailed, "Không tải được thông tin giọng nói."),
                 _ => (503, Msg315SaveFailed, "Không lưu được thay đổi. Vui lòng thử lại."),
             };
-            return Results.Json(new { code, message, errors = result.Errors }, statusCode: status);
+            var errors = result.Failure == VoiceFailure.NotConfirmed
+                ? new Dictionary<string, string[]> { [PersonAgreedField] = [message] }
+                : result.Errors;
+            return Results.Json(new { code, message, errors }, statusCode: status);
         }
         if (successCode is null) return Results.Ok(result.Data);
         var body = new { code = successCode, message = successMessage, data = result.Data };

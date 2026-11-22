@@ -36,16 +36,17 @@ public sealed class VoiceCollectionServiceTests
     private VoiceCollectionService PersonService() => new(_repository, _notifications, _unitOfWork, _embedder,
         new FakeVoiceprintProtector(), _audit, new FixedClock(Now), _accounts, NullLogger<VoiceCollectionService>.Instance);
 
-    private Task<VoiceOutcome> CollectForPerson()
-        => PersonService().AddForPersonAsync(_collector, _meeting.Member, new MemoryStream([1, 2, 3]), "audio/webm");
+    private Task<VoiceOutcome> CollectForPerson(bool personAgreed = true)
+        => PersonService().AddForPersonAsync(_collector, _meeting.Member, new MemoryStream([1, 2, 3]), "audio/webm", personAgreed);
 
     private VoiceCollectionService Service() => new(_repository, _notifications, _unitOfWork, _embedder,
         new FakeVoiceprintProtector(), _audit, new FixedClock(Now), new NoCallerAccounts(), NullLogger<VoiceCollectionService>.Instance);
 
-    private Task<VoiceOutcome> Collect(Guid? actor = null)
-        => Service().AddAsync(_meeting.Meeting.Id, actor ?? _meeting.Secretary, _meeting.Member, new MemoryStream([1, 2, 3]), "audio/webm");
+    private Task<VoiceOutcome> Collect(Guid? actor = null, bool personAgreed = true)
+        => Service().AddAsync(_meeting.Meeting.Id, actor ?? _meeting.Secretary, _meeting.Member, new MemoryStream([1, 2, 3]),
+            "audio/webm", personAgreed);
 
-    private VoiceConsent Consented(string notice = VoiceIdRules.CollectionNoticeVersion)
+    private VoiceConsent Consented(string notice = VoiceIdRules.ProxyNoticeVersion)
     {
         var consent = new VoiceConsent
         {
@@ -162,7 +163,7 @@ public sealed class VoiceCollectionServiceTests
     [Fact]
     public async Task ADR_0071_a_sample_taken_with_no_meeting_is_kept_under_the_consent_lock_and_its_owner_is_told()
     {
-        Consented(VoiceIdRules.AnytimeCollectionNoticeVersion);
+        Consented(VoiceIdRules.ProxyNoticeVersion);
 
         var outcome = await CollectForPerson();
 
@@ -178,19 +179,61 @@ public sealed class VoiceCollectionServiceTests
     }
 
     [Fact]
-    public async Task ADR_0071_a_consent_to_notice_1_3_covers_the_meetings_Secretary_but_not_recording_with_no_meeting()
+    public async Task ADR_0073_a_consent_to_notice_1_3_lets_nobody_record_in_a_meeting_or_outside_one()
     {
+        // Lộc 21/11: the users screen said "has not agreed to the new terms" while the meeting screen recorded the same
+        // person. One rule now: no proxy sample under a notice that does not name recording outside a meeting.
         Consented(VoiceIdRules.CollectionNoticeVersion);
 
+        Assert.Equal(VoiceFailure.NoConsent, (await Collect()).Failure);
         Assert.Equal(VoiceFailure.NoConsent, (await CollectForPerson()).Failure);
         Assert.Equal(0, _embedder.Calls);
-        Assert.Equal(VoiceFailure.None, (await Collect()).Failure);
+        Assert.Empty(_repository.Samples);
+        var view = Assert.IsType<VoiceCollectionView>((await Service().ListAsync(_meeting.Meeting.Id, _meeting.Secretary)).Data);
+        Assert.False(Assert.Single(view.People, p => p.UserId == _meeting.Member).Consented);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ADR_0073_a_take_the_person_did_not_agree_to_is_refused_before_any_audio_reaches_the_worker(bool inMeeting)
+    {
+        Consented();
+
+        var outcome = inMeeting ? await Collect(personAgreed: false) : await CollectForPerson(personAgreed: false);
+
+        Assert.Equal(VoiceFailure.NotConfirmed, outcome.Failure);
+        Assert.Equal(0, _embedder.Calls);
+        Assert.Empty(_repository.Samples);
+        Assert.Empty(_notifications.Added);
+        Assert.Empty(_audit.Actions);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ADR_0073_the_confirmation_is_audited_and_the_person_is_told_how_to_undo_it(bool inMeeting)
+    {
+        Consented();
+
+        Assert.Equal(VoiceFailure.None, (inMeeting ? await Collect() : await CollectForPerson()).Failure);
+
+        Assert.Contains("personAgreed = True", Assert.Single(_audit.Details)?.ToString());
+        Assert.Contains("Nếu bạn không đồng ý, hãy xoá mẫu", Assert.Single(_notifications.Added).Body);
+    }
+
+    [Fact]
+    public async Task ADR_0073_without_a_standing_consent_the_answer_is_no_consent_even_when_the_take_was_confirmed()
+    {
+        Assert.Equal(VoiceFailure.NoConsent, (await Collect()).Failure);
+        Assert.Equal(VoiceFailure.NoConsent, (await CollectForPerson()).Failure);
+        Assert.Equal(0, _embedder.Calls);
     }
 
     [Fact]
     public async Task ADR_0071_a_deactivated_or_unknown_person_is_not_found()
     {
-        Consented(VoiceIdRules.AnytimeCollectionNoticeVersion);
+        Consented(VoiceIdRules.ProxyNoticeVersion);
         _accounts.Users.Single(u => u.Id == _meeting.Member).IsActive = false;
 
         Assert.Equal(VoiceFailure.NotFound, (await CollectForPerson()).Failure);
@@ -201,7 +244,7 @@ public sealed class VoiceCollectionServiceTests
     [Fact]
     public async Task ADR_0071_the_person_view_lists_every_proxy_sample_and_hearing_one_is_audited()
     {
-        var sample = Collected(Consented(VoiceIdRules.AnytimeCollectionNoticeVersion));
+        var sample = Collected(Consented(VoiceIdRules.ProxyNoticeVersion));
 
         var view = Assert.IsType<PersonVoiceCollectionView>((await PersonService().GetPersonAsync(_collector, _meeting.Member)).Data);
         Assert.True(view.Consented);

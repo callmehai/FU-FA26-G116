@@ -31,11 +31,15 @@ internal static class VoiceCollection
         return json;
     }
 
-    internal static MultipartFormDataContent Sample(string type = "audio/wav")
+    /// <param name="personAgreed">The collector's confirmation that the person agreed to this take (ADR-0073); null sends
+    /// no field at all. One's own sample ignores it.</param>
+    internal static MultipartFormDataContent Sample(string type = "audio/wav", string? personAgreed = "true")
     {
         var file = new ByteArrayContent(Encoding.ASCII.GetBytes(Recorded));
         file.Headers.ContentType = MediaTypeHeaderValue.Parse(type);
-        return new MultipartFormDataContent { { file, "file", "giong-mau.wav" } };
+        var form = new MultipartFormDataContent { { file, "file", "giong-mau.wav" } };
+        if (personAgreed is not null) form.Add(new StringContent(personAgreed), "personAgreed");
+        return form;
     }
 
     /// <summary>A signed-in client whose token carries these capabilities; the gate still re-reads them from the database.</summary>
@@ -76,13 +80,13 @@ internal static class VoiceCollection
         await AssertCode(await Agree(client), 200, "MSG305");
     }
 
-    /// <summary>A consent given before notice 1.3, which did not yet name Secretaries recording on the room's mic.</summary>
-    internal static async Task AgreeToOldNotice(RecordingFixture fixture, Guid user)
+    /// <summary>A consent given before notice 1.4 (by default before 1.3, which did not yet name Secretaries at all).</summary>
+    internal static async Task AgreeToOldNotice(RecordingFixture fixture, Guid user, string version = "1.2")
     {
         await using var db = fixture.Db();
         db.VoiceConsents.Add(new()
         {
-            UserId = user, GrantedAt = fixture.Clock.Now, NoticeVersion = "1.2", Purpose = "Nhận ra người phát biểu.",
+            UserId = user, GrantedAt = fixture.Clock.Now, NoticeVersion = version, Purpose = "Nhận ra người phát biểu.",
             CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
         });
         await db.SaveChangesAsync();
@@ -121,6 +125,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     private const string Msg475NoProxyConsent = "MSG475";
     private const string Msg476Limit = "MSG476";
     private const string Msg477NotCollectable = "MSG477";
+    private const string Msg483NotConfirmed = "MSG483";
 
     private async Task<(RecordingFixture.Scenario S, HttpClient Secretary)> Arrange(MeetingStatus status = MeetingStatus.InProgress,
         MeetingMode mode = MeetingMode.Hybrid)
@@ -331,6 +336,63 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         // Deleted, the notice opens nothing.
         await VoiceCollection.AssertCode(await secretary.DeleteAsync($"{VoiceCollection.Url(s.MeetingId)}/samples/{id}"), 200, Msg474Deleted);
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/notifications/{notice.Id}/target")).StatusCode);
+    }
+
+    [Fact]
+    public async Task ADR_0073_a_consent_to_notice_1_3_no_longer_lets_the_Secretary_record_from_the_meeting_screen()
+    {
+        // The bypass Lộc reported on 21/11: the users screen refused this person ("has not agreed to the new terms")
+        // while the meeting screen offered "Thu" and stored the sample.
+        var (s, secretary) = await Arrange();
+        await VoiceCollection.AgreeToOldNotice(fixture, s.Member, VoiceIdRules.CollectionNoticeVersion);
+        var url = VoiceCollection.Url(s.MeetingId);
+        var embedded = fixture.Speech.EmbedCalls;
+
+        var list = await secretary.GetFromJsonAsync<JsonElement>(url);
+        var member = list.GetProperty("people").EnumerateArray().Single(p => p.GetProperty("userId").GetGuid() == s.Member);
+        Assert.False(member.GetProperty("consented").GetBoolean());
+        await VoiceCollection.AssertCode(await secretary.PostAsync($"{url}/{s.Member}/samples", VoiceCollection.Sample()), 409,
+            Msg475NoProxyConsent);
+
+        Assert.Equal(embedded, fixture.Speech.EmbedCalls);
+        await using var db = fixture.Db();
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    [InlineData("yes")]
+    public async Task ADR_0073_a_take_without_the_persons_agreement_to_it_is_refused_before_the_worker_hears_it(string? personAgreed)
+    {
+        var (s, secretary) = await Arrange();
+        await VoiceCollection.Agree(fixture, s.Member);
+        var embedded = fixture.Speech.EmbedCalls;
+
+        var refused = await VoiceCollection.AssertCode(await secretary.PostAsync(
+            $"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample(personAgreed: personAgreed)), 400,
+            Msg483NotConfirmed);
+
+        Assert.True(refused.GetProperty("errors").TryGetProperty("personAgreed", out _));
+        Assert.Equal(embedded, fixture.Speech.EmbedCalls);
+        await using var db = fixture.Db();
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
+        Assert.False(await db.Notifications.AnyAsync(n => n.UserId == s.Member && n.Type == NotificationType.VoiceSampleCollected));
+    }
+
+    [Fact]
+    public async Task ADR_0073_a_confirmed_take_is_kept_with_the_confirmation_in_the_audit_and_the_person_told_how_to_undo_it()
+    {
+        var (s, secretary) = await Arrange();
+        await VoiceCollection.Agree(fixture, s.Member);
+
+        var id = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+
+        await using var db = fixture.Db();
+        var audit = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceSampleAdded && a.ObjectId == id);
+        Assert.Contains("\"personAgreed\":true", audit.Details.Replace(" ", ""));
+        var notice = await db.Notifications.SingleAsync(n => n.UserId == s.Member && n.TargetId == id);
+        Assert.Contains("Nếu bạn không đồng ý, hãy xoá mẫu", notice.Body);
     }
 
     [Fact]

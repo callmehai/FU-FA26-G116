@@ -156,7 +156,10 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
           title={`Thu giọng mẫu: ${recordFor.fullName}`}
           hint="Dùng micro phòng họp. Mời người này ngồi chỗ quen thuộc, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:"
           passage={PASSAGES[recordFor.sampleCount % PASSAGES.length]}
-          upload={(audio, fileName) => collectVoiceSample(meetingId, recordFor.userId, audio, fileName)}
+          askConsentOf={recordFor.fullName}
+          upload={(audio, fileName, personAgreed) =>
+            collectVoiceSample(meetingId, recordFor.userId, audio, fileName, personAgreed)
+          }
           onClose={() => setRecordFor(null)}
           onSaved={async (message) => {
             setRecordFor(null)

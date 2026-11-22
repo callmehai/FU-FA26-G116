@@ -4547,6 +4547,8 @@ audio.recording-player { height: 40px; }
 .consent-file + .alert { margin: 0 0 14px; }
 .consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 8px; font-size: 14px; line-height: 1.45; cursor: pointer; }
 .consent-check input { margin-top: 2px; flex: none; }
+/* ADR-0073: the collector ticks that the person agreed to this take, first thing in the recording dialog. */
+.voice-ask { margin-top: 0; }
 @media (max-width: 560px) {
   .recording-row { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; }
   .recording-icon { display: none; }

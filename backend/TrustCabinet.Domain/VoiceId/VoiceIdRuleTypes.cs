@@ -22,16 +22,20 @@ public static class VoiceIdRules
     /// <summary>The first notice under which the machine names a sure match by itself.</summary>
     public const string AutoAssignNoticeVersion = "1.2";
 
-    /// <summary>The first notice under which a meeting's Secretary may record the person's samples (ADR-0060).</summary>
+    /// <summary>The first notice that named a meeting's Secretary recording the person's samples (ADR-0060). History only:
+    /// since 2026-11-22 no proxy sample is taken under it, see <see cref="ProxyNoticeVersion"/>.</summary>
     public const string CollectionNoticeVersion = "1.3";
 
-    public static bool AllowsCollection(string noticeVersion) => string.CompareOrdinal(noticeVersion, CollectionNoticeVersion) >= 0;
+    /// <summary>
+    /// The first notice under which anyone may record the person's samples for them (ADR-0071), in a meeting or not. One
+    /// rule for every proxy sample (2026-11-22, Lộc's report of 21/11): before it a person who agreed to 1.3 was refused
+    /// on the users screen ("has not agreed to the new terms") yet recorded from the meeting screen, which read as a way
+    /// round the consent step. They renew once, on their own "Giọng nói của tôi" page, like every notice bump before.
+    /// </summary>
+    public const string ProxyNoticeVersion = "1.4";
 
-    /// <summary>The first notice under which a holder of "Thu giọng mẫu hộ" may record the person outside any meeting (ADR-0071).</summary>
-    public const string AnytimeCollectionNoticeVersion = "1.4";
-
-    public static bool AllowsAnytimeCollection(string noticeVersion)
-        => string.CompareOrdinal(noticeVersion, AnytimeCollectionNoticeVersion) >= 0;
+    public static bool AllowsProxyCollection(string noticeVersion)
+        => string.CompareOrdinal(noticeVersion, ProxyNoticeVersion) >= 0;
 
     public const string Purpose =
         "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
