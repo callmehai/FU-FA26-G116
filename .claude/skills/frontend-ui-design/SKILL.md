@@ -163,7 +163,7 @@ see **minimize-text**.
 ## 8. Before you commit
 
 ```bash
-cd frontend && npm run lint && npm run build
+cd frontend && npm run lint && npm test && npm run build
 ```
 
 Format only the files you wrote. The repo has no Prettier config; this matches its style:

@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { routes } from '../../lib/routes'
 import { DocumentOverlayProvider } from '../documents/DocumentOverlay'
 import { NotificationsProvider } from '../notifications/NotificationsProvider'
+import { RoomMicProvider } from '../recordings/RoomMicProvider'
 import { UploadsProvider } from '../uploads/UploadsProvider'
 import { useAuth } from './useAuth'
 
@@ -27,13 +28,16 @@ export function RequireAuth() {
 
   // One notification connection for everything a signed-in user sees. Keyed by account, so another
   // account signing in from a second tab never inherits the previous one's list. The upload queue lives
-  // here too, so a page change never stops a file on its way.
+  // here too, so a page change never stops a file on its way, and so does the Secretary's room mic, so going
+  // between a meeting's page and its call room never stops it (ADR-0072).
   return (
     <NotificationsProvider key={user?.id}>
       <UploadsProvider>
         {/* A document opens over whichever page it was picked from, the call room included. */}
         <DocumentOverlayProvider>
-          <Outlet />
+          <RoomMicProvider>
+            <Outlet />
+          </RoomMicProvider>
         </DocumentOverlayProvider>
       </UploadsProvider>
     </NotificationsProvider>

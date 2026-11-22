@@ -167,10 +167,11 @@ Checks:
 dotnet build TrustCabinet.sln     # build the backend
 cd frontend && npm run build      # tsc -b + vite build, emits into the backend wwwroot
 cd frontend && npm run lint       # oxlint
+cd frontend && npm test           # node --test, frontend/tests/unit (logic that needs no browser)
 dotnet test TrustCabinet.sln      # xunit, tests/TrustCabinet.Web.Tests
 ```
 
-CI runs all four on every pull request, limited to what the PR touches — see
+CI runs all five on every pull request, limited to what the PR touches — see
 [.github/workflows/ci.yml](.github/workflows/ci.yml). A PR that only changes `frontend/` or `docs/`
 runs just the backend tests that read those files; one that only changes README or `deploy/` skips
 both jobs. A new file the backend build or a test reads from outside `backend/` and `tests/` needs

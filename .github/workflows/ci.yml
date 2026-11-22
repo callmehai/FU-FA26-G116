@@ -163,6 +163,9 @@ jobs:
 
       - run: npm run lint
 
+      # Test đơn vị cho phần logic không cần trình duyệt (tests/unit, node --test tự bỏ kiểu TypeScript).
+      - run: npm test
+
       # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
       - run: npm run build
 
