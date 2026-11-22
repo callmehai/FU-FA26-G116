@@ -323,8 +323,11 @@ cũ), nên FE hỏi lại trước; ghi nhật ký `transcript.rerun`.
 ### `GET /api/recordings/{recordingId}/transcript.txt`
 
 Chủ toạ hoặc Thư ký lưu bản gỡ băng đã xong thành tệp `.txt` (UTF-8): đầu tệp ghi tên cuộc họp, nguồn, giờ
-bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, giờ tính từ đầu
-bản ghi, tên là tên Thư ký đã gán hoặc *Người nói N*. Chưa xong: `409 MSG357`. Response `transcript` có
+bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, tên là tên Thư ký đã
+gán hoặc *Người nói N*. Giờ của bản ghi mic phòng là giờ thật (giờ Việt Nam) lúc câu được nói: giờ bắt đầu của lượt
+ghi chứa đoạn cộng với vị trí của đoạn trong lượt đó, như tệp câu micro riêng; trước 22/11/2026 là vị trí trong âm
+thanh ghép, lệch khỏi giờ thật thêm mỗi quãng nghỉ giữa hai lượt ghi. Tệp tải lên không biết giờ thật nên vẫn ghi vị
+trí tính từ đầu tệp. Chưa xong: `409 MSG357`. Response `transcript` có
 `canExport`.
 
 ### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
