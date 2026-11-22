@@ -4725,13 +4725,15 @@ audio.recording-player { height: 40px; }
 .tl-speakers { position: sticky; top: -20px; z-index: 2; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: var(--surface); }
 .tl-speakers-title { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--label-ink); font-size: 12px; font-weight: 600; }
 .tl-pill { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--surface-alt); color: var(--ink-soft); font-size: 11.5px; font-weight: 700; line-height: 20px; text-align: center; }
-.tl-speakers ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+/* Each speaker is the room record's row (.speaker-list, .speaker-row, under SCRUM-35 below), so both records read alike:
+   equal columns across the card, one under another in the side column. The filter ends the row where the room record
+   shows the speaking time. The filter is wider than a time, so the columns are too: a full name still fits one line. */
+.tl-speakers .speaker-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
 @container (min-width: 880px) {
-  .tl-body-split .tl-speakers ul { grid-template-columns: 1fr; }
+  .tl-body-split .tl-speakers .speaker-list { grid-template-columns: minmax(0, 1fr); }
 }
-.tl-speaker { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
+.speaker-row.tl-speaker { padding-right: 4px; }
 .tl-speaker.is-on { border-color: var(--brand-wash-line); background: var(--brand-wash); }
-.tl-speaker-name { max-width: 100%; overflow: hidden; font-size: 13.5px; font-weight: 600; line-height: 28px; text-overflow: ellipsis; white-space: nowrap; }
 .tl-filter { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--control-line); border-radius: var(--radius); background: var(--surface); color: var(--brand); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
 .tl-filter:hover { border-color: var(--brand); background: var(--brand-wash); }
 .tl-filter.is-on { border-color: var(--brand); background: var(--brand); color: var(--surface); }
@@ -4836,8 +4838,12 @@ audio.recording-player { height: 40px; }
   .tl-group { grid-template-columns: 24px minmax(0, 1fr); column-gap: 2px; }
   .tl-row > .tl-time { display: none; }
   .tl-time-inline { display: inline; }
-  .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
-  .tl-speaker { flex: none; max-width: 85%; }
+}
+/* On a phone, one line of equal rows that scrolls sideways, so the sticky speakers stay one row tall over the record.
+   A narrow column on a desktop keeps the grid: a mouse has no swipe to find the rows past the edge. */
+@media (max-width: 640px) {
+  .tl-speakers .speaker-list { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tl-speaker { flex: 0 0 min(240px, 85%); }
 }
 
 /* SCRUM-29 — the Secretary's room mic, floating over every tab of a running meeting (AI-eCabinet's FloatingMicBox).
@@ -4954,53 +4960,46 @@ body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized
   .room-recording-short { display: inline; }
 }
 
-/* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
-   take two lines on a desktop instead of six. */
-/* As AI-eCabinet's voice cards: one bordered card a voice, the name (its picker) on the left and the speaking time
-   pinned to the right of the same line. A name too long for the card wraps inside its own column (PO 03/11/2026: a
-   name is never cut), so the time never drops under it. */
-/* Each card as wide as its name and time, several to a line: a long name gets the width it needs instead of wrapping
-   in a narrow column, and only a name wider than the whole line wraps. Cards are not stretched to fill a line (team
-   test 21/11/2026: a lone card on the last line ran across the whole card, as wide as a field). */
-.speaker-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 0; padding: 0; list-style: none; }
-/* The voices and the lines, laid out as the per-mic record (.tl-body-split): beside them on a wide card, the cards
-   one under another in a 260px column; above them, side by side, when narrower. 800px here is the per-mic 880px of
+/* SCRUM-35 — voices of a recording and who they are, as AI-eCabinet's voice cards: one row a voice, its dot and name
+   (the picker) on the left and the speaking time at the right end, in one thin box. Rows sit in equal columns, so a
+   lone last row keeps the column's width instead of running across the card (Hải, 22/11/2026: cards as wide as their
+   name looked ragged). A name too long for its column wraps inside it (PO 03/11/2026: a name is never cut). */
+.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+/* The voices and the lines, laid out as the per-mic record (.tl-body-split): beside them on a wide card, the rows
+   one under another in a 260px column; above them, in columns, when narrower. 800px here is the per-mic 880px of
    card less the recording row's indent, so both records split at the same window width. */
 .transcript-body { display: flex; flex-direction: column; gap: 8px; }
 .transcript-speakers .tl-speakers-title { margin-bottom: 6px; }
 @container (min-width: 800px) {
   .transcript-body.is-split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: 12px; }
   .transcript-body.is-split .transcript-speakers { order: 2; max-height: 480px; overflow-y: auto; }
-  .transcript-body.is-split .speaker-list { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
-  .transcript-body.is-split .speaker-row { flex: none; min-width: 0; }
+  .transcript-body.is-split .speaker-list { grid-template-columns: minmax(0, 1fr); }
 }
 .speaker-row {
-  flex: 0 1 auto; min-width: 0; max-width: 100%;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 42px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-width: 0; min-height: 42px;
   padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
   font-size: 14px;
 }
-.speaker-who { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .speaker-row .select { min-width: 0; }
 .speaker-row .speaker-name { padding-left: 6px; }
-/* Borderless inside the card, as eCab's: the card is the box; an unnamed voice keeps its dashed outline. */
-.speaker-row .select-trigger { width: auto; max-width: 100%; }
-.speaker-row .select-trigger:not(.select-empty) { border-color: transparent; background: transparent; box-shadow: none; }
-.speaker-row .select-trigger:not(.select-empty):hover { background: var(--surface-alt); }
+/* Borderless inside the row, named or not: the row is the one box. An unnamed voice is told by its quieter text. */
+.speaker-row .select-trigger { width: auto; max-width: 100%; border-color: transparent; border-style: solid; background: transparent; box-shadow: none; }
+.speaker-row .select-trigger:hover { background: var(--surface-alt); }
 /* Borderless at rest, so focus (and an open menu) draws the one thin border every field shows. */
 .speaker-row .select-trigger:is(:focus-visible, [aria-expanded='true']),
 .tl-name-pick .select-trigger:focus-visible { border-color: var(--focus-line); }
 .speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
-/* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
-   longer than the whole row wraps rather than ending in "…". */
+/* "Người nói N", no one named yet: muted and regular weight, the dot still its colour on the record. */
+.speaker-row.is-unnamed .speaker-name, .speaker-row.is-unnamed .select-trigger { color: var(--muted-ink); font-weight: 500; }
+/* A person's name is never cut (PO 03/11/2026): a name longer than its column wraps rather than ending in "…". */
 .speaker-row .select-trigger, .tl-name-pick .select-trigger { height: auto; min-height: 32px; padding-block: 3px; }
 .tl-name-pick .select-trigger { min-height: 28px; padding-block: 2px; }
-/* A finger-sized name on a touch screen, on the voice cards and heading each run. */
+/* A finger-sized name on a touch screen, on the voice rows and heading each run. */
 @media (pointer: coarse) { .speaker-row .select-trigger, .tl-name-pick .select-trigger { min-height: 40px; } }
 .speaker-row .select-text, .tl-name-pick .select-text { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
-.speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
-.speaker-same { flex: none; padding: 0 6px; border-radius: 4px; background: var(--chip-slate-bg); color: var(--chip-slate-fg); font-size: 12px; line-height: 20px; white-space: nowrap; }
-.speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+.tl-speaker .tl-filter { font-variant-numeric: tabular-nums; }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
    One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per

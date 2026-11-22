@@ -173,23 +173,27 @@ export function SpeechTimeline({
               <h3 id="tl-speakers-title" className="tl-speakers-title">
                 Người nói <span className="tl-pill">{speakers.length}</span>
               </h3>
-              <ul>
+              {/* The same row as the room record's voices (SpeakerList): dot and name, the filter at the end. */}
+              <ul className="speaker-list">
                 {speakers.map((s) => {
                   const on = shownFilter === s.id
                   return (
-                    <li key={s.id} className={on ? 'tl-speaker is-on' : 'tl-speaker'}>
-                      <span className="tl-speaker-name" style={{ color: speakerSlot(s.slot).ink }} title={s.name}>
+                    <li key={s.id} className={on ? 'speaker-row tl-speaker is-on' : 'speaker-row tl-speaker'}>
+                      <span className="speaker-name">
+                        <span className="select-dot" style={{ background: speakerSlot(s.slot).dot }} aria-hidden="true" />
                         {s.name}
                       </span>
                       <button
                         type="button"
                         className={on ? 'tl-filter is-on' : 'tl-filter'}
                         aria-pressed={on}
+                        aria-label={on ? undefined : `Xem ${s.count} lượt của ${s.name}`}
                         onClick={() => setFilter(on ? null : s.id)}
                         data-tooltip={`Chỉ xem lời trên micro của ${s.name}`}
                       >
+                        {/* Short, as the time ends a room record's row: the funnel says it filters, the name is beside it. */}
                         <Icon name={on ? 'filterOff' : 'filter'} size={14} />
-                        {on ? 'Bỏ lọc' : `Xem ${s.count} lượt`}
+                        {on ? 'Bỏ lọc' : `${s.count} lượt`}
                       </button>
                     </li>
                   )
