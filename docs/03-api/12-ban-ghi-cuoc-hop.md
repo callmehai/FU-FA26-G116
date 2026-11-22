@@ -294,6 +294,11 @@ mốc của từng token của model nhận dạng; FE tô đậm từ đang ph�
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
 giờ chia đều thời lượng cho các từ để giả mốc.
 
+Số trong `text` viết bằng chữ số (`2026`, `5,5`, `15%`, `ngày 22 tháng 11`) từ 22/11/2026
+([ADR-0076](../05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)): worker gộp các từ của một con số thành một
+từ, lấy mốc của từ đầu và độ chắc thấp nhất trong các từ gộp, nên `wordStartsMs` và `wordConfidence` vẫn mỗi từ một số.
+Bản gỡ băng cũ giữ chữ như cũ tới khi chuyển chữ lại; câu micro riêng cũng theo cách này.
+
 `wordConfidence`: độ chắc của máy nhận dạng với từng từ trong `text`, theo phần trăm (0–100), mỗi từ một số. Worker
 lấy xác suất của từng token Gipformer trả (`ys_log_probs`), từ nhiều token lấy token kém chắc nhất. FE tô nền vàng
 nhạt (`--word-unsure-bg`) cho từ dưới **40**, để Thư ký biết chỗ cần nghe lại (họp thử 21/11/2026, PO chốt 22/11). Trên

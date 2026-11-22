@@ -63,6 +63,7 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_CLIP_MAX_GAIN_DB` | `6` | Mức tăng âm tối đa của hồ sơ `clip` |
 | `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
+| `SPEECH_NUMBERS` | `1` | `0` giữ số bằng chữ ("hai mươi ba" thay vì "23"), xem bước 8 ở [Cách chạy bên trong](#cách-chạy-bên-trong). Đo WER với đáp án viết bằng chữ thì đặt `0` |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -116,10 +117,11 @@ Không cần xác thực.
   một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
 - `wordStartsMs`: mốc bắt đầu (ms trong bản ghi) của từng từ trong `text`, lấy từ mốc của từng token mà Gipformer
   trả (`result.timestamps`, token mở đầu một từ mang dấu `▁`). Bước dấu câu không thêm bớt từ nên mốc vẫn khớp.
-  `null` khi số mốc không khớp số từ: không bao giờ chia đều để đoán.
+  Bước viết số gộp nhiều từ thành một ("hai mươi ba" → "23"): từ mới lấy mốc của từ đầu. `null` khi số mốc không khớp
+  số từ: không bao giờ chia đều để đoán.
 - `wordConfidence`: máy nhận dạng chắc đến đâu với từng từ trong `text`, theo phần trăm (0–100). Gipformer trả xác suất
-  (log) của từng token nó chọn (`result.ys_log_probs`); một từ gồm nhiều token lấy token kém chắc nhất. `null` khi số
-  điểm không khớp số từ, như `wordStartsMs`.
+  (log) của từng token nó chọn (`result.ys_log_probs`); một từ gồm nhiều token lấy token kém chắc nhất, một con số
+  gộp từ nhiều từ lấy từ kém chắc nhất. `null` khi số điểm không khớp số từ, như `wordStartsMs`.
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
   bằng viBERT-capu (bước 7 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
   đoạn trước thì bắt đầu bằng chữ thường; đoạn đầu của một lượt nói luôn viết hoa, và một đoạn bị bỏ ngỏ ngay trước
@@ -191,7 +193,21 @@ Các bước xử lý một bản ghi:
    không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
    chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
    lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
-8. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
+8. **Viết số bằng chữ số** (`speech/numbers.py`, [ADR-0076](../../docs/05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)),
+   sau bước dấu câu vì bước đó cần đúng số từ của model. Luật tự viết, thận trọng:
+   - số từ hai từ trở lên đúng ngữ pháp thì đổi: "hai mươi ba" → 23, "một trăm linh năm" → 105, "hai nghìn không trăm
+     hai sáu" → 2026, "hai trăm triệu" → "200 triệu", "hai triệu năm trăm nghìn" → 2.500.000;
+   - số một từ giữ chữ ("một số", "hai người", "mười phân vẹn mười"), trừ khi có đơn vị: "năm phẩy năm" → 5,5,
+     "năm phần trăm" → 5%, "ba giờ" → 3 giờ ("chờ một phút" giữ), "ngày hai tháng chín" → ngày 2 tháng 9;
+   - hai chữ số liền nhau là khoảng ("hai ba người", "sáu bảy triệu") nên giữ, trừ "hai mốt", "hai tư", "ba lăm" (chỉ
+     hàng chục mới có các đơn vị đó) và ngày ("ngày hai hai tháng mười một" → ngày 22 tháng 11);
+   - từ bốn chữ số đọc rời trở lên là mã hay năm: "hai không hai sáu" → 2026;
+   - sau "thứ" một từ giữ nguyên ("thứ hai"); "hai mươi năm" → "20 năm" (25 đọc là "hai mươi lăm");
+   - dấu câu giữa hai từ cắt con số ở đó.
+
+   Từ 10.000 có dấu chấm phân cách, số bốn chữ số thì không, thập phân dùng dấu phẩy. Từ gộp lấy mốc của từ đầu và độ
+   chắc thấp nhất, nên `wordStartsMs`, `wordConfidence` vẫn mỗi từ một số.
+9. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
 
 Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + embedding cửa sổ 10 giây). Đo trên
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
@@ -230,7 +246,8 @@ Thư mục cần `enrolA.wav` và `enrolB.wav` (mỗi file một giọng, 8–30
 - mẫu ghép hai giọng bị từ chối là `multiple_speakers`.
 
 Đo chất lượng trên giọng thật (VIVOS, giọng của nhóm, một cuộc họp có bản gỡ băng): xem
-[eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó.
+[eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó. Đáp án viết số bằng chữ, nên đo WER thì chạy
+worker với `SPEECH_NUMBERS=0`.
 
 ## Hiệu chỉnh
 
