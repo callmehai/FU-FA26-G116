@@ -7,6 +7,7 @@ import { Resampler } from '../speech/wav'
 // Always a file of our own origin: Vite would inline a file this small as a data: URL, which the test server's CSP
 // (script-src 'self') refuses to run as a worklet.
 import speechTapUrl from '../speech/speechTap.worklet.js?url&no-inline'
+import { TakeRoller } from './takeRoller'
 import {
   BYTES_PER_SECOND,
   RoomTape,
@@ -143,7 +144,8 @@ export interface RoomMicEvents {
    * turned a part down and the rest of the take could not be kept.
    */
   onLost: (message: string, failed?: boolean) => void
-  onSaved: (saved: RoomTakeSaved | null) => void
+  /** `rolled`: saved on its own while the mic stays on (every few minutes, or full), not by switching it off. */
+  onSaved: (saved: RoomTakeSaved | null, rolled: boolean) => void
 }
 
 /** Five seconds of headroom: a take rolls over before it reaches the server's limit, never at it. */
@@ -151,11 +153,15 @@ const ROLL_HEADROOM = 5 * BYTES_PER_SECOND
 
 export class RoomMic {
   private source: MicSource | null = null
-  private tape: RoomTape | null = null
-  // While the next take opens (the last one was full), blocks wait here.
-  private rolling: Promise<void> | null = null
-  private waiting: Float32Array[] = []
-  private closing: Promise<void>[] = []
+  // The take recorded into, saved and opened anew every few minutes while the mic stays on (ADR-0072).
+  private readonly roller = new TakeRoller<RoomTape>({
+    bytesPerSecond: BYTES_PER_SECOND,
+    bytesPerSample: 2,
+    headroomBytes: ROLL_HEADROOM,
+    close: (tape) => this.close(tape, true),
+    open: () => this.fresh(false),
+    onFailed: () => this.lost('Không mở được lượt ghi tiếp theo. Phần đã ghi vẫn được lưu.'),
+  })
   // Stopped before the mic opened (the page was left while the browser asked): it is let go as soon as it opens.
   private stopped = false
 
@@ -183,7 +189,7 @@ export class RoomMic {
 
   /** Seconds of audio waiting behind a part the server has not taken: the network is slow, nothing is lost. */
   behindSeconds() {
-    return (this.tape?.behind() ?? 0) / BYTES_PER_SECOND
+    return (this.roller.current?.behind() ?? 0) / BYTES_PER_SECOND
   }
 
   /**
@@ -196,7 +202,7 @@ export class RoomMic {
     taping.catch(() => undefined)
     let source: MicSource
     try {
-      source = await openMic((samples) => this.take(samples), this.unplugged, deviceId)
+      source = await openMic((samples) => this.roller.push(samples), this.unplugged, deviceId)
     } catch (error) {
       // No mic, no take: one already opened is saved empty at once, so the meeting holds no take nobody feeds.
       if (!saved) void taping.then((tape) => saveTake(tape.recordingId)).catch(() => undefined)
@@ -210,7 +216,7 @@ export class RoomMic {
     }
     this.source = source
     try {
-      await this.into(taping)
+      await this.roller.into(taping)
     } catch (error) {
       this.source?.release()
       this.source = null
@@ -226,7 +232,7 @@ export class RoomMic {
     if (!this.source || this.stopped) return
     let next: MicSource
     try {
-      next = await openMic((samples) => this.take(samples), this.unplugged, deviceId)
+      next = await openMic((samples) => this.roller.push(samples), this.unplugged, deviceId)
     } catch (error) {
       throw new Error(micError(error))
     }
@@ -246,10 +252,8 @@ export class RoomMic {
     this.stopped = true
     this.source?.release()
     this.source = null
-    await this.rolling
-    if (this.tape) this.closing.push(this.close(this.tape))
-    this.tape = null
-    await Promise.all(this.closing)
+    const tape = await this.roller.detach()
+    if (tape) await this.close(tape, false)
   }
 
   private lost(message: string, failed = false) {
@@ -281,7 +285,7 @@ export class RoomMic {
     })
   }
 
-  private async close(tape: RoomTape) {
+  private async close(tape: RoomTape, rolled: boolean) {
     try {
       await tape.finish()
     } catch (error) {
@@ -290,41 +294,6 @@ export class RoomMic {
       // A part turned down: what the server took before it is still saved.
       if (!(error instanceof TapeRefused)) throw error
     }
-    this.events.onSaved(await saveTake(tape.recordingId))
-  }
-
-  private take(samples: Float32Array) {
-    if (this.rolling) {
-      this.waiting.push(samples)
-      return
-    }
-    const tape = this.tape
-    if (!tape) return
-    if (tape.full(ROLL_HEADROOM)) {
-      this.waiting.push(samples)
-      this.tape = null
-      // The meeting has one open take: this one is saved before the next opens.
-      void this.into(this.close(tape).then(() => this.fresh(false))).catch(() =>
-        this.lost('Không mở được lượt ghi tiếp theo. Phần đã ghi vẫn được lưu.'),
-      )
-      return
-    }
-    tape.push(samples)
-  }
-
-  /** Records into the next take once it has opened; what was heard meanwhile goes into it, or nowhere if it never does. */
-  private into(next: Promise<RoomTape>) {
-    const rolling = next
-      .then((tape) => {
-        this.tape = tape
-      })
-      .finally(() => {
-        this.rolling = null
-        const blocks = this.waiting
-        this.waiting = []
-        for (const block of blocks) this.take(block)
-      })
-    this.rolling = rolling.catch(() => undefined)
-    return rolling
+    this.events.onSaved(await saveTake(tape.recordingId), rolled)
   }
 }

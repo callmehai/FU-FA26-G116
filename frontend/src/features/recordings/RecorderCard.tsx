@@ -8,6 +8,7 @@ import { ConsentDialog } from './ConsentDialog'
 import { formatDuration } from './format'
 import { saveTake } from './roomMic'
 import type { RoomRecorder } from './useRoomRecorder'
+import { TAKE_SPLIT_SECONDS } from './takeRoller'
 import { isFirstTake } from './useRoomRecordings'
 import { useFloatingBox, type Edge } from './useFloatingBox'
 
@@ -229,7 +230,8 @@ export function RecorderCard({
             {status}
           </span>
           {on && room.startedAt !== null && (
-            <span className="mic-clock" data-tooltip="Thời lượng lượt ghi này">
+            // The take is saved on its own every few minutes (ADR-0072): the clock counts from the switch.
+            <span className="mic-clock" data-tooltip={`Từ lúc bật mic · tự lưu mỗi ${TAKE_SPLIT_SECONDS / 60} phút`}>
               {/* The clock stands still while the mic is off: until its next tick it is behind the new start. */}
               {formatDuration(Math.max(0, now - room.startedAt))}
             </span>

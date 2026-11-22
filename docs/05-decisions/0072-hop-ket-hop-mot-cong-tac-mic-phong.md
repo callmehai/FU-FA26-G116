@@ -1,4 +1,4 @@
-# ADR-0072: Họp kết hợp: một công tắc mic phòng, vừa ghi lượt mic phòng vừa phát vào phòng họp trực tuyến; mic phòng không tắt khi Thư ký đi giữa trang cuộc họp và phòng họp
+# ADR-0072: Họp kết hợp: một công tắc mic phòng, vừa ghi lượt mic phòng vừa phát vào phòng họp trực tuyến; mic phòng không tắt khi Thư ký đi giữa trang cuộc họp và phòng họp; mic phòng tự chia lượt mỗi 5 phút
 
 - **Trạng thái:** Đề xuất — buổi test của nhóm 21/11/2026 (Lộc, Hải, Khánh)
 - **Ngày:** 2026-11-22
@@ -49,6 +49,15 @@ Nhóm chốt: họp kết hợp thì mic phòng nằm trong phòng họp trực 
    - "Vào phòng họp" từ trang cuộc họp đang giữ mic cũng mở phòng ngay trong tab đó.
    Nút "Trang cuộc họp" trên đầu phòng họp vẫn mở tab trang cuộc họp và giữ cuộc gọi: mic phòng ở lại tab phòng họp.
    Mỗi trình duyệt vẫn chỉ một tab giữ mic phòng của một cuộc họp (Web Lock của ADR-0041).
+5. **Mic phòng tự chia lượt mỗi 5 phút** (Lộc, buổi test 21/11; áp dụng cả họp trực tiếp và họp kết hợp).
+   - Mic còn bật thì cứ đủ 5 phút tiếng (`TAKE_SPLIT_SECONDS`) trình duyệt tự lưu lượt đang ghi và mở ngay lượt tiếp
+     theo. Công tắc vẫn "bật", không hỏi lại xác nhận (chỉ hỏi trước lượt đầu), không hiện thông báo mỗi lần lưu.
+   - Server chỉ cho một lượt mở mỗi cuộc họp, nên lượt sau mở khi lượt trước đã lưu. Tiếng nghe được trong khoảng chờ đó
+     nằm lại trên máy rồi vào lượt sau: không mất tiếng. Giờ bắt đầu của lượt sau (giờ server mở lượt) muộn hơn câu đầu
+     của nó đúng bằng khoảng chờ, thường dưới một giây.
+   - Đây cũng là cách lượt tự sang lượt mới khi gần chạm giới hạn kích thước (ADR-0041 điểm 4), nay thêm điều kiện thời
+     lượng. Tiếng gửi vào cuộc gọi không bị ngắt: mic không đổi, chỉ lượt ghi đổi.
+   - Đồng hồ trên thẻ đếm từ lúc bật mic, không từ đầu lượt.
 
 ## Nghĩa vụ theo Luật 91/2025/QH15
 
@@ -71,3 +80,6 @@ Nhóm chốt: họp kết hợp thì mic phòng nằm trong phòng họp trực 
 - Phòng họp trực tuyến chưa sẵn sàng (LiveKit không chạy) thì họp kết hợp không có chỗ bật mic phòng.
 - Thư ký phải vào phòng họp trực tuyến mới bật được mic phòng của họp kết hợp. Đó cũng là điều họ cần để người trực tuyến
   nghe phòng.
+- Chia lượt mỗi 5 phút: chữ của phòng họp có dần trong khi họp, mất mạng hay sập máy chỉ ảnh hưởng lượt đang ghi. Mỗi
+  lượt mới làm server chuyển chữ lại cả bản ghi (ADR-0041 điểm 5); việc bỏ qua lần chuyển chữ đã cũ khi có lượt mới hơn
+  làm ở backend, ngoài thay đổi này. Tab Bản ghi có vạch "Lượt N" mỗi 5 phút.

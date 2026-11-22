@@ -66,9 +66,10 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     void Promise.resolve().then(look)
   }, [look])
 
+  // A take saved on its own every few minutes while the mic stays on is not announced: the switch never moved.
   const said = useCallback(
-    (saved: RoomTakeSaved | null) => {
-      if (saved) toast.show(saved.message, saved.recordingId ? 'success' : 'info')
+    (saved: RoomTakeSaved | null, rolled = false) => {
+      if (saved && !rolled) toast.show(saved.message, saved.recordingId ? 'success' : 'info')
       changedRef.current()
     },
     [toast],
