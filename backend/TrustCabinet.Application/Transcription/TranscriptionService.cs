@@ -128,7 +128,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 var names = transcript.Speakers.ToDictionary(s => s.Label, AssignedName);
                 var now = clock.GetUtcNow();
                 var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
-                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
+                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(
+                        TranscriptText.LineTime(s.StartMs, recording.Takes),
                         names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
                 await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
                     new { recording.MeetingId, segments = transcript.Segments.Count }, token);

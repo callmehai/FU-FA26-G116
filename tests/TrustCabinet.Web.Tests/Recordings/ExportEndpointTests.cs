@@ -173,6 +173,42 @@ public sealed class ExportEndpointTests(RecordingFixture fixture) : IClassFixtur
     }
 
     [Fact]
+    public async Task A_room_recording_is_saved_on_the_meeting_clock_across_the_pause_between_takes()
+    {
+        var s = await fixture.Seed();
+        var before = fixture.Speech.Result;
+        fixture.Speech.Result = before with
+        {
+            Segments = [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí."),
+                new(6500, 10900, "SPEAKER_01", "Tôi đề nghị bổ sung kinh phí.")],
+        };
+        try
+        {
+            var id = await UploadAndTranscribe(s);
+            // Two takes of the room mic, 70 minutes apart: the second line is 500 ms into the second take.
+            var vietnam = TimeSpan.FromHours(7);
+            await using (var db = fixture.Db())
+            {
+                var recording = await db.Recordings.SingleAsync(r => r.Id == id);
+                recording.Takes = [new(0, 6000, new DateTimeOffset(2026, 11, 22, 14, 20, 3, vietnam)),
+                    new(6000, 4900, new DateTimeOffset(2026, 11, 22, 15, 31, 10, vietnam))];
+                await db.SaveChangesAsync();
+            }
+            using var secretary = fixture.Client(s.Secretary);
+
+            var text = await (await secretary.GetAsync($"/api/recordings/{id}/transcript.txt")).Content.ReadAsStringAsync();
+            // Who said it depends on the voices other tests enrolled; the time is what this test is about.
+            Assert.Matches(@"\n\[14:20:03\] [^:\n]+: Kính thưa các đồng chí\.\n", text);
+            Assert.Matches(@"\n\[15:31:10\] [^:\n]+: Tôi đề nghị bổ sung kinh phí\.\n", text);
+            Assert.DoesNotContain("[00:00:06]", text);
+        }
+        finally
+        {
+            fixture.Speech.Result = before;
+        }
+    }
+
+    [Fact]
     public async Task A_secret_meeting_keeps_its_audio_and_words_inside()
     {
         var s = await fixture.Seed();
