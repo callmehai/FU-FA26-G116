@@ -151,13 +151,29 @@ export interface RoomMicEvents {
 /** Five seconds of headroom: a take rolls over before it reaches the server's limit, never at it. */
 const ROLL_HEADROOM = 5 * BYTES_PER_SECOND
 
+/**
+ * Development only, to watch takes roll in seconds rather than minutes: `localStorage['tc:roomMicSplit'] = '10,5'`
+ * splits at 10 s and cuts anyway 5 s later. Production builds drop this (`import.meta.env.DEV` is false there).
+ */
+function devSplit(): { splitSeconds?: number; maxExtraSeconds?: number } {
+  if (!import.meta.env.DEV) return {}
+  try {
+    const [split, extra] = (localStorage.getItem('tc:roomMicSplit') ?? '').split(',').map(Number)
+    return split > 0 ? { splitSeconds: split, maxExtraSeconds: extra >= 0 ? extra : undefined } : {}
+  } catch {
+    return {}
+  }
+}
+
 export class RoomMic {
   private source: MicSource | null = null
-  // The take recorded into, saved and opened anew every few minutes while the mic stays on (ADR-0072).
+  // The take recorded into, saved and opened anew about every five minutes, at a pause, while the mic stays on
+  // (ADR-0072, ADR-0078). It hears the same samples as the take, so it needs no analyser or second mic of its own.
   private readonly roller = new TakeRoller<RoomTape>({
     bytesPerSecond: BYTES_PER_SECOND,
     bytesPerSample: 2,
     headroomBytes: ROLL_HEADROOM,
+    ...devSplit(),
     close: (tape) => this.close(tape, true),
     open: () => this.fresh(false),
     onFailed: () => this.lost('Không mở được lượt ghi tiếp theo. Phần đã ghi vẫn được lưu.'),

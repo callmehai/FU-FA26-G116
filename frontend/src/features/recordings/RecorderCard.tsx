@@ -230,8 +230,9 @@ export function RecorderCard({
             {status}
           </span>
           {on && room.startedAt !== null && (
-            // The take is saved on its own every few minutes (ADR-0072): the clock counts from the switch.
-            <span className="mic-clock" data-tooltip={`Từ lúc bật mic · tự lưu mỗi ${TAKE_SPLIT_SECONDS / 60} phút`}>
+            // The take is saved on its own about every five minutes, at a pause (ADR-0072, ADR-0078): the clock counts
+            // from the switch.
+            <span className="mic-clock" data-tooltip={`Từ lúc bật mic · tự lưu khoảng ${TAKE_SPLIT_SECONDS / 60} phút một lần, ở chỗ ngừng nói`}>
               {/* The clock stands still while the mic is off: until its next tick it is behind the new start. */}
               {formatDuration(Math.max(0, now - room.startedAt))}
             </span>
