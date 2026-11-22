@@ -5,13 +5,13 @@ Hai cách trình bày mô hình dữ liệu của TrustCabinet: `muc-tieu` (dạ
 
 | Thư mục | Nội dung | Dùng ở đâu | Đẩy Drive |
 |---|---|---|---|
-| [muc-tieu/](muc-tieu/README.md) | ERD dạng bảng vẽ lại theo code (15/11/2026): 42 bảng — 36 thực thể, 4 bảng nối, 2 bảng kỹ thuật — có thuộc tính | Đối chiếu thuộc tính với [02-erd.md](../02-design/02-erd.md); Report 3 §I.3.2 liệt kê 34 thực thể (chờ note SCRUM-36/SCRUM-142) | Có |
+| [muc-tieu/](muc-tieu/README.md) | ERD dạng bảng theo code (22/11/2026), bố cục sắp xếp tay của PR #272: 42 bảng — 36 thực thể, 4 bảng nối, 2 bảng kỹ thuật — có thuộc tính | Đối chiếu thuộc tính với [02-erd.md](../02-design/02-erd.md); Report 3 §I.3.2 liệt kê 34 thực thể (chờ note SCRUM-36/SCRUM-142) | Có |
 | [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 34 thực thể / 57 quan hệ | Góc nhìn thực thể–quan hệ | Có |
 
 ## Bản nào là nguồn?
 
 - Câu hỏi **schema thật đang có bảng, cột và khoá ngoại nào** → `muc-tieu`. Hình sinh từ snapshot EF bằng
-  `scripts/draw_erd.py`; schema đổi thì chạy lại script, không kéo tay.
+  `scripts/draw_erd.py` rồi sắp xếp tay (PR #272); schema đổi thì sửa thẳng file `.drawio`, không chạy lại script đè lên.
 - Câu hỏi **mô hình đích gồm thực thể và quan hệ nào** → `chen` và [02-erd.md](../02-design/02-erd.md).
   `02-erd.md` là nguồn văn bản: tên thực thể, quan hệ, quy tắc và trạng thái triển khai. Khi Chen và văn
   bản lệch nhau, sửa hình theo văn bản.
@@ -21,8 +21,8 @@ Hai cách trình bày mô hình dữ liệu của TrustCabinet: `muc-tieu` (dạ
 
 ## Quy tắc sửa
 
-- `muc-tieu`: không sửa tay file `.drawio`; sửa lưới `GRID` trong `scripts/draw_erd.py` rồi sinh lại
-  theo [muc-tieu/README.md](muc-tieu/README.md).
+- `muc-tieu`: sửa thẳng file `.drawio` trong draw.io rồi xuất lại ảnh; **không** chạy `scripts/draw_erd.py` đè lên
+  vì nó xoá bố cục sắp xếp tay — xem [muc-tieu/README.md](muc-tieu/README.md#sinh-lại).
 - `chen`: sửa file `.drawio`, xuất lại ảnh cùng tên; không sửa tay file ảnh.
 - Tuân theo [DRAWIO_EDITING_RULES.md](../../DRAWIO_EDITING_RULES.md) và
   [drawio-skill](../../.agents/skills/drawio-skill/SKILL.md).
