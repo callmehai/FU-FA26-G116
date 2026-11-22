@@ -37,6 +37,9 @@ Nhóm chốt: họp kết hợp thì mic phòng nằm trong phòng họp trực 
 2. **Trang cuộc họp của họp kết hợp không còn chỗ bật mic phòng.** Thẻ nổi chỉ hiện khi mic phòng đang bật ở tab này, khi
    máy còn lượt ghi dở, hoặc khi có lượt đang mở ở nơi khác. Lượt đang mở do tab phòng họp của cùng trình duyệt ghi thì
    thẻ ghi "Đang ghi ở tab khác" và không có nút "Lưu lượt đó" (bấm sẽ cắt mic của tab kia).
+   - **Dự phòng:** phòng họp trực tuyến không dùng được thì thẻ nổi lại là công tắc trên trang cuộc họp, như họp trực
+     tiếp. "Không dùng được" là: server chưa cấu hình LiveKit, server không hỏi được LiveKit (`GET …/call` trả
+     `participantCount` rỗng), hoặc trình duyệt này vào phòng thất bại trong 30 phút gần nhất (vào lại được thì hết).
 3. **Mic phòng do ứng dụng giữ, không do trang.** Bộ ghi mic phòng nằm trên các route (`RoomMicProvider`, trong
    `RequireAuth`), theo cuộc họp có trên URL: trang cuộc họp hoặc phòng họp của cuộc họp đó. Vì vậy:
    - đi giữa trang cuộc họp và phòng họp trong cùng một tab không tắt mic;
@@ -77,9 +80,8 @@ Nhóm chốt: họp kết hợp thì mic phòng nằm trong phòng họp trực 
   thành lượt mic phòng (tách người nói, gợi ý tên bằng Voice ID) thay vì câu theo tài khoản.
 - Chủ toạ tắt mic của Thư ký trong cuộc gọi chỉ tắt bản sao gửi vào cuộc gọi; lượt mic phòng vẫn ghi. Thư ký tắt hẳn bằng
   nút mic phòng.
-- Phòng họp trực tuyến chưa sẵn sàng (LiveKit không chạy) thì họp kết hợp không có chỗ bật mic phòng.
-- Thư ký phải vào phòng họp trực tuyến mới bật được mic phòng của họp kết hợp. Đó cũng là điều họ cần để người trực tuyến
-  nghe phòng.
+- Thư ký phải vào phòng họp trực tuyến mới bật được mic phòng của họp kết hợp (trừ khi phòng không dùng được, xem dự
+  phòng ở điểm 2). Đó cũng là điều họ cần để người trực tuyến nghe phòng.
 - Chia lượt mỗi 5 phút: chữ của phòng họp có dần trong khi họp, mất mạng hay sập máy chỉ ảnh hưởng lượt đang ghi. Mỗi
   lượt mới làm server chuyển chữ lại cả bản ghi (ADR-0041 điểm 5); việc bỏ qua lần chuyển chữ đã cũ khi có lượt mới hơn
   làm ở backend, ngoài thay đổi này. Tab Bản ghi có vạch "Lượt N" mỗi 5 phút.

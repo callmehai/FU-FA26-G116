@@ -20,7 +20,7 @@ for that step.
 ```bash
 dotnet build TrustCabinet.sln -warnaserror
 dotnet test TrustCabinet.sln
-cd frontend && npm run lint && npm run build
+cd frontend && npm run lint && npm test && npm run build
 ```
 - `-warnaserror` is only in CI; a plain local build passes with warnings that fail the PR.
 - Backend tests need the PostgreSQL and Redis from `docker compose up -d`.

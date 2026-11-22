@@ -28,6 +28,7 @@ import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { markCallFailed } from '../callFailed'
 import { returnToMeetingTab, useTabName } from '../meetingTabs'
 import { MeetingPageLink } from '../TabLinks'
 import { VoiceShortcut } from '../../voice/VoiceShortcut'
@@ -417,8 +418,11 @@ function PreJoin({
       } catch {
         // Never in, so nothing was lost: the lobby stays, says so, and "Vào phòng" tries again.
         setJoinError(roomMessage.unreachable)
+        // ADR-0072: a hybrid meeting's Secretary then records the room from the meeting page's card.
+        markCallFailed(meeting.id, true)
         return
       }
+      markCallFailed(meeting.id, false)
       onJoined({ on: micOn, deviceId: micId || undefined })
       if (speakerId && CAN_PICK_SPEAKER) {
         await room.switchActiveDevice('audiooutput', speakerId).catch(() => undefined)
@@ -441,6 +445,7 @@ function PreJoin({
     } catch (err) {
       if (handleAccessLost(err)) return
       setJoinError(errorMessage(err))
+      markCallFailed(meeting.id, true)
     } finally {
       setJoining(false)
     }

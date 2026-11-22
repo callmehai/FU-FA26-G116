@@ -34,6 +34,7 @@ import { RecorderCard } from '../../recordings/RecorderCard'
 import { MinutesPanel } from '../../minutes/MinutesPanel'
 import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
+import { useCallFailed } from '../../calls/callFailed'
 import { useHeldRoomMic } from '../../recordings/roomMicContext'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
@@ -215,10 +216,17 @@ function MeetingDetail({
   const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online' && onRoster)
   // ADR-0072: the mic is held above the routes, so going to the call room in this tab and back keeps it on.
   const room = useHeldRoomMic(meeting.id, running, roomRecordings.reload)
+  const call = useCallRoom(meeting)
+  const callFailed = useCallFailed(meeting.id)
   // ADR-0040: an in-person meeting's room is recorded by the Secretary here. A hybrid one's switch is the Secretary's
   // mic in the call room, which the people online hear (ADR-0072): here the card only shows a mic still on, a take
-  // kept on this laptop, or one open elsewhere.
-  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
+  // kept on this laptop, or one open elsewhere — unless the call room cannot be used (no LiveKit, unreachable, or the
+  // join failed here), when the card is the switch again, as for an in-person meeting.
+  const callUnusable = call.usable === false || callFailed
+  const recordsRoom =
+    (meeting.mode === 'InPerson' || (meeting.mode === 'Hybrid' && callUnusable)) &&
+    running &&
+    meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
   const showsRecorder =
     room !== null &&
@@ -254,7 +262,7 @@ function MeetingDetail({
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
-  const roomOpen = useCallRoomOpen(meeting)
+  const roomOpen = call.open
   // SCRUM-69: the Chair starts a published meeting and ends a running one.
   const canRun = lifecycleAction(meeting) !== null
   // UC-75: the organizer calls it off any time before it starts.
@@ -699,21 +707,29 @@ function DetailSkeleton() {
  * Whether to offer "join the call room" (SCRUM-41). Only an online or hybrid meeting in progress
  * has a room, so nothing is asked otherwise; and the backend answers 404 to someone who is not
  * invited (e.g. the organizer who is not a participant), which simply hides the button.
+ * `usable` (ADR-0072): the room can be joined — LiveKit is configured and the server reached it — or null until known.
  */
-function useCallRoomOpen(meeting: Meeting) {
-  const [open, setOpen] = useState(false)
+function useCallRoom(meeting: Meeting) {
+  const [state, setState] = useState<{ open: boolean; usable: boolean | null }>({ open: false, usable: null })
   const eligible = meeting.mode !== 'InPerson' && meeting.status === 'InProgress'
 
   useEffect(() => {
     if (!eligible) return
     let cancelled = false
     getMeetingCall(meeting.id)
-      .then((call) => !cancelled && setOpen(call.status === 'Open'))
-      .catch(() => !cancelled && setOpen(false))
+      .then(
+        (call) =>
+          !cancelled &&
+          setState({
+            open: call.status === 'Open',
+            usable: call.status === 'Open' && call.available && call.participantCount !== null,
+          }),
+      )
+      .catch(() => !cancelled && setState({ open: false, usable: false }))
     return () => {
       cancelled = true
     }
   }, [eligible, meeting.id])
 
-  return eligible && open
+  return eligible ? state : { open: false, usable: null }
 }

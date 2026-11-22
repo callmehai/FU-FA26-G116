@@ -250,9 +250,10 @@ A Use Case is Done only when **all** of these hold:
 | Backend build | `dotnet build TrustCabinet.sln` |
 | Backend tests | `dotnet test TrustCabinet.sln` |
 | Frontend lint | `cd frontend && npm run lint` |
+| Frontend unit tests (`frontend/tests/unit`, `node --test`) | `cd frontend && npm test` |
 | Frontend build (includes `tsc -b`) | `cd frontend && npm run build` |
 
-CI runs all four on every pull request, limited to what the PR touches — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
+CI runs all five on every pull request, limited to what the PR touches — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
 
 Branch and PR conventions:
 
