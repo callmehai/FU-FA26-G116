@@ -666,47 +666,6 @@
         },
         {
           "id": "MEET_API_IT29",
-          "description": "Verify PUT /api/meetings/{id} requires a JSON content type.",
-          "procedure": [
-            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<draft id> with Content-Type: text/plain and any body."
-          ],
-          "expected": [
-            "HTTP 415 Unsupported Media Type, code \"MSG34\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Draft meeting created by the Organizer.",
-            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_API_IT30",
-          "description": "Verify PUT /api/meetings/{id} rejects a body over 64 KiB.",
-          "procedure": [
-            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<draft id> with a JSON body larger than 64 KiB (a \"description\" of 70,000 characters)."
-          ],
-          "expected": [
-            "HTTP 413 Payload Too Large, code \"MSG87\".",
-            "The meeting is unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Draft meeting created by the Organizer.",
-            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-15 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_rejects_json_larger_than_64_kib)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_API_IT31",
           "description": "Verify PUT /api/meetings/{id} requires a token and MeetingCreator.",
           "procedure": [
             "Send PUT /api/meetings/<draft id> without an Authorization header.",
@@ -727,7 +686,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT32",
+          "id": "MEET_API_IT30",
           "description": "Verify PUT /api/meetings/{id} answers 404 to another Organizer and to an unknown id alike.",
           "procedure": [
             "Sign in as a second Organizer (MeetingCreator) who did not create the meeting.",
@@ -749,7 +708,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT33",
+          "id": "MEET_API_IT31",
           "description": "Verify PUT /api/meetings/<id> answers 500 Internal Server Error MSG36 when the database fails.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -782,7 +741,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT34",
+          "id": "MEET_API_IT32",
           "description": "Verify GET /api/meetings returns the first page with its paging metadata.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -805,7 +764,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT35",
+          "id": "MEET_API_IT33",
           "description": "Verify GET /api/meetings lists only meetings the caller may read.",
           "procedure": [
             "Sign in as a Member who is on the roster of a Published meeting and not on any other.",
@@ -826,7 +785,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT36",
+          "id": "MEET_API_IT34",
           "description": "Verify GET /api/meetings filters by status and sensitivity together.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -847,7 +806,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT37",
+          "id": "MEET_API_IT35",
           "description": "Verify GET /api/meetings searches the title without case or accents.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -868,7 +827,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT38",
+          "id": "MEET_API_IT36",
           "description": "Verify GET /api/meetings filters by the overlap of the planned time with from and to.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -888,7 +847,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT39",
+          "id": "MEET_API_IT37",
           "description": "Verify GET /api/meetings sorts and pages as asked.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -908,7 +867,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT40",
+          "id": "MEET_API_IT38",
           "description": "Verify GET /api/meetings returns an empty page for no match and for a page past the end.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -929,7 +888,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT41",
+          "id": "MEET_API_IT39",
           "description": "Verify GET /api/meetings rejects an invalid status, including the retired ones.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -949,7 +908,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT42",
+          "id": "MEET_API_IT40",
           "description": "Verify GET /api/meetings rejects a time filter without an offset or with from after to.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -969,7 +928,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT43",
+          "id": "MEET_API_IT41",
           "description": "Verify GET /api/meetings rejects page, pageSize and sort values out of range.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -990,7 +949,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT44",
+          "id": "MEET_API_IT42",
           "description": "Verify GET /api/meetings splits upcoming from past with timing.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1014,7 +973,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT45",
+          "id": "MEET_API_IT43",
           "description": "Verify GET /api/meetings?scope=todo keeps only the meetings waiting on the caller.",
           "procedure": [
             "Sign in as an Approver with a meeting WaitingApproval assigned to them.",
@@ -1035,7 +994,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT46",
+          "id": "MEET_API_IT44",
           "description": "Verify GET /api/meetings?excludeDeclined=true hides meetings the caller declined.",
           "procedure": [
             "Sign in as a Member who answered \"Không tham dự\" to one Published meeting.",
@@ -1056,7 +1015,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT47",
+          "id": "MEET_API_IT45",
           "description": "Verify GET /api/meetings requires a token.",
           "procedure": [
             "Send GET /api/meetings without an Authorization header."
@@ -1073,7 +1032,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT48",
+          "id": "MEET_API_IT46",
           "description": "Verify GET /api/meetings is open to any signed-in account without MeetingCreator.",
           "procedure": [
             "Sign in as a Member without MeetingCreator.",
@@ -1092,7 +1051,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT49",
+          "id": "MEET_API_IT47",
           "description": "Verify GET /api/meetings answers 500 Internal Server Error MSG38 when the database fails.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1123,7 +1082,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT50",
+          "id": "MEET_API_IT48",
           "description": "Verify GET /api/meetings/{id} returns the full meeting to its Organizer.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1144,7 +1103,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT51",
+          "id": "MEET_API_IT49",
           "description": "Verify GET /api/meetings/{id} hides a Draft from a Member on the roster.",
           "procedure": [
             "Sign in as a Member who is on the roster of a Draft meeting.",
@@ -1165,7 +1124,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT52",
+          "id": "MEET_API_IT50",
           "description": "Verify GET /api/meetings/{id} lets the Chair and the Secretary read a Draft.",
           "procedure": [
             "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>.",
@@ -1184,7 +1143,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT53",
+          "id": "MEET_API_IT51",
           "description": "Verify GET /api/meetings/{id} lets the assigned approver read from WaitingApproval.",
           "procedure": [
             "Sign in as the Approver assigned to the meeting.",
@@ -1205,7 +1164,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT54",
+          "id": "MEET_API_IT52",
           "description": "Verify GET /api/meetings/{id} answers 404 alike for a stranger and an unknown id.",
           "procedure": [
             "Sign in as an active account with no relation to the meeting.",
@@ -1225,7 +1184,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT55",
+          "id": "MEET_API_IT53",
           "description": "Verify GET /api/meetings/{id} shows the caller their invitation answer.",
           "procedure": [
             "Sign in as a Member on the roster of a Published meeting.",
@@ -1247,7 +1206,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT56",
+          "id": "MEET_API_IT54",
           "description": "Verify GET /api/meetings/{id} requires a token.",
           "procedure": [
             "Send GET /api/meetings/<id> without an Authorization header."
@@ -1265,7 +1224,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT57",
+          "id": "MEET_API_IT55",
           "description": "Verify GET /api/meetings/<id> answers 500 Internal Server Error MSG37 when the database fails.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1298,7 +1257,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT58",
+          "id": "MEET_API_IT56",
           "description": "Verify GET /api/meetings/approvers lists the active approvers except the caller.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1320,7 +1279,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT59",
+          "id": "MEET_API_IT57",
           "description": "Verify GET /api/meetings/approvers requires a token and MeetingCreator.",
           "procedure": [
             "Send GET /api/meetings/approvers without an Authorization header.",
@@ -1340,7 +1299,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT60",
+          "id": "MEET_API_IT58",
           "description": "Verify GET /api/meetings/approvers answers 503 MSG130 when the list cannot be read.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1368,7 +1327,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT61",
+          "id": "MEET_API_IT59",
           "description": "Verify GET /api/meetings/{id}/submission-readiness reports a complete Draft as ready.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1391,7 +1350,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT62",
+          "id": "MEET_API_IT60",
           "description": "Verify GET /api/meetings/{id}/submission-readiness lists what is missing as data, not as an HTTP error.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1411,7 +1370,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT63",
+          "id": "MEET_API_IT61",
           "description": "Verify GET /api/meetings/{id}/submission-readiness refuses a meeting that is no longer Draft or Rejected.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1431,7 +1390,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT64",
+          "id": "MEET_API_IT62",
           "description": "Verify GET /api/meetings/{id}/submission-readiness is for the Organizer only.",
           "procedure": [
             "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>/submission-readiness.",
@@ -1466,7 +1425,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT65",
+          "id": "MEET_API_IT63",
           "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval moves a Draft to WaitingApproval.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1491,7 +1450,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT66",
+          "id": "MEET_API_IT64",
           "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval resubmits a Rejected meeting directly.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1514,7 +1473,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT67",
+          "id": "MEET_API_IT65",
           "description": "Verify SubmitForApproval refuses the Organizer as approver.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1537,7 +1496,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT68",
+          "id": "MEET_API_IT66",
           "description": "Verify SubmitForApproval refuses an approver without MeetingApprover.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1560,7 +1519,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT69",
+          "id": "MEET_API_IT67",
           "description": "Verify SubmitForApproval refuses a meeting whose information is incomplete.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1583,7 +1542,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT70",
+          "id": "MEET_API_IT68",
           "description": "Verify SubmitForApproval needs an assignedApproverId.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1606,7 +1565,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT71",
+          "id": "MEET_API_IT69",
           "description": "Verify SubmitForApproval refuses a meeting that is not Draft or Rejected.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1629,7 +1588,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT72",
+          "id": "MEET_API_IT70",
           "description": "Verify POST /api/meetings/{id}/transitions Approve moves WaitingApproval to Approved.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1651,7 +1610,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT73",
+          "id": "MEET_API_IT71",
           "description": "Verify POST /api/meetings/{id}/transitions Reject stores the reason and notifies the Organizer.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1674,7 +1633,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT74",
+          "id": "MEET_API_IT72",
           "description": "Verify Reject needs a reason.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1697,7 +1656,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT75",
+          "id": "MEET_API_IT73",
           "description": "Verify Reject accepts a reason of 1,000 characters and refuses 1,001.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1720,7 +1679,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT76",
+          "id": "MEET_API_IT74",
           "description": "Verify Approve is refused for an account that is not the assigned approver.",
           "procedure": [
             "Sign in as an Approver who is not the assigned approver of the meeting and keep the access token.",
@@ -1742,7 +1701,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT77",
+          "id": "MEET_API_IT75",
           "description": "Verify Approve and Reject answer 409 when the meeting is no longer waiting.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1764,7 +1723,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT78",
+          "id": "MEET_API_IT76",
           "description": "Verify ReturnToDraft withdraws a WaitingApproval meeting whose approver is no longer valid.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1787,7 +1746,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT79",
+          "id": "MEET_API_IT77",
           "description": "Verify ReturnToDraft is refused while the waiting approver is still valid.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1810,7 +1769,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT80",
+          "id": "MEET_API_IT78",
           "description": "Verify POST /api/meetings/{id}/transitions Publish makes an Approved meeting Published and invites the roster.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1834,7 +1793,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT81",
+          "id": "MEET_API_IT79",
           "description": "Verify Publish is refused without exactly one Chair and a Secretary.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1857,7 +1816,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT82",
+          "id": "MEET_API_IT80",
           "description": "Verify Publish is refused for a meeting that is not Approved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1880,7 +1839,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT83",
+          "id": "MEET_API_IT81",
           "description": "Verify Publish is refused when the Organizer has lost MeetingCreator, and for a reader who is not the Organizer.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1904,7 +1863,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT84",
+          "id": "MEET_API_IT82",
           "description": "Verify Publish answers 503 MSG47 and rolls back when it cannot be saved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1927,7 +1886,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT85",
+          "id": "MEET_API_IT83",
           "description": "Verify POST /api/meetings/{id}/transitions Start moves Published to InProgress.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1951,7 +1910,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT86",
+          "id": "MEET_API_IT84",
           "description": "Verify Start is refused for a reader who is neither the Chair nor the Secretary.",
           "procedure": [
             "Sign in as the Organizer, who is neither the Chair nor the Secretary, and keep the access token (repeat for a Member).",
@@ -1973,7 +1932,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT87",
+          "id": "MEET_API_IT85",
           "description": "Verify Start is refused when the meeting is not Published or has no Secretary.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1996,7 +1955,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT88",
+          "id": "MEET_API_IT86",
           "description": "Verify Start answers 503 MSG115 when it cannot be saved.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -2018,7 +1977,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT89",
+          "id": "MEET_API_IT87",
           "description": "Verify POST /api/meetings/{id}/transitions End moves InProgress to Ended and closes the current agenda item.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -2041,7 +2000,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT90",
+          "id": "MEET_API_IT88",
           "description": "Verify End is refused for a non-Chair and for a meeting that is not InProgress.",
           "procedure": [
             "Sign in as the Organizer, who is not the Chair and keep the access token.",
@@ -2065,7 +2024,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT91",
+          "id": "MEET_API_IT89",
           "description": "Verify End rolls back with 503 MSG116 when it cannot be saved.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -2087,7 +2046,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT92",
+          "id": "MEET_API_IT90",
           "description": "Verify POST /api/meetings/{id}/transitions Cancel cancels an unstarted meeting with its reason.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2111,7 +2070,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT93",
+          "id": "MEET_API_IT91",
           "description": "Verify Cancel from WaitingApproval tells the approver and Cancel from Draft tells nobody.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2134,7 +2093,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT94",
+          "id": "MEET_API_IT92",
           "description": "Verify Cancel needs a reason.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2157,7 +2116,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT95",
+          "id": "MEET_API_IT93",
           "description": "Verify Cancel accepts a reason of 1,000 characters and refuses 1,001.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2181,7 +2140,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT96",
+          "id": "MEET_API_IT94",
           "description": "Verify Cancel is refused once the meeting has started, ended or been cancelled.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2204,7 +2163,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT97",
+          "id": "MEET_API_IT95",
           "description": "Verify Cancel is refused for a reader who is not the Organizer.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -2226,7 +2185,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT98",
+          "id": "MEET_API_IT96",
           "description": "Verify Cancel answers 503 MSG264 when it cannot be saved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2249,7 +2208,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT99",
+          "id": "MEET_API_IT97",
           "description": "Verify TransferOrganizer hands an Approved meeting of a deactivated Organizer to a new Organizer.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -2271,7 +2230,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT100",
+          "id": "MEET_API_IT98",
           "description": "Verify TransferOrganizer refuses an invalid new Organizer.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -2293,7 +2252,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT101",
+          "id": "MEET_API_IT99",
           "description": "Verify TransferOrganizer is refused while the current Organizer is active or the meeting is not Approved.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -2315,7 +2274,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT102",
+          "id": "MEET_API_IT100",
           "description": "Verify TransferOrganizer answers 404 to an account that is not an administrator.",
           "procedure": [
             "Sign in as the Organizer or a Member and keep the access token.",
@@ -2336,7 +2295,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT103",
+          "id": "MEET_API_IT101",
           "description": "Verify POST /api/meetings/{id}/transitions rejects an unknown, numeric or composite action.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -2360,7 +2319,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT104",
+          "id": "MEET_API_IT102",
           "description": "Verify POST /api/meetings/{id}/transitions rejects fields that do not belong to the action.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -2382,29 +2341,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT105",
-          "description": "Verify POST /api/meetings/{id}/transitions requires JSON and a body under 64 KiB.",
-          "procedure": [
-            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<id>/transitions with Content-Type: text/plain.",
-            "Send it with a JSON body larger than 64 KiB."
-          ],
-          "expected": [
-            "Step 2: HTTP 415 Unsupported Media Type, code \"MSG34\".",
-            "Step 3: HTTP 413 Payload Too Large, code \"MSG87\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting created by the Organizer.",
-            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-18 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_json_and_returns_MSG34); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Authentication_active_gate_content_type_and_size_contracts_are_preserved)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_API_IT106",
+          "id": "MEET_API_IT103",
           "description": "Verify POST /api/meetings/{id}/transitions requires a token and hides meetings the caller cannot read.",
           "procedure": [
             "Send POST /api/meetings/<id>/transitions with { \"action\": \"Publish\" } and no Authorization header.",
@@ -2425,7 +2362,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT107",
+          "id": "MEET_API_IT104",
           "description": "Verify POST /api/meetings/{id}/transitions answers 503 MSG131 when the account cannot be checked.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2445,7 +2382,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT108",
+          "id": "MEET_API_IT105",
           "description": "Verify SubmitForApproval answers 503 MSG42 when it cannot be saved.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2479,7 +2416,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT109",
+          "id": "MEET_API_IT106",
           "description": "Verify GET /api/meetings/{id}/history gives the Organizer the full timeline in order.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2502,7 +2439,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT110",
+          "id": "MEET_API_IT107",
           "description": "Verify GET /api/meetings/{id}/history gives the current approver the full timeline.",
           "procedure": [
             "Sign in as the assigned Approver.",
@@ -2522,7 +2459,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT111",
+          "id": "MEET_API_IT108",
           "description": "Verify GET /api/meetings/{id}/history redacts the rejection reason for a Member.",
           "procedure": [
             "Sign in as a Member on the roster of the Published meeting.",
@@ -2541,7 +2478,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT112",
+          "id": "MEET_API_IT109",
           "description": "Verify GET /api/meetings/{id}/history lets the Chair read before Publish.",
           "procedure": [
             "Sign in as the Chair of a Draft meeting.",
@@ -2560,7 +2497,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT113",
+          "id": "MEET_API_IT110",
           "description": "Verify GET /api/meetings/{id}/history pages and answers empty past the end.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2582,7 +2519,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT114",
+          "id": "MEET_API_IT111",
           "description": "Verify GET /api/meetings/{id}/history rejects invalid paging.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2602,7 +2539,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT115",
+          "id": "MEET_API_IT112",
           "description": "Verify GET /api/meetings/{id}/history requires a token and hides meetings the caller cannot read.",
           "procedure": [
             "Send GET /api/meetings/<id>/history without a token.",
@@ -2622,7 +2559,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_API_IT116",
+          "id": "MEET_API_IT113",
           "description": "Verify a meeting left InProgress 24 hours after its planned end is ended by the system and its history shows AutoEnd.",
           "procedure": [
             "Wait for the next run of the overdue job (every 15 minutes), or ask QA lead to run it.",

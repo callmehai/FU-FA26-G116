@@ -645,27 +645,6 @@
         },
         {
           "id": "AGENDA_API_IT30",
-          "description": "Verify POST agenda requires JSON and a body under 64 KiB.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda with Content-Type: text/plain.",
-            "Send POST /api/meetings/<meetingId>/agenda with a JSON body larger than 64 KiB (description of 70,000 characters)."
-          ],
-          "expected": [
-            "Step 2: HTTP 415 Unsupported Media Type: { \"code\": \"MSG34\", \"message\": \"Yêu cầu phải dùng Content-Type application/json.\" }.",
-            "Step 3: HTTP 413 Payload Too Large: { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_API_IT31",
           "description": "Verify POST agenda hides the meeting from a stranger and needs a token; a Guest cannot write.",
           "procedure": [
             "Send POST /api/meetings/<meetingId>/agenda without a token.",
@@ -688,7 +667,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT32",
+          "id": "AGENDA_API_IT31",
           "description": "Verify POST agenda answers 503 MSG68 and writes nothing when it cannot be saved.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -709,7 +688,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT33",
+          "id": "AGENDA_API_IT32",
           "description": "Verify two simultaneous creates both succeed with distinct positions.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -738,7 +717,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT34",
+          "id": "AGENDA_API_IT33",
           "description": "Verify PUT item replaces the title, description and presenter.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -761,7 +740,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT35",
+          "id": "AGENDA_API_IT34",
           "description": "Verify PUT item works on an InProgress and a Done item too.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -780,7 +759,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT36",
+          "id": "AGENDA_API_IT35",
           "description": "Verify an optional field that is left out is cleared, but documentIds left out keeps the documents.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -802,7 +781,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT37",
+          "id": "AGENDA_API_IT36",
           "description": "Verify an update that changes nothing does not touch the item.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -823,7 +802,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT38",
+          "id": "AGENDA_API_IT37",
           "description": "Verify changing the presenter notifies the new presenter and clearing it notifies nobody.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -845,7 +824,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT39",
+          "id": "AGENDA_API_IT38",
           "description": "Verify PUT item rejects invalid values with MSG66 and leaves the item as it was.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -866,7 +845,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT40",
+          "id": "AGENDA_API_IT39",
           "description": "Verify an inactive presenter must be replaced on the next save.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -888,7 +867,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT41",
+          "id": "AGENDA_API_IT40",
           "description": "Verify PUT item is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -912,7 +891,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT42",
+          "id": "AGENDA_API_IT41",
           "description": "Verify PUT item answers 404 for an item that is not in the meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -932,7 +911,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT43",
+          "id": "AGENDA_API_IT42",
           "description": "Verify PUT item answers 503 MSG69 when it cannot be saved.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -952,7 +931,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT44",
+          "id": "AGENDA_API_IT43",
           "description": "Verify PUT item answers 401 without a token and 415 / 413 for a bad body.",
           "procedure": [
             "Send PUT /api/meetings/<meetingId>/agenda/<itemId> without a token.",
@@ -983,7 +962,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT45",
+          "id": "AGENDA_API_IT44",
           "description": "Verify DELETE item removes a Pending item and keeps its documents.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1005,7 +984,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT46",
+          "id": "AGENDA_API_IT45",
           "description": "Verify DELETE item refuses an item that has started.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1024,7 +1003,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT47",
+          "id": "AGENDA_API_IT46",
           "description": "Verify deleting an item keeps the notes written on it.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1045,7 +1024,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT48",
+          "id": "AGENDA_API_IT47",
           "description": "Verify DELETE item is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1069,7 +1048,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT49",
+          "id": "AGENDA_API_IT48",
           "description": "Verify DELETE item answers 404 for an item that is not in the meeting and 401 without a token.",
           "procedure": [
             "Send DELETE /api/meetings/<meetingId>/agenda/<itemId> without a token.",
@@ -1090,7 +1069,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT50",
+          "id": "AGENDA_API_IT49",
           "description": "Verify DELETE item answers 503 MSG70 when it cannot be saved.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1118,7 +1097,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT51",
+          "id": "AGENDA_API_IT50",
           "description": "Verify PUT order saves the new order using the latest orderVersion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1142,7 +1121,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT52",
+          "id": "AGENDA_API_IT51",
           "description": "Verify PUT order also moves InProgress and Done items.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1161,7 +1140,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT53",
+          "id": "AGENDA_API_IT52",
           "description": "Verify PUT order with the unchanged order succeeds without writing.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1180,7 +1159,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT54",
+          "id": "AGENDA_API_IT53",
           "description": "Verify PUT order rejects an out-of-date orderVersion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1199,7 +1178,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT55",
+          "id": "AGENDA_API_IT54",
           "description": "Verify PUT order rejects a set of ids that omits, repeats or adds an item.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1221,7 +1200,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT56",
+          "id": "AGENDA_API_IT55",
           "description": "Verify PUT order needs at least two items and refuses the retired body.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1241,7 +1220,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT57",
+          "id": "AGENDA_API_IT56",
           "description": "Verify PUT order is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1264,7 +1243,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT58",
+          "id": "AGENDA_API_IT57",
           "description": "Verify PUT order answers 503 MSG71 when it cannot be saved, and 401 without a token.",
           "procedure": [
             "Send PUT /api/meetings/<meetingId>/agenda/order without a token.",
@@ -1294,7 +1273,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT59",
+          "id": "AGENDA_API_IT58",
           "description": "Verify the Chair starts any Pending item of a meeting in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1315,7 +1294,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT60",
+          "id": "AGENDA_API_IT59",
           "description": "Verify a second item cannot start while one is in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1336,7 +1315,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT61",
+          "id": "AGENDA_API_IT60",
           "description": "Verify Start is refused when the item is not Pending.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1355,7 +1334,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT62",
+          "id": "AGENDA_API_IT61",
           "description": "Verify Start is refused when the meeting is not InProgress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1374,7 +1353,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT63",
+          "id": "AGENDA_API_IT62",
           "description": "Verify Start is refused for the Secretary, the Organizer and a Member.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1394,7 +1373,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT64",
+          "id": "AGENDA_API_IT63",
           "description": "Verify Start answers 404 for an item that is not in the meeting and 401 without a token.",
           "procedure": [
             "Send POST /api/meetings/<meetingId>/agenda/<itemId>/current without a token.",
@@ -1415,7 +1394,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT65",
+          "id": "AGENDA_API_IT64",
           "description": "Verify Start answers 503 MSG75 when it cannot be saved.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1443,7 +1422,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT66",
+          "id": "AGENDA_API_IT65",
           "description": "Verify the Chair completes the current item and nothing else starts.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1464,7 +1443,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT67",
+          "id": "AGENDA_API_IT66",
           "description": "Verify Complete is refused for an item that is not in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1483,7 +1462,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT68",
+          "id": "AGENDA_API_IT67",
           "description": "Verify Complete is refused when the meeting is not InProgress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1502,7 +1481,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT69",
+          "id": "AGENDA_API_IT68",
           "description": "Verify Complete is refused for anyone but the Chair.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1521,7 +1500,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT70",
+          "id": "AGENDA_API_IT69",
           "description": "Verify ending the meeting completes the current item and keeps the Pending ones.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1542,7 +1521,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT71",
+          "id": "AGENDA_API_IT70",
           "description": "Verify Complete answers 404 for an unknown item, 401 without a token and 503 MSG76 on a failed save.",
           "procedure": [
             "Send POST /api/meetings/<meetingId>/agenda/<itemId>/complete without a token.",
@@ -1573,7 +1552,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT72",
+          "id": "AGENDA_API_IT71",
           "description": "Verify the Chair records the conclusion of an InProgress item.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1596,7 +1575,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT73",
+          "id": "AGENDA_API_IT72",
           "description": "Verify the Secretary records a conclusion on a Done item after the meeting ended.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1615,7 +1594,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT74",
+          "id": "AGENDA_API_IT73",
           "description": "Verify every valid save rewrites the conclusion, the actor and the time.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1634,7 +1613,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT75",
+          "id": "AGENDA_API_IT74",
           "description": "Verify a blank or missing conclusion is refused and an old one cannot be cleared.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1653,7 +1632,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT76",
+          "id": "AGENDA_API_IT75",
           "description": "Verify a conclusion of 2,000 characters is accepted and 2,001 is refused.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1674,7 +1653,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT77",
+          "id": "AGENDA_API_IT76",
           "description": "Verify the conclusion body is strict.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1694,7 +1673,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT78",
+          "id": "AGENDA_API_IT77",
           "description": "Verify a Pending item takes no conclusion.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1713,7 +1692,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT79",
+          "id": "AGENDA_API_IT78",
           "description": "Verify any minutes document locks the conclusion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1732,7 +1711,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT80",
+          "id": "AGENDA_API_IT79",
           "description": "Verify a conclusion is refused for a Member and while the meeting is not InProgress or Ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1754,7 +1733,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT81",
+          "id": "AGENDA_API_IT80",
           "description": "Verify a conclusion on a meeting or item the caller cannot see answers MSG174.",
           "procedure": [
             "Sign in as an unrelated account (POST /api/auth/login) and keep the access token.",
@@ -1775,7 +1754,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT82",
+          "id": "AGENDA_API_IT81",
           "description": "Verify a conclusion requires a token, JSON and a body under 64 KiB; a Guest is refused.",
           "procedure": [
             "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion without a token.",
@@ -1800,7 +1779,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT83",
+          "id": "AGENDA_API_IT82",
           "description": "Verify a conclusion that cannot be saved answers 503 MSG274.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",

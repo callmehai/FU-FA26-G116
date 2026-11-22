@@ -133,25 +133,25 @@ Tổng: 259 case nhóm B1, 42 case nhóm B2.
 - MEET_API_IT13: Verify POST /api/meetings answers 400 for a body that is not valid JSON.
 - MEET_API_IT18: Verify PUT /api/meetings/{id} with unchanged data succeeds without writing.
 - MEET_API_IT27: Verify PUT /api/meetings/{id} allows a Draft start that is already past.
-- MEET_API_IT37: Verify GET /api/meetings searches the title without case or accents.
-- MEET_API_IT38: Verify GET /api/meetings filters by the overlap of the planned time with from and to. _[thời gian]_
-- MEET_API_IT39: Verify GET /api/meetings sorts and pages as asked.
-- MEET_API_IT44: Verify GET /api/meetings splits upcoming from past with timing. _[thời gian]_
-- MEET_API_IT46: Verify GET /api/meetings?excludeDeclined=true hides meetings the caller declined.
-- MEET_API_IT48: Verify GET /api/meetings is open to any signed-in account without MeetingCreator.
-- MEET_API_IT55: Verify GET /api/meetings/{id} shows the caller their invitation answer.
-- MEET_API_IT56: Verify GET /api/meetings/{id} requires a token.
-- MEET_API_IT64: Verify GET /api/meetings/{id}/submission-readiness is for the Organizer only.
-- MEET_API_IT115: Verify GET /api/meetings/{id}/history requires a token and hides meetings the caller cannot read.
+- MEET_API_IT35: Verify GET /api/meetings searches the title without case or accents.
+- MEET_API_IT36: Verify GET /api/meetings filters by the overlap of the planned time with from and to. _[thời gian]_
+- MEET_API_IT37: Verify GET /api/meetings sorts and pages as asked.
+- MEET_API_IT42: Verify GET /api/meetings splits upcoming from past with timing. _[thời gian]_
+- MEET_API_IT44: Verify GET /api/meetings?excludeDeclined=true hides meetings the caller declined.
+- MEET_API_IT46: Verify GET /api/meetings is open to any signed-in account without MeetingCreator.
+- MEET_API_IT53: Verify GET /api/meetings/{id} shows the caller their invitation answer.
+- MEET_API_IT54: Verify GET /api/meetings/{id} requires a token.
+- MEET_API_IT62: Verify GET /api/meetings/{id}/submission-readiness is for the Organizer only.
+- MEET_API_IT112: Verify GET /api/meetings/{id}/history requires a token and hides meetings the caller cannot read.
 
 **FE-05 Agenda** (6)
 
 - AGENDA_API_IT07: Verify GET agenda requires a token.
 - AGENDA_API_IT14: Verify editor-options answers 404 for a stranger and 401 without a token.
 - AGENDA_API_IT15: Verify editor-options answers 500 MSG128 when it cannot be read. _[chèn lỗi]_
-- AGENDA_API_IT42: Verify PUT item answers 404 for an item that is not in the meeting.
-- AGENDA_API_IT49: Verify DELETE item answers 404 for an item that is not in the meeting and 401 without a token.
-- AGENDA_API_IT64: Verify Start answers 404 for an item that is not in the meeting and 401 without a token.
+- AGENDA_API_IT41: Verify PUT item answers 404 for an item that is not in the meeting.
+- AGENDA_API_IT48: Verify DELETE item answers 404 for an item that is not in the meeting and 401 without a token.
+- AGENDA_API_IT63: Verify Start answers 404 for an item that is not in the meeting and 401 without a token.
 
 **FE-06 Participants** (50)
 
@@ -176,35 +176,35 @@ Tổng: 259 case nhóm B1, 42 case nhóm B2.
 - PART_API_IT45: Verify editor-options without a token answers 401.
 - PART_API_IT55: Verify POST participants refuses a second Chair.
 - PART_API_IT59: Verify POST participants rejects a query string.
-- PART_API_IT66: Verify POST participants answers 404 for someone who may not read the meeting.
-- PART_API_IT67: Verify POST participants without a token answers 401.
-- PART_API_IT71: Verify PUT assignments sending the current role again is a no-op.
-- PART_API_IT77: Verify PUT assignments lets a Draft meeting have no Secretary.
-- PART_API_IT82: Verify PUT assignments rejects empty changes, duplicate ids, an unknown role and more than 100 changes.
-- PART_API_IT85: Verify PUT assignments answers 404 for a participantId that is not a current participant of the meeting.
-- PART_API_IT88: Verify PUT assignments answers 404 for someone who may not read the meeting, and 401 without a token.
-- PART_API_IT89: Verify PUT assignments writes one audit row and notifies the new role holder only on a published meeting.
-- PART_API_IT91: Verify DELETE participant clears the removed person as agenda presenter and from the speaking queue.
-- PART_API_IT95: Verify DELETE participant answers 404 for an assignment that is not current in this meeting.
-- PART_API_IT96: Verify DELETE participant rejects a request body.
-- PART_API_IT100: Verify DELETE participant answers 404 for an unrelated account and 401 without a token.
-- PART_API_IT101: Verify removing a person from a Published meeting notifies them and writes one audit row.
-- PART_API_IT104: Verify POST guest-invitations trims the name and accepts the 200-character name and 256-character email limits.
-- PART_API_IT108: Verify POST guest-invitations rejects the email of a current internal participant.
-- PART_API_IT114: Verify POST guest-invitations answers 404 for someone who may not read the meeting.
-- PART_API_IT115: Verify POST guest-invitations without a token answers 401.
-- PART_API_IT117: Verify DELETE guest-invitations clears the Guest as agenda presenter.
-- PART_API_IT119: Verify DELETE guest-invitations answers 404 for an unknown or already revoked invitation.
-- PART_API_IT122: Verify DELETE guest-invitations answers 403/MSG85 for a Member, 404 for an unrelated account and 401 without a token.
-- PART_API_IT126: Verify GET invitation-response answers 404 while the meeting is not yet published.
-- PART_API_IT127: Verify GET invitation-response answers 404 for a reader with no invitation, such as an Organizer not on the roster.
-- PART_API_IT128: Verify GET invitation-response answers 404 for someone who may not read the meeting, and 401 without a token.
-- PART_API_IT129: Verify GET invitation-response rejects any query string.
-- PART_API_IT138: Verify PUT invitation-response answers 404 for a reader who is not invited, such as the Organizer outside the roster.
-- PART_API_IT139: Verify PUT invitation-response answers 404 for an unrelated account and 401 without a token.
-- PART_API_IT146: Verify GET attendance pages the list and returns an empty page past the end.
-- PART_API_IT153: Verify POST attendance can mark a Guest.
-- PART_API_IT177: Verify chair-handover-candidates answers 403 with an empty body for a deactivated Chair.
+- PART_API_IT65: Verify POST participants answers 404 for someone who may not read the meeting.
+- PART_API_IT66: Verify POST participants without a token answers 401.
+- PART_API_IT70: Verify PUT assignments sending the current role again is a no-op.
+- PART_API_IT76: Verify PUT assignments lets a Draft meeting have no Secretary.
+- PART_API_IT81: Verify PUT assignments rejects empty changes, duplicate ids, an unknown role and more than 100 changes.
+- PART_API_IT84: Verify PUT assignments answers 404 for a participantId that is not a current participant of the meeting.
+- PART_API_IT87: Verify PUT assignments answers 404 for someone who may not read the meeting, and 401 without a token.
+- PART_API_IT88: Verify PUT assignments writes one audit row and notifies the new role holder only on a published meeting.
+- PART_API_IT90: Verify DELETE participant clears the removed person as agenda presenter and from the speaking queue.
+- PART_API_IT94: Verify DELETE participant answers 404 for an assignment that is not current in this meeting.
+- PART_API_IT95: Verify DELETE participant rejects a request body.
+- PART_API_IT99: Verify DELETE participant answers 404 for an unrelated account and 401 without a token.
+- PART_API_IT100: Verify removing a person from a Published meeting notifies them and writes one audit row.
+- PART_API_IT103: Verify POST guest-invitations trims the name and accepts the 200-character name and 256-character email limits.
+- PART_API_IT107: Verify POST guest-invitations rejects the email of a current internal participant.
+- PART_API_IT112: Verify POST guest-invitations answers 404 for someone who may not read the meeting.
+- PART_API_IT113: Verify POST guest-invitations without a token answers 401.
+- PART_API_IT115: Verify DELETE guest-invitations clears the Guest as agenda presenter.
+- PART_API_IT117: Verify DELETE guest-invitations answers 404 for an unknown or already revoked invitation.
+- PART_API_IT120: Verify DELETE guest-invitations answers 403/MSG85 for a Member, 404 for an unrelated account and 401 without a token.
+- PART_API_IT124: Verify GET invitation-response answers 404 while the meeting is not yet published.
+- PART_API_IT125: Verify GET invitation-response answers 404 for a reader with no invitation, such as an Organizer not on the roster.
+- PART_API_IT126: Verify GET invitation-response answers 404 for someone who may not read the meeting, and 401 without a token.
+- PART_API_IT127: Verify GET invitation-response rejects any query string.
+- PART_API_IT135: Verify PUT invitation-response answers 404 for a reader who is not invited, such as the Organizer outside the roster.
+- PART_API_IT136: Verify PUT invitation-response answers 404 for an unrelated account and 401 without a token.
+- PART_API_IT143: Verify GET attendance pages the list and returns an empty page past the end.
+- PART_API_IT150: Verify POST attendance can mark a Guest.
+- PART_API_IT173: Verify chair-handover-candidates answers 403 with an empty body for a deactivated Chair.
 
 **FE-07 Documents** (34)
 
@@ -347,18 +347,18 @@ Tổng: 259 case nhóm B1, 42 case nhóm B2.
 - VOTE_API_IT02: Verify GET /api/meetings/{meetingId}/votes answers 404 for a caller who may not read the meeting.
 - VOTE_API_IT03: Verify GET /api/meetings/{meetingId}/votes without a token answers 401.
 - VOTE_API_IT06: Verify GET /api/meetings/{meetingId}/votes/{voteId} answers 404 for an unknown vote or another meeting's vote.
-- VOTE_API_IT20: Verify attaching a document that is not in the meeting answers 404.
-- VOTE_API_IT21: Verify attaching an already linked document answers 409.
-- VOTE_API_IT24: Verify attaching from the library with no documents answers 400.
-- VOTE_API_IT26: Verify uploading a non-PDF/DOCX file answers 400.
-- VOTE_API_IT27: Verify uploading more than 10 files or 100 MB in one request answers 400.
-- VOTE_API_IT28: Verify uploading to a draft answers 409 MSG346 when the system document storage is full.
-- VOTE_API_IT31: Verify detaching a document that was never linked answers 404.
-- VOTE_API_IT33: Verify opening a draft answers 409 when the caller is not the current Chair.
-- VOTE_API_IT40: Verify voting on a vote that is no longer open answers 409.
-- VOTE_API_IT48: Verify closing an open vote answers 409 for anyone but the current Chair.
-- VOTE_API_IT51: Verify a conclusion outside Passed/NotPassed/Deferred answers 400.
-- VOTE_API_IT52: Verify recording a conclusion answers 409 when the vote is not closed.
+- VOTE_API_IT19: Verify attaching a document that is not in the meeting answers 404.
+- VOTE_API_IT20: Verify attaching an already linked document answers 409.
+- VOTE_API_IT23: Verify attaching from the library with no documents answers 400.
+- VOTE_API_IT25: Verify uploading a non-PDF/DOCX file answers 400.
+- VOTE_API_IT26: Verify uploading more than 10 files or 100 MB in one request answers 400.
+- VOTE_API_IT27: Verify uploading to a draft answers 409 MSG346 when the system document storage is full.
+- VOTE_API_IT30: Verify detaching a document that was never linked answers 404.
+- VOTE_API_IT32: Verify opening a draft answers 409 when the caller is not the current Chair.
+- VOTE_API_IT39: Verify voting on a vote that is no longer open answers 409.
+- VOTE_API_IT47: Verify closing an open vote answers 409 for anyone but the current Chair.
+- VOTE_API_IT50: Verify a conclusion outside Passed/NotPassed/Deferred answers 400.
+- VOTE_API_IT51: Verify recording a conclusion answers 409 when the vote is not closed.
 
 **FE-12 Minutes** (14)
 

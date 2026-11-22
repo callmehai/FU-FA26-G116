@@ -1317,29 +1317,6 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify POST participants answers 413/MSG87 for a body over 64 KiB.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Read the current roster ETag: GET /api/meetings/{meetingId}/participants with Authorization: Bearer <access_token>; keep the ETag header (for example \"participants-7\").",
-            "Send POST /api/meetings/{meetingId}/participants",
-            "Headers: Authorization: Bearer <access_token>; If-Match: \"participants-<revision>\"; Content-Type: application/json",
-            "Body: <JSON body larger than 65536 bytes>"
-          ],
-          "expected": [
-            "HTTP 413 Payload Too Large.",
-            "Body: { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
-          ],
-          "note": "UC-28a · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
-          "id": "PART_API_IT61",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
           "description": "Verify POST participants answers 409/MSG98 while the meeting waits for approval.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1357,7 +1334,7 @@
             "A meeting in WaitingApproval with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT62",
+          "id": "PART_API_IT61",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1379,7 +1356,7 @@
             "A meeting in Ended with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT63",
+          "id": "PART_API_IT62",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1403,7 +1380,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
-          "id": "PART_API_IT64",
+          "id": "PART_API_IT63",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1425,7 +1402,7 @@
             "A Draft meeting created by the Organizer, who is not on its roster."
           ],
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Removed_organizer_keeps_read_access_but_cannot_manage_roster)",
-          "id": "PART_API_IT65",
+          "id": "PART_API_IT64",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1448,7 +1425,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_StrangerIs404)",
-          "id": "PART_API_IT66",
+          "id": "PART_API_IT65",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1466,7 +1443,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Participants_CreateAnonymousIs401)",
-          "id": "PART_API_IT67",
+          "id": "PART_API_IT66",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1489,7 +1466,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded)",
-          "id": "PART_API_IT68",
+          "id": "PART_API_IT67",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1516,7 +1493,7 @@
             "Two accounts not on the roster."
           ],
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Events_include_removed_reader_and_response_audit_only_contains_changed_row)",
-          "id": "PART_API_IT69",
+          "id": "PART_API_IT68",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1548,7 +1525,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-79 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_and_secretary_manage_before_publication)",
-          "id": "PART_API_IT70",
+          "id": "PART_API_IT69",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1572,7 +1549,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · MSG154 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_SameRoleIsNoOp)",
-          "id": "PART_API_IT71",
+          "id": "PART_API_IT70",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1596,7 +1573,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-294 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Chair_replacement_requires_confirmation_and_rolls_back_both_roles_on_second_save_failure)",
-          "id": "PART_API_IT72",
+          "id": "PART_API_IT71",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1620,7 +1597,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Chair_replacement_requires_confirmation_and_rolls_back_both_roles_on_second_save_failure)",
-          "id": "PART_API_IT73",
+          "id": "PART_API_IT72",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1643,7 +1620,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-126 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_can_never_be_removed_or_demoted_without_a_replacement)",
-          "id": "PART_API_IT74",
+          "id": "PART_API_IT73",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1666,7 +1643,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-122 · MSG100 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
-          "id": "PART_API_IT75",
+          "id": "PART_API_IT74",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1690,7 +1667,7 @@
             "The Secretary is the only current Secretary."
           ],
           "note": "UC-28b · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
-          "id": "PART_API_IT76",
+          "id": "PART_API_IT75",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1714,7 +1691,7 @@
             "The Secretary is the only current Secretary."
           ],
           "note": "UC-28b · BR-122 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_DraftMeetingMayHaveNoSecretary)",
-          "id": "PART_API_IT77",
+          "id": "PART_API_IT76",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1738,7 +1715,7 @@
             "The Chair account is active."
           ],
           "note": "UC-28b · BR-126 · MSG256 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Secretary_cannot_touch_active_chair_and_chair_can_hand_over)",
-          "id": "PART_API_IT78",
+          "id": "PART_API_IT77",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1762,7 +1739,7 @@
             "The Chair account is deactivated by the admin."
           ],
           "note": "UC-28b · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Inactive_chair_can_only_be_demoted_during_confirmed_replacement_by_active_member)",
-          "id": "PART_API_IT79",
+          "id": "PART_API_IT78",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1785,7 +1762,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · UC-73 · BR-126 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Secretary_cannot_touch_active_chair_and_chair_can_hand_over)",
-          "id": "PART_API_IT80",
+          "id": "PART_API_IT79",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1808,7 +1785,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-295 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Invalid_chair_recipient_is_rejected)",
-          "id": "PART_API_IT81",
+          "id": "PART_API_IT80",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1832,7 +1809,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_RejectsEmptyDuplicateUnknownAndOversizedChanges)",
-          "id": "PART_API_IT82",
+          "id": "PART_API_IT81",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1854,7 +1831,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
-          "id": "PART_API_IT83",
+          "id": "PART_API_IT82",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1875,7 +1852,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
-          "id": "PART_API_IT84",
+          "id": "PART_API_IT83",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1898,7 +1875,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_UnknownParticipantIs404)",
-          "id": "PART_API_IT85",
+          "id": "PART_API_IT84",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1920,7 +1897,7 @@
             "A meeting in WaitingApproval with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT86",
+          "id": "PART_API_IT85",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1942,7 +1919,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
-          "id": "PART_API_IT87",
+          "id": "PART_API_IT86",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1962,7 +1939,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28b · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_StrangerIs404AndAnonymousIs401)",
-          "id": "PART_API_IT88",
+          "id": "PART_API_IT87",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1988,7 +1965,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-28b · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Assignments_PublishedChangeNotifiesNewRoleHolderAndAudits)",
-          "id": "PART_API_IT89",
+          "id": "PART_API_IT88",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2019,7 +1996,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · MSG103 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
-          "id": "PART_API_IT90",
+          "id": "PART_API_IT89",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2043,7 +2020,7 @@
             "The Member is Presenter of an agenda item and has raised a hand."
           ],
           "note": "UC-28c · BR-337 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_ClearsAgendaPresenterAndSpeakingQueue)",
-          "id": "PART_API_IT91",
+          "id": "PART_API_IT90",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2067,7 +2044,7 @@
             "The Member had answered \"Accepted\"."
           ],
           "note": "UC-28c · BR-88 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
-          "id": "PART_API_IT92",
+          "id": "PART_API_IT91",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2090,7 +2067,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · BR-126 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Chair_can_never_be_removed_or_demoted_without_a_replacement)",
-          "id": "PART_API_IT93",
+          "id": "PART_API_IT92",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2113,7 +2090,7 @@
             "Only one Secretary."
           ],
           "note": "UC-28c · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Last_secretary_is_retained_but_may_be_replaced_atomically)",
-          "id": "PART_API_IT94",
+          "id": "PART_API_IT93",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2135,7 +2112,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_UnknownAssignmentIs404)",
-          "id": "PART_API_IT95",
+          "id": "PART_API_IT94",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2157,7 +2134,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_RejectsRequestBody)",
-          "id": "PART_API_IT96",
+          "id": "PART_API_IT95",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2178,7 +2155,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
-          "id": "PART_API_IT97",
+          "id": "PART_API_IT96",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2199,7 +2176,7 @@
             "A meeting in Ended with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT98",
+          "id": "PART_API_IT97",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2220,7 +2197,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
-          "id": "PART_API_IT99",
+          "id": "PART_API_IT98",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2240,7 +2217,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28c · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_StrangerIs404AndAnonymousIs401)",
-          "id": "PART_API_IT100",
+          "id": "PART_API_IT99",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2265,7 +2242,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Remove_PublishedRemovalNotifiesPersonAndAudits)",
-          "id": "PART_API_IT101",
+          "id": "PART_API_IT100",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2298,7 +2275,7 @@
             "An email address not on the roster."
           ],
           "note": "UC-28a · BR-88 · MSG96 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
-          "id": "PART_API_IT102",
+          "id": "PART_API_IT101",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2322,7 +2299,7 @@
             "A controlled inbox for the Guest address."
           ],
           "note": "UC-28a · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantDeliveryTests.cs (Materialization_is_atomic_deduplicated_and_smtp_disabled_retains_intent)",
-          "id": "PART_API_IT103",
+          "id": "PART_API_IT102",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2345,7 +2322,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_TrimsNameAndAcceptsBoundaryLengths)",
-          "id": "PART_API_IT104",
+          "id": "PART_API_IT103",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2368,7 +2345,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
-          "id": "PART_API_IT105",
+          "id": "PART_API_IT104",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2391,7 +2368,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
-          "id": "PART_API_IT106",
+          "id": "PART_API_IT105",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2414,7 +2391,7 @@
             "A current Guest already invited with guest@example.test."
           ],
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Batch_validation_is_atomic_and_guest_email_uses_citext)",
-          "id": "PART_API_IT107",
+          "id": "PART_API_IT106",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2436,7 +2413,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-82 · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_RejectsEmailOfCurrentInternalParticipant)",
-          "id": "PART_API_IT108",
+          "id": "PART_API_IT107",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2458,7 +2435,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · MSG97 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
-          "id": "PART_API_IT109",
+          "id": "PART_API_IT108",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2479,29 +2456,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
-          "id": "PART_API_IT110",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST guest-invitations rejects a non-JSON content type and an oversized body.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Read the current roster ETag: GET /api/meetings/{meetingId}/participants with Authorization: Bearer <access_token>; keep the ETag header (for example \"participants-7\").",
-            "Send POST /api/meetings/{meetingId}/guest-invitations with Content-Type: text/plain.",
-            "Send it again as application/json with a body larger than 65536 bytes."
-          ],
-          "expected": [
-            "Step 3: HTTP 415 with { \"code\": \"MSG34\", \"message\": \"Yêu cầu phải dùng Content-Type application/json.\" }.",
-            "Step 4: HTTP 413 with { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
-          ],
-          "note": "UC-28a · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
-          "id": "PART_API_IT111",
+          "id": "PART_API_IT109",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2523,7 +2478,7 @@
             "A meeting in WaitingApproval with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT112",
+          "id": "PART_API_IT110",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2545,7 +2500,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRolePolicyTests.cs (Non_managers_read_roster_but_cannot_mutate)",
-          "id": "PART_API_IT113",
+          "id": "PART_API_IT111",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2567,7 +2522,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_StrangerIs404)",
-          "id": "PART_API_IT114",
+          "id": "PART_API_IT112",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2585,7 +2540,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-28a · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (GuestInvite_AnonymousIs401)",
-          "id": "PART_API_IT115",
+          "id": "PART_API_IT113",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2617,7 +2572,7 @@
             "A Guest with a verified session."
           ],
           "note": "UC-28c · BR-181 · MSG103 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Removing_and_reinviting_keeps_history_and_revokes_meeting_and_agenda_access)",
-          "id": "PART_API_IT116",
+          "id": "PART_API_IT114",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2640,7 +2595,7 @@
             "A Guest set as Presenter of an agenda item."
           ],
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_ClearsGuestAsAgendaPresenter)",
-          "id": "PART_API_IT117",
+          "id": "PART_API_IT115",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2663,7 +2618,7 @@
             "A Guest whose invitation email was already delivered."
           ],
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantDeliveryTests.cs (Removal_requires_materialized_invitation_for_same_owner)",
-          "id": "PART_API_IT118",
+          "id": "PART_API_IT116",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2685,7 +2640,7 @@
             "A Guest invitation that was already revoked."
           ],
           "note": "UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_UnknownOrRevokedInvitationIs404)",
-          "id": "PART_API_IT119",
+          "id": "PART_API_IT117",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2709,7 +2664,7 @@
             "A Guest on the roster."
           ],
           "note": "UC-28c · MSG97 · MSG276 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
-          "id": "PART_API_IT120",
+          "id": "PART_API_IT118",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2731,7 +2686,7 @@
             "A Guest on the roster."
           ],
           "note": "UC-28c · BR-80 · MSG98 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT121",
+          "id": "PART_API_IT119",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2755,7 +2710,7 @@
             "A Guest on the roster."
           ],
           "note": "UC-28c · BR-79 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Revoke_MemberIs403StrangerIs404AnonymousIs401)",
-          "id": "PART_API_IT122",
+          "id": "PART_API_IT120",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2784,7 +2739,7 @@
             "The Member has not answered."
           ],
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_owned_without_attendance_changes)",
-          "id": "PART_API_IT123",
+          "id": "PART_API_IT121",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2805,7 +2760,7 @@
             "The Member answered."
           ],
           "note": "UC-29 · BR-106 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Answered_invitation_put_and_no_op_match_read_permissions)",
-          "id": "PART_API_IT124",
+          "id": "PART_API_IT122",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2826,7 +2781,7 @@
             "A Guest with a verified session."
           ],
           "note": "UC-29 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
-          "id": "PART_API_IT125",
+          "id": "PART_API_IT123",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2845,7 +2800,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_DraftMeetingIs404)",
-          "id": "PART_API_IT126",
+          "id": "PART_API_IT124",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2865,7 +2820,7 @@
             "The Organizer created the meeting but is not on its roster."
           ],
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_OrganizerWithoutSeatIs404)",
-          "id": "PART_API_IT127",
+          "id": "PART_API_IT125",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2885,7 +2840,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_StrangerIs404AndAnonymousIs401)",
-          "id": "PART_API_IT128",
+          "id": "PART_API_IT126",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2904,7 +2859,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (OwnResponse_RejectsQueryString)",
-          "id": "PART_API_IT129",
+          "id": "PART_API_IT127",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2936,7 +2891,7 @@
             "The Member has not answered."
           ],
           "note": "UC-29 · BR-105 · BR-115 · MSG105 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_owned_without_attendance_changes)",
-          "id": "PART_API_IT130",
+          "id": "PART_API_IT128",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2959,7 +2914,7 @@
             "The Member has not answered."
           ],
           "note": "UC-29 · BR-105 · BR-321 · MSG105 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (A_declined_meeting_leaves_only_the_decliners_calendar)",
-          "id": "PART_API_IT131",
+          "id": "PART_API_IT129",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2982,7 +2937,7 @@
             "The Member already answered \"Accepted\"."
           ],
           "note": "UC-29 · BR-106 · MSG154 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Answered_invitation_put_and_no_op_match_read_permissions)",
-          "id": "PART_API_IT132",
+          "id": "PART_API_IT130",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3006,7 +2961,7 @@
             "The Member already answered \"Accepted\"."
           ],
           "note": "UC-29 · BR-106 · MSG285 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_asked_once_and_never_of_the_chair)",
-          "id": "PART_API_IT133",
+          "id": "PART_API_IT131",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3029,7 +2984,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · BR-105 · MSG286 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Response_is_asked_once_and_never_of_the_chair)",
-          "id": "PART_API_IT134",
+          "id": "PART_API_IT132",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3054,7 +3009,7 @@
             "The Member has not answered."
           ],
           "note": "UC-29 · MSG106 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Strict_json_rejects_ambiguous_or_untrusted_fields)",
-          "id": "PART_API_IT135",
+          "id": "PART_API_IT133",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3076,28 +3031,7 @@
             "A meeting in Ended with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · BR-106 · MSG107 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (State_matrix_controls_read_management_and_response)",
-          "id": "PART_API_IT136",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT invitation-response answers 415/MSG34 for a non-JSON body and 413/MSG87 for a body over 64 KiB.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/invitation-response with Content-Type: text/plain.",
-            "Send it as application/json with a body larger than 65536 bytes."
-          ],
-          "expected": [
-            "Step 2: HTTP 415 with { \"code\": \"MSG34\", ... }.",
-            "Step 3: HTTP 413 with { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in Published with its Chair, a Secretary and a Member on the roster."
-          ],
-          "note": "UC-29 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Payload_auth_and_write_failure_contracts_are_explicit)",
-          "id": "PART_API_IT137",
+          "id": "PART_API_IT134",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3119,7 +3053,7 @@
             "The Organizer created the meeting but is not on its roster."
           ],
           "note": "UC-29 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Respond_OrganizerWithoutSeatIs404)",
-          "id": "PART_API_IT138",
+          "id": "PART_API_IT135",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3139,7 +3073,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Respond_StrangerIs404AndAnonymousIs401)",
-          "id": "PART_API_IT139",
+          "id": "PART_API_IT136",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3161,7 +3095,7 @@
             "A Guest with a verified session who has not answered."
           ],
           "note": "UC-29 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantEndpointTests.cs (Guest_contract_requires_verified_current_access_and_never_internal_roles)",
-          "id": "PART_API_IT140",
+          "id": "PART_API_IT137",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3182,7 +3116,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-29 · UC-28c · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Response_racing_removal_cannot_resurrect_assignment_or_access)",
-          "id": "PART_API_IT141",
+          "id": "PART_API_IT138",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3212,7 +3146,7 @@
             "One person marked Present, one Absent, one unmarked."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT142",
+          "id": "PART_API_IT139",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3232,7 +3166,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT143",
+          "id": "PART_API_IT140",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3252,7 +3186,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
-          "id": "PART_API_IT144",
+          "id": "PART_API_IT141",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3273,7 +3207,7 @@
             "A row that holds a value recorded before only Present and Absent existed."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Legacy_values_are_separate_and_can_be_corrected_without_rewriting_others)",
-          "id": "PART_API_IT145",
+          "id": "PART_API_IT142",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3295,7 +3229,7 @@
             "At least 5 people on the roster."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Attendance_PagesListAndEmptyPagePastEnd)",
-          "id": "PART_API_IT146",
+          "id": "PART_API_IT143",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3316,7 +3250,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · MSG278 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Read_failure_query_media_size_and_wrong_identifiers_have_stable_codes)",
-          "id": "PART_API_IT147",
+          "id": "PART_API_IT144",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3335,7 +3269,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT148",
+          "id": "PART_API_IT145",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3356,7 +3290,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT149",
+          "id": "PART_API_IT146",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3377,7 +3311,7 @@
             "A stored attendance value is corrupt or the database read is made to fail (only in a prepared environment)."
           ],
           "note": "UC-31 · MSG289 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Corrupt_database_attendance_is_not_silently_mapped_to_unmarked)",
-          "id": "PART_API_IT150",
+          "id": "PART_API_IT147",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3410,7 +3344,7 @@
             "The person is unmarked."
           ],
           "note": "UC-31 · BR-170 · MSG147 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
-          "id": "PART_API_IT151",
+          "id": "PART_API_IT148",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3434,7 +3368,7 @@
             "At least four people on the roster."
           ],
           "note": "UC-31 · BR-172 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
-          "id": "PART_API_IT152",
+          "id": "PART_API_IT149",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3457,7 +3391,7 @@
             "A Guest on the roster."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (Attendance_CanMarkGuest)",
-          "id": "PART_API_IT153",
+          "id": "PART_API_IT150",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3481,7 +3415,7 @@
             "The person is already Present."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Mixed_batch_is_partial_audited_versioned_and_noop_preserves_metadata)",
-          "id": "PART_API_IT154",
+          "id": "PART_API_IT151",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3504,7 +3438,7 @@
             "The person is marked Present."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Legacy_values_are_separate_and_can_be_corrected_without_rewriting_others)",
-          "id": "PART_API_IT155",
+          "id": "PART_API_IT152",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3529,7 +3463,7 @@
             "The second person's attendance changed since the version was read."
           ],
           "note": "UC-31 · BR-172 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceConcurrencyTests.cs (Reverse_order_batches_do_not_deadlock_and_stale_batch_is_atomic)",
-          "id": "PART_API_IT156",
+          "id": "PART_API_IT153",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3552,7 +3486,7 @@
             "A Member removed after the Secretary loaded the list."
           ],
           "note": "UC-31 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Invalid_entries_are_rejected)",
-          "id": "PART_API_IT157",
+          "id": "PART_API_IT154",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3575,7 +3509,7 @@
             "Two Secretary accounts on the roster."
           ],
           "note": "UC-31 · BR-172 · MSG151 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceConcurrencyTests.cs (Concurrent_writers_compare_versions_after_waiting)",
-          "id": "PART_API_IT158",
+          "id": "PART_API_IT155",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3598,7 +3532,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-170 · MSG149 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
-          "id": "PART_API_IT159",
+          "id": "PART_API_IT156",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3620,7 +3554,7 @@
             "A meeting in Ended with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · MSG149 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Only_in_progress_can_write)",
-          "id": "PART_API_IT160",
+          "id": "PART_API_IT157",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3643,7 +3577,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-170 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT161",
+          "id": "PART_API_IT158",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3667,7 +3601,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT162",
+          "id": "PART_API_IT159",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3687,7 +3621,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Authorization_and_field_privacy_are_server_side)",
-          "id": "PART_API_IT163",
+          "id": "PART_API_IT160",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3712,7 +3646,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · MSG148 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Strict_body_validation)",
-          "id": "PART_API_IT164",
+          "id": "PART_API_IT161",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3735,28 +3669,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · MSG148 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Strict_body_validation)",
-          "id": "PART_API_IT165",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST attendance answers 415/MSG34 for a non-JSON body and 413/MSG87 over 64 KiB, even when sent in chunks.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/attendance with Content-Type: text/plain.",
-            "Send it as application/json with a body over 65536 bytes, once with Content-Length and once chunked."
-          ],
-          "expected": [
-            "Step 2: HTTP 415 with { \"code\": \"MSG34\", ... }.",
-            "Step 3: both requests HTTP 413 with { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
-          ],
-          "note": "UC-31 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Chunked_requests_cannot_bypass_body_size_limit)",
-          "id": "PART_API_IT166",
+          "id": "PART_API_IT162",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3781,7 +3694,7 @@
             "The database write is made to fail (only in a prepared environment)."
           ],
           "note": "UC-31 · MSG150 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Persistence_failure_rolls_back_batch_and_transport_failure_keeps_commit)",
-          "id": "PART_API_IT167",
+          "id": "PART_API_IT163",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3801,7 +3714,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-31 · Automated: tests/TrustCabinet.Web.Tests/Attendance/AttendanceEndpointTests.cs (Response_and_role_updates_preserve_attendance_token_and_ABA_does_not)",
-          "id": "PART_API_IT168",
+          "id": "PART_API_IT164",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3831,7 +3744,7 @@
             "A deactivated Member and a Secretary on the roster."
           ],
           "note": "UC-73 · BR-295 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Candidates_filter_before_search_and_paging_without_guest_profile_dependency)",
-          "id": "PART_API_IT169",
+          "id": "PART_API_IT165",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3853,7 +3766,7 @@
             "At least two Members."
           ],
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Candidates_filter_before_search_and_paging_without_guest_profile_dependency)",
-          "id": "PART_API_IT170",
+          "id": "PART_API_IT166",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3874,7 +3787,7 @@
             "A Published meeting whose roster is only the Chair and a Secretary."
           ],
           "note": "UC-73 · MSG258 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (No_eligible_members_is_successful_empty_state_and_has_no_side_effects)",
-          "id": "PART_API_IT171",
+          "id": "PART_API_IT167",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3894,7 +3807,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Query_validation_is_strict)",
-          "id": "PART_API_IT172",
+          "id": "PART_API_IT168",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3915,7 +3828,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT173",
+          "id": "PART_API_IT169",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3934,7 +3847,7 @@
             "A meeting in Draft with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-126 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Status_gate_precedes_validation)",
-          "id": "PART_API_IT174",
+          "id": "PART_API_IT170",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3955,7 +3868,7 @@
             "A Guest with a verified session."
           ],
           "note": "UC-73 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT175",
+          "id": "PART_API_IT171",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3975,7 +3888,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT176",
+          "id": "PART_API_IT172",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3996,7 +3909,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantRound1Tests.cs (ChairCandidates_DeactivatedChairIs403)",
-          "id": "PART_API_IT177",
+          "id": "PART_API_IT173",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4017,7 +3930,7 @@
             "The database read is made to fail (only in a prepared environment)."
           ],
           "note": "UC-73 · MSG95 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Missing_secretary_blocks_swap_and_read_failures_have_standard_mapping)",
-          "id": "PART_API_IT178",
+          "id": "PART_API_IT174",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4049,7 +3962,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-126 · BR-295 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
-          "id": "PART_API_IT179",
+          "id": "PART_API_IT175",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4071,7 +3984,7 @@
             "A meeting in InProgress with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-126 · MSG257 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
-          "id": "PART_API_IT180",
+          "id": "PART_API_IT176",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4098,7 +4011,7 @@
             "Admin account supplied by QA lead."
           ],
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Handover_preserves_evidence_and_commits_exactly_one_set_of_side_effects)",
-          "id": "PART_API_IT181",
+          "id": "PART_API_IT177",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4122,7 +4035,7 @@
             "The real-time channel is made to fail (only in a prepared environment)."
           ],
           "note": "UC-73 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Transport_failure_after_commit_does_not_report_false_save_failure)",
-          "id": "PART_API_IT182",
+          "id": "PART_API_IT178",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4147,7 +4060,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · MSG101 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Strict_body_validation_precedes_missing_header)",
-          "id": "PART_API_IT183",
+          "id": "PART_API_IT179",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4172,7 +4085,7 @@
             "A deactivated Member on the roster."
           ],
           "note": "UC-73 · BR-295 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Invalid_recipient_precedes_stale_revision)",
-          "id": "PART_API_IT184",
+          "id": "PART_API_IT180",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4192,7 +4105,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · MSG259 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Invalid_recipient_precedes_stale_revision)",
-          "id": "PART_API_IT185",
+          "id": "PART_API_IT181",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4217,7 +4130,7 @@
             "Another roster change was made after the ETag was read."
           ],
           "note": "UC-73 · MSG275 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
-          "id": "PART_API_IT186",
+          "id": "PART_API_IT182",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4237,28 +4150,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · MSG276 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Header_media_length_and_query_limits_are_enforced)",
-          "id": "PART_API_IT187",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify chair-handover answers 415/MSG34 for a non-JSON body and 413/MSG87 over 64 KiB.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/participants/chair-handover with Content-Type: text/plain.",
-            "Send it as application/json with a body over 65536 bytes."
-          ],
-          "expected": [
-            "Step 2: HTTP 415, \"code\": \"MSG34\".",
-            "Step 3: HTTP 413, \"code\": \"MSG87\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in Published with its Chair, a Secretary and a Member on the roster."
-          ],
-          "note": "UC-73 · MSG34 · MSG87 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Body_media_and_size_errors_precede_unknown_query)",
-          "id": "PART_API_IT188",
+          "id": "PART_API_IT183",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4282,7 +4174,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-126 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT189",
+          "id": "PART_API_IT184",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4305,7 +4197,7 @@
             "A Draft meeting chaired by the Chair (repeat on an Ended meeting)."
           ],
           "note": "UC-73 · MSG260 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Status_gate_precedes_validation)",
-          "id": "PART_API_IT190",
+          "id": "PART_API_IT185",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4325,7 +4217,7 @@
             "A Guest with a verified session."
           ],
           "note": "UC-73 · MSG85 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT191",
+          "id": "PART_API_IT186",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4345,7 +4237,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-121 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Access_gate_does_not_leak_resources_or_allow_non_chairs)",
-          "id": "PART_API_IT192",
+          "id": "PART_API_IT187",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4369,7 +4261,7 @@
             "A Published meeting with a Chair, a Member and no Secretary (prepared directly in the database)."
           ],
           "note": "UC-73 · BR-122 · MSG109 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Missing_secretary_blocks_swap_and_read_failures_have_standard_mapping)",
-          "id": "PART_API_IT193",
+          "id": "PART_API_IT188",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4394,7 +4286,7 @@
             "The database write is made to fail (only in a prepared environment)."
           ],
           "note": "UC-73 · MSG102 · Automated: tests/TrustCabinet.Web.Tests/Participants/ChairHandoverEndpointTests.cs (Failure_at_either_save_rolls_back_roles_revision_and_all_side_effects)",
-          "id": "PART_API_IT194",
+          "id": "PART_API_IT189",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4415,7 +4307,7 @@
             "A meeting in Published with its Chair, a Secretary and a Member on the roster."
           ],
           "note": "UC-73 · BR-126 · Automated: tests/TrustCabinet.Web.Tests/Participants/ParticipantConcurrencyTests.cs (Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary)",
-          "id": "PART_API_IT195",
+          "id": "PART_API_IT190",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
