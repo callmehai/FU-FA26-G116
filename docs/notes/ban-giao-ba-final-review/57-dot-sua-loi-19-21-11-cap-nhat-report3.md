@@ -2,7 +2,7 @@
 
 **Người ghi:** agent, theo 5 tin của bot kênh `note-gửi-ba` (19–20/11/2026, đã thả ❌ ngày 21/11). **Ngày:** 21/11/2026.
 **Nhánh / worktree:** `docs/report3-dot-sua-loi-19-21-11` tại `../TrustCabinet-note57`, tách từ **`origin/app`** (`23c41181`; `app` chứa toàn bộ `main` + #448). PR của note này đích **`app`**.
-**Trạng thái: 🟡 XONG PHẦN SỬA, CHỜ 2 QUYẾT ĐỊNH (1.4 AF, BR khoá tab) + REVIEW TỔNG THỂ** — DOCX + sequence + snapshot xong hết nhóm 1–10; chưa commit/push/Drive, chưa comment Jira (§2 để sau merge).
+**Trạng thái: 🟡 XONG PHẦN SỬA, CHỜ 2 QUYẾT ĐỊNH (1.4 AF, BR khoá tab) + REVIEW TỔNG THỂ** — DOCX + sequence + snapshot xong hết nhóm 1–10; đã push nhánh `docs/report3-dot-sua-loi-19-21-11`, PR #465 đích `app` đang mở, chưa merge/Drive, chưa comment Jira (§2 để sau merge).
 **Nguồn chuẩn:** DOCX `docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`. Không sửa tay `Report-3_*.md`, `05-use-case-specifications.md`, `06-business-rules.md` (sinh bằng `scripts/sync_reports.py`). Mô tả từng PR trên GitHub là nguồn chi tiết.
 
 > **PR #448 (bản tổng hợp Online + MP3) đã vào `app` (`ccde071a`), chưa lên `main`.** Đặc tả làm bình thường trên nhánh `app`. Khi comment Jira cho nhóm 10, ghi rõ "đã vào `app`, chưa lên `main`", giữ nguyên trạng thái ticket.
@@ -84,7 +84,8 @@ Quy ước: ☐ chưa làm · mỗi dòng gồm *sửa gì → ở đâu*. Sửa
 
 **Nhóm 9 · Tab Bản ghi (#424) và khoá tab (#427)** — SCRUM-31, SCRUM-29, SCRUM-32 — ✅ XONG PHẦN CHẮC 21/11, **TREO: hỏi BR mới hay không** (xem "Kết quả nhóm 9" + §4.2)
 - ☑ 9.1 **UC-43a/43b, UC-45a**: câu liền nhau của một người gộp thành một đoạn; đang lọc theo người thì nghe một câu rồi dừng; khi phát tô từng từ nếu bản ghi có mốc; dấu câu của câu trước có thể được chấm lại khi câu sau tới.
-- ☐ 9.2 **UC-43a** và các UC chi tiết cuộc họp (UC-58 biên bản, UC-16 — UC-17 không có tab nên bỏ): **tab Bản ghi khoá đến khi họp bắt đầu** (Thư ký đang thu giọng mẫu thì mở sớm — UC-44/SCRUM-152), **Biên bản khoá đến khi họp kết thúc**, **họp đã huỷ khoá cả hai**; link tới tab đang khoá mở **Thông tin chung**; nút khoá nào cũng có lý do. **TREO: BR mới (số kế tiếp) hay chỉ ghi trong UC? — chờ trả lời, chưa tạo BR.**
+- ☑ 9.2a **UC-43a** và các UC chi tiết cuộc họp (UC-58 biên bản, UC-16 — UC-17 không có tab nên bỏ): **tab Bản ghi khoá đến khi họp bắt đầu** (Thư ký đang thu giọng mẫu thì mở sớm — UC-44/SCRUM-152), **Biên bản khoá đến khi họp kết thúc**, **họp đã huỷ khoá cả hai**; link tới tab đang khoá mở **Thông tin chung**; nút khoá nào cũng có lý do. Đã xong trong DOCX + màn 4.5.
+- ☐ 9.2b TREO: BR mới (số kế tiếp) cho mốc mở tab hay chỉ ghi trong UC? — chờ trả lời, chưa tạo BR.
 - ☑ 9.3 Màn chi tiết cuộc họp trong Report 3 §III (4.5 Tabs): câu chữ lý do khoá đọc từ `MeetingDetailPage.tsx` (không bịa).
 
 **Nhóm 10 · Bản tổng hợp Online + MP3 (#448, đã vào `app`)** — SCRUM-29, SCRUM-153 — ✅ XONG 21/11 (xem "Kết quả nhóm 10" ở cuối note)
@@ -114,7 +115,7 @@ Quy ước: ☐ chưa làm · mỗi dòng gồm *sửa gì → ở đâu*. Sửa
 
 ### Bước 5 — PR
 
-- ☐ 5.1 Commit (tiếng Việt, theo lịch sử repo) — **chỉ khi Khánh bảo commit**. Push + mở PR đích `main`, tiêu đề tiếng Anh, mô tả tiếng Anh, nêu: PR nào đã phản ánh, #448 chờ `main`.
+- ☑ 5.1 Commit + push, mở PR [#465](https://github.com/callmehai/FU-FA26-G116/pull/465) đích `app` (tiêu đề, mô tả tiếng Anh; #448 đã vào `app`). Commit thứ hai 22/11/2026 sửa theo review: UC-43c EX-3, BR-130, BR-439 (danh sách người duyệt UC-18), Change Log 21/11.
 - ☐ 5.2 Không đẩy Drive (`push_reports.py`) khi chưa được yêu cầu.
 
 ## 2. Sau khi PR sửa được merge — Jira (DEVELOPMENT_WORKFLOW §2.2)
@@ -123,7 +124,7 @@ Làm **sau** khi `git log --oneline origin/app` thấy merge commit của PR nà
 
 | Ticket | Nhóm | Nội dung comment |
 |---|---|---|
-| SCRUM-69 | 1 | BR-130, BR-164, UC-21 (+ luồng phụ), MSG112, sequence UC21 |
+| SCRUM-69 | 1 | BR-130, BR-164, UC-21 (chưa thêm luồng phụ 1.4 — chờ Hải, không ghi đã thêm), MSG112, sequence UC21 |
 | SCRUM-41 | 2 | UC-37/38 tab mới, nút Trang cuộc họp, rời phòng |
 | SCRUM-16 | 3 | BR-441–443, UC-13 hiện tên đối tượng, họp Mật |
 | SCRUM-36 | 4 | UC-47 điều kiện đã kết thúc + có câu thoại, MSG481 |
@@ -144,6 +145,21 @@ Quy tắc: ticket nào chỉ một phần vào `main` (code có, tài liệu ch�
 Kênh `note-gửi-ba` (`1562073406482948188`):
 `1573056876734844941` (#420–#425) · `1573078668077695088` (#422–#427) · `1573308300777492541` (#430) · `1573343903170699335` (#436) · `1573357998242406665` (#448).
 Gỡ ❌ bằng REST (`DELETE …/reactions/%E2%9D%8C/@me`), rồi thêm ✅ — xem memory `discord-note-gui-ba-reactions`.
+
+## 3a. Đặc tả màn hình (Report 3 §III) — PENDING
+
+Mọi thay đổi liên quan đặc tả màn hình trong đợt này để **PENDING**: chưa chốt, không coi là xong khi review PR #465, xử lý sau theo luồng wireframe (không chụp ảnh app). Các đoạn §III đã sửa trong DOCX giữ nguyên, chờ rà lại cùng wireframe:
+
+| Nhóm | Màn / đoạn §III | Trạng thái |
+|---|---|---|
+| 1 | Nút Start T198; P564, P616, P655 (Chủ toạ hoặc Thư ký bắt đầu) | PENDING — đã sửa chữ, chờ rà |
+| 2 | P663, P813, P818, P661 (tab mới, nút back, Leave đóng tab, End đỏ); T191 R6, cột Status 4.3 (Ended xanh); T194 | PENDING — đã sửa chữ, chờ rà |
+| 3 | Màn Nhật ký hệ thống: P486, P488, T189 R6 (ô Search), T189 R10 (cột Đối tượng) | PENDING — đã sửa chữ, chờ rà |
+| 6 | **Màn 4.3, dropdown Thời điểm: dòng "Other choices" thiếu `Today [Hôm nay]`** (code `WHEN_OPTIONS` = today, week, upcoming, past) | **PENDING — CHƯA SỬA** |
+| 6 | Màn 4.3: gạch Filter Meetings + mở với "Mọi thời điểm" | PENDING — đã sửa chữ, chờ rà |
+| 7 | Màn 16.7 / màn UC-84 không có trong DOCX | PENDING — chưa có màn |
+| 8 | Màn 7.4, File hint, Upload, Upload area, P774, T239 (10 MB/100 MB); màn 8.6 (khung xem trên trang) | PENDING — đã sửa chữ, chờ rà |
+| 9 | Màn 4.5 dòng Tabs (lý do khoá tab) | PENDING — đã sửa chữ, chờ rà |
 
 ## 4. Điểm cần xác nhận với Hải
 
