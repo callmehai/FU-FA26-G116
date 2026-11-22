@@ -259,6 +259,39 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
+    public async Task What_the_secretary_corrected_by_hand_survives_transcribing_the_recording_again()
+    {
+        // ADR-0077: a room recording is transcribed again after every take; names, edits and moves must not vanish.
+        var s = await fixture.Seed();
+        fixture.Speech.Failure = null;
+        var id = await Upload(s);
+        await ProcessAll();
+        using var secretary = fixture.Client(s.Secretary);
+        var lines = (await Transcript(secretary, id)).GetProperty("segments").EnumerateArray()
+            .Select(x => x.GetProperty("id").GetGuid()).ToArray();
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_00", new { userId = s.Member }), 200, "MSG316");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[1]}", new { text = "Tôi đề nghị bổ sung kinh phí đào tạo." }),
+            200, "MSG302");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[1]}/speaker", new { userId = s.Secretary }), 200, "MSG407");
+
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
+        await ProcessAll();
+
+        var again = await Transcript(secretary, id);
+        Assert.Equal("Completed", again.GetProperty("status").GetString());
+        var voices = again.GetProperty("speakers").EnumerateArray()
+            .ToDictionary(v => v.GetProperty("label").GetString()!, v => v.GetProperty("assignedUserId"));
+        Assert.Equal(s.Member, voices["SPEAKER_00"].GetGuid());
+        var line = again.GetProperty("segments")[1];
+        Assert.NotEqual(lines[1], line.GetProperty("id").GetGuid());
+        Assert.Equal("Tôi đề nghị bổ sung kinh phí đào tạo.", line.GetProperty("text").GetString());
+        Assert.Equal("Recording test 0", line.GetProperty("editedByName").GetString());
+        Assert.Equal(s.Secretary, voices[line.GetProperty("speakerLabel").GetString()!].GetGuid());
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "transcript.corrections_carried"));
+    }
+
+    [Fact]
     public async Task A_recording_erased_while_the_worker_runs_gets_no_transcript_back()
     {
         var s = await fixture.Seed();

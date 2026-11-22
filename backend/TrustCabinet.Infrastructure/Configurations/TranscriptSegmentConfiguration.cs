@@ -22,5 +22,10 @@ public class TranscriptSegmentConfiguration : IEntityTypeConfiguration<Transcrip
             .WithMany()
             .HasForeignKey(s => s.EditedById)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(s => s.SpeakerAssignedBy)
+            .WithMany()
+            .HasForeignKey(s => s.SpeakerAssignedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

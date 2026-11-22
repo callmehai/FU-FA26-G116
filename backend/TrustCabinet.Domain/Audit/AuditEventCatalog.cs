@@ -90,6 +90,7 @@ public static class AuditEventCatalog
         new(AuditActions.TranscriptSegmentSpeakerAssigned, "Gán người nói cho một đoạn", Recordings),
         new(AuditActions.TranscriptSegmentEdited, "Sửa đoạn gỡ băng", Recordings),
         new(AuditActions.TranscriptRerun, "Gỡ băng lại", Recordings),
+        new(AuditActions.TranscriptCorrectionsCarried, "Giữ phần sửa tay khi gỡ băng lại", Recordings),
         new(AuditActions.TranscriptExported, "Xuất bản gỡ băng", Recordings),
         new(AuditActions.SpeechClipEdited, "Sửa câu nói", Recordings),
         new(AuditActions.SpeechClipDeleted, "Xoá câu nói", Recordings),

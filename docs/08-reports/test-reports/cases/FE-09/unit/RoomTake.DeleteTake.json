@@ -49,9 +49,9 @@
             "Transcript in status Processing."
           ],
           "inputs": "take 2.",
-          "return": "Success; no line is removed, the transcript is reset to Pending with progress 0 so it is made again from the shorter file.",
+          "return": "Success; the transcript is reset to Pending with progress 0 so it is made again from the shorter file, and the last finished run's lines are cut and moved up as for a completed transcript (ADR-0077).",
           "exception": "N/A",
-          "log": "Audit RecordingTakeDeleted with 0 lines.",
+          "log": "Audit RecordingTakeDeleted with the number of lines cut.",
           "type": "Boundary",
           "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366",
           "round1": "Passed",
