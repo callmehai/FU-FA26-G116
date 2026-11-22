@@ -833,24 +833,23 @@ function ConclusionForm({
 }: {
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
 }) {
-  const [value, setValue] = useState<VoteConclusionValue | ''>('')
+  // Starts on "Thông qua": a control with nothing picked showed three plain words and read as text, not as
+  // something to press (Hải 23/11/2026). The Chair still picks and records it; the tally never sets it (BR-263).
+  const [value, setValue] = useState<VoteConclusionValue>('Passed')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
-  // The button stays live and says what is missing, rather than greying out with no reason given.
-  const [missing, setMissing] = useState(false)
   return (
     <form
       className="vote-box vote-conclusion-form"
       onSubmit={async (event) => {
         event.preventDefault()
-        if (!value) return setMissing(true)
         setSaving(true)
         await onConclude(value, note.trim())
         setSaving(false)
       }}
     >
       <h4 className="field-required">Kết luận</h4>
-      <SegmentedControl<VoteConclusionValue | ''>
+      <SegmentedControl<VoteConclusionValue>
         label="Kết luận"
         value={value}
         options={[
@@ -858,13 +857,9 @@ function ConclusionForm({
           { value: 'NotPassed', label: 'Không thông qua', short: 'Không qua' },
           { value: 'Deferred', label: 'Hoãn' },
         ]}
-        onChange={(next) => {
-          setValue(next)
-          setMissing(false)
-        }}
+        onChange={setValue}
         disabled={saving}
       />
-      {missing && <small className="field-error">Chọn kết luận.</small>}
       <label className="field">
         <span>Ghi chú</span>
         <textarea

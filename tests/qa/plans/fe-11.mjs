@@ -888,10 +888,9 @@ export default {
           await qa.expect(voters.locator('li').filter({ hasText: u.secretary.name })).toContainText('Không đồng ý')
           await qa.expect(voters.locator('li').filter({ hasText: u.chair.name })).toContainText('Không bỏ phiếu')
           const form = row.locator('form.vote-conclusion-form')
-          await qa.expect(form.getByRole('radio', { checked: true })).toHaveCount(0)
-          // Pressed with no conclusion picked, it says what is missing instead of being greyed out.
-          await press(qa, form.getByRole('button', { name: 'Ghi kết luận' }))
-          await qa.expect(form.getByText('Chọn kết luận.')).toBeVisible()
+          // It starts on "Thông qua" so it reads as a choice to make (Hải 23/11/2026); nothing is recorded until pressed.
+          await qa.expect(form.getByRole('radio', { checked: true })).toHaveCount(1)
+          await qa.expect(form.getByRole('radio', { name: 'Thông qua' })).toBeChecked()
           await row.scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('ket-qua-cong-khai', { fullPage: true })
