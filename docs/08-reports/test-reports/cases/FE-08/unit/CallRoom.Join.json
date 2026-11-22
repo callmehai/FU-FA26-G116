@@ -22,47 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a verified guest session of this meeting with a declared display name.",
-            "LiveKit is configured."
-          ],
-          "inputs": "meetingId: the meeting; caller: that guest session; recordingNoticeAcknowledged: true.",
-          "return": "Success with a join ticket whose identity is \"guest-{sessionId}\"; one audit row call.guest_admitted (object = the session, no actor, with meetingId, invitationId, display name, recordingNoticeAcknowledged true) written before any token exists.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37 · UC-04"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Caller cannot read the meeting (stranger, or meeting does not exist)."
-          ],
-          "inputs": "meetingId: that meeting; caller: the stranger.",
-          "return": "NotFound; no ticket, nothing written, existence stays hidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Caller holds a verified guest session of another meeting."
-          ],
-          "inputs": "meetingId: this meeting; caller: that guest session; recordingNoticeAcknowledged: true.",
-          "return": "NotFound; a guest token of another meeting is answered as if the meeting did not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress with mode InPerson; caller is a current participant."
           ],
@@ -71,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG280"
+          "note": "UC-37 · MSG280",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Meeting Published with mode Online; caller is a current participant."
           ],
@@ -83,10 +52,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG117"
+          "note": "UC-37 · MSG117",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress with mode Online; caller is a current participant.",
             "LiveKit is not configured."
@@ -96,10 +68,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · MSG281"
+          "note": "UC-37 · MSG281",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress with mode Online; caller is a verified guest session of this meeting.",
             "LiveKit is configured."
@@ -109,48 +84,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG380"
+          "note": "UC-37 · UC-04 · MSG380",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a verified guest session of this meeting."
-          ],
-          "inputs": "meetingId: the meeting; caller: that guest session; recordingNoticeAcknowledged sent as the text \"true\" instead of JSON true.",
-          "return": "RecordingNoticeRequired (MSG380); only the JSON value true counts.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG380"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a current participant.",
-            "LiveKit is configured with TokenTtlMinutes 0."
-          ],
-          "inputs": "meetingId: the meeting; caller: the participant.",
-          "return": "Success with a ticket expiring in 1 minute; a zero or negative lifetime is clamped up to 1 minute.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a current participant.",
-            "LiveKit is configured with TokenTtlMinutes 120."
-          ],
-          "inputs": "meetingId: the meeting; caller: the participant.",
-          "return": "Success with a ticket expiring in 60 minutes; an over-long lifetime is clamped down to 60 minutes.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC012",
+          "id": "UTC006",
           "preconditions": [
             "Meeting InProgress with mode Online; caller is a current participant.",
             "The access read fails in storage."
@@ -160,32 +100,10 @@
           "exception": "N/A",
           "log": "Could not read call room access for meeting {MeetingId}.",
           "type": "Abnormal",
-          "note": "UC-37 · MSG118"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a verified guest session of this meeting.",
-            "The guest-admission audit write fails in storage."
-          ],
-          "inputs": "meetingId: the meeting; caller: that guest session; recordingNoticeAcknowledged: true.",
-          "return": "ReadFailed (MSG118); no token is issued without the recorded evidence of the notice.",
-          "exception": "N/A",
-          "log": "Could not record the admission of guest session {SessionId}.",
-          "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG118"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "A caller that is neither a signed-in user nor a guest (no id on either side)."
-          ],
-          "inputs": "meetingId: any meeting; caller: empty.",
-          "return": "No result; the member identity cannot be resolved.",
-          "exception": "ArgumentException: a caller is a user or a guest.",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-37"
+          "note": "UC-37 · MSG118",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

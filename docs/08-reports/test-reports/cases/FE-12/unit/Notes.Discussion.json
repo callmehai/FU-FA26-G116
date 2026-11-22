@@ -44,7 +44,7 @@
           "return": "Empty list; the line moved to section III.",
           "exception": "N/A",
           "log": "N/A",
-          "type": "Boundary",
+          "type": "Normal",
           "note": "UC-59 · UC-82"
         },
         {
@@ -68,7 +68,7 @@
           "return": "Empty list.",
           "exception": "N/A",
           "log": "N/A",
-          "type": "Boundary",
+          "type": "Normal",
           "note": "UC-59 · UC-82"
         }
       ]

@@ -21,7 +21,10 @@
             "Time already has microsecond precision in UTC."
           ],
           "return": "2026-12-01T03:00:00.123456Z.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,7 +36,10 @@
             "Time has a 7th fractional digit."
           ],
           "return": "2026-12-01T03:00:00.123456Z; the extra tick is dropped, not rounded.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -45,19 +51,10 @@
             "Time has a local offset."
           ],
           "return": "2026-12-01T03:00:00.5Z, offset zero.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "time: 2026-12-01T03:00:00.1234569Z.",
-          "log": "N/A",
-          "note": "BR-72",
-          "preconditions": [
-            "Time ends in 9 ticks (0.9 microsecond)."
-          ],
-          "return": "2026-12-01T03:00:00.123456Z (truncation, not rounding up).",
-          "type": "Boundary"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

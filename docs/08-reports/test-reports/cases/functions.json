@@ -63,6 +63,29 @@
       "sheet": "Jwt.AccessToken"
     },
     {
+      "description": "Password hashing and verification: same password verifies, different password fails, malformed hash fails instead of throwing.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": "Returns true only when the supplied password matches the stored hash; a wrong password or a malformed hash returns false without throwing.",
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 30,
+          "method": "PasswordHasher.Verify",
+          "layer": "Infrastructure"
+        },
+        {
+          "decides": "Hashes with a random salt, so the same password hashes differently every time and every hash verifies.",
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 28,
+          "method": "PasswordHasher.Hash",
+          "layer": "Infrastructure"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "No database needed; pure hashing check.",
+      "sheet": "Password.Verify"
+    },
+    {
       "description": "Google sign-in: identity verification, linking an administrator-created account by email, deactivated and unlinked accounts.",
       "feature": "FE-01",
       "methods": [
@@ -2553,7 +2576,7 @@
     },
     {
       "file": "backend/TrustCabinet.Application/Access/RolePermissionResult.cs",
-      "reason": "Result factories: status and message code only; covered through RolePerm.Update."
+      "reason": "Result factories: status and message code only; covered through RolePermission.Update."
     },
     {
       "file": "backend/TrustCabinet.Application/Authentication/GoogleSignInResult.cs",
@@ -2561,7 +2584,7 @@
     },
     {
       "file": "backend/TrustCabinet.Application/Authentication/SignInResult.cs",
-      "reason": "Result factory: status and message code only; covered through Auth.SignIn."
+      "reason": "Result factory: status and message code only; covered through Authentication.SignIn."
     },
     {
       "class": "CallResult",
@@ -3972,18 +3995,6 @@
       "class": "JwtTokenIssuer",
       "method": "JwtTokenIssuer.CreateRefreshToken",
       "reason": "Covered indirectly via Authentication.Refresh; Helper plumbing (tạo refresh token, phần còn lại của luồng refresh); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
-    },
-    {
-      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-      "class": "PasswordHasher",
-      "method": "PasswordHasher.Hash",
-      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (băm mật khẩu nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
-    },
-    {
-      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-      "class": "PasswordHasher",
-      "method": "PasswordHasher.Verify",
-      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (so khớp hash nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
     },
     {
       "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",

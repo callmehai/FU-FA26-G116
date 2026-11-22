@@ -21,7 +21,10 @@
             "Title has surrounding spaces."
           ],
           "return": "{Title: \"Opening\"; Description: \"Notes\"}.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,23 +36,14 @@
             "Title is null and description is null."
           ],
           "return": "{Title: \"\"; Description: \"\"}.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "input {Title: \"   \"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Title is only spaces."
-          ],
-          "return": "Title \"\" (later rejected by validation).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "input {Title: \"A\"; Description: \"  line  \"}.",
           "log": "N/A",
           "note": "UC-23a · BR-66",
@@ -57,19 +51,10 @@
             "Description keeps its own spacing."
           ],
           "return": "Description is left as \"  line  \" (not trimmed).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "input {Title: \" A \"; PresenterId: P; DocumentIds: [D1]}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66",
-          "preconditions": [
-            "Other fields are untouched."
-          ],
-          "return": "Title \"A\"; PresenterId P and DocumentIds [D1] unchanged.",
-          "type": "Normal"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

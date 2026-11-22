@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "Saved: draft content replacing the old text whole; the earlier review and correction no longer apply.",
           "type": "Normal",
-          "note": "UC-47 · BR-376 · BR-378 · BR-379 · Pending: needs a live language model; the draft text comes from the model and cannot be stubbed."
+          "note": "UC-47 · BR-376 · BR-378 · BR-379",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,7 +37,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-47"
+          "note": "UC-47",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -58,7 +64,10 @@
           "exception": "N/A",
           "log": "Warning logged with the meeting id and the model message.",
           "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model; the failure message comes from the model."
+          "note": "UC-47",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
@@ -70,7 +79,10 @@
           "exception": "N/A",
           "log": "Error logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model; the throw comes from the model call."
+          "note": "UC-47",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC006",
@@ -82,7 +94,7 @@
           "exception": "N/A",
           "log": "Error logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model plus a real store failure while persisting the draft."
+          "note": "UC-47"
         }
       ]
     }

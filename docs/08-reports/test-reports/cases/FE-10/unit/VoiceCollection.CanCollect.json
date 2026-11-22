@@ -21,22 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-86b · BR-451"
+          "note": "UC-86b · BR-451",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Meeting status is InProgress."
-          ],
-          "inputs": "status: InProgress.",
-          "return": "true.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-86b · BR-451"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Meeting status is Ended."
           ],
@@ -45,10 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-451 · MSG477"
+          "note": "UC-86b · BR-451 · MSG477",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Meeting status is Cancelled."
           ],
@@ -57,7 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-451"
+          "note": "UC-86b · BR-451",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

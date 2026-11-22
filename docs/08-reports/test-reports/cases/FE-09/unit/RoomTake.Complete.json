@@ -23,7 +23,10 @@
           "exception": "N/A",
           "log": "File cut to its whole-millisecond size and its WAV lengths sealed; a Transcript in status Pending is created; audit RecordingTakeSaved kept true with takeMs; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG363"
+          "note": "UC-44b · BR-341 · BR-345 · MSG363",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -37,94 +40,13 @@
           "exception": "N/A",
           "log": "Joined file written; audit RecordingTakeSaved on the room recording with appended true, takeMs 5000, totalMs 35000; the previous room file and the take's file are deleted after the commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · BR-360 · MSG363"
+          "note": "UC-44b · BR-341 · BR-345 · BR-345 · BR-360 · MSG363",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "As above, but the room recording has no transcript row."
-          ],
-          "inputs": "recordingId: the take; actor: its maker.",
-          "return": "Success: appended; a new Pending Transcript is created for the room recording.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The take has 320,015 bytes."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success; the take is cut to 320,012 bytes (whole milliseconds, 9,999 ms), so the last 3 bytes are dropped.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · MSG363"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The take holds only the 44-byte header."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success (200, MSG365) with no recording id: the mic heard nothing, the take row is removed.",
-          "exception": "N/A",
-          "log": "Audit RecordingTakeSaved with kept false; the take's file is deleted; RecordingsChanged published.",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · MSG365"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The take holds 44 + 31 bytes (under one millisecond)."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success (MSG365): rounded down to 44 bytes, so it is dropped.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · MSG365"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The take holds 44 + 32 bytes (exactly 1 ms)."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success (MSG363): a 1 ms take is kept.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · MSG363"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The room recording is 314,000,064 bytes; the take is 572,780 bytes (data 572,736); sum of data 314,572,756."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success: 44 + both data parts equals 314,572,800 bytes, the limit, so the take is appended.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363"
-        },
-        {
-          "id": "UTC009",
           "preconditions": [
             "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
             "Clock reads 2026-11-14 12:00 UTC.",
@@ -135,22 +57,13 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeSaved with kept true; no files deleted.",
           "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363"
+          "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC010",
-          "preconditions": [
-            "The take is Pending; the actor is a different Secretary of the meeting."
-          ],
-          "inputs": "actor: another Secretary.",
-          "return": "Success (MSG363): a Secretary may save a take left open on another device.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-44b · BR-341 · BR-345 · BR-341 · MSG363"
-        },
-        {
-          "id": "UTC011",
+          "id": "UTC004",
           "preconditions": [
             "The take is Pending; the actor is the Chair."
           ],
@@ -159,22 +72,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG295"
+          "note": "UC-44b · BR-341 · BR-345 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC012",
-          "preconditions": [
-            "The take is already saved (status Available); the first answer was lost."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "Success (MSG363) with the same recording id, appended false; nothing is changed.",
-          "exception": "N/A",
-          "log": "RecordingsChanged is published again.",
-          "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · MSG363"
-        },
-        {
-          "id": "UTC013",
+          "id": "UTC005",
           "preconditions": [
             "The recording is Deleted."
           ],
@@ -183,58 +87,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG362"
+          "note": "UC-44b · BR-341 · BR-345 · MSG362",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC014",
-          "preconditions": [
-            "No recording with this id."
-          ],
-          "inputs": "recordingId: random.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "The recording is an uploaded file (source Upload)."
-          ],
-          "inputs": "recordingId; actor: Secretary.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "actor: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "The actor is not on the roster."
-          ],
-          "inputs": "actor: creator only.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · BR-350"
-        },
-        {
-          "id": "UTC018",
+          "id": "UTC006",
           "preconditions": [
             "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
             "Clock reads 2026-11-14 12:00 UTC.",
@@ -245,7 +104,10 @@
           "exception": "IOException caught; logged.",
           "log": "Error log 'Failed to save take'.",
           "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG298"
+          "note": "UC-44b · BR-341 · BR-345 · MSG298",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

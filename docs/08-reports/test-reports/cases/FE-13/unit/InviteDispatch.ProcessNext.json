@@ -21,23 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Email delivery enabled.",
-            "No dispatch is due."
-          ],
-          "inputs": "Clock 2026-11-18T03:00Z.",
-          "return": "0.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-20 · BR-300"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Three Pending dispatches are due; each can be turned into an email."
           ],
@@ -46,10 +36,13 @@
           "exception": "N/A",
           "log": "Three emails are queued and the three dispatches become Materialized.",
           "type": "Normal",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Three dispatches are due: one is turned into an email, one is already Materialized by another worker, one is suppressed because the invitee is no longer on the roster."
           ],
@@ -58,10 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Exactly 50 dispatches are due."
           ],
@@ -70,10 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "51 dispatches are due."
           ],
@@ -82,10 +81,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC006",
           "preconditions": [
             "Two due dispatches; the first one's materialization throws."
           ],
@@ -94,7 +96,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-20 · BR-300"
+          "note": "UC-20 · BR-300",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

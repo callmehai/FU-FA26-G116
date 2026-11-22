@@ -14,7 +14,10 @@
             "Meeting with an active Chair and an active Member who may read it."
           ],
           "return": "Both user ids, distinct and ordered.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -26,7 +29,10 @@
             "Meeting with an active Member who may read it and has no attendance row."
           ],
           "return": "The Member id; attendance plays no part.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -38,7 +44,10 @@
             "Meeting with an active Chair and a deactivated Member."
           ],
           "return": "Only the Chair id.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -50,7 +59,10 @@
             "Meeting with no Guest participants."
           ],
           "return": "Empty list; the vote cannot open (MSG220).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",

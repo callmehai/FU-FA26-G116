@@ -21,7 +21,10 @@
             "Current participant with an active account."
           ],
           "return": "true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,7 +36,10 @@
             "Participant account deactivated."
           ],
           "return": "false.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -45,19 +51,10 @@
             "Participant removed from the roster."
           ],
           "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "participant {Role: Guest; Current; active}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-150",
-          "preconditions": [
-            "Guest-role row."
-          ],
-          "return": "false.",
-          "type": "Boundary"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

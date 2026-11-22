@@ -22,48 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-412"
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Issued revision of meeting \"Họp quý 3\".",
-            "Actor is a Member who reads the meeting."
-          ],
-          "inputs": "minutesId: the Issued revision; actor: the Member; format: Docx.",
-          "return": "File \"Biên bản - Họp quý 3.docx\" (Word content type); a reader downloads what they may read.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-58 · BR-412"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Issued revision of meeting \"Họp quý 3\".",
-            "Actor is the current Chair."
-          ],
-          "inputs": "minutesId: the Issued revision; actor: the current Chair; format: Pdf.",
-          "return": "File \"Biên bản - Họp quý 3.pdf\" (application/pdf) built from the same HTML; no message code.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-58 · BR-412"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Actor's account is deactivated."
-          ],
-          "inputs": "minutesId: an Issued revision; actor: deactivated Secretary; format: Docx.",
-          "return": "Failure Inactive; 403 with no message code; no file.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-58"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "No revision has the given id.",
             "Actor is the current Secretary."
@@ -73,10 +38,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58"
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Draft revision exists.",
             "Actor is a Member who reads the meeting."
@@ -86,10 +54,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58 · BR-412"
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Issued revision of a Secret meeting.",
             "Actor is the current Chair."
@@ -99,10 +70,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58 · BR-188 · MSG405"
+          "note": "UC-58 · BR-188 · MSG405",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Issued revision of a meeting whose title makes the file name longer than 120 characters.",
             "Actor is the current Secretary."
@@ -112,10 +86,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-58"
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC006",
           "preconditions": [
             "Issued revision.",
             "Actor is the current Secretary.",
@@ -126,7 +103,10 @@
           "exception": "N/A",
           "log": "Error logged with the minutes id.",
           "type": "Abnormal",
-          "note": "UC-58 · MSG403"
+          "note": "UC-58 · MSG403",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

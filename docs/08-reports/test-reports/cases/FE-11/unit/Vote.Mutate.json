@@ -14,90 +14,6 @@
         {
           "id": "UTC001",
           "preconditions": [
-            "Meeting the actor cannot read (not organizer, approver or participant)."
-          ],
-          "inputs": "operation: Create; actor: stranger.",
-          "return": "Failure NotFound; 404 MSG205; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · MSG205"
-        },
-        {
-          "id": "UTC002",
-          "preconditions": [
-            "Actor's account is deactivated."
-          ],
-          "inputs": "operation: Cast; actor: deactivated Member.",
-          "return": "Failure Inactive; 403 with no message code; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-269"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Guest actor whose invitation is revoked or whose session is invalid."
-          ],
-          "inputs": "operation: Cast; actor: Guest.",
-          "return": "Failure NotFound; 404 MSG205.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-181 · MSG205"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Guest actor whose session belongs to another meeting."
-          ],
-          "inputs": "operation: Cast; actor: Guest of a different meeting.",
-          "return": "Failure NotFound; 404 MSG205.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · MSG205"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Guest actor with a verified session; meeting Ended (a Guest loses access once the meeting ends)."
-          ],
-          "inputs": "operation: Cast; actor: Guest.",
-          "return": "Failure NotFound; 404 MSG205.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-181 · MSG205"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Draft vote; actor is an ordinary Member who can read the meeting."
-          ],
-          "inputs": "operation: Update; voteId: the draft; actor: Member.",
-          "return": "Failure NotFound; 404 MSG205, as if the draft did not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-253 · MSG205"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "No vote with that id in the meeting."
-          ],
-          "inputs": "operation: Close; voteId: unknown id; actor: Chair.",
-          "return": "Failure NotFound; 404 MSG205.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-56 · MSG205"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
             "Meeting Approved; actor is the current Secretary."
           ],
           "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: false.",
@@ -105,22 +21,13 @@
           "exception": "N/A",
           "log": "Draft vote row with creator = actor; DraftCreated event published to Chair and Secretary only.",
           "type": "Normal",
-          "note": "UC-53 · BR-252 · BR-256 · BR-257 · MSG210"
+          "note": "UC-53 · BR-252 · BR-256 · BR-257 · MSG210",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Meeting InProgress; actor is the Chair."
-          ],
-          "inputs": "operation: Create; Title: \"  Họp  \" (spaces trimmed to \"Họp\"); Options: [\" A \", \"B\"]; IsAnonymous: true; EligibleRoles: [\"Guest\"].",
-          "return": "Success; MSG210; title saved as \"Họp\", options \"A\" and \"B\", secret ballot, roles [Guest].",
-          "exception": "N/A",
-          "log": "Draft saved; DraftCreated event to managers only.",
-          "type": "Boundary",
-          "note": "UC-53 · BR-255 · BR-272 · MSG210"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC002",
           "preconditions": [
             "Meeting InProgress; actor is a Member."
           ],
@@ -129,94 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-53 · BR-252 · MSG213"
+          "note": "UC-53 · BR-252 · MSG213",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
-          "preconditions": [
-            "Meeting Ended; actor is the Chair."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
-          "return": "Failure DraftDenied; 409 MSG213.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-189 · MSG213"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Meeting Draft (not yet approved); actor is the Secretary."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
-          "return": "Failure DraftDenied; 409 MSG213.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-252 · MSG213"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair."
-          ],
-          "inputs": "operation: Create; Title: \"\"; Options: [\"A\"]; IsAnonymous: null; EligibleRoles: [].",
-          "return": "Failure Invalid; 400 MSG209 with errors for title, options, isAnonymous and eligibleRoles; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-255 · BR-256 · BR-257 · BR-272 · MSG209"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair."
-          ],
-          "inputs": "operation: Create; request sent with a non-JSON content type (ParseFailure UnsupportedMedia).",
-          "return": "Failure UnsupportedMedia; 415 MSG34.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · MSG34"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair."
-          ],
-          "inputs": "operation: Create; body over 64 KiB (ParseFailure TooLarge).",
-          "return": "Failure TooLarge; 413 MSG87.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · MSG87"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "Meeting InProgress; actor is the Secretary."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Failure OpenDenied; 409 MSG218; no draft is left behind.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · UC-54 · BR-252 · MSG218"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Meeting Published; actor is the Chair."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Failure OpenDenied; 409 MSG218 (opening needs InProgress).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · UC-54 · MSG218"
-        },
-        {
-          "id": "UTC018",
+          "id": "UTC003",
           "preconditions": [
             "Meeting InProgress; actor is the current Chair; another vote is already Open."
           ],
@@ -225,322 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-53 · UC-54 · BR-266 · MSG219"
+          "note": "UC-53 · UC-54 · BR-266 · MSG219",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC019",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; no other vote open; Chair and Member are active participants."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Success; MSG217; the new vote is Open with EligibleCount 2 and OpenedAt = now.",
-          "exception": "N/A",
-          "log": "Vote and its two eligible-voter rows saved; Opened event (with the title) published to everyone.",
-          "type": "Normal",
-          "note": "UC-53 · UC-54 · BR-190 · BR-266 · MSG217"
-        },
-        {
-          "id": "UTC020",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; the selected role has no holder."
-          ],
-          "inputs": "operation: Create; EligibleRoles: [\"Guest\"]; OpenImmediately: true; no Guest invited.",
-          "return": "Failure NoEligibleVoters; 409 MSG220; no draft is left behind.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · UC-54 · BR-267 · MSG220"
-        },
-        {
-          "id": "UTC021",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG214; nothing saved.",
-          "exception": "N/A",
-          "log": "Error logged with the operation and meeting id.",
-          "type": "Abnormal",
-          "note": "UC-53 · MSG214"
-        },
-        {
-          "id": "UTC022",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; the other Open vote is created by a simultaneous request."
-          ],
-          "inputs": "operation: Create with OpenImmediately: true; the database's one-open-vote index rejects the save.",
-          "return": "Failure AnotherOpen; 409 MSG219; changes discarded.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-266 · MSG219"
-        },
-        {
-          "id": "UTC023",
-          "preconditions": [
-            "Meeting Approved; Draft vote with options [\"A\", \"B\", \"C\"]; actor is the Chair."
-          ],
-          "inputs": "operation: Update; Title: \"Mới\"; Options: [\"A\", \"B2\"]; IsAnonymous: true; EligibleRoles: [\"Member\"].",
-          "return": "Success; MSG211; option 2 relabelled, option 3 removed; new title, secret ballot and roles kept.",
-          "exception": "N/A",
-          "log": "Draft updated; DraftUpdated event to managers only.",
-          "type": "Normal",
-          "note": "UC-53 · BR-256 · MSG211"
-        },
-        {
-          "id": "UTC024",
-          "preconditions": [
-            "Draft vote with options [\"A\", \"B\"]."
-          ],
-          "inputs": "operation: Update; Options: [\"A\", \"B\", \"C\"].",
-          "return": "Success; MSG211; a third option is added at position 3.",
-          "exception": "N/A",
-          "log": "Option row added.",
-          "type": "Boundary",
-          "note": "UC-53 · BR-256 · MSG211"
-        },
-        {
-          "id": "UTC025",
-          "preconditions": [
-            "Vote is Open; actor is the Chair."
-          ],
-          "inputs": "operation: Update; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
-          "return": "Failure DraftDenied; 409 MSG213; the vote is unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-254 · MSG213"
-        },
-        {
-          "id": "UTC026",
-          "preconditions": [
-            "Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: Update; Options: [\"A\", \"a\"] (duplicates ignoring case).",
-          "return": "Failure Invalid; 400 MSG209 with errors[options]; draft unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-256 · MSG209"
-        },
-        {
-          "id": "UTC027",
-          "preconditions": [
-            "Draft vote; actor is the Secretary; meeting InProgress."
-          ],
-          "inputs": "operation: Update; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Failure OpenDenied; 409 MSG218; draft keeps its previous content.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · MSG218"
-        },
-        {
-          "id": "UTC028",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; draft vote; no other vote open."
-          ],
-          "inputs": "operation: Update; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Success; MSG217; vote saved with the edits and Opened.",
-          "exception": "N/A",
-          "log": "Opened event published to everyone.",
-          "type": "Normal",
-          "note": "UC-53 · UC-54 · BR-190 · MSG217"
-        },
-        {
-          "id": "UTC029",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; draft vote; selected roles have no holder."
-          ],
-          "inputs": "operation: Update; EligibleRoles: [\"Guest\"]; OpenImmediately: true.",
-          "return": "Failure NoEligibleVoters; 409 MSG220; the saved draft stays as it was.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-267 · MSG220"
-        },
-        {
-          "id": "UTC030",
-          "preconditions": [
-            "Meeting Published; Draft vote; actor is the Secretary."
-          ],
-          "inputs": "operation: Delete.",
-          "return": "Success; MSG212; the draft, its options and links are removed.",
-          "exception": "N/A",
-          "log": "DraftDeleted event to managers only.",
-          "type": "Normal",
-          "note": "UC-53 · BR-189 · MSG212"
-        },
-        {
-          "id": "UTC031",
-          "preconditions": [
-            "Vote is Open."
-          ],
-          "inputs": "operation: Delete; actor: Chair.",
-          "return": "Failure DraftDenied; 409 MSG213; the vote stays.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-189 · MSG213"
-        },
-        {
-          "id": "UTC032",
-          "preconditions": [
-            "Vote is Closed."
-          ],
-          "inputs": "operation: Delete; actor: Chair.",
-          "return": "Failure DraftDenied; 409 MSG213; the vote stays as evidence.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-189 · MSG213"
-        },
-        {
-          "id": "UTC033",
-          "preconditions": [
-            "Draft vote; meeting Ended."
-          ],
-          "inputs": "operation: Delete; actor: Chair.",
-          "return": "Failure DraftDenied; 409 MSG213.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-189 · MSG213"
-        },
-        {
-          "id": "UTC034",
-          "preconditions": [
-            "Draft vote; the database fails on save."
-          ],
-          "inputs": "operation: Delete; actor: Chair.",
-          "return": "Failure SaveFailed; 503 MSG216; the draft stays.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-53 · MSG216"
-        },
-        {
-          "id": "UTC035",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; Draft vote with roles [Chair, Member]; both active."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Success; MSG217; status Open, OpenedAt = now, EligibleCount 2 and the two voters stored.",
-          "exception": "N/A",
-          "log": "Opened event with title published to everyone.",
-          "type": "Normal",
-          "note": "UC-54 · BR-190 · BR-266 · MSG217"
-        },
-        {
-          "id": "UTC036",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; Draft vote with roles [Guest]; one invited Guest with a live invitation."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Success; EligibleCount 1 (the invitation); MSG217.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-54 · BR-190 · BR-267 · MSG217"
-        },
-        {
-          "id": "UTC037",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; vote roles [Member, Guest]; 2 active Members and 1 Guest invitation."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Success; EligibleCount 3; voters = both users plus the invitation.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-54 · BR-190 · MSG217"
-        },
-        {
-          "id": "UTC038",
-          "preconditions": [
-            "Meeting InProgress; Draft vote; actor is the Secretary."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Failure OpenDenied; 409 MSG218.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · MSG218"
-        },
-        {
-          "id": "UTC039",
-          "preconditions": [
-            "Meeting Published; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Failure OpenDenied; 409 MSG218.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-160 · MSG218"
-        },
-        {
-          "id": "UTC040",
-          "preconditions": [
-            "Vote already Open; actor is the Chair."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Failure OpenDenied; 409 MSG218.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · MSG218"
-        },
-        {
-          "id": "UTC041",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; another vote of the meeting is Open."
-          ],
-          "inputs": "operation: Open on a Draft vote.",
-          "return": "Failure AnotherOpen; 409 MSG219.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-266 · MSG219"
-        },
-        {
-          "id": "UTC042",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; vote roles [Secretary] but the Secretary is deactivated."
-          ],
-          "inputs": "operation: Open.",
-          "return": "Failure NoEligibleVoters; 409 MSG220; vote stays Draft.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-267 · MSG220"
-        },
-        {
-          "id": "UTC043",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; Draft vote."
-          ],
-          "inputs": "operation: Open; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG221; vote stays Draft.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-54 · MSG221"
-        },
-        {
-          "id": "UTC044",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; two Chair requests open different drafts at once."
-          ],
-          "inputs": "operation: Open; the database's one-open-vote index rejects the second save.",
-          "return": "Failure AnotherOpen; 409 MSG219; second request's changes discarded.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-54 · BR-266 · MSG219"
-        },
-        {
-          "id": "UTC045",
+          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; public ballot; no vote documents."
           ],
@@ -549,34 +66,13 @@
           "exception": "N/A",
           "log": "Ballot saved; BallotCast event published (never names the voter).",
           "type": "Normal",
-          "note": "UC-55 · BR-258 · BR-271 · MSG227"
+          "note": "UC-55 · BR-258 · BR-271 · MSG227",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC046",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; secret ballot."
-          ],
-          "inputs": "operation: Cast; OptionId: option B.",
-          "return": "Success; MSG227; a receipt is stored but no row says what the voter chose; option B count +1.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-55 · BR-259 · MSG227"
-        },
-        {
-          "id": "UTC047",
-          "preconditions": [
-            "Guest with a verified session on an Open vote listing the Guest invitation; meeting InProgress."
-          ],
-          "inputs": "operation: Cast; actor: Guest; OptionId: option A.",
-          "return": "Success; MSG227; receipt and choice are stored against the guest invitation.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-55 · BR-181 · MSG227"
-        },
-        {
-          "id": "UTC048",
+          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress; Open vote; actor was not on the list fixed at opening (joined later)."
           ],
@@ -585,34 +81,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-55 · BR-190 · BR-268 · MSG224"
+          "note": "UC-55 · BR-190 · BR-268 · MSG224",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC049",
-          "preconditions": [
-            "Vote Closed; actor is on the eligible list."
-          ],
-          "inputs": "operation: Cast.",
-          "return": "Failure NotAccepting; 409 MSG225.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · MSG225"
-        },
-        {
-          "id": "UTC050",
-          "preconditions": [
-            "Open vote but the meeting has Ended; actor eligible."
-          ],
-          "inputs": "operation: Cast.",
-          "return": "Failure NotAccepting; 409 MSG225.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · MSG225"
-        },
-        {
-          "id": "UTC051",
+          "id": "UTC006",
           "preconditions": [
             "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; the voter already cast a ballot."
           ],
@@ -621,106 +96,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-55 · BR-258 · BR-265 · MSG226"
+          "note": "UC-55 · BR-258 · BR-265 · MSG226",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC052",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; two ballots from the same voter arrive at once."
-          ],
-          "inputs": "operation: Cast twice simultaneously.",
-          "return": "The second gets Failure AlreadyCast; 409 MSG226; its changes discarded.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-258 · MSG226"
-        },
-        {
-          "id": "UTC053",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; the vote has two documents, the voter confirmed only one."
-          ],
-          "inputs": "operation: Cast; OptionId: option A.",
-          "return": "Failure DocumentsUnread; 409 MSG252 listing the one unread document; no ballot stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-289 · BR-292 · MSG252"
-        },
-        {
-          "id": "UTC054",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; the vote's only unread document was removed from the meeting."
-          ],
-          "inputs": "operation: Cast; OptionId: option A.",
-          "return": "Success; MSG227; a removed document no longer counts.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-55 · BR-292 · MSG227"
-        },
-        {
-          "id": "UTC055",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list."
-          ],
-          "inputs": "operation: Cast; OptionId: null.",
-          "return": "Failure OptionMissing; 400 MSG222.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-271 · MSG222"
-        },
-        {
-          "id": "UTC056",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list."
-          ],
-          "inputs": "operation: Cast; OptionId: Guid.Empty (00000000-0000-0000-0000-000000000000).",
-          "return": "Failure OptionMissing; 400 MSG222.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-55 · BR-271 · MSG222"
-        },
-        {
-          "id": "UTC057",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list."
-          ],
-          "inputs": "operation: Cast; OptionId: an option id of another vote.",
-          "return": "Failure OptionUnavailable; 400 MSG223; no ballot stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-271 · MSG223"
-        },
-        {
-          "id": "UTC058",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list."
-          ],
-          "inputs": "operation: Cast; non-JSON content type (ParseFailure UnsupportedMedia).",
-          "return": "Failure UnsupportedMedia; 415 MSG34.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · MSG34"
-        },
-        {
-          "id": "UTC059",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list."
-          ],
-          "inputs": "operation: Cast; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG228; no ballot recorded.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-55 · MSG228"
-        },
-        {
-          "id": "UTC060",
+          "id": "UTC007",
           "preconditions": [
             "Meeting InProgress; Open vote with 3 ballots; actor is the Chair."
           ],
@@ -729,82 +111,13 @@
           "exception": "N/A",
           "log": "Vote closed; Closed event published.",
           "type": "Normal",
-          "note": "UC-56 · BR-261 · BR-270 · MSG229"
+          "note": "UC-56 · BR-261 · BR-270 · MSG229",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC061",
-          "preconditions": [
-            "Meeting Ended; Open vote; actor is the Chair."
-          ],
-          "inputs": "operation: Close.",
-          "return": "Success; MSG229; closing is still allowed after the meeting ended.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-56 · BR-270 · MSG229"
-        },
-        {
-          "id": "UTC062",
-          "preconditions": [
-            "Open vote with no ballots."
-          ],
-          "inputs": "operation: Close.",
-          "return": "Success; MSG229; counts are 0 and percentages are not shown (null).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-56 · BR-261 · MSG229"
-        },
-        {
-          "id": "UTC063",
-          "preconditions": [
-            "Meeting InProgress; Open vote; actor is the Secretary."
-          ],
-          "inputs": "operation: Close.",
-          "return": "Failure CloseDenied; 409 MSG230.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-56 · MSG230"
-        },
-        {
-          "id": "UTC064",
-          "preconditions": [
-            "Vote is Draft or already Closed; actor is the Chair."
-          ],
-          "inputs": "operation: Close.",
-          "return": "Failure CloseDenied; 409 MSG230.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-56 · MSG230"
-        },
-        {
-          "id": "UTC065",
-          "preconditions": [
-            "Meeting Cancelled; vote Open; actor is the Chair."
-          ],
-          "inputs": "operation: Close.",
-          "return": "Failure CloseDenied; 409 MSG230.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-56 · BR-299 · MSG230"
-        },
-        {
-          "id": "UTC066",
-          "preconditions": [
-            "Open vote; the database fails on save."
-          ],
-          "inputs": "operation: Close; actor: Chair.",
-          "return": "Failure SaveFailed; 503 MSG231; the vote stays Open with its ballots.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-56 · MSG231"
-        },
-        {
-          "id": "UTC067",
+          "id": "UTC008",
           "preconditions": [
             "Closed vote without a conclusion; actor is the Chair; meeting Ended."
           ],
@@ -813,319 +126,10 @@
           "exception": "N/A",
           "log": "ConclusionRecorded event published.",
           "type": "Normal",
-          "note": "UC-57 · BR-262 · BR-263 · MSG235"
-        },
-        {
-          "id": "UTC068",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; Conclusion: \"Deferred\"; Note with 2000 characters.",
-          "return": "Success; MSG235; the 2000-character note is kept.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-57 · BR-262 · MSG235"
-        },
-        {
-          "id": "UTC069",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; Conclusion: \"NotPassed\"; Note: null.",
-          "return": "Success; MSG235; note stored as an empty string.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-57 · MSG235"
-        },
-        {
-          "id": "UTC070",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; Conclusion: \"passed\" (wrong case) or \"\".",
-          "return": "Failure ConclusionInvalid; 400 MSG232 with errors[conclusion].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · BR-263 · MSG232"
-        },
-        {
-          "id": "UTC071",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; Conclusion: \"Passed\"; Note: 2001 characters.",
-          "return": "Failure ConclusionInvalid; 400 MSG232 with errors[note].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · MSG232"
-        },
-        {
-          "id": "UTC072",
-          "preconditions": [
-            "Closed vote that already has a conclusion."
-          ],
-          "inputs": "operation: Conclude; Conclusion: \"NotPassed\".",
-          "return": "Failure ConclusionRecorded; 409 MSG233; the first conclusion stays.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · BR-262 · MSG233"
-        },
-        {
-          "id": "UTC073",
-          "preconditions": [
-            "Vote still Open."
-          ],
-          "inputs": "operation: Conclude; actor: Chair.",
-          "return": "Failure ConclusionDenied; 409 MSG234.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · MSG234"
-        },
-        {
-          "id": "UTC074",
-          "preconditions": [
-            "Closed vote; actor is the Secretary."
-          ],
-          "inputs": "operation: Conclude.",
-          "return": "Failure ConclusionDenied; 409 MSG234.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · MSG234"
-        },
-        {
-          "id": "UTC075",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; non-JSON content type (ParseFailure UnsupportedMedia).",
-          "return": "Failure UnsupportedMedia; 415 MSG34.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-57 · MSG34"
-        },
-        {
-          "id": "UTC076",
-          "preconditions": [
-            "Closed vote without a conclusion; actor is the Chair; meeting Ended."
-          ],
-          "inputs": "operation: Conclude; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG236; no conclusion recorded.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-57 · MSG236"
-        },
-        {
-          "id": "UTC077",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; two meeting documents not yet attached."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [doc1, doc2].",
-          "return": "Success; MSG265; both documents attached; no new meeting document added.",
-          "exception": "N/A",
-          "log": "Two vote-document links saved; DocumentsChanged event to managers only.",
-          "type": "Normal",
-          "note": "UC-76a · BR-287 · BR-304 · MSG265"
-        },
-        {
-          "id": "UTC078",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; one document."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [doc1, doc1] (duplicate).",
-          "return": "Success; the duplicate is collapsed and one link is created.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-76a · BR-287 · MSG265"
-        },
-        {
-          "id": "UTC079",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [].",
-          "return": "Failure DocumentNotInMeeting; 404 MSG170.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-211 · MSG170"
-        },
-        {
-          "id": "UTC080",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [a document of another meeting].",
-          "return": "Failure DocumentNotInMeeting; 404 MSG170; nothing attached.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-211 · MSG170"
-        },
-        {
-          "id": "UTC081",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; doc1 is already attached."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [doc1, doc2].",
-          "return": "Failure DocumentAlreadyAttached; 409 MSG266; none is attached (all or none).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-287 · BR-304 · MSG266"
-        },
-        {
-          "id": "UTC082",
-          "preconditions": [
-            "Vote is Open; actor is the Chair."
-          ],
-          "inputs": "operation: AttachDocuments; DocumentIds: [doc1].",
-          "return": "Failure DraftDenied; 409 MSG213; the document list is fixed once the vote opens.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-288 · MSG213"
-        },
-        {
-          "id": "UTC083",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachDocuments; non-JSON content type (ParseFailure UnsupportedMedia).",
-          "return": "Failure UnsupportedMedia; 415 MSG34.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · MSG34"
-        },
-        {
-          "id": "UTC084",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachDocuments; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG267; nothing attached.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-76a · MSG267"
-        },
-        {
-          "id": "UTC085",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; the actor's library holds two documents."
-          ],
-          "inputs": "operation: AttachFromLibrary; DocumentIds: [lib1, lib2].",
-          "return": "Success; MSG265; both are added to the meeting and attached in the same save; the added documents are returned.",
-          "exception": "N/A",
-          "log": "Meeting documents and vote links saved together.",
-          "type": "Normal",
-          "note": "UC-76a · BR-286 · BR-304 · MSG265"
-        },
-        {
-          "id": "UTC086",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachFromLibrary; DocumentIds: [a library document of someone else].",
-          "return": "Failure LibraryUnavailable; 400 MSG249; nothing added.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-209 · MSG249"
-        },
-        {
-          "id": "UTC087",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; the library document is already attached to this vote."
-          ],
-          "inputs": "operation: AttachFromLibrary; DocumentIds: [lib1].",
-          "return": "Failure DocumentAlreadyAttached; 409 MSG266.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-193 · MSG266"
-        },
-        {
-          "id": "UTC088",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: AttachFromLibrary; adding fails for any other reason.",
-          "return": "Failure SaveFailed; 503 MSG166; no document added.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76a · BR-194 · MSG166"
-        },
-        {
-          "id": "UTC089",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; doc1 attached to the draft and to an agenda item."
-          ],
-          "inputs": "operation: DetachDocument; MeetingDocumentId: doc1.",
-          "return": "Success; MSG268; only the vote link is removed; the document stays in the meeting.",
-          "exception": "N/A",
-          "log": "Link row removed; DocumentsChanged event to managers only.",
-          "type": "Normal",
-          "note": "UC-76b · BR-305 · MSG268"
-        },
-        {
-          "id": "UTC090",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair; doc2 is not attached."
-          ],
-          "inputs": "operation: DetachDocument; MeetingDocumentId: doc2.",
-          "return": "Failure DocumentNotAttached; 404 MSG269.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76b · MSG269"
-        },
-        {
-          "id": "UTC091",
-          "preconditions": [
-            "Vote is Open; actor is the Chair."
-          ],
-          "inputs": "operation: DetachDocument; MeetingDocumentId: doc1.",
-          "return": "Failure DraftDenied; 409 MSG213.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-76b · BR-288 · MSG213"
-        },
-        {
-          "id": "UTC092",
-          "preconditions": [
-            "Meeting Approved; Draft vote; actor is the Chair."
-          ],
-          "inputs": "operation: DetachDocument; the database fails on save.",
-          "return": "Failure SaveFailed; 503 MSG270; the link stays.",
-          "exception": "N/A",
-          "log": "Error logged.",
-          "type": "Abnormal",
-          "note": "UC-76b · MSG270"
-        },
-        {
-          "id": "UTC093",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; the real-time push of the change fails or times out after 2 seconds."
-          ],
-          "inputs": "operation: Close; actor: Chair.",
-          "return": "Success as normal; the committed write is not rolled back.",
-          "exception": "N/A",
-          "log": "Warning logged: vote committed, realtime delivery failed.",
-          "type": "Boundary",
-          "note": "UC-56 · MSG229"
+          "note": "UC-57 · BR-262 · BR-263 · MSG235",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

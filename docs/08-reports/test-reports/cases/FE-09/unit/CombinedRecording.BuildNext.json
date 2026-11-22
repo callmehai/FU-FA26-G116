@@ -14,18 +14,6 @@
         {
           "id": "UTC001",
           "preconditions": [
-            "No hybrid meeting ended within the last 8 days is waiting for a combined recording."
-          ],
-          "inputs": "No arguments; the clock reads 2026-11-18 09:00 UTC.",
-          "return": "false; no recording is created or changed and nothing is published.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC002",
-          "preconditions": [
             "Hybrid, non-Secret meeting ended 2026-11-14 10:00 UTC.",
             "One available room-mic recording with a single take of 60,000 ms started 2026-11-14 03:05 UTC; no take is streaming.",
             "Three online sentences of 5,000 ms each with audio files in 16 kHz mono 16-bit WAV, started inside the room take.",
@@ -36,10 +24,13 @@
           "exception": "N/A",
           "log": "Saved recording row; Information log 'Built the combined recording' with 1 room take, 3 online sentences; a RecordingsChanged event is published to the meeting.",
           "type": "Normal",
-          "note": "UC-43a · BR-456"
+          "note": "UC-43a · BR-456",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC003",
+          "id": "UTC002",
           "preconditions": [
             "Same hybrid meeting, but the room recording's take is still streaming (status Pending)."
           ],
@@ -48,10 +39,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456"
+          "note": "UC-43a · BR-456",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Hybrid meeting whose only recordings are online sentences; it has no available room-mic recording."
           ],
@@ -60,34 +54,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456"
+          "note": "UC-43a · BR-456",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Hybrid meeting with an available room recording but no online sentence with audio still in the record (all excluded or without audio)."
-          ],
-          "inputs": "No arguments.",
-          "return": "false; nothing is built.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456 · BR-357"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Room take and online sentences exist; the newest source change was 30 seconds ago."
-          ],
-          "inputs": "No arguments; settle time is 1 minute.",
-          "return": "false; the sources have not settled yet.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Newest source change was exactly 1 minute ago (equal to the settle limit)."
           ],
@@ -96,35 +69,13 @@
           "exception": "N/A",
           "log": "Combined recording row saved; RecordingsChanged published.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456"
+          "note": "UC-43a · BR-456",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
-          "preconditions": [
-            "A combined recording already exists with UpdatedAt equal to the latest source change."
-          ],
-          "inputs": "No arguments.",
-          "return": "false; the combined recording is up to date and is left as it is.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "A combined recording exists, built from sources last changed 2026-11-14 10:30 UTC.",
-            "An online sentence was deleted (or excluded) later, so the latest source change is 2026-11-15 08:00 UTC, more than a minute ago."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the same recording row is rebuilt: new file path, new size and duration, status Available, UpdatedAt set to 2026-11-15 08:00 UTC; the previous file is deleted after the commit.",
-          "exception": "N/A",
-          "log": "Old audio file removed from storage; RecordingsChanged published.",
-          "type": "Normal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC005",
           "preconditions": [
             "A combined recording exists, status Deleted (the Secretary erased it)."
           ],
@@ -133,22 +84,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457"
+          "note": "UC-43a · UC-44e · BR-456 · BR-457",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
-          "preconditions": [
-            "A combined recording is being replaced; while mixing, the Secretary erases it so the locked row reads Deleted."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the freshly mixed file is deleted, the row stays Deleted, nothing is changed and nothing is published.",
-          "exception": "N/A",
-          "log": "New mixed file removed from storage.",
-          "type": "Abnormal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457"
-        },
-        {
-          "id": "UTC012",
+          "id": "UTC006",
           "preconditions": [
             "The room take and the online sentences together would make a track longer than 12 hours (sources spread over 13 hours of sound)."
           ],
@@ -157,151 +99,10 @@
           "exception": "InvalidOperationException 'The combined recording would last ... ms, past the limit.' raised inside the build and caught; logged as an error.",
           "log": "Error log 'Could not build the combined recording of meeting'; the meeting is remembered as failed at its current change time.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "The previous call failed for this meeting; none of its sources has changed since."
-          ],
-          "inputs": "No arguments.",
-          "return": "false; the failed meeting is skipped so the worker does not spin on it.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "The previous call failed for this meeting; a sentence was deleted afterwards, so the newest change is later than the failure."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the build is tried again and, when it works, the failure memory is cleared.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "One online sentence's audio file is missing in storage."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the combined recording is built without that sentence; the other sentences and the room take are mixed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "One online sentence is stored as 44.1 kHz stereo WAV, not 16 kHz mono 16-bit PCM."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; that sentence is left out of the mix; the rest is built.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Two online sentences overlap the room take and add up beyond 16-bit full scale."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the summed samples are limited to the 16-bit range instead of wrapping; the recording is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC018",
-          "preconditions": [
-            "The room recording's takes all have duration 0 ms."
-          ],
-          "inputs": "No arguments.",
-          "return": "false; there is no room sound to lay on the clock.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC019",
-          "preconditions": [
-            "Writing the mixed file fails with a disk error."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the partly written file is deleted, no recording row is saved, and the failure is remembered for this meeting.",
-          "exception": "IOException caught; logged as an error.",
-          "log": "Temporary file removed; error log written.",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC020",
-          "preconditions": [
-            "Saving the combined recording row fails in the database (transaction rolled back)."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the mixed file is deleted so no personal audio is left behind; the failure is remembered.",
-          "exception": "PersistenceException caught; logged with its inner exception.",
-          "log": "Mixed file removed from storage.",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC021",
-          "preconditions": [
-            "The caller cancels the work while the mix is running."
-          ],
-          "inputs": "No arguments; cancellation requested.",
-          "return": "The call ends by cancellation; the partly written file is deleted and the meeting is not marked failed.",
-          "exception": "OperationCanceledException propagates to the caller.",
-          "log": "Partly written file removed.",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC022",
-          "preconditions": [
-            "Two combinable meetings are listed oldest end first: the first one has no plan (no clips), the second one is ready."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; only the second meeting is built in this call; the first is skipped.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC023",
-          "preconditions": [
-            "Two combinable meetings are both ready."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; only the first (oldest end) is built in this call; the second waits for the next call.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
-        },
-        {
-          "id": "UTC024",
-          "preconditions": [
-            "Publishing the change event fails or takes more than 2 seconds."
-          ],
-          "inputs": "No arguments.",
-          "return": "true; the combined recording is saved and kept; the event failure does not undo it.",
-          "exception": "N/A",
-          "log": "Warning log 'Could not publish recordings change'.",
-          "type": "Boundary",
-          "note": "UC-43a · BR-456"
+          "note": "UC-43a · BR-456",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

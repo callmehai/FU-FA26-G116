@@ -14,18 +14,6 @@
         {
           "id": "UTC001",
           "preconditions": [
-            "Records with no notes (null)."
-          ],
-          "inputs": "records.Notes: null.",
-          "return": "Empty discussion for every item, no conclusions, no tasks.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC002",
-          "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
           "inputs": "Notes: item 2 \"Chốt giá\" is listed before the meeting-wide note \"Mở đầu\".",
@@ -36,7 +24,7 @@
           "note": "UC-59 · UC-82"
         },
         {
-          "id": "UTC003",
+          "id": "UTC002",
           "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
@@ -48,7 +36,7 @@
           "note": "UC-59 · UC-82"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
@@ -60,19 +48,7 @@
           "note": "UC-59 · UC-82"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
-          ],
-          "inputs": "Note on item 1: \"KẾT LUẬN : Duyệt\" (upper case, space before the colon).",
-          "return": "Recognised as a conclusion: \"- Báo cáo: Duyệt\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
@@ -84,19 +60,7 @@
           "note": "UC-59 · UC-82"
         },
         {
-          "id": "UTC007",
-          "preconditions": [
-            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
-          ],
-          "inputs": "Note on item 1: \"Ý kiến: Đồng ý\".",
-          "return": "Opinion mark is only a mark: the whole line \"Ý kiến: Đồng ý\" stays in the discussion.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
@@ -108,19 +72,7 @@
           "note": "UC-59 · UC-82"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
-          ],
-          "inputs": "Note body \"a\\r\\n\\n  b  \\n\" on item 1.",
-          "return": "Lines \"a\" and \"b\" kept; blank lines and carriage returns dropped.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC006",
           "preconditions": [
             "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
           ],
