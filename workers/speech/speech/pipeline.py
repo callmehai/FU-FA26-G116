@@ -147,6 +147,14 @@ class UnreadableAudio(Exception):
     """ffmpeg could not decode the upload as audio."""
 
 
+class Cancelled(Exception):
+    """The caller went away (a newer version of the recording is waiting): the run stopped part-way."""
+
+
+def _never() -> bool:
+    return False
+
+
 def decode(path: str | os.PathLike[str]) -> np.ndarray:
     """Decode any container ffmpeg reads into 16 kHz mono float32 samples.
 
@@ -483,6 +491,9 @@ def closest_pair(voices: dict[int, np.ndarray]) -> tuple[float, int, int] | None
 class Engine:
     """The loaded models plus the operations the HTTP server exposes."""
 
+    # Asked between steps of a run (transcribe_file's `cancelled`), so a run nobody waits for stops within a second.
+    _cancelled: Callable[[], bool] = staticmethod(_never)
+
     def __init__(
         self,
         root: Path | None = None,
@@ -555,6 +566,10 @@ class Engine:
 
     # --- building blocks (call with the lock held) ---------------------------------------------
 
+    def _check(self) -> None:
+        if self._cancelled():
+            raise Cancelled()
+
     def _speech_segments(self, samples: np.ndarray, config=None) -> list[tuple[int, np.ndarray]]:
         """Voiced stretches as (start sample, samples), padded, each at most MAX_CHUNK_S long."""
         config = config or self._vad_config
@@ -579,6 +594,7 @@ class Engine:
         texts: list[str] = []
         timings: list[list[float] | None] = []
         for first in range(0, len(pieces), 8):
+            self._check()
             streams = []
             for piece in pieces[first : first + 8]:
                 stream = self._recognizer.create_stream()
@@ -605,6 +621,7 @@ class Engine:
         before = context_words(context)
         restored_context = None
         for number, indices in enumerate(passages(pieces, raws)):
+            self._check()
             lines = [" ".join(raws[i].split()).lower() for i in indices]
             ahead = number == 0 and before is not None
             if ahead:
@@ -654,6 +671,7 @@ class Engine:
             parts[label].append(self._slice(regions, start, end))
         voices = {label: self._voice(audio) for label, audio in parts.items()}
         while (pair := closest_pair(voices)) is not None and pair[0] >= MERGE_THRESHOLD:
+            self._check()
             _, keep, drop = pair
             parts[keep].extend(parts.pop(drop))
             del voices[drop]
@@ -681,7 +699,7 @@ class Engine:
             offset, audio = by_group[group]
             return audio[start - offset : end - offset]
 
-        vectors = np.stack([self._embed(audio_of(*span)) for span in spans])
+        vectors = np.stack([self._checked(self._embed, audio_of(*span)) for span in spans])
         clustering = self._onnx.FastClustering(
             self._onnx.FastClusteringConfig(
                 num_clusters=min(speakers, len(spans)) if speakers else -1,
@@ -701,6 +719,10 @@ class Engine:
         turns = [turn for turn in sorted(turns) if turn[1] - turn[0] >= MIN_TURN_S * SAMPLE_RATE]
         return self._merge_same_voices(regions, turns) if turns and not speakers else turns
 
+    def _checked(self, function, *args):
+        self._check()
+        return function(*args)
+
     @staticmethod
     def _slice(regions: list[tuple[int, np.ndarray]], start: int, end: int) -> np.ndarray:
         for offset, audio in regions:
@@ -711,11 +733,23 @@ class Engine:
     # --- operations ------------------------------------------------------------------------------
 
     def transcribe_file(self, path: str | os.PathLike[str], diarize: bool = True,
-                        speakers: int | None = None, profile: str = "room", context: str | None = None) -> dict:
+                        speakers: int | None = None, profile: str = "room", context: str | None = None,
+                        cancelled: Callable[[], bool] | None = None) -> dict:
+        """`cancelled` is asked between steps; once it says yes the run raises Cancelled instead of going on."""
+        if cancelled is not None and cancelled():
+            raise Cancelled()
         samples = decode(path)
         with self._lock:
             started = time.monotonic()
-            result = self._transcribe(samples, diarize, speakers, profile, context)
+            self._cancelled = cancelled or _never
+            try:
+                self._check()
+                result = self._transcribe(samples, diarize, speakers, profile, context)
+            except Cancelled:
+                log.info("run stopped after %.1fs: the caller went away", time.monotonic() - started)
+                raise
+            finally:
+                self._cancelled = _never
             elapsed = time.monotonic() - started
         audio_s = samples.size / SAMPLE_RATE
         log.info(
@@ -785,6 +819,7 @@ class Engine:
 
         voices = []
         for label in sorted(turns_by_label):
+            self._check()
             turns = turns_by_label[label]
             voices.append({
                 "label": label,

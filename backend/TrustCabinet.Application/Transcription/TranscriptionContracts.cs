@@ -113,6 +113,8 @@ public interface ITranscriptRepository
     Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct);
     Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct);
     Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct);
+    /// <summary>Whether the transcript is still Processing, read without tracking anything.</summary>
+    Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct);
     /// <summary>Reads the transcript's own columns again, as they are once its recording's row is locked.</summary>
     Task ReloadAsync(Transcript transcript, CancellationToken ct);
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);

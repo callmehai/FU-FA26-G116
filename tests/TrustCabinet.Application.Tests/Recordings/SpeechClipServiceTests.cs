@@ -52,6 +52,36 @@ public sealed class SpeechClipServiceTests
         Assert.Empty(_storage.Deleted);
     }
 
+    [Theory]
+    [InlineData("Ừ.")]
+    [InlineData("À. Ừ.")]
+    [InlineData("ờ")]
+    public async Task A_sentence_of_interjections_only_is_not_stored(string heard)
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        _engine.Text = heard;
+
+        var outcome = await Add(meeting, Upload());
+
+        Assert.Equal((SpeechClipFailure.None, null), (outcome.Failure, outcome.Data));
+        Assert.Empty(_clips.Added);
+        Assert.Empty(_storage.Files);
+        Assert.Equal(0, _unitOfWork.Saves);
+    }
+
+    [Theory]
+    [InlineData("Đồng ý.")]
+    [InlineData("Khó nghe.")]
+    public async Task A_short_answer_from_the_speakers_own_mic_is_stored(string heard)
+    {
+        var meeting = new RecordingTestMeeting(_meetings, MeetingMode.Online, Now);
+        _engine.Text = heard;
+
+        await Add(meeting, Upload());
+
+        Assert.Equal(heard, Assert.Single(_clips.Added).Text);
+    }
+
     [Fact]
     public async Task A_sentence_from_a_meeting_held_in_one_room_is_refused_before_it_is_transcribed()
     {
