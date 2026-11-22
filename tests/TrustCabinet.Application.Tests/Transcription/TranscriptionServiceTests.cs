@@ -44,9 +44,12 @@ public sealed class TranscriptionServiceTests
         _recordings.Recordings.Add(_recording);
     }
 
+    // A run's stale watch waits on this clock, so it looks only when a test moves the time on: on a real timer it woke
+    // up in the middle of other tests' runs and added reads to what they count.
+    private readonly ManualClock _clock = new(Now);
+
     private TranscriptionService Service() => new(_meetings, _recordings, _transcripts, _unitOfWork, _storage, _engine, _voices,
-        _protector, Options.Create(new VoiceIdOptions()), _audit, _publisher, new FixedClock(Now),
-        NullLogger<TranscriptionService>.Instance) { StaleCheckEvery = TimeSpan.FromMilliseconds(20) };
+        _protector, Options.Create(new VoiceIdOptions()), _audit, _publisher, _clock, NullLogger<TranscriptionService>.Instance);
 
     private Transcript Queued(TranscriptStatus status = TranscriptStatus.Pending)
     {
@@ -184,10 +187,14 @@ public sealed class TranscriptionServiceTests
         var transcript = Queued();
         var started = new TaskCompletionSource();
         _engine.Hold = started;
-        var run = Task.Run(() => Service().ProcessNextAsync());
+        var service = Service();
+        var run = Task.Run(() => service.ProcessNextAsync());
         await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await _clock.WhenPendingAsync();
         // RoomTakeService appends the take and queues the whole recording again.
         transcript.Status = TranscriptStatus.Pending;
+        Assert.False(run.IsCompleted);
+        _clock.Advance(service.StaleCheckEvery);
 
         Assert.True(await run.WaitAsync(TimeSpan.FromSeconds(10)));
         Assert.True(_engine.Cancelled);
@@ -204,9 +211,16 @@ public sealed class TranscriptionServiceTests
         _engine.Hold = started;
         using var shutdown = new CancellationTokenSource();
 
-        var run = Task.Run(() => Service().ProcessNextAsync(shutdown.Token));
+        var service = Service();
+        var run = Task.Run(() => service.ProcessNextAsync(shutdown.Token));
         await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        await Task.Delay(200);
+        // Three looks, each finding the transcript still Processing, and the watch waiting for the next one.
+        for (var look = 0; look < 3; look++)
+        {
+            await _clock.WhenPendingAsync();
+            _clock.Advance(service.StaleCheckEvery);
+        }
+        await _clock.WhenPendingAsync();
 
         Assert.False(run.IsCompleted);
         Assert.False(_engine.Cancelled);
