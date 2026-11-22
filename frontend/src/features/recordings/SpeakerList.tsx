@@ -1,6 +1,5 @@
 import { useId, useState } from 'react'
 import { assignLineSpeaker, assignSpeaker } from '../../api/transcripts'
-import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
@@ -53,14 +52,15 @@ export function SpeakerList({ transcript, onChanged }: { transcript: Transcript;
                     {voiceName(voice.speaker)}
                   </span>
                 )}
+                {/* Words, not a "people" icon nobody read right (team test 21/11/2026): the machine heard this person
+                    as several voices, folded into one card, and the time is all of them. */}
                 {voice.labels.length > 1 && (
                   <span
                     className="speaker-same"
                     tabIndex={0}
-                    aria-label={`Gộp ${voice.labels.length} giọng`}
-                    data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
+                    data-tooltip={`Máy nghe thành ${voice.labels.length} giọng khác nhau, đã gộp vì là cùng một người. Thời gian nói là tổng của cả ${voice.labels.length}.`}
                   >
-                    <Icon name="users" size={14} />
+                    {voice.labels.length} giọng
                   </span>
                 )}
               </span>
