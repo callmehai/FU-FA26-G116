@@ -46,6 +46,8 @@ export interface SpeechClip {
    * Null for a sentence stored before word times were kept, or corrected since.
    */
   wordStartsMs?: number[] | null
+  /** How sure the recogniser was of each word, in per cent (0–100); null on the same terms as `wordStartsMs`. */
+  wordConfidence?: number[] | null
 }
 
 /** GET /api/meetings/{id}/speech-clips — the whole list, or what changed since `readAt` of the last read. */

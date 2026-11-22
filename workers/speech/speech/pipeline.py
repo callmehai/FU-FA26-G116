@@ -312,6 +312,31 @@ def word_starts(tokens: list[str], timestamps: list[float], words: int) -> list[
     return starts if len(starts) == words else None
 
 
+def word_confidence(tokens: list[str], log_probs: list[float], words: int) -> list[float] | None:
+    """How sure the recogniser was of each word of its text, in per cent (0–100), or None when unknown.
+
+    Gipformer's transducer scores every token it emits (`result.ys_log_probs`, natural log); a word is as sure as its
+    least sure token, so a word with one doubtful syllable reads as doubtful. Should the
+    count not match the words (no scores, an odd token), there are no scores rather than wrong ones.
+    """
+    if not words or len(log_probs) != len(tokens):
+        return None
+    scores: list[float] = []
+    new_word = False
+    for token, log_prob in zip(tokens, log_probs):
+        if token[:1] in WORD_MARKS:
+            new_word = True
+        if not token.lstrip("".join(WORD_MARKS)):
+            continue
+        probability = math.exp(min(0.0, float(log_prob)))
+        if new_word or not scores:
+            scores.append(probability)
+            new_word = False
+        else:
+            scores[-1] = min(scores[-1], probability)
+    return [round(score * 100) for score in scores] if len(scores) == words else None
+
+
 def word_times_ms(start_s: float, end_s: float, starts: list[float] | None) -> list[int] | None:
     """A piece's word starts on the recording's clock, in ms, kept inside the piece and in order."""
     if starts is None:
@@ -337,8 +362,8 @@ def context_words(context: str | None) -> str | None:
     return " ".join(words) if 0 < len(words) <= MAX_CONTEXT_WORDS else None
 
 
-def aligned_words(sentence: str, times: list[int] | None) -> list[int] | None:
-    """The word times of a readable line, only while they still match its words one for one.
+def aligned_words(sentence: str, times: list | None) -> list | None:
+    """The word times (or scores) of a readable line, only while they still match its words one for one.
 
     Punctuation edits words in place and never adds or drops one, so the recogniser's word times
     belong to the words of the punctuated text as well; anything else sends no times at all.
@@ -589,10 +614,13 @@ class Engine:
         drain()
         return [(start, samples[start:end]) for start, end in pad_regions(found, samples.size)]
 
-    def _transcribe_pieces(self, pieces: list[np.ndarray]) -> tuple[list[str], list[list[float] | None]]:
-        """The raw text of each piece, and when each of its words begins (seconds into the piece)."""
+    def _transcribe_pieces(self, pieces: list[np.ndarray]
+                           ) -> tuple[list[str], list[list[float] | None], list[list[float] | None]]:
+        """The raw text of each piece, when each of its words begins (seconds into the piece), and how sure the
+        recogniser was of each word."""
         texts: list[str] = []
         timings: list[list[float] | None] = []
+        sureness: list[list[float] | None] = []
         for first in range(0, len(pieces), 8):
             self._check()
             streams = []
@@ -605,7 +633,9 @@ class Engine:
                 result = stream.result
                 texts.append(result.text)
                 timings.append(word_starts(list(result.tokens), list(result.timestamps), len(result.text.split())))
-        return texts, timings
+                sureness.append(word_confidence(list(result.tokens), list(getattr(result, "ys_log_probs", []) or []),
+                                                len(result.text.split())))
+        return texts, timings, sureness
 
     def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str],
                   context: str | None = None) -> tuple[list[str], str | None]:
@@ -802,10 +832,10 @@ class Engine:
                     for _, _, label, part in pieces:
                         turns_by_label[label].append(part)
 
-        raws, timings = self._transcribe_pieces([piece[3] for piece in pieces])
+        raws, timings, sureness = self._transcribe_pieces([piece[3] for piece in pieces])
         texts, restored_context = self._readable(pieces, raws, context)
         segments = []
-        for (start, end, label, part), sentence, loudness, timing in zip(pieces, texts, levels, timings):
+        for (start, end, label, part), sentence, loudness, timing, sure in zip(pieces, texts, levels, timings, sureness):
             if sentence:
                 segments.append({
                     "startMs": round(start * 1000),
@@ -814,6 +844,7 @@ class Engine:
                     "text": sentence,
                     "levelDbfs": None if loudness is None else round(loudness, 1),
                     "wordStartsMs": aligned_words(sentence, word_times_ms(start, end, timing)),
+                    "wordConfidence": aligned_words(sentence, sure),
                 })
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 

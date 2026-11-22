@@ -26,8 +26,10 @@ public sealed record SpeechTranscription(long DurationMs, string Language, strin
 /// <param name="LevelDbfs">How loud the segment reached the mic, before the worker levelled it.</param>
 /// <param name="WordStartsMs">When each word of <c>Text</c> begins, in ms into the audio, one per word; null when the worker
 /// could not tell (or is older than word timings).</param>
+/// <param name="WordConfidence">How sure the recogniser was of each word of <c>Text</c>, 0–100 per cent, one per word; null when the
+/// worker could not tell (or is older than word scores).</param>
 public sealed record SpeechSegment(long StartMs, long EndMs, string? Speaker, string Text, double? LevelDbfs = null,
-    IReadOnlyList<long>? WordStartsMs = null);
+    IReadOnlyList<long>? WordStartsMs = null, IReadOnlyList<int>? WordConfidence = null);
 
 /// <summary>
 /// One diarized voice. The embedding is used once, to suggest who the voice is (SCRUM-35), and is never stored:
@@ -55,10 +57,12 @@ public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFai
 /// <summary>
 /// One line of a transcript. <c>WordStartsMs</c>: when each word of <c>Text</c> begins, in ms into the recording, so the
 /// line can follow the voice word by word; null for a line the Secretary corrected or one transcribed before word
-/// timings were kept.
+/// timings were kept. <c>WordConfidence</c>: how sure the recogniser was of each word, 0–100 per cent, so a doubtful word can be
+/// marked for the Secretary to check; null on the same terms.
 /// </summary>
 public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, long EndMs, string Text,
-    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName, IReadOnlyList<long>? WordStartsMs = null);
+    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName, IReadOnlyList<long>? WordStartsMs = null,
+    IReadOnlyList<int>? WordConfidence = null);
 
 /// <summary>
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;

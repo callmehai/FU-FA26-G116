@@ -563,8 +563,8 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
-            [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5, [40, 200, 360, 560, 760, 960]),
-                new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0, [1300, 1500, 1720, 1980])], []);
+            [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5, [40, 200, 360, 560, 760, 960], [100, 100, 90, 95, 30, 80]),
+                new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0, [1300, 1500, 1720, 1980], [90, 90, 45, 100])], []);
         using var member = fixture.Client(s.Member);
         var clip = (await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 200, "MSG318")).GetProperty("clip");
         long[] words = [40, 200, 360, 560, 760, 960, 1300, 1500, 1720, 1980];
@@ -572,12 +572,15 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         using var secretary = fixture.Client(s.Secretary);
         var line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
         Assert.Equal(words, line.GetProperty("wordStartsMs").EnumerateArray().Select(w => w.GetInt64()));
+        Assert.Equal([100, 100, 90, 95, 30, 80, 90, 90, 45, 100],
+            line.GetProperty("wordConfidence").EnumerateArray().Select(w => w.GetInt32()));
 
         // The times were the machine's words': once a person rewrites them, the line is followed as a whole.
         await AssertCode(await secretary.PutAsJsonAsync($"/api/speech-clips/{clip.GetProperty("id").GetGuid()}/text",
             new { text = "Tôi đồng ý với dự thảo, đề nghị biểu quyết ngay." }), 200, "MSG302");
         line = Assert.Single((await List(secretary, s.MeetingId)).GetProperty("items").EnumerateArray());
         Assert.Equal(JsonValueKind.Null, line.GetProperty("wordStartsMs").ValueKind);
+        Assert.Equal(JsonValueKind.Null, line.GetProperty("wordConfidence").ValueKind);
 
         // A stretch the worker sent no times for (an older worker) leaves the whole sentence without: never a guess.
         fixture.Speech.Result = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
