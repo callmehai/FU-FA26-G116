@@ -34,7 +34,7 @@ FE dùng ID từ endpoint này để xây `participants` khi POST tạo họp. B
 |---|---|
 | GET /participant-context | `{meetingId,status,revision,myRole,permissions:{canManageParticipants,canReplaceChair,canRespond}}` |
 | GET /participants?q=&page=1&pageSize=20 | `{items,total,page,pageSize,revision}` |
-| GET /participants/editor-options?q=&page=1&pageSize=20 | Manager ở trạng thái editable; `{items:[{id,fullName,email,voiceCollector}],total,page,pageSize,roles:["Chair","Secretary","Member"],revision}`. `voiceCollector`: vai trò hệ thống có quyền `VoiceCollector`; FE cảnh báo đỏ khi chọn người không có quyền này làm Thư ký (PO 21/11/2026) |
+| GET /participants/editor-options?q=&page=1&pageSize=20 | Manager ở trạng thái editable; `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"],revision}` |
 | GET /invitation-response | Own current invitation: `{id,kind,response,respondedAt,canRespond}`, từ Published |
 
 `myRole` là Chair/Secretary/Member/Guest/null. `canManageParticipants` = manager + editable. Preparation: `canReplaceChair` bằng manage; Published/InProgress: current Chair hoặc Secretary có Chair inactive; locked states false. `canRespond` chỉ current internal active (không phải Chair) hoặc Guest, ở Published/InProgress, **chưa trả lời** — xem §4.1.
@@ -45,7 +45,7 @@ Roster item:
 {
   "id":"assignment-or-invitation-guid","kind":"Internal","displayName":"Nguyễn An",
   "email":"an@example.test","role":"Member","userId":"user-guid","isActive":true,
-  "invitedName":null,"selfDeclaredDisplayName":null,"selfDeclaredJobTitle":null,"voiceCollector":true,
+  "invitedName":null,"selfDeclaredDisplayName":null,"selfDeclaredJobTitle":null,
   "response":"Pending","respondedAt":null
 }
 ```

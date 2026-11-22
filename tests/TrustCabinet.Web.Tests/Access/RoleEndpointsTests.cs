@@ -142,7 +142,7 @@ public class RoleEndpointsTests : IDisposable
     [MemberData(nameof(EveryEndpoint))]
     public async Task Callers_without_admin_users_get_403(string method, string path)
     {
-        var client = _factory.ClientFor(GivenUser(BuiltInRoles.Secretary), Capability.MinutesEditor);
+        var client = _factory.ClientFor(GivenUser(TestRoles.Secretary), Capability.VoiceCollector);
 
         var response = await client.SendAsync(Request(method, path));
 
@@ -169,7 +169,7 @@ public class RoleEndpointsTests : IDisposable
     public async Task List_returns_every_role_with_its_user_count_in_display_order()
     {
         var deputy = GivenCustomRole();
-        _factory.Roles.WithUsers(BuiltInRoles.Chair, 3);
+        _factory.Roles.WithUsers(BuiltInRoles.Approver, 3);
 
         var response = await AdminClient().GetAsync("/api/roles");
 
@@ -181,11 +181,12 @@ public class RoleEndpointsTests : IDisposable
             [.. BuiltInRoles.All.Select(id => id.ToString()), deputy.Id.ToString()],
             roles.Select(r => r.GetProperty("id").GetString()));
 
-        var chair = roles[0];
-        Assert.Equal("Chủ toạ", chair.GetProperty("name").GetString());
-        Assert.True(chair.GetProperty("isBuiltIn").GetBoolean());
-        Assert.Equal(3, chair.GetProperty("userCount").GetInt32());
-        Assert.False(string.IsNullOrWhiteSpace(chair.GetProperty("description").GetString()));
+        var approver = roles[1];
+        Assert.Equal("Phê duyệt viên", approver.GetProperty("name").GetString());
+        Assert.True(approver.GetProperty("isBuiltIn").GetBoolean());
+        Assert.Equal(3, approver.GetProperty("userCount").GetInt32());
+        Assert.False(string.IsNullOrWhiteSpace(approver.GetProperty("description").GetString()));
+        Assert.Equal("Thành viên", roles[0].GetProperty("name").GetString());
 
         var custom = roles[^1];
         Assert.Equal("Thư ký phó", custom.GetProperty("name").GetString());
@@ -210,7 +211,7 @@ public class RoleEndpointsTests : IDisposable
         {
             name = "Thư ký phó",
             description = "Hỗ trợ thư ký soạn biên bản.",
-            capabilities = new[] { "MinutesEditor" },
+            capabilities = new[] { "VoiceCollector" },
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -227,7 +228,7 @@ public class RoleEndpointsTests : IDisposable
         Assert.Equal(0, role.GetProperty("userCount").GetInt32());
         Assert.Equal($"/api/roles/{id}", response.Headers.Location?.ToString());
 
-        Assert.Equal([Capability.MinutesEditor], _factory.Roles.CapabilitiesOf(Guid.Parse(id!)));
+        Assert.Equal([Capability.VoiceCollector], _factory.Roles.CapabilitiesOf(Guid.Parse(id!)));
     }
 
     [Fact]
@@ -308,7 +309,7 @@ public class RoleEndpointsTests : IDisposable
     [Fact]
     public async Task Create_answers_MSG21_with_409_for_a_name_already_used()
     {
-        var response = await AdminClient().PostAsJsonAsync("/api/roles", new { name = "THƯ KÝ" });
+        var response = await AdminClient().PostAsJsonAsync("/api/roles", new { name = "PHÊ DUYỆT VIÊN" });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 

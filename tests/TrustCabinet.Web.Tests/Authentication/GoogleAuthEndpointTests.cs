@@ -11,6 +11,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -77,7 +78,7 @@ public class GoogleAuthEndpointTests : IDisposable
             Email = Email,
             PasswordHash = null,
             GoogleSubjectId = googleSubjectId,
-            RoleId = role ?? BuiltInRoles.Secretary,
+            RoleId = role ?? TestRoles.Secretary,
             IsActive = isActive,
         };
 
@@ -88,7 +89,7 @@ public class GoogleAuthEndpointTests : IDisposable
     public async Task A_linked_active_account_gets_a_token_pair()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle();
 
@@ -102,16 +103,16 @@ public class GoogleAuthEndpointTests : IDisposable
             h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal)
                 && h.Length > "tc_refresh_token=".Length);
         Assert.Equal(Email, body.User.Email);
-        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
+        Assert.Equal(TestRoles.Secretary.ToString(), body.User.RoleId);
         Assert.Equal("Thư ký", body.User.RoleName);
-        Assert.Equal(["MinutesEditor"], body.User.Capabilities);
+        Assert.Equal(["VoiceCollector"], body.User.Capabilities);
     }
 
     [Fact]
     public async Task The_response_shape_matches_password_sign_in()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var raw = await (await PostGoogle()).Content.ReadAsStringAsync();
 
@@ -131,7 +132,7 @@ public class GoogleAuthEndpointTests : IDisposable
     public async Task An_unverifiable_token_answers_MSG03(string idToken)
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle(idToken);
 
@@ -157,7 +158,7 @@ public class GoogleAuthEndpointTests : IDisposable
         // nothing but SQL could set one, so this answered MSG05 for everybody.
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null))
-            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle();
 
@@ -170,7 +171,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(isActive: false))
-            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle();
 
@@ -184,7 +185,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null, isActive: false))
-            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle();
 
@@ -222,7 +223,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.GoogleEnabled = false;
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(TestRoles.Secretary, Capability.VoiceCollector);
 
         var response = await PostGoogle();
 

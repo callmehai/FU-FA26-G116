@@ -25,7 +25,7 @@ Màn hình hiện tại ở [`frontend/src/features/access/RolesPage.tsx`](../..
 `PUT /api/roles/capabilities` nhận:
 
 ```json
-{ "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22", "capabilities": ["MeetingCreator", "MinutesEditor"] }
+{ "roleId": "01a0ce78-7202-7945-be13-d2022cf25203", "capabilities": ["MeetingCreator", "MeetingApprover"] }
 ```
 
 **Gửi đủ mọi quyền vai trò đó cần có SAU khi sửa**, kể cả những quyền nó đã có sẵn từ trước.
@@ -36,8 +36,8 @@ toàn hợp lệ.
 
 | Người dùng làm gì | Trạng thái hiện tại | Phải gửi |
 |---|---|---|
-| Tick thêm `MinutesEditor` | `["MeetingCreator"]` | `["MeetingCreator", "MinutesEditor"]` |
-| Bỏ tick `MeetingCreator` | `["MeetingCreator", "MinutesEditor"]` | `["MinutesEditor"]` |
+| Tick thêm `MeetingApprover` | `["MeetingCreator"]` | `["MeetingCreator", "MeetingApprover"]` |
+| Bỏ tick `MeetingCreator` | `["MeetingCreator", "MeetingApprover"]` | `["MeetingApprover"]` |
 | Bỏ tick hết | `["MeetingCreator"]` | `[]` |
 
 Mảng rỗng `[]` là **hợp lệ** và gỡ sạch quyền của vai trò đó.
@@ -58,7 +58,9 @@ của cả vai trò. Cùng một cái bẫy với `isActive` ở
 
 ## 2. Mã quyền là **PascalCase**, khác với bảng cứng đang có trong code FE
 
-API trả và nhận: `"AdminUsers"`, `"MeetingCreator"`, `"MeetingApprover"`, `"MinutesEditor"`.
+API trả và nhận: `"AdminUsers"`, `"MeetingCreator"`, `"MeetingApprover"`, `"VoiceCollector"`. `"MinutesEditor"` đã bỏ
+([ADR-0075](../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md)): soạn và sửa biên bản theo vai trò Thư ký **của
+cuộc họp**, không theo quyền hệ thống.
 
 Nhưng [`frontend/src/types/user.ts`](../../frontend/src/types/user.ts) đang có
 `ROLE_CAPABILITIES` dùng **snake_case** (`'admin_users'`). Hai thứ đó **không khớp nhau**, đừng
@@ -203,7 +205,7 @@ thu ghi rõ *"Màn hình không được có nút Tạo quyền mới"*.
 
 **Vai trò thì tạo được** từ `SCRUM-63` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)):
 `POST/PUT/DELETE /api/roles`, xem [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). `isBuiltIn = true`
-là một trong bốn vai trò mặc định — không đổi tên, không xoá được, nhưng **vẫn sửa quyền được** ở
+là một trong ba vai trò mặc định — không đổi tên, không xoá được, nhưng **vẫn sửa quyền được** ở
 màn hình này. Vai trò tự tạo có `isBuiltIn = false`.
 
 Cũng **chưa có** chức năng "Khôi phục mặc định" (`resetRolePermissionsToDefault` trên class diagram

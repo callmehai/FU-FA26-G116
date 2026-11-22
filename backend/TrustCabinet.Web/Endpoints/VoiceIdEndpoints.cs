@@ -10,10 +10,9 @@ namespace TrustCabinet.Web.Endpoints;
 /// SCRUM-35 — the caller's own Voice ID: consent, enrolment samples, withdrawal. No <c>/api/me/voice</c> route names
 /// another person: nobody can consent for someone else.
 ///
-/// ADR-0060 adds the one way to record someone else's voice: the Secretary of an in-person or hybrid meeting, holding
-/// <see cref="Capability.VoiceCollector"/>, records samples for its people on the room's mic, under each person's own
-/// Voice ID consent: the one consent covers both sets (ADR-0060). ADR-0071: a holder of that capability may also record
-/// one person at any time, with no meeting, under a consent to notice 1.4 or later.
+/// The one way to record someone else's voice (ADR-0071, ADR-0075): a holder of <see cref="Capability.VoiceCollector"/>
+/// records one person at any time, with no meeting, under that person's own Voice ID consent to notice 1.4 or later and
+/// their agreement to that take (ADR-0073). The meeting Secretary's path of ADR-0060 was removed by ADR-0075.
 /// </summary>
 public static class VoiceIdEndpoints
 {
@@ -33,7 +32,6 @@ public static class VoiceIdEndpoints
     private const string Msg474ProxySampleDeleted = "MSG474";
     private const string Msg475NoProxyConsent = "MSG475";
     private const string Msg476ProxySampleLimit = "MSG476";
-    private const string Msg477NotCollectable = "MSG477";
     private const string Msg483NotConfirmed = "MSG483";
 
     /// <summary>
@@ -69,26 +67,6 @@ public static class VoiceIdEndpoints
             => Map(await service.DeleteSampleAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg311SampleDeleted, "Đã xoá giọng mẫu."));
 
-        // ADR-0060: an active account, then — on every call, in the service — the Secretary of this very meeting; one
-        // without the VoiceCollector capability only while the meeting is open (PO 2026-11-21).
-        var collection = app.MapGroup("/api/meetings/{meetingId:guid}/voice-collection")
-            .RequireActiveUser(Error(500, Msg314ReadFailed, "Không tải được thông tin giọng nói."));
-        collection.MapGet("", async (Guid meetingId, HttpContext context, IVoiceCollectionService service, CancellationToken ct)
-            => Map(await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct), collection: true));
-        collection.MapPost("/{userId:guid}/samples", CollectSampleAsync);
-        collection.MapGet("/samples/{sampleId:guid}/audio", async (Guid meetingId, Guid sampleId, HttpContext context,
-            IVoiceCollectionService service, CancellationToken ct) =>
-        {
-            var audio = await service.AudioAsync(meetingId, CapabilityGate.GatedUserId(context.User), sampleId, ct);
-            if (audio is null) return Results.NotFound();
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.File(audio.Bytes, audio.ContentType, enableRangeProcessing: true);
-        });
-        collection.MapDelete("/samples/{sampleId:guid}", async (Guid meetingId, Guid sampleId, HttpContext context,
-            IVoiceCollectionService service, CancellationToken ct)
-            => Map(await service.DeleteAsync(meetingId, CapabilityGate.GatedUserId(context.User), sampleId, ct),
-                Msg474ProxySampleDeleted, "Đã xoá giọng mẫu thu hộ.", collection: true));
-
         // ADR-0071: the capability itself is the gate (403 without it, a fixed path); a person who does not exist, is
         // deactivated, or a sample not taken for them by someone else, is a 404.
         var person = app.MapGroup("/api/users/{userId:guid}/voice-collection")
@@ -117,17 +95,6 @@ public static class VoiceIdEndpoints
         if (refused is not null) return refused;
         await using (audio)
             return Map(await service.AddForPersonAsync(CapabilityGate.GatedUserId(context.User), userId, audio!, type!,
-                    PersonAgreed(context), ct),
-                Msg473ProxySampleAdded, "Đã lưu giọng mẫu thu hộ.", created: true, collection: true);
-    }
-
-    private static async Task<IResult> CollectSampleAsync(Guid meetingId, Guid userId, HttpContext context,
-        IVoiceCollectionService service, CancellationToken ct)
-    {
-        var (audio, type, refused) = await ReadSampleAsync(context, ct);
-        if (refused is not null) return refused;
-        await using (audio)
-            return Map(await service.AddAsync(meetingId, CapabilityGate.GatedUserId(context.User), userId, audio!, type!,
                     PersonAgreed(context), ct),
                 Msg473ProxySampleAdded, "Đã lưu giọng mẫu thu hộ.", created: true, collection: true);
     }
@@ -178,7 +145,7 @@ public static class VoiceIdEndpoints
         errors = new Dictionary<string, string[]> { ["file"] = [VoiceIdRules.RejectionMessage(reason)] },
     }, statusCode: StatusCodes.Status422UnprocessableEntity);
 
-    /// <param name="collection">A Secretary recording for someone else (ADR-0060): the person's consent and limit are theirs.</param>
+    /// <param name="collection">A collector recording for someone else (ADR-0071): the person's consent and limit are theirs.</param>
     private static IResult Map(VoiceOutcome result, string? successCode = null, string? successMessage = null, bool created = false,
         bool collection = false)
     {
@@ -192,11 +159,9 @@ public static class VoiceIdEndpoints
                 VoiceFailure.NoConsent when collection => (409, Msg475NoProxyConsent,
                     "Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi."),
                 VoiceFailure.LimitReached when collection => (409, Msg476ProxySampleLimit,
-                    $"Đã đủ giọng mẫu thu hộ cho người này: mỗi Thư ký thu tối đa {VoiceIdRules.MaxProxySamplesPerCollector} mẫu, tổng {VoiceIdRules.MaxProxySamples} mẫu. Xoá bớt rồi thu lại."),
+                    $"Đã đủ {VoiceIdRules.MaxProxySamples} giọng mẫu thu hộ cho người này. Xoá bớt rồi thu lại."),
                 VoiceFailure.NotConfirmed => (400, Msg483NotConfirmed,
                     "Hãy hỏi ý người được thu và xác nhận họ đồng ý cho lần thu này trước khi lưu giọng mẫu."),
-                VoiceFailure.NotCollectable => (409, Msg477NotCollectable,
-                    "Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp."),
                 VoiceFailure.NoConsent => (409, Msg308NoConsent, "Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu."),
                 VoiceFailure.LimitReached => (409, Msg310SampleLimit, $"Đã đủ {VoiceIdRules.MaxSamples} giọng mẫu. Xoá bớt rồi ghi lại."),
                 VoiceFailure.EngineUnavailable => (503, Msg312EngineUnavailable, "Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau."),

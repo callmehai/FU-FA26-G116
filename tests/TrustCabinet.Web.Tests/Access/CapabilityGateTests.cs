@@ -153,7 +153,7 @@ public class CapabilityGateTests : IDisposable
     {
         // Signed in, with a genuine token — it simply does not carry AdminUsers.
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), path));
@@ -255,9 +255,9 @@ public class CapabilityGateTests : IDisposable
     public async Task Me_returns_the_capability_set_the_interface_renders_from()
     {
         var secretary = GivenUser(
-            "Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
+            "Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary);
         var client = _factory.ClientFor(
-            secretary, Capability.MeetingCreator, Capability.MinutesEditor);
+            secretary, Capability.MeetingCreator, Capability.VoiceCollector);
 
         var response = await client.GetAsync("/api/auth/me");
 
@@ -268,9 +268,9 @@ public class CapabilityGateTests : IDisposable
             .EnumerateArray().Select(c => c.GetString() ?? "").ToArray();
 
         Assert.Equal(secretary.Email, body.GetProperty("email").GetString());
-        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.GetProperty("roleId").GetString());
+        Assert.Equal(TestRoles.Secretary.ToString(), body.GetProperty("roleId").GetString());
         Assert.Equal("Thư ký", body.GetProperty("roleName").GetString());
-        Assert.Equal(["MeetingCreator", "MinutesEditor"], capabilities);
+        Assert.Equal(["MeetingCreator", "VoiceCollector"], capabilities);
         // The frontend's stale table gave the Secretary no admin rights either; this is now the
         // only place that answer comes from.
         Assert.DoesNotContain("AdminUsers", capabilities);
@@ -283,9 +283,9 @@ public class CapabilityGateTests : IDisposable
         // Member with none. A /me that read its claims would report the token's version — which is
         // the whole failure this endpoint is supposed not to have, because it is what the
         // interface renders from.
-        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
+        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", TestRoles.Secretary);
         var client = _factory.ClientFor(
-            user, Capability.MeetingCreator, Capability.MinutesEditor);
+            user, Capability.MeetingCreator, Capability.VoiceCollector);
 
         user.RoleId = BuiltInRoles.Member;
 

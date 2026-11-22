@@ -73,7 +73,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | CallParticipant | Một lượt kết nối của User hoặc khách | DONE (SCRUM-59) | UserId XOR GuestSessionId (`ck_call_participants_one_member`). Tối đa một lượt đang mở (`left_at IS NULL`) cho mỗi người trong một phiên: unique index `ux_call_participants_open_user_stint` / `ux_call_participants_open_guest_stint`. |
 | GuestSession | Phiên Khách đã xác minh email; hạn 12 giờ, thu hồi khi Khách tự thoát hoặc lời mời bị thu hồi | IMPLEMENTED (SCRUM-116, bảng `guest_sessions`) | `InvitationId` → `MeetingGuestInvitation`; một lời mời có nhiều phiên (mỗi thiết bị một phiên); `ExpiresAt`, `RevokedAt`; xoá theo lời mời. Lượt vào/ra phòng họp trỏ tới phiên qua `CallParticipant.GuestSessionId`. |
 | SpeechClip | Một câu nói thu từ chính micro của người dự họp, kèm âm thanh để nghe lại từng câu | IMPLEMENTED (SCRUM-109, bảng `speech_clips`; Khách từ SCRUM-129) | `MeetingId`; người nói là **đúng một** trong `SpeakerId` (thành viên) và `GuestInvitationId` (Khách — gắn với **lời mời**, không với phiên; ADR-0051), ràng buộc `ck_speech_clips_one_speaker`; `ClientClipId` chống gửi trùng khi mất mạng; `StartedAt`, `DurationMs`, `Text`, `EditedById/EditedAt` (Thư ký sửa chữ), `ExcludedAt/ExcludedById/ExclusionReason` (loại khỏi bản ghi, không xoá), `Segments` (jsonb, số đo tiếng lọt giữa các micro — ADR-0038, kèm `WordStartsMs` mốc từng từ và `WordConfidence` độ chắc từng từ), `AudioPath`/`AudioContentType`, `Peaks` (dạng sóng). Là dữ liệu cá nhân: xoá cùng hạn với bản ghi (`Recordings:RetentionDays`, ADR-0040). |
-| VoiceConsent | Sự đồng ý Voice ID của một người, tách hẳn khỏi đồng ý ghi âm | IMPLEMENTED (SCRUM-35, bảng `voice_consents`, ADR-0027, ADR-0060) | `UserId` (mỗi người tối đa một dòng đang hiệu lực, cho cả mẫu tự thu lẫn mẫu Thư ký thu hộ — ADR-0060), `GrantedAt`, `NoticeVersion` (bản câu thông báo đã đọc), `Purpose`, `WithdrawnAt` (một lần, **không hồi**); rút đồng ý là xoá mọi giọng mẫu và lần đồng ý lại tạo dòng mới. Giọng dùng để nhận người là **dữ liệu cá nhân nhạy cảm** theo Luật 91/2025/QH15. |
+| VoiceConsent | Sự đồng ý Voice ID của một người, tách hẳn khỏi đồng ý ghi âm | IMPLEMENTED (SCRUM-35, bảng `voice_consents`, ADR-0027, ADR-0060) | `UserId` (mỗi người tối đa một dòng đang hiệu lực, cho cả mẫu tự thu lẫn mẫu thu hộ — ADR-0060), `GrantedAt`, `NoticeVersion` (bản câu thông báo đã đọc), `Purpose`, `WithdrawnAt` (một lần, **không hồi**); rút đồng ý là xoá mọi giọng mẫu và lần đồng ý lại tạo dòng mới. Giọng dùng để nhận người là **dữ liệu cá nhân nhạy cảm** theo Luật 91/2025/QH15. |
 | VoiceSample | Một mẫu giọng đã mã hoá, dùng để gợi ý tên người nói | IMPLEMENTED (SCRUM-35, bảng `voice_samples`, ADR-0027) | `UserId`, `ConsentId`; `Ciphertext` (AES-256-GCM: nonce + ciphertext + tag, gắn người/mẫu/model), `EmbeddingModel` (`eres2net-base-200k@<sha12>`), `SpeechMs`, `AudioCiphertext` + `AudioContentType` (bản ghi gốc, cũng mã hoá, để chủ nhân nghe lại), `CollectedById` + `MeetingId` (ai thu hộ, ở cuộc họp nào — ADR-0060; cả hai rỗng với mẫu tự thu; mẫu thu ngoài cuộc họp chỉ có `CollectedById` — ADR-0071; check constraint: có `MeetingId` thì phải có `CollectedById`). Không lưu vector giọng ở bất kỳ bảng nào khác — `DatabaseModelTests` chặn. |
 
 `MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
@@ -122,7 +122,7 @@ erDiagram
         uuid Id PK
         citext Name UK "tối đa 64"
         string Description
-        bool IsBuiltIn "4 vai trò mặc định, id cố định"
+        bool IsBuiltIn "3 vai trò mặc định, id cố định (ADR-0075)"
     }
     RoleCapability {
         uuid RoleId PK
@@ -514,7 +514,7 @@ erDiagram
         bigint SpeechMs
         bytea AudioCiphertext "nullable; bản ghi gốc, mã hoá"
         string AudioContentType "nullable"
-        uuid CollectedById FK "nullable; Thư ký thu hộ (ADR-0060)"
+        uuid CollectedById FK "nullable; người thu hộ (ADR-0060, ADR-0075)"
         uuid MeetingId FK "nullable; cuộc họp nơi thu hộ, rỗng nếu thu ngoài cuộc họp (ADR-0071)"
     }
     MeetingMinutes {
@@ -792,7 +792,7 @@ Ràng buộc và lý do:
 | User | 1 → 0..* | VoiceConsent | Đồng ý Voice ID |
 | VoiceConsent | 1 → 0..* | VoiceSample | Mẫu giọng nằm dưới lần đồng ý |
 | User | 1 → 0..* | VoiceSample | Sở hữu mẫu giọng |
-| User | 0..1 → 0..* | VoiceSample | Thu hộ mẫu giọng (Thư ký, SCRUM-152) |
+| User | 0..1 → 0..* | VoiceSample | Thu hộ mẫu giọng (người có quyền Thu giọng mẫu hộ; trước ADR-0075 cả Thư ký cuộc họp) |
 | Meeting | 0..1 → 0..* | VoiceSample | Nơi thu hộ mẫu giọng (SCRUM-152) |
 | Meeting | 1 → 0..* | MeetingMinutes | Ban hành |
 | MeetingMinutes | 0..1 → 0..1 | MeetingMinutes | Thay thế phiên bản trước |
@@ -831,7 +831,7 @@ Ràng buộc và lý do:
 19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160). Vote còn `Draft` lúc kết thúc bị hệ thống xoá trong cùng transaction, mỗi nháp một dòng `AuditLogEntry` `vote.draft_deleted_on_meeting_end` (PO 08/11/2026); huỷ cuộc họp cũng vậy, với `vote.draft_deleted_on_meeting_cancel` (ADR-0067); Vote Open/Closed giữ nguyên (BR-189).
 20. BR-166 đã retired (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng): không còn vòng ký, không niêm phong, không vô hiệu hoá chữ ký. Sửa sau ban hành thì tạo bản đính chính mới (UC-83), bản cũ thành `Superseded` khi bản mới ban hành.
 21. Mỗi câu nói thu từ micro (`SpeechClip`) có **đúng một** người nói: `SpeakerId` (thành viên) hoặc `GuestInvitationId` (Khách), do `ck_speech_clips_one_speaker` ép; câu của Khách gắn với **lời mời**, không với phiên (ADR-0051). Câu là dữ liệu cá nhân: chủ câu tự xoá khi phiên còn, Chủ toạ/Thư ký loại khỏi bản ghi hoặc xoá, và hệ thống xoá cùng hạn với bản ghi (ADR-0040).
-22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027). Mẫu tự thu có `CollectedById`/`MeetingId` null; mẫu Thư ký thu hộ có cả hai (SCRUM-152, ADR-0060).
+22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027). Mẫu tự thu có `CollectedById`/`MeetingId` null; mẫu thu hộ có `CollectedById`, và `MeetingId` chỉ với mẫu Thư ký thu trong cuộc họp trước ADR-0075 (SCRUM-152, ADR-0060, ADR-0071).
 
 ## Khác biệt với implementation hiện tại và ghi chú migration
 

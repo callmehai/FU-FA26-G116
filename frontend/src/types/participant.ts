@@ -53,8 +53,6 @@ export interface ParticipantRow {
   invitedName: string | null
   selfDeclaredDisplayName: string | null
   selfDeclaredJobTitle: string | null
-  /** The system role may record proxy Voice ID samples; null for a guest or when a guest reads the roster. */
-  voiceCollector?: boolean | null
   response: InvitationResponse
   respondedAt: string | null
 }
@@ -74,8 +72,6 @@ export interface ParticipantOption {
   id: string
   fullName: string
   email: string
-  /** The system role may record proxy Voice ID samples (ADR-0060). */
-  voiceCollector: boolean
 }
 
 /**

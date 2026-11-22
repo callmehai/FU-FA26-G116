@@ -34,7 +34,7 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
         [BuiltInRoles.Admin] = [Guid.CreateVersion7()],
     };
 
-    /// <summary>The four built-in roles, plus any a test adds with <see cref="WithRole"/>.</summary>
+    /// <summary>The built-in roles, plus any a test adds with <see cref="WithRole"/>.</summary>
     private readonly List<Role> _roles = [.. ReferenceData.Roles()];
 
     /// <summary>A role an administrator created, with nothing granted and nobody holding it.</summary>

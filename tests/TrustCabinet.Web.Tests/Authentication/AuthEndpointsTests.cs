@@ -12,6 +12,7 @@ using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -90,7 +91,7 @@ public class AuthEndpointsTests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = Email,
             PasswordHash = new FakePasswordHasher().Hash(Password),
-            RoleId = role ?? BuiltInRoles.Secretary,
+            RoleId = role ?? TestRoles.Secretary,
             IsActive = isActive,
         };
 
@@ -128,7 +129,7 @@ public class AuthEndpointsTests : IDisposable
         Assert.False(string.IsNullOrWhiteSpace(body.AccessToken));
         Assert.Equal(Email, body.User.Email);
         // The role by id and by its current name (ADR-0008), never the old enum string.
-        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
+        Assert.Equal(TestRoles.Secretary.ToString(), body.User.RoleId);
         Assert.Equal("Thư ký", body.User.RoleName);
         Assert.Equal(["MeetingCreator"], body.User.Capabilities);
     }
@@ -177,7 +178,7 @@ public class AuthEndpointsTests : IDisposable
     {
         // "No system access" is gone (SCRUM-63): a role with no capabilities works like Member — attending,
         // reading and voting need none — so its holders sign in rather than being locked out.
-        var client = NewClient(role: BuiltInRoles.Chair, capabilities: []);
+        var client = NewClient(role: BuiltInRoles.Approver, capabilities: []);
 
         var response = await PostLogin(client, Email, Password);
 
@@ -210,7 +211,7 @@ public class AuthEndpointsTests : IDisposable
 
         var me = await response.Content.ReadFromJsonAsync<CurrentUserBody>();
         Assert.Equal(Email, me!.Email);
-        Assert.Equal(BuiltInRoles.Secretary.ToString(), me.RoleId);
+        Assert.Equal(TestRoles.Secretary.ToString(), me.RoleId);
         Assert.Equal("Thư ký", me.RoleName);
         Assert.Equal(["MeetingCreator"], me.Capabilities);
     }

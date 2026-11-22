@@ -24,6 +24,7 @@ using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
+using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -1314,7 +1315,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.RoleCapabilities.Add(new RoleCapability
         {
             RoleId = noApproverRole.Id,
-            Capability = Capability.MinutesEditor,
+            Capability = Capability.VoiceCollector,
         });
         await _db.SaveChangesAsync();
 

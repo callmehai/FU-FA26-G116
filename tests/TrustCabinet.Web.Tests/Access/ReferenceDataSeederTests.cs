@@ -87,7 +87,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
 
         // A description edited in the database, and one built-in role gone (with its grants).
         await _db.Roles
-            .Where(r => r.Id == BuiltInRoles.Chair)
+            .Where(r => r.Id == BuiltInRoles.Approver)
             .ExecuteUpdateAsync(s => s.SetProperty(r => r.Description, "Mô tả do DBA sửa."));
         await _db.Roles.Where(r => r.Id == BuiltInRoles.Member).ExecuteDeleteAsync();
 
@@ -97,7 +97,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
         Assert.True(await _db.Roles.AnyAsync(r => r.Id == BuiltInRoles.Member));
         Assert.Equal(
             "Mô tả do DBA sửa.",
-            (await _db.Roles.SingleAsync(r => r.Id == BuiltInRoles.Chair)).Description);
+            (await _db.Roles.SingleAsync(r => r.Id == BuiltInRoles.Approver)).Description);
     }
 
     [Fact]
@@ -117,13 +117,12 @@ public class ReferenceDataSeederTests : IAsyncLifetime
     [Fact]
     public async Task An_administrators_configuration_survives_a_reseed()
     {
-        // What an administrator might do through UC-11: move AdminUsers to Secretary and take
-        // MinutesEditor away from them.
+        // What an administrator might do through UC-11: take "Thu giọng mẫu hộ" away from Quản trị viên.
         await ReferenceDataSeeder.SeedAsync(_db);
         _db.ChangeTracker.Clear();
 
         await _db.RoleCapabilities
-            .Where(rc => rc.RoleId == BuiltInRoles.Secretary && rc.Capability == Capability.MinutesEditor)
+            .Where(rc => rc.RoleId == BuiltInRoles.Admin && rc.Capability == Capability.VoiceCollector)
             .ExecuteDeleteAsync();
 
         // Re-running the seeder must not put it back. Filling in individually missing rows would
@@ -131,11 +130,11 @@ public class ReferenceDataSeederTests : IAsyncLifetime
         // would silently undo their work — the exact failure this seeder is shaped to avoid.
         await ReferenceDataSeeder.SeedAsync(_db);
 
-        var secretary = await _db.RoleCapabilities
-            .Where(rc => rc.RoleId == BuiltInRoles.Secretary)
+        var admin = await _db.RoleCapabilities
+            .Where(rc => rc.RoleId == BuiltInRoles.Admin)
             .Select(rc => rc.Capability)
             .ToArrayAsync();
 
-        Assert.DoesNotContain(Capability.MinutesEditor, secretary);
+        Assert.DoesNotContain(Capability.VoiceCollector, admin);
     }
 }

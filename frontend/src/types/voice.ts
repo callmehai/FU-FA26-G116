@@ -24,7 +24,7 @@ export interface VoiceProfile {
   purpose: string
   /** Who controls the voice data; consent is valid only when the person knows (Luật 91/2025, Điều 9.2.b). */
   controller: string
-  /** ADR-0060: the second set, recorded for the person by a meeting's Secretary on the room's mic. */
+  /** ADR-0060, ADR-0071: the second set, recorded for the person by a holder of "Thu giọng mẫu hộ". */
   proxy: ProxyVoiceProfile
 }
 
@@ -49,39 +49,11 @@ export interface PersonVoiceCollection {
   fullName: string
   /** Their consent is to notice 1.4 or later, which names recording outside a meeting. */
   consented: boolean
-  /** Consented, and neither their limit nor the caller's share of it is reached. */
+  /** Consented, and their limit of proxy samples is not reached. */
   canCollect: boolean
   maxSamples: number
-  maxSamplesPerCollector: number
   /** Every sample anyone took for them, in a meeting or not. */
   samples: ProxySample[]
-}
-
-/** GET /api/meetings/{id}/voice-collection — what the meeting's Secretary sees (ADR-0060). */
-export interface VoiceCollection {
-  /** Published or InProgress: samples can be added now, not only heard back and deleted. */
-  canCollect: boolean
-  maxSamples: number
-  people: VoiceCollectionPerson[]
-}
-
-export interface VoiceCollectionPerson {
-  userId: string
-  fullName: string
-  role: 'Chair' | 'Secretary' | 'Member'
-  /** The person let Secretaries record for them; nothing can be taken without it. */
-  consented: boolean
-  /** Every sample Secretaries took for them, in any meeting, against `maxSamples`. */
-  sampleCount: number
-  /** Only the ones taken in this meeting. */
-  samples: CollectedSample[]
-}
-
-export interface CollectedSample {
-  id: string
-  createdAt: string
-  speechMs: number
-  collectedByName: string
 }
 
 export interface VoiceMutation<T> {

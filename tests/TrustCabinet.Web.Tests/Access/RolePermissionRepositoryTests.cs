@@ -121,19 +121,19 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         await AddActiveUserAsync(BuiltInRoles.Admin);
 
         var result = await ServiceOver(_db).UpdateAsync(
-            BuiltInRoles.Secretary, [Capability.MinutesEditor], Guid.CreateVersion7());
+            BuiltInRoles.Approver, [Capability.MeetingApprover], Guid.CreateVersion7());
 
         Assert.True(result.Succeeded);
         _db.ChangeTracker.Clear();
 
         var secretary = await _db.RoleCapabilities
-            .Where(rc => rc.RoleId == BuiltInRoles.Secretary)
+            .Where(rc => rc.RoleId == BuiltInRoles.Approver)
             .Select(rc => rc.Capability)
             .ToArrayAsync();
 
-        // MeetingCreator removed, MinutesEditor kept — the row that did not change was not
+        // MeetingCreator removed, MeetingApprover kept — the row that did not change was not
         // deleted and re-inserted.
-        Assert.Equal([Capability.MinutesEditor], secretary);
+        Assert.Equal([Capability.MeetingApprover], secretary);
     }
 
     [Fact]
@@ -142,10 +142,10 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         // The race the table lock exists to stop. Both roles administer and both have a user, so
         // either request alone is legal; together they would leave nobody able to administer.
         await AddActiveUserAsync(BuiltInRoles.Admin);
-        await AddActiveUserAsync(BuiltInRoles.Secretary);
+        await AddActiveUserAsync(BuiltInRoles.Approver);
 
         _db.RoleCapabilities.Add(
-            new RoleCapability { RoleId = BuiltInRoles.Secretary, Capability = Capability.AdminUsers });
+            new RoleCapability { RoleId = BuiltInRoles.Approver, Capability = Capability.AdminUsers });
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
 
@@ -158,7 +158,7 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         var results = await Task.WhenAll(
             ServiceOver(first).UpdateAsync(BuiltInRoles.Admin, [], actor),
             ServiceOver(second).UpdateAsync(
-                BuiltInRoles.Secretary, [Capability.MinutesEditor], actor));
+                BuiltInRoles.Approver, [Capability.MeetingApprover], actor));
 
         // Exactly one may win. Without the lock both would read a matrix in which the other role
         // still holds AdminUsers, both would pass validation, and both would commit.
