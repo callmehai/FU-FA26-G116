@@ -33,7 +33,7 @@ UserRepository-->UserService: Current account status
 deactivate Database
 deactivate UserRepository
 
-alt Status change is not allowed
+alt Status change is not allowed - EX-1
     UserService-->UserController: Status change not allowed
     UserController-->UserPage: Display reason for rejected status change
     UserPage-->Admin: Show status change error

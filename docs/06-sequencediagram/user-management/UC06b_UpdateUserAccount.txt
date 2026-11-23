@@ -27,7 +27,7 @@ UserPage-->Admin: Show current user information
 Admin->UserPage: Submit updated user information
 UserPage->UserController: Update user account
 UserController->UserService: Update user account
-alt Invalid user information
+alt Invalid user information - EX-1
     UserService-->UserController: Invalid user information
     UserController-->UserPage: Validation errors
     UserPage-->Admin: Display invalid fields

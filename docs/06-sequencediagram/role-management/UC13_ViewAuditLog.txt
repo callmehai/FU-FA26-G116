@@ -9,54 +9,64 @@ database ":Database" as Database
 
 Admin->AuditLogPage: Open Nhật ký hệ thống with a period, filters and page
 activate AuditLogPage
+
 AuditLogPage->AuditLogEndpoints: GET /api/audit-log with the query string
 activate AuditLogEndpoints
 
 alt The session has expired
     AuditLogEndpoints-->AuditLogPage: 401, no code
     AuditLogPage-->Admin: Sent back to sign-in
-else The caller's role does not hold the User administration permission - EX-3
+
+else The caller's role does not hold the User administration permission - EX-1
     AuditLogEndpoints-->AuditLogPage: 403, no code, no audit entry returned
     AuditLogPage-->Admin: Audit Log is not shown
-else The permission is held
-    AuditLogEndpoints->AuditLogEndpoints: Parse the query string (period, actor, event, keyword, page)\nand check every value (BR-442)
 
-    alt A parameter is unknown, repeated or out of range - EX-1
+else The permission is held
+
+    alt A parameter is unknown, repeated or out of range - EX-2
         AuditLogEndpoints-->AuditLogPage: 400 MSG469 - The audit log filter is invalid. Check the period and the selected values.
         AuditLogPage-->Admin: MSG469 - The audit log filter is invalid. Check the period and the selected values.
+
     else The criteria are valid
         AuditLogEndpoints->AuditLogQueryService: getPage(query)
         activate AuditLogQueryService
+
         AuditLogQueryService->AuditLogQuery: count(query), findPage(query, skip)
-        AuditLogQuery->Database: Retrieve the matching audit entries and their total,\nnewest first, one page (BR-11, BR-31, BR-442)
+        activate AuditLogQuery
+
+        AuditLogQuery->Database: Retrieve the matching audit entries and their total, newest first, one page (BR-11, BR-31, BR-442)
         activate Database
-        Database-->AuditLogQuery: Entries and total / Read failure
+
+        Database-->AuditLogQuery: Entries and total
         deactivate Database
-        AuditLogQuery-->AuditLogQueryService: Entries and total / Read failure
 
-        alt The entries cannot be read - EX-2
-            AuditLogQueryService-->AuditLogEndpoints: Read failed
-            AuditLogEndpoints-->AuditLogPage: 500 MSG470 - Unable to load the audit log. Please try again.
-            AuditLogPage-->Admin: MSG470 - Unable to load the audit log. Please try again.
-        else Entries read
-            AuditLogQueryService->AuditLogQuery: findNames(user ids, role ids, invitation ids)
-            AuditLogQuery->Database: Retrieve the names and emails of the accounts\nand Guest invitations named by the entries
-            activate Database
-            Database-->AuditLogQuery: Names and emails
-            deactivate Database
-            AuditLogQuery-->AuditLogQueryService: Names and emails
-            AuditLogQueryService->AuditLogQueryService: Name each actor as a user account, a Guest\nor the system (BR-441), and each event with its Vietnamese label
-            AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object,\nIP address and recorded details (BR-441, BR-443)
-            AuditLogEndpoints-->AuditLogPage: 200 page of audit entries
+        AuditLogQuery-->AuditLogQueryService: Entries and total
+        deactivate AuditLogQuery
 
-            alt No entry matches - AF-3
-                AuditLogPage-->Admin: No matching audit entries (BR-12)
-            else At least one entry matches
-                AuditLogPage-->Admin: Audit entries, newest first, read-only
-            end
+        AuditLogQueryService->AuditLogQuery: findNames(user ids, role ids, invitation ids)
+        activate AuditLogQuery
+
+        AuditLogQuery->Database: Retrieve the names and emails of the accounts and Guest invitations named by the entries
+        activate Database
+
+        Database-->AuditLogQuery: Names and emails
+        deactivate Database
+
+        AuditLogQuery-->AuditLogQueryService: Names and emails
+        deactivate AuditLogQuery
+
+        AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object, IP address and recorded details (BR-441, BR-443)
+        AuditLogEndpoints-->AuditLogPage: 200 page of audit entries
+
+        alt No entry matches - AF-3
+            AuditLogPage-->Admin: No matching audit entries (BR-12)
+        else At least one entry matches
+            AuditLogPage-->Admin: Audit entries, newest first, read-only
         end
+
         deactivate AuditLogQueryService
     end
 end
+
 deactivate AuditLogEndpoints
 deactivate AuditLogPage

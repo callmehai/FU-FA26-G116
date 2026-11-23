@@ -11,59 +11,73 @@ database ":Database" as Database
 
 Admin->RolePage: Select Delete on a role
 activate RolePage
+
 RolePage-->Admin: Show delete confirmation dialog
 Admin->RolePage: Confirm deletion
 RolePage->RoleController: Delete role
 activate RoleController
+
 RoleController->RoleService: Delete role
 activate RoleService
+
 RoleService->RoleRepository: Get role and number of user accounts holding it
 activate RoleRepository
+
 RoleRepository->Database: Retrieve role, its permissions and user count
 activate Database
+
 Database-->RoleRepository: Role, permissions and user count
+deactivate Database
+
 RoleRepository-->RoleService: Role, permissions and user count
-alt Role not found
-    RoleService-->RoleController: Role not found
-    RoleController-->RolePage: Role not found
-    RolePage-->Admin: Show error and refresh role list
-else Role is a predefined role
+deactivate RoleRepository
+
+alt Role is a predefined role - EX-1
     RoleService-->RoleController: Predefined role cannot be deleted
     RoleController-->RolePage: MSG24 - Predefined role cannot be renamed or deleted
     RolePage-->Admin: Show error message
-else Role is still held by user accounts
+
+else Role is still held by user accounts - EX-2
     RoleService-->RoleController: Role is still in use (user count)
     RoleController-->RolePage: MSG25 - Role is still held by n user account(s)
     RolePage-->Admin: Show error in confirmation dialog
+
 else Custom role not held by any user account
     RoleService->RoleRepository: Delete role and its permissions
+    activate RoleRepository
+
     RoleRepository->Database: Delete role (role permissions removed together)
+    activate Database
+
     Database-->RoleRepository: Delete result
+    deactivate Database
+
     RoleRepository-->RoleService: Delete result
-    alt Role was assigned to a user account in the meantime
-        RoleService-->RoleController: Role is still in use (user count)
-        RoleController-->RolePage: MSG25 - Role is still held by n user account(s)
-        RolePage-->Admin: Show error in confirmation dialog
-    else Role cannot be deleted
-        RoleService-->RoleController: Unable to delete role
-        RoleController-->RolePage: Error - Unable to delete role
-        RolePage-->Admin: Show error message
-    else Role deleted
-        RoleService->AuditService: Record role deletion (name, permissions)
-        activate AuditService
-        AuditService->AuditLogRepository: add(audit entry)
-        AuditLogRepository->Database: Save audit log
-        Database-->AuditLogRepository: Audit log saved
-        AuditLogRepository-->AuditService: Audit log saved
-        AuditService-->RoleService: Audit recorded
-        RoleService-->RoleController: Role deleted successfully
-        RoleController-->RolePage: MSG23 - Role deleted successfully
-        RolePage-->Admin: Show success message and updated role list
-        deactivate AuditService
-    end
+    deactivate RoleRepository
+
+    RoleService->AuditService: Record role deletion (name, permissions)
+    activate AuditService
+
+    AuditService->AuditLogRepository: add(audit entry)
+    activate AuditLogRepository
+
+    AuditLogRepository->Database: Save audit log
+    activate Database
+
+    Database-->AuditLogRepository: Audit log saved
+    deactivate Database
+
+    AuditLogRepository-->AuditService: Audit log saved
+    deactivate AuditLogRepository
+
+    AuditService-->RoleService: Audit recorded
+    deactivate AuditService
+
+    RoleService-->RoleController: Role deleted successfully
+    RoleController-->RolePage: MSG23 - Role deleted successfully
+    RolePage-->Admin: Show success message and updated role list
 end
-deactivate Database
-deactivate RoleRepository
+
 deactivate RoleService
 deactivate RoleController
 deactivate RolePage
