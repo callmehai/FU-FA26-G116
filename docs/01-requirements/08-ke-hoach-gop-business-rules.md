@@ -141,7 +141,7 @@ Mã BR-001…BR-153 theo thứ tự xuất hiện. Cột cuối là BR cũ đư�
 | `BR-039` | Mỗi người tham dự có đúng một vai trò họp: Chair, Secretary hoặc Member, độc lập với vai trò hệ thống. | BR-85, BR-86, BR-173 |
 | `BR-040` | Mỗi cuộc họp tối đa một Chair; Published và InProgress luôn có Chair và ít nhất một Secretary. | BR-122, BR-123 |
 | `BR-041` | Trước công bố Secretary gán hoặc đổi Chair. | BR-126, BR-169, BR-294, BR-295, BR-296 |
-| `BR-042` | Từ công bố chỉ Chair hiện tại chuyển Chair, cho người nội bộ đang hoạt động không phải Secretary; Chair cũ thành Member. | BR-126, BR-169, BR-294, BR-295, BR-296 |
+| `BR-042` | Từ công bố chỉ Chair hiện tại chuyển Chair cho người nội bộ đang hoạt động không phải Secretary, Chair cũ thành Member; Chair bị vô hiệu thì Secretary thay được. | BR-126, BR-169, BR-294, BR-295, BR-296 |
 | `BR-043` | Đổi vai trò không đổi phản hồi hay điểm danh; phản hồi và điểm danh độc lập nhau. | BR-96, BR-116 |
 | `BR-044` | Gỡ người tham dự hoặc thu hồi lời mời Guest chấm dứt quyền truy cập từ quan hệ đó; quyền độc lập khác còn hiệu lực. | BR-97, BR-100, BR-157 |
 | `BR-045` | Phản hồi và điểm danh của người đã gỡ giữ làm lịch sử, không tính vào danh sách, quyền hay số vai trò hiện tại. | BR-102, BR-103 |
@@ -332,7 +332,7 @@ Mã BR-001…BR-153 theo thứ tự xuất hiện. Cột cuối là BR cũ đư�
 | `BR-121` | Âm thanh và mẫu giọng xử lý trong hệ thống, không gửi dịch vụ ngoài. | BR-369 |
 | `BR-122` | Bản ghi gộp chỉ để nghe và tải, không phiên âm. | BR-458 |
 | `BR-123` | Máy tự điền tên khi giọng khớp rõ với người đồng ý trong danh sách hiện tại. | BR-366 |
-| `BR-124` | Chỉ người đã đồng ý thông báo từ bản 1.2 trở lên được máy tự điền tên, người khác chỉ được gợi ý; thu hộ cần bản 1.4. | BR-366, BR-367 |
+| `BR-124` | Chỉ người đã đồng ý thông báo từ bản 1.2 trở lên được máy tự điền tên, người khác chỉ được gợi ý; thu hộ cần bản 1.4. | BR-362, BR-449 |
 | `BR-125` | Khi chuyển chữ lại, tên gán tay, chữ sửa và câu chuyển người được mang sang câu hoặc giọng khớp; phần không khớp chỉ còn dấu vết trong nhật ký, không ghi chữ. | BR-467 |
 
 **Không phải BR — chuyển đi**
@@ -546,7 +546,7 @@ Mã BR-001…BR-153 theo thứ tự xuất hiện. Cột cuối là BR cũ đư�
 | `BR-121` | BR-369 |
 | `BR-122` | BR-458 |
 | `BR-123` | BR-366 |
-| `BR-124` | BR-366, BR-367 |
+| `BR-124` | BR-362, BR-449 |
 | `BR-125` | BR-467 |
 | `BR-126` | BR-374, BR-375, BR-462 |
 | `BR-127` | BR-374, BR-375, BR-462 |

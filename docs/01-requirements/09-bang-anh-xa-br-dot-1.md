@@ -365,12 +365,12 @@
 | BR-359 | BR-114, BR-115 |
 | BR-360 | Không còn là BR; chuyển tới UC-45, UC-46 |
 | BR-361 | BR-116 |
-| BR-362 | BR-116 |
+| BR-362 | BR-116, BR-124 |
 | BR-363 | BR-118, BR-119 |
 | BR-364 | BR-118, BR-119 |
 | BR-365 | BR-117 |
-| BR-366 | BR-120, BR-123, BR-124 |
-| BR-367 | BR-124 |
+| BR-366 | BR-120, BR-123 |
+| BR-367 | Không còn là BR; chuyển tới NFR nhận dạng giọng |
 | BR-368 | BR-120 |
 | BR-369 | BR-121 |
 | BR-370 | BR-111, BR-112 |
@@ -452,7 +452,7 @@
 | BR-446 | BR-009, BR-010, BR-011 |
 | BR-447 | BR-151 |
 | BR-448 | BR-118, BR-119 |
-| BR-449 | BR-118, BR-119 |
+| BR-449 | BR-118, BR-119, BR-124 |
 | BR-450 | BR-118, BR-119 |
 | BR-451 | Không còn là BR; chuyển tới UC-86, UC-44c |
 | BR-452 | BR-118, BR-119 |
