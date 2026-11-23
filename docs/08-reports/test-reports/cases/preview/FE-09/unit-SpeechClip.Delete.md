@@ -6,7 +6,7 @@ Precondition: Existing clips.
 
 ## SpeechClipService.DeleteAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:229`
+Layer: Application · `backend/TrustCabinet.Application/Recordings/SpeechClipService.cs:233`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

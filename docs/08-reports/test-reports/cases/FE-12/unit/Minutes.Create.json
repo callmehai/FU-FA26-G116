@@ -9,7 +9,7 @@
       "method": "MinutesService.CreateAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 50,
+      "line": 59,
       "cases": [
         {
           "id": "UTC001",
@@ -21,49 +21,15 @@
           "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: false.",
           "return": "New Draft revision 1 with content built from the records and the reviewed draft; BuiltFromDraftAt = the draft change time; 201 MSG395.",
           "exception": "N/A",
-          "log": "Saved: minutes row (Draft, revision 1) with template content, BuiltFromDraftAt and creation time.",
+          "log": "Saved: minutes row (Draft, revision 1) with template content, BuiltFromDraftAt and creation time; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-59 · MSG395"
+          "note": "UC-59 · MSG395 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "A Draft revision exists with the Secretary's own edits."
-          ],
-          "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: true.",
-          "return": "Content rebuilt from the records and the current draft; the Secretary's edits are discarded; 201 MSG395.",
-          "exception": "N/A",
-          "log": "Saved: content, BuiltFromDraftAt and UpdatedAt replaced on the existing revision.",
-          "type": "Normal",
-          "note": "UC-59 · MSG395"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Actor reads no meeting (not organizer, approver or participant)."
-          ],
-          "inputs": "meetingId: that meeting; actor: the stranger; rebuild: false.",
-          "return": "Failure NotFound; 404 with no message code; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Actor's account is deactivated."
-          ],
-          "inputs": "meetingId: an Ended meeting the actor manages; actor: deactivated Secretary; rebuild: false.",
-          "return": "Failure Inactive; 403 with no message code; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Ended meeting the actor can read.",
             "Actor is an ordinary Member (neither Chair nor Secretary)."
@@ -73,12 +39,15 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG397"
+          "note": "UC-59 · MSG397",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
-            "Meeting still in Draft status (not started).",
+            "Meeting still InProgress (not ended).",
             "Actor is the current Secretary."
           ],
           "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: false.",
@@ -86,10 +55,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG398"
+          "note": "UC-59 · MSG398",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "A Draft revision already exists."
@@ -99,10 +71,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG399"
+          "note": "UC-59 · MSG399",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "The latest revision is WaitingApproval."
@@ -112,36 +87,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG400"
+          "note": "UC-59 · MSG400",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "The latest revision is a Draft correction of the issued text (it replaces an issued revision)."
-          ],
-          "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: true.",
-          "return": "Failure CorrectionRebuild; 409 MSG456; the correction keeps its issued content for hand editing.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59 · UC-83 · BR-413 · MSG456"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Ended meeting with no minutes; actor is the current Secretary.",
-            "A simultaneous request builds the first draft at the same time."
-          ],
-          "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: false; the database's one-minutes-per-meeting index rejects the save.",
-          "return": "Failure Exists; 409 MSG399; the other request's draft stands.",
-          "exception": "N/A",
-          "log": "Warning logged: concurrent creation for the meeting; the existing draft stands.",
-          "type": "Abnormal",
-          "note": "UC-59 · MSG399"
-        },
-        {
-          "id": "UTC011",
+          "id": "UTC006",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "The database fails while saving the new draft."
@@ -151,7 +103,10 @@
           "exception": "N/A",
           "log": "Error logged with the meeting id.",
           "type": "Abnormal",
-          "note": "UC-59 · MSG404"
+          "note": "UC-59 · MSG404",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

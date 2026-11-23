@@ -1,172 +1,150 @@
 title UC-86b - Record Voice Sample for Attendee
 
-actor "Secretary" as Secretary
-boundary "Meeting Detail Page" as MeetingPage
+actor "VoiceCollector" as Collector
+boundary "Users Page" as UsersPage
 control ":Voice Collection Controller" as CollectionController
 control ":Voice Collection Service" as CollectionService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Voice ID Repository" as VoiceRepository
 participant ":Speech Recognition Service" as SpeechEngine
 participant ":Voiceprint Protector" as Protector
 participant ":Audit Service" as AuditService
 database ":Database" as Database
 
-Secretary->MeetingPage: Save the previewed sample for the person
-activate MeetingPage
+Collector->UsersPage: Save the previewed sample for the person
+activate UsersPage
 
-MeetingPage->CollectionController: Save the voice sample for the person
+UsersPage->CollectionController: Save the voice sample for the person with personAgreed
 activate CollectionController
-CollectionController->CollectionController: Read the form: one audio file of at most 10 MB in a supported format
+CollectionController->CollectionController: Read the form: personAgreed, one audio file of at most 10 MB in a supported format
 
 alt No audio file, or the form is unreadable
-    CollectionController-->MeetingPage: MSG313 - Invalid submission data.
-    MeetingPage-->Secretary: MSG313 - Invalid submission data.
+    CollectionController-->UsersPage: MSG313 - Invalid submission data.
+    UsersPage-->Collector: MSG313 - Invalid submission data.
 else Audio format is not supported
-    CollectionController-->MeetingPage: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
-    MeetingPage-->Secretary: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+    CollectionController-->UsersPage: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+    UsersPage-->Collector: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
 else Audio received
-    CollectionController->CollectionService: add(meetingId, actorId, userId, audio, contentType)
+    CollectionController->CollectionService: add(userId, actorId, audio, contentType, personAgreed)
     activate CollectionService
 
-    CollectionService->MeetingRepository: Get the Meeting with its current Secretary and active roster (BR-450, BR-451)
-    activate MeetingRepository
-    MeetingRepository->Database: Retrieve meeting with participants
-    activate Database
-    Database-->MeetingRepository: Meeting with participants / Not found
-    deactivate Database
-    MeetingRepository-->CollectionService: Meeting with participants / Not found
-    deactivate MeetingRepository
-
-    alt No access: not the current Secretary, or the Meeting is not In-person or Hybrid,\nis Secret or is Cancelled - EX-1
+    alt No access: no Voice sample collection permission - EX-1
         CollectionService-->CollectionController: Not found
         deactivate CollectionService
 
-        CollectionController-->MeetingPage: Return failure
+        CollectionController-->UsersPage: Return failure
         deactivate CollectionController
 
-        MeetingPage-->Secretary: Show the Meeting as not found
+        UsersPage-->Collector: Show the person as not found
     else Access granted
-        CollectionService->VoiceRepository: Get the person's standing consent and Secretary-recorded samples
+        CollectionService->VoiceRepository: Get the person's standing consent and collected samples
         activate VoiceRepository
-        VoiceRepository->Database: Retrieve consent not withdrawn and proxy samples
+        VoiceRepository->Database: Retrieve consent not withdrawn and collected samples
         activate Database
-        Database-->VoiceRepository: Consent and proxy samples
+        Database-->VoiceRepository: Consent and collected samples
         deactivate Database
-        VoiceRepository-->CollectionService: Consent and proxy samples
+        VoiceRepository-->CollectionService: Consent and collected samples
         deactivate VoiceRepository
 
-        alt Person is not on the current roster - EX-8
-            CollectionService-->CollectionController: Not found
+        alt Person has not agreed under notice 1.4 or later - EX-2
+            CollectionService-->CollectionController: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
             deactivate CollectionService
 
-            CollectionController-->MeetingPage: Return failure
+            CollectionController-->UsersPage: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
             deactivate CollectionController
 
-            MeetingPage-->Secretary: Show the person as not found
-        else Person is on the roster
-            CollectionService->CollectionService: Check consent under notice 1.3 or later\nand fewer than 5 proxy samples kept (BR-448, BR-449)
-
-            alt Person has not agreed under the current notice - EX-2
-                CollectionService-->CollectionController: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
+            UsersPage-->Collector: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
+        else Person agreed
+            alt Person already has 50 collected samples - EX-3
+                CollectionService-->CollectionController: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
                 deactivate CollectionService
 
-                CollectionController-->MeetingPage: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
+                CollectionController-->UsersPage: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
                 deactivate CollectionController
 
-                MeetingPage-->Secretary: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
-            else Person agreed
-                alt Person already has 5 Secretary-recorded samples - EX-3
-                    CollectionService-->CollectionController: MSG476 - This person already has 5 collected voice samples.\nDelete a sample collected at this Meeting before recording a new one.
+                UsersPage-->Collector: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
+            else Samples may be added
+                CollectionService->CollectionService: Check personAgreed for this take (BR-449, BR-453)
+
+                alt Per-take agreement missing - EX-4
+                    CollectionService-->CollectionController: MSG483 - Confirm the person agreed to this recording.
                     deactivate CollectionService
 
-                    CollectionController-->MeetingPage: MSG476 - This person already has 5 collected voice samples.\nDelete a sample collected at this Meeting before recording a new one.
+                    CollectionController-->UsersPage: MSG483 - Confirm the person agreed to this recording.
                     deactivate CollectionController
 
-                    MeetingPage-->Secretary: MSG476 - This person already has 5 collected voice samples.\nDelete a sample collected at this Meeting before recording a new one.
-                else Samples may be added
-                    CollectionService->CollectionService: Check the Meeting is Published or In Progress (BR-451)
+                    UsersPage-->Collector: MSG483 - Confirm the person agreed to this recording.
+                else Take agreed
+                    CollectionService->SpeechEngine: Check the sample and make its voiceprint inside the system (BR-369)
+                    activate SpeechEngine
+                    SpeechEngine-->CollectionService: Voiceprint with speech length / Sample rejected with a reason / Unavailable
+                    deactivate SpeechEngine
 
-                    alt Meeting is not Published or In Progress - EX-4
-                        CollectionService-->CollectionController: MSG477 - Voice samples can be collected only\nwhile the Meeting is Published or In Progress.
+                    alt Sample fails the quality rules - 6 to 60 seconds of clear speech by one person (BR-363) - EX-6
+                        CollectionService-->CollectionController: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
                         deactivate CollectionService
 
-                        CollectionController-->MeetingPage: MSG477 - Voice samples can be collected only\nwhile the Meeting is Published or In Progress.
+                        CollectionController-->UsersPage: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
                         deactivate CollectionController
 
-                        MeetingPage-->Secretary: MSG477 - Voice samples can be collected only\nwhile the Meeting is Published or In Progress.
-                    else Meeting can be recorded now
-                        CollectionService->SpeechEngine: Check the sample and make its voiceprint inside the system (BR-369)
-                        activate SpeechEngine
-                        SpeechEngine-->CollectionService: Voiceprint with speech length / Sample rejected with a reason / Unavailable
-                        deactivate SpeechEngine
+                        UsersPage-->Collector: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
+                    else Speech Recognition Service unavailable - EX-7
+                        CollectionService-->CollectionController: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+                        deactivate CollectionService
 
-                        alt Sample fails the quality rules - 6 to 60 seconds of clear speech by one person (BR-363) - EX-6
-                            CollectionService-->CollectionController: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
+                        CollectionController-->UsersPage: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+                        deactivate CollectionController
+
+                        UsersPage-->Collector: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+                    else Voiceprint made
+                        CollectionService->VoiceRepository: Lock the consent and recheck it,\nthe 50-sample limit and personAgreed
+                        activate VoiceRepository
+                        VoiceRepository->Database: Retrieve consent for update and collected samples
+                        activate Database
+                        Database-->VoiceRepository: Consent and collected samples
+                        deactivate Database
+                        VoiceRepository-->CollectionService: Consent and collected samples
+                        deactivate VoiceRepository
+
+                        CollectionService->Protector: Protect the voiceprint, bound to the person, the sample and its model (BR-364)
+                        activate Protector
+                        Protector-->CollectionService: Protected voiceprint
+                        deactivate Protector
+
+                        CollectionService->Protector: Protect the sample recording for the owner\nand the collector to hear (BR-364, BR-452)
+                        activate Protector
+                        Protector-->CollectionService: Protected recording
+                        deactivate Protector
+
+                        CollectionService->VoiceRepository: Save the sample with the collector\nand the per-take agreement, and notify the person (BR-452, BR-453)
+                        activate VoiceRepository
+                        VoiceRepository->Database: Insert voice sample and notification
+                        activate Database
+                        Database-->VoiceRepository: Sample saved / Save failed
+                        deactivate Database
+                        VoiceRepository-->CollectionService: Sample saved / Save failed
+                        deactivate VoiceRepository
+
+                        CollectionService->AuditService: Record the new collected sample with its model and speech length
+                        activate AuditService
+                        AuditService-->CollectionService: Entry saved
+                        deactivate AuditService
+
+                        alt Sample cannot be saved
+                            CollectionService-->CollectionController: MSG315 - Unable to save changes. Please try again.
                             deactivate CollectionService
 
-                            CollectionController-->MeetingPage: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
+                            CollectionController-->UsersPage: MSG315 - Unable to save changes. Please try again.
                             deactivate CollectionController
 
-                            MeetingPage-->Secretary: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
-                        else Speech Recognition Service unavailable - EX-7
-                            CollectionService-->CollectionController: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+                            UsersPage-->Collector: MSG315 - Unable to save changes. Please try again.
+                        else Sample saved
+                            CollectionService-->CollectionController: MSG473 - Voice sample recorded for the attendee.
                             deactivate CollectionService
 
-                            CollectionController-->MeetingPage: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+                            CollectionController-->UsersPage: MSG473 - Voice sample recorded for the attendee.
                             deactivate CollectionController
 
-                            MeetingPage-->Secretary: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-                        else Voiceprint made
-                            CollectionService->VoiceRepository: Lock the consent and recheck it, the Secretary,\nthe Meeting state and the 5-sample limit
-                            activate VoiceRepository
-                            VoiceRepository->Database: Retrieve consent for update and proxy samples
-                            activate Database
-                            Database-->VoiceRepository: Consent and proxy samples
-                            deactivate Database
-                            VoiceRepository-->CollectionService: Consent and proxy samples
-                            deactivate VoiceRepository
-
-                            CollectionService->Protector: Protect the voiceprint, bound to the person, the sample and its model (BR-364)
-                            activate Protector
-                            Protector-->CollectionService: Protected voiceprint
-                            deactivate Protector
-
-                            CollectionService->Protector: Protect the sample recording for the owner and the Secretary to hear (BR-364)
-                            activate Protector
-                            Protector-->CollectionService: Protected recording
-                            deactivate Protector
-
-                            CollectionService->VoiceRepository: Save the sample with the Meeting and the Secretary\nwho recorded it, and notify the person (BR-452, BR-453)
-                            activate VoiceRepository
-                            VoiceRepository->Database: Insert voice sample and notification
-                            activate Database
-                            Database-->VoiceRepository: Sample saved / Save failed
-                            deactivate Database
-                            VoiceRepository-->CollectionService: Sample saved / Save failed
-                            deactivate VoiceRepository
-
-                            CollectionService->AuditService: Record the new proxy sample with its model and speech length
-                            activate AuditService
-                            AuditService-->CollectionService: Entry saved
-                            deactivate AuditService
-
-                            alt Sample cannot be saved
-                                CollectionService-->CollectionController: MSG315 - Unable to save changes. Please try again.
-                                deactivate CollectionService
-
-                                CollectionController-->MeetingPage: MSG315 - Unable to save changes. Please try again.
-                                deactivate CollectionController
-
-                                MeetingPage-->Secretary: MSG315 - Unable to save changes. Please try again.
-                            else Sample saved
-                                CollectionService-->CollectionController: MSG473 - Voice sample recorded for the attendee.
-                                deactivate CollectionService
-
-                                CollectionController-->MeetingPage: MSG473 - Voice sample recorded for the attendee.
-                                deactivate CollectionController
-
-                                MeetingPage-->Secretary: MSG473 - Voice sample recorded for the attendee.
-                            end
+                            UsersPage-->Collector: MSG473 - Voice sample recorded for the attendee.
                         end
                     end
                 end
@@ -176,4 +154,4 @@ else Audio received
 end
 
 deactivate CollectionController
-deactivate MeetingPage
+deactivate UsersPage

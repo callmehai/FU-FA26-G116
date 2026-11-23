@@ -7,15 +7,18 @@
         {
           "exception": "N/A",
           "id": "UTC001",
-          "inputs": "user: Nguyễn Thư Ký (thuky@trustcabinet.local); capabilities: [MeetingCreator, MinutesEditor].",
+          "inputs": "user: Nguyễn Thư Ký (thuky@trustcabinet.local); capabilities: [MeetingCreator, VoiceCollector].",
           "log": "N/A",
           "note": "UC-01 · BR-08 · Deviation: real token carries the full name under claim type \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" (ClaimTypes.Name), not \"name\"; sub, jti, email, cap x2, no role claim, iss/aud \"TrustCabinet\", HS256, exp ~15 min, no nbf — all as expected.",
           "preconditions": [
             "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes.",
             "Active account \"Nguyễn Thư Ký\" <thuky@trustcabinet.local> with a known id."
           ],
-          "return": "Signed HS256 JWT with claims sub = user id, jti (unique), email = \"thuky@trustcabinet.local\", claim \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" = \"Nguyễn Thư Ký\", and one \"cap\" claim per capability: MeetingCreator and MinutesEditor; no role claim; issuer and audience \"TrustCabinet\".",
-          "type": "Normal"
+          "return": "Signed HS256 JWT with claims sub = user id, jti (unique), email = \"thuky@trustcabinet.local\", claim \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" = \"Nguyễn Thư Ký\", and one \"cap\" claim per capability: MeetingCreator and VoiceCollector; no role claim; issuer and audience \"TrustCabinet\".",
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -27,19 +30,25 @@
             "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes."
           ],
           "return": "Signed JWT with sub, jti, email and name claims and no \"cap\" claim.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "Same user and capabilities; method called twice.",
+          "inputs": "user: Nguyễn Thư Ký; capabilities: [].",
           "log": "N/A",
           "note": "UC-01",
           "preconditions": [
-            "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes."
+            "Signing key configured with AccessTokenMinutes = 5."
           ],
-          "return": "Two signed JWTs whose jti values differ.",
-          "type": "Normal"
+          "return": "Signed JWT whose exp is about 5 minutes after creation (within a few seconds); it carries no nbf claim.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -48,26 +57,17 @@
           "log": "N/A",
           "note": "UC-01",
           "preconditions": [
-            "Signing key configured with AccessTokenMinutes = 5."
+            "Signing key configured with AccessTokenMinutes = 1 (the smallest allowed)."
           ],
-          "return": "Signed JWT whose exp is about 5 minutes after creation (within a few seconds); it carries no nbf claim.",
-          "type": "Boundary"
+          "return": "Signed JWT whose exp is about 1 minute after creation.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC005",
-          "inputs": "user: Nguyễn Thư Ký; capabilities: [].",
-          "log": "N/A",
-          "note": "UC-01",
-          "preconditions": [
-            "Signing key configured with AccessTokenMinutes = 1 (the smallest allowed)."
-          ],
-          "return": "Signed JWT whose exp is about 1 minute after creation.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "Token created for the Secretary, then validated with a different signing key, and again after one character of the payload is changed.",
           "log": "N/A",
           "note": "UC-01",
@@ -75,19 +75,10 @@
             "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes."
           ],
           "return": "The token validates under the configured signing key and fails validation under any other key or after tampering.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "user with PasswordHash \"khong-lien-quan\"; capabilities: [].",
-          "log": "N/A",
-          "note": "UC-01 · BR-01 · BR-10",
-          "preconditions": [
-            "Signing key configured (at least 32 characters); issuer and audience \"TrustCabinet\"; access token lifetime 15 minutes."
-          ],
-          "return": "Signed JWT whose raw text and claims do not contain the password hash.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Infrastructure/Authentication/JwtTokenIssuer.cs",

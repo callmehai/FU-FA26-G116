@@ -22,50 +22,14 @@
             "Item I is InProgress; no minutes exist."
           ],
           "return": "Success; 200 / MSG271.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "actor: Secretary S; input {Conclusion: \"Deferred to next meeting.\"}.",
-          "log": "ConclusionUpdatedById is S.",
-          "note": "UC-77 · BR-65 · MSG271",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is Done."
-          ],
-          "return": "Success; 200 / MSG271.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "actor: Chair C; input {Conclusion: \"Noted.\"}.",
-          "log": "N/A",
-          "note": "UC-77 · MSG271",
-          "preconditions": [
-            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is Done; minutes not yet created."
-          ],
-          "return": "Success; 200 / MSG271.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "actor: Chair C; input {Conclusion: 2000 characters}.",
-          "log": "N/A",
-          "note": "UC-77 · MSG271",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress."
-          ],
-          "return": "Success; 200 / MSG271.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "actor: Chair C; input {Conclusion: 2001 characters}.",
           "log": "N/A",
           "note": "UC-77 · MSG272",
@@ -74,37 +38,14 @@
             "Item I is InProgress."
           ],
           "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "actor: Chair C; input {Conclusion: \"   \"}.",
-          "log": "N/A",
-          "note": "UC-77 · MSG272",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress."
-          ],
-          "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "actor: Chair C; input {Conclusion: null}.",
-          "log": "N/A",
-          "note": "UC-77 · MSG272",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress."
-          ],
-          "return": "Failure Invalid on conclusion; 400 / MSG272.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC003",
           "inputs": "actor: Chair C; input {Conclusion: \"x\"}.",
           "log": "Conclusion unchanged.",
           "note": "UC-77 · MSG273",
@@ -113,74 +54,29 @@
             "Item I is Done; minutes exist for the meeting."
           ],
           "return": "Failure Locked; 409 / MSG273.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "actor: Chair C; input {Conclusion: \"x\"}.",
-          "log": "N/A",
-          "note": "UC-77 · MSG273",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is Pending."
-          ],
-          "return": "Failure Locked; 409 / MSG273.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "actor: Chair C.",
-          "log": "N/A",
-          "note": "UC-77 · MSG273",
-          "preconditions": [
-            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress (inconsistent)."
-          ],
-          "return": "Failure Locked; 409 / MSG273.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "actor: Member M; input {Conclusion: \"x\"}.",
-          "log": "N/A",
-          "note": "UC-77 · BR-65 · MSG273",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress."
-          ],
-          "return": "Failure Forbidden; 403 / MSG273.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "actor: Chair C; itemId: unknown.",
+          "id": "UTC004",
+          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,761}].",
           "log": "N/A",
           "note": "UC-77 · MSG174",
           "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+            "One candidate of 10 MB plus 1 byte."
           ],
-          "return": "Failure NotFound; 404 / MSG174.",
-          "type": "Abnormal"
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"lon.pdf: tệp lớn hơn 10 MB.\"]; the bytes are not read.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "actor: stranger.",
-          "log": "N/A",
-          "note": "UC-77 · BR-29 · MSG174",
-          "preconditions": [
-            "Meeting not readable by the actor."
-          ],
-          "return": "Failure NotFound; 404 / MSG174.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
+          "id": "UTC005",
           "inputs": "actor: Chair C; input.ParseFailure: UnsupportedMedia.",
           "log": "N/A",
           "note": "UC-77 · MSG34",
@@ -189,11 +85,14 @@
             "Item I is InProgress."
           ],
           "return": "Failure UnsupportedMedia; 415 / MSG34.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC015",
+          "id": "UTC006",
           "inputs": "actor: Chair C; the database fails while saving.",
           "log": "N/A",
           "note": "UC-77 · MSG274",
@@ -202,19 +101,10 @@
             "Item I is InProgress."
           ],
           "return": "Failure SaveFailed; 503 / MSG274.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "actor: deactivated user.",
-          "log": "N/A",
-          "note": "UC-77",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Inactive; 403, empty body.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

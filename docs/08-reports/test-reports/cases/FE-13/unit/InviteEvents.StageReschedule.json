@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Each payload holds PreviousStartsAt 09:00 and PreviousEndsAt 10:30. No in-app notification is staged here; the caller adds it, leaving out the organizer who moved the meeting.",
           "type": "Normal",
-          "note": "UC-15 · BR-76 · BR-322"
+          "note": "UC-15 · BR-76 · BR-322",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,7 +36,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-15 · BR-76"
+          "note": "UC-15 · BR-76",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

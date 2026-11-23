@@ -6,7 +6,7 @@ Precondition: Meeting with a room.
 
 ## CallRoomService.GetRoomAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:65`
+Layer: Application · `backend/TrustCabinet.Application/Calls/CallRoomService.cs:66`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|

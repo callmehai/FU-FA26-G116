@@ -16,6 +16,11 @@
 // - "[QA] FE-15 tài khoản tạm" (qa-fe15-inactive@trustcabinet.local, role Thành viên) is reactivated, signed in and
 //   deactivated by AC12, and left deactivated.
 // Every export (AC1, AC10, AC9) writes one audit row report.exported, as BR-438 requires.
+//
+// The screen was reworked after the supervisor's review of 22/11/2026 (PR #488, docs/03-api/22-bao-cao-thong-ke.md): a
+// band of manager figures from GET /api/reports/meetings on top, then a query over the main tables (GET /api/reports/query:
+// Dữ liệu, Nhóm theo, Hiển thị and filter comboboxes, sortable columns, a Tổng row); Xuất Excel exports the table on screen.
+// AC2, AC4, AC6, AC7, AC9, AC10 and AC11 check that screen; AC1, AC3, AC5, AC8 and AC12 still check the meeting report API.
 
 import { readFileSync } from 'node:fs'
 import { inflateRawSync } from 'node:zlib'
@@ -85,18 +90,10 @@ const MEETINGS = [
   { status: 'Cancelled', title: 'FE-15 đã huỷ', sensitivity: 'Secret', from: '17:15', to: '18:00' },
 ]
 
-// ---- formatting, as people read it (the contract: "87,3 %", "1 giờ 35 phút", "30,5 giờ") ----
+// ---- formatting, as people read it (the screen: "87,3%", "1.011", "24,6") ----
 const percent = new Intl.NumberFormat('vi-VN', { style: 'percent', maximumFractionDigits: 1 })
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 const fmtRate = (r) => percent.format(r)
-const fmtMinutes = (m) => {
-  const total = Math.round(m)
-  const h = Math.floor(total / 60)
-  const rest = total % 60
-  if (h === 0) return `${rest} phút`
-  return rest === 0 ? `${h} giờ` : `${h} giờ ${rest} phút`
-}
-const fmtHours = (h) => (h < 48 ? `${decimal.format(h)} giờ` : `${decimal.format(h / 24)} ngày`)
 const squash = (s) => String(s).replace(/[\s  ]+/g, ' ').trim()
 
 // ---- API helpers ----
@@ -233,6 +230,8 @@ async function meeting(qa, status) {
 async function prepareAll(qa) {
   for (const s of STATUSES) await meeting(qa, s)
 }
+/** The month the plan's meetings are in: they are reused across runs, so it is the month of the day they were made. */
+const planMonth = () => vnMonthOf(made.Ended.plannedStartTime)
 
 /** What is wrong with a report on its own terms (BR-433, BR-434, BR-437 and the contract's shape). */
 function problems(rep, from, to) {
@@ -290,22 +289,27 @@ async function press(qa, locator) {
   else await locator.click()
 }
 
-/** Records every GET /api/reports/meetings the page makes (not the export), with its query and body. */
-function watchReports(qa) {
+/**
+ * Records every GET the page makes to `path` (the meeting report by default, or the report query), with its query string
+ * and body. Exports are other paths and are not recorded.
+ */
+function watchReports(qa, path = '/api/reports/meetings') {
   const seen = []
   qa.page.on('response', async (r) => {
     const u = new URL(r.url())
-    if (u.pathname !== '/api/reports/meetings' || r.request().method() !== 'GET') return
+    if (u.pathname !== path || r.request().method() !== 'GET') return
     let body
     try {
       body = await r.json()
     } catch {
       body = null
     }
-    seen.push({ from: u.searchParams.get('from'), to: u.searchParams.get('to'), status: r.status(), body })
+    const params = Object.fromEntries(u.searchParams)
+    seen.push({ from: params.from, to: params.to, params, status: r.status(), body })
   })
   return seen
 }
+const watchTables = (qa) => watchReports(qa, '/api/reports/query')
 async function lastReport(qa, seen, pred = () => true, timeout = 15_000) {
   const end = Date.now() + timeout
   while (Date.now() < end) {
@@ -317,50 +321,112 @@ async function lastReport(qa, seen, pred = () => true, timeout = 15_000) {
 }
 
 const region = (qa, name) => qa.page.getByRole('region', { name })
+const band = (qa) => region(qa, 'Số liệu chính')
+const queryCard = (qa) => region(qa, 'Truy vấn báo cáo')
 const exportButton = (qa) => qa.page.getByRole('button', { name: /Xuất Excel|Đang xuất/ })
 
-/** Waits for the figures to be on screen and not refreshing. */
+/** Waits for the band and the query table (or its empty line) to be on screen and not refreshing. */
 async function figuresReady(qa) {
-  await qa.expect(region(qa, 'Theo trạng thái').locator('tbody tr')).toHaveCount(8, { timeout: 15_000 })
+  await qa.expect(band(qa).locator('.report-figure dt')).toHaveCount(7, { timeout: 15_000 })
+  await qa.expect(queryCard(qa).locator('.report-result, .report-query-empty').first()).toBeVisible({ timeout: 15_000 })
   await qa.page.waitForFunction(() => !document.querySelector('[aria-busy="true"], .data-table-stale'))
 }
 
-/** The screen shows exactly the report the page received (UC-70a step 4). */
-async function expectScreenMatches(qa, rep) {
-  const wrong = []
-  const header = squash(await qa.page.locator('.page-header-desc').innerText())
-  if (header !== `${rep.total} cuộc họp`) wrong.push(`header "${header}", API total ${rep.total}`)
-  const rows = async (name) =>
-    (await region(qa, name).locator('tbody tr').all()).map(async (tr) => (await tr.locator('td').allInnerTexts()).map(squash))
-  const status = await Promise.all(await rows('Theo trạng thái'))
-  const wantStatus = rep.byStatus.map((s) => [STATUS_LABEL[s.status], String(s.count)])
-  if (JSON.stringify(status) !== JSON.stringify(wantStatus)) wrong.push(`status table ${JSON.stringify(status)} ≠ ${JSON.stringify(wantStatus)}`)
-  const sens = await Promise.all(await rows('Theo mức độ'))
-  const wantSens = rep.bySensitivity.map((s) => [SENSITIVITY_LABEL[s.sensitivity], String(s.count)])
-  if (JSON.stringify(sens) !== JSON.stringify(wantSens)) wrong.push(`sensitivity table ${JSON.stringify(sens)} ≠ ${JSON.stringify(wantSens)}`)
-  const months = (await Promise.all(await rows('Theo tháng'))).map((r) => r.slice(0, 2))
-  const wantMonths = rep.byMonth.map((m) => [monthLabel(m.month), String(m.count)])
-  if (JSON.stringify(months) !== JSON.stringify(wantMonths)) wrong.push(`month table ${JSON.stringify(months)} ≠ ${JSON.stringify(wantMonths)}`)
-  const ended = countOf(rep, 'byStatus', 'status', 'Ended')
-  const overview = await Promise.all(await rows('Tổng quan'))
-  const wantOverview = [
-    ['Tỷ lệ tham dự trung bình', rep.attendance.averageRate === null ? NO_DATA : fmtRate(rep.attendance.averageRate), rep.attendance.meetings],
-    ['Thời lượng họp trung bình', rep.duration.averageMinutes === null ? NO_DATA : fmtMinutes(rep.duration.averageMinutes), rep.duration.meetings],
+/** Picks `option` in the report combobox labelled `label` ("Dữ liệu", "Nhóm theo", "Hiển thị", a filter). */
+async function pick(qa, label, option) {
+  await press(qa, queryCard(qa).getByRole('button', { name: new RegExp(`^${label}:`) }))
+  await press(qa, qa.page.getByRole('listbox', { name: label }).getByRole('option', { name: option, exact: true }))
+}
+
+// The figures as the screen writes them: 1.011, 74,3%, 24,6; nothing to show is "Chưa có".
+const integer = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 })
+const fmtFigure = (v, format) =>
+  v === null || v === undefined
+    ? 'Chưa có'
+    : format === 'percent'
+      ? fmtRate(v)
+      : format === 'hours' || format === 'megabytes'
+        ? decimal.format(v)
+        : integer.format(v)
+
+/** The band holds the manager figures of the report the page received, in order (supervisor review 22/11/2026). */
+async function expectBandMatches(qa, rep) {
+  const count = (s) => countOf(rep, 'byStatus', 'status', s)
+  const want = [
+    ['Đã họp', integer.format(count('Ended'))],
+    ['Sắp họp', integer.format(count('Approved') + count('Published'))],
+    ['Đã huỷ', integer.format(count('Cancelled'))],
+    ['Tỷ lệ có mặt', rep.attendance.averageRate === null ? 'Chưa có' : fmtRate(rep.attendance.averageRate)],
+    ['Thông qua', `${integer.format(rep.votes.passed)} / ${integer.format(rep.votes.closed)} biểu quyết`],
     [
-      'Từ kết thúc tới ban hành biên bản',
-      rep.minutesTurnaround.averageHours === null ? NO_DATA : fmtHours(rep.minutesTurnaround.averageHours),
-      rep.minutesTurnaround.meetings,
+      'Biên bản ban hành',
+      `${integer.format(rep.minutes.issued)}${rep.minutes.waitingApproval > 0 ? ` ${rep.minutes.waitingApproval} chờ duyệt` : ''}`,
     ],
+    ['Giờ ghi âm', `${decimal.format(rep.recordings.recordedHours)} ${decimal.format(rep.recordings.transcribedHours)} gỡ băng`],
   ]
-  if (overview.length !== 3) wrong.push(`overview has ${overview.length} rows`)
-  wantOverview.forEach(([label, value, basis], i) => {
-    const [l, v] = overview[i] ?? []
-    if (l !== label) wrong.push(`overview row ${i + 1} label "${l}" ≠ "${label}"`)
-    // The value and "trên x/y" are two boxes side by side (a line apart on a phone): compare without the gap.
-    const want = squash(`${value} trên ${basis}/${ended} cuộc họp`)
-    if (String(v).replace(/ /g, '') !== want.replace(/ /g, '')) wrong.push(`overview "${label}" shows "${v}", expected "${want}"`)
-  })
+  const shown = await band(qa)
+    .locator('.report-figure')
+    .evaluateAll((els) => els.map((el) => [el.querySelector('dt')?.innerText, el.querySelector('dd')?.innerText]))
+  const got = shown.map(([l, v]) => [squash(l), squash(v)])
+  const wantSquashed = want.map(([l, v]) => [l, squash(v)])
+  qa.expect(got, `band ${JSON.stringify(got)} ≠ ${JSON.stringify(wantSquashed)}`).toEqual(wantSquashed)
+}
+
+/** Columns the table shows: grouped by meeting, the meeting table drops the three that are 1 or 0 on every row. */
+const shownColumns = (table) =>
+  table.entity === 'meetings' && table.groupBy === 'meeting'
+    ? table.columns.filter((c) => !['count', 'ended', 'cancelled'].includes(c.key))
+    : table.columns
+
+/** The result table shows exactly the table the page received: headers, ranked rows, the Tổng row. */
+async function expectTableMatches(qa, table) {
+  const wrong = []
+  const columns = shownColumns(table)
+  const result = queryCard(qa).locator('.report-result')
+  if (qa.device !== 'phone') {
+    // Headings are written in capitals by the stylesheet; compare the words.
+    const heads = (await result.locator('thead th').allInnerTexts()).map((t) => squash(t).toLocaleLowerCase('vi'))
+    const want = ['#', table.groupLabel, ...columns.map((c) => c.label)].map((t) => t.toLocaleLowerCase('vi'))
+    if (JSON.stringify(heads.slice(0, want.length)) !== JSON.stringify(want)) wrong.push(`headers ${JSON.stringify(heads)} ≠ ${JSON.stringify(want)}`)
+  }
+  const rows = await result.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => [...tr.cells].map((c) => c.innerText)))
+  const want = table.rows.map((r) => [String(r.rank), r.label, ...columns.map((c) => fmtFigure(r.values[c.key], c.format))])
+  const got = rows.map((r) => r.slice(0, 2 + columns.length).map(squash))
+  if (JSON.stringify(got) !== JSON.stringify(want.map((r) => r.map(squash)))) wrong.push(`rows ${JSON.stringify(got)} ≠ ${JSON.stringify(want)}`)
+  const total = (await result.locator('tfoot tr').evaluate((tr) => [...tr.cells].map((c) => c.innerText))).map(squash)
+  const wantTotal = ['', 'Tổng', ...columns.map((c) => squash(fmtFigure(table.total[c.key], c.format)))]
+  if (JSON.stringify(total.slice(0, wantTotal.length)) !== JSON.stringify(wantTotal)) wrong.push(`Tổng ${JSON.stringify(total)} ≠ ${JSON.stringify(wantTotal)}`)
+  const cut = table.top !== null && table.groups > table.rows.length
+  const note = queryCard(qa).locator('.report-cut')
+  if (cut && squash(await note.innerText()) !== `${table.rows.length} / ${table.groups} nhóm`) wrong.push(`cut line "${await note.innerText()}"`)
+  if (!cut && (await note.count())) wrong.push('a cut line shows while every group is listed')
   qa.expect(wrong, wrong.join('\n')).toEqual([])
+}
+
+/** The screen shows exactly what the page received (UC-70a step 4): the band, then the query table. */
+async function expectScreenMatches(qa, rep, table) {
+  await expectBandMatches(qa, rep)
+  if (table) await expectTableMatches(qa, table)
+}
+
+/** A table on its own terms: ranks 1..n, at most `top` rows, `groups` ≥ rows, sorted as asked, nothing out of range. */
+function tableProblems(table, params) {
+  const wrong = []
+  for (const [k, v] of Object.entries({ entity: params.entity, groupBy: params.groupBy, sort: params.sort }))
+    if (v && table[k] !== v) wrong.push(`${k} ${table[k]}, asked ${v}`)
+  if (table.rows.some((r, i) => r.rank !== i + 1)) wrong.push(`ranks ${table.rows.map((r) => r.rank)}`)
+  if (table.top !== null && table.rows.length > table.top) wrong.push(`${table.rows.length} rows over top ${table.top}`)
+  if (table.groups < table.rows.length) wrong.push(`groups ${table.groups} < rows ${table.rows.length}`)
+  if (table.sort !== 'group') {
+    const vals = table.rows.map((r) => r.values[table.sort] ?? -Infinity)
+    if (vals.some((v, i) => i > 0 && v > vals[i - 1])) wrong.push(`not sorted by ${table.sort}: ${vals}`)
+  }
+  for (const c of table.columns)
+    if (c.format === 'percent')
+      for (const r of [...table.rows, { label: 'Tổng', values: table.total }])
+        if (r.values[c.key] !== null && (r.values[c.key] < 0 || r.values[c.key] > 1)) wrong.push(`${r.label} ${c.key} ${r.values[c.key]}`)
+  if (!/\+07:00$/.test(table.generatedAt)) wrong.push(`generatedAt ${table.generatedAt} is not in Vietnam time`)
+  return wrong
 }
 
 /** A minimal ZIP reader for the exported .xlsx (stored or deflated entries). */
@@ -405,53 +471,47 @@ function readXlsx(buf) {
   return { sheetName, rows: [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r), xml, files }
 }
 
-/** The exported file holds exactly the figures of the report (BR-438) and nothing about a meeting (BR-437). */
-function fileProblems(file, rep, titles = []) {
+/**
+ * The exported file holds exactly the table on screen (BR-438): what was asked at the top, then one row per group with
+ * its rank, then Tổng. A meeting title may appear only when the table is grouped by meeting.
+ */
+function tableFileProblems(file, table, titles = []) {
   const wrong = []
-  if (file.sheetName !== 'Báo cáo cuộc họp') wrong.push(`sheet "${file.sheetName}"`)
-  const byLabel = new Map()
-  const blocks = []
-  let block = null
-  for (const r of file.rows) {
-    const label = r.A?.text
-    if (!label) continue
-    if (r.B?.text === 'Số cuộc họp' || r.B?.text === 'Giá trị') {
-      block = { head: label, rows: [] }
-      blocks.push(block)
-      continue
-    }
-    if (block) block.rows.push(r)
-    else byLabel.set(label, r)
-  }
-  if (byLabel.get('Khoảng thời gian')?.B?.text !== `${monthLabel(rep.from)} – ${monthLabel(rep.to)}`)
+  const columns = table.columns
+  if (file.sheetName !== table.entityLabel) wrong.push(`sheet "${file.sheetName}", expected "${table.entityLabel}"`)
+  const byLabel = new Map(file.rows.filter((r) => r.A?.text && r.B).map((r) => [r.A.text, r]))
+  if (byLabel.get('Khoảng thời gian')?.B?.text !== `${monthLabel(table.from)} – ${monthLabel(table.to)}`)
     wrong.push(`period cell "${byLabel.get('Khoảng thời gian')?.B?.text}"`)
+  if (byLabel.get('Nhóm theo')?.B?.text !== table.groupLabel) wrong.push(`grouping cell "${byLabel.get('Nhóm theo')?.B?.text}"`)
+  const filters = table.filters.length ? table.filters.map((f) => `${f.label}: ${f.valueLabel}`).join('; ') : 'Không'
+  if (byLabel.get('Bộ lọc')?.B?.text !== filters) wrong.push(`filter cell "${byLabel.get('Bộ lọc')?.B?.text}", expected "${filters}"`)
   if (!/\(GMT\+7\)$/.test(byLabel.get('Thời điểm xuất')?.B?.text ?? '')) wrong.push(`export time "${byLabel.get('Thời điểm xuất')?.B?.text}"`)
-  if (byLabel.get('Tổng số cuộc họp')?.B?.num !== rep.total) wrong.push(`total cell ${byLabel.get('Tổng số cuộc họp')?.B?.num} ≠ ${rep.total}`)
-  const table = (head) => blocks.find((b) => b.head === head)?.rows.map((r) => [r.A?.text, r.B?.num]) ?? null
-  const months = table('Tháng')
-  const want = rep.byMonth.map((m) => [monthLabel(m.month), m.count])
-  if (JSON.stringify(months) !== JSON.stringify(want)) wrong.push(`month table ${JSON.stringify(months)} ≠ ${JSON.stringify(want)}`)
-  const st = table('Trạng thái')
-  const wantSt = rep.byStatus.map((s) => [STATUS_LABEL[s.status], s.count])
-  if (JSON.stringify(st) !== JSON.stringify(wantSt)) wrong.push(`status table ${JSON.stringify(st)} ≠ ${JSON.stringify(wantSt)}`)
-  const se = table('Mức độ mật')
-  const wantSe = rep.bySensitivity.map((s) => [SENSITIVITY_LABEL[s.sensitivity], s.count])
-  if (JSON.stringify(se) !== JSON.stringify(wantSe)) wrong.push(`sensitivity table ${JSON.stringify(se)} ≠ ${JSON.stringify(wantSe)}`)
-  const avg = blocks.find((b) => b.head === 'Chỉ số')?.rows ?? []
-  const wantAvg = [
-    [/^Tỷ lệ tham dự/, rep.attendance.averageRate, rep.attendance.meetings, rep.attendance.meetingsWithoutAttendance],
-    [/^Thời lượng họp/, rep.duration.averageMinutes, rep.duration.meetings, rep.duration.meetingsWithoutTimes],
-    [/ban hành biên bản/, rep.minutesTurnaround.averageHours, rep.minutesTurnaround.meetings, rep.minutesTurnaround.meetingsWithoutIssuedMinutes],
-  ]
-  if (avg.length !== 3) wrong.push(`${avg.length} average rows, expected 3`)
-  wantAvg.forEach(([label, value, basis, missing], i) => {
-    const r = avg[i] ?? {}
-    if (!label.test(r.A?.text ?? '')) wrong.push(`average row ${i + 1} "${r.A?.text}"`)
-    if (value === null ? r.B?.text !== NO_DATA : Math.abs((r.B?.num ?? NaN) - value) > 1e-6) wrong.push(`"${r.A?.text}" value ${JSON.stringify(r.B)}, API ${value}`)
-    if (r.C?.num !== basis || r.D?.num !== missing) wrong.push(`"${r.A?.text}" counted ${r.C?.num}/${r.D?.num}, API ${basis}/${missing}`)
+  const letters = 'CDEFGH'
+  const headAt = file.rows.findIndex((r) => r.A?.text === '#')
+  if (headAt < 0) return [...wrong, 'no table heading row "#"']
+  const head = file.rows[headAt]
+  const wantHead = [table.groupLabel, ...columns.map((c) => c.label)]
+  const gotHead = [head.B?.text, ...columns.map((_, i) => head[letters[i]]?.text)]
+  if (JSON.stringify(gotHead) !== JSON.stringify(wantHead)) wrong.push(`heading ${JSON.stringify(gotHead)} ≠ ${JSON.stringify(wantHead)}`)
+  const cell = (r, i) => r[letters[i]]
+  const same = (c, v) => (v === null ? c?.text === NO_DATA : Math.abs((c?.num ?? NaN) - v) < 1e-6)
+  const body = file.rows.slice(headAt + 1)
+  table.rows.forEach((row, n) => {
+    const r = body[n] ?? {}
+    if (r.A?.num !== row.rank || r.B?.text !== row.label) wrong.push(`row ${n + 1} "${r.A?.num} ${r.B?.text}" ≠ "${row.rank} ${row.label}"`)
+    columns.forEach((c, i) => {
+      const v = c.format === 'count' && row.values[c.key] !== null ? Math.round(row.values[c.key]) : row.values[c.key]
+      if (!same(cell(r, i), v)) wrong.push(`row "${row.label}" ${c.key} ${JSON.stringify(cell(r, i))}, API ${v}`)
+    })
   })
-  for (const t of titles) if (file.xml.includes(t)) wrong.push(`meeting title "${t}" is in the file`)
-  if (/\[QA\]/.test(file.xml)) wrong.push('a "[QA]" meeting title is in the file')
+  const total = body[table.rows.length] ?? {}
+  if (total.B?.text !== 'Tổng') wrong.push(`no Tổng row after the groups (got ${JSON.stringify(total.B)})`)
+  else
+    columns.forEach((c, i) => {
+      const v = c.format === 'count' && table.total[c.key] !== null ? Math.round(table.total[c.key]) : table.total[c.key]
+      if (!same(cell(total, i), v)) wrong.push(`Tổng ${c.key} ${JSON.stringify(cell(total, i))}, API ${v}`)
+    })
+  if (table.groupBy !== 'meeting') for (const t of titles) if (file.xml.includes(t)) wrong.push(`meeting title "${t}" is in the file`)
   return wrong
 }
 
@@ -461,17 +521,23 @@ async function downloadExport(qa) {
   return { name: dl.suggestedFilename(), buf: readFileSync(path) }
 }
 
-/** The audit row of the export just made by `who`, read by the admin (BR-438). */
-async function expectAuditRow(qa, who, from, to, since) {
+/**
+ * The audit row of the export just made by `who`, read by the admin (BR-438): exactly one since `since`, with `want` in its
+ * details (which table, grouping and filters).
+ */
+async function expectAuditRow(qa, who, from, to, since, want = {}) {
   const user = await me(qa, who)
   const res = await (await client(qa, 'admin')).get(`/api/audit-log?action=report.exported&actor=${user.id}&pageSize=10`)
   qa.expectStatus(res, 200)
-  const row = res.body.items.find(
-    (r) => new Date(r.occurredAt).getTime() >= since - 5_000 && JSON.stringify(r.details).includes(from) && JSON.stringify(r.details).includes(to),
+  const details = (r) => (typeof r.details === 'string' ? JSON.parse(r.details) : (r.details ?? {}))
+  const rows = res.body.items.filter(
+    (r) => new Date(r.occurredAt).getTime() >= since - 5_000 && details(r).from === from && details(r).to === to,
   )
-  qa.expect(row, `no report.exported audit row for ${who} ${from}..${to} since the export`).toBeTruthy()
+  qa.expect(rows.length, `report.exported audit rows for ${who} ${from}..${to} since the export`).toBe(1)
+  const [row] = rows
   qa.expect(row.objectType).toBe('Report')
   qa.expect(row.objectId ?? null).toBeNull()
+  qa.expect(details(row)).toMatchObject(want)
   qa.note(`Audit: ${row.actionLabel ?? row.action} · ${row.actor?.name} · ${JSON.stringify(row.details)} · IP ${row.ipAddress}`)
 }
 
@@ -535,7 +601,7 @@ export default {
         }
         await qa.goto('/mgmt/reports')
         await qa.expect(qa.page).toHaveURL(/\/login/)
-        await qa.expect(qa.page.getByText('Theo trạng thái')).toHaveCount(0)
+        await qa.expect(band(qa)).toHaveCount(0)
         await settled(qa)
         await qa.shot('chua-dang-nhap-ve-dang-nhap')
         qa.expect(wrong, wrong.join('\n')).toEqual([])
@@ -568,11 +634,17 @@ export default {
       id: 'AC2',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thành viên mở Báo cáo từ sidebar: khoảng mặc định 12 tháng tới tháng này, mọi số trên màn khớp API trang nhận được, 8 trạng thái theo thứ tự',
-      steps: ['Đăng nhập thanhvien@, mở danh sách cuộc họp', 'Bấm "Báo cáo" trên sidebar (điện thoại: mở menu trước)'],
-      expected: `URL /mgmt/reports; hai ô "Từ tháng ${monthLabel(DEFAULT.from)}" "Đến tháng ${monthLabel(DEFAULT.to)}"; trang gọi API from=${DEFAULT.from}&to=${DEFAULT.to}; dòng mô tả "N cuộc họp" = total; bảng Theo trạng thái đủ 8 dòng Nháp → Đã huỷ, Theo mức độ 3 dòng, Theo tháng 12 dòng, Tổng quan 3 chỉ số kèm "trên x/y cuộc họp" — đúng số API; API tự khớp (tổng các nhóm = total); nút Xuất Excel bấm được; không cuộn ngang, không mã thô`,
+      title: 'Thành viên mở Báo cáo từ sidebar: dải số chính trên đầu, ô Dữ liệu/Nhóm theo/Hiển thị mặc định, bảng theo tháng khớp API, dòng Tổng; đổi Nhóm theo và bấm cột để xếp',
+      steps: [
+        'Đăng nhập thanhvien@, mở danh sách cuộc họp',
+        'Bấm "Báo cáo" trên sidebar (điện thoại: mở menu trước)',
+        'Chọn Nhóm theo = Trạng thái cuộc họp',
+        'Máy tính: bấm tiêu đề cột "Đã họp", rồi tiêu đề cột nhóm',
+      ],
+      expected: `URL /mgmt/reports; hai ô "Từ tháng ${monthLabel(DEFAULT.from)}" "Đến tháng ${monthLabel(DEFAULT.to)}"; trang gọi /api/reports/meetings và /api/reports/query from=${DEFAULT.from}&to=${DEFAULT.to}; dải "Số liệu chính" 7 số theo thứ tự Đã họp, Sắp họp, Đã huỷ, Tỷ lệ có mặt, Thông qua (/ N biểu quyết), Biên bản ban hành, Giờ ghi âm (… gỡ băng) — đúng số API; ô "Dữ liệu: Cuộc họp", "Nhóm theo: Tháng", "Hiển thị: Tất cả"; bảng 12 tháng, cột #, Tháng, Số cuộc họp, Đã họp, Đã huỷ, Giờ họp, Tỷ lệ có mặt, dòng Tổng — đúng số API, Tổng số cuộc họp = total của báo cáo; Nhóm theo trạng thái → URL groupBy=status, bảng khớp API; bấm "Đã họp" → sort=ended, lớn trước; bấm cột nhóm → về thứ tự trạng thái; Xuất Excel bấm được; không cuộn ngang, không mã thô`,
       async run(qa) {
         const seen = watchReports(qa)
+        const tables = watchTables(qa)
         await qa.goto('/mgmt/meetings')
         if (qa.device === 'phone') {
           const menu = qa.page.getByRole('button', { name: /menu|Mở thanh bên|Điều hướng/i }).first()
@@ -584,23 +656,51 @@ export default {
         await qa.expect(qa.page).toHaveURL(/\/mgmt\/reports/)
         await qa.expect(qa.page.getByRole('heading', { name: 'Báo cáo', level: 1 })).toBeVisible()
         const rep = await lastReport(qa, seen)
+        const table = await lastReport(qa, tables)
         qa.expect(seen[0], 'the first request is not the default period').toMatchObject({ from: DEFAULT.from, to: DEFAULT.to })
+        qa.expect(tables[0].params).toMatchObject({ entity: 'meetings', from: DEFAULT.from, to: DEFAULT.to, groupBy: 'month', sort: 'group' })
         await figuresReady(qa)
         await qa.expect(qa.page.getByRole('button', { name: `Từ tháng: Tháng ${monthLabel(DEFAULT.from)}` })).toBeVisible()
         await qa.expect(qa.page.getByRole('button', { name: `Đến tháng: Tháng ${monthLabel(DEFAULT.to)}` })).toBeVisible()
+        for (const name of ['Dữ liệu: Cuộc họp', 'Nhóm theo: Tháng', 'Hiển thị: Tất cả', 'Trạng thái cuộc họp: Mọi trạng thái'])
+          await qa.expect(queryCard(qa).getByRole('button', { name })).toBeVisible()
         qa.expect(problems(rep, DEFAULT.from, DEFAULT.to)).toEqual([])
-        await expectScreenMatches(qa, rep)
+        qa.expect(tableProblems(table, tables[0].params)).toEqual([])
+        qa.expect(table.rows.map((r) => r.key), 'the month table does not list every month').toEqual(rep.byMonth.map((m) => m.month))
+        qa.expect(table.total.count, 'Tổng số cuộc họp ≠ the report total').toBe(rep.total)
+        await expectScreenMatches(qa, rep, table)
         await qa.expect(qa.page.getByText(/^Số liệu lúc /)).toBeVisible()
         await qa.expect(exportButton(qa)).toBeEnabled()
         await settled(qa)
         await qa.shot('bao-cao-mac-dinh', { fullPage: true })
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
-        // An explanation is behind a visible (i) that works on a tap too (no hover-only text).
-        const tip = region(qa, 'Tổng quan').getByRole('button', { name: /Số người có mặt/ })
-        await press(qa, tip)
-        await qa.expect(qa.page.getByRole('tooltip')).toContainText('Số người có mặt')
-        await qa.shot('giai-thich-ty-le-tham-du')
+
+        await pick(qa, 'Nhóm theo', 'Trạng thái cuộc họp')
+        await qa.expect(qa.page).toHaveURL(/groupBy=status/)
+        const byStatus = await lastReport(qa, tables, (x) => x.params.groupBy === 'status')
+        await figuresReady(qa)
+        qa.expect(tableProblems(byStatus, { entity: 'meetings', groupBy: 'status', sort: 'count' })).toEqual([])
+        for (const r of byStatus.rows) qa.expect(r.values.count).toBe(countOf(rep, 'byStatus', 'status', r.key))
+        await expectTableMatches(qa, byStatus)
+        await settled(qa)
+        await qa.shot('nhom-theo-trang-thai', { fullPage: true })
+        if (qa.device === 'desktop') {
+          // Sorting lives in the column headings (hidden on a phone, where each row is a block).
+          await press(qa, queryCard(qa).getByRole('button', { name: /^Đã họp/ }))
+          await qa.expect(qa.page).toHaveURL(/sort=ended/)
+          const byHeld = await lastReport(qa, tables, (x) => x.params.groupBy === 'status' && x.params.sort === 'ended')
+          await figuresReady(qa)
+          qa.expect(tableProblems(byHeld, { groupBy: 'status', sort: 'ended' })).toEqual([])
+          await qa.expect(queryCard(qa).locator('th[aria-sort="descending"]')).toContainText(/Đã họp/i)
+          await expectTableMatches(qa, byHeld)
+          await press(qa, queryCard(qa).getByRole('button', { name: /^Trạng thái cuộc họp$/ }))
+          const natural = await lastReport(qa, tables, (x) => x.params.groupBy === 'status' && x.params.sort === 'group')
+          await figuresReady(qa)
+          const order = natural.rows.map((r) => STATUSES.indexOf(r.key))
+          qa.expect(order, 'grouped in their own order').toEqual([...order].sort((a, b) => a - b))
+          await expectTableMatches(qa, natural)
+        }
       },
     },
     {
@@ -630,60 +730,97 @@ export default {
       id: 'AC4',
       role: REPORTER,
       devices: ['desktop', 'phone'],
-      title: `Số liệu đúng trên dữ liệu của riêng kế hoạch (tháng ${monthLabel(FAR_MONTH)}): mỗi trạng thái, mức độ khớp danh sách cuộc họp; tỷ lệ tham dự, thời lượng đúng; chỉ số chưa có dữ liệu ghi "Chưa có dữ liệu"; không lộ tên cuộc họp`,
+      title: `Số liệu đúng trên dữ liệu của riêng kế hoạch (tháng của các cuộc họp kế hoạch): dải số và bảng theo trạng thái, người dự họp theo điểm danh, từng cuộc họp — khớp danh sách cuộc họp; tỷ lệ có mặt và giờ họp đúng`,
       steps: [
         `Tài khoản ${REPORTER} có 8 cuộc họp [QA] FE-15 ngày ${FAR} (một mỗi trạng thái) và các cuộc "đếm thêm" đã huỷ của AC5`,
-        `Mở /mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}`,
+        'Mở /mgmt/reports trong tháng đó, Nhóm theo = Trạng thái cuộc họp (?groupBy=status)',
+        'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh',
+        'Chọn Dữ liệu = Cuộc họp, Nhóm theo = Từng cuộc họp, Hiển thị = Tất cả',
       ],
-      expected: `Mỗi trạng thái và mức độ trên API bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-432/BR-434), mỗi trạng thái ≥ 1; tỷ lệ tham dự = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-435); thời lượng = từ bắt đầu tới kết thúc thực tế, phút 1 chữ số (BR-447); "Từ kết thúc tới ban hành biên bản" ghi "Chưa có dữ liệu" (chưa ban hành biên bản nào, AF-3); màn khớp API; không có tên cuộc họp nào trên trang (BR-437); không cuộn ngang`,
+      expected: `Bảng theo trạng thái: mỗi trạng thái bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-432/BR-434), mỗi trạng thái ≥ 1; Tỷ lệ có mặt = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-435); Giờ họp = tổng giờ thực tế của cuộc Đã kết thúc; dải số: Đã họp, Sắp họp, Đã huỷ đúng danh sách, Thông qua "0 / 0 biểu quyết", Biên bản ban hành 0 (chưa ban hành biên bản nào); Người dự họp theo điểm danh: Có mặt = số người có mặt, Vắng = số người vắng của cuộc Đã kết thúc, Lượt mời = 3 × số cuộc họp; Từng cuộc họp: đúng các cuộc họp của tài khoản, tên là link /mgmt/meetings/{id}, ẩn 3 cột luôn 1/0; màn khớp API; không cuộn ngang`,
       async run(qa) {
         await prepareAll(qa)
+        // The plan's meetings are reused across runs, so they sit in the month of the day they were first made.
+        const FAR_MONTH = planMonth()
         const list = await reporterMeetings(qa, FAR_MONTH)
-        const rep = await report(qa, REPORTER, FAR_MONTH, FAR_MONTH)
-        const wrong = problems(rep, FAR_MONTH, FAR_MONTH)
-        if (rep.total !== list.length) wrong.push(`total ${rep.total}, the meeting list has ${list.length}`)
+        const api = await client(qa, REPORTER)
+        const read = async (q) => {
+          const res = await api.get(`/api/reports/query?from=${FAR_MONTH}&to=${FAR_MONTH}&${q}`)
+          qa.expectStatus(res, 200)
+          return res.body
+        }
+        const byStatus = await read('entity=meetings&groupBy=status')
+        const wrong = tableProblems(byStatus, { entity: 'meetings', groupBy: 'status' })
+        if (byStatus.total.count !== list.length) wrong.push(`total ${byStatus.total.count}, the meeting list has ${list.length}`)
         for (const s of STATUSES) {
           const n = list.filter((m) => m.status === s).length
-          if (countOf(rep, 'byStatus', 'status', s) !== n) wrong.push(`${s}: report ${countOf(rep, 'byStatus', 'status', s)}, list ${n}`)
+          const got = byStatus.rows.find((r) => r.key === s)?.values.count ?? 0
+          if (got !== n) wrong.push(`${s}: report ${got}, list ${n}`)
           if (n < 1) wrong.push(`no ${s} meeting in the reporter's list`)
         }
-        for (const s of SENSITIVITIES) {
-          const n = list.filter((m) => m.sensitivity === s).length
-          if (countOf(rep, 'bySensitivity', 'sensitivity', s) !== n) wrong.push(`${s}: report ${countOf(rep, 'bySensitivity', 'sensitivity', s)}, list ${n}`)
-        }
-        // Expected averages from the Ended meetings themselves.
-        const api = await client(qa, REPORTER)
+        // Expected figures from the Ended meetings themselves.
         const rates = []
-        const minutes = []
+        let hours = 0
+        let present = 0
+        let absent = 0
         for (const m of list.filter((x) => x.status === 'Ended')) {
           const att = (await api.get(`/api/meetings/${m.id}/attendance?pageSize=100`)).body
           if (att.totals.present + att.totals.absent > 0) rates.push(att.totals.present / att.totals.total)
+          present += att.totals.present
+          absent += att.totals.absent
           const full = (await api.get(`/api/meetings/${m.id}`)).body
-          if (full.actualStartedAt && full.actualEndedAt) minutes.push((new Date(full.actualEndedAt) - new Date(full.actualStartedAt)) / 60000)
+          if (full.actualStartedAt && full.actualEndedAt) hours += (new Date(full.actualEndedAt) - new Date(full.actualStartedAt)) / 3_600_000
         }
         const mean = (xs) => xs.reduce((a, x) => a + x, 0) / xs.length
         const wantRate = rates.length ? Math.round(mean(rates) * 10000) / 10000 : null
-        const wantMin = minutes.length ? Math.round(mean(minutes) * 10) / 10 : null
-        if (rep.attendance.averageRate !== wantRate) wrong.push(`averageRate ${rep.attendance.averageRate}, expected ${wantRate} (${rates})`)
-        if (rep.attendance.meetings !== rates.length) wrong.push(`attendance.meetings ${rep.attendance.meetings}, expected ${rates.length}`)
-        if (wantMin === null ? rep.duration.averageMinutes !== null : Math.abs(rep.duration.averageMinutes - wantMin) > 0.051)
-          wrong.push(`averageMinutes ${rep.duration.averageMinutes}, expected ${wantMin}`)
-        if (rep.minutesTurnaround.averageHours !== null) wrong.push(`averageHours ${rep.minutesTurnaround.averageHours}, no minutes were issued`)
-        qa.note(`Báo cáo ${FAR_MONTH} của ${REPORTER}: total ${rep.total}; ${rep.byStatus.map((s) => `${s.status} ${s.count}`).join(', ')}; tỷ lệ ${rep.attendance.averageRate}; thời lượng ${rep.duration.averageMinutes} phút`)
+        if (byStatus.total.attendance !== wantRate) wrong.push(`attendance ${byStatus.total.attendance}, expected ${wantRate} (${rates})`)
+        if (Math.abs(byStatus.total.hours - Math.round(hours * 10) / 10) > 0.051) wrong.push(`hours ${byStatus.total.hours}, expected ${hours}`)
+        const people = await read('entity=participants&groupBy=attendance')
+        wrong.push(...tableProblems(people, { entity: 'participants', groupBy: 'attendance' }))
+        if (people.total.count !== 3 * list.length) wrong.push(`invitations ${people.total.count}, expected 3 × ${list.length}`)
+        if (people.total.present !== present || people.total.absent !== absent)
+          wrong.push(`present/absent ${people.total.present}/${people.total.absent}, attendance lists say ${present}/${absent}`)
+        const rep = await report(qa, REPORTER, FAR_MONTH, FAR_MONTH)
+        if (rep.votes.closed !== 0 || rep.minutes.issued !== 0) wrong.push(`votes ${JSON.stringify(rep.votes)}, minutes ${JSON.stringify(rep.minutes)}`)
+        qa.note(`Báo cáo ${FAR_MONTH} của ${REPORTER}: ${byStatus.rows.map((r) => `${r.key} ${r.values.count}`).join(', ')}; tỷ lệ ${byStatus.total.attendance}; ${byStatus.total.hours} giờ; có mặt ${present}, vắng ${absent}`)
         qa.expect(wrong, wrong.join('\n')).toEqual([])
 
         const seen = watchReports(qa)
-        await qa.goto(`/mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}`)
-        const shown = await lastReport(qa, seen, (x) => x.from === FAR_MONTH && x.to === FAR_MONTH)
+        const tables = watchTables(qa)
+        await qa.goto(`/mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}&groupBy=status`)
+        const shownRep = await lastReport(qa, seen, (x) => x.from === FAR_MONTH && x.to === FAR_MONTH)
+        const shown = await lastReport(qa, tables, (x) => x.params.groupBy === 'status')
         await figuresReady(qa)
         await qa.expect(qa.page.getByRole('button', { name: `Từ tháng: Tháng ${monthLabel(FAR_MONTH)}` })).toBeVisible()
-        await expectScreenMatches(qa, shown)
-        await qa.expect(region(qa, 'Tổng quan').getByText(NO_DATA)).toBeVisible()
+        await expectScreenMatches(qa, shownRep, shown)
         await settled(qa)
         await qa.shot('so-lieu-thang-xa', { fullPage: true })
-        const text = await qa.page.locator('main').innerText()
-        for (const m of list) qa.expect(text, `meeting title "${m.title}" is on the page`).not.toContain(m.title)
-        qa.expect(text).not.toContain('[QA]')
+
+        await pick(qa, 'Dữ liệu', 'Người dự họp')
+        await qa.expect(qa.page).toHaveURL(/entity=participants/)
+        await pick(qa, 'Nhóm theo', 'Điểm danh')
+        const shownPeople = await lastReport(qa, tables, (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance')
+        await figuresReady(qa)
+        await expectTableMatches(qa, shownPeople)
+        await settled(qa)
+        await qa.shot('nguoi-du-hop-theo-diem-danh', { fullPage: true })
+
+        await pick(qa, 'Dữ liệu', 'Cuộc họp')
+        await pick(qa, 'Nhóm theo', 'Từng cuộc họp')
+        await pick(qa, 'Hiển thị', 'Tất cả')
+        const perMeeting = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'meetings' && x.params.groupBy === 'meeting' && x.params.top === undefined,
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, perMeeting)
+        const ids = list.map((m) => m.id).sort()
+        qa.expect(perMeeting.rows.map((r) => r.key).sort(), 'the meetings listed are not the reporter’s').toEqual(ids)
+        const links = await queryCard(qa).locator('.report-result tbody a').evaluateAll((as) => as.map((a) => a.getAttribute('href')))
+        qa.expect(links.sort()).toEqual(ids.map((id) => `/mgmt/meetings/${id}`).sort())
+        await settled(qa)
+        await qa.shot('tung-cuoc-hop', { fullPage: true })
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
       },
@@ -736,9 +873,10 @@ export default {
       devices: ['desktop', 'phone'],
       title: 'Chọn khoảng khác bằng hai ô tháng: URL đổi, số liệu tải lại và khớp API; tải lại trang giữ khoảng',
       steps: ['thuky@ mở Báo cáo', `Chọn Từ tháng = Tháng ${monthLabel(P6.from)}`, `Chọn Đến tháng = Tháng ${monthLabel(P6.to)}`, 'Tải lại trang'],
-      expected: `URL ?from=${P6.from}&to=${P6.to}; trang gọi đúng khoảng đó; Theo tháng 3 dòng ${monthLabel(P6.from)} → ${monthLabel(P6.to)}; mọi số khớp API; sau tải lại vẫn khoảng đó; không cuộn ngang`,
+      expected: `URL ?from=${P6.from}&to=${P6.to}; trang gọi đúng khoảng đó; bảng theo tháng 3 dòng ${monthLabel(P6.from)} → ${monthLabel(P6.to)}; mọi số khớp API; sau tải lại vẫn khoảng đó; không cuộn ngang`,
       async run(qa) {
         const seen = watchReports(qa)
+        const tables = watchTables(qa)
         await qa.goto('/mgmt/reports')
         await lastReport(qa, seen)
         await figuresReady(qa)
@@ -750,19 +888,22 @@ export default {
         await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/reports\\?from=${P6.from}&to=${P6.to}$`))
         const rep = await lastReport(qa, seen, (x) => x.from === P6.from && x.to === P6.to)
         if (rep.total === 0) qa.inconclusive(`thuky@ đọc được 0 cuộc họp trong ${P6.from}..${P6.to}: chọn khoảng khác có dữ liệu`)
+        const table = await lastReport(qa, tables, (x) => x.from === P6.from && x.to === P6.to)
         await figuresReady(qa)
-        await qa.expect(region(qa, 'Theo tháng').locator('tbody tr')).toHaveCount(3)
+        await qa.expect(queryCard(qa).locator('.report-result tbody tr')).toHaveCount(3)
         qa.expect(problems(rep, P6.from, P6.to)).toEqual([])
-        await expectScreenMatches(qa, rep)
+        await expectScreenMatches(qa, rep, table)
         await settled(qa)
         await qa.shot('khoang-ba-thang', { fullPage: true })
         await noSidewaysScroll(qa)
         seen.length = 0
+        tables.length = 0
         await qa.page.reload()
         const again = await lastReport(qa, seen, (x) => x.from === P6.from && x.to === P6.to)
+        const againTable = await lastReport(qa, tables, (x) => x.from === P6.from && x.to === P6.to)
         await figuresReady(qa)
         await qa.expect(qa.page.getByRole('button', { name: `Từ tháng: Tháng ${monthLabel(P6.from)}` })).toBeVisible()
-        await expectScreenMatches(qa, again)
+        await expectScreenMatches(qa, again, againTable)
       },
     },
 
@@ -775,18 +916,18 @@ export default {
       steps: [
         'thuky@ mở /mgmt/reports?from=2026-06&to=2026-01',
         `Mở /mgmt/reports?from=${addMonths(NOW_MONTH, -24)}&to=${NOW_MONTH} (25 tháng)`,
-        `Từ khoảng đúng ${monthLabel(P6.from)} – ${monthLabel(P6.to)}, chọn Từ tháng = Tháng ${monthLabel(NOW_MONTH)} (sau Đến tháng) bằng ô chọn`,
-        `Từ khoảng 12 tháng đến ${monthLabel(NOW_MONTH)}, chọn Từ tháng = Tháng ${monthLabel(addMonths(NOW_MONTH, -30))} (khoảng thành 31 tháng) bằng ô chọn`,
+        `Từ khoảng đúng ${monthLabel(P6.from)} – ${monthLabel(P6.to)}, chọn Từ tháng = Tháng ${monthLabel(NOW_MONTH)} (sau Đến tháng) bằng ô chọn: Đến tháng đi theo, không báo lỗi`,
         'Mở /mgmt/reports?from=2026-13&to=abc',
       ],
-      expected: `Ô chọn Từ tháng xa: Đến tháng co lại thành 24 tháng, số liệu tải lại 24 dòng tháng, không báo lỗi (RPT_FT06); URL sai: câu "${MSG463}" (role alert), không có bảng số liệu, không request /api/reports, nút Xuất Excel bị khoá; ô chọn: Đến tháng chạy theo thành Tháng ${monthLabel(NOW_MONTH)}, số liệu tải lại, không báo lỗi (followPeriod); URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
+      expected: `Câu "${MSG463}" (role alert), không có dải số và thẻ truy vấn, không request /api/reports, nút Xuất Excel bị khoá; URL sai dạng: dùng khoảng mặc định ${DEFAULT.from}..${DEFAULT.to}, không báo lỗi`,
       async run(qa) {
         const seen = watchReports(qa)
+        const tables = watchTables(qa)
         const expectInvalid = async (slug) => {
           await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toBeVisible()
           await qa.expect(exportButton(qa)).toBeDisabled()
-          await qa.expect(region(qa, 'Theo trạng thái')).toHaveCount(0)
-          await qa.expect(qa.page.locator('.page-header-desc')).toHaveCount(0)
+          await qa.expect(queryCard(qa)).toHaveCount(0)
+          await qa.expect(band(qa)).toHaveCount(0)
           await settled(qa)
           await qa.shot(slug)
           await noSidewaysScroll(qa)
@@ -796,52 +937,30 @@ export default {
         await expectInvalid('bat-dau-sau-ket-thuc')
         await qa.goto(`/mgmt/reports?from=${addMonths(NOW_MONTH, -24)}&to=${NOW_MONTH}`)
         await expectInvalid('qua-24-thang')
-        qa.expect(seen, `the page asked the API for an invalid period: ${JSON.stringify(seen.map((s) => [s.from, s.to]))}`).toEqual([])
+        qa.expect([...seen, ...tables], `the page asked the API for an invalid period: ${JSON.stringify([...seen, ...tables].map((s) => [s.from, s.to]))}`).toEqual([])
 
         await qa.goto(`/mgmt/reports?from=${P6.from}&to=${P6.to}`)
         await lastReport(qa, seen, (x) => x.from === P6.from)
-        await qa.expect(qa.page.locator('.page-header-desc')).toBeVisible()
+        await figuresReady(qa)
         seen.length = 0
+        tables.length = 0
+        // A picker never leaves an invalid period: picking a start after the end moves the end along (followPeriod).
         await press(qa, qa.page.getByRole('button', { name: /^Từ tháng:/ }))
         await press(qa, qa.page.getByRole('listbox', { name: 'Từ tháng' }).getByRole('option', { name: `Tháng ${monthLabel(NOW_MONTH)}` }))
-        // followPeriod (BR-433): picking one end never leaves an invalid period — the other end follows instead of an error.
-        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/reports\\?from=${NOW_MONTH}&to=${NOW_MONTH}$`))
-        const followed = await lastReport(qa, seen, (x) => x.from === NOW_MONTH && x.to === NOW_MONTH)
+        await qa.expect(qa.page).toHaveURL(new RegExp(`from=${NOW_MONTH}&to=${NOW_MONTH}`))
+        await lastReport(qa, tables, (x) => x.from === NOW_MONTH && x.to === NOW_MONTH)
         await figuresReady(qa)
-        qa.expect(problems(followed, NOW_MONTH, NOW_MONTH)).toEqual([])
         await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toHaveCount(0)
-        await qa.expect(exportButton(qa)).toBeEnabled()
+        await qa.expect(qa.page.getByRole('button', { name: `Đến tháng: Tháng ${monthLabel(NOW_MONTH)}` })).toBeVisible()
         await settled(qa)
-        await qa.shot('chon-tu-thang-sau-den-thang-dau-kia-chay-theo')
-        await noSidewaysScroll(qa)
-
-        // RPT_FT06: a start month 30 months back would make 31 months, so the end month moves to keep it at 24 (BR-433).
-        const far = addMonths(NOW_MONTH, -30)
-        const capped = addMonths(far, 23)
-        await qa.goto(`/mgmt/reports?from=${addMonths(NOW_MONTH, -11)}&to=${NOW_MONTH}`)
-        await lastReport(qa, seen, (x) => x.from === addMonths(NOW_MONTH, -11))
-        seen.length = 0
-        await press(qa, qa.page.getByRole('button', { name: /^Từ tháng:/ }))
-        await press(qa, qa.page.getByRole('listbox', { name: 'Từ tháng' }).getByRole('option', { name: `Tháng ${monthLabel(far)}` }))
-        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/reports\\?from=${far}&to=${capped}$`))
-        const cappedRep = await lastReport(qa, seen, (x) => x.from === far && x.to === capped)
-        // this account may have no meeting that long ago: either the figures or the empty message (MSG466) is fine
-        await qa.expect(qa.page.locator('.page-header-desc')).toBeVisible()
-        qa.expect(problems(cappedRep, far, capped)).toEqual([])
-        qa.expect(cappedRep.byMonth.length).toBe(24)
-        await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toHaveCount(0)
-        await qa.expect(qa.page.getByRole('button', { name: `Đến tháng: Tháng ${monthLabel(capped)}` })).toBeVisible()
-        await qa.expect(exportButton(qa)).toBeEnabled()
-        await settled(qa)
-        await qa.shot('chon-tu-thang-xa-den-thang-co-lai-24-thang')
-        await noSidewaysScroll(qa)
+        await qa.shot('chon-tu-thang-sau-den-thang')
 
         await qa.goto('/mgmt/reports?from=2026-13&to=abc')
         const rep = await lastReport(qa, seen, (x) => x.from === DEFAULT.from && x.to === DEFAULT.to)
         await figuresReady(qa)
         await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toHaveCount(0)
         await qa.expect(qa.page.getByRole('button', { name: `Từ tháng: Tháng ${monthLabel(DEFAULT.from)}` })).toBeVisible()
-        await expectScreenMatches(qa, rep)
+        await expectBandMatches(qa, rep)
         await settled(qa)
         await qa.shot('url-sai-dang-dung-mac-dinh')
       },
@@ -888,31 +1007,37 @@ export default {
       id: 'AC9',
       role: REPORTER,
       devices: ['desktop', 'phone'],
-      title: 'Không có cuộc họp nào đọc được trong khoảng (AF-2): MSG466, "0 cuộc họp", không có chỉ số trung bình; vẫn xuất được tệp với số 0 (UC-70b AF-1)',
+      title: 'Không có cuộc họp nào đọc được trong khoảng (AF-2): dải số toàn 0, MSG466 thay cho bảng; vẫn xuất được tệp bảng với Tổng 0 (UC-70b AF-1)',
       steps: [
         `${REPORTER} (chỉ có cuộc họp tháng ${monthLabel(FAR_MONTH)}) mở Báo cáo với khoảng mặc định`,
         `Mở /mgmt/reports?from=${EMPTY.from}&to=${EMPTY.to}, bấm Xuất Excel`,
       ],
-      expected: `API total 0, mọi nhóm 0, ba trung bình null; màn: "${MSG466}", dòng mô tả "0 cuộc họp", không có bảng chỉ số; Xuất Excel bật, tệp bao-cao-cuoc-hop_${EMPTY.from}_${EMPTY.to}.xlsx có tổng 0, mọi dòng 0, ba trung bình "Chưa có dữ liệu"; một dòng audit report.exported; không cuộn ngang`,
+      expected: `API báo cáo total 0, ba trung bình null; API truy vấn: các tháng đều 0, Tổng 0; màn: dải số Đã họp 0, Sắp họp 0, Đã huỷ 0, Tỷ lệ có mặt "Chưa có", Thông qua "0 / 0 biểu quyết"; "${MSG466}" thay cho bảng; Xuất Excel bật, tệp bao-cao-cuoc-hop_${EMPTY.from}_${EMPTY.to}.xlsx có các tháng 0 và dòng Tổng 0; đúng một dòng audit report.exported; không cuộn ngang`,
       async run(qa) {
         await prepareAll(qa)
         const seen = watchReports(qa)
+        const tables = watchTables(qa)
         await qa.goto('/mgmt/reports')
         const def = await lastReport(qa, seen)
         qa.expect(def.total, `the reporter reads ${def.total} meetings in the default period`).toBe(0)
-        await qa.expect(qa.page.getByText(MSG466)).toBeVisible()
-        await qa.expect(qa.page.locator('.page-header-desc')).toHaveText('0 cuộc họp')
+        await qa.expect(queryCard(qa).getByText(MSG466)).toBeVisible()
+        await figuresReady(qa)
+        await expectBandMatches(qa, def)
         await settled(qa)
         await qa.shot('mac-dinh-khong-co-cuoc-hop')
 
         await qa.goto(`/mgmt/reports?from=${EMPTY.from}&to=${EMPTY.to}`)
         const rep = await lastReport(qa, seen, (x) => x.from === EMPTY.from && x.to === EMPTY.to)
+        const table = await lastReport(qa, tables, (x) => x.from === EMPTY.from && x.to === EMPTY.to)
         qa.expect(problems(rep, EMPTY.from, EMPTY.to)).toEqual([])
         qa.expect(rep.total).toBe(0)
         qa.expect([rep.attendance.averageRate, rep.duration.averageMinutes, rep.minutesTurnaround.averageHours]).toEqual([null, null, null])
-        await qa.expect(qa.page.getByText(MSG466)).toBeVisible()
-        await qa.expect(qa.page.locator('.page-header-desc')).toHaveText('0 cuộc họp')
-        await qa.expect(region(qa, 'Tổng quan')).toHaveCount(0)
+        qa.expect(table.rows.map((r) => [r.key, r.values.count])).toEqual(rep.byMonth.map((m) => [m.month, 0]))
+        qa.expect(table.total.count).toBe(0)
+        await qa.expect(queryCard(qa).getByText(MSG466)).toBeVisible()
+        await qa.expect(queryCard(qa).locator('.report-result')).toHaveCount(0)
+        await figuresReady(qa)
+        await expectBandMatches(qa, rep)
         await qa.expect(exportButton(qa)).toBeEnabled()
         await settled(qa)
         await qa.shot('khoang-trong-msg466')
@@ -922,9 +1047,9 @@ export default {
           const since = Date.now()
           const file = await downloadExport(qa)
           qa.expect(file.name).toBe(`bao-cao-cuoc-hop_${EMPTY.from}_${EMPTY.to}.xlsx`)
-          const wrong = fileProblems(readXlsx(file.buf), rep)
+          const wrong = tableFileProblems(readXlsx(file.buf), table)
           qa.expect(wrong, wrong.join('\n')).toEqual([])
-          await expectAuditRow(qa, REPORTER, EMPTY.from, EMPTY.to, since)
+          await expectAuditRow(qa, REPORTER, EMPTY.from, EMPTY.to, since, { report: 'meetings', groupBy: 'month' })
         }
       },
     },
@@ -933,32 +1058,54 @@ export default {
     {
       id: 'AC10',
       role: REPORTER,
-      title: `Xuất Excel từ màn (UC-70b): tệp mang đúng số trên màn tháng ${monthLabel(FAR_MONTH)}, nhãn tiếng Việt, số là số, không có tên cuộc họp; xuất được ghi audit`,
-      steps: [`${REPORTER} mở /mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}`, 'Bấm Xuất Excel', 'Quản trị đọc nhật ký hệ thống, sự kiện report.exported'],
-      expected: `Tệp bao-cao-cuoc-hop_${FAR_MONTH}_${FAR_MONTH}.xlsx, sheet "Báo cáo cuộc họp": khoảng "${monthLabel(FAR_MONTH)} – ${monthLabel(FAR_MONTH)}", thời điểm xuất (GMT+7), tổng; bảng Tháng, Trạng thái (8 nhãn), Mức độ mật (3 nhãn) và 3 dòng trung bình kèm số cuộc họp được tính / chưa có dữ liệu — đúng số API trang nhận; không có tiêu đề cuộc họp (BR-437); nhật ký có dòng "Xuất báo cáo cuộc họp" của tài khoản đó, objectType Report, details có from/to (BR-438)`,
+      title: `Xuất Excel từ màn (UC-70b): tệp là đúng bảng đang xem (Người dự họp theo điểm danh, lọc Đã kết thúc, tháng của các cuộc họp kế hoạch), số là số, có dòng Tổng; đúng một dòng audit`,
+      steps: [
+        `${REPORTER} mở /mgmt/reports trong tháng của các cuộc họp kế hoạch`,
+        'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh, Trạng thái cuộc họp = Đã kết thúc',
+        'Bấm Xuất Excel',
+        'Quản trị đọc nhật ký hệ thống, sự kiện report.exported',
+      ],
+      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-438)`,
       async run(qa) {
         await prepareAll(qa)
-        const seen = watchReports(qa)
+        const FAR_MONTH = planMonth()
+        const tables = watchTables(qa)
         await qa.goto(`/mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}`)
-        const rep = await lastReport(qa, seen, (x) => x.from === FAR_MONTH)
+        await lastReport(qa, tables, (x) => x.from === FAR_MONTH)
         await figuresReady(qa)
+        await pick(qa, 'Dữ liệu', 'Người dự họp')
+        await pick(qa, 'Nhóm theo', 'Điểm danh')
+        await pick(qa, 'Trạng thái cuộc họp', 'Đã kết thúc')
+        await qa.expect(qa.page).toHaveURL(/status=Ended/)
+        const table = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance' && x.params.status === 'Ended',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, table)
+        qa.expect(table.filters).toEqual([{ key: 'status', label: 'Trạng thái cuộc họp', value: 'Ended', valueLabel: 'Đã kết thúc' }])
         const since = Date.now()
         const file = await downloadExport(qa)
         await settled(qa)
-        await qa.shot('sau-khi-xuat-excel')
-        qa.expect(file.name).toBe(`bao-cao-cuoc-hop_${FAR_MONTH}_${FAR_MONTH}.xlsx`)
+        await qa.shot('sau-khi-xuat-excel', { fullPage: true })
+        qa.expect(file.name).toBe(`bao-cao-thanh-phan_${FAR_MONTH}_${FAR_MONTH}.xlsx`)
         const xlsx = readXlsx(file.buf)
         const titles = STATUSES.map((s) => made[s].title)
-        const wrong = fileProblems(xlsx, rep, titles)
-        // The figures were computed again at export time: someone may have added a meeting in between, so re-read once.
+        const wrong = tableFileProblems(xlsx, table, titles)
+        // The figures were computed again at export time: someone may have marked attendance in between, so re-read once.
         if (wrong.length) {
-          const fresh = await report(qa, REPORTER, FAR_MONTH, FAR_MONTH)
-          const again = fileProblems(xlsx, fresh, titles)
+          const fresh = (
+            await (await client(qa, REPORTER)).get(
+              `/api/reports/query?entity=participants&from=${FAR_MONTH}&to=${FAR_MONTH}&groupBy=attendance&status=Ended`,
+            )
+          ).body
+          const again = tableFileProblems(xlsx, fresh, titles)
           if (again.length < wrong.length) wrong.splice(0, wrong.length, ...again)
         }
         qa.note(`Tệp: ${file.name}, ${file.buf.length} byte, ${xlsx.rows.length} dòng có dữ liệu`)
         qa.expect(wrong, wrong.join('\n')).toEqual([])
-        await expectAuditRow(qa, REPORTER, FAR_MONTH, FAR_MONTH, since)
+        await expectAuditRow(qa, REPORTER, FAR_MONTH, FAR_MONTH, since, { report: 'participants', groupBy: 'attendance', filters: 'status=Ended' })
       },
     },
 
@@ -967,29 +1114,44 @@ export default {
       id: 'AC11',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Lỗi máy chủ (giả lập câu trả lời trong trình duyệt): MSG464 kèm Thử lại; MSG465 là toast; MSG463 của server hiện dưới thanh chọn và khoá Xuất Excel',
+      title: 'Lỗi máy chủ (giả lập câu trả lời trong trình duyệt): MSG464 của truy vấn kèm Thử lại trong thẻ truy vấn, của dải số thay dải số; MSG465 là toast; MSG463 của server hiện dưới thanh chọn và khoá Xuất Excel',
       steps: [
-        'Chặn GET /api/reports/meetings trả 500 {code MSG464}, mở Báo cáo',
+        'Chặn GET /api/reports/query trả 500 {code MSG464}, mở Báo cáo',
         'Bỏ chặn, bấm Thử lại',
-        'Chặn export trả 500 {code MSG465}, bấm Xuất Excel',
-        'Chặn GET trả 400 {code MSG463} cho một khoảng đúng, mở khoảng đó',
+        'Chặn GET /api/reports/meetings trả 500 {code MSG464}, tải lại trang',
+        'Bỏ chặn; chặn /api/reports/query/export trả 500 {code MSG465}, bấm Xuất Excel',
+        'Chặn GET /api/reports/query trả 400 {code MSG463} cho một khoảng đúng, mở khoảng đó',
       ],
-      expected: `"${MSG464}" (role alert) với nút Thử lại, không có bảng; Thử lại → số liệu hiện; toast "${MSG465}", không tải tệp; "${MSG463}" dưới thanh chọn, nút Xuất Excel bị khoá. (Lỗi database thật không gây ra được ở đây: đây chỉ kiểm phần FE.)`,
+      expected: `Truy vấn lỗi: "${MSG464}" (role alert) với nút Thử lại trong thẻ truy vấn, không có bảng, dải số vẫn hiện, Xuất Excel khoá; Thử lại → bảng hiện; dải số lỗi: "${MSG464}" thay dải số, bảng vẫn hiện; toast "${MSG465}", không tải tệp; "${MSG463}" dưới thanh chọn, không có dải số và bảng, nút Xuất Excel bị khoá. (Lỗi database thật không gây ra được ở đây: đây chỉ kiểm phần FE.)`,
       async run(qa) {
+        const isQuery = (url) => new URL(url).pathname === '/api/reports/query'
         const isReport = (url) => new URL(url).pathname === '/api/reports/meetings'
-        const isExport = (url) => new URL(url).pathname === '/api/reports/meetings/export'
+        const isExport = (url) => new URL(url).pathname === '/api/reports/query/export'
         const fail = (status, code, message) => (route) =>
           route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ code, message }) })
-        await qa.page.route(isReport, fail(500, 'MSG464', MSG464))
+        await qa.page.route(isQuery, fail(500, 'MSG464', MSG464))
         await qa.goto('/mgmt/reports')
-        const alert = qa.page.getByRole('alert').filter({ hasText: MSG464 })
+        const alert = queryCard(qa).getByRole('alert').filter({ hasText: MSG464 })
         await qa.expect(alert).toBeVisible()
-        await qa.expect(region(qa, 'Theo trạng thái')).toHaveCount(0)
+        await qa.expect(queryCard(qa).locator('.report-result')).toHaveCount(0)
+        await qa.expect(band(qa).locator('.report-figure dt')).toHaveCount(7)
+        await qa.expect(exportButton(qa)).toBeDisabled()
         await settled(qa)
         await qa.shot('msg464-thu-lai')
         await noSidewaysScroll(qa)
-        await qa.page.unroute(isReport)
+        await qa.page.unroute(isQuery)
         await press(qa, alert.getByRole('button', { name: 'Thử lại' }))
+        await figuresReady(qa)
+
+        await qa.page.route(isReport, fail(500, 'MSG464', MSG464))
+        await qa.page.reload()
+        await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG464 })).toBeVisible()
+        await qa.expect(band(qa)).toHaveCount(0)
+        await qa.expect(queryCard(qa).locator('.report-result')).toBeVisible()
+        await settled(qa)
+        await qa.shot('msg464-dai-so-lieu')
+        await qa.page.unroute(isReport)
+        await qa.page.reload()
         await figuresReady(qa)
 
         await qa.page.route(isExport, fail(500, 'MSG465', MSG465))
@@ -1002,9 +1164,11 @@ export default {
         qa.expect(downloaded, 'a file was downloaded on MSG465').toBe(false)
         await qa.page.unroute(isExport)
 
-        await qa.page.route(isReport, fail(400, 'MSG463', MSG463))
+        await qa.page.route(isQuery, fail(400, 'MSG463', MSG463))
         await qa.goto('/mgmt/reports?from=2026-02&to=2026-04')
         await qa.expect(qa.page.getByRole('alert').filter({ hasText: MSG463 })).toBeVisible()
+        await qa.expect(queryCard(qa)).toHaveCount(0)
+        await qa.expect(band(qa)).toHaveCount(0)
         await qa.expect(exportButton(qa)).toBeDisabled()
         await settled(qa)
         await qa.shot('msg463-tu-server')

@@ -38,9 +38,11 @@ const KEY_LABELS: Record<string, string> = {
   files: 'Số tệp',
   firsttake: 'Lượt ghi đầu',
   folderid: 'Thư mục',
+  filters: 'Bộ lọc',
   from: 'Từ',
   fromstatus: 'Trạng thái trước',
   fullname: 'Họ tên',
+  groupby: 'Nhóm theo',
   gracehours: 'Thời gian chờ (giờ)',
   granted: 'Đã cấp',
   guest: 'Khách',
@@ -110,6 +112,14 @@ const VALUE_LABELS: Record<string, Record<string, string>> = {
   mode: { Local: 'Máy local', Api: 'API' },
   apikey: { kept: 'Giữ nguyên', replaced: 'Thay mới', removed: 'Đã xoá' },
   source: { Upload: 'Tải lên', BrowserCapture: 'Ghi trên trình duyệt' },
+  report: {
+    meetings: 'Cuộc họp',
+    participants: 'Người dự họp',
+    votes: 'Biểu quyết',
+    documents: 'Tài liệu',
+    minutes: 'Biên bản',
+    recordings: 'Bản ghi',
+  },
 }
 
 export function detailLabel(key: string) {

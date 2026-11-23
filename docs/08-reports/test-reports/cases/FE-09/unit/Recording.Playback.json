@@ -9,7 +9,7 @@
       "method": "RecordingService.PlaybackAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-      "line": 113,
+      "line": 115,
       "cases": [
         {
           "id": "UTC001",
@@ -22,34 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43b · BR-350"
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "The same recording in a Secret meeting."
-          ],
-          "inputs": "actorId: a Member of the meeting.",
-          "return": "Success; a signed playback URL. Listening is not restricted by sensitivity, only downloading is.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-43b · BR-350 · BR-351"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "No recording with this id exists."
-          ],
-          "inputs": "recordingId: a random id.",
-          "return": "NotFound (404 without body).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "The actor's account is deactivated."
           ],
@@ -58,58 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350"
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor created the meeting but is not on the roster."
-          ],
-          "inputs": "actorId: the creator.",
-          "return": "NotFound; the recording is hidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The actor is an approver, not on the roster."
-          ],
-          "inputs": "actorId: the approver.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "The actor's Member assignment was removed."
-          ],
-          "inputs": "actorId: the former Member.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "The recording belongs to a meeting that has been deleted or cannot be loaded."
-          ],
-          "inputs": "actorId: any user.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43b · BR-350"
-        },
-        {
-          "id": "UTC009",
+          "id": "UTC003",
           "preconditions": [
             "The recording was erased: status Deleted."
           ],
@@ -118,10 +52,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · BR-348"
+          "note": "UC-43b · BR-350 · BR-348",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC010",
+          "id": "UTC004",
           "preconditions": [
             "A room-mic take still streaming: status Pending."
           ],
@@ -130,10 +67,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44a · UC-43b · BR-350"
+          "note": "UC-44a · UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
+          "id": "UTC005",
           "preconditions": [
             "A recording whose transcription failed: status Failed."
           ],
@@ -142,10 +82,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43b · BR-350"
+          "note": "UC-43b · BR-350",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC012",
+          "id": "UTC006",
           "preconditions": [
             "The database fails while reading the recording."
           ],
@@ -154,7 +97,10 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to sign playback'.",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · MSG297"
+          "note": "UC-43b · BR-350 · MSG297",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

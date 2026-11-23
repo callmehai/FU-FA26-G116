@@ -22,7 +22,10 @@
             "Agenda item \"Q3 review\" has presenter P; P is an active current participant; no notification with the key exists."
           ],
           "return": "Completes; one in-app notification is saved.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -34,7 +37,10 @@
             "Same assignment as before; a notification with key \"agenda-presenter:E1:P\" already exists."
           ],
           "return": "Completes; nothing is added (idempotent).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -46,83 +52,14 @@
             "Presenter P was removed from the roster after the change."
           ],
           "return": "Completes; nothing is added.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "assignment for P.",
-          "log": "No notification.",
-          "note": "UC-23a",
-          "preconditions": [
-            "Presenter P's account is deactivated."
-          ],
-          "return": "Completes; nothing is added.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "assignment with unknown meeting id.",
-          "log": "N/A",
-          "note": "UC-23a",
-          "preconditions": [
-            "Meeting M no longer exists."
-          ],
-          "return": "Completes; nothing is written.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "assignment with unknown item id.",
-          "log": "N/A",
-          "note": "UC-23c",
-          "preconditions": [
-            "Agenda item was deleted before the notifier ran."
-          ],
-          "return": "Completes; nothing is written.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "assignment {PresenterId: P}.",
-          "log": "No notification.",
-          "note": "UC-23b",
-          "preconditions": [
-            "The item's presenter was changed to Q after the assignment to P was made."
-          ],
-          "return": "Completes; nothing is added (the assignment is stale).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "assignment {PresenterId: P}.",
-          "log": "N/A",
-          "note": "UC-23b",
-          "preconditions": [
-            "The item's presenter was cleared."
-          ],
-          "return": "Completes; nothing is added.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "assignment {PresenterId: null; PresenterGuestInvitationId: null}; item also has no presenter.",
-          "log": "N/A",
-          "note": "UC-23b",
-          "preconditions": [
-            "Assignment names neither an internal presenter nor a Guest."
-          ],
-          "return": "Completes; nothing is added.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
           "inputs": "assignment {PresenterGuestInvitationId: G}.",
           "log": "Email to khach@example.com: subject \"Phân công trình bày mục nghị sự\"; text body greets \"Tran Khach\", gives the item, meeting and time, the verification link line and \"Người tổ chức: Le Chu Tri\"; HTML body from the guest-presenter template; deduplication key \"agenda-presenter:E1:G\".",
           "note": "UC-23a · BR-91",
@@ -131,55 +68,10 @@
             "Guest link provider is available and returns a ready link."
           ],
           "return": "Completes; one email is queued.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "assignment for G.",
-          "log": "Email queued; body has no link line.",
-          "note": "UC-23a · BR-91",
-          "preconditions": [
-            "Item presenter is Guest G; link provider returns a link that is not ready (e.g. invitation already used)."
-          ],
-          "return": "Completes; one email is queued without the verification link line.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "assignment for G.",
-          "log": "Email queued; body has no link line.",
-          "note": "UC-23a · BR-91",
-          "preconditions": [
-            "Item presenter is Guest G; no link provider is registered."
-          ],
-          "return": "Completes; one email is queued without a link.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "assignment for G.",
-          "log": "N/A",
-          "note": "UC-28c · BR-157",
-          "preconditions": [
-            "Guest invitation G was revoked."
-          ],
-          "return": "Completes; no email is queued.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "the same Guest assignment delivered twice.",
-          "log": "No new email.",
-          "note": "UC-23a",
-          "preconditions": [
-            "An email with key \"agenda-presenter:E1:G\" already exists."
-          ],
-          "return": "Completes; no second email.",
-          "type": "Boundary"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

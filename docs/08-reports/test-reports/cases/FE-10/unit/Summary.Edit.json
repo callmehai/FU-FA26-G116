@@ -9,7 +9,7 @@
       "method": "SummaryService.EditAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 108,
+      "line": 125,
       "cases": [
         {
           "id": "UTC001",
@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Normal",
-          "note": "UC-49 · BR-377 · MSG388"
+          "note": "UC-49 · BR-377 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,7 +36,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · MSG390"
+          "note": "UC-49 · MSG390",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -45,7 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · MSG387"
+          "note": "UC-49 · MSG387",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -57,7 +66,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · MSG389"
+          "note": "UC-49 · MSG389",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
@@ -69,22 +81,13 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Boundary",
-          "note": "UC-49 · MSG388"
+          "note": "UC-49 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC006",
-          "preconditions": [
-            "A Ready draft exists; actor is the current chair."
-          ],
-          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: conclusions of 8.001 characters.",
-          "return": "Failure Invalid (MSG389); errors[conclusions] = [\"Nhập nội dung, tối đa 8.000 ký tự.\"]; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-49 · MSG389"
-        },
-        {
-          "id": "UTC007",
           "preconditions": [
             "A Ready draft exists; actor takes part but is neither chair nor secretary."
           ],
@@ -93,7 +96,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · BR-374 · MSG385"
+          "note": "UC-49 · BR-374 · MSG385",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Domain.Transcription;
 
@@ -33,6 +34,19 @@ public static class TranscriptText
     {
         var at = TimeSpan.FromMilliseconds(Math.Max(0, ms));
         return $"{(int)at.TotalHours:00}:{at.Minutes:00}:{at.Seconds:00}";
+    }
+
+    /// <summary>
+    /// When a line of a recording was said: the wall clock for the room mic, whose takes know when each was spoken
+    /// (ADR-0041) — the take's start plus how far into it the line begins — and the offset into the file for an upload,
+    /// which knows no clock. Read as an offset, the room recording drifted from the clock by every pause between takes:
+    /// a line at 01:01:11 into the audio of the meeting of 22/11/2026 was said at 15:31, 70 minutes after a 14:20 start.
+    /// </summary>
+    public static string LineTime(long ms, IReadOnlyList<RecordingTake>? takes)
+    {
+        if (takes is not { Count: > 0 }) return Offset(ms);
+        var take = takes.LastOrDefault(t => t.OffsetMs <= ms) ?? takes[0];
+        return Clock(take.StartedAt.AddMilliseconds(Math.Max(0, ms - take.OffsetMs)));
     }
 
     /// <summary>A moment of the meeting, as the wall clock in the room showed it.</summary>

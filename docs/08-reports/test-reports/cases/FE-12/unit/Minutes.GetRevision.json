@@ -9,7 +9,7 @@
       "method": "MinutesService.GetRevisionAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 172,
+      "line": 184,
       "cases": [
         {
           "id": "UTC001",
@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-386 · BR-412"
+          "note": "UC-58 · BR-386 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -35,7 +38,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-58 · BR-386 · BR-412"
+          "note": "UC-58 · BR-386 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -48,7 +54,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58 · BR-412"
+          "note": "UC-58 · BR-412",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -61,7 +70,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-58"
+          "note": "UC-58",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
@@ -75,7 +87,10 @@
           "exception": "N/A",
           "log": "Error logged with the minutes id.",
           "type": "Abnormal",
-          "note": "UC-58 · MSG403"
+          "note": "UC-58 · MSG403",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

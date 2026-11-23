@@ -22,159 +22,14 @@
             "Meeting has no agenda items."
           ],
           "return": "Success; 201 / MSG60; new item id returned.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "actor: Secretary S; input {Title: \"  Closing  \"; Description: \"Wrap up\"}.",
-          "log": "Title saved trimmed as \"Closing\"; position 6 (last position + 1); status Pending.",
-          "note": "UC-23a · BR-67 · MSG60",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Items at positions 1, 2, 5 exist."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "actor: Chair C; input {Title: \"Any other business\"}.",
-          "log": "New Pending item appended after the last position; existing positions unchanged.",
-          "note": "UC-23a · BR-65 · BR-67 · MSG60",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item 1 is InProgress."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "actor: Secretary S; input {Title: \"Item\"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-65 · BR-74 · MSG60",
-          "preconditions": [
-            "Meeting in status WaitingApproval; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "actor: Secretary S; input {Title: \"Budget\"; PresenterId: Member M's user id}.",
-          "log": "Presenter M set; presenter notice for M queued after commit (item, meeting and local time named); change \"Created\" published.",
-          "note": "UC-23a · BR-66 · MSG60",
-          "preconditions": [
-            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "actor: Secretary S; input {Title: \"My item\"; PresenterId: S}.",
-          "log": "No presenter notice: nobody is notified of their own action.",
-          "note": "UC-23a · MSG60",
-          "preconditions": [
-            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "actor: Secretary S; input {Title: \"Budget\"; PresenterId: M}.",
-          "log": "Presenter set; no notice because the meeting is not yet published.",
-          "note": "UC-23a · MSG60",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "actor: Chair C; input {Title: \"Guest talk\"; PresenterGuestInvitationId: G}.",
-          "log": "Guest set as presenter; email notice for G queued after commit.",
-          "note": "UC-23a · BR-66 · MSG60",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Guest invitation G is current."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "actor: S; input {Title: \"With docs\"; DocumentIds: [D1, D2]}.",
-          "log": "D1 and D2 linked to the new item.",
-          "note": "UC-23a · BR-278 · MSG60",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Documents D1 and D2 belong to the meeting."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "actor: S; input {Title: \"A\"} where the realtime publisher then throws.",
-          "log": "Item stays saved; warning logged for the failed push.",
-          "note": "UC-23a · BR-73 · MSG60",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "actor: S; input {Title: \"A\"} where the presenter notice then throws.",
-          "log": "Item stays saved; warning logged.",
-          "note": "UC-23a · MSG60 · Deviation: the presenter notice is never queued for this input (no presenter change in a Draft meeting), so nothing is delivered after commit and no warning is logged; the item is still saved with Success.",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "actor: S; input {Title: \"   \"}.",
-          "log": "Nothing saved.",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Invalid on title; 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "actor: S; input {Title: 300 characters}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG60",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Success; 201 / MSG60.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
           "inputs": "actor: S; input {Title: 301 characters}.",
           "log": "N/A",
           "note": "UC-23a · BR-66 · MSG66",
@@ -182,111 +37,14 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on title; 400 / MSG66.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "actor: S; input {Title: \"A\"; Description: 4001 characters}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Invalid on description; 400 / MSG66.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "actor: S; input {Title: \"A\"; PresenterId: M; PresenterGuestInvitationId: G}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC017",
-          "inputs": "actor: S; input {Title: \"A\"; PresenterId: U}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "User U is not on the roster."
-          ],
-          "return": "Failure Invalid on presenterId (\"must be an active internal member of the meeting\"); 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC018",
-          "inputs": "actor: S; input {Title: \"A\"; PresenterId: M}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Member M's account is deactivated."
-          ],
-          "return": "Failure Invalid on presenterId; 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC019",
-          "inputs": "actor: S; input {Title: \"A\"; PresenterGuestInvitationId: G}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Guest invitation G is revoked."
-          ],
-          "return": "Failure Invalid on presenterGuestInvitationId (\"guest no longer in the meeting\"); 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC020",
-          "inputs": "actor: S; input {Title: \"A\"; DocumentIds: [X]}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-278 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Document X belongs to another meeting."
-          ],
-          "return": "Failure Invalid on documentIds; 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC021",
-          "inputs": "actor: S; input {Title: \"A\"; DocumentIds: [D1, D1]}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-278 · MSG66",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Invalid on documentIds; 400 / MSG66.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC022",
-          "inputs": "actor: Member M; input {Title: \"A\"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-65 · MSG67 · Deviation: a Member cannot read a Draft meeting, so the call answers NotFound (404, existence hidden) before the planner check; Forbidden applies once the meeting is readable (for example Published or InProgress).",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC023",
+          "id": "UTC003",
           "inputs": "actor: organizer; input {Title: \"A\"}.",
           "log": "N/A",
           "note": "UC-23a · BR-65 · MSG67",
@@ -295,35 +53,14 @@
             "Actor is the organizer without a roster seat."
           ],
           "return": "Failure Forbidden; 403 / MSG67.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC024",
-          "inputs": "actor: Chair C; input {Title: \"A\"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-74 · MSG67",
-          "preconditions": [
-            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Locked; 409 / MSG67.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC025",
-          "inputs": "actor: Secretary S; input {Title: \"A\"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-74 · MSG67",
-          "preconditions": [
-            "Meeting in status Cancelled; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Locked; 409 / MSG67.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC026",
+          "id": "UTC004",
           "inputs": "actor: S; input.ParseFailure: UnsupportedMedia.",
           "log": "N/A",
           "note": "UC-23a · MSG34",
@@ -331,11 +68,14 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure UnsupportedMedia; 415 / MSG34; errors {body}.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC027",
+          "id": "UTC005",
           "inputs": "actor: S; input.ParseFailure: TooLarge.",
           "log": "N/A",
           "note": "UC-23a · MSG87",
@@ -343,48 +83,14 @@
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure TooLarge; 413 / MSG87.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC028",
-          "inputs": "actor: user whose account is deactivated.",
-          "log": "N/A",
-          "note": "UC-23a · BR-65",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure Inactive; 403, empty body.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC029",
-          "inputs": "actor: any active user.",
-          "log": "N/A",
-          "note": "UC-23a · BR-29",
-          "preconditions": [
-            "Meeting id does not exist."
-          ],
-          "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC030",
-          "inputs": "actor: stranger.",
-          "log": "N/A",
-          "note": "UC-23a · BR-29",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Actor is an active user unrelated to the meeting."
-          ],
-          "return": "Failure NotFound; 404 (existence is hidden).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC031",
+          "id": "UTC006",
           "inputs": "actor: S; input {Title: \"A\"}.",
           "log": "Nothing saved.",
           "note": "UC-23a · MSG68",
@@ -393,19 +99,10 @@
             "An existing item already holds position 2147483647."
           ],
           "return": "Failure SaveFailed; 503 / MSG68.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC032",
-          "inputs": "actor: S; input {Title: \"A\"}; the database fails while saving.",
-          "log": "Error logged; no event published.",
-          "note": "UC-23a · MSG68",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure SaveFailed; 503 / MSG68.",
-          "type": "Abnormal"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

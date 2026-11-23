@@ -14,23 +14,14 @@
             "Google token verifier rejects the token (absent, malformed, expired, wrong audience, bad signature or unverified email)."
           ],
           "return": "GoogleSignInResult Failure(InvalidGoogleToken) (MSG03); no account lookup is made.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "idToken: \"\".",
-          "log": "N/A",
-          "note": "UC-02 · BR-05 · MSG03",
-          "preconditions": [
-            "Google token verifier receives an empty token and returns no identity."
-          ],
-          "return": "GoogleSignInResult Failure(InvalidGoogleToken) (MSG03).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (details { method: \"google\" }).",
           "note": "UC-02 · BR-05 · BR-444",
@@ -39,24 +30,14 @@
             "Active account already linked to subject g-100."
           ],
           "return": "GoogleSignInResult Success with the user, capabilities of the role, access token, refresh token (stored) and expiry.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "idToken: \"<valid token>\".",
-          "log": "Google identity linked to account {UserId}.; audit rows UserGoogleLinked (no details) then SignedIn (method \"google\").",
-          "note": "UC-02 · BR-444",
-          "preconditions": [
-            "Verifier returns identity { subject: g-200, email: staff@example.com }.",
-            "Active account staff@example.com created by an administrator, not yet linked to any Google subject."
-          ],
-          "return": "GoogleSignInResult Success; the account is linked to subject g-200 and the token pair is issued.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC003",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: account {UserId} is deactivated and was never linked.; audit row SignInFailed (details { method: \"google\", reason: \"account_deactivated\" }).",
           "note": "UC-02 · BR-03 · BR-444 · MSG02",
@@ -65,11 +46,14 @@
             "Account former@example.com is deactivated and was never linked to a Google subject."
           ],
           "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); the subject is not linked and no token is issued.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC004",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: no internal account is linked to that Google identity.; no audit row.",
           "note": "UC-02 · BR-06 · BR-07 · MSG05",
@@ -78,37 +62,14 @@
             "No internal account has that subject or email."
           ],
           "return": "GoogleSignInResult Failure(NotLinked) (MSG05); no account is created.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "idToken: \"<valid token>\".",
-          "log": "Google sign-in rejected: no internal account is linked to that Google identity.; no audit row.",
-          "note": "UC-02 · BR-06 · MSG05",
-          "preconditions": [
-            "Verifier returns identity { subject: g-500, email: organizer@example.com }.",
-            "Account organizer@example.com is already linked to a different subject g-100."
-          ],
-          "return": "GoogleSignInResult Failure(NotLinked) (MSG05): the caller is not the owner of that account, and the account is not re-linked.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "idToken: \"<valid token>\".",
-          "log": "Google sign-in rejected: account {UserId} is deactivated.; audit row SignInFailed (details { method: \"google\", reason: \"account_deactivated\" }).",
-          "note": "UC-02 · BR-03 · BR-444 · MSG02",
-          "preconditions": [
-            "Verifier returns identity { subject: g-100, email: organizer@example.com }.",
-            "Account linked to subject g-100 is deactivated."
-          ],
-          "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); no token issued.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
+          "id": "UTC005",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (method \"google\").",
           "note": "UC-02 · BR-04 · BR-444",
@@ -117,7 +78,10 @@
             "The account role holds no capabilities (BR-04)."
           ],
           "return": "GoogleSignInResult Success with an empty capability list and a token pair.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",

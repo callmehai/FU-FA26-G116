@@ -121,6 +121,11 @@ public interface ITranscriptRepository
     Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct);
     /// <summary>Reads the transcript's own columns again, as they are once its recording's row is locked.</summary>
     Task ReloadAsync(Transcript transcript, CancellationToken ct);
+    /// <summary>
+    /// The lines and voices a transcript has now, read without tracking anything, so a new run can carry over what the
+    /// Secretary corrected by hand before they are replaced (ADR-0077). Empty for a transcript that never completed.
+    /// </summary>
+    Task<TranscriptCorrections> ReadCorrectionsAsync(Guid transcriptId, CancellationToken ct);
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);
     void Add(Transcript transcript);
     Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
@@ -129,3 +134,13 @@ public interface ITranscriptRepository
     /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
     Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
 }
+
+/// <summary>A transcript as it stood before a new run replaced it: what <see cref="TranscriptionService"/> carries over.</summary>
+public sealed record TranscriptCorrections(IReadOnlyList<PreviousLine> Lines, IReadOnlyList<PreviousVoice> Voices);
+
+/// <param name="Text">Read only for a line the Secretary edited: the others are the machine's, made again by the new run.</param>
+public sealed record PreviousLine(long StartMs, long EndMs, string SpeakerLabel, string? Text, Guid? EditedById,
+    DateTimeOffset? EditedAt, Guid? SpeakerAssignedById, DateTimeOffset? SpeakerAssignedAt);
+
+public sealed record PreviousVoice(string Label, Guid? AssignedUserId, Guid? AssignedGuestId, Guid? AssignedById,
+    DateTimeOffset? AssignedAt);

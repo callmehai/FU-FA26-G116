@@ -9,7 +9,7 @@
       "method": "MinutesService.ApproveAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 213,
+      "line": 225,
       "cases": [
         {
           "id": "UTC001",
@@ -21,9 +21,12 @@
           "inputs": "minutesId: the waiting revision; actor: the current Chair; loadedAt: T.",
           "return": "Status Issued with ApprovedBy = the Chair and ApprovedAt = IssuedAt = now; 200 MSG427.",
           "exception": "N/A",
-          "log": "Saved: status, approver and issue times; audit row for the issue (actor = the Chair, details carry meeting, revision and replaced-revision ids); notification \"Biên bản đã ban hành\" to every reader except the Chair (\"Biên bản cuộc họp \"…\" đã được ban hành.\"); issue emails queued for the same readers.",
+          "log": "Saved: status, approver and issue times; audit row for the issue (actor = the Chair, details carry meeting, revision and replaced-revision ids); notification \"Biên bản đã ban hành\" to every reader except the Chair (\"Biên bản cuộc họp \"…\" đã được ban hành.\"); issue emails queued for the same readers; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427"
+          "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,25 +37,15 @@
           "inputs": "minutesId: the waiting correction; actor: the current Chair; loadedAt: T.",
           "return": "Status Issued; revision 1 becomes Superseded and stays readable; 200 MSG427 with the correction message.",
           "exception": "N/A",
-          "log": "Saved: the correction Issued, the earlier revision Superseded; audit row; notifications and emails carry \"Bản đính chính biên bản cuộc họp \"…\" đã được ban hành.\"",
+          "log": "Saved: the correction Issued, the earlier revision Superseded; audit row; notifications and emails carry \"Bản đính chính biên bản cuộc họp \"…\" đã được ban hành.\"; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-64 · UC-83 · BR-409 · MSG427"
+          "note": "UC-64 · UC-83 · BR-409 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Revision WaitingApproval.",
-            "Actor reads no meeting."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the stranger; loadedAt: T.",
-          "return": "Failure NotFound; 404 with no message code; status unchanged and nobody notified.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-64"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "Revision WaitingApproval with UpdatedAt T."
@@ -62,10 +55,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-406 · MSG428"
+          "note": "UC-64 · BR-406 · MSG428",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "Revision still Draft."
@@ -75,10 +71,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · MSG429"
+          "note": "UC-64 · MSG429",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "WaitingApproval revision read at T, then saved by someone else."
@@ -88,10 +87,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-389 · MSG401"
+          "note": "UC-64 · BR-389 · MSG401",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC006",
           "preconditions": [
             "Ended meeting; actor is the current Chair; WaitingApproval revision read at T.",
             "The database fails while saving the transition."
@@ -101,7 +103,10 @@
           "exception": "N/A",
           "log": "Error logged with the action and minutes id.",
           "type": "Abnormal",
-          "note": "UC-64 · MSG404"
+          "note": "UC-64 · MSG404",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

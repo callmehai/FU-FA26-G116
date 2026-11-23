@@ -51,4 +51,13 @@ public class TranscriptSegment : Entity
     public User? EditedBy { get; set; }
 
     public DateTimeOffset? EditedAt { get; set; }
+
+    /// <summary>
+    /// Set when the Secretary moved this line to another voice (<see cref="SpeakerLabel"/> is then theirs, not the
+    /// diarizer's), so the move is made again when the recording is transcribed again (ADR-0077).
+    /// </summary>
+    public Guid? SpeakerAssignedById { get; set; }
+    public User? SpeakerAssignedBy { get; set; }
+
+    public DateTimeOffset? SpeakerAssignedAt { get; set; }
 }

@@ -8,6 +8,7 @@ using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Application.Recordings;
 
@@ -323,7 +324,9 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
 
     /// <summary>
     /// Takes the erased take's lines out and moves the later ones up by its length; edits, names and positions stay. A
-    /// transcript still being made is made again from the shorter file instead: its result would place lines wrongly.
+    /// transcript still being made is made again from the shorter file as well: its result would place lines wrongly.
+    /// Its lines of the last finished run are cut all the same, so the run that replaces them finds the Secretary's
+    /// corrections where the shorter file has them (ADR-0077).
     /// </summary>
     private static int CutTranscript(Transcript transcript, RecordingTake gone, DateTimeOffset now)
     {
@@ -333,7 +336,6 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             transcript.Status = TranscriptStatus.Pending;
             transcript.ErrorMessage = "";
             transcript.ProgressPercent = 0;
-            return 0;
         }
         var start = gone.OffsetMs;
         var end = gone.OffsetMs + gone.DurationMs;
@@ -350,7 +352,11 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             }
             // A line running on past the take's start ends where the take began, or later by what is left after it.
             else if (segment.EndMs > start)
+            {
                 segment.EndMs = segment.EndMs > end ? segment.EndMs - gone.DurationMs : start;
+                // Its words said in the erased take now start where it ends, not after it.
+                segment.WordStartsMs = WordTimings.Within(segment.WordStartsMs, segment.StartMs, segment.EndMs);
+            }
         }
         var spoke = transcript.Segments.GroupBy(s => s.SpeakerLabel).ToDictionary(g => g.Key, g => g.Sum(s => s.EndMs - s.StartMs));
         foreach (var speaker in transcript.Speakers.ToList())

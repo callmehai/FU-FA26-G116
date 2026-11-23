@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Saved: sample removed; audit row records the deletion.",
           "type": "Normal",
-          "note": "UC-81e · MSG311"
+          "note": "UC-81e · MSG311",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,7 +37,10 @@
           "exception": "N/A",
           "log": "Saved: sample removed; audit row records the deletion with the meeting scope.",
           "type": "Normal",
-          "note": "UC-81e · BR-452 · MSG311"
+          "note": "UC-81e · BR-452 · MSG311",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -46,7 +52,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81e"
+          "note": "UC-81e",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -58,7 +67,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81e"
+          "note": "UC-81e",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

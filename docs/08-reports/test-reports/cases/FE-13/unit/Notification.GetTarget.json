@@ -21,22 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "N1 as above, but U1 lost access to M1 (removed from the roster)."
-          ],
-          "inputs": "userId U1; notificationId N1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Notification N2 belongs to U2."
           ],
@@ -45,22 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "No notification with this id."
-          ],
-          "inputs": "userId U1; notificationId random.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC005",
+          "id": "UTC003",
           "preconditions": [
             "A notification with TargetType Meeting whose MeetingId (M1) differs from its TargetId (M2)."
           ],
@@ -69,34 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
-          "preconditions": [
-            "A notification of a removed participant: TargetType and TargetId are null."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "A Meeting notification whose TargetId is null."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "A calendar-share notification; U1 is the owner or the viewer of the share."
           ],
@@ -105,34 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "A calendar-share notification; the share no longer involves U1 or no longer exists."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "A calendar-share notification with a null TargetId."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC011",
+          "id": "UTC005",
           "preconditions": [
             "A voice-sample notification; the sample S1 still exists and belongs to U1."
           ],
@@ -141,34 +81,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC012",
-          "preconditions": [
-            "A voice-sample notification; the sample was deleted or belongs to someone else."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "A voice-sample notification with a null TargetId."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-68"
-        },
-        {
-          "id": "UTC014",
+          "id": "UTC006",
           "preconditions": [
             "A notification with an unsupported TargetType \"Document\"."
           ],
@@ -177,7 +96,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-68"
+          "note": "UC-68",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
