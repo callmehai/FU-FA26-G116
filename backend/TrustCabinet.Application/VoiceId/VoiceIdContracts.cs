@@ -175,15 +175,22 @@ public static class SpeakerMatcher
         return na == 0 || nb == 0 ? 0 : dot / Math.Sqrt(na * nb);
     }
 
+    /// <summary>
+    /// Each voice's score against every candidate, best first. A person's score for a voice is their best sample against
+    /// it: samples differ by mood, mic and room.
+    /// </summary>
+    public static Dictionary<string, (Guid UserId, double Score)[]> Scores(IReadOnlyList<SpeechSpeaker> speakers,
+        IReadOnlyList<Candidate> candidates)
+        => speakers.ToDictionary(s => s.Label, s => candidates.GroupBy(c => c.UserId)
+            .Select(g => (UserId: g.Key, Score: g.Max(c => Cosine(s.Embedding, c.Embedding))))
+            .OrderByDescending(x => x.Score).ToArray());
+
     public static IReadOnlyDictionary<string, Suggestion> Suggest(IReadOnlyList<SpeechSpeaker> speakers,
         IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice,
         double inherit)
     {
         var voices = speakers.ToDictionary(s => s.Label, s => s.Embedding);
-        // A person's score for a voice is their best sample against it: samples differ by mood, mic and room.
-        var scores = speakers.ToDictionary(s => s.Label, s => candidates.GroupBy(c => c.UserId)
-            .Select(g => (UserId: g.Key, Score: g.Max(c => Cosine(s.Embedding, c.Embedding))))
-            .OrderByDescending(x => x.Score).ToArray());
+        var scores = Scores(speakers, candidates);
         var result = new Dictionary<string, Suggestion>();
         // The voice each person was first suggested for: the surest, as pairs come best first.
         var first = new Dictionary<Guid, string>();

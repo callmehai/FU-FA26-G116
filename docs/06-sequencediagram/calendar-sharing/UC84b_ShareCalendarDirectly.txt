@@ -8,139 +8,75 @@ control ":Calendar Sharing Service" as SharingService
 participant ":User Repository" as UserRepository
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
-participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 Owner->SharingPage: Open the Chia sẻ lịch page
 activate SharingPage
 
-SharingPage->SharingController: Load share candidates (purpose=direct)
-activate SharingController
-SharingController->SharingService: listCandidates(ownerId, purpose=direct, q, page)
-activate SharingService
-SharingService->UserRepository: Verify owner is active (BR-430)
-activate UserRepository
-UserRepository->Database: Retrieve owner account
-activate Database
-Database-->UserRepository: Account / Not found
-deactivate Database
-UserRepository-->SharingService: Verification result
-deactivate UserRepository
-
-alt Owner is not active - EX-5
-    SharingService-->SharingController: Refused, nothing disclosed
-    deactivate SharingService
-    SharingController-->SharingPage: Request refused
-    deactivate SharingController
-    SharingPage-->Owner: (nothing disclosed)
-else Owner is verified
-    SharingService->UserRepository: Get active internal accounts with MeetingCreator, except the owner (server filter, purpose=direct)
-    activate UserRepository
-    UserRepository->Database: Retrieve candidates (active, internal, has MeetingCreator, id <> ownerId)
-    activate Database
-    Database-->UserRepository: Candidate list / Read failed
-    deactivate Database
-    UserRepository-->SharingService: Candidate list / Read failed
-    deactivate UserRepository
-
-    alt Candidate list cannot be read - EX-6
-        SharingService-->SharingController: MSG467 - Unable to load the candidate list.
-        deactivate SharingService
-        SharingController-->SharingPage: 500 MSG467
-        deactivate SharingController
-        SharingPage-->Owner: MSG467 - Unable to load the candidate list.
-    else Candidate list is loaded
-        SharingService-->SharingController: Candidate list
-        deactivate SharingService
-        SharingController-->SharingPage: Candidate list
-        deactivate SharingController
-        SharingPage-->Owner: Candidate list
-    end
-end
-
 Owner->SharingPage: Share calendar at Level 1 (recipient, date range)
-
 SharingPage->SharingController: Share calendar directly
 activate SharingController
-
 SharingController->SharingService: shareDirectly(ownerId, recipientId, startDate, endDate)
 activate SharingService
 
-SharingService->UserRepository: Verify owner is active and recipient is active,\nholds MeetingCreator and is not the owner (BR-414, BR-423)
+SharingService->UserRepository: Verify owner and recipient
 activate UserRepository
-UserRepository->Database: Retrieve both accounts with capabilities
+UserRepository->Database: Retrieve both accounts
 activate Database
-Database-->UserRepository: Accounts / Not found
+Database-->UserRepository: Accounts
 deactivate Database
 UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
 alt Recipient cannot receive a share - EX-1
     SharingService-->SharingController: MSG455 - This person cannot receive a calendar share.
-    deactivate SharingService
-    SharingController-->SharingPage: 400 MSG455
-    deactivate SharingController
+    SharingController-->SharingPage: MSG455 - This person cannot receive a calendar share.
     SharingPage-->Owner: MSG455 - This person cannot receive a calendar share.
 else Recipient is verified
-    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient with end date on or after today (BR-423, BR-425)
+    SharingService->ShareRepository: Check no Pending or Effective share
     activate ShareRepository
     ShareRepository->Database: Find shares of the pair
     activate Database
     Database-->ShareRepository: Existing shares
     deactivate Database
-    ShareRepository-->SharingService: No Pending or Effective share / Already shared
+    ShareRepository-->SharingService: No share / Already shared
     deactivate ShareRepository
 
     alt A share already exists - EX-2
         SharingService-->SharingController: MSG449 - There is already a pending or effective share with this person.
-        deactivate SharingService
-        SharingController-->SharingPage: 409 MSG449
-        deactivate SharingController
+        SharingController-->SharingPage: MSG449 - There is already a pending or effective share with this person.
         SharingPage-->Owner: MSG449 - There is already a pending or effective share with this person.
     else No share exists
-        SharingService->SharingService: Validate Level 1 and date range (BR-414, BR-431)
-
         alt Range is invalid - EX-3
             SharingService-->SharingController: MSG443 - The date range is invalid.
-            deactivate SharingService
-            SharingController-->SharingPage: 400 MSG443
-            deactivate SharingController
+            SharingController-->SharingPage: MSG443 - The date range is invalid.
             SharingPage-->Owner: MSG443 - The date range is invalid.
-        else Share request is valid
-            SharingService->ShareRepository: Save Pending share at Level 1 and audit entry (BR-414, BR-426)
+        else Range is valid
+            SharingService->ShareRepository: Save Pending share at Level 1 and audit entry
             activate ShareRepository
             ShareRepository->Database: Insert share and audit record
             activate Database
-            Database-->ShareRepository: Saved / Save failed
+            Database-->ShareRepository: Saved
             deactivate Database
-            ShareRepository-->SharingService: Pending share / Save failed
+            ShareRepository-->SharingService: Pending share
             deactivate ShareRepository
 
-            alt Share cannot be saved - EX-4
-                SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
-                deactivate SharingService
-                SharingController-->SharingPage: 503 MSG447
-                deactivate SharingController
-                SharingPage-->Owner: MSG447 - Unable to save the calendar sharing data. Please try again.
-            else Share is Pending
-                SharingService->NotificationService: Notify the recipient of the direct share (BR-426)
-                activate NotificationService
-                NotificationService->NotificationRepository: add(notification)
-                NotificationRepository->Database: Record recipient notification
-                activate Database
-                Database-->NotificationRepository: Notification recorded
-                deactivate Database
-                NotificationRepository-->NotificationService: Notification recorded
-                NotificationService-->SharingService: Recipient notified
-                deactivate NotificationService
-                SharingService-->SharingController: Pending share
-                deactivate SharingService
-                SharingController-->SharingPage: 201 MSG441 - Calendar shared. Waiting for acceptance.
-                deactivate SharingController
-                SharingPage-->Owner: MSG441 - Calendar shared. Waiting for acceptance.
-            end
+            SharingService->NotificationService: Notify the recipient
+            activate NotificationService
+            NotificationService->Database: Record recipient notification
+            activate Database
+            Database-->NotificationService: Notification recorded
+            deactivate Database
+            NotificationService-->SharingService: Recipient notified
+            deactivate NotificationService
+
+            SharingService-->SharingController: Pending share
+            SharingController-->SharingPage: 201 MSG441 - Calendar shared. Waiting for acceptance.
+            SharingPage-->Owner: MSG441 - Calendar shared. Waiting for acceptance.
         end
     end
 end
 
+deactivate SharingService
+deactivate SharingController
 deactivate SharingPage

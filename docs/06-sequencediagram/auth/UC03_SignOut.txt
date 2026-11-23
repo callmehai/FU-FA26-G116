@@ -7,10 +7,5 @@ User->AuthenticatedPage: Select "Sign Out"
 activate AuthenticatedPage
 AuthenticatedPage-->User: Display confirmation message
 User->AuthenticatedPage: Confirm sign out
-AuthenticatedPage->AuthenticatedPage: Remove JWT authentication token
-alt JWT cannot be cleared
-    AuthenticatedPage-->User: MSG01 - Unable to sign out. Please try again.
-else JWT removed successfully
-    AuthenticatedPage-->User: Redirect to login page
-end
+AuthenticatedPage-->User: Redirect to login page
 deactivate AuthenticatedPage

@@ -19,7 +19,7 @@ activate DocumentController
 DocumentController->DocumentService: getDocumentContent(meetingId, meetingDocumentId, actor, download)
 activate DocumentService
 
-DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting: an internal user,\nor a Guest whose verified session is current while the Meeting is Published or InProgress (BR-181, BR-275)
+DocumentService->MeetingAccessPolicy: Check the actor can currently view the Meeting
 activate MeetingAccessPolicy
 MeetingAccessPolicy->Database: Check the actor's current Meeting relationship or Guest session
 activate Database
@@ -28,7 +28,7 @@ deactivate Database
 MeetingAccessPolicy-->DocumentService: Access / No access
 deactivate MeetingAccessPolicy
 
-DocumentService->MeetingDocumentRepository: Get the document while it is still attached to this Meeting,\nwith its stored file and the Meeting sensitivity (BR-211)
+DocumentService->MeetingDocumentRepository: Get the document while it is still attached to this Meeting,\nwith its stored file and the Meeting sensitivity
 activate MeetingDocumentRepository
 MeetingDocumentRepository->Database: Retrieve the Meeting document not removed, with its stored file
 activate Database
@@ -42,68 +42,41 @@ alt Document is no longer accessible - EX-1
     DocumentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
     DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
 
-else Download requested for a Secret Meeting - EX-3
+else Download requested for a Secret Meeting - EX-2
     DocumentService-->DocumentController: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
     DocumentController-->DocumentViewer: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
     DocumentViewer-->User: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
 
 else Document can be provided
-    DocumentService->FileStorage: Read the uploaded file unchanged (BR-183, BR-216)
+    DocumentService->FileStorage: Read the uploaded file unchanged
     activate FileStorage
-    FileStorage-->DocumentService: File content / File missing / Read failed
+    FileStorage-->DocumentService: File content / File missing
     deactivate FileStorage
 
-    alt The stored file no longer exists - EX-5
+    alt The stored file no longer exists - EX-3
         DocumentService-->DocumentController: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
         DocumentController-->DocumentViewer: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
         DocumentViewer-->User: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
 
-    else File cannot be provided - EX-2 / EX-4
-        DocumentService-->DocumentController: Read failed
-        DocumentController-->DocumentViewer: Read failed
-
-        alt Viewing - EX-2
-            DocumentViewer-->User: MSG158 - Unable to display the document. Please try again.
-        else Downloading - EX-4
-            DocumentViewer-->User: MSG160 - Unable to download the document. Please try again.
-        end
-
     else File read
         opt Meeting is Secret
-            DocumentService->AuditLogRepository: Record the view with the actor and time,\nbefore any content is sent (BR-318)
+            DocumentService->AuditLogRepository: Record the view with the actor and time,\nbefore any content is sent
             activate AuditLogRepository
             AuditLogRepository->Database: Insert audit entry
             activate Database
-            Database-->AuditLogRepository: Entry saved / Save failed
+            Database-->AuditLogRepository: Entry saved
             deactivate Database
-            AuditLogRepository-->DocumentService: Entry saved / Save failed
+            AuditLogRepository-->DocumentService: Entry saved
             deactivate AuditLogRepository
         end
 
-        alt Audit entry could not be saved - EX-2 / EX-4
-            DocumentService-->DocumentController: No content is sent
-            DocumentController-->DocumentViewer: No content is sent
+        DocumentService-->DocumentController: File content and file name
+        DocumentController-->DocumentViewer: File content and file name
 
-            alt Viewing - EX-2
-                DocumentViewer-->User: MSG158 - Unable to display the document. Please try again.
-            else Downloading - EX-4
-                DocumentViewer-->User: MSG160 - Unable to download the document. Please try again.
-            end
-
-        else Content can be sent
-            DocumentService-->DocumentController: File content and file name
-            DocumentController-->DocumentViewer: File content and file name
-
-            alt Download chosen for a Meeting that is not Secret - AF-1
-                DocumentViewer-->User: Provide the original file (BR-188)
-            else Viewing
-                DocumentViewer->DocumentViewer: Render the PDF pages or the DOCX document in the browser,\nread the Meeting sensitivity from the Meeting details and hide Download for a Secret Meeting\n(BR-188, BR-282)
-                alt The browser cannot render the file - EX-6
-                    DocumentViewer-->User: MSG383 - The browser cannot display this file.\nIt may be damaged or in an unsupported format.
-                else Rendered
-                    DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
-                end
-            end
+        alt Download chosen for a Meeting that is not Secret - AF-1
+            DocumentViewer-->User: Provide the original file
+        else Viewing
+            DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
         end
     end
 end

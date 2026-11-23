@@ -1,4 +1,4 @@
-title UC-48 - View Meeting Summary
+﻿title UC-48 - View Meeting Summary
 
 actor "Chair / Secretary / Participant" as Actor
 boundary "Draft Card (Biên bản tab)" as DraftCard
@@ -23,7 +23,7 @@ deactivate Database
 MeetingRepository-->SummaryService: Meeting / Not found
 deactivate MeetingRepository
 
-alt The Meeting is not accessible - EX-2
+alt The Meeting is not accessible - EX-1
     SummaryService-->SummaryController: Not found
     SummaryController-->DraftCard: 404
     DraftCard-->Actor: The Meeting is not available
@@ -34,7 +34,6 @@ else The actor may read the Meeting
     Database-->MeetingSummaryRepository: Draft / None
     deactivate Database
     MeetingSummaryRepository-->SummaryService: Draft / None
-    SummaryService->SummaryService: Check whether the actor is the current Chair or Secretary (BR-374)
     alt Actor is the current Chair or Secretary
         SummaryService-->SummaryController: 200 SummaryState with the draft and readiness
     else Draft reviewed
@@ -59,9 +58,5 @@ else Read by another participant - AF-3
     DraftCard-->Actor: The approved draft, read-only, with no correction or review control
 end
 
-opt The draft cannot be read - EX-1
-    SummaryService-->SummaryController: MSG392 - Unable to load the draft.
-    SummaryController-->DraftCard: MSG392 - Unable to load the draft.
-    DraftCard-->Actor: MSG392 - Unable to load the draft.
-end
 deactivate DraftCard
+

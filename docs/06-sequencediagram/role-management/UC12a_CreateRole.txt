@@ -15,8 +15,7 @@ RolePage->RoleController: Create role
 activate RoleController
 RoleController->RoleService: Create role
 activate RoleService
-RoleService->RoleService: Validate role information
-alt Invalid role information
+alt Invalid role information - EX-1
     RoleService-->RoleController: Invalid role information
     RoleController-->RolePage: MSG20 - Invalid role information
     RolePage-->Admin: Show validation errors
@@ -27,7 +26,7 @@ else Valid role information
     activate Database
     Database-->RoleRepository: Search result
     RoleRepository-->RoleService: Role name exists / available
-    alt Role name already exists
+    alt Role name already exists - EX-2
         RoleService-->RoleController: Duplicate role name
         RoleController-->RolePage: MSG21 - Role name already exists
         RolePage-->Admin: Show duplicate name error
@@ -36,12 +35,7 @@ else Valid role information
         RoleRepository->Database: Insert role and role permissions
         Database-->RoleRepository: Insert result
         RoleRepository-->RoleService: Save result
-        alt Role cannot be saved
-            RoleService-->RoleController: Unable to create role
-            RoleController-->RolePage: Error - Unable to create role
-            RolePage-->Admin: Show error message
-        else Role saved
-            RoleService->AuditService: Record role creation
+        RoleService->AuditService: Record role creation
             activate AuditService
             AuditService->AuditLogRepository: add(audit entry)
             AuditLogRepository->Database: Save audit log

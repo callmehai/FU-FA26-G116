@@ -1,5 +1,5 @@
 // ADR-0072: the room mic saves its take on its own every few minutes and opens the next, losing nothing.
-// ADR-0078: past five minutes it waits for a pause to cut at, and cuts anyway a minute later.
+// ADR-0078: past the split (ADR-0080: thirty minutes) it waits for a pause to cut at, and cuts anyway a minute later.
 // Run with `npm test` (node --test, which strips the types itself); takeRoller.ts imports nothing for that reason.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -70,8 +70,8 @@ function roller(log: string[], opens: Array<ReturnType<typeof deferred<FakeTape>
   })
 }
 
-test('splits at five minutes when the room is quiet, opening the next take only after the last is saved, and loses no audio', async () => {
-  assert.equal(TAKE_SPLIT_SECONDS, 300)
+test('splits at thirty minutes when the room is quiet, opening the next take only after the last is saved, and loses no audio', async () => {
+  assert.equal(TAKE_SPLIT_SECONDS, 1800)
   const log: string[] = []
   const opens: Array<ReturnType<typeof deferred<FakeTape>>> = []
   const closes: Array<() => void> = []
@@ -79,11 +79,11 @@ test('splits at five minutes when the room is quiet, opening the next take only 
   const first = new FakeTape('1')
   await r.into(Promise.resolve(first))
 
-  // Five minutes and two seconds of audio, while the next take takes a while to open.
+  // Thirty minutes and two seconds of audio, while the next take takes a while to open.
   const blocks = (TAKE_SPLIT_SECONDS + 2) * 10
   for (let i = 0; i < blocks; i++) r.push(block())
-  assert.deepEqual(log, ['close 1'], 'the first take is saved when it reaches five minutes; nothing opens yet')
-  assert.ok(first.bytes() <= TAKE_SPLIT_SECONDS * BYTES_PER_SECOND, 'the first take holds at most five minutes')
+  assert.deepEqual(log, ['close 1'], 'the first take is saved when it reaches thirty minutes; nothing opens yet')
+  assert.ok(first.bytes() <= TAKE_SPLIT_SECONDS * BYTES_PER_SECOND, 'the first take holds at most thirty minutes')
   assert.equal(r.current, null)
 
   closes[0]()
@@ -153,10 +153,10 @@ test('the next take failing to open stops the mic', async () => {
 
 test('shouldRollNow: never before the split, at a long enough pause after it, always at the cap', () => {
   const at = { splitMs: 300_000, capMs: 360_000 }
-  assert.equal(shouldRollNow(299_999, 5_000, at), false, 'a pause before five minutes does not cut')
-  assert.equal(shouldRollNow(300_000, QUIET_MIN_MS, at), true, 'a pause right at five minutes cuts')
+  assert.equal(shouldRollNow(299_999, 5_000, at), false, 'a pause before the split does not cut')
+  assert.equal(shouldRollNow(300_000, QUIET_MIN_MS, at), true, 'a pause right at the split cuts')
   assert.equal(shouldRollNow(330_000, QUIET_MIN_MS - 1, at), false, 'a gap between words does not')
-  assert.equal(shouldRollNow(330_000, 0, at), false, 'speech carries on past five minutes')
+  assert.equal(shouldRollNow(330_000, 0, at), false, 'speech carries on past the split')
   assert.equal(shouldRollNow(360_000, 0, at), true, 'the cap cuts even mid-sentence')
   assert.equal(shouldRollNow(301_000, 250, { ...at, minQuietMs: 200 }), true)
 })
@@ -193,14 +193,14 @@ function quietRoller(log: string[]) {
   })
 }
 
-test('past five minutes mid-sentence, the take rolls at the next pause, not at the five minutes', async () => {
+test('past the split mid-sentence, the take rolls at the next pause, not at the split', async () => {
   const log: string[] = []
   const r = quietRoller(log)
   const first = new FakeTape('1')
   await r.into(Promise.resolve(first))
   // Speech up to 5:20, with gaps between words (0.3 s: too short to cut at).
   for (let i = 0; i < (TAKE_SPLIT_SECONDS + 20) * 10; i++) r.push(loud(i % 10 < 3 ? -60 : SPEECH))
-  assert.deepEqual(log, [], 'no cut while the sentence goes on, past the five minutes')
+  assert.deepEqual(log, [], 'no cut while the sentence goes on, past the split')
   // A one-second pause between sentences.
   for (let i = 0; i < 10; i++) r.push(loud(-60))
   await flush()
@@ -210,7 +210,7 @@ test('past five minutes mid-sentence, the take rolls at the next pause, not at t
   assert.equal(Math.round(intoPause * 10) / 10, (QUIET_MIN_MS - 100) / 1000, 'the cut is inside the pause')
 })
 
-test('a room that never pauses is cut at the cap, so a take is never over six minutes', async () => {
+test('a room that never pauses is cut at the cap, so a take is never over the split plus a minute', async () => {
   const log: string[] = []
   const r = quietRoller(log)
   const first = new FakeTape('1')
@@ -223,7 +223,7 @@ test('a room that never pauses is cut at the cap, so a take is never over six mi
   assert.ok(seconds <= cap && seconds > cap - 0.2, `${seconds}`)
 })
 
-test('a pause before five minutes does not cut', async () => {
+test('a pause before the split does not cut', async () => {
   const log: string[] = []
   const r = quietRoller(log)
   await r.into(Promise.resolve(new FakeTape('1')))

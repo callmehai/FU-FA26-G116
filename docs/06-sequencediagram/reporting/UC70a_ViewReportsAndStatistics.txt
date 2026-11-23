@@ -10,75 +10,75 @@ database ":Database" as Database
 
 Actor->ReportsPage: View the manager figures and query a table with chosen parameters (BR-433)
 activate ReportsPage
+
 ReportsPage->ReportController: Get meeting statistics and the queried table
 activate ReportController
 
 ReportController->ReportService: getMeetingStatistics(actorId, fromMonth, toMonth)
 activate ReportService
 
-ReportService->ReportService: Check the start month is not after the end month\nand the period covers at most 24 months (BR-433)
 
 alt The period is not valid - EX-1
     ReportService-->ReportController: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
-    deactivate ReportService
     ReportController-->ReportsPage: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
-    deactivate ReportController
     ReportsPage-->Actor: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
 
 else The period is valid
-    ReportService->ReportService: Check the queried table, grouping, sorting, top N and filter values exist for that table (BR-433)
-    alt The query parameter is not valid - EX-3
+
+    alt The query parameter is not valid - EX-2
         ReportService-->ReportController: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
-        deactivate ReportService
         ReportController-->ReportsPage: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
-        deactivate ReportController
         ReportsPage-->Actor: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
+
     else Query parameters valid
-        ReportService->MeetingRepository: Count the Meetings the actor may read whose planned start is in the period,\nper month, status and sensitivity (BR-432, BR-434)
+        ReportService->MeetingRepository: Count the Meetings the actor may read whose planned start is in the period, per month, status and sensitivity (BR-432, BR-434)
         activate MeetingRepository
+
         MeetingRepository->Database: Retrieve counts of readable Meetings
         activate Database
-        Database-->MeetingRepository: Counts / Read failure
+
+        Database-->MeetingRepository: Counts
         deactivate Database
-        MeetingRepository-->ReportService: Counts / Read failure
+
+        MeetingRepository-->ReportService: Counts
         deactivate MeetingRepository
 
-        alt The data cannot be read - EX-2
-            ReportService-->ReportController: MSG464 - Unable to load the report. Please try again.
-            deactivate ReportService
-            ReportController-->ReportsPage: MSG464 - Unable to load the report. Please try again.
-            deactivate ReportController
-            ReportsPage-->Actor: MSG464 - Unable to load the report. Please try again.
-        else Counts read
-            ReportService->MeetingRepository: Get attendance, actual start and end times, and first minutes issue of the readable Ended Meetings in the period
-            activate MeetingRepository
-            MeetingRepository->Database: Retrieve attendance marks, actual start and end times, and minutes issue times
-            activate Database
-            Database-->MeetingRepository: Attendance marks, actual times, issue times
-            deactivate Database
-            MeetingRepository-->ReportService: Attendance marks, actual times, issue times
-            deactivate MeetingRepository
-            ReportService->ReportService: Compute the average attendance rate (BR-435),\nthe average meeting duration in minutes with one decimal (BR-447: ActualStartedAt to ActualEndedAt, skipped when either is missing)\nand the average minutes turnaround (BR-436)
-            ReportService->ReportFactQuery: Read the rows of the chosen table for readable Meetings only,\nkeeping draft votes and unissued minutes to current Chairs and Secretaries,\nrecordings to current participants, and no combined hours (BR-468)
-            activate ReportFactQuery
-            ReportFactQuery->Database: Retrieve readable rows of the chosen table
-            activate Database
-            Database-->ReportFactQuery: Rows
-            deactivate Database
-            ReportFactQuery-->ReportService: Rows
-            deactivate ReportFactQuery
-            ReportService->ReportService: Group, sort and keep the top rows with a Total row (BR-437)
-            ReportService-->ReportController: Manager figures (counts, rates and averages only - BR-437)\nand the queried table with its Total row
-            deactivate ReportService
-            ReportController-->ReportsPage: Manager figures and the queried table
-            deactivate ReportController
+        ReportService->MeetingRepository: Get attendance, actual start and end times, and first minutes issue of the readable Ended Meetings in the period
+        activate MeetingRepository
 
-            alt No readable Meeting in the period - AF-2
-                ReportsPage-->Actor: MSG466 - There are no meetings you can view in this period.
-            else At least one readable Meeting
-                ReportsPage-->Actor: Manager figures on top,\nthen the queried table with the chosen grouping and filters and its Total row
-            end
+        MeetingRepository->Database: Retrieve attendance marks, actual start and end times, and minutes issue times
+        activate Database
+
+        Database-->MeetingRepository: Attendance marks, actual times, issue times
+        deactivate Database
+
+        MeetingRepository-->ReportService: Attendance marks, actual times, issue times
+        deactivate MeetingRepository
+
+
+        ReportService->ReportFactQuery: Read the rows of the chosen table for readable Meetings only, keeping draft votes and unissued minutes to current Chairs and Secretaries, recordings to current participants, and no combined hours (BR-468)
+        activate ReportFactQuery
+
+        ReportFactQuery->Database: Retrieve readable rows of the chosen table
+        activate Database
+
+        Database-->ReportFactQuery: Rows
+        deactivate Database
+
+        ReportFactQuery-->ReportService: Rows
+        deactivate ReportFactQuery
+
+        ReportService-->ReportController: Manager figures (counts, rates and averages only - BR-437) and the queried table with its Total row
+        ReportController-->ReportsPage: Manager figures and the queried table
+
+        alt No readable Meeting in the period - AF-2
+            ReportsPage-->Actor: MSG466 - There are no meetings you can view in this period.
+        else At least one readable Meeting
+            ReportsPage-->Actor: Manager figures on top, then the queried table with the chosen grouping and filters and its Total row
         end
     end
 end
+
+deactivate ReportService
+deactivate ReportController
 deactivate ReportsPage

@@ -4,67 +4,46 @@ actor "Chair" as Actor
 boundary "Meeting Management Page" as MeetingPage
 control ":Vote Controller" as VoteController
 control ":Vote Service" as VoteService
-participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Vote Repository" as VoteRepository
-participant ":Vote Choice Repository" as VoteChoiceRepository
 database ":Database" as Database
 
-Actor->MeetingPage: Confirm Close voting on an Open Vote
+Actor->MeetingPage: Select Close voting on an Open Vote
 activate MeetingPage
-MeetingPage->VoteController: Close Vote
+
+MeetingPage->VoteController: Close vote
 activate VoteController
 VoteController->VoteService: closeVote(meetingId, voteId, actorId)
 activate VoteService
 
-VoteService->VoteRepository: Get Vote, its Meeting and current statuses
-activate VoteRepository
-VoteRepository->Database: Get Vote, its Meeting and current statuses
+VoteService->MeetingAccessPolicy: Check actor can access the Vote
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check Meeting relationship or Guest invitation
 activate Database
-Database-->VoteRepository: Vote and Meeting / Not found
+Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
-VoteRepository-->VoteService: Vote and Meeting / Not found
-deactivate VoteRepository
-VoteService->ParticipantRepository: Check current Chair assignment
-activate ParticipantRepository
-ParticipantRepository->Database: Check current Chair assignment
-activate Database
-Database-->ParticipantRepository: Current Chair / Not eligible
-deactivate Database
-ParticipantRepository-->VoteService: Current Chair / Not eligible
-deactivate ParticipantRepository
-alt Meeting or Vote not accessible - EX-3
+MeetingAccessPolicy-->VoteService: Access / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting or Vote is not accessible - EX-2
     VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
     VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
     MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
-else Actor not the current Chair, Meeting not InProgress or Ended, or Vote not Open - EX-1
-    VoteService-->VoteController: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
-    VoteController-->MeetingPage: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
-    MeetingPage-->Actor: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
-else Current Chair, Open Vote, Meeting InProgress or Ended (BR-270)
-    opt Meeting is Ended and the Vote is still Open - AF-1
-        VoteService->VoteService: Keep ballots unchanged; End Meeting neither closed the Vote\nnor altered its ballots (BR-159, BR-165)
-    end
-    VoteService->VoteChoiceRepository: Count recorded VoteChoices per option; percentages use ballots cast,\nno percentage when no ballots (BR-259, BR-261)
-    activate VoteChoiceRepository
-    VoteChoiceRepository->Database: Retrieve VoteChoices grouped by option
-    activate Database
-    Database-->VoteChoiceRepository: Tally per option / Load failed
-    deactivate Database
-    VoteChoiceRepository-->VoteService: Tally per option / Load failed
-    deactivate VoteChoiceRepository
-    VoteService->VoteRepository: Recheck Vote is Open; save Closed status, closing time and tally together;\nkeep every recorded ballot; no conclusion is recorded (BR-263, BR-270)
-    activate VoteRepository
-    VoteRepository->Database: Update Vote as Closed with tally
-    activate Database
-    Database-->VoteRepository: Vote closed / Save failed; Vote remains Open
-    deactivate Database
-    VoteRepository-->VoteService: Vote closed / Save failed; Vote remains Open
-    deactivate VoteRepository
-    alt Voting cannot be closed - EX-2
-        VoteService-->VoteController: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
-        VoteController-->MeetingPage: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
-        MeetingPage-->Actor: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
-    else Voting closed
+else Vote is accessible
+    alt Closing is no longer allowed - EX-1
+        VoteService-->VoteController: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+        VoteController-->MeetingPage: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+        MeetingPage-->Actor: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+    else Closing is allowed
+        VoteService->VoteRepository: Close Vote and tally ballots
+        activate VoteRepository
+        VoteRepository->Database: Update Vote status and tally
+        activate Database
+        Database-->VoteRepository: Updated
+        deactivate Database
+        VoteRepository-->VoteService: Closed Vote
+        deactivate VoteRepository
+
         VoteService-->VoteController: MSG229 - Voting closed. The result is available.
         VoteController-->MeetingPage: MSG229 - Voting closed. The result is available.
         MeetingPage-->Actor: MSG229 - Voting closed. The result is available.

@@ -1,4 +1,4 @@
-title UC-86a - View Voice Collection
+﻿title UC-86a - View Voice Collection
 
 actor "VoiceCollector" as Collector
 boundary "Users Page" as UsersPage
@@ -18,41 +18,23 @@ activate CollectionService
 
 alt No access: no Voice sample collection permission - EX-1
     CollectionService-->CollectionController: Not found
-    deactivate CollectionService
-
     CollectionController-->UsersPage: Return failure
-    deactivate CollectionController
-
     UsersPage-->Collector: Show the person as not found (BR-450)
-
 else Access granted
     CollectionService->VoiceRepository: Get the standing consent and collected samples of the person
     activate VoiceRepository
     VoiceRepository->Database: Retrieve standing consent and collected samples
     activate Database
-    Database-->VoiceRepository: Consent and samples / Load failed
+    Database-->VoiceRepository: Consent and samples
     deactivate Database
-    VoiceRepository-->CollectionService: Consent and samples / Load failed
+    VoiceRepository-->CollectionService: Consent and samples
     deactivate VoiceRepository
 
-    alt Voice collection cannot be loaded - EX-2
-        CollectionService-->CollectionController: Read failed
-        deactivate CollectionService
-
-        CollectionController-->UsersPage: Return failure
-        deactivate CollectionController
-
-        UsersPage-->Collector: Show the voice collection as unavailable
-
-    else Voice collection loaded
-        CollectionService-->CollectionController: Consent state and collected samples out of 50 (BR-448, BR-449)
-        deactivate CollectionService
-
-        CollectionController-->UsersPage: Voice collection
-        deactivate CollectionController
-
-        UsersPage-->Collector: Show the consent state with Record while fewer than 50 collected samples (BR-448)
-    end
+    CollectionService-->CollectionController: Consent state and collected samples out of 50 (BR-448, BR-449)
+    CollectionController-->UsersPage: Voice collection
+    UsersPage-->Collector: Show the consent state with Record while fewer than 50 collected samples (BR-448)
 end
 
+deactivate CollectionService
+deactivate CollectionController
 deactivate UsersPage

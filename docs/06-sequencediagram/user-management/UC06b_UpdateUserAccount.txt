@@ -27,10 +27,14 @@ UserPage-->Admin: Show current user information
 Admin->UserPage: Submit updated user information
 UserPage->UserController: Update user account
 UserController->UserService: Update user account
-alt Invalid user information
+alt Invalid user information - EX-1
     UserService-->UserController: Invalid user information
     UserController-->UserPage: Validation errors
     UserPage-->Admin: Display invalid fields
+else Email is already in use - EX-2
+    UserService-->UserController: MSG08 - Email is already in use.
+    UserController-->UserPage: MSG08 - Email is already in use.
+    UserPage-->Admin: MSG08 - Email is already in use.
 else User information is valid
     UserService->UserRepository: Update user account information
     UserRepository->Database: Store updated user information

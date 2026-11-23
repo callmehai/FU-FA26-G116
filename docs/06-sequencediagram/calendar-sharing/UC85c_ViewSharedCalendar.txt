@@ -1,96 +1,49 @@
 title UC-85c - View Shared Calendar
 
-actor "Meeting Organizer" as Viewer
-boundary "Calendar Sharing Page" as CalendarPage
-control ":Shared Calendar Controller" as CalendarController
-control ":Shared Calendar Service" as CalendarService
-participant ":User Repository" as UserRepository
+actor "Meeting Organizer" as Actor
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-Viewer->CalendarPage: Open the Lịch được chia sẻ tab (/calendar/sharing?tab=week)
-activate CalendarPage
+Actor->SharingPage: Open the Lịch được chia sẻ tab
+activate SharingPage
 
-CalendarPage->CalendarController: View the shared week
-activate CalendarController
+SharingPage->SharingController: View shared calendar
+activate SharingController
+SharingController->SharingService: viewSharedCalendar(actorId, week)
+activate SharingService
 
-CalendarController->CalendarService: readWeek(viewerId, week)
-activate CalendarService
-
-CalendarService->UserRepository: Verify the viewer is active and holds MeetingCreator (BR-430)
-activate UserRepository
-UserRepository->Database: Retrieve viewer account with capabilities
-activate Database
-Database-->UserRepository: Account / Not found
-deactivate Database
-UserRepository-->CalendarService: Verification result
-deactivate UserRepository
-
-alt Viewer is not an active Meeting Organizer - EX-2
-    CalendarService-->CalendarController: MSG448 - Only a Meeting Organizer can do this.
-    deactivate CalendarService
-    CalendarController-->CalendarPage: 403 MSG448
-    deactivate CalendarController
-    CalendarPage-->Viewer: MSG448 - Only a Meeting Organizer can do this.
-else Viewer is an active Meeting Organizer
-    CalendarService->ShareRepository: Get the viewer's Effective or Stopped shares with end date on or after today (BR-425)
+alt Actor cannot create meetings - EX-1
+    SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
+    SharingController-->SharingPage: MSG448 - Only a Meeting Organizer can do this.
+    SharingPage-->Actor: MSG448 - Only a Meeting Organizer can do this.
+else Actor is a Meeting Organizer
+    SharingService->ShareRepository: Load Effective or Stopped shares
     activate ShareRepository
-    ShareRepository->Database: Retrieve shares with status, range and end date >= today
+    ShareRepository->Database: Retrieve shares
     activate Database
-    Database-->ShareRepository: Shares / Read failed
+    Database-->ShareRepository: Shares
     deactivate Database
-    ShareRepository-->CalendarService: Shares / Read failed
+    ShareRepository-->SharingService: Shares
     deactivate ShareRepository
 
-    alt Shares cannot be read - EX-1
-        CalendarService-->CalendarController: MSG453 - Unable to load the calendar sharing data. Please try again.
-        deactivate CalendarService
-        CalendarController-->CalendarPage: 500 MSG453
-        deactivate CalendarController
-        CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
-    else Shares are loaded
-        alt No Effective or Stopped share in range - AF-1
-            CalendarService-->CalendarController: Empty week
-            deactivate CalendarService
-            CalendarController-->CalendarPage: 200 Empty week
-            deactivate CalendarController
-            CalendarPage-->Viewer: Chưa ai chia sẻ lịch với bạn.
-        else Shares exist
-            CalendarService->MeetingRepository: Get sharers' meetings in the week at shared levels only (BR-414, BR-417)
-            activate MeetingRepository
-            MeetingRepository->Database: Retrieve overlapping meetings with roles and actual start/end times
-            activate Database
-            Database-->MeetingRepository: Meetings / Read failed
-            deactivate Database
-            MeetingRepository-->CalendarService: Meetings / Read failed
-            deactivate MeetingRepository
+    SharingService->MeetingRepository: Load sharers' meetings
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve meetings
+    activate Database
+    Database-->MeetingRepository: Meetings
+    deactivate Database
+    MeetingRepository-->SharingService: Meetings
+    deactivate MeetingRepository
 
-            alt Meetings cannot be read - EX-1
-                CalendarService-->CalendarController: MSG453 - Unable to load the calendar sharing data. Please try again.
-                deactivate CalendarService
-                CalendarController-->CalendarPage: 500 MSG453
-                deactivate CalendarController
-                CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
-            else Week is loaded
-                CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00:\nonly current Chair, Secretary or Member assignments in busy meeting statuses (BR-419, BR-420);\nan ongoing meeting counts from its actual start for its planned duration and at least until now.\nShares whose end date is before today are excluded at read time (BR-425).\nStopped shares stay listed with their state label and contribute no hours (BR-424);\nnever include titles, locations, attendees or levels (BR-424, BR-427)
-                CalendarService-->CalendarController: Busy blocks with share states
-                deactivate CalendarService
-                CalendarController-->CalendarPage: 200 Busy blocks with share states, one row per owner
-                deactivate CalendarController
-                CalendarPage-->Viewer: Shared week: one row per person, one 08:00-17:00 bar per day in the person's colour;\ndays outside the share's range are hatched Chưa biết, never drawn as free (BR-415, BR-427)
-
-                opt A shown share is Stopped
-                    CalendarPage-->Viewer: Đã dừng, Không còn xem được (BR-424)
-                end
-
-                opt Viewer opens a stopped share
-                    CalendarPage-->Viewer: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
-                end
-            end
-        end
-    end
+    SharingService-->SharingController: Week view
+    SharingController-->SharingPage: Week view
+    SharingPage-->Actor: Show week view with busy blocks
 end
 
-deactivate CalendarController
-deactivate CalendarPage
+deactivate SharingService
+deactivate SharingController
+deactivate SharingPage
