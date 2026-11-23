@@ -67,7 +67,7 @@
           ],
           "expected": [
             "Step 2: HTTP 202 with \"code\": \"MSG300\"; the status returns to \"Pending\".",
-            "Step 3: the new segments replace the old ones; corrections the Secretary made and names given to voices are replaced by the new result.",
+            "Step 3: the new segments replace the old ones, but a sentence the Secretary corrected and a voice the Secretary named keep the correction and the name when the new result matches them in time (ADR-0077); what cannot be matched is listed in an audit row \"transcript.corrections_carried\" without the text.",
             "An audit row \"TranscriptRerun\" is written for the recording with the Secretary as actor."
           ],
           "preconditions": [
@@ -76,7 +76,7 @@
             "The transcript is \"Completed\", with a segment corrected and a voice named.",
             "Active Secretary account of that meeting supplied by QA lead."
           ],
-          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Redoing_a_finished_transcript_replaces_corrections_and_names_and_is_audited)",
+          "note": "UC-45c | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptCoverageTests.cs (Redoing_a_finished_transcript_keeps_corrections_and_names_and_is_audited)",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

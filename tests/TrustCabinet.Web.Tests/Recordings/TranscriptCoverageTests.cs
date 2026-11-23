@@ -149,9 +149,9 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
-    public async Task Redoing_a_finished_transcript_replaces_corrections_and_names_and_is_audited()
+    public async Task Redoing_a_finished_transcript_keeps_corrections_and_names_and_is_audited()
     {
-        // TRANS_API_IT03.
+        // TRANS_API_IT03. ADR-0077: a rerun puts the Secretary's hand edits back on the new result.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -168,12 +168,15 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
         await ProcessAll();
         var done = await Transcript(secretary, id);
         Assert.Equal("Completed", done.GetProperty("status").GetString());
-        // The new result replaced the old one: the correction and the name are gone.
-        Assert.Equal("Kính thưa các đồng chí.", done.GetProperty("segments")[0].GetProperty("text").GetString());
-        Assert.All(done.GetProperty("speakers").EnumerateArray(),
-            v => Assert.Equal(JsonValueKind.Null, v.GetProperty("assignedUserId").ValueKind));
+        // The worker heard the same sentences at the same times, so the edited sentence and the named voice match the
+        // new result and keep what the Secretary did.
+        Assert.Equal("Đã sửa bởi Thư ký.", done.GetProperty("segments")[0].GetProperty("text").GetString());
+        Assert.Contains(done.GetProperty("speakers").EnumerateArray(),
+            v => v.GetProperty("assignedUserId").ValueKind == JsonValueKind.String
+                && v.GetProperty("assignedUserId").GetGuid() == s.Member);
         await using var db = fixture.Db();
         Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == AuditActions.TranscriptRerun));
+        Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == AuditActions.TranscriptCorrectionsCarried));
     }
 
     [Fact]
