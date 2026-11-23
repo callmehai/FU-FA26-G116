@@ -11,4 +11,8 @@ file chỉ có trên Drive. Workbook kiểm thử Report 5.x nằm ở [../test-
 Quy tắc sửa DOCX, đồng bộ Markdown và thay file Google Drive nằm ở
 [README của 08-reports](../README.md). Đọc file đó trước khi sửa nguồn trong thư mục này.
 
+`Report-7_Final Project Document.docx` là mẫu của trường, chỉ tổng hợp lại từ Report 1–6. Ảnh (context, BF, ERD, UC, screen flow,
+kiến trúc, package, class, sequence) được chèn bằng `python scripts/fill_report7.py --write` (chạy lại được, dựng lại đúng các mục đó
+từ `docs/`); phần chữ và bảng điền tay hoặc ở lượt sau.
+
 PPTX là file nguồn trình bày, không phải snapshot Markdown.
