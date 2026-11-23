@@ -21,6 +21,7 @@ import logging
 import multiprocessing
 import os
 import threading
+import time
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FutureTimeout
 from concurrent.futures.process import BrokenProcessPool
 from typing import Callable
@@ -110,8 +111,19 @@ class EngineProcess:
         # The caller's run id of each transcription given to the child and not answered yet.
         self._runs: dict[str, int] = {}
         self._runs_lock = threading.Lock()
+        self._init_recycling()
         self._pool = self._start()
         # Load the models now rather than on the first request: a broken install fails at boot.
+        self._warm()
+
+    def _init_recycling(self) -> None:
+        # Jobs given to the pool and not answered yet; a recycle waits until there are none, and new jobs wait for it.
+        self._gate = threading.Condition()
+        self._inflight = 0
+        self._recycling = False
+        self._dirty = False
+
+    def _warm(self) -> None:
         self._pool.submit(_ready).result()
 
     def _start(self) -> ProcessPoolExecutor:
@@ -123,8 +135,52 @@ class EngineProcess:
             self._cancelled[self._next_slot] = job
             self._next_slot = (self._next_slot + 1) % CANCELLED_SLOTS
 
-    def _call(self, function, *args, cancelled: Callable[[], bool] | None = None, job: int = 0):
-        pool = self._pool
+    def _call(self, function, *args, cancelled: Callable[[], bool] | None = None, job: int = 0,
+              heavy: bool = False):
+        """`heavy`: a whole recording, after which the child is started afresh once nothing else waits (recycle)."""
+        with self._gate:
+            while self._recycling:
+                self._gate.wait()
+            self._inflight += 1
+            pool = self._pool
+        try:
+            return self._run(pool, function, *args, cancelled=cancelled, job=job)
+        finally:
+            with self._gate:
+                self._inflight -= 1
+                self._dirty = self._dirty or heavy
+                start = self._dirty and self._inflight == 0 and not self._recycling
+                if start:
+                    self._recycling = True
+            if start:
+                threading.Thread(target=self._recycle, name="engine-recycle", daemon=True).start()
+
+    def _recycle(self) -> None:
+        """Starts the child afresh after a whole recording, while nothing waits for it.
+
+        The child keeps the memory a long run needed (onnxruntime arenas, the decoded audio, the diarization
+        windows) for as long as it lives: on the test server it held 2.4 GB of RAM and 1.8 GB of swap while idle
+        after a 35-minute recording (23/11/2026), and every later run crawled through swap. A fresh child holds
+        only the models; loading them takes about six seconds, which requests arriving meanwhile wait out.
+        """
+        started = time.monotonic()
+        try:
+            with self._restart:
+                self._pool.shutdown(wait=True)
+                self._pool = self._start()
+                self._warm()
+            log.info("engine process restarted after a long run, in %.1fs, to give its memory back",
+                     time.monotonic() - started)
+        except Exception:  # noqa: BLE001 - a failed restart must not take the server down; the next job retries
+            log.exception("could not restart the engine process after a long run")
+        finally:
+            with self._gate:
+                self._recycling = False
+                self._dirty = False
+                self._gate.notify_all()
+
+    def _run(self, pool: ProcessPoolExecutor, function, *args, cancelled: Callable[[], bool] | None = None,
+             job: int = 0):
         try:
             future = pool.submit(function, *args)
             while True:
@@ -153,7 +209,7 @@ class EngineProcess:
                 self._runs[run] = job
         try:
             return self._call(_transcribe, os.fspath(path), diarize, speakers, profile, context, job,
-                              cancelled=cancelled, job=job)
+                              cancelled=cancelled, job=job, heavy=profile != "clip")
         finally:
             if run:
                 with self._runs_lock:
