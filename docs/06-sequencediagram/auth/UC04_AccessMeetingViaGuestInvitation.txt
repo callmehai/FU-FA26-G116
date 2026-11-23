@@ -16,133 +16,77 @@ Controller->Service: open(invitationId, linkToken), then sendCode(invitationId, 
 activate Service
 Service->Repository: Read current invitation, verification challenge and Guest access
 activate Repository
-Repository->Database: Read invitation (revoked or not), Meeting status, latest challenge and Guest session
+Repository->Database: Read invitation, Meeting status, latest challenge and Guest session
 activate Database
-Database-->Repository: Current information / Read failure
-Repository-->Service: Current information / Read failure
-Service->Service: Check current invitation and Meeting scope (BR-152–BR-157)
+Database-->Repository: Current information
+Repository-->Service: Current information
 alt Invitation is missing or revoked, or the Meeting is no longer open - EX-1
-Service-->Controller: Deny access; no protected Meeting content
 Service-->Controller: MSG371 - The guest invitation is no longer valid.
 Controller-->Page: MSG371 - The guest invitation is no longer valid.
 Page-->Guest: MSG371 - The guest invitation is no longer valid.
-else Verification/access service is unavailable - EX-3
-Service-->Controller: Verification could not be completed; no Guest session
-Controller-->Page: MSG374 - Verification could not be completed.
-Page-->Guest: MSG374 - Verification could not be completed.
 else Invitation is current
 alt Reopen already verified active Guest session - AF-1
-Service->Service: Reuse access only for this invited Meeting; do not request another code
 Service-->Controller: Invited Meeting and allowed Member participation actions
-Controller-->Page: Display invited Meeting; subsequent requests recheck access
+Controller-->Page: Display invited Meeting
 Page-->Guest: Invited Meeting available
 else First access without verified email
-Service->Service: Check resend interval and daily code limit for this invitation (BR-371)
-alt Previous code was sent less than 1 minute ago - EX-5
-Service-->Controller: MSG373 - Wait before requesting another code.
-Controller-->Page: MSG373 - Wait before requesting another code.
-Page-->Guest: MSG373 - Wait before requesting another code.
-else 20 codes were already sent for this invitation within 24 hours - EX-6
+alt Code requested too soon or too many codes in 24 hours - EX-2
 Service-->Controller: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
 Controller-->Page: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
 Page-->Guest: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
 else Code request is allowed
-Service->Repository: Prepare one-time code for the invited email only; a newer code replaces the previous one (BR-153)
+Service->Repository: Prepare one-time code for the invited email only (BR-153)
 Repository->Database: Save verification challenge
-Database-->Repository: Saved / Failure
-Repository-->Service: Challenge result
-alt Challenge cannot be saved - EX-3
-Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: MSG374 - Verification could not be completed.
-Page-->Guest: MSG374 - Verification could not be completed.
-else Challenge saved
-Service->Email: Send code to the invited email (BR-153)
-activate Email
-Email-->Service: Delivery accepted / Failure
-alt Email delivery cannot be arranged - EX-3
-Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: MSG374 - Verification could not be completed.
-Page-->Guest: MSG374 - Verification could not be completed.
-else Code delivered
+Database-->Repository: Saved
+Repository-->Service: Challenge saved
+Service->Email: Send code to the invited email
+Email-->Service: Delivery accepted
 Service-->Controller: Request one-time code entry
 Controller-->Page: Display invited-email code entry
 Page-->Guest: Enter the code sent to the invited email
 Guest->Page: Submit the one-time code
 Page->Controller: Verify code for this invitation
 Controller->Service: verify(invitationId, linkToken, code)
-Service->Service: Check correct, unexpired, unused code and invited-email binding (BR-153)
-alt Code is incorrect, expired or already used - EX-2
-Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.\nwith the entries left before the code locks
-Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.\nCode boxes emptied; from the third incorrect entry, the entries left
-else Code is locked after 5 incorrect entries - EX-4
-Service-->Controller: MSG372 - Too many incorrect codes. Request a new code.
-Controller-->Page: MSG372 - Too many incorrect codes. Request a new code.
-Page-->Guest: MSG372 - Too many incorrect codes. Request a new code.
-else Code and invitation are valid
-Service->Repository: Consume code, open a Meeting-scoped Guest session valid for 12 hours (BR-155)\nand record the verification in the audit log (BR-444), in one transaction
-Repository->Database: Lock the invitation; recheck the unused challenge;\nsave consumed code, Guest session and guest.verified audit entry
-Database-->Repository: Verification saved / Conflict / Failure
-Repository-->Service: Verification result
-alt Code was consumed by a concurrent request - EX-2
+alt Code is incorrect, expired, already used or locked - EX-2
 Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-else Verification cannot be saved - EX-3
-Service-->Controller: Verification not completed; no Guest session
-Controller-->Page: Verification could not be completed
-Page-->Guest: Verification could not be completed
-else Invited-email control verified
+else Code and invitation are valid
+Service->Repository: Consume code, open a Meeting-scoped Guest session valid for 12 hours (BR-155)
+Repository->Database: Save consumed code, Guest session and audit entry
+Database-->Repository: Verification saved
+Repository-->Service: Verification result
 Service-->Controller: Guest session token; display information still to declare
-Controller-->Page: Show display name and job title entry; invited email remains unchanged
-Page-->Guest: Enter display name and optional job title for presentation
+Controller-->Page: Show display name and job title entry
+Page-->Guest: Enter display name and optional job title
 Guest->Page: Submit self-declared display information
 Page->Controller: Complete invited-Meeting access
 Controller->Service: saveProfile(session, displayName, jobTitle)
-Service->Service: Check display name is present and display information is valid (BR-180)
-Service->Service: Check the display information is not already declared\nwith different values for this invitation (BR-180)
-alt Display information is invalid - EX-7
+alt Display information is invalid or already declared with different values - EX-3
 Service-->Controller: MSG377 - Invalid display information.
 Controller-->Page: MSG377 - Invalid display information.
 Page-->Guest: MSG377 - Invalid display information.
-else Display information was already declared with different values - EX-9
-Service-->Controller: MSG381 - The display name was already declared.
-Controller-->Page: MSG381 - The display name was already declared.
-Page-->Guest: MSG381 - The display name was already declared.
 else Display information is valid
-Service->Service: Keep display fields self-declared, separate from verified email (BR-180)
 Service->Repository: Save display name and job title on the invitation
 Repository->Database: Save self-declared display information
-Database-->Repository: Saved / Failure
-Repository-->Service: Save result
-Service->Service: Apply Guest Member participation only; no additional grants,\nno internal account, system role or Chair/Secretary authority (BR-181)
-alt Access cannot be completed - EX-3
-Service-->Controller: No successful Guest access
-Controller-->Page: Access could not be completed
-Page-->Guest: Access could not be completed
-else Guest access is established
-Service-->Controller: Invited Meeting and allowed Member participation actions
-Controller-->Page: Display invited Meeting; subsequent requests recheck access
-Page-->Guest: MSG376 - Display information saved; invited Meeting available, email verified, display information self-declared
+Database-->Repository: Saved
+Repository-->Service: Saved
+Service-->Controller: Invited Meeting and Member participation actions only (BR-181)
+Controller-->Page: Display invited Meeting
+Page-->Guest: MSG376 - Display information saved; invited Meeting available
 opt Guest chooses Thoát [Sign out] - AF-3
 Guest->Page: Sign out
 Page->Controller: End this Guest session
-Controller->Service: signOut(session): this session only (BR-155)
+Controller->Service: signOut(session)
 Service->Repository: Revoke this Guest session
-Repository->Database: Set the session revoked; other sessions of the invitation stay
+Repository->Database: Set the session revoked
 Database-->Repository: Saved
 Repository-->Service: Session ended
 Service-->Controller: Session ended
 Controller-->Page: Session ended
-Page->Page: Forget the session token; remove the Meeting data from the screen;\nother tabs of this browser show the same screen at their next check
 Page-->Guest: You have left the meeting - Rejoin asks for a new code
 end
 end
-end
-end
-end
-end
-    deactivate Email
 end
 end
 end

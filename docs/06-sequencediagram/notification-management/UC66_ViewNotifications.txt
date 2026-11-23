@@ -9,29 +9,30 @@ database ":Database" as Database
 
 User->NotificationPanel: Select notification bell
 activate NotificationPanel
+
 NotificationPanel->NotificationController: Request notifications and unread count
 activate NotificationController
+
 NotificationController->NotificationService: Get notifications for current user
 activate NotificationService
-NotificationService->NotificationRepository: Get notifications and unread count\nwithout changing read status (BR-48, BR-49)
+
+NotificationService->NotificationRepository: Get notifications and unread count without changing read status (BR-48, BR-49)
 activate NotificationRepository
-NotificationRepository->Database: Retrieve user notifications\nand unread count
+
+NotificationRepository->Database: Retrieve user notifications and unread count
 activate Database
-alt Notifications cannot be retrieved - EX-1
-    Database-->NotificationRepository: Retrieval failed
-    NotificationRepository-->NotificationService: Unable to retrieve notifications
-    NotificationService-->NotificationController: Notifications cannot be loaded
-    NotificationController-->NotificationPanel: Display notification loading error
-    NotificationPanel-->User: Inform notifications cannot be loaded
-else Notifications retrieved successfully
-    Database-->NotificationRepository: Notifications and unread count
-    NotificationRepository-->NotificationService: Notification list and unread count
-    NotificationService-->NotificationController: Notification list and unread count
-    NotificationController-->NotificationPanel: Display notifications and unread badge
-    NotificationPanel-->User: Show notifications, unread indicators and unread count
-end
+
+Database-->NotificationRepository: Notifications and unread count
 deactivate Database
+
+NotificationRepository-->NotificationService: Notification list and unread count
 deactivate NotificationRepository
+
+NotificationService-->NotificationController: Notification list and unread count
 deactivate NotificationService
+
+NotificationController-->NotificationPanel: Display notifications and unread badge
 deactivate NotificationController
+
+NotificationPanel-->User: Show notifications, unread indicators and unread count
 deactivate NotificationPanel

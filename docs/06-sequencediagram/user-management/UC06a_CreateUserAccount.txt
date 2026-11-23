@@ -21,11 +21,11 @@ UserRepository->Database: Find matching user accounts
 activate Database
 Database-->UserRepository: Matching account information
 UserRepository-->UserService: Username and Email availability
-alt Invalid user information
+alt Invalid user information - EX-1
     UserService-->UserController: Invalid user information
     UserController-->UserPage: Validation errors
     UserPage-->Admin: Display invalid fields
-else Username or Email already exists
+else Username or Email already exists - EX-2
     UserService-->UserController: Duplicate account information
     UserController-->UserPage: MSG08 - Username or Email already exists
     UserPage-->Admin: Display duplicate account message
