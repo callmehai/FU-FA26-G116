@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG271.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "return": "Failure Invalid on conclusion; 400 / MSG272.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,7 +56,7 @@
           "return": "Failure Locked; 409 / MSG273.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,7 +71,7 @@
           "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"lon.pdf: tệp lớn hơn 10 MB.\"]; the bytes are not read.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -87,23 +87,7 @@
           "return": "Failure UnsupportedMedia; 415 / MSG34.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "actor: Chair C; the database fails while saving.",
-          "log": "N/A",
-          "note": "UC-77 · MSG274",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
-            "Item I is InProgress."
-          ],
-          "return": "Failure SaveFailed; 503 / MSG274.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

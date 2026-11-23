@@ -89,10 +89,10 @@ public sealed class CalUnitRound1Tests
         Assert.Equal([AuditActions.CalendarShareAccepted], _audit.Actions);
     }
 
-    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC005 approving with nothing pending is refused")]
-    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC005")]
+    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC004 approving with nothing pending is refused")]
+    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task AcceptAsync_UTC005()
+    public async Task AcceptAsync_UTC004()
     {
         var share = _shares.Share(_owner, _organizer, CalendarShareStatus.Effective, Today, Today.AddDays(30));
 
@@ -277,10 +277,10 @@ public sealed class CalUnitRound1Tests
         return Task.CompletedTask;
     }
 
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC006 stranger to the share may do nothing")]
-    [Trait("UTC", "CalendarShareRules.Actions/UTC006")]
+    [Fact(DisplayName = "CalendarShareRules.Actions/UTC004 stranger to the share may do nothing")]
+    [Trait("UTC", "CalendarShareRules.Actions/UTC004")]
     [Trait("Trait", "UTC")]
-    public Task Actions_UTC006()
+    public Task Actions_UTC004()
     {
         var share = _shares.Share(_owner, _organizer, CalendarShareStatus.Pending, Today, Today.AddDays(30));
 

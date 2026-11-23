@@ -137,7 +137,7 @@ public static class RecordingEndpoints
     private static async Task<IResult> UploadAsync(Guid meetingId, HttpContext context, IRecordingService service,
         IRecordingStorage storage, IOptions<RecordingOptions> options, CancellationToken ct)
     {
-        var maxBytes = options.Value.MaxUploadMegabytes * 1024L * 1024;
+        var maxBytes = options.Value.MaxUploadBytes;
         var actor = CapabilityGate.GatedUserId(context.User);
         var allowed = await service.CanUploadAsync(meetingId, actor, ct);
         if (allowed.Failure != RecordingFailure.None) return Map(allowed);

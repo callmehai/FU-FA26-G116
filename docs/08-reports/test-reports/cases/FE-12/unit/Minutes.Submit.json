@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-61 · BR-404 · MSG424 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Abnormal",
           "note": "UC-61 · BR-404 · MSG425",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,27 +56,11 @@
           "type": "Abnormal",
           "note": "UC-61 · BR-405 · MSG426",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "Revision already WaitingApproval."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Secretary; loadedAt: T.",
-          "return": "Failure Locked; 409 MSG400; a sent revision is not sent again.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-61 · MSG400",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "Draft revision read at T, then saved by someone else."
@@ -88,23 +72,7 @@
           "type": "Abnormal",
           "note": "UC-61 · BR-389 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary; Draft revision read at T.",
-            "The database fails while saving the transition."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the current Secretary; loadedAt: T.",
-          "return": "Failure SaveFailed; 503 MSG404; status unchanged and nobody notified.",
-          "exception": "N/A",
-          "log": "Error logged with the action and minutes id.",
-          "type": "Abnormal",
-          "note": "UC-61 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

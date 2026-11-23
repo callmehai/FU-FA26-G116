@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-44b · BR-341 · BR-345 · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -42,7 +42,7 @@
           "type": "Normal",
           "note": "UC-44b · BR-341 · BR-345 · BR-345 · BR-360 · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -59,7 +59,7 @@
           "type": "Boundary",
           "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -74,39 +74,7 @@
           "type": "Abnormal",
           "note": "UC-44b · BR-341 · BR-345 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The recording is Deleted."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "TakeClosed (409, MSG362).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG362",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A Pending room take made by the Secretary in an InProgress InPerson meeting.",
-            "Clock reads 2026-11-14 12:00 UTC.",
-            "The disk fails while joining the files."
-          ],
-          "inputs": "recordingId; actor: maker.",
-          "return": "SaveFailed (503, MSG298); the partly joined file is deleted, the take stays Pending.",
-          "exception": "IOException caught; logged.",
-          "log": "Error log 'Failed to save take'.",
-          "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

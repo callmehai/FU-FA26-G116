@@ -194,9 +194,9 @@ public sealed class VoicePersonCollectionEndpointTests(RecordingFixture fixture)
     }
 
     [Fact]
-    public async Task ADR_0075_one_collector_may_take_all_fifty_proxy_samples_and_no_more()
+    public async Task One_collector_may_take_all_five_proxy_samples_and_no_more()
     {
-        // The per-collector share of 5 went with the meeting Secretaries (ADR-0075); the person's limit of 50 stays.
+        // The per-collector share of 5 went with the meeting Secretaries (ADR-0075); the person's limit is 5 since 23/11/2026 (was 50).
         var (s, collector) = await Arrange();
         await VoiceCollection.Agree(fixture, s.Member);
         await using (var seed = fixture.Db())

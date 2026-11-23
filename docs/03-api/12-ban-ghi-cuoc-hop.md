@@ -64,6 +64,7 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
   "meetingId": "…",
   "canUpload": true,
   "canRecord": true,
+  "maxUploadBytes": 314572800,
   "items": [
     {
       "id": "…", "fileName": "ghi-am-phong-29-10-2026-0900.wav", "contentType": "audio/wav",
@@ -84,6 +85,9 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
 được, không xoá được (`409 MSG364`). `source`: `Upload` | `BrowserCapture` (mic phòng). Mới nhất lên đầu.
 `takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. `canRecord`: người gọi bật được mic phòng ngay lúc
 này (Thư ký, cuộc họp `InProgress`, có phòng). `canClose`: Thư ký lưu hộ được lượt đang mở.
+`maxUploadBytes`: tệp lớn nhất `POST …/recordings` nhận (`Recordings:MaxUploadMegabytes` tính ra byte). Trình duyệt kiểm
+trước khi gửi và báo `MSG293` ngay: quá giới hạn thì server trả `413` khi tệp còn đang lên rồi cắt kết nối, nên trình
+duyệt thường chỉ thấy lỗi mạng (QA round 1, REC_FT27). Kết nối đứt khi đang gửi tệp quá giới hạn cũng được báo là `MSG293`.
 `durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật. Bản ghi mic phòng tính độ
 dài từ số byte. Không trả đường dẫn lưu trữ.
 
@@ -273,10 +277,22 @@ là tiếng đệm ("Ừ.", "À. Ừ.", "Ờm"). Câu dài luôn giữ nguyên. 
 "Người nói N", và các nhãn còn lại được đánh số lại theo thứ tự lên tiếng (`SPEAKER_00`, `SPEAKER_01`…), không
 nhảy số.
 
-Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
+Danh sách bản ghi trả thêm cho mỗi dòng: `transcriptStatus`, `transcriptProgressPercent` (0–99 khi `Processing`, 100
+khi `Completed`), `transcriptProcessingStartedAt` (lúc lượt chạy hiện tại hay lượt cuối bắt đầu; `null` khi đang chờ,
+hay với bản gỡ băng làm trước 23/11/2026) và `transcriptCompletedAt`.
+
+**Tiến độ và thời gian xử lý** (PO 23/11/2026: "hiện được process bar ko ? và hiện thời gian xử lí được ko"). Mỗi lượt
+chạy, `TranscriptionService` gửi worker một mã lượt (`run`, một GUID mới) cùng tệp âm thanh. Vòng kiểm tra cũ của lượt
+chạy (5 giây một lần, xem bản ghi còn `Processing` không) nay hỏi thêm worker `GET /v1/progress?run=…`
+([workers/speech/README.md](../../workers/speech/README.md#get-v1progressrun)) và ghi `progress_percent` khi số tăng:
+chỉ tăng, dừng ở 99 tới khi ghi kết quả (100). Worker không trả lời được trong 3 giây, hay trả lỗi, thì bỏ qua lần đó;
+tiến độ không bao giờ làm lượt chạy dừng hay lỗi. `processing_started_at` được đặt khi một lượt nhận bản ghi ra khỏi hàng
+chờ và xoá khi bản ghi quay lại `Pending` (chạy lại, thêm hay xoá lượt ghi, app khởi động lại giữa chừng). FE vẽ thanh
+tiến độ, đồng hồ chạy theo giây từ `processingStartedAt`, và thời gian còn lại ≈ đã chạy × (100 − p) / p khi p ≥ 5% và
+đã chạy ≥ 30 giây; bản đã xong hiện "chuyển chữ N phút" (`completedAt − processingStartedAt`).
 
 **Chuyển chữ lại giữ phần sửa tay** ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). Bản ghi mic
-phòng được chuyển chữ lại cả tệp sau mỗi lượt (5 phút một lần), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
+phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 phút một lần, [ADR-0080](../05-decisions/0080-mic-phong-luot-30-phut.md)), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
 `TranscriptionService` đặt phần Thư ký sửa tay lên kết quả mới, chỉ dựa vào thời gian (`TranscriptCarry`):
 
 - **Tên Thư ký gán cho giọng** (có `AssignedById`, kể cả bỏ gán) đi sang giọng mới trùng giọng cũ ≥ 60% lời trong phần
@@ -296,6 +312,7 @@ phòng được chuyển chữ lại cả tệp sau mỗi lượt (5 phút một
   "recordingId": "…", "status": "Completed",
   "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "progressPercent": 100, "processingStartedAt": "…",
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,

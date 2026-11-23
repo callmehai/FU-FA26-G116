@@ -636,19 +636,6 @@ def build_book(m):
         for hidden_col in ('J', 'K', 'M', 'N', 'T'):
             ws.column_dimensions[hidden_col].hidden = True
         ws['B2'] = entry['module']
-        layers = sorted({mo.get('layer', '') for mo in entry['methods']})
-        header = [('F2', 'Method', ', '.join(mo['method'] for mo in entry['methods'])),
-                  ('F3', 'Layer', ' / '.join(layers)),
-                  ('F4', 'Code under test', ', '.join(f"{mo['file'].split('/', 2)[-1]}:{mo['line']}" for mo in entry['methods'])
-                   + f" @ {source(m).sha[:12]}"),
-                  ('F5', 'Created By', m['cover']['creator']), ('F6', 'Executed By', ''),
-                  ('F7', 'Test requirement', entry.get('description', ''))]
-        for ref, label, value in header:
-            row = int(ref[1:])
-            ws[ref], ws[f'H{row}'] = label, value
-            ws[ref]._style, ws[f'H{row}']._style = copy(ws['A2']._style), copy(ws['B2']._style)
-            ws.merge_cells(f'H{row}:O{row}')
-            ws[f'H{row}'].alignment = copy(ws['B3'].alignment)
         ws['B3'] = '=COUNTIF(A:A,"UTC*")'
         ws['B4'], ws['C4'], ws['D4'] = 'Passed', 'Failed', 'Pending'
         for r, col in ((5, 'F'), (6, 'I'), (7, 'L')):
@@ -704,7 +691,7 @@ def build_book(m):
     for col, label in zip('BCDEFG', ('No', 'Module Name', 'Sheet Name', 'Method Name', 'Description', 'Pre-Condition')):
         tc[f'{col}8'] = label
     tc['G8']._style = copy(head_style[-1])
-    tc.column_dimensions['D'].width, tc.column_dimensions['E'].width = 22, 40
+    tc.column_dimensions['D'].width, tc.column_dimensions['E'].width = 30, 42
     tc.column_dimensions['F'].width, tc.column_dimensions['G'].width = 34, 30.6
     row_style = styles_of(tc, 9, 6)
     clear_from(tc, 9)
@@ -722,6 +709,40 @@ def build_book(m):
         # Internal link: location on the element, not an external relationship
         tc[f'D{r}'].hyperlink = Hyperlink(ref=f'D{r}', location=f"'{entry['sheet']}'!A1", display=entry['sheet'])
 
+    # MethodList: a plain bordered table, wrapped text, top-aligned, header frozen and filterable
+    from openpyxl.styles import Alignment, Border, Font, Side
+    thin = Side(style='thin', color='808080')
+    box = Border(left=thin, right=thin, top=thin, bottom=thin)
+    for rng in ('D3:F3', 'D4:F4', 'D5:F5'):
+        tc.unmerge_cells(rng)
+    for rr in (3, 4, 5):
+        tc.merge_cells(f'D{rr}:G{rr}')
+        tc[f'D{rr}'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
+    tc.merge_cells('B6:G6')
+    tc['B6'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
+    tc.row_dimensions[6].height = height_for([(tc['B6'].value, 150)])
+    tc.row_dimensions[5].height = height_for([(tc['D5'].value, 120)])
+    tc.row_dimensions[8].height = 24
+    for col in 'BCDEFG':
+        c = tc[f'{col}8']
+        c.border = box
+        c.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
+    for rr in range(9, 9 + len(built)):
+        for col in 'BCDEFG':
+            c = tc[f'{col}{rr}']
+            c.border = box
+            c.alignment = Alignment(wrap_text=True, vertical='top',
+                                    horizontal='center' if col == 'B' else 'left')
+            if col != 'D':
+                c.font = Font(name='Tahoma', size=10, color='000000')
+        tc.row_dimensions[rr].height = height_for(
+            [(tc[f'{col}{rr}'].value, w) for col, w in (('C', 24), ('D', 28), ('E', 40), ('F', 32), ('G', 30))])
+    tc.freeze_panes = 'B9'
+    tc.auto_filter.ref = f'B8:G{8 + len(built)}'
+    tc.page_setup.orientation = 'landscape'
+    tc.page_setup.fitToWidth, tc.page_setup.fitToHeight = 1, 0
+    tc.sheet_properties.pageSetUpPr.fitToPage = True
+
     # Test Statistics
     data_style = styles_of(ts, 12, 9)
     total_style = styles_of(ts, 16, 9)
@@ -730,7 +751,7 @@ def build_book(m):
     ts['B5'] = m['projectCode']
     ts['B6'] = f"{m['projectCode']}_Unit_Test_v{m['cover']['version']}"
     ts['F6'] = m['cover']['issueDate']
-    ts['B7'] = m['book']['note'] + ' Statistics count the final round (Round 3).'
+    ts['B7'] = m['book']['note'] + ' Statistics count the latest round that has an executed (Passed or Failed) result.'
     clear_from(ts, 12)
     for i, (entry, _, _) in enumerate(built, 1):
         r = 11 + i
@@ -738,7 +759,11 @@ def build_book(m):
         ref = "'" + entry['sheet'].replace("'", "''") + "'"
         ts[f'A{r}'] = i
         ts[f'B{r}'] = entry['sheet']
-        for col, cell in zip('CDEFGHI', ('B7', 'C7', 'D7', 'B9', 'C9', 'D9', 'B3')):
+        # Passed / Failed / Untested come from the latest round with an executed result: Round 3, else 2, else 1.
+        for col, c in zip('CDE', 'BCD'):
+            ts[f'{col}{r}'] = (f'=IF({ref}!B7+{ref}!C7>0,{ref}!{c}7,'
+                               f'IF({ref}!B6+{ref}!C6>0,{ref}!{c}6,{ref}!{c}5))')
+        for col, cell in zip('FGHI', ('B9', 'C9', 'D9', 'B3')):
             ts[f'{col}{r}'] = f'={ref}!{cell}'
         ts[f'B{r}'].hyperlink = Hyperlink(ref=f'B{r}', location=f"'{entry['sheet']}'!A1", display=entry['sheet'])
     last = 11 + len(built)
@@ -759,31 +784,23 @@ def build_book(m):
         ts[f'D{rr}'] = formula
         ts[f'E{rr}'] = '%'
 
-    # Function coverage by feature and layer (planned methods, those with UTCs, public methods skipped on purpose)
-    start = t + 9
-    items, _ = classify(m, source(m))
-    skipped = {}
-    for it in items:
-        if it['status'] == 'skipped':
-            skipped[it['layer']] = skipped.get(it['layer'], 0) + 1
-    ts[f'B{start}'] = 'Function coverage by feature and layer'
-    ts[f'B{start}']._style = copy(ts[f'B{t}']._style)
-    for col, label in zip('BCDEF', ('Feature', 'Layer', 'Methods', 'With UTCs', 'UTCs')):
-        ts[f'{col}{start + 1}'] = label
-        ts[f'{col}{start + 1}']._style = copy(ts['B11']._style)
-    r = start + 2
-    for (fe, layer), c in sorted(coverage(m).items()):
-        apply(ts, r, data_style)
-        ts[f'A{r}'] = None
-        for col, v in zip('BCDEF', (fe, layer, c['planned'], c['written'], c['utcs'])):
-            ts[f'{col}{r}'] = v
-        r += 1
-    for layer in LAYERS:
-        if skipped.get(layer):
-            apply(ts, r, data_style)
-            ts[f'A{r}'] = None
-            ts[f'B{r}'], ts[f'C{r}'], ts[f'D{r}'] = 'Skipped (skip list)', layer, skipped[layer]
-            r += 1
+    # Pie charts under the summary. The template's own charts point at the old sheet name and rows, so they are replaced.
+    ts._charts = []
+    from openpyxl.chart import PieChart, Reference
+    from openpyxl.chart.label import DataLabelList
+    for title, c0, c1, anchor in (('Passed Percent', 3, 5, f'B{t + 9}'), ('Test Type', 6, 8, f'F{t + 9}')):
+        pie = PieChart()
+        pie.title = title
+        pie.add_data(Reference(ts, min_col=c0, max_col=c1, min_row=t), from_rows=True, titles_from_data=False)
+        pie.set_categories(Reference(ts, min_col=c0, max_col=c1, min_row=11))
+        pie.dataLabels = DataLabelList()
+        pie.dataLabels.showVal = True
+        pie.dataLabels.showCatName = False
+        pie.dataLabels.showSerName = False
+        pie.dataLabels.showPercent = False
+        pie.dataLabels.showLeaderLines = False
+        pie.width, pie.height = 11, 7.5
+        ts.add_chart(pie, anchor)
 
     target = REPORTS / m['book']['file']
     try:

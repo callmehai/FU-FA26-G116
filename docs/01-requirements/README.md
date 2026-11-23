@@ -37,6 +37,8 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   trong dải BR-01 → BR-394 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
   rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa
   BR-30/105/106/115/126/172/176/215/295; **BR-373 → BR-394 thêm 05/11/2026 cho dự thảo AI và bản nháp biên bản, PR #260**); danh sách BR ngừng dùng ở cuối file.
+- [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Bản nháp kế hoạch gộp BR từ 406 về 153 (đánh số lại BR-001…BR-153 theo ADR-0079, mỗi BR một ý) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review (chờ nhóm duyệt, chưa áp vào DOCX).
+- [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md) — Dự thảo bảng cố định mã BR cũ → mã mới của đợt đánh số lại đầu tiên (ADR-0079); chỉ thêm dòng, không sửa dòng đã có.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
@@ -112,7 +114,8 @@ Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện n
 - Một BR chỉ diễn đạt **một nguyên tắc nghiệp vụ độc lập**. Tách các điều kiện, quyền, giới hạn và kết quả có thể áp dụng riêng thành các BR riêng.
 - Viết ngắn, trực tiếp và dễ kiểm tra: nêu đối tượng, điều kiện nếu có và điều được phép, bắt buộc hoặc bị cấm. Không kể lại toàn bộ flow.
 - Nội dung Rule Statement không chứa mã BR khác, mã feature, mã MSG, tên bảng dữ liệu hoặc chi tiết triển khai. Phạm vi UC, nguồn quyết định và liên hệ giữa các quy tắc nằm ở cột riêng hoặc tại bước áp dụng trong UC.
-- Tra danh mục trước khi thêm: dùng lại quy tắc cùng nghĩa, không tạo BR trùng. Khi tách BR lớn, giữ mã cũ cho nguyên tắc chính và cấp mã mới cho các nguyên tắc được tách; không renumber hoặc tái cấp mã đã dùng.
+- Tra danh mục trước khi thêm: dùng lại quy tắc cùng nghĩa, không tạo BR trùng. Khi tách BR lớn, giữ mã cũ cho nguyên tắc chính và cấp mã mới cho các nguyên tắc được tách.
+- Được đánh số lại BR và UC theo từng đợt có kế hoạch ([ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)): mỗi đợt có một bảng ánh xạ `mã cũ → mã mới` giữ mãi, chỉ thêm dòng; tài liệu còn sống đổi sang mã mới trong cùng đợt, ADR và note cũ giữ mã cũ và tra bảng ánh xạ. Mã MSG thì không (xem §2.7).
 - Quy tắc từ ADR đã được chấp nhận cần được diễn đạt thành BR nghiệp vụ; ghi ADR tại cột nguồn, không đưa nội dung kỹ thuật của ADR vào Rule Statement.
 - Phân biệt quy tắc đã chốt và quy tắc đề xuất. Không biến giả định, giá trị giới hạn chưa rõ hoặc quyết định còn thiếu thành quy tắc đã được PO thông qua.
 - Dùng tên actor chuẩn: `Guest`, không dùng `verified Guest` hoặc `external Guest` làm tên actor. Xác minh email và hiệu lực lời mời là điều kiện nghiệp vụ. `Participant` không có nghĩa là người đó đã tham dự hoặc được ghi nhận có mặt.

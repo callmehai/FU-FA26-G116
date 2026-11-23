@@ -28,7 +28,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
 {
     private static readonly TimeSpan Vietnam = TimeSpan.FromHours(7);
 
-    private long MaxBytes => options.Value.MaxUploadMegabytes * 1024L * 1024;
+    private long MaxBytes => options.Value.MaxUploadBytes;
 
     public async Task<RecordingOutcome> BeginAsync(Guid meetingId, Guid actorId, RoomTakeStart start, CancellationToken ct = default)
     {
@@ -247,6 +247,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 transcript.Status = TranscriptStatus.Pending;
                 transcript.ErrorMessage = "";
                 transcript.ProgressPercent = 0;
+                transcript.ProcessingStartedAt = null;
                 transcript.UpdatedAt = now;
             }
             recordings.Remove(take);
@@ -336,6 +337,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             transcript.Status = TranscriptStatus.Pending;
             transcript.ErrorMessage = "";
             transcript.ProgressPercent = 0;
+            transcript.ProcessingStartedAt = null;
         }
         var start = gone.OffsetMs;
         var end = gone.OffsetMs + gone.DurationMs;

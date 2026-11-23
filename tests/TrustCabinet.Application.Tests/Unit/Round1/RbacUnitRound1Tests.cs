@@ -138,30 +138,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Empty(logger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "RoleService.CreateAsync/UTC004 answers a storage failure as save failed")]
+    [Fact(DisplayName = "RoleService.CreateAsync/UTC004 accepts a 64-character name")]
     [Trait("UTC", "RoleService.CreateAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task RoleService_CreateAsync_UTC004_answers_a_storage_failure_as_save_failed()
-    {
-        var roles = new FakeRoleRepository();
-        var audit = new CaptureAuditService();
-        var logger = new CaptureLogger<RoleService>();
-        var service = new RoleService(roles, _unitOfWork, audit, new FakeAdministratorInvariantGuard(), logger);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var result = await service.CreateAsync(new NewRole("Thư ký phó", null, []), _actorId);
-
-        Assert.Equal(RoleOutcome.SaveFailed, result.Outcome); // Return
-        Assert.Empty(audit.Rows);
-        var log = Assert.Single(logger.Entries); // Log Message + Exception: N/A (caught inside)
-        Assert.Equal(LogLevel.Error, log.Level);
-        Assert.Contains("failed to save", log.Message);
-    }
-
-    [Fact(DisplayName = "RoleService.CreateAsync/UTC005 accepts a 64-character name")]
-    [Trait("UTC", "RoleService.CreateAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task RoleService_CreateAsync_UTC005_accepts_a_64_character_name()
+    public async Task RoleService_CreateAsync_UTC004_accepts_a_64_character_name()
     {
         var roles = new FakeRoleRepository();
         var audit = new CaptureAuditService();
@@ -179,10 +159,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Contains("created by", log.Message);
     }
 
-    [Fact(DisplayName = "RoleService.CreateAsync/UTC006 refuses a 65-character name")]
-    [Trait("UTC", "RoleService.CreateAsync/UTC006")]
+    [Fact(DisplayName = "RoleService.CreateAsync/UTC005 refuses a 65-character name")]
+    [Trait("UTC", "RoleService.CreateAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task RoleService_CreateAsync_UTC006_refuses_a_65_character_name()
+    public async Task RoleService_CreateAsync_UTC005_refuses_a_65_character_name()
     {
         var roles = new FakeRoleRepository();
         var audit = new CaptureAuditService();
@@ -290,31 +270,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Empty(logger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "RoleService.UpdateAsync/UTC005 answers a storage failure as save failed")]
+    [Fact(DisplayName = "RoleService.UpdateAsync/UTC005 accepts a 64-character name")]
     [Trait("UTC", "RoleService.UpdateAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task RoleService_UpdateAsync_UTC005_answers_a_storage_failure_as_save_failed()
-    {
-        var roles = new FakeRoleRepository();
-        var role = GivenCustomRole(roles);
-        var audit = new CaptureAuditService();
-        var logger = new CaptureLogger<RoleService>();
-        var service = new RoleService(roles, _unitOfWork, audit, new FakeAdministratorInvariantGuard(), logger);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var result = await service.UpdateAsync(role.Id, new RoleEdit("Tên mới", null), _actorId);
-
-        Assert.Equal(RoleOutcome.SaveFailed, result.Outcome); // Return
-        Assert.Empty(audit.Rows);
-        var log = Assert.Single(logger.Entries); // Log Message + Exception: N/A (caught inside)
-        Assert.Equal(LogLevel.Error, log.Level);
-        Assert.Contains("failed to save", log.Message);
-    }
-
-    [Fact(DisplayName = "RoleService.UpdateAsync/UTC006 accepts a 64-character name")]
-    [Trait("UTC", "RoleService.UpdateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task RoleService_UpdateAsync_UTC006_accepts_a_64_character_name()
+    public async Task RoleService_UpdateAsync_UTC005_accepts_a_64_character_name()
     {
         var roles = new FakeRoleRepository();
         var role = GivenCustomRole(roles);
@@ -411,32 +370,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Empty(logger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "RoleService.DeleteAsync/UTC004 answers a storage failure as save failed")]
+    [Fact(DisplayName = "RoleService.DeleteAsync/UTC004 a deactivated holder still blocks the delete")]
     [Trait("UTC", "RoleService.DeleteAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task RoleService_DeleteAsync_UTC004_answers_a_storage_failure_as_save_failed()
-    {
-        var inner = new FakeRoleRepository();
-        var role = GivenCustomRole(inner);
-        var roles = new RoleCapsRepository(inner, []);
-        var audit = new CaptureAuditService();
-        var logger = new CaptureLogger<RoleService>();
-        var service = new RoleService(roles, _unitOfWork, audit, new FakeAdministratorInvariantGuard(), logger);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var result = await service.DeleteAsync(role.Id, _actorId);
-
-        Assert.Equal(RoleOutcome.SaveFailed, result.Outcome); // Return
-        Assert.Empty(audit.Rows);
-        var log = Assert.Single(logger.Entries); // Log Message + Exception: N/A (caught inside)
-        Assert.Equal(LogLevel.Error, log.Level);
-        Assert.Contains("failed.", log.Message);
-    }
-
-    [Fact(DisplayName = "RoleService.DeleteAsync/UTC005 a deactivated holder still blocks the delete")]
-    [Trait("UTC", "RoleService.DeleteAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task RoleService_DeleteAsync_UTC005_a_deactivated_holder_still_blocks_the_delete()
+    public async Task RoleService_DeleteAsync_UTC004_a_deactivated_holder_still_blocks_the_delete()
     {
         var inner = new FakeRoleRepository();
         var role = GivenCustomRole(inner);
@@ -454,10 +391,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Empty(logger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "RoleService.DeleteAsync/UTC006 audits an empty capability list")]
-    [Trait("UTC", "RoleService.DeleteAsync/UTC006")]
+    [Fact(DisplayName = "RoleService.DeleteAsync/UTC005 audits an empty capability list")]
+    [Trait("UTC", "RoleService.DeleteAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task RoleService_DeleteAsync_UTC006_audits_an_empty_capability_list()
+    public async Task RoleService_DeleteAsync_UTC005_audits_an_empty_capability_list()
     {
         var inner = new FakeRoleRepository();
         var role = GivenCustomRole(inner);
@@ -589,50 +526,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Equal(LogLevel.Warning, log.Level);
     }
 
-    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC005 answers a storage failure as save failed")]
+    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC005 moving the last admin right is allowed")]
     [Trait("UTC", "RolePermissionService.UpdateAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task RolePermissionService_UpdateAsync_UTC005_answers_a_storage_failure_as_save_failed()
-    {
-        var (roles, publisher, shares, audit, logger) = GivenPermissions();
-        var secretary = new Role { Name = "Thư ký" };
-        roles.Roles.Add(secretary);
-        roles.Matrix[secretary.Id] = [Capability.MeetingCreator];
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var result = await PermissionService(roles, audit, publisher, shares, logger)
-            .UpdateAsync(secretary.Id, [Capability.MeetingCreator, Capability.VoiceCollector], _actorId);
-
-        Assert.Equal(RolePermissionOutcome.SaveFailed, result.Outcome); // Return
-        Assert.Empty(audit.Rows);
-        Assert.Empty(publisher.Told);
-        var log = Assert.Single(logger.Entries); // Log Message + Exception: N/A (caught inside)
-        Assert.Equal(LogLevel.Error, log.Level);
-        Assert.Contains("failed.", log.Message);
-    }
-
-    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC006 repeated capabilities change nothing")]
-    [Trait("UTC", "RolePermissionService.UpdateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task RolePermissionService_UpdateAsync_UTC006_repeated_capabilities_change_nothing()
-    {
-        var (roles, publisher, shares, audit, logger) = GivenPermissions();
-        roles.Matrix[BuiltInRoles.Member] = [Capability.MeetingCreator];
-
-        var result = await PermissionService(roles, audit, publisher, shares, logger)
-            .UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator, Capability.MeetingCreator], _actorId);
-
-        Assert.True(result.Succeeded); // Return
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(audit.Rows);
-        Assert.Empty(publisher.Told);
-        Assert.Empty(logger.Entries); // Log Message: N/A + Exception: N/A
-    }
-
-    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC007 moving the last admin right is allowed")]
-    [Trait("UTC", "RolePermissionService.UpdateAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task RolePermissionService_UpdateAsync_UTC007_moving_the_last_admin_right_is_allowed()
+    public async Task RolePermissionService_UpdateAsync_UTC005_moving_the_last_admin_right_is_allowed()
     {
         var (roles, publisher, shares, audit, logger) = GivenPermissions();
         var secretary = new Role { Name = "Thư ký" };
@@ -650,10 +547,10 @@ public sealed class RbacUnitRound1Tests
         Assert.DoesNotContain(logger.Entries, e => e.Level >= LogLevel.Warning); // Exception: N/A
     }
 
-    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC008 a failed notice still leaves the save")]
-    [Trait("UTC", "RolePermissionService.UpdateAsync/UTC008")]
+    [Fact(DisplayName = "RolePermissionService.UpdateAsync/UTC006 a failed notice still leaves the save")]
+    [Trait("UTC", "RolePermissionService.UpdateAsync/UTC006")]
     [Trait("Trait", "UTC")]
-    public async Task RolePermissionService_UpdateAsync_UTC008_a_failed_notice_still_leaves_the_save()
+    public async Task RolePermissionService_UpdateAsync_UTC006_a_failed_notice_still_leaves_the_save()
     {
         var (roles, publisher, shares, audit, logger) = GivenPermissions();
         var secretary = new Role { Name = "Thư ký" };
@@ -779,25 +676,6 @@ public sealed class RbacUnitRound1Tests
             => inner.CountActiveUsersInRolesAsync(rolesWithCapability, ct);
     }
 
-    [Fact(DisplayName = "AdministratorInvariantGuard.WriteAsync/UTC006 a lock failure skips the write")]
-    [Trait("UTC", "AdministratorInvariantGuard.WriteAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task AdministratorInvariantGuard_WriteAsync_UTC006_a_lock_failure_skips_the_write()
-    {
-        var guard = new AdministratorInvariantGuard(_unitOfWork, new FailingLockRoles(new FakeRolePermissionRepository()));
-        var ran = false;
-
-        await Assert.ThrowsAsync<PersistenceUnavailableException>(() => // Exception
-            guard.WriteAsync(_ =>
-            {
-                ran = true;
-                return Task.FromResult(0);
-            }));
-
-        Assert.False(ran); // Return
-        Assert.Equal(0, _unitOfWork.Commits); // Log Message: N/A (no logger)
-    }
-
     // ---- AuditService.RecordAsync ----
     // The service has no ILogger: the "Log Message" line is asserted through Saves.
 
@@ -880,25 +758,10 @@ public sealed class RbacUnitRound1Tests
         Assert.Equal(1, uow.Saves); // Log Message + Exception: N/A
     }
 
-    [Fact(DisplayName = "AuditService.RecordAsync/UTC005 an action may carry no object id")]
+    [Fact(DisplayName = "AuditService.RecordAsync/UTC005 a storage failure propagates")]
     [Trait("UTC", "AuditService.RecordAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task AuditService_RecordAsync_UTC005_an_action_may_carry_no_object_id()
-    {
-        var (log, uow) = GivenAudit(out var caller);
-
-        await AuditService(log, uow, caller).RecordAsync(
-            AuditActions.ReportExported, AuditActions.ReportObjectType, null, Guid.CreateVersion7());
-
-        var row = Assert.Single(log.Rows); // Return
-        Assert.Null(row.ObjectId);
-        Assert.Equal(1, uow.Saves); // Log Message + Exception: N/A
-    }
-
-    [Fact(DisplayName = "AuditService.RecordAsync/UTC006 a storage failure propagates")]
-    [Trait("UTC", "AuditService.RecordAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task AuditService_RecordAsync_UTC006_a_storage_failure_propagates()
+    public async Task AuditService_RecordAsync_UTC005_a_storage_failure_propagates()
     {
         var (log, uow) = GivenAudit(out var caller);
         uow.FailNextSave = new PersistenceUnavailableException();

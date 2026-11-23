@@ -23,7 +23,7 @@
           "return": "Details with AssignedApproverId null (hidden before submission).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,27 +38,12 @@
           "return": "Chair set; Secretaries ordered by name (An, Bình); MyMeetingRole \"Member\"; MyResponse null; CanRespond true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "actorId: delegating Member (Delegated).",
-          "log": "N/A",
-          "note": "UC-16 · UC-29",
-          "preconditions": [
-            "The actor Member row is delegated."
-          ],
-          "return": "MyMeetingRole null; the row is not current.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "meeting: Cancelled; CancelledAt set; CancelledBy \"Lan\"; reason \"Hoãn\".",
           "log": "N/A",
           "note": "UC-16 · UC-75 · BR-298",
@@ -68,27 +53,12 @@
           "return": "Cancellation { time, CancelledById, CancelledByName \"Lan\", Reason \"Hoãn\" }.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "CancelledAt: null.",
-          "log": "N/A",
-          "note": "UC-16 · BR-299",
-          "preconditions": [
-            "Meeting is Cancelled but has no cancellation time recorded."
-          ],
-          "return": "Cancellation null.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC004",
           "inputs": "two Chair rows, one not Current.",
           "log": "N/A",
           "note": "UC-16 · BR-124",
@@ -98,7 +68,7 @@
           "return": "Chair is the current one only.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

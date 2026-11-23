@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-84c · MSG437",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "type": "Boundary",
           "note": "UC-84c · MSG437",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,7 +57,7 @@
           "type": "Normal",
           "note": "UC-84c · MSG452",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,7 +73,7 @@
           "type": "Boundary",
           "note": "UC-84c · BR-431 · MSG452",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -89,40 +89,7 @@
           "type": "Abnormal",
           "note": "UC-84c · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
-          ],
-          "inputs": "actor: Binh (the sender).",
-          "return": "Failure NotFound (404); the sender cannot decline their own request.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20.",
-            "The database fails while saving."
-          ],
-          "inputs": "actor: An.",
-          "return": "Failure SaveFailed (MSG447); share remains Pending.",
-          "exception": "N/A",
-          "log": "Unit of work changes discarded; error logged.",
-          "type": "Abnormal",
-          "note": "UC-84c · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

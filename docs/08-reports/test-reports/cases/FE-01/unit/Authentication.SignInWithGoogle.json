@@ -7,21 +7,6 @@
         {
           "exception": "N/A",
           "id": "UTC001",
-          "inputs": "idToken: \"not-a-google-token\".",
-          "log": "N/A",
-          "note": "UC-02 · BR-05 · MSG03",
-          "preconditions": [
-            "Google token verifier rejects the token (absent, malformed, expired, wrong audience, bad signature or unverified email)."
-          ],
-          "return": "GoogleSignInResult Failure(InvalidGoogleToken) (MSG03); no account lookup is made.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC002",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (details { method: \"google\" }).",
           "note": "UC-02 · BR-05 · BR-444",
@@ -32,12 +17,12 @@
           "return": "GoogleSignInResult Success with the user, capabilities of the role, access token, refresh token (stored) and expiry.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC003",
+          "id": "UTC002",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: account {UserId} is deactivated and was never linked.; audit row SignInFailed (details { method: \"google\", reason: \"account_deactivated\" }).",
           "note": "UC-02 · BR-03 · BR-444 · MSG02",
@@ -48,12 +33,12 @@
           "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); the subject is not linked and no token is issued.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC003",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: no internal account is linked to that Google identity.; no audit row.",
           "note": "UC-02 · BR-06 · BR-07 · MSG05",
@@ -64,12 +49,12 @@
           "return": "GoogleSignInResult Failure(NotLinked) (MSG05); no account is created.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (method \"google\").",
           "note": "UC-02 · BR-04 · BR-444",
@@ -80,7 +65,7 @@
           "return": "GoogleSignInResult Success with an empty capability list and a token pair.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

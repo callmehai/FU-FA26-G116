@@ -44,15 +44,23 @@ public sealed record RecordingUpload(string FileName, string ContentType, string
 /// <summary>
 /// <c>Status</c> <c>Pending</c> is the room mic's take being streamed: everyone sees that the room is being recorded,
 /// nobody hears it yet. <c>CanClose</c> lets the Chair or a Secretary save a take left open on another device.
+/// <c>Transcript*</c>: how its transcript stands — how far a running one got, when the current or last run started,
+/// and when it finished — so the row shows progress and how long the run took without opening it.
 /// </summary>
 public sealed record RecordingView(Guid Id, string FileName, string ContentType, long ByteSize, long DurationMs,
     string Source, string Status, DateTimeOffset CreatedAt, string CreatedByName, DateTimeOffset? ConsentObtainedAt,
     string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase,
     string TranscriptStatus, bool CanDownload = false, Guid CreatedById = default,
-    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false);
+    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false, int TranscriptProgressPercent = 0,
+    DateTimeOffset? TranscriptProcessingStartedAt = null, DateTimeOffset? TranscriptCompletedAt = null);
 
-/// <summary><c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041).</summary>
-public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false);
+/// <summary>
+/// <c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041). <c>MaxUploadBytes</c>: the largest file the
+/// upload takes. A browser checks it before sending: the server refuses a bigger body while it is still arriving, and the
+/// browser then sees the connection drop rather than the 413 (MSG293).
+/// </summary>
+public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false,
+    long MaxUploadBytes = 0);
 
 /// <summary>
 /// Switching the room mic on. The participants are told once, before the meeting's first take: a later take is

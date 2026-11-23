@@ -1,4 +1,4 @@
-title UC-43b - Play Meeting Recording
+﻿title UC-43b - Play Meeting Recording
 
 actor "Participant" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab
@@ -25,9 +25,9 @@ alt Room recording selected
     activate RecordingRepository
     RecordingRepository->Database: Retrieve recording
     activate Database
-    Database-->RecordingRepository: Recording / Not found / Load failed
+    Database-->RecordingRepository: Recording / Not found
     deactivate Database
-    RecordingRepository-->RecordingService: Recording / Not found / Load failed
+    RecordingRepository-->RecordingService: Recording / Not found
     deactivate RecordingRepository
     RecordingService->MeetingRepository: Get the Meeting with its current roster
     activate MeetingRepository
@@ -37,13 +37,8 @@ alt Room recording selected
     deactivate Database
     MeetingRepository-->RecordingService: Meeting and roster
     deactivate MeetingRepository
-    RecordingService->RecordingService: Check the actor is on the current roster (BR-350, BR-370)\nand the recording is Available
 
-    alt Recording cannot be loaded - EX-1
-        RecordingService-->RecordingController: MSG297 - Unable to load meeting recordings.
-        RecordingController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
-        RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
-    else Actor no longer has access, or recording not Available - EX-2
+    alt Actor no longer has access, or recording not Available - EX-1
         RecordingService-->RecordingController: Recording not found
         RecordingController-->RecordingsTab: Recording not found
         RecordingsTab-->Actor: Show the recording as no longer available
@@ -72,9 +67,9 @@ else Sentence selected
     activate ClipRepository
     ClipRepository->Database: Retrieve sentence
     activate Database
-    Database-->ClipRepository: Sentence / Not found / Load failed
+    Database-->ClipRepository: Sentence / Not found
     deactivate Database
-    ClipRepository-->ClipService: Sentence / Not found / Load failed
+    ClipRepository-->ClipService: Sentence / Not found
     deactivate ClipRepository
     ClipService->MeetingRepository: Get the Meeting with its current roster
     activate MeetingRepository
@@ -84,13 +79,8 @@ else Sentence selected
     deactivate Database
     MeetingRepository-->ClipService: Meeting and roster
     deactivate MeetingRepository
-    ClipService->ClipService: Check the actor is on the current roster (BR-350, BR-370);\nan excluded sentence is played only for the current Chair or Secretary (BR-357)
 
-    alt Sentence cannot be loaded - EX-1
-        ClipService-->ClipController: MSG297 - Unable to load meeting recordings.
-        ClipController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
-        RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
-    else Actor no longer has access, sentence has no audio, or it is excluded and actor is not Chair or Secretary - EX-2
+    alt Actor no longer has access, sentence has no audio, or it is excluded and actor is not Chair or Secretary - EX-1
         ClipService-->ClipController: Sentence not found
         ClipController-->RecordingsTab: Sentence not found
         RecordingsTab-->Actor: Show the sentence as not playable

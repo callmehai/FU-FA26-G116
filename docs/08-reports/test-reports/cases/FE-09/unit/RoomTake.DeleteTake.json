@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-44d · BR-341 · BR-349 · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Boundary",
           "note": "UC-44d · BR-341 · BR-349 · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Boundary",
           "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,40 +70,7 @@
           "type": "Abnormal",
           "note": "UC-44d · BR-341 · BR-349 · MSG367",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
-            "The actor is the Chair."
-          ],
-          "inputs": "take 2.",
-          "return": "Forbidden (403, MSG295).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms; file of 736,044 bytes (23,000 ms).",
-            "The actor is its current Secretary.",
-            "The database fails while saving."
-          ],
-          "inputs": "take 2.",
-          "return": "SaveFailed (503, MSG298); the cut copy is deleted and the original file is kept.",
-          "exception": "PersistenceException or IOException caught; logged.",
-          "log": "Error log 'Failed to erase take'; cut file removed.",
-          "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

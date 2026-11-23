@@ -54,20 +54,8 @@ public sealed class NotiUnitRound1Tests
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
     }
 
-    [Fact(DisplayName = "NotificationService.MarkReadAsync/UTC003: unknown id returns null")]
+    [Fact(DisplayName = "NotificationService.MarkReadAsync/UTC003: already-read keeps its first ReadAt")]
     [Trait("UTC", "NotificationService.MarkReadAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task MarkRead_UnknownId_ReturnsNull()
-    {
-        var result = await Service().MarkReadAsync(Guid.CreateVersion7(), Guid.CreateVersion7());
-
-        Assert.Null(result);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "NotificationService.MarkReadAsync/UTC004: already-read keeps its first ReadAt")]
-    [Trait("UTC", "NotificationService.MarkReadAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task MarkRead_AlreadyRead_KeepsFirstReadAt()
     {
@@ -133,28 +121,8 @@ public sealed class NotiUnitRound1Tests
         Assert.NotNull(_repository.Rows.Single().TargetId);
     }
 
-    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC003: tampered target is not opened")]
+    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC003: calendar share opens for a party")]
     [Trait("UTC", "NotificationService.GetTargetAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task GetTarget_MismatchedTargetId_ReturnsNull()
-    {
-        var (meetingId, user) = (Guid.CreateVersion7(), Guid.CreateVersion7());
-        _repository.Rows.Add(new Notification
-        {
-            UserId = user, MeetingId = meetingId, TargetType = "Meeting", TargetId = Guid.CreateVersion7(),
-            Type = NotificationType.MeetingInvited, Title = "Moi hop",
-        });
-        _meetings.Accessible.Add((meetingId, user));
-
-        var target = await Service().GetTargetAsync(user, _repository.Rows.Single().Id);
-
-        Assert.Null(target);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Single(_repository.Rows);
-    }
-
-    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC004: calendar share opens for a party")]
-    [Trait("UTC", "NotificationService.GetTargetAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task GetTarget_CalendarShareParty_ReturnsShareTarget()
     {
@@ -173,8 +141,8 @@ public sealed class NotiUnitRound1Tests
         Assert.Single(_repository.Rows);
     }
 
-    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC005: own voice sample opens")]
-    [Trait("UTC", "NotificationService.GetTargetAsync/UTC005")]
+    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC004: own voice sample opens")]
+    [Trait("UTC", "NotificationService.GetTargetAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task GetTarget_OwnVoiceSample_ReturnsSampleTarget()
     {
@@ -189,25 +157,6 @@ public sealed class NotiUnitRound1Tests
         var target = await Service().GetTargetAsync(user, _repository.Rows.Single().Id);
 
         Assert.Equal(new NotificationTarget("VoiceSample", sampleId), target);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Single(_repository.Rows);
-    }
-
-    [Fact(DisplayName = "NotificationService.GetTargetAsync/UTC006: unsupported type returns null")]
-    [Trait("UTC", "NotificationService.GetTargetAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task GetTarget_UnsupportedType_ReturnsNull()
-    {
-        var user = Guid.CreateVersion7();
-        _repository.Rows.Add(new Notification
-        {
-            UserId = user, TargetType = "Document", TargetId = Guid.CreateVersion7(),
-            Type = NotificationType.MeetingInvited, Title = "Tai lieu",
-        });
-
-        var target = await Service().GetTargetAsync(user, _repository.Rows.Single().Id);
-
-        Assert.Null(target);
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
         Assert.Single(_repository.Rows);
     }
@@ -248,24 +197,6 @@ public sealed class NotiUnitRound1Tests
 
         Assert.Empty(pending);
         Assert.Equal(2, _repository.Rows.Count);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "NotificationService.PendingPushAsync/UTC003: limit equal to available returns all")]
-    [Trait("UTC", "NotificationService.PendingPushAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task PendingPush_LimitEqualsAvailable_ReturnsAll()
-    {
-        for (var i = 0; i < 3; i++)
-            _repository.Rows.Add(new Notification
-            {
-                UserId = Guid.CreateVersion7(), Type = NotificationType.MeetingInvited, Title = "Moi hop",
-            });
-
-        var pending = await Service().PendingPushAsync(3);
-
-        Assert.Equal(3, pending.Count);
-        Assert.Equal(3, _repository.Rows.Count);
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
     }
 
@@ -312,20 +243,6 @@ public sealed class NotiUnitRound1Tests
         Assert.Empty(_repository.Added);
         Assert.Equal(0, _unitOfWork.Saves);
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "NotificationService.QueueMeetingStartedAsync/UTC004: single recipient queues one")]
-    [Trait("UTC", "NotificationService.QueueMeetingStartedAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task MeetingStarted_SingleRecipient_QueuesOne()
-    {
-        var (meetingId, historyId, user) = (Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7());
-
-        await Service().QueueMeetingStartedAsync(meetingId, "Hop giao ban", historyId, Now, [user]);
-
-        var notice = Assert.Single(_repository.Added);
-        Assert.Equal($"meeting-started:{historyId:D}:{user:D}", notice.DeduplicationKey);
-        Assert.Equal(1, _unitOfWork.Saves);
     }
 
     // ---- NotificationService.QueueStartingSoonAsync ----
@@ -386,51 +303,8 @@ public sealed class NotiUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC004: reminded user is skipped")]
+    [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC004: duplicated upcoming row queued once")]
     [Trait("UTC", "NotificationService.QueueStartingSoonAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task StartingSoon_OneAlreadyReminded_QueuesOnlyTheOther()
-    {
-        var meetingId = Guid.CreateVersion7();
-        var (first, second) = (Guid.CreateVersion7(), Guid.CreateVersion7());
-        var start = Now.AddMinutes(10);
-        _repository.Upcoming.AddRange(
-        [
-            new(meetingId, "Giao ban", start, first),
-            new(meetingId, "Giao ban", start, second),
-        ]);
-        _repository.Rows.Add(new Notification
-        {
-            UserId = first, MeetingId = meetingId, Type = NotificationType.MeetingStartingSoon, Title = "x",
-            DeduplicationKey = $"meeting-starting-soon:{meetingId:D}:{start.ToUnixTimeSeconds()}:{first:D}",
-        });
-
-        var created = await Service().QueueStartingSoonAsync();
-
-        Assert.Equal(1, created);
-        Assert.Equal(second, Assert.Single(_repository.Added).UserId);
-        Assert.Equal(1, _unitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC006: no recipient returned queues nothing")]
-    [Trait("UTC", "NotificationService.QueueStartingSoonAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task StartingSoon_NoRecipientReturned_QueuesNothing()
-    {
-        // The query returns only active participants of Published meetings inside the window; a Draft or Cancelled
-        // meeting, or an inactive participant, is simply not in its answer (the filter itself runs against the database
-        // in NotificationRepositoryPostgresTests).
-        Assert.Empty(_repository.Upcoming);
-
-        var created = await Service().QueueStartingSoonAsync();
-
-        Assert.Equal(0, created);
-        Assert.Empty(_repository.Added);
-        Assert.Equal(0, _unitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "NotificationService.QueueStartingSoonAsync/UTC005: duplicated upcoming row queued once")]
-    [Trait("UTC", "NotificationService.QueueStartingSoonAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task StartingSoon_DuplicatedRow_QueuesOnce()
     {

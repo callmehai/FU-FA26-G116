@@ -110,4 +110,32 @@ public sealed class SpeakerMatcherTests
         Assert.Equal("SPEAKER_00", SpeakerMatcher.SameAs([("SPEAKER_00", Lan, 0.70, Lan), ("SPEAKER_01", Lan, 0.82, null)])["SPEAKER_01"]);
         Assert.Empty(SpeakerMatcher.SameAs([("SPEAKER_00", Lan, 0.70, Minh), ("SPEAKER_01", Lan, 0.82, null)]));
     }
+
+    [Fact]
+    public void Scores_rank_each_person_by_their_best_sample_also_for_a_voice_left_unnamed()
+    {
+        // Every person and score is listed, named or not: what the transcription logs for each voice.
+        var scores = SpeakerMatcher.Scores([new("SPEAKER_00", 1000, [1f, 1f])],
+            [C(Lan, [1f, -0.6f]), C(Lan, [1f, 0.9f]), C(Minh, [1f, 0.5f])]);
+        var ranked = scores["SPEAKER_00"];
+        Assert.Equal(2, ranked.Length);
+        Assert.Equal(Lan, ranked[0].UserId);
+        Assert.Equal(SpeakerMatcher.Cosine([1f, 1f], [1f, 0.9f]), ranked[0].Score, 6);
+        Assert.True(ranked[0].Score >= ranked[1].Score);
+    }
+
+    [Fact]
+    public void A_runner_up_already_suggested_for_a_different_voice_does_not_block_the_best_match()
+    {
+        // Lan's own voice is A; voice B sounds like Minh (0.66) and a little like Lan (0.60), as Hải against Khánh
+        // on 23/11. A and B differ (0.66 < 0.7), so Lan is not B and Minh is suggested.
+        var a = new SpeechSpeaker("SPEAKER_00", 1000, [1f, 0.1f, 0f]);
+        var b = new SpeechSpeaker("SPEAKER_01", 1000, [0.6f, 0.66f, 0.452f]);
+        var result = Suggest([a, b], C(Lan, [1f, 0f, 0f]), C(Minh, [0f, 1f, 0f]));
+        Assert.Equal(Lan, result["SPEAKER_00"].UserId);
+        Assert.Equal(Minh, result["SPEAKER_01"].UserId);
+
+        // Without Lan's own voice in the recording the near tie still stays unnamed.
+        Assert.Empty(Suggest([b], C(Lan, [1f, 0f, 0f]), C(Minh, [0f, 1f, 0f])));
+    }
 }

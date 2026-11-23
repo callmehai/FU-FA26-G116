@@ -24,26 +24,11 @@
           "type": "Normal",
           "note": "UC-43b · BR-350",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "The recording was erased: status Deleted."
           ],
@@ -54,11 +39,11 @@
           "type": "Abnormal",
           "note": "UC-43b · BR-350 · BR-348",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "A room-mic take still streaming: status Pending."
           ],
@@ -69,26 +54,11 @@
           "type": "Boundary",
           "note": "UC-44a · UC-43b · BR-350",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "A recording whose transcription failed: status Failed."
-          ],
-          "inputs": "actorId: a Member.",
-          "return": "NotFound; only Available recordings are played.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43b · BR-350",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "The database fails while reading the recording."
           ],
@@ -99,7 +69,7 @@
           "type": "Abnormal",
           "note": "UC-43b · BR-350 · MSG297",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

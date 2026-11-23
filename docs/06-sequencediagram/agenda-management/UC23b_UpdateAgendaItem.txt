@@ -1,100 +1,55 @@
 title UC-23b - Update Agenda Item
 
 actor "Secretary" as Secretary
-boundary "Meeting Management Page" as MeetingPage
+boundary "Meeting Agenda Page" as AgendaPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
-control ":Notification Service" as NotificationService
-participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Participant Repository" as MeetingParticipantRepository
-participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Agenda Repository" as AgendaRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Update Agenda Item
-activate MeetingPage
-MeetingPage->AgendaController: Update Agenda Item
+Secretary->AgendaPage: Update agenda item
+activate AgendaPage
+
+AgendaPage->AgendaController: Update item (meetingId, itemId, changes)
 activate AgendaController
-AgendaController->AgendaService: updateAgendaItem(meetingId, agendaItemId, secretaryId, agendaInfo, presenterId)
+
+AgendaController->AgendaService: updateAgendaItem(meetingId, itemId, changes)
 activate AgendaService
 
-AgendaService->MeetingRepository: Get selected Meeting and current status
-activate MeetingRepository
-MeetingRepository->Database: Get selected Meeting and current status
+AgendaService->AgendaRepository: Find item and verify secretary
+activate AgendaRepository
+AgendaRepository->Database: Retrieve item and meeting
 activate Database
-Database-->MeetingRepository: Meeting / Not found
+Database-->AgendaRepository: Item and meeting
 deactivate Database
-MeetingRepository-->AgendaService: Meeting / Not found
-deactivate MeetingRepository
+AgendaRepository-->AgendaService: Item and meeting
+deactivate AgendaRepository
 
-AgendaService->MeetingParticipantRepository: Check active current Secretary assignment
-activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Check active current Secretary assignment
-activate Database
-Database-->MeetingParticipantRepository: Active Secretary / Not eligible
-deactivate Database
-MeetingParticipantRepository-->AgendaService: Active Secretary / Not eligible
-deactivate MeetingParticipantRepository
+alt Invalid agenda item information - EX-1
+    AgendaService-->AgendaController: MSG66 - Invalid agenda item information.
+    AgendaController-->AgendaPage: Return validation errors
+    AgendaPage-->Secretary: MSG66 - Invalid agenda item information.
 
-AgendaService->AgendaItemRepository: Get selected Item and Meeting membership
-activate AgendaItemRepository
-AgendaItemRepository->Database: Get selected Item and Meeting membership
-activate Database
-Database-->AgendaItemRepository: Item / Not found
-deactivate Database
-AgendaItemRepository-->AgendaService: Item / Not found
-deactivate AgendaItemRepository
-
-AgendaService->AgendaService: Verify Secretary, Item membership and permitted Meeting status\nDraft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-64, BR-65, BR-74)
-alt Editing no longer permitted - EX-2
+else Editing no longer permitted - EX-2
     AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
-    AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
-    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
-else Editing permitted
-    opt Presenter assigned or changed
-        AgendaService->MeetingParticipantRepository: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
-        activate MeetingParticipantRepository
-        MeetingParticipantRepository->Database: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
-        activate Database
-        Database-->MeetingParticipantRepository: Current participant or Guest / Invalid Presenter
-        deactivate Database
-        MeetingParticipantRepository-->AgendaService: Current participant or Guest / Invalid Presenter
-        deactivate MeetingParticipantRepository
+    AgendaController-->AgendaPage: Return planning error
+    AgendaPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 
-    end
-    AgendaService->AgendaService: Validate Title, Presenter and Description\nin any execution status (BR-66, BR-68, BR-306)
-    alt Invalid Item information - EX-1
-        AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-        AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-        MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-    else Changes valid
-        AgendaService->AgendaItemRepository: Save Title, Presenter and Description together;\nkeep document links, execution status, actual times and position unchanged (BR-68, BR-280)
-        activate AgendaItemRepository
-        AgendaItemRepository->Database: Save Title, Presenter and Description together;\nkeep document links, execution status, actual times and position unchanged (BR-68, BR-280)
-        activate Database
-        Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
-        deactivate Database
-        AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
-        deactivate AgendaItemRepository
+else Valid update
+    AgendaService->AgendaRepository: Save changes preserving status and timestamps (BR-68)
+    activate AgendaRepository
+    AgendaRepository->Database: Update agenda item
+    activate Database
+    Database-->AgendaRepository: Updated
+    deactivate Database
+    AgendaRepository-->AgendaService: Updated
+    deactivate AgendaRepository
 
-        alt Change cannot be saved - EX-3
-            AgendaService-->AgendaController: MSG69 - Unable to update the agenda item. Please try again.
-            AgendaController-->MeetingPage: MSG69 - Unable to update the agenda item. Please try again.
-            MeetingPage-->Secretary: MSG69 - Unable to update the agenda item. Please try again.
-        else Change saved successfully
-            opt Presenter assigned or changed while Meeting is Published or InProgress
-                AgendaService->NotificationService: Notify the new Presenter: internal user in the application\n(not when the assignee is the actor, BR-322),\nGuest by email (BR-307)
-                activate NotificationService
-                NotificationService-->AgendaService: Notification created / delivery failed\n(failure does not undo the change)
-                deactivate NotificationService
-            end
-            AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
-            AgendaService-->AgendaController: MSG61 - Agenda item updated successfully.
-            AgendaController-->MeetingPage: MSG61 - Agenda item updated successfully.
-            MeetingPage-->Secretary: MSG61 - Agenda item updated successfully.
-        end
-    end
+    AgendaService-->AgendaController: Item updated successfully
+    AgendaController-->AgendaPage: MSG61 - Agenda item updated successfully.
+    AgendaPage-->Secretary: MSG61 - Agenda item updated successfully.
 end
 
 deactivate AgendaService
 deactivate AgendaController
-deactivate MeetingPage
+deactivate AgendaPage

@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-46a · BR-359 · MSG302",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-46a · BR-359 · MSG303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Boundary",
           "note": "UC-46a · BR-359 · MSG302",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,38 +69,7 @@
           "type": "Abnormal",
           "note": "UC-46a · BR-359 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "No segment exists for the id."
-          ],
-          "inputs": "segmentId: an unknown id; actorId: an active user; text: corrected sentence.",
-          "return": "Failure NotFound; answered as if the segment does not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Transcript segment exists; actor is the current secretary.",
-            "The store fails while saving."
-          ],
-          "inputs": "segmentId: an existing segment; actorId: the current secretary; text: corrected sentence.",
-          "return": "Failure SaveFailed (MSG304 \"Không lưu được thay đổi bản ghi. Vui lòng thử lại.\"); the edit is rolled back.",
-          "exception": "PersistenceException is caught inside the service.",
-          "log": "Error logged with the segment id.",
-          "type": "Abnormal",
-          "note": "UC-46a · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

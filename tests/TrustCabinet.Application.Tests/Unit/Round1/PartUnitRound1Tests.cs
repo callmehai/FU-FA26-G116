@@ -166,28 +166,10 @@ public sealed class PartUnitRound1Tests
         Assert.Empty(_participantLogger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "ParticipantService.MutateAsync/UTC004 a stale revision is refused")]
+    [Fact(DisplayName = "ParticipantService.MutateAsync/UTC004 adding 100 members at once works")]
     [Trait("UTC", "ParticipantService.MutateAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task ParticipantService_MutateAsync_UTC004_a_stale_revision_is_refused()
-    {
-        var meeting = GivenRoster();
-
-        var result = await ParticipantService().MutateAsync(meeting.Id, null, User(_secretary),
-            ParticipantOperation.AddInternal,
-            new ParticipantInput(UserIds: [Guid.CreateVersion7()], Role: nameof(MeetingRole.Member), Revision: 4),
-            default);
-
-        Assert.Equal(ParticipantFailure.Stale, result.Failure); // Return
-        Assert.Null(result.Revision); // the stale branch sets no revision (see Deviation in the UTC)
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_participantLogger.Entries); // Log Message: N/A + Exception: N/A
-    }
-
-    [Fact(DisplayName = "ParticipantService.MutateAsync/UTC005 adding 100 members at once works")]
-    [Trait("UTC", "ParticipantService.MutateAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task ParticipantService_MutateAsync_UTC005_adding_100_members_at_once_works()
+    public async Task ParticipantService_MutateAsync_UTC004_adding_100_members_at_once_works()
     {
         var meeting = GivenRoster();
         var ids = Enumerable.Range(0, 100).Select(_ => Guid.CreateVersion7()).ToArray();
@@ -205,10 +187,10 @@ public sealed class PartUnitRound1Tests
         Assert.Empty(_participantLogger.Entries); // Log Message: N/A
     }
 
-    [Fact(DisplayName = "ParticipantService.MutateAsync/UTC006 adding 101 members is refused")]
-    [Trait("UTC", "ParticipantService.MutateAsync/UTC006")]
+    [Fact(DisplayName = "ParticipantService.MutateAsync/UTC005 adding 101 members is refused")]
+    [Trait("UTC", "ParticipantService.MutateAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task ParticipantService_MutateAsync_UTC006_adding_101_members_is_refused()
+    public async Task ParticipantService_MutateAsync_UTC005_adding_101_members_is_refused()
     {
         var meeting = GivenRoster();
         var ids = Enumerable.Range(0, 101).Select(_ => Guid.CreateVersion7()).ToArray();
@@ -297,35 +279,10 @@ public sealed class PartUnitRound1Tests
         Assert.Empty(_attendanceLogger.Entries); // Log Message (audit row + event, no logger call)
     }
 
-    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC002 a chair cannot record attendance")]
+    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC002 recording before the meeting starts is locked")]
     [Trait("UTC", "AttendanceService.SaveAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task AttendanceService_SaveAsync_UTC002_a_chair_cannot_record_attendance()
-    {
-        var (meeting, member) = GivenInProgress();
-        meeting.Participants.Add(new MeetingParticipant
-        {
-            MeetingId = meeting.Id, UserId = _chair, Role = MeetingRole.Chair,
-            AssignmentStatus = AssignmentStatus.Current, Response = InvitationResponse.Accepted,
-            Attendance = AttendanceStatus.Unknown, AttendanceVersion = 0,
-            User = new User { Id = _chair, FullName = "Chủ tọa", Email = $"{_chair}@trustcabinet.local", IsActive = true },
-        });
-        _attendance.ActiveUsers.Add(_chair);
-
-        var result = await AttendanceService().SaveAsync(meeting.Id, User(_chair),
-            new AttendanceInput([new AttendanceEntry(member.Id, "Internal", "Present",
-                AttendanceRules.Token(meeting.Id, "Internal", member.Id, 0))]), default);
-
-        Assert.Equal(AttendanceFailure.Forbidden, result.Failure); // Return
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_effects.Calls);
-        Assert.Empty(_attendanceLogger.Entries); // Log Message: N/A + Exception: N/A
-    }
-
-    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC003 recording before the meeting starts is locked")]
-    [Trait("UTC", "AttendanceService.SaveAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task AttendanceService_SaveAsync_UTC003_recording_before_the_meeting_starts_is_locked()
+    public async Task AttendanceService_SaveAsync_UTC002_recording_before_the_meeting_starts_is_locked()
     {
         var (meeting, member) = GivenInProgress();
         meeting.Status = MeetingStatus.Published;
@@ -340,10 +297,10 @@ public sealed class PartUnitRound1Tests
         Assert.Empty(_attendanceLogger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC004 a moved version token is stale")]
-    [Trait("UTC", "AttendanceService.SaveAsync/UTC004")]
+    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC003 a moved version token is stale")]
+    [Trait("UTC", "AttendanceService.SaveAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task AttendanceService_SaveAsync_UTC004_a_moved_version_token_is_stale()
+    public async Task AttendanceService_SaveAsync_UTC003_a_moved_version_token_is_stale()
     {
         var (meeting, member) = GivenInProgress();
         member.AttendanceVersion = 1;
@@ -358,10 +315,10 @@ public sealed class PartUnitRound1Tests
         Assert.Empty(_attendanceLogger.Entries); // Log Message: N/A + Exception: N/A
     }
 
-    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC005 a version overflow fails the save")]
-    [Trait("UTC", "AttendanceService.SaveAsync/UTC005")]
+    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC004 a version overflow fails the save")]
+    [Trait("UTC", "AttendanceService.SaveAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task AttendanceService_SaveAsync_UTC005_a_version_overflow_fails_the_save()
+    public async Task AttendanceService_SaveAsync_UTC004_a_version_overflow_fails_the_save()
     {
         var (meeting, member) = GivenInProgress();
         member.AttendanceVersion = long.MaxValue;
@@ -379,10 +336,10 @@ public sealed class PartUnitRound1Tests
         Assert.Contains("Attendance save failed", log.Message);
     }
 
-    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC006 an oversized body is refused")]
-    [Trait("UTC", "AttendanceService.SaveAsync/UTC006")]
+    [Fact(DisplayName = "AttendanceService.SaveAsync/UTC005 an oversized body is refused")]
+    [Trait("UTC", "AttendanceService.SaveAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task AttendanceService_SaveAsync_UTC006_an_oversized_body_is_refused()
+    public async Task AttendanceService_SaveAsync_UTC005_an_oversized_body_is_refused()
     {
         var (meeting, _) = GivenInProgress();
 

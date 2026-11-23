@@ -17,7 +17,7 @@
           "return": "GuestAccessResult success with GuestInvitationView { invitationId I1, meeting { id, title \"Họp giao ban\", status \"Published\", planned start/end }, maskedEmail \"ng***@example.com\" }.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); the invitation store is not read.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           "return": "GuestAccessResult Failure(Unavailable) (MSG374).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -62,22 +62,7 @@
           "return": "maskedEmail = \"a***@example.com\" (one leading character when the local part is 3 characters or fewer).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "invitationId: I1; linkToken: <valid link token>.",
-          "log": "N/A",
-          "note": "UC-04",
-          "preconditions": [
-            "Invitation for the email abcd@example.com (at-sign at index 4) is open."
-          ],
-          "return": "maskedEmail = \"ab***@example.com\" (two leading characters from a 4-character local part).",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

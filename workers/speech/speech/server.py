@@ -1,4 +1,4 @@
-"""HTTP front of the speech worker: three routes, JSON out, raw audio in.
+"""HTTP front of the speech worker: four routes, JSON out, raw audio in.
 
 Only the TrustCabinet backend calls this, over the internal Docker network. Uploads are streamed to
 a temporary file (deleted when the request ends) instead of being held in memory, and nothing is
@@ -11,6 +11,7 @@ import hmac
 import json
 import logging
 import os
+import re
 import select
 import socket
 import tempfile
@@ -29,6 +30,8 @@ MAX_SPEAKERS = 20
 # The previous sentence read ahead of a per-mic one: a few dozen words (pipeline.MAX_CONTEXT_WORDS).
 MAX_CONTEXT_CHARS = 2000
 BLOCK = 1 << 20
+# A run id: the backend sends a GUID.
+RUN_ID = re.compile(r"[A-Za-z0-9-]{1,64}")
 
 
 class Engine(Protocol):
@@ -36,9 +39,11 @@ class Engine(Protocol):
 
     def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
                         profile: str = "room", context: str | None = None,
-                        cancelled: Callable[[], bool] | None = None) -> dict: ...
+                        cancelled: Callable[[], bool] | None = None, run: str | None = None) -> dict: ...
 
     def embed_file(self, path: str) -> tuple[bool, dict]: ...
+
+    def progress(self, run: str) -> dict: ...
 
 
 class Rejected(Exception):
@@ -80,6 +85,18 @@ def parse_context(query: str) -> str | None:
     if len(value) > MAX_CONTEXT_CHARS:
         raise Rejected(400, "invalid_parameter")
     return value or None
+
+
+def parse_run(query: str, required: bool = False) -> str | None:
+    """`run`: the caller's id for one transcription, to ask GET /v1/progress about it (letters, digits, '-', ≤ 64)."""
+    values = parse_qs(query, keep_blank_values=True).get("run")
+    if values is None:
+        if required:
+            raise Rejected(400, "invalid_parameter")
+        return None
+    if len(values) != 1 or not RUN_ID.fullmatch(values[0]):
+        raise Rejected(400, "invalid_parameter")
+    return values[0]
 
 
 def authorised(header: str | None, api_key: str | None) -> bool:
@@ -127,6 +144,13 @@ class Handler(BaseHTTPRequestHandler):
                     raise Rejected(405, "method_not_allowed", close=True)
                 self._send(200, {"status": "ok", "models": self.server.engine.model_ids})
                 return
+            if url.path == "/v1/progress":
+                if method != "GET":
+                    raise Rejected(405, "method_not_allowed", close=True)
+                if not authorised(self.headers.get("Authorization"), self.server.api_key):
+                    raise Rejected(401, "unauthorized", close=True)
+                self._send(200, self.server.engine.progress(parse_run(url.query, required=True)))
+                return
             if url.path not in ("/v1/transcribe", "/v1/embed"):
                 raise Rejected(404, "not_found", close=True)
             if method != "POST":
@@ -136,9 +160,10 @@ class Handler(BaseHTTPRequestHandler):
             if url.path == "/v1/transcribe":
                 diarize, speakers, profile = parse_transcribe_query(url.query)
                 context = parse_context(url.query)
+                run = parse_run(url.query)
                 body_path = self._receive_body()
                 self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile, context,
-                                                                   self._client_gone))
+                                                                   self._client_gone, run=run))
             else:
                 if url.query:
                     raise Rejected(400, "invalid_parameter", close=True)

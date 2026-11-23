@@ -16,7 +16,7 @@ activate FolderController
 FolderController->FolderService: renameFolder(ownerId, folderId, name)
 activate FolderService
 
-FolderService->FolderRepository: Get the selected folder owned by the user (BR-219, BR-242)
+FolderService->FolderRepository: Get the selected folder owned by the user
 activate FolderRepository
 FolderRepository->Database: Retrieve the folder
 activate Database
@@ -31,14 +31,12 @@ alt Folder is missing or not owned by the user - EX-1
     LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
 
 else Folder is available
-    FolderService->FolderService: Check the new folder name is not blank,\nduplicate names permitted (BR-220, BR-221)
-
     alt Folder name is blank - EX-2
         FolderService-->FolderController: MSG188 - Enter a folder name.
         FolderController-->LibraryScreen: MSG188 - Enter a folder name.
         LibraryScreen-->Actor: MSG188 - Enter a folder name.
 
-    else Folder name exceeds 400 characters - EX-4
+    else Folder name exceeds 400 characters - EX-3
         FolderService-->FolderController: MSG348 - The text is longer than allowed.
         FolderController-->LibraryScreen: MSG348 - The text is longer than allowed.
         LibraryScreen-->Actor: MSG348 - The text is longer than allowed.
@@ -48,22 +46,14 @@ else Folder is available
         activate FolderRepository
         FolderRepository->Database: Update folder name
         activate Database
-        Database-->FolderRepository: Saved / Failed
+        Database-->FolderRepository: Saved
         deactivate Database
-        FolderRepository-->FolderService: Renamed folder / Failed
+        FolderRepository-->FolderService: Renamed folder
         deactivate FolderRepository
 
-        alt Folder cannot be renamed - EX-3
-            FolderService-->FolderController: MSG192 - Unable to rename the folder. Its name remains unchanged.
-            FolderController-->LibraryScreen: MSG192 - Unable to rename the folder. Its name remains unchanged.
-            LibraryScreen-->Actor: MSG192 - Unable to rename the folder. Its name remains unchanged.
-
-        else Folder is renamed
-            FolderService-->FolderController: Renamed folder
-            FolderController-->LibraryScreen: Renamed folder
-            LibraryScreen->LibraryScreen: Refresh the folder name
-            LibraryScreen-->Actor: MSG191 - Folder renamed successfully.
-        end
+        FolderService-->FolderController: Renamed folder
+        FolderController-->LibraryScreen: Renamed folder
+        LibraryScreen-->Actor: MSG191 - Folder renamed successfully.
     end
 end
 

@@ -35,6 +35,12 @@ export interface Recording {
   canErase: boolean
   /** SCRUM-31 — "None" for a recording kept before speech to text existed. */
   transcriptStatus: TranscriptStatus
+  /** How far a Processing transcript has got, 0–99; 100 once Completed. */
+  transcriptProgressPercent: number
+  /** When the transcript's current or last run started; null while it waits, or for one made before this was kept. */
+  transcriptProcessingStartedAt: string | null
+  /** When the transcript was last completed. */
+  transcriptCompletedAt: string | null
   /** The Chair or a Secretary may save the original file; never in a Secret meeting. */
   canDownload: boolean
   createdById: string
@@ -49,6 +55,8 @@ export interface RecordingList {
   canUpload: boolean
   /** The caller may switch the room mic on now: the meeting's Secretary, while it runs in a room. */
   canRecord: boolean
+  /** The largest file the upload takes (`Recordings:MaxUploadMegabytes`); checked before sending (MSG293). */
+  maxUploadBytes: number
   items: Recording[]
 }
 

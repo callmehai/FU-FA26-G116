@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-59 · UC-60 · BR-264",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Normal",
           "note": "UC-59",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "No draft; agenda item 1 \"Báo cáo\" presented by \"Phạm Dũng\" and item 2 \"Khác\" with no presenter; no notes."
-          ],
-          "inputs": "draft: null; records.Agenda: 2 items.",
-          "return": "Section II lists \"### 1. Báo cáo\" with \"Phạm Dũng trình bày. ……\", then \"### 2. Khác\" with \"……\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-59",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "No draft; agenda items with recorded conclusions \"Duyệt ngân sách\" (item \"Ngân sách\") and none for the other item; two vote result lines."
           ],
@@ -68,11 +53,11 @@
           "type": "Normal",
           "note": "UC-59 · BR-264 · BR-392",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "No draft; the Secretary's notes: an unmarked note on item 1 and a note \"Kết luận: Duyệt\" and \"Nhiệm vụ: Gửi báo cáo\" on the same item."
           ],
@@ -83,26 +68,11 @@
           "type": "Normal",
           "note": "UC-59 · UC-82 · BR-392",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
-          "preconditions": [
-            "A reviewed or unreviewed draft with Objectives, Discussion and Conclusions text."
-          ],
-          "inputs": "draft: Objectives \"Mục tiêu A\"; Discussion \"1. Báo cáo\\nNội dung thảo luận\"; Conclusions \"1. Kết luận của chủ trì\\nDuyệt\".",
-          "return": "Section I shows \"Mục tiêu A\"; in section II \"1. Báo cáo\" becomes \"### 1. Báo cáo\" followed by the plain line; in section III the sub-heading becomes \"### 1. Kết luận của chủ trì\"; agenda, notes and conclusions of the records are not used.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-59 · UC-49",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC005",
           "preconditions": [
             "Draft whose text imitates the template's marks."
           ],
@@ -113,11 +83,11 @@
           "type": "Abnormal",
           "note": "UC-59 · BR-385",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC006",
           "preconditions": [
             "Draft discussion with a numbered line of 152 characters after \"1. \" (too long to be a title)."
           ],
@@ -128,7 +98,7 @@
           "type": "Boundary",
           "note": "UC-59",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

@@ -32,18 +32,57 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
 
     public bool IsConfigured => options.Value.IsConfigured;
 
+    /// <summary>How long a progress question may take: the worker answers it from memory, so a slow answer means trouble.</summary>
+    internal static readonly TimeSpan ProgressTimeout = TimeSpan.FromSeconds(3);
+
     public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
-        CancellationToken ct, string? context = null)
+        CancellationToken ct, string? context = null, Guid? run = null)
     {
         var ahead = string.IsNullOrWhiteSpace(context) ? "" : $"&context={Uri.EscapeDataString(context)}";
+        var named = run is { } id ? $"&run={id:D}" : "";
         using var response = await SendAsync(
-            $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}{ahead}", audio, contentType, ct);
+            $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}{ahead}{named}", audio,
+            contentType, ct);
         var body = await ReadBodyAsync<TranscribeBody>(response, ct);
         return new(body.DurationMs, body.Language ?? "vi", body.AsrModel ?? "", body.EmbeddingModel ?? "",
             [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs, s.WordStartsMs,
                 s.WordConfidence))],
             [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))],
             body.Context);
+    }
+
+    /// <summary>
+    /// GET /v1/progress. Any failure — not configured, unreachable, slow, an older worker without the route, an answer
+    /// that does not parse — is null: the caller shows the bar where it was and the run goes on.
+    /// </summary>
+    public async Task<SpeechProgress?> ProgressAsync(Guid run, CancellationToken ct)
+    {
+        if (!IsConfigured) return null;
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(ProgressTimeout);
+        try
+        {
+            var client = clients.CreateClient(HttpClientName);
+            using var request = new HttpRequestMessage(HttpMethod.Get,
+                new Uri(new Uri(options.Value.BaseUrl.TrimEnd('/') + "/"), $"v1/progress?run={run:D}"));
+            if (!string.IsNullOrEmpty(options.Value.ApiKey))
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", options.Value.ApiKey);
+            using var response = await client.SendAsync(request, timeout.Token);
+            if (!response.IsSuccessStatusCode) return null;
+            var body = await response.Content.ReadFromJsonAsync<ProgressBody>(Json, timeout.Token);
+            return body?.State switch
+            {
+                "running" => new(SpeechRunState.Running, Math.Clamp(body.Percent, 0, 100)),
+                "queued" => new(SpeechRunState.Queued, 0),
+                "unknown" => new(SpeechRunState.Unknown, 0),
+                _ => null,
+            };
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or NotSupportedException
+            || ex is OperationCanceledException && !ct.IsCancellationRequested)
+        {
+            return null;
+        }
     }
 
     /// <summary>SCRUM-35 — the embedding of one enrolment sample, after the worker's quality checks.</summary>
@@ -117,6 +156,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     }
 
     private sealed record ErrorBody(string? Error);
+    private sealed record ProgressBody(string? State, int Percent);
     private sealed record EmbedBody(float[]? Embedding, string? Model, long SpeechMs);
     private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text, double? LevelDbfs,
         long[]? WordStartsMs, int[]? WordConfidence);

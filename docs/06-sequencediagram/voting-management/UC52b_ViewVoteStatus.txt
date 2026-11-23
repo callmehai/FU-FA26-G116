@@ -4,114 +4,97 @@ actor "User" as Actor
 boundary "Meeting Management Page" as MeetingPage
 control ":Vote Controller" as VoteController
 control ":Vote Service" as VoteService
-participant ":Meeting Participant Repository" as ParticipantRepository
 participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Vote Repository" as VoteRepository
-participant ":Vote Receipt Repository" as VoteReceiptRepository
-participant ":Vote Choice Repository" as VoteChoiceRepository
 database ":Database" as Database
 
 Actor->MeetingPage: Select a Vote from the Meeting Voting area
 activate MeetingPage
+
 MeetingPage->VoteController: View Vote status
 activate VoteController
 VoteController->VoteService: getVoteStatus(meetingId, voteId, actorId)
 activate VoteService
 
-VoteService->MeetingAccessPolicy: Check actor can currently view the Meeting's Votes (BR-29, BR-181, BR-274)
+VoteService->MeetingAccessPolicy: Check actor can view the Meeting's Votes
 activate MeetingAccessPolicy
-MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+MeetingAccessPolicy->Database: Check Meeting relationship or Guest invitation
 activate Database
 Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
 MeetingAccessPolicy-->VoteService: Access / No access
 deactivate MeetingAccessPolicy
-VoteService->VoteRepository: Get Vote and its Meeting with current statuses
+
+VoteService->VoteRepository: Get Vote and its Meeting
 activate VoteRepository
-VoteRepository->Database: Get Vote and its Meeting with current statuses
+VoteRepository->Database: Retrieve Vote and Meeting
 activate Database
-Database-->VoteRepository: Vote and Meeting / Not found
+Database-->VoteRepository: Vote and Meeting
 deactivate Database
-VoteRepository-->VoteService: Vote and Meeting / Not found
+VoteRepository-->VoteService: Vote and Meeting
 deactivate VoteRepository
-VoteService->ParticipantRepository: Check current Chair or Secretary assignment (BR-253)
-activate ParticipantRepository
-ParticipantRepository->Database: Check current Chair or Secretary assignment (BR-253)
-activate Database
-Database-->ParticipantRepository: Current Chair or Secretary / Not eligible
-deactivate Database
-ParticipantRepository-->VoteService: Current Chair or Secretary / Not eligible
-deactivate ParticipantRepository
-alt Meeting or Vote unavailable, access lost or Draft Vote not visible to the actor - EX-1
+
+alt Meeting or Vote unavailable or Draft not visible - EX-1
     VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
     VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
     MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
-else Vote is accessible and visible (BR-29, BR-181, BR-253, BR-274)
+else Vote is accessible and visible
     alt Vote is Draft - AF-1
-        VoteService->VoteRepository: Get saved content, options, ballot type, selected roles and Vote documents\n(no eligible-voter list or ballots exist yet) (BR-190, BR-253, BR-288)
+        VoteService->VoteRepository: Get Draft configuration
         activate VoteRepository
-        VoteRepository->Database: Get saved content, options, ballot type, selected roles and Vote documents\n(no eligible-voter list or ballots exist yet) (BR-190, BR-253, BR-288)
+        VoteRepository->Database: Retrieve Draft configuration
         activate Database
-        Database-->VoteRepository: Draft Vote configuration / Load failed
+        Database-->VoteRepository: Draft configuration
         deactivate Database
-        VoteRepository-->VoteService: Draft Vote configuration / Load failed
+        VoteRepository-->VoteService: Draft configuration
         deactivate VoteRepository
+        VoteService-->VoteController: Draft configuration
+        VoteController-->MeetingPage: Draft configuration
+        MeetingPage-->Actor: Show Draft configuration
     else Vote is Open - Main Flow
-        VoteService->VoteRepository: Get content, options, ballot type, selected roles, opening time,\nfixed eligible-voter count and Vote documents (BR-190, BR-285, BR-288)
+        VoteService->VoteRepository: Get Open Vote configuration
         activate VoteRepository
-        VoteRepository->Database: Get content, options, ballot type, selected roles, opening time,\nfixed eligible-voter count and Vote documents (BR-190, BR-285, BR-288)
+        VoteRepository->Database: Retrieve Open Vote configuration
         activate Database
-        Database-->VoteRepository: Open Vote configuration / Load failed
+        Database-->VoteRepository: Open Vote configuration
         deactivate Database
-        VoteRepository-->VoteService: Open Vote configuration / Load failed
+        VoteRepository-->VoteService: Open Vote configuration
         deactivate VoteRepository
-        VoteService->VoteReceiptRepository: Count ballots recorded against the fixed count;\nno individual choice or result per option (BR-259, BR-260)
-        activate VoteReceiptRepository
-        VoteReceiptRepository->Database: Count ballots recorded against the fixed count;\nno individual choice or result per option (BR-259, BR-260)
+
+        VoteService->VoteRepository: Count recorded ballots
+        activate VoteRepository
+        VoteRepository->Database: Count ballots
         activate Database
-        Database-->VoteReceiptRepository: Turnout / Load failed
+        Database-->VoteRepository: Turnout
         deactivate Database
-        VoteReceiptRepository-->VoteService: Turnout / Load failed
-        deactivate VoteReceiptRepository
-        VoteService->VoteService: If the Meeting has ended, mark the Vote as no longer accepting ballots (BR-165)
+        VoteRepository-->VoteService: Turnout
+        deactivate VoteRepository
+
+        VoteService-->VoteController: Open Vote status
+        VoteController-->MeetingPage: Open Vote status
+        MeetingPage-->Actor: Show Open Vote status and turnout
     else Vote is Closed - AF-2
-        VoteService->VoteRepository: Get content, opening and closing times, fixed eligible-voter count,\nrecorded-ballot count and saved Chair conclusion with note, if any (BR-161, BR-263)
+        VoteService->VoteRepository: Get Closed Vote and conclusion
         activate VoteRepository
-        VoteRepository->Database: Get content, opening and closing times, fixed eligible-voter count,\nrecorded-ballot count and saved Chair conclusion with note, if any (BR-161, BR-263)
+        VoteRepository->Database: Retrieve Closed Vote and conclusion
         activate Database
-        Database-->VoteRepository: Closed Vote and conclusion / Load failed
+        Database-->VoteRepository: Closed Vote and conclusion
         deactivate Database
-        VoteRepository-->VoteService: Closed Vote and conclusion / Load failed
+        VoteRepository-->VoteService: Closed Vote and conclusion
         deactivate VoteRepository
-        VoteService->VoteChoiceRepository: Get tally per option; percentages use ballots cast (BR-261)
-        activate VoteChoiceRepository
-        VoteChoiceRepository->Database: Get tally per option; percentages use ballots cast (BR-261)
+
+        VoteService->VoteRepository: Get tally per option
+        activate VoteRepository
+        VoteRepository->Database: Retrieve tally
         activate Database
-        Database-->VoteChoiceRepository: Tally / Load failed
+        Database-->VoteRepository: Tally
         deactivate Database
-        VoteChoiceRepository-->VoteService: Tally / Load failed
-        deactivate VoteChoiceRepository
-        alt Public Vote
-            VoteService->VoteChoiceRepository: Get each recorded choice with its voter and match it with the\neligible-voter list, or mark the person as not voted (BR-259, BR-273)
-            activate VoteChoiceRepository
-            VoteChoiceRepository->Database: Retrieve choices with voters
-            activate Database
-            Database-->VoteChoiceRepository: Choice per eligible voter / Load failed
-            deactivate Database
-            VoteChoiceRepository-->VoteService: Choice per eligible voter / Load failed
-            deactivate VoteChoiceRepository
-        else Secret Vote
-            VoteService->VoteService: Return totals only, with no voter-choice link (BR-259)
-        end
-    end
-    alt Status or result cannot be loaded - EX-2
-        VoteService-->VoteController: MSG208 - Unable to load the vote status or result. Please try again.
-        VoteController-->MeetingPage: MSG208 - Unable to load the vote status or result. Please try again.
-        MeetingPage-->Actor: MSG208 - Unable to load the vote status or result. Please try again.
-    else Status or result is loaded
-        VoteService-->VoteController: Vote status or result allowed for its ballot type
-        VoteController-->MeetingPage: Vote status or result
-        MeetingPage-->Actor: Show Draft configuration, Open turnout, or Closed tally and conclusion
+        VoteRepository-->VoteService: Tally
+        deactivate VoteRepository
+
+        VoteService-->VoteController: Closed Vote result
+        VoteController-->MeetingPage: Closed Vote result
+        MeetingPage-->Actor: Show tally and conclusion
     end
 end
 

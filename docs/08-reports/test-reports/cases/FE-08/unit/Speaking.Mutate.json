@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-79 · BR-339",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-79 · MSG458",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Abnormal",
           "note": "UC-79 · MSG457 · BR-338",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,38 +71,7 @@
           "type": "Abnormal",
           "note": "UC-79 · MSG459 · BR-338",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Meeting InProgress; actor holds a Queued request (never invited) and is connected to the room."
-          ],
-          "inputs": "operation: Start; requestId: that request; actor: its owner.",
-          "return": "NotOpen; 409 \"Yêu cầu phát biểu này đã thay đổi. Hãy tải lại danh sách.\" (MSG460); only an Invited request can start.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-79 · MSG460",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting InProgress; actor is connected to the room.",
-            "The write fails in storage."
-          ],
-          "inputs": "operation: Raise; actor: the participant.",
-          "return": "SaveFailed; 503 \"Không lưu được thay đổi lượt phát biểu. Vui lòng thử lại.\" (MSG462); nothing is saved; no change is published.",
-          "exception": "N/A",
-          "log": "Failed speaking {Operation} for meeting {MeetingId}.",
-          "type": "Abnormal",
-          "note": "UC-79 · MSG462",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

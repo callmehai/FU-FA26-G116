@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-44e · BR-348 · BR-341 · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "UC-44e · BR-348 · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Normal",
           "note": "UC-44e · BR-348 · BR-457 · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,7 +68,7 @@
           "type": "Abnormal",
           "note": "UC-44e · BR-348 · BR-341 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -83,22 +83,7 @@
           "type": "Abnormal",
           "note": "UC-44e · BR-348 · MSG364",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The database fails while saving."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "SaveFailed (503, MSG298); the file is not deleted.",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to erase recording'.",
-          "type": "Abnormal",
-          "note": "UC-44e · BR-348 · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

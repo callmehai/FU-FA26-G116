@@ -62,7 +62,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                         canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
                         s.AssignedGuestId, AutoAssigned(s)))],
-                    people, canExport && transcript.Status == TranscriptStatus.Completed));
+                    people, canExport && transcript.Status == TranscriptStatus.Completed, transcript.ProgressPercent,
+                    transcript.ProcessingStartedAt));
             }, ct);
         }
         catch (PersistenceException ex)
@@ -97,6 +98,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcript.Status = TranscriptStatus.Pending;
                     transcript.ErrorMessage = "";
                     transcript.ProgressPercent = 0;
+                    transcript.ProcessingStartedAt = null;
                     transcript.UpdatedAt = now;
                 }
                 else return new(TranscriptFailure.NotRetryable);
@@ -406,12 +408,14 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         // is claimed next instead of waiting behind minutes of work whose result would be thrown away.
         using var stale = CancellationTokenSource.CreateLinkedTokenSource(ct);
         using var stopWatching = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var watch = WatchAsync(transcriptId, stale, stopWatching.Token);
+        // A new id each run: a run made stale may still be winding down in the worker under the old one.
+        var run = Guid.CreateVersion7();
+        var watch = WatchAsync(transcriptId, run, stale, stopWatching.Token);
         try
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
             await using var audio = storage.OpenRead(recording.StoragePath);
-            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token);
+            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token, run: run);
         }
         catch (Exception ex) when (ex is OperationCanceledException && stale.IsCancellationRequested && !ct.IsCancellationRequested)
         {
@@ -437,18 +441,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     /// <summary>How often a running transcript checks that it is still the version to make.</summary>
     internal TimeSpan StaleCheckEvery { get; init; } = TimeSpan.FromSeconds(5);
 
+    /// <summary>The highest progress written before the result: 100 means written, and only the result writes it.</summary>
+    internal const int MaxRunningPercent = 99;
+
     /// <summary>
     /// Cancels <paramref name="stale"/> once the transcript is no longer Processing: whatever moved it (a new take, an
-    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away.
+    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away. While it is
+    /// still current, each look also asks the worker how far <paramref name="run"/> has got and writes it down, so the
+    /// Bản ghi tab shows a bar that moves (PO 23/11/2026) instead of a spinner for the half hour a long meeting takes.
     /// </summary>
-    private async Task WatchAsync(Guid transcriptId, CancellationTokenSource stale, CancellationToken ct)
+    private async Task WatchAsync(Guid transcriptId, Guid run, CancellationTokenSource stale, CancellationToken ct)
     {
+        var written = 0;
         try
         {
             while (true)
             {
                 await Task.Delay(StaleCheckEvery, clock, ct);
-                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct)) continue;
+                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct))
+                {
+                    written = await ReportProgressAsync(transcriptId, run, written, ct);
+                    continue;
+                }
                 await stale.CancelAsync();
                 return;
             }
@@ -460,6 +474,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             // Not being able to look is no reason to stop: the result is checked again before it is written.
             logger.LogWarning(ex.InnerException ?? ex, "Could not check whether transcript {TranscriptId} is stale", transcriptId);
+        }
+    }
+
+    /// <summary>
+    /// Writes how far the worker says <paramref name="run"/> got, when that is past <paramref name="written"/>; returns
+    /// what is written now. A worker that cannot say, or a write that fails, leaves the bar where it was: progress is
+    /// something to look at, never a reason to stop or fail the run.
+    /// </summary>
+    private async Task<int> ReportProgressAsync(Guid transcriptId, Guid run, int written, CancellationToken ct)
+    {
+        if (await engine.ProgressAsync(run, ct) is not { State: SpeechRunState.Running } progress) return written;
+        var percent = Math.Clamp(progress.Percent, 0, MaxRunningPercent);
+        if (percent <= written) return written;
+        try
+        {
+            await ReadAsync(token => transcripts.SetProgressAsync(transcriptId, percent, token), ct);
+            return percent;
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogWarning(ex.InnerException ?? ex, "Could not write the progress of transcript {TranscriptId}", transcriptId);
+            return written;
         }
     }
 
@@ -724,8 +760,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
         }
         var options = voiceOptions.Value;
-        return (SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold), nameable);
+        var suggestions = SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold,
+            options.SuggestMargin, options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold);
+        LogScores(meetingId, result.Speakers, candidates, suggestions);
+        return (suggestions, nameable);
+    }
+
+    /// <summary>
+    /// The two best scores of every voice, named or not, so a voice left "Người nói N" shows whether it fell short of
+    /// <see cref="VoiceIdOptions.SuggestThreshold"/> or tied within <see cref="VoiceIdOptions.SuggestMargin"/> (Hải,
+    /// 23/11/2026). Only labels, user ids and numbers are logged: never an embedding, a name or audio.
+    /// </summary>
+    private void LogScores(Guid meetingId, IReadOnlyList<SpeechSpeaker> speakers,
+        IReadOnlyList<SpeakerMatcher.Candidate> candidates, IReadOnlyDictionary<string, SpeakerMatcher.Suggestion> suggestions)
+    {
+        if (candidates.Count == 0 || !logger.IsEnabled(LogLevel.Information)) return;
+        foreach (var (label, ranked) in SpeakerMatcher.Scores(speakers, candidates).OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var top = string.Join(", ", ranked.Take(2).Select(x => $"{x.UserId}={x.Score:0.000}"));
+            var named = suggestions.TryGetValue(label, out var suggestion) ? suggestion.UserId.ToString() : "none";
+            logger.LogInformation("Voice scores in meeting {MeetingId}: {Label} best {Top}; suggested {Suggested}",
+                meetingId, label, top, named);
+        }
     }
 
     /// <summary>

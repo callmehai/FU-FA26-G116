@@ -32,7 +32,8 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var items = await ReadAsync(token => recordings.ListAsync(meetingId, token), ct);
             return new(Data: new RecordingList(meetingId,
                 secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.TakesUploads(meeting.Mode),
-                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
+                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId),
+                options.Value.MaxUploadBytes));
         }
         catch (PersistenceException ex)
         {
@@ -279,5 +280,6 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         r.ByteSize, r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName,
         r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status == RecordingStatus.Available,
         r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available, r.CreatedById, r.Takes,
-        secretary && r.Status == RecordingStatus.Pending);
+        secretary && r.Status == RecordingStatus.Pending, r.Transcript?.ProgressPercent ?? 0, r.Transcript?.ProcessingStartedAt,
+        r.Transcript?.CompletedAt);
 }

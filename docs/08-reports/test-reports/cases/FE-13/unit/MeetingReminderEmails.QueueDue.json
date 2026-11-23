@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Boundary",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,37 +68,7 @@
           "type": "Abnormal",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A Guest invitation; the link provider returns Unavailable."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "No email for the Guest and the key is not recorded, so the next cycle tries again; participants are unaffected.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04 · BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The meeting title contains a line break and is 320 characters long."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "The subject has the line break replaced by a space and is at most 300 characters.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

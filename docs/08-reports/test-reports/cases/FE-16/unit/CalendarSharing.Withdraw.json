@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-84e · MSG438",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,27 +40,11 @@
           "type": "Abnormal",
           "note": "UC-84e · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
-          ],
-          "inputs": "actor: a third user.",
-          "return": "Failure NotFound (404).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20.",
@@ -73,7 +57,7 @@
           "type": "Abnormal",
           "note": "UC-84e · MSG447",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

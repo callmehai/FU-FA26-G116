@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-36 · BR-229 · MSG177",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-36 · MSG179",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Storage used 10 MB, limit 11 MB."
-          ],
-          "inputs": "files: one 1 MB file.",
-          "return": "Value returned; exactly at the limit.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-36 · ADR-0034",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Storage used 10 MB, limit 11 MB."
           ],
@@ -68,11 +53,11 @@
           "type": "Boundary",
           "note": "UC-36 · MSG346",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Ten files whose lengths add to more than 100 MB."
           ],
@@ -83,7 +68,7 @@
           "type": "Abnormal",
           "note": "UC-36 · BR-286 · MSG178",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

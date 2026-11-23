@@ -9,16 +9,32 @@
     "changes": [
       {
         "date": "2026-11-13",
-        "description": "Rebuilt as a JSON pipeline like 5.2/5.2.2: one sheet per production function, UTC rows, from unit/*.json",
+        "version": "2.0",
         "item": "All sheets",
-        "reference": "docs/08-reports/test-reports/AGENTS.md",
+        "type": "A",
+        "description": "Unit test report created: one sheet per business function, with test cases listed per function.",
+        "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "2026-11-23",
+        "version": "2.1",
+        "item": "All sheets",
         "type": "M",
-        "version": "2.0"
+        "description": "Test cases reduced to 604, covering all 149 functions with Normal, Abnormal and Boundary cases. Round 1 executed: all Passed.",
+        "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "2026-11-23",
+        "version": "2.1",
+        "item": "Statistics, MethodList",
+        "type": "M",
+        "description": "Added summary charts; statistics follow the latest executed round. Function list reformatted.",
+        "reference": "Report 5.0 Test Documentation"
       }
     ],
     "creator": "TrustCabinet Team",
-    "issueDate": "2026-11-13",
-    "version": "2.0"
+    "issueDate": "2026-11-23",
+    "version": "2.1"
   },
   "inventory": {
     "infrastructure": [

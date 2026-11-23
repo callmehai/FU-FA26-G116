@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-70a EX-1 · BR-433 · MSG463",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Abnormal",
           "note": "UC-70a EX-2 · MSG464",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,23 +70,7 @@
           "type": "Boundary",
           "note": "UC-70a · BR-435 · BR-436",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The period is valid.",
-            "The caller stops waiting while the read is running."
-          ],
-          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\"; cancellation requested.",
-          "return": "N/A",
-          "exception": "The cancellation escapes to the caller; it is not converted into ReadFailed.",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-70a",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

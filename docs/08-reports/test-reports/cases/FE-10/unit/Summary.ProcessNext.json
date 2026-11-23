@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-47 · BR-376 · BR-378 · BR-379",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Normal",
           "note": "UC-47",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Normal",
           "note": "UC-47 · Claim lost to another worker: the fake store answers 0 changed rows and leaves the draft Running, the way a second worker that claimed first would.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,37 +69,7 @@
           "type": "Abnormal",
           "note": "UC-47",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A draft is Queued; writing it fails unexpectedly."
-          ],
-          "inputs": "No arguments; the model call throws.",
-          "return": "true; the draft is Failed with \"Không viết được dự thảo. Vui lòng thử lại.\".",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-47",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A draft is Queued and written; storing it fails."
-          ],
-          "inputs": "No arguments; the store rejects the finished draft.",
-          "return": "true; the draft is Failed with \"Không lưu được dự thảo. Vui lòng thử lại.\"; it is left out of Running so it never blocks the next request.",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-47",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

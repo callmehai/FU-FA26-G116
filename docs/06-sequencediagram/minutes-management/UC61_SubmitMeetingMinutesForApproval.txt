@@ -1,72 +1,60 @@
 title UC-61 - Submit Meeting Minutes for Approval
 
 actor "Secretary" as Actor
-boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Endpoints" as MinutesEndpoints
+boundary "Meeting Management Page" as MeetingPage
+control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Notification Service" as NotificationService
 participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
-Actor->MinutesCard: Confirm Submit for Approval
-activate MinutesCard
-MinutesCard->MinutesEndpoints: submit(minutesId, updatedAt)
-activate MinutesEndpoints
-MinutesEndpoints->MinutesService: SubmitAsync(minutesId, actorId, updatedAt)
+Actor->MeetingPage: Select Submit for approval
+activate MeetingPage
+
+MeetingPage->MinutesController: Submit meeting minutes for approval
+activate MinutesController
+MinutesController->MinutesService: submitMinutes(meetingId, actorId)
 activate MinutesService
-MinutesService->MinutesRepository: lock the Meeting and the revision
-MinutesRepository->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
+
+MinutesService->MinutesRepository: Load the revision
+activate MinutesRepository
+MinutesRepository->Database: Retrieve revision
 activate Database
-Database-->MinutesRepository: Meeting and revision / None
+Database-->MinutesRepository: Revision
 deactivate Database
-MinutesRepository-->MinutesService: Meeting and revision / None
+MinutesRepository-->MinutesService: Revision
+deactivate MinutesRepository
 
-alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-6
-    MinutesService-->MinutesEndpoints: Not found
-    MinutesEndpoints-->MinutesCard: 404
-    MinutesCard-->Actor: No minutes
-else Actor is the current Chair, not the Secretary - EX-1
-    MinutesService-->MinutesEndpoints: MSG425 - Only the Secretary may submit the minutes for approval.
-    MinutesEndpoints-->MinutesCard: 403 MSG425
-    MinutesCard-->Actor: MSG425 - Only the Secretary may submit the minutes for approval.
-else Actor is the current Secretary
-    MinutesService->MinutesService: Check the Meeting has Ended (BR-405), the revision is Draft or returned (BR-407)\nand it is the copy the actor read (BR-389)
+alt Actor is the current Chair, not the Secretary - EX-1
+    MinutesService-->MinutesController: MSG425 - Only the Secretary may submit the minutes for approval.
+    MinutesController-->MeetingPage: MSG425 - Only the Secretary may submit the minutes for approval.
+    MeetingPage-->Actor: MSG425 - Only the Secretary may submit the minutes for approval.
+else Actor is the Secretary
+    alt Meeting has not ended - EX-2
+        MinutesService-->MinutesController: MSG426 - The minutes can be submitted only after the meeting has ended.
+        MinutesController-->MeetingPage: MSG426 - The minutes can be submitted only after the meeting has ended.
+        MeetingPage-->Actor: MSG426 - The minutes can be submitted only after the meeting has ended.
+    else Meeting has ended
+        alt Revision was already submitted or issued - EX-3
+            MinutesService-->MinutesController: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+            MinutesController-->MeetingPage: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+            MeetingPage-->Actor: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+        else Revision is a draft or returned
+            MinutesService->MinutesRepository: Mark revision waiting for approval
+            activate MinutesRepository
+            MinutesRepository->Database: Update revision and notification
+            activate Database
+            Database-->MinutesRepository: Updated
+            deactivate Database
+            MinutesRepository-->MinutesService: Updated
+            deactivate MinutesRepository
 
-    alt The Meeting has not ended - EX-2
-        MinutesService-->MinutesEndpoints: MSG426 - The minutes can be submitted only after the meeting has ended.
-        MinutesEndpoints-->MinutesCard: 409 MSG426
-        MinutesCard-->Actor: MSG426 - The minutes can be submitted only after the meeting has ended.
-    else Already submitted or issued - EX-3
-        MinutesService-->MinutesEndpoints: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-        MinutesEndpoints-->MinutesCard: 409 MSG400
-        MinutesCard-->Actor: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-    else Saved since the actor read it - EX-4
-        MinutesService-->MinutesEndpoints: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-        MinutesEndpoints-->MinutesCard: 409 MSG401
-        MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-    else Submission valid
-        MinutesService->MinutesRepository: save the submitted revision with the Chair's notification
-        MinutesRepository->Database: Set WaitingApproval, who submitted and when, together with\nthe Chair's notification, in one save (BR-388, BR-411)
-        activate Database
-        Database-->MinutesRepository: Saved / Failed
-        deactivate Database
-        MinutesRepository-->MinutesService: Saved / Failed
-
-        alt Saved
-            MinutesService->NotificationService: The notification is saved with the state; the dispatcher pushes it
-            activate NotificationService
-            NotificationService-->MinutesService: Queued
-            deactivate NotificationService
-            MinutesService-->MinutesEndpoints: State
-            MinutesEndpoints-->MinutesCard: 200 MSG424 - Minutes submitted to the Chair for approval.
-            MinutesCard-->Actor: MSG424 - Minutes submitted to the Chair for approval.
-        else The change cannot be saved - EX-5
-            MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
-            MinutesEndpoints-->MinutesCard: 503 MSG404
-            MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
+            MinutesService-->MinutesController: MSG424 - Minutes submitted to the Chair for approval.
+            MinutesController-->MeetingPage: MSG424 - Minutes submitted to the Chair for approval.
+            MeetingPage-->Actor: MSG424 - Minutes submitted to the Chair for approval.
         end
     end
 end
+
 deactivate MinutesService
-deactivate MinutesEndpoints
-deactivate MinutesCard
+deactivate MinutesController
+deactivate MeetingPage

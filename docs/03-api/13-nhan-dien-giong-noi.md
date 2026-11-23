@@ -126,7 +126,7 @@ Người có quyền **`VoiceCollector`** thu, nghe lại, xoá giọng mẫu th
   nên đồng ý 1.4 vẫn đủ).
 - Mỗi lần thu phải gửi kèm `personAgreed=true` (người thu đã hỏi và người đó đồng ý cho lần thu này): thiếu là `400 MSG483`.
 
-Tối đa 50 mẫu thu hộ cho một người (ai thu cũng tính). Mẫu mã hoá gắn với người được thu, nằm dưới đồng ý Voice ID của họ;
+Tối đa 5 mẫu thu hộ cho một người (ai thu cũng tính; từ 23/11/2026, trước là 50). Mẫu mã hoá gắn với người được thu, nằm dưới đồng ý Voice ID của họ;
 bản ghi mẫu luôn được lưu (mã hoá) để người thu nghe lại kiểm tra. Mỗi lần thu, chủ mẫu nhận thông báo `VoiceSampleCollected`.
 Thu và xoá ghi nhật ký với `scope: "proxy"`, `meetingId: null`.
 
@@ -135,13 +135,13 @@ Thu và xoá ghi nhật ký với `scope: "proxy"`, `meetingId: null`.
 ```json
 {
   "userId": "…", "fullName": "Nguyễn Văn A", "consented": true, "canCollect": true,
-  "maxSamples": 50,
+  "maxSamples": 5,
   "samples": [ { "id": "…", "createdAt": "…", "speechMs": 9100, "playable": true,
                  "meetingId": null, "meetingTitle": null, "collectedByName": "Lê Thư Ký" } ]
 }
 ```
 
-`consented`: đồng ý hiện có là theo thông báo 1.4 trở lên. `canCollect`: đã đồng ý và chưa đủ 50 mẫu. (`maxSamplesPerCollector`
+`consented`: đồng ý hiện có là theo thông báo 1.4 trở lên. `canCollect`: đã đồng ý và chưa đủ 5 mẫu. (`maxSamplesPerCollector`
 đã bỏ cùng giới hạn 5 mẫu mỗi người thu, ADR-0075.) `samples`: **mọi** mẫu thu hộ của người đó, trong cuộc họp (`meetingId`, `meetingTitle` có giá trị) và
 ngoài cuộc họp, ai thu cũng hiện. Không gồm mẫu người đó tự thu.
 
@@ -149,7 +149,7 @@ ngoài cuộc họp, ai thu cũng hiện. Không gồm mẫu người đó tự 
 
 Kiểm tra tệp và chất lượng như `POST /api/me/voice/samples` (`415 MSG292`, `422 MSG309`, `503 MSG312`). `201 MSG473`,
 `data` có dạng một phần tử của `samples` ở trên. Người được thu nhận thông báo `VoiceSampleCollected`. Chưa đồng ý theo
-thông báo 1.4: `409 MSG475`. Thiếu `personAgreed=true`: `400 MSG483`. Đủ 50 mẫu: `409 MSG476`.
+thông báo 1.4: `409 MSG475`. Thiếu `personAgreed=true`: `400 MSG483`. Đủ 5 mẫu: `409 MSG476`.
 
 ### `GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio`
 
@@ -187,6 +187,10 @@ họp; người khác nhận `null`. Tên hiển thị của một giọng: `ass
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
 và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
 xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
+Người xếp sau đã được gợi ý chắc hơn cho một giọng khác, mà giọng đó nghe không giống giọng đang xét (cosine
+< `SameVoiceThreshold`), thì không tính là người xếp sau: một người không thể là hai giọng khác nhau. Ví dụ buổi thử
+23/11/2026: giọng của Hải được 0,670 với Hải và 0,635 với Khánh. Mẫu của hai người cùng cắt từ một bản ghi mic phòng
+nên nghe giống nhau. Khánh đã là giọng khác ở 0,735, nên Hải được gợi ý thay vì bị bỏ vì sát điểm.
 
 > **21/11/2026** ([ADR-0074](../05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)): mọi ngưỡng
 > Voice ID từng bị hạ xuống 0,5 để bớt "Người nói N"; buổi thử cùng ngày cho thấy một tên nhận tới 7 giọng máy, có giọng

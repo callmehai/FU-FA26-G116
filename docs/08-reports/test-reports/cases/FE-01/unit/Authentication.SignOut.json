@@ -16,7 +16,7 @@
           "return": "Completes without error; T1 is revoked, so no new access token can be issued with it (an access token already issued stays valid until expiry).",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,7 +31,7 @@
           "return": "Completes without error and without a failure result; sign-out is treated as successful.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,22 +46,7 @@
           "return": "Completes without error; the token store is not called.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "refreshToken: \"   \".",
-          "log": "Sign-out with no live refresh token; nothing to revoke.",
-          "note": "UC-03",
-          "preconditions": [
-            "No token store call is needed for a whitespace token."
-          ],
-          "return": "Completes without error; the token store is not called.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

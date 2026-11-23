@@ -23,7 +23,7 @@
           "return": "Returns 1; status Cancelled, CancelledById null, CancelledAt = now, CancelledFromStatus Draft; reason \"Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.\"",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "Returns 1 (start is not later than now minus the delay).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "return": "Returns 0; the meeting is not touched.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,27 +68,12 @@
           "return": "Not cancelled; not counted.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC005",
-          "inputs": "two overdue meetings; first save fails.",
-          "log": "Error logged for the failed meeting; pending changes discarded.",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Saving one of two overdue meetings fails."
-          ],
-          "return": "Returns 1; the failed meeting is left for the next sweep and the tracker is discarded.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "60 overdue meetings.",
           "log": "N/A",
           "note": "UC-75 · BR-301",
@@ -98,7 +83,7 @@
           "return": "At most 50 per sweep.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -23,27 +23,12 @@
           "return": "Success; title updated, status still Draft; Rescheduled false; MSG30.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "id: unknown.",
-          "log": "N/A",
-          "note": "UC-15 · BR-29",
-          "preconditions": [
-            "Meeting does not exist or is not owned by the actor."
-          ],
-          "return": "Failure NotFound (404); the input factory is not called.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "input: any.",
           "log": "N/A",
           "note": "UC-15 · BR-34 · MSG33",
@@ -53,12 +38,12 @@
           "return": "Failure NotEditable; MSG33; the input is not read or validated.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC003",
           "inputs": "input: title \"\".",
           "log": "N/A",
           "note": "UC-15 · BR-24 · MSG31",
@@ -68,12 +53,12 @@
           "return": "Invalid; errors { title }; MSG31; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "input: same title, mode, sensitivity, description; start +1 day, end +1 day.",
           "log": "Saved: Meeting; history row Reschedule (Published to Published) by the organizer; invitation emails staged with previous times; notification \"Cuộc họp đã dời lịch\" for every current invitee except the organizer.",
           "note": "UC-15 · BR-27 · BR-75 · BR-76 · BR-158 · MSG138",
@@ -83,22 +68,7 @@
           "return": "Success with Rescheduled true; MSG138; status stays Published.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC006",
-          "inputs": "valid input on a Draft.",
-          "log": "Error logged with meeting and actor ids; transaction rolled back.",
-          "note": "UC-15 · MSG36",
-          "preconditions": [
-            "The store fails while saving."
-          ],
-          "return": "Failure SaveFailed; MSG36; the error is logged.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -16,7 +16,7 @@
           "return": "No errors; roles parsed as [Chair, Member].",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,7 +31,7 @@
           "return": "errors[title] = [\"Nội dung biểu quyết phải có từ 1 đến 300 ký tự.\"]",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,41 +46,11 @@
           "return": "errors[description] = [\"Mô tả không quá 4000 ký tự.\"]; 4000 characters pass.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "exception": "N/A",
           "id": "UTC004",
-          "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"hà nội\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
-          "log": "N/A",
-          "note": "UC-53 · MSG209",
-          "preconditions": [
-            "Draft input with two options that differ only by case."
-          ],
-          "return": "errors[options] = [\"Cần ít nhất 2 phương án khác nhau, mỗi phương án từ 1 đến 200 ký tự.\"]",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: null; EligibleRoles: [\"Member\"].",
-          "log": "N/A",
-          "note": "UC-53 · MSG209",
-          "preconditions": [
-            "Draft input without an anonymity choice."
-          ],
-          "return": "errors[isAnonymous] = [\"Chọn biểu quyết công khai hoặc kín.\"]",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "Draft input with a title at the length limit."
           ],
@@ -91,7 +61,7 @@
           "type": "Boundary",
           "note": "UC-53 · MSG209",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

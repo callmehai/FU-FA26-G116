@@ -5,60 +5,82 @@ boundary "Reports Page" as ReportsPage
 control ":Report Controller" as ReportController
 control ":Report Service" as ReportService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Audit Service" as AuditService
+participant ":Report Fact Query" as ReportFactQuery
+control ":Audit Service" as AuditService
 participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
-Actor->ReportsPage: Export to Excel for the chosen period
+Actor->ReportsPage: Export the table on screen to Excel
 activate ReportsPage
-ReportsPage->ReportController: Export meeting statistics for the period
+
+ReportsPage->ReportController: Export the table on screen
 activate ReportController
-ReportController->ReportService: exportMeetingStatistics(actorId, fromMonth, toMonth)
+
+ReportController->ReportService: exportTable(actorId, entity, groupBy, sort, top, filters, fromMonth, toMonth)
 activate ReportService
-ReportService->ReportService: Check the start month is not after the end month\nand the period covers at most 24 months (BR-433)
+
 
 alt The period is not valid - EX-1
     ReportService-->ReportController: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
     ReportController-->ReportsPage: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
     ReportsPage-->Actor: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
-else The period is valid
-    ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance,\nactual start and end times, and first minutes issue (BR-432, BR-434, BR-435, BR-436, BR-447)
-    activate MeetingRepository
-    MeetingRepository->Database: Retrieve counts, attendance marks, actual start and end times, and issue times of readable Meetings
-    activate Database
-    Database-->MeetingRepository: Figures / Read failure
-    deactivate Database
-    MeetingRepository-->ReportService: Figures / Read failure
-    deactivate MeetingRepository
 
-    alt The data cannot be read - EX-2
-        ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
-        ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
-        ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
-    else Figures read, zero counts when no Meeting is readable - AF-1
-        ReportService->ReportService: Build the Excel file with the same figures as the page,\nincluding the three average rows (attendance rate, meeting duration in minutes, minutes turnaround),\nno meeting title, participant or content (BR-437, BR-438)
-        ReportService->AuditService: Record the export with the actor and the period (BR-438)
+else The period is valid
+
+    alt The query parameter is not valid - EX-2
+        ReportService-->ReportController: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
+        ReportController-->ReportsPage: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
+        ReportsPage-->Actor: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
+
+    else Query parameters valid
+        ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance, actual start and end times, and first minutes issue (BR-432, BR-434, BR-435, BR-436, BR-447)
+        activate MeetingRepository
+
+        MeetingRepository->Database: Retrieve counts, attendance marks, actual start and end times, and issue times of readable Meetings
+        activate Database
+
+        Database-->MeetingRepository: Figures
+        deactivate Database
+
+        MeetingRepository-->ReportService: Figures
+        deactivate MeetingRepository
+
+        ReportService->ReportFactQuery: Read the rows of the table on screen for readable Meetings only, keeping draft votes and unissued minutes to current Chairs and Secretaries, recordings to current participants, and no combined hours (BR-468)
+        activate ReportFactQuery
+
+        ReportFactQuery->Database: Retrieve readable rows of the table on screen
+        activate Database
+
+        Database-->ReportFactQuery: Figures
+        deactivate Database
+
+        ReportFactQuery-->ReportService: Figures
+        deactivate ReportFactQuery
+
+        ReportService->AuditService: Record the export with the actor, the table, the grouping, the filters and the period (BR-438)
         activate AuditService
+
         AuditService->AuditLogRepository: add(audit entry)
+        activate AuditLogRepository
+
         AuditLogRepository->Database: Insert audit entry
         activate Database
-        Database-->AuditLogRepository: Saved / Write failure
+
+        Database-->AuditLogRepository: Saved
         deactivate Database
-        AuditLogRepository-->AuditService: Saved / Write failure
-        AuditService-->ReportService: Recorded / Write failure
+
+        AuditLogRepository-->AuditService: Saved
+        deactivate AuditLogRepository
+
+        AuditService-->ReportService: Recorded
         deactivate AuditService
 
-        alt The export cannot be recorded - EX-2
-            ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
-            ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
-            ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
-        else Recorded
-            ReportService-->ReportController: Excel file
-            ReportController-->ReportsPage: Excel file
-            ReportsPage-->Actor: Save the Excel file
-        end
+        ReportService-->ReportController: Excel file
+        ReportController-->ReportsPage: Excel file
+        ReportsPage-->Actor: Save the Excel file
     end
 end
+
 deactivate ReportService
 deactivate ReportController
 deactivate ReportsPage

@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-37 · Deviation: at 7286680a closing the room here notified nobody and dropped the closed-hands count with no speaking-queue update; the current code closes the hands instead — SCRUM-213",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,38 +71,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Roster enforcement is off (synthetic connections under check).",
-            "A provider room holds only synthetic people and no session is known."
-          ],
-          "inputs": "No caller arguments (cancellation token only); seeded: the provider room with synthetic connections.",
-          "return": "The room is kept; with enforcement off the synthetic people are exactly what is being checked.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "LiveKit is not configured."
-          ],
-          "inputs": "No caller arguments (cancellation token only).",
-          "return": "Returns at once; the provider is never called.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

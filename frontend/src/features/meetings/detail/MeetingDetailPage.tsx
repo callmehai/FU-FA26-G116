@@ -479,7 +479,11 @@ function MeetingDetail({
           ) : tab === 'recordings' ? (
             <div className="recordings-tab">
               <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
-              <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
+              <RecordingsPanel
+                meetingId={meeting.id}
+                existingOnly={meeting.mode === 'Online'}
+                micInCall={meeting.mode === 'Hybrid' && !callUnusable}
+              />
             </div>
           ) : (
             <MinutesPanel meeting={meeting} />

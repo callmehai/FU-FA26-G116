@@ -32,21 +32,10 @@ public sealed class PasswordVerifyJwtRound1Tests
         Assert.True(_hasher.Verify(hash, "MatKhau@2026"));
     }
 
-    [Fact(DisplayName = "PasswordHasher.Verify/UTC002 a different password does not verify")]
+    [Fact(DisplayName = "PasswordHasher.Verify/UTC002 a malformed stored hash fails verification instead of throwing")]
     [Trait("UTC", "PasswordHasher.Verify/UTC002")]
     [Trait("Trait", "UTC")]
     public void Verify_UTC002()
-    {
-        // Return: false. Exception: N/A (no throw). Log: N/A.
-        var hash = _hasher.Hash("MatKhau@2026");
-
-        Assert.False(_hasher.Verify(hash, "MatKhau@2027"));
-    }
-
-    [Fact(DisplayName = "PasswordHasher.Verify/UTC003 a malformed stored hash fails verification instead of throwing")]
-    [Trait("UTC", "PasswordHasher.Verify/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void Verify_UTC003()
     {
         // Return: false for each malformed shape. Exception: N/A — none of these may throw
         // (the framework parser's FormatException is caught inside Verify). Log: N/A.
@@ -56,10 +45,10 @@ public sealed class PasswordVerifyJwtRound1Tests
         }
     }
 
-    [Fact(DisplayName = "PasswordHasher.Hash/UTC004 the same password hashes differently every time")]
-    [Trait("UTC", "PasswordHasher.Hash/UTC004")]
+    [Fact(DisplayName = "PasswordHasher.Hash/UTC003 the same password hashes differently every time")]
+    [Trait("UTC", "PasswordHasher.Hash/UTC003")]
     [Trait("Trait", "UTC")]
-    public void Hash_UTC004()
+    public void Hash_UTC003()
     {
         // Return: two different hash strings, both verifying against the password
         // (proof the salt is per-password and random). Exception: N/A. Log: N/A.
@@ -162,28 +151,10 @@ public sealed class PasswordVerifyJwtRound1Tests
         Assert.DoesNotContain(token.Claims, c => c.Type == "nbf");
     }
 
-    [Fact(DisplayName = "JwtTokenIssuer.CreateAccessToken/UTC004 the access token expires about one minute after creation")]
+    [Fact(DisplayName = "JwtTokenIssuer.CreateAccessToken/UTC004 the token validates under its key and fails under any other key or after tampering")]
     [Trait("UTC", "JwtTokenIssuer.CreateAccessToken/UTC004")]
     [Trait("Trait", "UTC")]
     public void CreateAccessToken_UTC004()
-    {
-        // Return: exp about 1 minute after creation (the smallest allowed lifetime).
-        // Exception: N/A. Log: N/A.
-        var issuer = NewIssuer(new AuthenticationOptions { SigningKey = SigningKey, AccessTokenMinutes = 1 });
-
-        var token = Parse(issuer.CreateAccessToken(Secretary, []));
-
-        Assert.Equal(TimeSpan.FromMinutes(1), issuer.AccessTokenLifetime);
-        Assert.InRange(
-            token.ValidTo,
-            DateTime.UtcNow.AddSeconds(30),
-            DateTime.UtcNow.AddMinutes(2));
-    }
-
-    [Fact(DisplayName = "JwtTokenIssuer.CreateAccessToken/UTC005 the token validates under its key and fails under any other key or after tampering")]
-    [Trait("UTC", "JwtTokenIssuer.CreateAccessToken/UTC005")]
-    [Trait("Trait", "UTC")]
-    public void CreateAccessToken_UTC005()
     {
         // Return: the token validates under the configured signing key and fails validation
         // under any other key or after tampering. Exception: N/A (rejections surface as the

@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-43c · BR-351",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-43c · BR-351 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-43c · BR-351 · MSG356",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,26 +69,11 @@
           "type": "Boundary",
           "note": "UC-43c · BR-351 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
-          "preconditions": [
-            "The database fails while reading."
-          ],
-          "inputs": "actorId: the Chair.",
-          "return": "ReadFailed (500, MSG297).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to sign a download'.",
-          "type": "Abnormal",
-          "note": "UC-43c · MSG297",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "Available WAV recording in a Normal meeting; the actor is its current Chair.",
             "The server cannot convert audio to MP3 (no converter)."
@@ -100,7 +85,7 @@
           "type": "Abnormal",
           "note": "UC-43c · BR-351 · MSG482 · Deviation: downloads leave as MP3 since ADR-0069 (ea9b880a), after these UTCs were written",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

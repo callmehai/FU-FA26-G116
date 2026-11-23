@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-33c · BR-197 · BR-281 · MSG167",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-33c · BR-211 · MSG170",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-33c · BR-184 · MSG169",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,37 +69,7 @@
           "type": "Abnormal",
           "note": "UC-33c · BR-195 · MSG248",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Ten files whose lengths add to more than 100 MB."
-          ],
-          "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
-          "return": "Failure TooMany (HTTP 400, MSG288).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33c · MSG174",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Database error on save."
-          ],
-          "inputs": "meetingDocumentId: M1.",
-          "return": "Failure StoreFailed (HTTP 503, MSG171); the document stays in the meeting.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to remove a document from meeting\".",
-          "type": "Abnormal",
-          "note": "UC-33c · MSG171",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

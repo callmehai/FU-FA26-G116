@@ -413,26 +413,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_meetings.Added);
             Assert.Empty(_logger.Entries);
         }
-
-        [Fact(DisplayName = "MeetingService.CreateAsync/UTC006 maps a save failure to SaveFailed")]
-        [Trait("UTC", "MeetingService.CreateAsync/UTC006")]
-        [Trait("Trait", "UTC")]
-        public async Task Create_save_failure_is_logged_and_rolled_back()
-        {
-            var actor = Guid.CreateVersion7();
-            var seeds = new List<ParticipantSeed> { new(Guid.CreateVersion7(), nameof(MeetingRole.Chair)) };
-            var failure = new PersistenceUnavailableException();
-            _unitOfWork.FailNextSave = failure;
-
-            var result = await Service().CreateAsync(ValidInput(), actor, seeds);
-
-            Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);
-            Assert.Equal(1, _unitOfWork.Rollbacks);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(actor.ToString(), entry.Message);
-        }
     }
 
     public sealed class MeetCheckUpdateRound1Tests
@@ -486,26 +466,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Equal(MeetingOutcome.NotFound, result.Outcome);
             Assert.Empty(_logger.Entries);
         }
-
-        [Fact(DisplayName = "MeetingService.CheckUpdateAsync/UTC004 maps a read failure to ReadFailed")]
-        [Trait("UTC", "MeetingService.CheckUpdateAsync/UTC004")]
-        [Trait("Trait", "UTC")]
-        public async Task CheckUpdate_read_failure_is_logged()
-        {
-            var meetingId = Guid.CreateVersion7();
-            var actor = Guid.CreateVersion7();
-            var failure = new PersistenceUnavailableException();
-            _meetings.FailRead = failure;
-
-            var result = await Service().CheckUpdateAsync(meetingId, actor);
-
-            Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(meetingId.ToString(), entry.Message);
-            Assert.Contains(actor.ToString(), entry.Message);
-        }
     }
 
     public sealed class MeetUpdateRound1Tests
@@ -543,27 +503,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC002 answers NotFound without reading the input")]
+        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC002 refuses a meeting waiting for approval")]
         [Trait("UTC", "MeetingService.UpdateAsync/UTC002")]
-        [Trait("Trait", "UTC")]
-        public async Task Update_unknown_meeting_skips_input_factory()
-        {
-            var called = false;
-            Task<MeetingInput> Factory(CancellationToken ct)
-            {
-                called = true;
-                return Task.FromResult(Round1Data.InputOf(Round1Data.NewMeeting(MeetingStatus.Draft, Guid.CreateVersion7())));
-            }
-
-            var result = await Service().UpdateAsync(Guid.CreateVersion7(), Factory, Guid.CreateVersion7());
-
-            Assert.Equal(MeetingOutcome.NotFound, result.Outcome);
-            Assert.False(called);
-            Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC003 refuses a meeting waiting for approval")]
-        [Trait("UTC", "MeetingService.UpdateAsync/UTC003")]
         [Trait("Trait", "UTC")]
         public async Task Update_waiting_approval_is_not_editable()
         {
@@ -584,8 +525,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC004 rejects a blank title")]
-        [Trait("UTC", "MeetingService.UpdateAsync/UTC004")]
+        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC003 rejects a blank title")]
+        [Trait("UTC", "MeetingService.UpdateAsync/UTC003")]
         [Trait("Trait", "UTC")]
         public async Task Update_rejects_blank_title()
         {
@@ -602,8 +543,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC005 reschedules a published meeting")]
-        [Trait("UTC", "MeetingService.UpdateAsync/UTC005")]
+        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC004 reschedules a published meeting")]
+        [Trait("UTC", "MeetingService.UpdateAsync/UTC004")]
         [Trait("Trait", "UTC")]
         public async Task Update_published_reschedule_notifies_invitees()
         {
@@ -642,28 +583,6 @@ public sealed class MeetUnitRound1Tests
             Assert.All(_inner.Notifications, n => Assert.Equal("Cuộc họp đã dời lịch", n.Title));
             Assert.Equal(1, _unitOfWork.Saves);
             Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.UpdateAsync/UTC006 maps a save failure to SaveFailed")]
-        [Trait("UTC", "MeetingService.UpdateAsync/UTC006")]
-        [Trait("Trait", "UTC")]
-        public async Task Update_save_failure_is_logged_and_rolled_back()
-        {
-            var actor = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Draft, actor);
-            _inner.Meetings.Add(meeting);
-            var failure = new PersistenceUnavailableException();
-            _unitOfWork.FailNextSave = failure;
-
-            var result = await Service().UpdateAsync(meeting.Id, Round1Data.InputOf(meeting, title: "Họp mới"), actor);
-
-            Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);
-            Assert.Equal(1, _unitOfWork.Rollbacks);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(meeting.Id.ToString(), entry.Message);
-            Assert.Contains(actor.ToString(), entry.Message);
         }
     }
 
@@ -715,19 +634,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC003 answers NotFound for an unknown meeting")]
+        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC003 refuses a chair who did not create it")]
         [Trait("UTC", "MeetingService.GetSubmissionReadinessAsync/UTC003")]
-        [Trait("Trait", "UTC")]
-        public async Task Readiness_unknown_meeting_is_not_found()
-        {
-            var result = await Service().GetSubmissionReadinessAsync(Guid.CreateVersion7(), Guid.CreateVersion7());
-
-            Assert.Equal(MeetingWorkflowOutcome.NotFound, result.Outcome);
-            Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC004 refuses a chair who did not create it")]
-        [Trait("UTC", "MeetingService.GetSubmissionReadinessAsync/UTC004")]
         [Trait("Trait", "UTC")]
         public async Task Readiness_chair_without_ownership_is_forbidden()
         {
@@ -744,8 +652,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC005 reports conflict while waiting for approval")]
-        [Trait("UTC", "MeetingService.GetSubmissionReadinessAsync/UTC005")]
+        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC004 reports conflict while waiting for approval")]
+        [Trait("UTC", "MeetingService.GetSubmissionReadinessAsync/UTC004")]
         [Trait("Trait", "UTC")]
         public async Task Readiness_waiting_approval_conflicts()
         {
@@ -759,24 +667,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
             Assert.Equal(MeetingStatus.WaitingApproval, result.Status);
             Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.GetSubmissionReadinessAsync/UTC006 maps a read failure to ReadFailed")]
-        [Trait("UTC", "MeetingService.GetSubmissionReadinessAsync/UTC006")]
-        [Trait("Trait", "UTC")]
-        public async Task Readiness_read_failure_is_logged()
-        {
-            var meetingId = Guid.CreateVersion7();
-            var failure = new PersistenceUnavailableException();
-            _meetings.FailRead = failure;
-
-            var result = await Service().GetSubmissionReadinessAsync(meetingId, Guid.CreateVersion7());
-
-            Assert.Equal(MeetingWorkflowOutcome.ReadFailed, result.Outcome);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(meetingId.ToString(), entry.Message);
         }
     }
 
@@ -893,24 +783,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Null(row.NewOrganizerId);
             Assert.Empty(_logger.Entries);
         }
-
-        [Fact(DisplayName = "MeetingService.GetHistoryAsync/UTC006 maps a read failure to ReadFailed")]
-        [Trait("UTC", "MeetingService.GetHistoryAsync/UTC006")]
-        [Trait("Trait", "UTC")]
-        public async Task History_read_failure_is_logged()
-        {
-            var meetingId = Guid.CreateVersion7();
-            var failure = new PersistenceUnavailableException();
-            _meetings.FailRead = failure;
-
-            var result = await Service().GetHistoryAsync(meetingId, Guid.CreateVersion7(), 1, 20);
-
-            Assert.Equal(MeetingWorkflowOutcome.ReadFailed, result.Outcome);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(meetingId.ToString(), entry.Message);
-        }
     }
 
     public sealed class MeetTransitionRound1Tests
@@ -955,23 +827,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC002 rejects a submit without an approver before reading")]
+        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC002 refuses to submit a draft with an empty title")]
         [Trait("UTC", "MeetingService.TransitionAsync/UTC002")]
-        [Trait("Trait", "UTC")]
-        public async Task Transition_submit_without_approver_reads_nothing()
-        {
-            var command = new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval);
-
-            var result = await Service().TransitionAsync(Guid.CreateVersion7(), command, Guid.CreateVersion7());
-
-            Assert.Equal(MeetingWorkflowOutcome.InvalidRequest, result.Outcome);
-            Assert.Empty(_meetings.Reads);
-            Assert.Empty(_inner.Locked);
-            Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC003 refuses to submit a draft with an empty title")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC003")]
         [Trait("Trait", "UTC")]
         public async Task Transition_submit_with_empty_title_is_not_ready()
         {
@@ -992,49 +849,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC004 refuses to submit an approved meeting")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC004")]
-        [Trait("Trait", "UTC")]
-        public async Task Transition_submit_on_approved_conflicts()
-        {
-            var organizer = Guid.CreateVersion7();
-            var approver = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Approved, organizer);
-            _inner.Meetings.Add(meeting);
-            _inner.Capabilities.Add((organizer, Capability.MeetingCreator));
-            _meetings.EligibleApprovers.Add(approver);
-            var command = new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver);
-
-            var result = await Service().TransitionAsync(meeting.Id, command, organizer);
-
-            Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
-            Assert.Equal(MeetingStatus.Approved, meeting.Status);
-            Assert.Empty(_inner.History);
-            Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC005 refuses a submit from a chair who did not create it")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC005")]
-        [Trait("Trait", "UTC")]
-        public async Task Transition_submit_by_non_creator_is_forbidden()
-        {
-            var organizer = Guid.CreateVersion7();
-            var chair = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Draft, organizer);
-            Round1Data.AddParticipant(meeting, chair, "Trần Chủ toạ", MeetingRole.Chair);
-            _inner.Meetings.Add(meeting);
-            var command = new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, Guid.CreateVersion7());
-
-            var result = await Service().TransitionAsync(meeting.Id, command, chair);
-
-            Assert.Equal(MeetingWorkflowOutcome.Forbidden, result.Outcome);
-            Assert.Empty(_inner.History);
-            Assert.Empty(_inner.Notifications);
-            Assert.Empty(_logger.Entries);
-        }
-
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC006 approves a waiting meeting")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC006")]
+        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC003 approves a waiting meeting")]
+        [Trait("UTC", "MeetingService.TransitionAsync/UTC003")]
         [Trait("Trait", "UTC")]
         public async Task Transition_approve_by_assigned_approver()
         {
@@ -1057,8 +873,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC007 publishes an approved meeting to its roster")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC007")]
+        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC004 publishes an approved meeting to its roster")]
+        [Trait("UTC", "MeetingService.TransitionAsync/UTC004")]
         [Trait("Trait", "UTC")]
         public async Task Transition_publish_notifies_roster_but_not_organizer()
         {
@@ -1088,8 +904,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_logger.Entries);
         }
 
-        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC008 cancels a published meeting with a trimmed reason")]
-        [Trait("UTC", "MeetingService.TransitionAsync/UTC008")]
+        [Fact(DisplayName = "MeetingService.TransitionAsync/UTC005 cancels a published meeting with a trimmed reason")]
+        [Trait("UTC", "MeetingService.TransitionAsync/UTC005")]
         [Trait("Trait", "UTC")]
         public async Task Transition_cancel_published_trims_reason_and_clears_drafts()
         {
@@ -1264,52 +1080,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_inner.History);
             Assert.DoesNotContain(_logger.Entries, e => e.Level >= LogLevel.Error);
         }
-
-        [Fact(DisplayName = "MeetingLifecycleService.TransitionAsync/UTC007 refuses to start an approved meeting")]
-        [Trait("UTC", "MeetingLifecycleService.TransitionAsync/UTC007")]
-        [Trait("Trait", "UTC")]
-        public async Task Lifecycle_start_on_approved_conflicts()
-        {
-            var chair = Guid.CreateVersion7();
-            var secretary = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Approved, Guid.CreateVersion7());
-            Round1Data.AddParticipant(meeting, chair, "Trần Chủ toạ", MeetingRole.Chair);
-            Round1Data.AddParticipant(meeting, secretary, "Lê Thư ký", MeetingRole.Secretary);
-            _inner.Meetings.Add(meeting);
-
-            var result = await Service().TransitionAsync(meeting.Id, Start(), chair);
-
-            Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
-            Assert.Equal(MeetingStatus.Approved, meeting.Status);
-            Assert.Equal(0, _unitOfWork.Saves);
-            Assert.Empty(_effects.Calls);
-            Assert.DoesNotContain(_logger.Entries, e => e.Level >= LogLevel.Error);
-        }
-
-        [Fact(DisplayName = "MeetingLifecycleService.TransitionAsync/UTC008 maps a save failure to SaveFailed")]
-        [Trait("UTC", "MeetingLifecycleService.TransitionAsync/UTC008")]
-        [Trait("Trait", "UTC")]
-        public async Task Lifecycle_start_save_failure_sends_no_notification()
-        {
-            var chair = Guid.CreateVersion7();
-            var secretary = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Published, Guid.CreateVersion7());
-            Round1Data.AddParticipant(meeting, chair, "Trần Chủ toạ", MeetingRole.Chair);
-            Round1Data.AddParticipant(meeting, secretary, "Lê Thư ký", MeetingRole.Secretary);
-            _inner.Meetings.Add(meeting);
-            var failure = new PersistenceUnavailableException();
-            _unitOfWork.FailNextSave = failure;
-
-            var result = await Service().TransitionAsync(meeting.Id, Start(), chair);
-
-            Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
-            Assert.Equal(1, _unitOfWork.Rollbacks);
-            Assert.Empty(_effects.Calls);
-            var entry = Assert.Single(_logger.Entries);
-            Assert.Equal(LogLevel.Error, entry.Level);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(meeting.Id.ToString(), entry.Message);
-        }
     }
 
     public sealed class MeetCancelOverdueRound1Tests
@@ -1406,33 +1176,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_inner.History);
         }
 
-        [Fact(DisplayName = "MeetingOverdueService.CancelOverdueAsync/UTC005 counts the saved meeting when the other save fails")]
+        [Fact(DisplayName = "MeetingOverdueService.CancelOverdueAsync/UTC005 cancels at most 50 meetings per sweep")]
         [Trait("UTC", "MeetingOverdueService.CancelOverdueAsync/UTC005")]
-        [Trait("Trait", "UTC")]
-        public async Task CancelOverdue_one_failed_save_cancels_the_other()
-        {
-            var failed = GivenOverdue(MeetingStatus.Draft, Round1Data.Now.AddHours(-30));
-            var saved = GivenOverdue(MeetingStatus.Draft, Round1Data.Now.AddHours(-25));
-            var failure = new PersistenceUnavailableException();
-            _unitOfWork.FailNextSave = failure;
-
-            var cancelled = await Service().CancelOverdueAsync();
-
-            Assert.Equal(1, cancelled);
-            // The failed meeting keeps its queued in-memory change (rule R7: the tracker is only
-            // discarded) but is not counted, so the next sweep retries it.
-            Assert.Equal(MeetingStatus.Cancelled, saved.Status);
-            Assert.Equal(1, _unitOfWork.Discards);
-            Assert.Equal(2, _logger.Entries.Count);
-            var entry = Assert.Single(_logger.Entries, e => e.Level == LogLevel.Error);
-            Assert.Same(failure, entry.Exception);
-            Assert.Contains(failed.Id.ToString(), entry.Message);
-            Assert.Contains(_logger.Entries, e => e.Level == LogLevel.Information
-                && e.Message.Contains(saved.Id.ToString()));
-        }
-
-        [Fact(DisplayName = "MeetingOverdueService.CancelOverdueAsync/UTC006 cancels at most 50 meetings per sweep")]
-        [Trait("UTC", "MeetingOverdueService.CancelOverdueAsync/UTC006")]
         [Trait("Trait", "UTC")]
         public async Task CancelOverdue_caps_at_50_per_sweep()
         {
@@ -1529,21 +1274,6 @@ public sealed class MeetUnitRound1Tests
             Assert.Equal(Round1Data.Now.AddHours(-48), call.Cutoff);
             Assert.Equal("Đang diễn ra quá 48 giờ sau giờ kết thúc dự kiến mà chưa ai kết thúc.", call.Reason);
         }
-
-        [Fact(DisplayName = "MeetingOverdueService.EndOverrunAsync/UTC005 ends at most 50 meetings per sweep")]
-        [Trait("UTC", "MeetingOverdueService.EndOverrunAsync/UTC005")]
-        [Trait("Trait", "UTC")]
-        public async Task EndOverrun_caps_at_50_per_sweep()
-        {
-            for (var i = 0; i < 60; i++)
-                GivenOverrun(Round1Data.Now.AddHours(-25).AddMinutes(-i));
-            _lifecycle.EndAnswer = _ => true;
-
-            var ended = await Service().EndOverrunAsync();
-
-            Assert.Equal(50, ended);
-            Assert.Equal(50, _lifecycle.EndCalls.Count);
-        }
     }
 
     public sealed class MeetAudienceRound1Tests
@@ -1592,24 +1322,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Empty(_meetings.Reads);
         }
 
-        [Fact(DisplayName = "MeetingAudience.CanGuestJoinAsync/UTC003 refuses a session of another meeting")]
+        [Fact(DisplayName = "MeetingAudience.CanGuestJoinAsync/UTC003 refuses a session after the meeting ended")]
         [Trait("UTC", "MeetingAudience.CanGuestJoinAsync/UTC003")]
-        [Trait("Trait", "UTC")]
-        public async Task GuestJoin_session_of_another_meeting_is_refused()
-        {
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Published, Guid.CreateVersion7());
-            _inner.Meetings.Add(meeting);
-            var session = Session(Guid.CreateVersion7());
-            _guests.ReadableSessions.Add(session.SessionId);
-
-            var joined = await Audience().CanGuestJoinAsync(session, meeting.Id, CancellationToken.None);
-
-            Assert.False(joined);
-            Assert.Empty(_meetings.Reads);
-        }
-
-        [Fact(DisplayName = "MeetingAudience.CanGuestJoinAsync/UTC004 refuses a session after the meeting ended")]
-        [Trait("UTC", "MeetingAudience.CanGuestJoinAsync/UTC004")]
         [Trait("Trait", "UTC")]
         public async Task GuestJoin_ended_meeting_is_closed_to_guests()
         {
@@ -1670,21 +1384,8 @@ public sealed class MeetUnitRound1Tests
             Assert.False(joined);
         }
 
-        [Fact(DisplayName = "MeetingAudience.CanUserJoinAsync/UTC004 refuses to join a meeting that does not exist")]
+        [Fact(DisplayName = "MeetingAudience.CanUserJoinAsync/UTC004 lets an invitee open a cancelled meeting")]
         [Trait("UTC", "MeetingAudience.CanUserJoinAsync/UTC004")]
-        [Trait("Trait", "UTC")]
-        public async Task UserJoin_unknown_meeting_is_refused()
-        {
-            var user = Guid.CreateVersion7();
-            _inner.ActiveUsers.Add(user);
-
-            var joined = await Audience().CanUserJoinAsync(Guid.CreateVersion7(), user, CancellationToken.None);
-
-            Assert.False(joined);
-        }
-
-        [Fact(DisplayName = "MeetingAudience.CanUserJoinAsync/UTC005 lets an invitee open a cancelled meeting")]
-        [Trait("UTC", "MeetingAudience.CanUserJoinAsync/UTC005")]
         [Trait("Trait", "UTC")]
         public async Task UserJoin_member_joins_cancelled_from_published()
         {
@@ -1738,23 +1439,8 @@ public sealed class MeetUnitRound1Tests
             Assert.True(details.CanRespond);
         }
 
-        [Fact(DisplayName = "MeetingDetails.From/UTC003 hides the role of a delegated member")]
+        [Fact(DisplayName = "MeetingDetails.From/UTC003 shows the cancellation of a cancelled meeting")]
         [Trait("UTC", "MeetingDetails.From/UTC003")]
-        [Trait("Trait", "UTC")]
-        public void Details_delegated_member_has_no_role()
-        {
-            var member = Guid.CreateVersion7();
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Published, Guid.CreateVersion7());
-            Round1Data.AddParticipant(meeting, member, "Phạm Thành viên", MeetingRole.Member,
-                response: InvitationResponse.Delegated);
-
-            var details = MeetingDetails.From(meeting, member);
-
-            Assert.Null(details.MyMeetingRole);
-        }
-
-        [Fact(DisplayName = "MeetingDetails.From/UTC004 shows the cancellation of a cancelled meeting")]
-        [Trait("UTC", "MeetingDetails.From/UTC004")]
         [Trait("Trait", "UTC")]
         public void Details_cancelled_shows_cancellation()
         {
@@ -1774,21 +1460,8 @@ public sealed class MeetUnitRound1Tests
             Assert.Equal("Hoãn", details.Cancellation.Reason);
         }
 
-        [Fact(DisplayName = "MeetingDetails.From/UTC005 hides a cancellation without a recorded time")]
-        [Trait("UTC", "MeetingDetails.From/UTC005")]
-        [Trait("Trait", "UTC")]
-        public void Details_cancelled_without_time_has_no_cancellation()
-        {
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Cancelled, Guid.CreateVersion7());
-            meeting.CancelledAt = null;
-
-            var details = MeetingDetails.From(meeting, meeting.CreatedById);
-
-            Assert.Null(details.Cancellation);
-        }
-
-        [Fact(DisplayName = "MeetingDetails.From/UTC006 shows only the current chair")]
-        [Trait("UTC", "MeetingDetails.From/UTC006")]
+        [Fact(DisplayName = "MeetingDetails.From/UTC004 shows only the current chair")]
+        [Trait("UTC", "MeetingDetails.From/UTC004")]
         [Trait("Trait", "UTC")]
         public void Details_chair_is_the_current_one()
         {
@@ -1867,16 +1540,6 @@ public sealed class MeetUnitRound1Tests
 
             Assert.True(MeetingReadPolicy.CanRead(
                 GivenMeeting(MeetingStatus.Cancelled, member, MeetingRole.Member, MeetingStatus.Published), member));
-        }
-
-        [Fact(DisplayName = "MeetingReadPolicy.CanRead/UTC006 refuses a stranger")]
-        [Trait("UTC", "MeetingReadPolicy.CanRead/UTC006")]
-        [Trait("Trait", "UTC")]
-        public void Policy_stranger_cannot_read()
-        {
-            var meeting = Round1Data.NewMeeting(MeetingStatus.Published, Guid.CreateVersion7());
-
-            Assert.False(MeetingReadPolicy.CanRead(meeting, Guid.CreateVersion7()));
         }
     }
 

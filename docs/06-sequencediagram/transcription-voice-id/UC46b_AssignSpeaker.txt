@@ -1,4 +1,4 @@
-title UC-46b - Assign Speaker
+﻿title UC-46b - Assign Speaker
 
 actor "Secretary" as Actor
 boundary "Transcript View" as TranscriptView
@@ -42,7 +42,6 @@ loop For the chosen voice, and each voice suggested as the same person - AF-1 (B
     deactivate Database
     TranscriptRepository-->TranscriptionService: Voices
     deactivate TranscriptRepository
-    TranscriptionService->TranscriptionService: Check the actor is the current Secretary (BR-341), the voice exists\nand the person, when given, is on the current roster (BR-368)
 
     alt Actor is not the current Secretary - EX-2
         TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
@@ -61,16 +60,11 @@ loop For the chosen voice, and each voice suggested as the same person - AF-1 (B
         activate TranscriptRepository
         TranscriptRepository->Database: Update speaker
         activate Database
-        Database-->TranscriptRepository: Speaker saved / Save failed
+        Database-->TranscriptRepository: Speaker saved
         deactivate Database
-        TranscriptRepository-->TranscriptionService: Speaker saved / Save failed
+        TranscriptRepository-->TranscriptionService: Speaker saved
         deactivate TranscriptRepository
-        alt Assignment cannot be saved
-            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
-        else Speaker assigned
-            TranscriptionService-->TranscriptController: MSG316 - Speaker assigned.
+                    TranscriptionService-->TranscriptController: MSG316 - Speaker assigned.
             TranscriptController-->TranscriptView: MSG316 - Speaker assigned.
             TranscriptView-->Actor: MSG316 - Speaker assigned.
         end
@@ -105,7 +99,6 @@ opt Change the speaker of one sentence - AF-2
     TranscriptRepository-->TranscriptionService: Voices
     deactivate TranscriptRepository
 
-    TranscriptionService->TranscriptionService: Check the actor is the current Secretary (BR-341), the sentence belongs\nto this recording, and the chosen person or Guest is valid (BR-368)
 
     alt Actor is not the current Secretary - EX-2
         TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
@@ -115,7 +108,7 @@ opt Change the speaker of one sentence - AF-2
         TranscriptionService-->TranscriptController: MSG317 - Assigned person must be on the current meeting roster.
         TranscriptController-->TranscriptView: MSG317 - Assigned person must be on the current meeting roster.
         TranscriptView-->Actor: MSG317 - Assigned person must be on the current meeting roster.
-    else The voice is not in this recording - EX-4
+    else The voice is not in this recording - EX-3
         TranscriptionService-->TranscriptController: Not found
         TranscriptController-->TranscriptView: No such voice in this recording
     else Assignment valid
@@ -124,30 +117,25 @@ opt Change the speaker of one sentence - AF-2
             activate TranscriptRepository
             TranscriptRepository->Database: Insert speaker
             activate Database
-            Database-->TranscriptRepository: Speaker created / Save failed
+            Database-->TranscriptRepository: Speaker created
             deactivate Database
-            TranscriptRepository-->TranscriptionService: Speaker created / Save failed
+            TranscriptRepository-->TranscriptionService: Speaker created
             deactivate TranscriptRepository
         end
-        TranscriptionService->TranscriptRepository: Move only this sentence to that voice\nand update the durations (BR-395)
+        TranscriptionService->TranscriptRepository: Move only this sentence to that voice,\nupdate the durations and mark who moved it and when, so a later run carries it again (BR-395, BR-467)
         activate TranscriptRepository
         TranscriptRepository->Database: Update the sentence and the durations
         activate Database
-        Database-->TranscriptRepository: Sentence moved / Save failed
+        Database-->TranscriptRepository: Sentence moved
         deactivate Database
-        TranscriptRepository-->TranscriptionService: Sentence moved / Save failed
+        TranscriptRepository-->TranscriptionService: Sentence moved
         deactivate TranscriptRepository
         TranscriptionService->AuditService: Record the change
         activate AuditService
         AuditService-->TranscriptionService: Entry saved
         deactivate AuditService
 
-        alt Sentence cannot be moved
-            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
-        else Speaker changed
-            TranscriptionService-->TranscriptController: MSG407 - The speaker of this sentence has been changed.
+                    TranscriptionService-->TranscriptController: MSG407 - The speaker of this sentence has been changed.
             TranscriptController-->TranscriptView: MSG407 - The speaker of this sentence has been changed.
             TranscriptView-->Actor: MSG407 - The speaker of this sentence has been changed.
         end
@@ -157,3 +145,4 @@ opt Change the speaker of one sentence - AF-2
 end
 
 deactivate TranscriptView
+

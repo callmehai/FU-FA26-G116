@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-71a · BR-186 · BR-213 · MSG180",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-71a · BR-242 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,22 +53,7 @@
           "type": "Boundary",
           "note": "UC-71a · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Database error."
-          ],
-          "inputs": "documentId: D1.",
-          "return": "SaveFailed (HTTP 503, MSG181); the library is unchanged.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to delete a document\".",
-          "type": "Abnormal",
-          "note": "UC-71a · MSG181",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

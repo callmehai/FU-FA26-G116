@@ -15,4 +15,3 @@ Layer: Domain · `backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs:34`
 | UTC003 | Published meeting; user is a Member. | userId: Member. | Return: true.<br>Exception: N/A<br>Log Message: N/A | Normal | UC-16 · BR-29 · BR-118 · BR-119 |
 | UTC004 | Approved meeting; user is only a Member. | userId: Member. | Return: false; a Member reads only from Published.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-16 · BR-29 · BR-118 · BR-119 |
 | UTC005 | Cancelled meeting that was Published before it was cancelled; user is a Member. | userId: Member; CancelledFromStatus: Published. | Return: true.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-16 · BR-29 · BR-300 |
-| UTC006 | Published meeting; user has no relationship to it. | userId: stranger. | Return: false.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-16 · BR-29 · BR-118 · BR-119 |

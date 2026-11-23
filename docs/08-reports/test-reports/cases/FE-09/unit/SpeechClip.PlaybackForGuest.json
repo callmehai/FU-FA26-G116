@@ -23,26 +23,11 @@
           "type": "Normal",
           "note": "UC-43b",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "A current guest session; the sentence is another speaker's."
-          ],
-          "inputs": "guest session; clipId: someone else's sentence.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "A current guest session; the guest's own sentence was taken out of the record."
           ],
@@ -53,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-46c · BR-357",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "A current guest session; the guest's own sentence was stored without audio (disk was full)."
-          ],
-          "inputs": "guest session; clipId: the guest's own sentence without audio.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43b",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
+          "id": "UTC003",
           "preconditions": [
             "A current guest session; the database fails while reading."
           ],
@@ -83,7 +53,7 @@
           "type": "Abnormal",
           "note": "UC-43b · MSG297",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

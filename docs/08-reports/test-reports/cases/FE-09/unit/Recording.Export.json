@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-43c · UC-45b · BR-351",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-43c · UC-45b · BR-351 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "The actor is the Chair of a Secret meeting."
-          ],
-          "inputs": "actor: the Chair.",
-          "return": "SecretMeeting (shown as MSG356).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · UC-45b · BR-351 · MSG356",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "The actor is a Member of a Secret meeting."
           ],
@@ -68,7 +53,7 @@
           "type": "Boundary",
           "note": "UC-43c · BR-351 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

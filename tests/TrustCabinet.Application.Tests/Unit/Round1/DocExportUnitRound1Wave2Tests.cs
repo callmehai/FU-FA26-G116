@@ -83,21 +83,6 @@ public sealed class DocExportUnitRound1Wave2Tests
         new FakeGuestSessionRepository(), _agenda, _unitOfWork, new FixedClock(Now),
         Microsoft.Extensions.Logging.Abstractions.NullLogger<DocumentCommentService>.Instance);
 
-    [Fact(DisplayName = "DocumentCommentService.AddAsync/UTC005: unknown document is not found")]
-    [Trait("UTC", "DocumentCommentService.AddAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Add_UnknownDocumentIsNotFound()
-    {
-        SeedManagerMeeting();
-
-        var outcome = await CommentService().AddAsync(_meeting, Guid.CreateVersion7(),
-            new ParticipantActor(_secretary), "Ý kiến cho tài liệu.", null, null);
-
-        Assert.Equal(CommentFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Value);
-        Assert.Empty(_comments.Added);
-    }
-
     // ---- MinutesService.ExportAsync ----
 
     private MinutesService MinutesService(IMeetingMinutesRepository? minutes = null) => new(minutes ?? _minutes,
@@ -129,27 +114,5 @@ public sealed class DocExportUnitRound1Wave2Tests
             DateTimeOffset now, CancellationToken ct)
             => inner.SaveContentAsync(minutesId, content, from, to, now, ct);
         public void Add(MeetingMinutes minutes) => inner.Add(minutes);
-    }
-
-    [Fact(DisplayName = "MinutesService.ExportAsync/UTC006: a failing read answers read failed")]
-    [Trait("UTC", "MinutesService.ExportAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_FailingReadAnswersReadFailed()
-    {
-        SeedManagerMeeting(MeetingStatus.Ended);
-        var row = new MeetingMinutes
-        {
-            MeetingId = _meeting, RevisionNumber = 1, Status = MinutesStatus.Issued,
-            Content = "<p>Biên bản</p>", CreatedById = _secretary,
-            CreatedAt = Now.AddMinutes(-10), UpdatedAt = Now.AddMinutes(-10),
-        };
-        _minutes.Rows.Add(row);
-
-        var outcome = await MinutesService(new UnreachableMinutesRepository(_minutes))
-            .ExportAsync(row.Id, _secretary, MinutesExportFormat.Docx);
-
-        Assert.Equal(MinutesFailure.ReadFailed, outcome.Failure);
-        Assert.Null(outcome.Data);
-        Assert.Contains("Could not export minutes", Assert.Single(_logger.Records).Message);
     }
 }

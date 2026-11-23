@@ -1408,12 +1408,15 @@ export default {
       id: 'AC24',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Thông báo của cuộc họp khác tới khi mic phòng đang ghi: chồng thông báo nằm trên thẻ mic, không che trạng thái và nút tắt mic',
+      // BA 23/11 replaced the QA FE-09 fix (toasts lifted above the card): toasts that followed the card jumped around the
+      // screen. They keep one corner, drawn over the card, wherever it is dragged.
+      title: 'Thông báo của cuộc họp khác tới khi mic phòng đang ghi: chồng thông báo ở góc cố định, đè lên thẻ mic, kéo thẻ đi không làm thông báo đổi chỗ',
       steps: [
         'thuky@ mở tab Bản ghi của họp trực tiếp đang diễn ra, thẻ mic ở góc mặc định, bật mic phòng',
         'Chủ toạ thêm 3 mục nghị sự do thuky@ trình bày ở một cuộc họp khác (API): 3 thông báo tới cùng lúc',
+        'Kéo thẻ mic lên trên trong lúc thông báo còn hiện',
       ],
-      expected: '3 thông báo hiện phía trên thẻ mic, không đè lên thẻ; trạng thái "Đang ghi cả phòng" và nút "Tắt mic, lưu lượt ghi" vẫn thấy',
+      expected: '3 thông báo ở góc dưới phải, nằm trên cùng (đè lên thẻ mic); kéo thẻ mic lên trên thì chồng thông báo không đổi chỗ; thông báo tắt rồi thì nút "Tắt mic, lưu lượt ghi" vẫn dùng được',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipRun')
         const other = await meeting(qa, 'ipPub')
@@ -1444,14 +1447,29 @@ export default {
             items.push(res.body.item?.id ?? res.body.id)
           }
           await qa.expect(qa.page.locator('.toast-stack .toast')).toHaveCount(3, { timeout: 10_000 })
-          await qa.page.waitForTimeout(400) // the stack glides into place
-          const over = await qa.page.evaluate(() => {
-            const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
-            const parts = ['.mic-dock', '.mic-status', '.mic-toggle'].map((q) => document.querySelector(q).getBoundingClientRect())
-            return [...document.querySelectorAll('.toast-stack .toast')].some((t) => parts.some((p) => hit(t.getBoundingClientRect(), p)))
-          })
-          await qa.shot('thong-bao-tren-the-mic')
-          qa.expect(over, 'a toast covers the mic card').toBe(false)
+          const place = () =>
+            qa.page.evaluate(() => {
+              const r = document.querySelector('.toast-stack').getBoundingClientRect()
+              const t = document.querySelector('.toast-stack .toast').getBoundingClientRect()
+              const top = document.elementFromPoint(t.left + t.width / 2, t.top + t.height / 2)?.closest('.toast-stack') !== null
+              return { right: Math.round(innerWidth - r.right), bottom: Math.round(innerHeight - r.bottom), top }
+            })
+          const before = await place()
+          await qa.shot('thong-bao-o-goc-co-dinh')
+          qa.expect(before.top, 'a toast is drawn over everything in its corner').toBe(true)
+          // Drag the card up by a part that is not a control (the head on a laptop, the bubble on a phone).
+          const handle = card.locator('.mic-card-head h2, .mic-bubble').first()
+          const hb = await handle.boundingBox()
+          await qa.page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2)
+          await qa.page.mouse.down()
+          for (let i = 1; i <= 8; i++) await qa.page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2 - 20 * i)
+          await qa.page.mouse.up()
+          await qa.page.waitForTimeout(400) // the old stack glided after the card for 0.2s
+          const after = await place()
+          await qa.shot('keo-the-mic-thong-bao-giu-cho')
+          qa.expect(after, 'dragging the mic card moves the toasts').toEqual(before)
+          await qa.page.locator('.toast-stack .toast').first().waitFor({ state: 'detached', timeout: 10_000 })
+          await qa.expect(qa.page.locator('.toast-stack .toast')).toHaveCount(0, { timeout: 10_000 })
           await qa.expect(card.getByRole('button', { name: 'Tắt mic, lưu lượt ghi' })).toBeVisible()
           await noSidewaysScroll(qa)
           await press(qa, card.getByRole('button', { name: 'Tắt mic, lưu lượt ghi' }))

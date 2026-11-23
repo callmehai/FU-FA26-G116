@@ -46,10 +46,10 @@ public static class VoiceIdRules
 
     public const int MaxSamples = 5;
     /// <summary>
-    /// Proxy samples that may be kept for one person (PO 2026-11-21). ADR-0075 dropped the per-collector share of 5: it
-    /// spread the samples over a meeting's Secretaries, and Secretaries no longer collect.
+    /// Proxy samples that may be kept for one person, whoever collects them: 5, as many as the person may record
+    /// themselves (Lộc 23/11/2026; was 50 since PO 2026-11-21). ADR-0075 dropped the per-collector share.
     /// </summary>
-    public const int MaxProxySamples = 50;
+    public const int MaxProxySamples = 5;
 
     /// <summary>True when no more proxy samples may be kept for the person.</summary>
     public static bool ProxyFull(IReadOnlyCollection<VoiceSample> proxySamples) => proxySamples.Count >= MaxProxySamples;

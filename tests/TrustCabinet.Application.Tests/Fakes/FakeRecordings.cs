@@ -254,10 +254,29 @@ public sealed class FakeSpeechEngine : ISpeechEngine
     /// <summary>Whether a held call ended by being cancelled.</summary>
     public bool Cancelled { get; private set; }
 
+    /// <summary>The run id each call was given, in order.</summary>
+    public List<Guid?> Runs { get; } = [];
+
+    /// <summary>What each progress question is answered, in turn; the last one repeats. Empty: the worker cannot say.</summary>
+    public Queue<SpeechProgress?> Progress { get; } = new();
+
+    /// <summary>The runs progress was asked about, in order.</summary>
+    public List<Guid> ProgressAsked { get; } = [];
+
+    private SpeechProgress? _lastProgress;
+
+    public Task<SpeechProgress?> ProgressAsync(Guid run, CancellationToken ct)
+    {
+        ProgressAsked.Add(run);
+        if (Progress.TryDequeue(out var next)) _lastProgress = next;
+        return Task.FromResult(_lastProgress);
+    }
+
     public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
-        string? context = null)
+        string? context = null, Guid? run = null)
     {
         Contexts.Add(context);
+        Runs.Add(run);
         if (Hold is { } hold)
         {
             hold.TrySetResult();
@@ -306,13 +325,15 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
         var next = Transcripts.Where(t => t.Status == TranscriptStatus.Pending).MinBy(t => t.CreatedAt);
         if (next is null) return Task.FromResult<Guid?>(null);
         next.Status = TranscriptStatus.Processing;
+        next.ProgressPercent = 0;
+        next.ProcessingStartedAt = now;
         return Task.FromResult<Guid?>(next.Id);
     }
 
     public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct)
     {
         var running = Transcripts.Where(t => t.Status == TranscriptStatus.Processing).ToList();
-        running.ForEach(t => t.Status = TranscriptStatus.Pending);
+        running.ForEach(t => (t.Status, t.ProgressPercent, t.ProcessingStartedAt) = (TranscriptStatus.Pending, 0, null));
         return Task.FromResult(running.Count);
     }
 
@@ -323,6 +344,23 @@ public sealed class FakeTranscriptRepository : ITranscriptRepository
 
     public Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct)
         => Task.FromResult(Transcripts.Any(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing));
+
+    /// <summary>Thrown by the next progress writes: a store that cannot be reached.</summary>
+    public Exception? ProgressFails { get; set; }
+
+    /// <summary>Each progress write, as asked: (transcript, percent).</summary>
+    public List<(Guid TranscriptId, int Percent)> ProgressWrites { get; } = [];
+
+    public Task<int> SetProgressAsync(Guid transcriptId, int percent, CancellationToken ct)
+    {
+        if (ProgressFails is { } failure) return Task.FromException<int>(failure);
+        ProgressWrites.Add((transcriptId, percent));
+        var transcript = Transcripts.SingleOrDefault(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing
+            && t.ProgressPercent < percent);
+        if (transcript is null) return Task.FromResult(0);
+        transcript.ProgressPercent = percent;
+        return Task.FromResult(1);
+    }
 
     public Task<TranscriptCorrections> ReadCorrectionsAsync(Guid transcriptId, CancellationToken ct)
     {

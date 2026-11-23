@@ -23,7 +23,7 @@
           "type": "Abnormal",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Normal",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,37 +69,7 @@
           "type": "Boundary",
           "note": "UC-04 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The link provider is available but its preparation returns Unavailable."
-          ],
-          "inputs": "id of a Guest Invitation dispatch.",
-          "return": "0.",
-          "exception": "N/A",
-          "log": "The dispatch becomes BlockedDependency, NextAttemptAt now + 1 minute, DependencyAttemptCount incremented, LastError \"Unavailable\".",
-          "type": "Abnormal",
-          "note": "UC-04 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The host cancels the work while a dispatch is being processed."
-          ],
-          "inputs": "Cancellation token cancelled.",
-          "return": "No result.",
-          "exception": "The cancellation is not swallowed; no failed attempt is recorded.",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

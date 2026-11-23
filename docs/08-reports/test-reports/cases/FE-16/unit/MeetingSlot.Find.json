@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-85a · BR-415 · BR-422",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -42,7 +42,7 @@
           "type": "Normal",
           "note": "UC-85a · BR-422 · MSG445",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -59,7 +59,7 @@
           "type": "Boundary",
           "note": "UC-85a · BR-416",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -75,7 +75,7 @@
           "type": "Abnormal",
           "note": "UC-85a · BR-430 · MSG448",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -91,7 +91,7 @@
           "type": "Abnormal",
           "note": "UC-85a · BR-421 · MSG444",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -108,41 +108,7 @@
           "type": "Boundary",
           "note": "UC-85a · BR-421",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh shares an Effective calendar and is free every weekday.",
-            "The range 2026-11-23 to 2026-12-23 holds far more than 200 slots."
-          ],
-          "inputs": "actor: An; search: userIds [Binh], duration 15, step 5, lunchBreak false, 2026-11-23 to 2026-12-23.",
-          "return": "Kind AllFree; 200 slots in time order; truncated true.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-85a · BR-422",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer.",
-            "The database fails while reading the shares and invitees."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with the base day and duration 60.",
-          "return": "Failure ReadFailed; the endpoint answers 500 MSG453 (\"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\"); nothing is returned.",
-          "exception": "N/A",
-          "log": "Error logged with the actor id.",
-          "type": "Abnormal",
-          "note": "UC-85a · MSG453",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-84e · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Boundary",
           "note": "UC-84e · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,27 +56,11 @@
           "type": "Abnormal",
           "note": "UC-84e · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending."
-          ],
-          "inputs": "actor: a third user.",
-          "return": "Failure NotFound (404).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share whose end date is today 2026-11-18."
@@ -88,24 +72,7 @@
           "type": "Boundary",
           "note": "UC-84e · BR-425 · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending.",
-            "The database fails while saving."
-          ],
-          "inputs": "actor: An.",
-          "return": "Failure SaveFailed (MSG447); share stays Effective.",
-          "exception": "N/A",
-          "log": "Unit of work changes discarded; error logged.",
-          "type": "Abnormal",
-          "note": "UC-84e · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

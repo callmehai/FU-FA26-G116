@@ -25,6 +25,7 @@ deactivate MeetingRepository
 
 alt No meeting left running past the grace
     OverdueService-->Worker: Nothing to do
+
 else At least one meeting left running
     loop Each overrun meeting, in its own transaction
         OverdueService->LifecycleService: End one overrun meeting
@@ -40,7 +41,7 @@ else At least one meeting left running
 
         alt Meeting already ended or no longer overruns — the Chair's End won
             LifecycleService-->OverdueService: Not ended
-            deactivate LifecycleService
+
         else Meeting still overruns
             LifecycleService->AgendaItemRepository: Complete the InProgress Agenda Item, if any (BR-159)
             activate AgendaItemRepository
@@ -66,8 +67,8 @@ else At least one meeting left running
             deactivate MeetingRoom
 
             LifecycleService-->OverdueService: Meeting ended
-            deactivate LifecycleService
         end
+        deactivate LifecycleService
     end
     OverdueService-->Worker: Overrun meetings ended
 end
