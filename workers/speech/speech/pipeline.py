@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, numbers, progress, punctuation, text
+from . import hotwords, manifest, numbers, progress, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -575,6 +575,9 @@ class Engine:
         self.model_ids = model_ids(hashes)
 
         started = time.monotonic()
+        # Meeting and project words the model mishears get a boost while it decodes (speech/hotwords.py);
+        # SPEECH_HOTWORDS_FILE=0 turns it off, to compare with and without.
+        self._hotwords = hotwords.prepare(root, hotwords.settings())
         self._recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
             encoder=str(root / "gipformer/encoder.int8.onnx"),
             decoder=str(root / "gipformer/decoder.int8.onnx"),
@@ -584,6 +587,7 @@ class Engine:
             sample_rate=SAMPLE_RATE,
             feature_dim=80,
             decoding_method="modified_beam_search",
+            **hotwords.recognizer_options(self._hotwords),
         )
         self._extractor = sherpa_onnx.SpeakerEmbeddingExtractor(
             sherpa_onnx.SpeakerEmbeddingExtractorConfig(
@@ -619,9 +623,11 @@ class Engine:
         self._numbers = os.environ.get("SPEECH_NUMBERS", "1").lower() not in ("0", "false", "off")
         log.info(
             "models loaded in %.1fs, %d threads, embedding dim %d, cluster threshold %.2f, "
-            "min enrolment consistency %.2f, punctuation %s, numbers in digits %s",
+            "min enrolment consistency %.2f, punctuation %s, numbers in digits %s, hotwords %s",
             time.monotonic() - started, threads, self._extractor.dim, self._cluster_threshold,
             self._min_consistency, "on" if self._punctuator else "off", "on" if self._numbers else "off",
+            f"{self._hotwords.count} at {self._hotwords.score:g} from {self._hotwords.source.name}"
+            if self._hotwords else "off",
         )
 
     # --- building blocks (call with the lock held) ---------------------------------------------

@@ -19,6 +19,7 @@ nhóm. Để chúng trong một thư mục ngoài repo.
 | `vivos_dataset.py` | Dựng bộ dữ liệu từ VIVOS: giọng mẫu, các cuộc họp giả lập, có biến thể "khác kênh" | numpy, ffmpeg |
 | `make_meeting.py` | Dựng một cuộc họp có đáp án từ các câu mỗi người tự ghi riêng | numpy, ffmpeg |
 | `score_transcript.py` | Chấm một bản ghi thật theo bản gỡ băng có nhãn `[mm:ss] Người nói N: …` | Python 3 chuẩn |
+| `hotwords_wer.py` | WER/CER của Gipformer theo từng cấu hình giải mã (từ khoá ưu tiên, `max_active_paths`, `blank_penalty`), chạy thẳng code worker không qua HTTP | venv của worker (sherpa-onnx, numpy, ffmpeg) |
 | `bleed.py` | Cuộc họp tổng hợp theo micro từng người, mỗi micro nghe lọt người khác; đo từ trùng trước và sau khi đánh dấu (`fold.py`, bản Python của `SpeechClipFold`) | numpy, Node 22.18+ |
 
 Chạy worker trước (xem [README của worker](../README.md#chạy-cục-bộ)). Các script nhận `--url`, mặc
@@ -115,6 +116,36 @@ người khác chưa bị đánh dấu), **lạc chỗ** (như trên nhưng micr
 
 `fold.py` phải đánh dấu đúng như backend: `tests/test_fold_port.py` chạy chung các ca trong
 `tests/TrustCabinet.Web.Tests/Recordings/speech-fold-cases.json` với `SpeechClipFoldTests`.
+
+## 5. Từ khoá ưu tiên (hotwords) và cách giải mã trên mic phòng
+
+`hotwords_wer.py` chạy chính code worker trong process (không qua HTTP): tăng âm, VAD, tách người nói và bỏ chỗ gần im
+lặng của hồ sơ `room` cắt mỗi tệp thành đúng các đoạn worker sẽ chuyển chữ, một lần; rồi từng cấu hình giải mã chuyển chữ
+các đoạn đó. Chấm trên chữ thô của Gipformer (trước dấu câu), hai bên cùng qua bước viết số của worker, bỏ dấu câu và
+tiếng đệm "ờ ừ ừm à ạ".
+
+```bash
+../.venv/bin/python -I hotwords_wer.py --cache /tmp/hw-cache \
+  --pair seg1.wav seg1.ref.txt --pair seg2.wav seg2.ref.txt \
+  --config base --config hw=1 --config hw=1.5 --config hw=2 --config paths=8 --config blank=0.5 \
+  --hyp whisper=seg1.whisper.txt,seg2.whisper.txt
+```
+
+Kiểm tra danh sách không làm hỏng lời đọc thường, bằng tập test VIVOS qua hồ sơ `clip` (mỗi câu một tệp):
+
+```bash
+awk '{id=$1; $1=""; sub(/^ /,""); split(id,a,"_"); printf "waves/%s/%s.wav\t%s\n", a[1], id, $0}' \
+  vivos/test/prompts.txt > vivos/test/test.tsv
+../.venv/bin/python -I hotwords_wer.py --profile clip --tsv vivos/test/test.tsv --config base --config hw=1
+```
+
+Giờ máy chạy dưới nền (tác vụ nền của macOS bị dồn sang nhân tiết kiệm điện) có thể chậm gấp mười lần: RTF chỉ so được
+giữa các lần chạy ở cùng điều kiện; dùng `--repeat 3` để lấy lần nhanh nhất.
+
+Đáp án ở README của worker là **đáp án bạc**: một model mạnh hơn nhiều (Whisper large-v3, chạy trên máy dev) chuyển chữ
+trước, rồi người sửa các lỗi rõ ràng bằng cách đối chiếu bản Whisper, bản Gipformer và ngữ cảnh. Nó không phải bản gỡ băng
+do người nghe lại từ đầu, nên WER tuyệt đối chỉ là ước lượng; so sánh giữa các cấu hình trên cùng đáp án thì đáng tin hơn.
+Âm thanh, đáp án, `--out` và `--cache` đều là dữ liệu cá nhân: để ngoài repo và xoá khi đo xong.
 
 ## Đọc kết quả của `evaluate.py`
 

@@ -24,6 +24,9 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
 | Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
 
+Gipformer còn kèm `bpe.model` (SentencePiece của chính các token đó): từ khoá ưu tiên cần nó để cắt mỗi từ khoá thành
+token của model. Không phải model riêng, chỉ là bảng token.
+
 Danh sách file, mã SHA-256 và URL nằm trong [models.manifest](models.manifest). Server kiểm tra lại
 mã băm mỗi lần khởi động; file bị thay hay thiếu thì **từ chối chạy**. Mỗi kết quả kèm mã model dạng
 `gipformer-1.5-68m-int8@b528768939c7` (12 ký tự đầu của SHA-256), để biết transcript nào làm bằng
@@ -65,6 +68,8 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_NUMBERS` | `1` | `0` giữ số bằng chữ ("hai mươi ba" thay vì "23"), xem bước 8 ở [Cách chạy bên trong](#cách-chạy-bên-trong). Đo WER với đáp án viết bằng chữ thì đặt `0` |
 | `SPEECH_CLIP_PROCESS` | `1` | `0` cho câu mic cá nhân và mẫu giọng chạy chung process con với bản ghi dài như trước (máy ít RAM), xem [Cách chạy bên trong](#cách-chạy-bên-trong) |
+| `SPEECH_HOTWORDS_FILE` | danh sách kèm theo (`speech/hotwords.txt`) | Danh sách từ khoá ưu tiên khi giải mã; `0`/`off` tắt. Xem [Từ khoá ưu tiên](#từ-khoá-ưu-tiên-hotwords) |
+| `SPEECH_HOTWORDS_SCORE` | `1.0` | Mức cộng điểm cho mỗi token khớp từ khoá; `0` cũng là tắt |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -213,6 +218,8 @@ Các bước xử lý một bản ghi:
    onnxruntime giữ lại bộ nhớ của lô lớn nhất nó từng gặp: trên bản ghi 83 phút, process con tăng từ 1,05 GB lên
    4,7 GB ở bước này (Docker, 2 CPU, 24/11/2026). Từng phần một thì bộ nhớ không tăng, bước này nhanh hơn 1,6–1,8 lần
    với 2 luồng, và WER trên cuộc họp thật 300 giây gần như không đổi (13,90% → 14,06%, chênh 2 từ trên 1216).
+   Model giải mã có **từ khoá ưu tiên** (hotwords): các từ dự án nói bằng tiếng Anh như report, commit, deploy được
+   cộng điểm, xem [Từ khoá ưu tiên](#từ-khoá-ưu-tiên-hotwords).
 7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
    thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Model luôn đọc chữ thường: chữ hoa nó gắn được giữ riêng và
    chỉ đặt vào ở cuối, cộng thêm chữ hoa cho từ đầu mỗi câu (sau `.` `?` `!`). Đọc lại chính chữ hoa của mình, model
@@ -442,6 +449,59 @@ ngày 31/10). Người bị tách đôi dưới 0.8 vẫn hiện hai giọng; Th
 
 Ba đoạn tổng hợp còn sai đều là các cặp giọng nữ tiếng Anh của macOS (Samantha, Karen, Moira),
 gần như giống hệt nhau.
+
+### Từ khoá ưu tiên (hotwords)
+
+Khi giải mã, sherpa-onnx cộng điểm cho các nhánh đang đi theo một từ trong danh sách
+([`speech/hotwords.txt`](speech/hotwords.txt), `speech/hotwords.py`). Model không đổi, không tốn thêm RAM. Danh sách là
+các từ dự án nói bằng tiếng Anh: report, commit, deploy, test case, local, BR, UC, API… Gipformer viết từ mượn tiếng Anh bằng
+chữ cái tiếng Anh ("REPORT", "DATA" ra đúng như vậy) nhưng hay ra âm tiết Việt khi người nói đọc lướt ("COMM", "REPOT",
+"DEPROID"); cộng điểm kéo các chỗ đó về đúng từ. Áp dụng cho cả hai hồ sơ `room` và `clip` vì chúng dùng chung một
+bộ giải mã. `SPEECH_HOTWORDS_FILE=0` tắt hẳn.
+
+**Đo trên bản ghi mic phòng của buổi họp thử 23/11/2026** (3–4 người cùng phòng nói chuyện tự nhiên, nhiều từ IT): hai đoạn
+5 phút (phút 0–5 và 11:31–16:31), cắt bằng chính hồ sơ `room` của worker thành 87 đoạn, đáp án 1.654 từ, đo bằng
+[`eval/hotwords_wer.py`](eval/README.md#5-từ-khoá-ưu-tiên-hotwords-và-cách-giải-mã-trên-mic-phòng), giải mã từng đoạn một
+(`RECOGNISE_BATCH = 1`).
+
+Đáp án là **đáp án bạc, do máy làm rồi người sửa**, không phải bản gỡ băng nghe lại từ đầu. Whisper large-v3 (whisper.cpp
+trên Mac M1) không làm đáp án trực tiếp được: chạy cả đoạn thì lặp một câu hàng chục lần, chạy từng đoạn thì 21/87 đoạn ra
+câu chào cuối video YouTube ("Hãy subscribe cho kênh…") thay cho lời thật. Đáp án được dựng từng đoạn bằng cách đối chiếu
+Whisper, Gipformer và ngữ cảnh: khác bản Whisper 893 từ, khác bản Gipformer (chưa có từ khoá) 180 từ. Vì gần bản Gipformer
+hơn, WER tuyệt đối của Gipformer ở đây **thấp hơn thực tế**, và chỗ nào hai bản đều không nghe rõ thì đáp án giữ cách đọc
+của Gipformer không từ khoá, nên phép đo nghiêng về phía *không* dùng từ khoá. Sau khi xem các bản có từ khoá, ba chỗ
+được phân xử lại theo Whisper và ngữ cảnh (hai chỗ theo bản có từ khoá, một chỗ ngược lại).
+
+| Cấu hình | WER | CER | Từ trong danh sách ra đúng |
+|---|--:|--:|--:|
+| Gipformer, không từ khoá (trước) | 14,4 % | 12,2 % | 49/79 |
+| **Danh sách kèm theo, điểm 1.0 (chọn)** | **14,4 %** | **12,3 %** | **54/79** |
+| Danh sách kèm theo, điểm 1.5 | 14,8 % | 12,6 % | 55/79 |
+| Danh sách kèm theo, điểm 2.0 | 15,0 % | 12,9 % | |
+| Thêm 10 từ họp tiếng Việt (biên bản, dự thảo, biểu quyết…), điểm 1.0 / 1.5 / 2 / 3 | 14,9 / 15,1 / 15,4 / 16,4 % | 12,6 / 12,9 / 13,2 / 14,3 % | |
+| Chỉ 10 từ họp tiếng Việt, điểm 1.0 | 14,9 % | 12,5 % | |
+| `max_active_paths` 8 (mặc định 4), không từ khoá | 14,3 % | 12,3 % | |
+| `max_active_paths` 8 + danh sách, điểm 1.0 | 14,4 % | 12,4 % | |
+| `blank_penalty` 0.5 | 17,0 % | 14,7 % | |
+| Whisper large-v3, từng đoạn, không ngữ cảnh (chỉ để tham khảo, không triển khai được) | 53,9 % | 47,7 % | |
+
+Lô 8 đoạn như trước #512 cho 16,8 % trên cùng đáp án; `max_active_paths` 2 và `blank_penalty` 1.0 đo ở lô 8 đều tệ hơn
+(18,1 % và 20,2 %).
+
+- **Chọn danh sách kèm theo ở điểm 1.0**: WER giữ nguyên, số từ trong danh sách ra đúng tăng từ 49 lên 54 trên 79 (commit,
+  report, deploy, detect, mic, local), thêm 2 chỗ ra nhầm "BR". Điểm cao hơn được thêm một hai từ nhưng đổi cả những từ xung
+  quanh, WER tăng. Từ họp tiếng Việt thì model vốn đã nhận đúng; cộng điểm chỉ chèn thêm "chủ", "họp", "tài liệu" lạc chỗ,
+  nên không đưa vào.
+- **Giữ nguyên cách giải mã**: `max_active_paths` 8 chỉ hơn một từ, `blank_penalty` làm tệ hơn.
+- Hai từ dự án không sửa được bằng từ khoá: "voice" người nói đọc thành "voi" và "bug" thành "bấc/bức", model viết đúng
+  các âm tiết đó dù được cộng điểm bao nhiêu.
+- Tốc độ: từ khoá không làm chậm bước chuyển chữ (riêng bước này, 506 giây lời của hai đoạn, MacBook M1, 2 luồng, lấy lần nhanh nhất trong 3 lần chạy xen kẽ: RTF 0,020 không từ khoá, 0,019 có từ khoá).
+- **Lời đọc thường không bị ảnh hưởng**: tập test VIVOS (760 câu đọc, 45 phút, 7.623 từ) qua hồ sơ `clip` cho WER khoảng 4,9 % cả khi có lẫn khi không có từ khoá; chia bốn phần thì từng phần bằng nhau tới 0,1 %.
+
+Từ khoá riêng của từng cuộc họp (tên người tham dự, từ trong tên cuộc họp) chưa làm. sherpa-onnx đã cho truyền từ khoá
+theo từng luồng (`create_stream(hotwords=…)`, cộng thêm vào danh sách chung), nên phần worker chỉ là một tham số mới của
+`/v1/transcribe`; phần lớn việc nằm ở backend (gửi danh sách) và ở việc đo lại, vì tên riêng tiếng Việt là từ thường
+("Hải", "Lộc") và dễ kéo nhầm. Đáng thử sau buổi bảo vệ.
 
 ## Hiệu năng
 

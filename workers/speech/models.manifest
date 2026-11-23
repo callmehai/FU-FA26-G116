@@ -7,6 +7,8 @@ gipformer/encoder.int8.onnx b528768939c7711a889be81a718ea7f2ee50d0d2d384d53f399e
 gipformer/decoder.int8.onnx e0a156b5454722a524230f9e35d5d928cfcdd3723437b418e5bd5e04f1c3a101 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/decoder.int8.onnx
 gipformer/joiner.int8.onnx 12636559d135315f002a1e1b477077d415e888477378db0fd450aee5b21ac551 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/joiner.int8.onnx
 gipformer/tokens.txt f536d03c2e95ebd2930cf0abec88e823bd17d3c1933da7ae6a82db3b80605e15 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/tokens.txt
+# SentencePiece model of the same tokens: hotwords (speech/hotwords.py) cut each phrase into tokens with it.
+gipformer/bpe.model 289dbb44527c13c419ae3a4d8ce6a349f01a97f8777e69934a77e3692d2f10db https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/bpe.model
 
 # 3D-Speaker ERes2Net base, 200k speakers — speaker embedding, 512 dims — Apache-2.0 — ONNX by k2-fsa.
 # Pinned to the k2-fsa author's Hugging Face commit of 14/10/2024: the GitHub release asset at the same name was
