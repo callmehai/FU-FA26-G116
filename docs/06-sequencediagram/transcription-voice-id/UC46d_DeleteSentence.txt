@@ -1,4 +1,4 @@
-title UC-46d - Delete a Sentence
+﻿title UC-46d - Delete a Sentence
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab
@@ -34,7 +34,6 @@ Database-->MeetingRepository: Meeting and roster
 deactivate Database
 MeetingRepository-->ClipService: Meeting and roster
 deactivate MeetingRepository
-ClipService->ClipService: Check the actor is the current Secretary or the speaker of the sentence (BR-355)
 
 alt Sentence no longer exists or actor is not on the roster
     ClipService-->ClipController: Sentence not found
@@ -53,17 +52,12 @@ else Secretary deletes the sentence
     activate ClipRepository
     ClipRepository->Database: Delete sentence
     activate Database
-    Database-->ClipRepository: Sentence deleted / Save failed
+    Database-->ClipRepository: Sentence deleted
     deactivate Database
-    ClipRepository-->ClipService: Sentence deleted / Save failed
+    ClipRepository-->ClipService: Sentence deleted
     deactivate ClipRepository
 
-    alt Sentence cannot be deleted - EX-2
-        ClipService-->ClipController: MSG304 - Unable to save transcript changes. Please try again.
-        ClipController-->RecordingsTab: MSG304 - Unable to save transcript changes. Please try again.
-        RecordingsTab-->Actor: MSG304 - Unable to save transcript changes. Please try again.
-    else Sentence deleted
-        ClipService->RecordingStorage: Delete the sentence audio (BR-355)
+            ClipService->RecordingStorage: Delete the sentence audio (BR-355)
         activate RecordingStorage
         RecordingStorage-->ClipService: Audio deleted
         deactivate RecordingStorage
@@ -80,3 +74,4 @@ end
 deactivate ClipService
 deactivate ClipController
 deactivate RecordingsTab
+

@@ -1,4 +1,4 @@
-title UC-44b - Stop and Save Room Recording
+﻿title UC-44b - Stop and Save Room Recording
 
 actor "Secretary" as Actor
 boundary "Room Recorder Card" as RecorderCard
@@ -14,7 +14,6 @@ database ":Database" as Database
 
 Actor->RecorderCard: Turn the room microphone off, or save a take left open on another device
 activate RecorderCard
-RecorderCard->RecorderCard: Send the parts still kept on this device (UC-44a)
 RecorderCard->RecordingController: Save the take
 activate RecordingController
 RecordingController->RoomTakeService: complete(recordingId, actorId)
@@ -36,16 +35,15 @@ Database-->RecordingRepository: Take
 deactivate Database
 RecordingRepository-->RoomTakeService: Take
 deactivate RecordingRepository
-RoomTakeService->RoomTakeService: Check the actor opened the take, or is the current Secretary\nsaving a take left open on another device - AF-3 (BR-341)
 
-alt Actor may not save this take - EX-2
-    RoomTakeService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
-    RecordingController-->RecorderCard: MSG295 - Only the meeting Secretary may manage recordings.
-    RecorderCard-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
-else Take is no longer open - EX-1
+alt Take is no longer open - EX-1
     RoomTakeService-->RecordingController: MSG362 - This recording take has been closed and cannot accept additional audio.
     RecordingController-->RecorderCard: MSG362 - This recording take has been closed and cannot accept additional audio.
     RecorderCard-->Actor: MSG362 - This recording take has been closed and cannot accept additional audio.
+else Actor may not save this take - EX-2
+    RoomTakeService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingController-->RecorderCard: MSG295 - Only the meeting Secretary may manage recordings.
+    RecorderCard-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
 else Take received no audio - AF-1
     RoomTakeService->RecordingRepository: Remove the empty take
     activate RecordingRepository
@@ -81,9 +79,9 @@ else Take holds audio
         activate RecordingRepository
         RecordingRepository->Database: Update take
         activate Database
-        Database-->RecordingRepository: Recording saved / Save failed
+        Database-->RecordingRepository: Recording saved
         deactivate Database
-        RecordingRepository-->RoomTakeService: Recording saved / Save failed
+        RecordingRepository-->RoomTakeService: Recording saved
         deactivate RecordingRepository
         RoomTakeService->TranscriptRepository: Queue a Pending transcript for the recording (BR-345)
         activate TranscriptRepository
@@ -96,15 +94,15 @@ else Take holds audio
     else Room recording exists
         RoomTakeService->RecordingStorage: Append the take audio to the room recording audio
         activate RecordingStorage
-        RecordingStorage-->RoomTakeService: Joined audio / Storage failed
+        RecordingStorage-->RoomTakeService: Joined audio
         deactivate RecordingStorage
         RoomTakeService->RecordingRepository: Add the take to the room recording with its place and length,\nupdate the duration and remove the separate take (BR-345)
         activate RecordingRepository
         RecordingRepository->Database: Update room recording, delete take
         activate Database
-        Database-->RecordingRepository: Recording saved / Save failed
+        Database-->RecordingRepository: Recording saved
         deactivate Database
-        RecordingRepository-->RoomTakeService: Recording saved / Save failed
+        RecordingRepository-->RoomTakeService: Recording saved
         deactivate RecordingRepository
         RoomTakeService->TranscriptRepository: Put the whole recording back as Pending to transcribe it again (BR-345)
         activate TranscriptRepository
@@ -119,21 +117,14 @@ else Take holds audio
     activate AuditService
     AuditService-->RoomTakeService: Entry saved
     deactivate AuditService
-
-    alt Recording cannot be saved - EX-3
-        RoomTakeService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
-        RecordingController-->RecorderCard: MSG298 - Unable to save recording changes. Please try again.
-        RecorderCard-->Actor: MSG298 - Unable to save recording changes. Please try again.
-    else Take saved
-        RoomTakeService->Publisher: Tell everyone in the Meeting that the recordings changed
-        activate Publisher
-        Publisher-->RoomTakeService: Change published
-        deactivate Publisher
-        RoomTakeService->RoomTakeService: ref UC-45c - the queued transcript is processed in the background
-        RoomTakeService-->RecordingController: MSG363 - Room recording take saved.
-        RecordingController-->RecorderCard: MSG363 - Room recording take saved.
-        RecorderCard-->Actor: MSG363 - Room recording take saved.
-    end
+    RoomTakeService->Publisher: Tell everyone in the Meeting that the recordings changed
+    activate Publisher
+    Publisher-->RoomTakeService: Change published
+    deactivate Publisher
+    RoomTakeService->RoomTakeService: ref UC-45c - the queued transcript is processed in the background
+    RoomTakeService-->RecordingController: MSG363 - Room recording take saved.
+    RecordingController-->RecorderCard: MSG363 - Room recording take saved.
+    RecorderCard-->Actor: MSG363 - Room recording take saved.
 end
 
 deactivate RoomTakeService

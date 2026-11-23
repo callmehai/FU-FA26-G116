@@ -1,4 +1,4 @@
-title UC-81a - View My Voice ID
+﻿title UC-81a - View My Voice ID
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage
@@ -17,16 +17,11 @@ VoiceService->VoiceRepository: Get the actor's standing consent and voice sample
 activate VoiceRepository
 VoiceRepository->Database: Retrieve consent not withdrawn and samples of the actor
 activate Database
-Database-->VoiceRepository: Consent and samples / Load failed
+Database-->VoiceRepository: Consent and samples
 deactivate Database
-VoiceRepository-->VoiceService: Consent and samples / Load failed
+VoiceRepository-->VoiceService: Consent and samples
 deactivate VoiceRepository
 
-alt Voice ID cannot be loaded - EX-1
-    VoiceService-->VoiceController: MSG314 - Unable to load voice profile information.
-    VoiceController-->VoicePage: MSG314 - Unable to load voice profile information.
-    VoicePage-->Actor: MSG314 - Unable to load voice profile information.
-else Voice ID loaded
     VoiceService-->VoiceController: Consent with its notice version, the samples the actor recorded\nwith length, date and whether playable, at most 5 self-recorded samples, the current notice,\nits purpose and the data controller (BR-362, BR-363, BR-448)
     VoiceController-->VoicePage: Consent with its notice version, the samples the actor recorded\nwith length, date and whether playable, at most 5 self-recorded samples, the current notice,\nits purpose and the data controller (BR-362, BR-363, BR-448)
     alt No consent
@@ -44,3 +39,4 @@ end
 deactivate VoiceService
 deactivate VoiceController
 deactivate VoicePage
+

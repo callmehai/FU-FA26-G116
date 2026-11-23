@@ -1,4 +1,4 @@
-title UC-86b - Record Voice Sample for Attendee
+﻿title UC-86b - Record Voice Sample for Attendee
 
 actor "VoiceCollector" as Collector
 boundary "Users Page" as UsersPage
@@ -13,145 +13,65 @@ database ":Database" as Database
 Collector->UsersPage: Save the previewed sample for the person
 activate UsersPage
 
-UsersPage->CollectionController: Save the voice sample for the person with personAgreed
+UsersPage->CollectionController: Save the voice sample for the person
 activate CollectionController
-CollectionController->CollectionController: Read the form: personAgreed, one audio file of at most 10 MB in a supported format
 
-alt No audio file, or the form is unreadable
-    CollectionController-->UsersPage: MSG313 - Invalid submission data.
-    UsersPage-->Collector: MSG313 - Invalid submission data.
-else Audio format is not supported
-    CollectionController-->UsersPage: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
-    UsersPage-->Collector: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
-else Audio received
-    CollectionController->CollectionService: add(userId, actorId, audio, contentType, personAgreed)
-    activate CollectionService
+CollectionController->CollectionService: add(userId, actorId, audio, contentType, personAgreed)
+activate CollectionService
 
-    alt No access: no Voice sample collection permission - EX-1
-        CollectionService-->CollectionController: Not found
-        deactivate CollectionService
+CollectionService->VoiceRepository: Get the person's consent and collected samples
+activate VoiceRepository
+VoiceRepository->Database: Retrieve consent and collected samples
+activate Database
+Database-->VoiceRepository: Consent and collected samples
+deactivate Database
+VoiceRepository-->CollectionService: Consent and collected samples
+deactivate VoiceRepository
 
-        CollectionController-->UsersPage: Return failure
-        deactivate CollectionController
+alt Person has not agreed under the current terms - EX-1
+    CollectionService-->CollectionController: MSG475 - The person has not agreed to Voice ID under the current terms.
+    CollectionController-->UsersPage: MSG475 - The person has not agreed to Voice ID under the current terms.
+    UsersPage-->Collector: MSG475 - The person has not agreed to Voice ID under the current terms.
+else Person already has 50 collected samples - EX-2
+    CollectionService-->CollectionController: MSG476 - This person already has 50 collected voice samples.
+    CollectionController-->UsersPage: MSG476 - This person already has 50 collected voice samples.
+    UsersPage-->Collector: MSG476 - This person already has 50 collected voice samples.
+else Samples may be added
+    CollectionService->SpeechEngine: Check the sample and make its voiceprint
+    activate SpeechEngine
+    SpeechEngine-->CollectionService: Voiceprint / Sample rejected
+    deactivate SpeechEngine
 
-        UsersPage-->Collector: Show the person as not found
-    else Access granted
-        CollectionService->VoiceRepository: Get the person's standing consent and collected samples
+    alt Audio is unsupported or fails the quality rules - EX-3
+        CollectionService-->CollectionController: MSG292 - Unsupported audio format.
+        CollectionController-->UsersPage: MSG292 - Unsupported audio format.
+        UsersPage-->Collector: MSG292 - Unsupported audio format.
+    else Voiceprint made
+        CollectionService->Protector: Protect the voiceprint and the recording
+        activate Protector
+        Protector-->CollectionService: Protected voiceprint and recording
+        deactivate Protector
+
+        CollectionService->VoiceRepository: Save the sample and notify the person
         activate VoiceRepository
-        VoiceRepository->Database: Retrieve consent not withdrawn and collected samples
+        VoiceRepository->Database: Insert voice sample and notification
         activate Database
-        Database-->VoiceRepository: Consent and collected samples
+        Database-->VoiceRepository: Saved
         deactivate Database
-        VoiceRepository-->CollectionService: Consent and collected samples
+        VoiceRepository-->CollectionService: Saved
         deactivate VoiceRepository
 
-        alt Person has not agreed under notice 1.4 or later - EX-2
-            CollectionService-->CollectionController: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
-            deactivate CollectionService
+        CollectionService->AuditService: Record the new collected sample
+        activate AuditService
+        AuditService-->CollectionService: Entry saved
+        deactivate AuditService
 
-            CollectionController-->UsersPage: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
-            deactivate CollectionController
-
-            UsersPage-->Collector: MSG475 - The person has not agreed to Voice ID under the current terms.\nThey can enable it on the My voice page.
-        else Person agreed
-            alt Person already has 50 collected samples - EX-3
-                CollectionService-->CollectionController: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
-                deactivate CollectionService
-
-                CollectionController-->UsersPage: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
-                deactivate CollectionController
-
-                UsersPage-->Collector: MSG476 - This person already has 50 collected voice samples.\nDelete a collected sample before recording a new one.
-            else Samples may be added
-                CollectionService->CollectionService: Check personAgreed for this take (BR-449, BR-453)
-
-                alt Per-take agreement missing - EX-4
-                    CollectionService-->CollectionController: MSG483 - Confirm the person agreed to this recording.
-                    deactivate CollectionService
-
-                    CollectionController-->UsersPage: MSG483 - Confirm the person agreed to this recording.
-                    deactivate CollectionController
-
-                    UsersPage-->Collector: MSG483 - Confirm the person agreed to this recording.
-                else Take agreed
-                    CollectionService->SpeechEngine: Check the sample and make its voiceprint inside the system (BR-369)
-                    activate SpeechEngine
-                    SpeechEngine-->CollectionService: Voiceprint with speech length / Sample rejected with a reason / Unavailable
-                    deactivate SpeechEngine
-
-                    alt Sample fails the quality rules - 6 to 60 seconds of clear speech by one person (BR-363) - EX-6
-                        CollectionService-->CollectionController: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
-                        deactivate CollectionService
-
-                        CollectionController-->UsersPage: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
-                        deactivate CollectionController
-
-                        UsersPage-->Collector: MSG309 - Voice sample did not meet quality requirements.\nPlease read the full sample text clearly.
-                    else Speech Recognition Service unavailable - EX-7
-                        CollectionService-->CollectionController: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-                        deactivate CollectionService
-
-                        CollectionController-->UsersPage: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-                        deactivate CollectionController
-
-                        UsersPage-->Collector: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-                    else Voiceprint made
-                        CollectionService->VoiceRepository: Lock the consent and recheck it,\nthe 50-sample limit and personAgreed
-                        activate VoiceRepository
-                        VoiceRepository->Database: Retrieve consent for update and collected samples
-                        activate Database
-                        Database-->VoiceRepository: Consent and collected samples
-                        deactivate Database
-                        VoiceRepository-->CollectionService: Consent and collected samples
-                        deactivate VoiceRepository
-
-                        CollectionService->Protector: Protect the voiceprint, bound to the person, the sample and its model (BR-364)
-                        activate Protector
-                        Protector-->CollectionService: Protected voiceprint
-                        deactivate Protector
-
-                        CollectionService->Protector: Protect the sample recording for the owner\nand the collector to hear (BR-364, BR-452)
-                        activate Protector
-                        Protector-->CollectionService: Protected recording
-                        deactivate Protector
-
-                        CollectionService->VoiceRepository: Save the sample with the collector\nand the per-take agreement, and notify the person (BR-452, BR-453)
-                        activate VoiceRepository
-                        VoiceRepository->Database: Insert voice sample and notification
-                        activate Database
-                        Database-->VoiceRepository: Sample saved / Save failed
-                        deactivate Database
-                        VoiceRepository-->CollectionService: Sample saved / Save failed
-                        deactivate VoiceRepository
-
-                        CollectionService->AuditService: Record the new collected sample with its model and speech length
-                        activate AuditService
-                        AuditService-->CollectionService: Entry saved
-                        deactivate AuditService
-
-                        alt Sample cannot be saved
-                            CollectionService-->CollectionController: MSG315 - Unable to save changes. Please try again.
-                            deactivate CollectionService
-
-                            CollectionController-->UsersPage: MSG315 - Unable to save changes. Please try again.
-                            deactivate CollectionController
-
-                            UsersPage-->Collector: MSG315 - Unable to save changes. Please try again.
-                        else Sample saved
-                            CollectionService-->CollectionController: MSG473 - Voice sample recorded for the attendee.
-                            deactivate CollectionService
-
-                            CollectionController-->UsersPage: MSG473 - Voice sample recorded for the attendee.
-                            deactivate CollectionController
-
-                            UsersPage-->Collector: MSG473 - Voice sample recorded for the attendee.
-                        end
-                    end
-                end
-            end
-        end
+        CollectionService-->CollectionController: MSG473 - Voice sample recorded for the attendee.
+        CollectionController-->UsersPage: MSG473 - Voice sample recorded for the attendee.
+        UsersPage-->Collector: MSG473 - Voice sample recorded for the attendee.
     end
 end
 
+deactivate CollectionService
 deactivate CollectionController
 deactivate UsersPage
