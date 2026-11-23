@@ -3,9 +3,9 @@
  * and the next one opens about every {@link TAKE_SPLIT_SECONDS} of audio, so a long meeting never builds one huge take
  * and its words come in as it goes. A take also rolls over before it reaches the server's size limit (ADR-0041).
  *
- * ADR-0078 — the cut waits for a pause. Once a take holds five minutes it rolls at the first {@link QUIET_MIN_MS} of
- * quiet, so no sentence is split across two takes; if the room never pauses it rolls anyway at
- * {@link TAKE_MAX_EXTRA_SECONDS} past the five minutes. Quiet is measured on the very samples the take records, against
+ * ADR-0078 — the cut waits for a pause. Once a take holds {@link TAKE_SPLIT_SECONDS} it rolls at the first
+ * {@link QUIET_MIN_MS} of quiet, so no sentence is split across two takes; if the room never pauses it rolls anyway at
+ * {@link TAKE_MAX_EXTRA_SECONDS} past the split. Quiet is measured on the very samples the take records, against
  * the room's own noise floor, so it needs no second microphone and no timer a background tab would slow down.
  *
  * The meeting has one open take on the server, so the next opens once the last is saved; what the mic hears meanwhile
@@ -13,9 +13,12 @@
  * `node --test` (takeRoller.test.ts).
  */
 
-/** Five minutes, as the team asked for (team test 21/11/2026): short enough for words to come in as the meeting goes. */
-export const TAKE_SPLIT_SECONDS = 5 * 60
-/** Past the five minutes, how long a take waits for a pause before it is cut anyway: a take is never over six. */
+/**
+ * ADR-0080 — thirty minutes (Lộc, 23/11/2026; five before). The room recording is transcribed again as a whole after
+ * every take, and at five minutes the next take came before the last run had finished: runs kept cancelling each other.
+ */
+export const TAKE_SPLIT_SECONDS = 30 * 60
+/** Past the split, how long a take waits for a pause before it is cut anyway: a take is never over 31 minutes. */
 export const TAKE_MAX_EXTRA_SECONDS = 60
 /** Quiet this long is a pause between sentences, not a gap between words. */
 export const QUIET_MIN_MS = 600

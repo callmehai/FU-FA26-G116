@@ -280,7 +280,7 @@ nhảy số.
 Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 
 **Chuyển chữ lại giữ phần sửa tay** ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). Bản ghi mic
-phòng được chuyển chữ lại cả tệp sau mỗi lượt (5 phút một lần), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
+phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 phút một lần, [ADR-0080](../05-decisions/0080-mic-phong-luot-30-phut.md)), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
 `TranscriptionService` đặt phần Thư ký sửa tay lên kết quả mới, chỉ dựa vào thời gian (`TranscriptCarry`):
 
 - **Tên Thư ký gán cho giọng** (có `AssignedById`, kể cả bỏ gán) đi sang giọng mới trùng giọng cũ ≥ 60% lời trong phần
