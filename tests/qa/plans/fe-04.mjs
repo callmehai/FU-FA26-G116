@@ -264,6 +264,50 @@ export default {
       },
     },
     {
+      // MEET_FT01 E2/E4, as a person does it: one press on "Tạo cuộc họp", no URL typed in between (AC1 opens the form
+      // a second time by URL to pick a day, which leaves an extra "?create=" entry in the history).
+      id: 'AC1B',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Tạo cuộc họp từ nút trên danh sách, Back không mở lại form trống, tải lại trang chi tiết vẫn là cuộc họp đó',
+      steps: [
+        'Mở Danh sách cuộc họp, bấm "Tạo cuộc họp"',
+        'Nhập tên (giờ điền sẵn), bấm "Tạo cuộc họp"',
+        'Bấm Back của trình duyệt, rồi Forward và tải lại trang',
+      ],
+      expected:
+        'Mở trang chi tiết cuộc họp mới; Back về danh sách và không có hộp "Tạo cuộc họp"; Forward và tải lại vẫn là trang chi tiết đó, trạng thái Nháp',
+      async run(qa) {
+        await qa.goto('/mgmt/meetings')
+        await press(qa, qa.page.getByRole('link', { name: 'Tạo cuộc họp' }).first())
+        const form = dialog(qa, 'Tạo cuộc họp')
+        await qa.expect(form).toBeVisible()
+        // From 22:00 the form starts with no time (createMeetingPrefill), and this criterion types no time.
+        if ((await qa.page.evaluate(() => new Date().getHours())) >= 22)
+          qa.inconclusive('Sau 22:00 form không điền sẵn giờ; chạy lại trong ngày')
+        const title = qa.name(`FE-04 tạo rồi Back ${rand()}`)
+        await form.getByPlaceholder('Ví dụ: Giao ban tuần 40').fill(title)
+        await form.getByRole('button', { name: 'Tạo cuộc họp' }).click()
+        await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings\/[0-9a-f-]{36}$/)
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: title })).toBeVisible()
+        const detail = qa.page.url()
+        await qa.page.goBack()
+        await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings$/)
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Danh sách cuộc họp' })).toBeVisible()
+        await qa.page.waitForTimeout(500)
+        await qa.expect(dialog(qa, 'Tạo cuộc họp')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('back-ve-danh-sach-khong-mo-form')
+        await qa.page.goForward()
+        await qa.expect(qa.page).toHaveURL(detail)
+        await qa.page.reload()
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: title })).toBeVisible()
+        await expectStatusChip(qa, 'Nháp')
+        await qa.expect(dialog(qa, 'Tạo cuộc họp')).toHaveCount(0)
+        qa.note(`Tạo: ${title} (${detail.split('/').pop()})`)
+      },
+    },
+    {
       id: 'AC2',
       role: 'secretary',
       devices: ['desktop', 'phone'],
