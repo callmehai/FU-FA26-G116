@@ -211,9 +211,11 @@ public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars =
             .AppendLine("KẾT LUẬN:")
             .AppendLine("Kết luận của chủ trì, mỗi nội dung một dòng \"- <tên nội dung>: <kết luận>\": theo dòng \"Kết luận của chủ trì\" của nội dung đó; nội dung không có dòng kết luận thì lấy từ lời kết luận, lời giao việc của chủ trì trong phần tóm tắt; không có thì bỏ nội dung đó. Không có kết luận nào thì ghi: Không có.")
             .AppendLine("NHIỆM VỤ:")
-            .AppendLine("Mỗi nhiệm vụ được giao trong cuộc họp một dòng \"- <nhiệm vụ> — <người hoặc đơn vị phụ trách> — <hạn>\". Chỉ ghi người hoặc đơn vị mà hồ sơ nói rõ được giao việc đó; người trình bày một nội dung KHÔNG phải là người phụ trách; hồ sơ không nói ai phụ trách thì bỏ phần đó. Hạn chép ĐÚNG như hồ sơ nói, kể cả hạn tương đối (\"trước thứ Tư\"), không tự tính ra ngày khác; không nói hạn thì bỏ phần hạn. Không có nhiệm vụ nào thì ghi: Không có.")
+            .AppendLine("Mỗi nhiệm vụ được giao trong cuộc họp một dòng \"- <nhiệm vụ> — <người hoặc đơn vị phụ trách> — <hạn>\". Chỉ ghi người hoặc đơn vị mà hồ sơ nói rõ được giao việc đó; người trình bày một nội dung KHÔNG phải là người phụ trách; hồ sơ không nói ai phụ trách thì bỏ phần đó. Phần hạn CHỈ ghi khi trong hồ sơ có người nói rõ thời hạn của chính việc đó, chép nguyên văn lời nói, không tự tính ra ngày khác; hồ sơ không nói hạn thì bỏ hẳn phần hạn, KHÔNG tự đặt hạn. Không có nhiệm vụ nào thì ghi: Không có.")
             .AppendLine("KHÔNG viết kết quả biểu quyết: hệ thống tự chép từ dữ liệu.");
-        return ParseOverview(Clean(await model.CompleteAsync(SystemPrompt, prompt.ToString(), ct)));
+        var (objectives, conclusions, tasks) = ParseOverview(Clean(await model.CompleteAsync(SystemPrompt, prompt.ToString(), ct)));
+        // The model still sets deadlines nobody said (Hải, 24/11/2026): a deadline the record does not name is dropped.
+        return (objectives, conclusions, DeadlineGrounding.Apply(tasks, facts));
     }
 
     /// <summary>
