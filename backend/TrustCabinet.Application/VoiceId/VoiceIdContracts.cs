@@ -141,7 +141,8 @@ public interface IVoiceEmbedder
 /// <summary>
 /// Who each diarized voice probably is. Only people offered as candidates — the meeting's own participants who
 /// consented — can be suggested, and only when the best match is both close enough and clearly ahead of the
-/// runner-up for that voice. Anything less stays "Người nói N".
+/// runner-up for that voice. Anything less stays "Người nói N". A runner-up already suggested, more surely, for another
+/// voice that sounds different is not a runner-up: one person is not two voices that differ.
 /// <para>
 /// One person may be suggested for several voices, as in AI-eCabinet: diarization splits a person in two, and the
 /// Secretary then sees both as that person, the weaker marked "the same voice as" the stronger
@@ -199,7 +200,14 @@ public static class SpeakerMatcher
                      .OrderByDescending(x => x.Score))
         {
             if (result.ContainsKey(label) || score < threshold) continue;
-            var runnerUp = scores[label].Where(x => x.UserId != userId).Select(x => x.Score).DefaultIfEmpty(0).Max();
+            // A runner-up already suggested, more surely, for another voice that does not sound like this one is not
+            // in the running: one person is not two voices that differ. Two people's samples cut from one room
+            // recording sound alike (Hải 0.670 against Khánh 0.635 for Hải's voice, 23/11/2026, Khánh already 0.735
+            // as his own), and the margin alone left Hải unnamed.
+            var runnerUp = scores[label]
+                .Where(x => x.UserId != userId
+                    && !(first.TryGetValue(x.UserId, out var own) && Cosine(voices[label], voices[own]) < sameVoice))
+                .Select(x => x.Score).DefaultIfEmpty(0).Max();
             if (score - runnerUp < margin) continue;
             if (first.TryGetValue(userId, out var lead) && (Cosine(voices[label], voices[lead]) < sameVoice || score < secondVoice))
                 continue;

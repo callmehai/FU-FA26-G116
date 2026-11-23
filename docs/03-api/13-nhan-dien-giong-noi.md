@@ -187,6 +187,10 @@ họp; người khác nhận `null`. Tên hiển thị của một giọng: `ass
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
 và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
 xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
+Người xếp sau đã được gợi ý chắc hơn cho một giọng khác, mà giọng đó nghe không giống giọng đang xét (cosine
+< `SameVoiceThreshold`), thì không tính là người xếp sau: một người không thể là hai giọng khác nhau. Ví dụ buổi thử
+23/11/2026: giọng của Hải được 0,670 với Hải và 0,635 với Khánh. Mẫu của hai người cùng cắt từ một bản ghi mic phòng
+nên nghe giống nhau. Khánh đã là giọng khác ở 0,735, nên Hải được gợi ý thay vì bị bỏ vì sát điểm.
 
 > **21/11/2026** ([ADR-0074](../05-decisions/0074-nguong-tach-nguoi-noi-va-voice-id-sau-buoi-thu-21-11.md)): mọi ngưỡng
 > Voice ID từng bị hạ xuống 0,5 để bớt "Người nói N"; buổi thử cùng ngày cho thấy một tên nhận tới 7 giọng máy, có giọng
