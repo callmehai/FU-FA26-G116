@@ -96,6 +96,7 @@ Table of Contents
 | API | Application Programming Interface |
 | JOB | Background Job |
 | ADR | Architecture Decision Record |
+| Organizer | The person who created a given Meeting, a Member or an Approver. Business rules name this relationship; it is not a separate actor and differs from the meeting role Member. |
 
 ## I. Overall Requirements
 

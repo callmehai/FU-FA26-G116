@@ -587,7 +587,12 @@ FIX = {
     # Step 1 states the search limits; BR-148 (Secret overlap) is cited where the Secret meeting is handled.
     "UC-85a": [("a slot never starts in the past. (BR-148)", "a slot never starts in the past.")],
 }
-APPROVER_TOO = "An Approver can also do this, because the Approver role also holds the create-meeting permission."
+ORGANIZER_TERM = (
+    "Organizer",
+    "The person who created a given Meeting, a Member or an Approver. Business rules name this relationship; "
+    "it is not a separate actor and differs from the meeting role Member.",
+)
+APPROVER_TOO ="An Approver can also do this, because the Approver role also holds the create-meeting permission."
 NFR_ADD = {
     "Session and token expiry": "Sign-out revokes only the refresh token, so an access token already issued stays usable until it expires.",
     "External Guest access scope": "For one invitation a new verification code can be requested at most once per minute, and at most 20 codes are sent in any 24 hours.",
@@ -756,6 +761,15 @@ for part, ctx, heading, el in list(blocks()):
             if name == "Approver":
                 set_cell_text(tcs[1], "Approver (Phê duyệt viên)")
                 report["actor_table"].append(name)
+    # Q3 of PR #509 (decided 24/11/2026): the rules keep "Organizer" for the meeting's creator, "Member" is the actor.
+    if heading.startswith("Definition and Acronyms") and not report["organizer_term"]:
+        rows = el.findall(q("tr"))
+        tr = copy.deepcopy(rows[-1])
+        renew_ids(tr)
+        for tc, text in zip(tr.findall(q("tc")), ORGANIZER_TERM):
+            set_cell_text(tc, text)
+        rows[-1].addnext(tr)
+        report["organizer_term"].append("added")
     if part == "IV" and heading.startswith("2.2 Performance") and not report["speaker_row"]:
         rows = el.findall(q("tr"))
         tr = copy.deepcopy(rows[-1])
