@@ -256,17 +256,23 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
   hơn (`nice` +10): trên máy 2 vCPU, câu mic cá nhân, backend, PostgreSQL và LiveKit được CPU trước. `SPEECH_CLIP_PROCESS=0`
   gộp lại một process con như cũ, cho máy thiếu RAM.
 
-  Đo trong Docker (Linux arm64 trên MacBook M1, `--cpus 2`, `--memory 2500m`, `SPEECH_THREADS=2` như server test), một
-  bản ghi 20 phút, cứ 15 giây gửi một câu 5 giây và mỗi phút một mẫu giọng 25 giây:
+  Đo trong Docker (Linux arm64 trên MacBook M1, `--cpus 2`, `--memory 2500m`, `SPEECH_THREADS=2` như server test,
+  24/11/2026), trong lúc chuyển chữ một bản ghi, cứ 15 giây gửi một câu 5 giây và đều đặn một mẫu giọng 25 giây. Cột
+  "trước" và "hai process con" cùng chuyển chữ 8 đoạn một lô, để chỉ so việc tách làn; cột cuối là bản cuối cùng, chuyển
+  chữ từng đoạn một (bước 6):
 
-  | | Một process con | Hai process con |
-  |---|---|---|
-  | Bản ghi 20 phút | 503 s | 489 s |
-  | Câu mic cá nhân (5 s) | trung vị 289 s, lâu nhất 494 s | trung vị 0,6 s, 90% dưới 4,8 s, lâu nhất 6,8 s |
-  | Mẫu giọng (25 s) | 123–482 s | 13–15 s (lúc rảnh 5,8 s) |
-  | RAM + swap của container, đỉnh | 3,1 GB | 3,5 GB |
+  | | Trước: một process con | Hai process con | Hai process con, từng đoạn một |
+  |---|---|---|---|
+  | Bản ghi | 20 phút, 503 s | 20 phút, 489 s | 83 phút, 2117 s (RTF 0,42) |
+  | Câu mic cá nhân (5 s) | trung vị 289 s, lâu nhất 494 s | trung vị 0,6 s, 90% dưới 4,8 s, lâu nhất 6,8 s | trung vị 1,4 s, 90% dưới 5,9 s, lâu nhất 18 s |
+  | Mẫu giọng (25 s) | 123–482 s | 13–15 s | 12–26 s |
+  | Đỉnh process con nặng / nhẹ | 2,5 GB + 0,4 GB swap / — | 2,3 GB + 0,6 GB swap / 0,7 GB | 1,9 GB / 0,7 GB, không swap |
 
-  Câu lâu nhất là câu đến đúng lúc làn nhẹ đang làm một mẫu giọng hoặc đang nạp lại model sau mẫu giọng.
+  Lúc rảnh, một mẫu giọng mất 5,8 giây và một câu 0,3 giây. Câu chờ lâu nhất là câu đến đúng lúc làn nhẹ đang làm một
+  mẫu giọng (câu xếp hàng sau nó) hoặc đang nạp lại model sau mẫu giọng. Bản ghi 83 phút với 8 đoạn một lô cần 4,7 GB
+  khi không giới hạn RAM, và với hai process con trong 2500m thì process con nặng bị hết bộ nhớ giữa chừng; từng đoạn
+  một thì cả hai process con vừa trong 2500m. Một câu hay mẫu giọng chạy bên cạnh lấy bớt CPU của bản ghi: chạy một
+  mình, bản ghi 83 phút (8 đoạn một lô) mất 1674 s.
 - Request đến khi làn của nó đang bận sẽ **xếp hàng**, không bị từ chối.
 - **Bên gọi ngắt kết nối thì dừng.** Trong lúc chạy `/v1/transcribe`, process HTTP cứ nửa giây xem kết nối còn không;
   bên gọi đã đóng thì báo process con qua một danh sách số việc đã huỷ dùng chung, và process con dừng ở bước kế tiếp
