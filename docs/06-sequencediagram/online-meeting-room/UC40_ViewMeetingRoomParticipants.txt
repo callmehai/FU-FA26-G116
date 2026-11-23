@@ -10,13 +10,7 @@ Page->RoomProvider: Read the people connected now with their speaking and microp
 activate RoomProvider
 RoomProvider-->Page: People connected now
 deactivate RoomProvider
-Page->Page: Order by Meeting Role (Chair, Secretary, Member, Guest) then by name;\nmark the actor as You; presence is not attendance (BR-329, BR-330)
 Page-->Actor: Participants panel with the number of people connected
-opt People join, leave, speak, mute or change role - AF-1, AF-2, AF-3
-    RoomProvider-->Page: Change in the room
-    Page-->Actor: List and count update without a reload
-end
-opt Connection is lost - EX-1
-    Page-->Actor: MSG333 - Connection lost, reconnecting...
-end
 deactivate Page
+EOF
+echo done

@@ -1,84 +1,68 @@
 title UC-75 - Cancel Meeting
 
-actor "Actor" as Actor
-boundary "Meeting Management Page" as MeetingPage
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Details Page" as DetailsPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Participant Repository" as ParticipantRepository
-participant ":Notification Service" as NotificationService
-participant ":Meeting Invitation Queue" as InvitationQueue
+control ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Actor->MeetingPage: Confirm Cancel meeting with a cancellation reason
-activate MeetingPage
-MeetingPage->MeetingController: Cancel meeting
+Organizer->DetailsPage: Cancel meeting with reason
+activate DetailsPage
+
+DetailsPage->MeetingController: Cancel meeting (meetingId, reason)
 activate MeetingController
-MeetingController->MeetingService: cancelMeeting(meetingId, organizerId, reason)
+
+MeetingController->MeetingService: cancelMeeting(meetingId, reason, organizer)
 activate MeetingService
 
-MeetingService->MeetingRepository: Get Meeting, its Organizer and current status
+MeetingService->MeetingRepository: Find meeting and verify organizer
 activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
+MeetingRepository->Database: Retrieve meeting and organizer
 activate Database
-Database-->MeetingRepository: Meeting and status
+Database-->MeetingRepository: Meeting and organizer
 deactivate Database
-MeetingRepository-->MeetingService: Meeting and status
+MeetingRepository-->MeetingService: Meeting and organizer
 deactivate MeetingRepository
 
-MeetingService->MeetingService: Verify actor is the Meeting Organizer and Meeting is Draft,\nWaitingApproval, Rejected, Approved or Published (BR-297)
-alt Actor is not the Meeting Organizer - EX-5
-    MeetingService-->MeetingController: MSG85 - You do not have permission to perform this action.
-    MeetingController-->MeetingPage: MSG85 - You do not have permission to perform this action.
-    MeetingPage-->Actor: MSG85 - You do not have permission to perform this action.
-else Meeting can no longer be cancelled - EX-2
+alt Cancellation reason is missing - EX-1
+    MeetingService-->MeetingController: MSG262 - Enter a reason for cancelling the meeting.
+    MeetingController-->DetailsPage: Return reason error
+    DetailsPage-->Organizer: MSG262 - Enter a reason for cancelling the meeting.
+
+else Cancellation reason is too long - EX-2
+    MeetingService-->MeetingController: MSG345 - Cancellation reason must not exceed 1000 characters.
+    MeetingController-->DetailsPage: Return reason error
+    DetailsPage-->Organizer: MSG345 - Cancellation reason must not exceed 1000 characters.
+
+else Meeting can no longer be cancelled - EX-3
     MeetingService-->MeetingController: MSG263 - This meeting can no longer be cancelled.
-    MeetingController-->MeetingPage: MSG263 - This meeting can no longer be cancelled.
-    MeetingPage-->Actor: MSG263 - This meeting can no longer be cancelled.
-else Cancellation permitted
-    MeetingService->MeetingService: Validate cancellation reason is not blank (BR-298)
-    alt Cancellation reason is missing - EX-1
-        MeetingService-->MeetingController: MSG262 - Enter a reason for cancelling the meeting.
-        MeetingController-->MeetingPage: MSG262 - Enter a reason for cancelling the meeting.
-        MeetingPage-->Actor: MSG262 - Enter a reason for cancelling the meeting.
-    else Reason provided
-        MeetingService->MeetingRepository: Recheck status, set Cancelled, record reason, actor and time\nin status history and close any pending approval request together (BR-38, BR-298, BR-299)
-        activate MeetingRepository
-        MeetingRepository->Database: Save status, history and approval request as one change
-        activate Database
-        Database-->MeetingRepository: Cancelled / Save failed; Meeting unchanged
-        deactivate Database
-        MeetingRepository-->MeetingService: Cancelled / Save failed; Meeting unchanged
-        deactivate MeetingRepository
-        alt Cancellation cannot be saved - EX-3
-            MeetingService-->MeetingController: MSG264 - Unable to cancel the meeting. Please try again.
-            MeetingController-->MeetingPage: MSG264 - Unable to cancel the meeting. Please try again.
-            MeetingPage-->Actor: MSG264 - Unable to cancel the meeting. Please try again.
-        else Meeting cancelled
-            opt Meeting was Published
-                MeetingService->ParticipantRepository: Get current invited internal participants and Guests
-                activate ParticipantRepository
-                ParticipantRepository->Database: Get invited internal participants and Guests
-                activate Database
-                Database-->ParticipantRepository: Invitees
-                deactivate Database
-                ParticipantRepository-->MeetingService: Invitees
-                deactivate ParticipantRepository
-                MeetingService->NotificationService: Notify invited internal participants in the application with the reason (BR-300)
-                activate NotificationService
-                NotificationService-->MeetingService: Notifications created / delivery failed\n(failure does not undo the cancellation)
-                deactivate NotificationService
-                MeetingService->InvitationQueue: Queue cancellation emails to invited internal participants and Guests\nwith the reason (BR-300)
-                activate InvitationQueue
-                InvitationQueue-->MeetingService: Delivery arranged / retry delivery;\nMeeting remains Cancelled
-                deactivate InvitationQueue
-            end
-            MeetingService-->MeetingController: MSG261 - Meeting cancelled successfully.
-            MeetingController-->MeetingPage: MSG261 - Meeting cancelled successfully.
-            MeetingPage-->Actor: MSG261 - Meeting cancelled successfully.
-        end
-    end
+    MeetingController-->DetailsPage: Return status error
+    DetailsPage-->Organizer: MSG263 - This meeting can no longer be cancelled.
+
+else Eligible
+    MeetingService->MeetingRepository: Change status to Cancelled, record history (BR-38, BR-298, BR-445)
+    activate MeetingRepository
+    MeetingRepository->Database: Save status and history
+    activate Database
+    Database-->MeetingRepository: Cancelled
+    deactivate Database
+    MeetingRepository-->MeetingService: Cancelled
+    deactivate MeetingRepository
+
+    MeetingService->NotificationService: Notify participants if published/waiting approval (BR-300, BR-322)
+    activate NotificationService
+    NotificationService-->MeetingService: Notified
+    deactivate NotificationService
+
+    MeetingService-->MeetingController: Cancellation successful
+    MeetingController-->DetailsPage: MSG261 - Meeting cancelled successfully.
+    DetailsPage-->Organizer: MSG261 - Meeting cancelled successfully.
 end
+
 deactivate MeetingService
 deactivate MeetingController
-deactivate MeetingPage
+deactivate DetailsPage
+EOF
+echo done
