@@ -377,6 +377,10 @@ async function typeNewParagraph(qa, editor, text) {
     sel.removeAllRanges()
     sel.addRange(range)
   })
+  // The editor (ProseMirror) learns of a selection set from script on the next `selectionchange`, which the browser
+  // fires as a separate task. An Enter sent before that splits the paragraph where focus() left the caret, at the top
+  // of the header table — most likely the phone failures of 21–22/11 (MIN_FT09), which do not happen by hand.
+  await qa.page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))))
   await qa.page.keyboard.press('Enter')
   await qa.page.keyboard.type(text)
 }
@@ -533,6 +537,80 @@ export default {
         // Only a paragraph was added: the template's tables (header, signature block) keep their column widths, which
         // the page, the Word file and the PDF print from (ADR-0055).
         qa.expect(cols(st.minutes.content), 'saving from the editor changed the column widths of the template tables').toEqual(cols(before.content))
+      },
+    },
+    {
+      // MIN_FT09 as written: a "……" replaced by a bold sentence, saved, then the page reloaded.
+      id: 'AC3R',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Thư ký thay một chỗ "……" bằng câu in đậm, lưu, tải lại trang: câu in đậm vẫn còn',
+      steps: [
+        'Mở tab Biên bản của bản nháp, bấm "Sửa"',
+        'Chọn một chỗ "……", gõ câu mới, bôi đậm bằng "Đậm (Ctrl+B)"',
+        'Bấm "Lưu", rồi tải lại trang',
+      ],
+      expected:
+        'Toast "Đã lưu biên bản." (MSG396); tờ biên bản có câu mới in đậm; sau khi tải lại vẫn còn câu đó, in đậm; API lưu câu trong <strong>',
+      async run(qa) {
+        const m = await flow(qa)
+        await driveTo(qa, m.id, 'Draft')
+        await openMinutes(qa, m)
+        await press(qa, btn(qa, 'Sửa'))
+        const editor = card(qa).getByRole('textbox', { name: 'Nội dung biên bản' })
+        await qa.expect(editor).toBeVisible()
+        // Select the first "……" placeholder of the paper, as a person double-clicking it would.
+        const found = await editor.evaluate((el) => {
+          el.focus()
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            const at = n.textContent.indexOf('……')
+            if (at < 0) continue
+            const range = document.createRange()
+            range.setStart(n, at)
+            range.setEnd(n, at + 2)
+            const sel = getSelection()
+            sel.removeAllRanges()
+            sel.addRange(range)
+            return true
+          }
+          return false
+        })
+        if (!found) qa.inconclusive('Bản nháp không còn chỗ "……" để thay')
+        const line = `Thống nhất kế hoạch quý IV ${rand()}.`
+        await qa.page.keyboard.type(line)
+        // Select what was typed and make it bold with the ribbon's button.
+        await editor.evaluate((el, text) => {
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            const at = n.textContent.indexOf(text)
+            if (at < 0) continue
+            const range = document.createRange()
+            range.setStart(n, at)
+            range.setEnd(n, at + text.length)
+            const sel = getSelection()
+            sel.removeAllRanges()
+            sel.addRange(range)
+            return
+          }
+        }, line)
+        await press(qa, card(qa).getByRole('button', { name: /^Đậm/ }))
+        await qa.expect(editor.locator('strong', { hasText: line })).toHaveCount(1)
+        await editor.locator('strong', { hasText: line }).scrollIntoViewIfNeeded()
+        await snap(qa, 'da-go-cau-in-dam')
+        await press(qa, card(qa).getByRole('button', { name: 'Lưu', exact: true }))
+        await qa.expect(toast(qa, 'Đã lưu biên bản.')).toBeVisible()
+        await qa.expect(editor).toHaveCount(0)
+        await qa.expect(paper(qa).locator('strong', { hasText: line })).toHaveCount(1)
+        await qa.page.reload()
+        await qa.expect(card(qa)).toBeVisible()
+        await qa.expect(card(qa)).not.toHaveAttribute('aria-busy', 'true')
+        await qa.expect(paper(qa).locator('strong', { hasText: line })).toHaveCount(1)
+        await paper(qa).locator('strong', { hasText: line }).scrollIntoViewIfNeeded()
+        await snap(qa, 'sau-khi-tai-lai')
+        await noSidewaysScroll(qa)
+        const st = await minutesState(qa, 'secretary', m.id)
+        qa.expect(st.minutes.content).toMatch(new RegExp(`<strong>[^<]*${line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
       },
     },
     {
