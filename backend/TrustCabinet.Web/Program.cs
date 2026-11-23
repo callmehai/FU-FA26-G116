@@ -243,6 +243,7 @@ app.MapCalendarSharingEndpoints();
 app.MapMeetingSlotEndpoints();
 // SCRUM-38: meeting report (UC-70a) and its Excel export (UC-70b).
 app.MapReportEndpoints();
+app.MapReportQueryEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();

@@ -82,12 +82,33 @@ public sealed record DurationFigure(double? AverageMinutes, int Meetings, int Me
 public sealed record TurnaroundFigure(double? AverageHours, int Meetings, int MeetingsWithoutIssuedMinutes);
 
 /// <summary>
+/// The votes of the period the caller may see: <see cref="Closed"/> of them closed, and how those were concluded
+/// (supervisor review 22/11/2026).
+/// </summary>
+public sealed record VoteFigure(int Closed, int Passed, int NotPassed, int Deferred);
+
+/// <summary>
+/// <see cref="Issued"/>: meetings whose minutes have been issued at least once. <see cref="WaitingApproval"/>: revisions
+/// sent for approval and not yet decided — only those of meetings the caller runs as Chair or Secretary (BR-412).
+/// </summary>
+public sealed record MinutesFigure(int Issued, int WaitingApproval);
+
+/// <summary>
+/// Recordings the caller may list (participants only), not deleted: how many, hours that can be played (a combined
+/// recording is not counted twice) and hours of them already transcribed.
+/// </summary>
+public sealed record RecordingFigure(int Count, double RecordedHours, double TranscribedHours);
+
+/// <summary>
 /// UC-70a — counts, rates and averages only (BR-437): never a meeting's id, title, participants or content.
 /// <see cref="ByMonth"/> has every month of the period and the other two every enum value, zeros included.
+/// <see cref="Votes"/>, <see cref="Minutes"/> and <see cref="Recordings"/> are the figures a manager reads first, above
+/// the report query.
 /// </summary>
 public sealed record MeetingReport(string From, string To, DateTimeOffset GeneratedAt, int Total,
     IReadOnlyList<MonthCount> ByMonth, IReadOnlyList<StatusCount> ByStatus, IReadOnlyList<SensitivityCount> BySensitivity,
-    AttendanceFigure Attendance, DurationFigure Duration, TurnaroundFigure MinutesTurnaround);
+    AttendanceFigure Attendance, DurationFigure Duration, TurnaroundFigure MinutesTurnaround,
+    VoteFigure Votes, MinutesFigure Minutes, RecordingFigure Recordings);
 
 public sealed record ReportFile(string FileName, byte[] Bytes, string ContentType);
 
@@ -98,9 +119,12 @@ public enum ReportFailure
     InvalidPeriod,
     ReadFailed,
     ExportFailed,
+    /// <summary>The report query names a table, group, sort, top or filter value that does not exist (MSG484).</summary>
+    InvalidParameter,
 }
 
-public sealed record ReportOutcome(ReportFailure Failure = ReportFailure.None, MeetingReport? Report = null, ReportFile? File = null);
+public sealed record ReportOutcome(ReportFailure Failure = ReportFailure.None, MeetingReport? Report = null,
+    ReportFile? File = null, ReportTable? Table = null);
 
 /// <summary>The <c>:Report Service</c> of UC-70a and UC-70b.</summary>
 public interface IReportService
@@ -110,4 +134,13 @@ public interface IReportService
 
     /// <summary>UC-70b — the same figures, computed again, as an Excel file; the export is audited (BR-438).</summary>
     Task<ReportOutcome> ExportMeetingReportAsync(Guid actorId, string? from, string? to, CancellationToken ct = default);
+
+    /// <summary>
+    /// The report query: one main table, grouped, filtered, sorted and cut to the top groups, over what
+    /// <paramref name="actorId"/> may see of the meetings whose planned start is in the period.
+    /// </summary>
+    Task<ReportOutcome> QueryAsync(Guid actorId, ReportQueryInput input, CancellationToken ct = default);
+
+    /// <summary>The same table, computed again, as an Excel file; the export is audited like UC-70b's (BR-438).</summary>
+    Task<ReportOutcome> ExportQueryAsync(Guid actorId, ReportQueryInput input, CancellationToken ct = default);
 }

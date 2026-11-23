@@ -268,7 +268,7 @@ export function TranscriptView({
           onClose={() => setRedoing(false)}
         >
           <p>Máy làm lại bản gỡ băng từ đầu, để dùng model mới hay giọng mẫu vừa đăng ký.</p>
-          <p className="field-hint">Khi xong, chữ đã sửa và tên đã gán cho người nói sẽ được thay bằng bản mới.</p>
+          <p className="field-hint">Chữ đã sửa và tên đã gán được giữ ở những câu, giọng mà bản mới còn khớp.</p>
         </ConfirmDialog>
       )}
       {dropping !== null && (

@@ -189,7 +189,9 @@ Các bước xử lý một bản ghi:
 6. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
    bằng nhau.
 7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
-   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Các đoạn liền nhau của cùng một người, cách nhau
+   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Model luôn đọc chữ thường: chữ hoa nó gắn được giữ riêng và
+   chỉ đặt vào ở cuối, cộng thêm chữ hoa cho từ đầu mỗi câu (sau `.` `?` `!`). Đọc lại chính chữ hoa của mình, model
+   viết hoa luôn từ kế tiếp, và sau ba lần cả dòng thành Viết Hoa Như Tiêu Đề (buổi họp 22/11/2026). Các đoạn liền nhau của cùng một người, cách nhau
    không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
    chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
    lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
@@ -203,7 +205,11 @@ Các bước xử lý một bản ghi:
      hàng chục mới có các đơn vị đó) và ngày ("ngày hai hai tháng mười một" → ngày 22 tháng 11);
    - từ bốn chữ số đọc rời trở lên là mã hay năm: "hai không hai sáu" → 2026;
    - sau "thứ" một từ giữ nguyên ("thứ hai"); "hai mươi năm" → "20 năm" (25 đọc là "hai mươi lăm");
-   - dấu câu giữa hai từ cắt con số ở đó.
+   - "từ hai hai đến hai bảy" → từ 22 đến 27; "chấm" giữa hai chữ số đơn là phiên bản: "bốn chấm năm" → 4.5;
+     phút một từ sau giờ: "9 giờ mười" → 9 giờ 10, "13 giờ không năm" → 13 giờ 05;
+   - dấu câu giữa hai từ cắt con số ở đó, trừ khi bước dấu câu đặt nhầm giữa một con số: sau "phẩy" ("không phẩy. bảy
+     hai" → 0,72), giữa giờ và phút ("14 giờ. 25" → 14 giờ 25), trước đơn vị đứng một mình cuối dòng ("150. Trang" →
+     150 trang).
 
    Từ 10.000 có dấu chấm phân cách, số bốn chữ số thì không, thập phân dùng dấu phẩy. Từ gộp lấy mốc của từ đầu và độ
    chắc thấp nhất, nên `wordStartsMs`, `wordConfidence` vẫn mỗi từ một số.

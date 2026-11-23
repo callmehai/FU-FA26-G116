@@ -828,7 +828,9 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(RecordingFailure.None, outcome.Failure);
         Assert.Equal(TranscriptStatus.Pending, transcript.Status);
         Assert.Equal(0, transcript.ProgressPercent);
-        Assert.Equal(3, transcript.Segments.Count);
+        // The last finished run's lines are cut as well (ADR-0077): the run that replaces them finds the Secretary's
+        // corrections on the shorter file's clock.
+        Assert.Equal([(1_000L, "A"), (11_000L, "C")], transcript.Segments.OrderBy(s => s.StartMs).Select(s => (s.StartMs, s.Text)));
         Assert.Equal([AuditActions.RecordingTakeDeleted], f.Audit.Actions);
     }
 

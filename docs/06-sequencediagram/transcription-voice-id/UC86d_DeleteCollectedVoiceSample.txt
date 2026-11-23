@@ -1,41 +1,31 @@
 title UC-86d - Delete Collected Voice Sample
 
-actor "Secretary" as Secretary
-boundary "Meeting Detail Page" as MeetingPage
+actor "VoiceCollector" as Collector
+boundary "Users Page" as UsersPage
 control ":Voice Collection Controller" as CollectionController
 control ":Voice Collection Service" as CollectionService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Voice ID Repository" as VoiceRepository
 participant ":Audit Service" as AuditService
 database ":Database" as Database
 
-Secretary->MeetingPage: Confirm Delete on a sample recorded at this Meeting
-activate MeetingPage
+Collector->UsersPage: Confirm Delete on a sample collected for the person
+activate UsersPage
 
-MeetingPage->CollectionController: Delete the collected voice sample
+UsersPage->CollectionController: Delete the collected voice sample
 activate CollectionController
 
-CollectionController->CollectionService: delete(meetingId, actorId, sampleId)
+CollectionController->CollectionService: delete(userId, actorId, sampleId)
 activate CollectionService
 
-CollectionService->MeetingRepository: Get the Meeting with its current Secretary;\ndeletion needs no Published or In Progress state (BR-450, BR-451)
-activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting with participants
-activate Database
-Database-->MeetingRepository: Meeting with participants / Not found
-deactivate Database
-MeetingRepository-->CollectionService: Meeting with participants / Not found
-deactivate MeetingRepository
-
-alt No access, or the sample was recorded at another Meeting or by the person - EX-1
+alt No access: no Voice sample collection permission, or the sample was recorded by the person - EX-1
     CollectionService-->CollectionController: Not found
     deactivate CollectionService
 
-    CollectionController-->MeetingPage: Return failure
+    CollectionController-->UsersPage: Return failure
     deactivate CollectionController
 
-    MeetingPage-->Secretary: Show the sample as not found
-else Sample recorded at this Meeting
+    UsersPage-->Collector: Show the sample as not found
+else Collected sample exists
     CollectionService->VoiceRepository: Delete the sample with its protected voiceprint and recording (BR-452)
     activate VoiceRepository
     VoiceRepository->Database: Delete voice sample
@@ -45,7 +35,7 @@ else Sample recorded at this Meeting
     VoiceRepository-->CollectionService: Sample deleted / Save failed
     deactivate VoiceRepository
 
-    CollectionService->AuditService: Record the deleted proxy sample (BR-453)
+    CollectionService->AuditService: Record the deleted collected sample (BR-453)
     activate AuditService
     AuditService-->CollectionService: Entry saved
     deactivate AuditService
@@ -54,20 +44,20 @@ else Sample recorded at this Meeting
         CollectionService-->CollectionController: MSG315 - Unable to save changes. Please try again.
         deactivate CollectionService
 
-        CollectionController-->MeetingPage: MSG315 - Unable to save changes. Please try again.
+        CollectionController-->UsersPage: MSG315 - Unable to save changes. Please try again.
         deactivate CollectionController
 
-        MeetingPage-->Secretary: MSG315 - Unable to save changes. Please try again.
+        UsersPage-->Collector: MSG315 - Unable to save changes. Please try again.
     else Sample deleted
         CollectionService->CollectionService: ref UC-86b - Record again is delete then record (AF-1)
         CollectionService-->CollectionController: MSG474 - Voice sample deleted.
         deactivate CollectionService
 
-        CollectionController-->MeetingPage: MSG474 - Voice sample deleted.
+        CollectionController-->UsersPage: MSG474 - Voice sample deleted.
         deactivate CollectionController
 
-        MeetingPage-->Secretary: MSG474 - Voice sample deleted.
+        UsersPage-->Collector: MSG474 - Voice sample deleted.
     end
 end
 
-deactivate MeetingPage
+deactivate UsersPage
