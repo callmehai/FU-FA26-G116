@@ -439,6 +439,15 @@ Sửa **cục bộ** ba source theo review của Hải; giữ ID cell, quan hệ
 - **Merge `main` vào `app` (20/11/2026):** FE-09 lấy bố cục chuẩn hoá của `main`; hộp `clipStore` giữ nội dung
   `ISpeechClipRepository` của §6i nhưng vẽ lại theo kiểu hộp chuẩn hoá, 370×230 tại (2120, 1163), ngay trên `SpeechClip`.
 
+## 6k. FE-10 — giữ phần sửa tay khi chuyển chữ lại · 23/11/2026 (note 59, ADR-0077)
+
+Sửa **cục bộ** source `feature-10-transcription-voice-id-class-diagram.drawio`, giữ ID (`segment`), quan hệ và bố cục còn lại:
+
+- Entity `TranscriptSegment` thêm `speakerAssignedById: Guid?` và `speakerAssignedAt: DateTimeOffset?` — dấu câu Thư ký
+  chuyển sang giọng khác, để lần chuyển chữ lại mang câu đó theo (BR-467); hộp rộng 180 → 240, cao 227 → 260.
+- Validator draw.io 0 lỗi (10 cảnh báo cạnh giao nhau có sẵn, cùng họ với §6g); PNG xuất lại bằng draw.io desktop CLI
+  scale 0.86 và đã mở xem: đủ hai dòng mới, không cắt chữ, không chồng hình.
+
 ## 7. Rà soát hiện trạng · 14/10/2026
 
 Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
