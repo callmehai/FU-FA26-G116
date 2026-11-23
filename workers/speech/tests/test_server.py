@@ -25,10 +25,12 @@ class FakeEngine:
         self.wait_for_cancel = False
         self.saw_cancel = threading.Event()
 
-    def transcribe_file(self, path, diarize=True, speakers=None, profile="room", context=None, cancelled=None):
+    def transcribe_file(self, path, diarize=True, speakers=None, profile="room", context=None, cancelled=None,
+                        run=None):
         self.calls.append(("transcribe", Path(path).read_bytes(), diarize, speakers, path))
         self.profile = profile
         self.context = context
+        self.run = run
         if self.fail_with:
             raise self.fail_with
         if self.wait_for_cancel:
@@ -40,6 +42,10 @@ class FakeEngine:
                     raise Cancelled()
                 time.sleep(0.01)
         return {"durationMs": 1, "segments": [], "speakers": []}
+
+    def progress(self, run):
+        self.calls.append(("progress", run))
+        return {"state": "running", "percent": 42}
 
     def embed_file(self, path):
         self.calls.append(("embed", Path(path).read_bytes(), path))
@@ -165,6 +171,28 @@ class OpenServerTests(ServerTests):
                 time.sleep(0.01)
         self.assertTrue(self.engine.saw_cancel.wait(3))
 
+    def test_transcribe_passes_the_run_id_on(self):
+        self.assertEqual(self.request("POST", "/v1/transcribe?diarize=true&run=0193-abc", b"a")[0], 200)
+        self.assertEqual(self.engine.run, "0193-abc")
+        self.request("POST", "/v1/transcribe", b"a")
+        self.assertIsNone(self.engine.run)
+
+    def test_a_malformed_run_id_is_400(self):
+        for query in ("run=", "run=a%20b", "run=" + "a" * 65, "run=a&run=b"):
+            with self.subTest(query=query):
+                self.assertEqual(self.request("POST", f"/v1/transcribe?{query}", b"a"), (400, {"error": "invalid_parameter"}))
+        self.assertEqual(self.engine.calls, [])
+
+    def test_progress_answers_for_a_run(self):
+        self.assertEqual(self.request("GET", "/v1/progress?run=0193-abc"), (200, {"state": "running", "percent": 42}))
+        self.assertEqual(self.engine.calls, [("progress", "0193-abc")])
+
+    def test_progress_needs_a_run_and_a_get(self):
+        self.assertEqual(self.request("GET", "/v1/progress"), (400, {"error": "invalid_parameter"}))
+        self.assertEqual(self.request("GET", "/v1/progress?run=a/b"), (400, {"error": "invalid_parameter"}))
+        self.assertEqual(self.request("POST", "/v1/progress?run=a", b"x")[0], 405)
+        self.assertEqual(self.engine.calls, [])
+
     def test_a_caller_still_waiting_gets_its_answer(self):
         status, body = self.request("POST", "/v1/transcribe", body=b"abc")
         self.assertEqual(status, 200)
@@ -187,6 +215,12 @@ class AuthenticatedServerTests(ServerTests):
 
     def test_right_key_is_accepted(self):
         status, _ = self.request("POST", "/v1/embed", b"a", {"Authorization": "Bearer s3cret-key"})
+        self.assertEqual(status, 200)
+
+    def test_progress_needs_the_key_too(self):
+        self.assertEqual(self.request("GET", "/v1/progress?run=a"), (401, {"error": "unauthorized"}))
+        self.assertEqual(self.engine.calls, [])
+        status, _ = self.request("GET", "/v1/progress?run=a", headers={"Authorization": "Bearer s3cret-key"})
         self.assertEqual(status, 200)
 
 

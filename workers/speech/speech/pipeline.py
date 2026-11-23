@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, numbers, punctuation, text
+from . import manifest, numbers, progress, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +125,13 @@ DEFAULT_CLUSTER_THRESHOLD = 0.72
 # 0.8 (was 0.85, ADR-0074): on the 21/11 rooms one person's halves were 0.75–0.82 alike. Skipped
 # when the caller states the number of speakers.
 MERGE_THRESHOLD = 0.8
+
+# --- Progress (speech/progress.py) --------------------------------------------------------------
+# The VAD reports how far it got once every this many windows (32 ms each): every half minute of audio.
+PROGRESS_EVERY_WINDOWS = 1000
+# Of the diarization stage, the share the window embeddings take; clustering and the second pass take the rest
+# (measured: 36 s and 5 s of 41 s on 12 minutes of speech).
+DIARIZE_EMBED_SHARE = 0.88
 
 # --- Enrolment sample quality gates (POST /v1/embed) ------------------------------------------
 # A voice sample becomes someone's reference voice, so a bad one causes wrong suggestions in
@@ -533,6 +540,8 @@ class Engine:
 
     # Asked between steps of a run (transcribe_file's `cancelled`), so a run nobody waits for stops within a second.
     _cancelled: Callable[[], bool] = staticmethod(_never)
+    # Told how far each stage of a run has got (transcribe_file's `progress`, through progress.Tracker).
+    _track: Callable[[str, float], None] = staticmethod(progress.ignore)
     # Numbers written in digits (speech/numbers.py); SPEECH_NUMBERS=0 keeps them in words, to compare with and without.
     _numbers: bool = True
 
@@ -625,9 +634,11 @@ class Engine:
                 found.append((vad.front.start, vad.front.start + len(vad.front.samples)))
                 vad.pop()
 
-        for start in range(0, samples.size, window):
+        for number, start in enumerate(range(0, samples.size, window)):
             vad.accept_waveform(samples[start : start + window])
             drain()
+            if number % PROGRESS_EVERY_WINDOWS == 0:
+                self._track("detect", start / samples.size)
         vad.flush()
         drain()
         return [(start, samples[start:end]) for start, end in pad_regions(found, samples.size)]
@@ -639,7 +650,12 @@ class Engine:
         texts: list[str] = []
         timings: list[list[float] | None] = []
         sureness: list[list[float] | None] = []
+        # Done by audio rather than by pieces: a piece is anything from a word to 25 seconds.
+        total = sum(piece.size for piece in pieces) or 1
+        done = 0
         for first in range(0, len(pieces), 8):
+            self._track("recognise", done / total)
+            done += sum(piece.size for piece in pieces[first : first + 8])
             self._check()
             streams = []
             for piece in pieces[first : first + 8]:
@@ -668,7 +684,9 @@ class Engine:
         out = [""] * len(pieces)
         before = context_words(context)
         restored_context = None
-        for number, indices in enumerate(passages(pieces, raws)):
+        groups = passages(pieces, raws)
+        for number, indices in enumerate(groups):
+            self._track("punctuate", number / len(groups))
             self._check()
             lines = [" ".join(raws[i].split()).lower() for i in indices]
             ahead = number == 0 and before is not None
@@ -747,7 +765,11 @@ class Engine:
             offset, audio = by_group[group]
             return audio[start - offset : end - offset]
 
-        vectors = np.stack([self._checked(self._embed, audio_of(*span)) for span in spans])
+        embedded = []
+        for number, span in enumerate(spans):
+            self._track("diarize", DIARIZE_EMBED_SHARE * number / len(spans))
+            embedded.append(self._checked(self._embed, audio_of(*span)))
+        vectors = np.stack(embedded)
         clustering = self._onnx.FastClustering(
             self._onnx.FastClusteringConfig(
                 num_clusters=min(speakers, len(spans)) if speakers else -1,
@@ -765,6 +787,7 @@ class Engine:
             for start, end in short:
                 turns.append((start, end, nearest(self._embed(self._slice(regions, start, end)), anchors)))
         turns = [turn for turn in sorted(turns) if turn[1] - turn[0] >= MIN_TURN_S * SAMPLE_RATE]
+        self._track("diarize", DIARIZE_EMBED_SHARE)
         return self._merge_same_voices(regions, turns) if turns and not speakers else turns
 
     def _checked(self, function, *args):
@@ -782,22 +805,31 @@ class Engine:
 
     def transcribe_file(self, path: str | os.PathLike[str], diarize: bool = True,
                         speakers: int | None = None, profile: str = "room", context: str | None = None,
-                        cancelled: Callable[[], bool] | None = None) -> dict:
-        """`cancelled` is asked between steps; once it says yes the run raises Cancelled instead of going on."""
+                        cancelled: Callable[[], bool] | None = None,
+                        progress_to: Callable[[float], None] | None = None) -> dict:
+        """`cancelled` is asked between steps; once it says yes the run raises Cancelled instead of going on.
+
+        `progress_to` is told the share of the run done so far, 0–1, only ever higher (speech/progress.py).
+        """
         if cancelled is not None and cancelled():
             raise Cancelled()
+        track = progress.Tracker(progress_to, progress.stages_for(diarize)) if progress_to else progress.ignore
+        track("decode", 0.0)
         samples = decode(path)
         with self._lock:
             started = time.monotonic()
             self._cancelled = cancelled or _never
+            self._track = track
             try:
                 self._check()
+                track("detect", 0.0)
                 result = self._transcribe(samples, diarize, speakers, profile, context)
             except Cancelled:
                 log.info("run stopped after %.1fs: the caller went away", time.monotonic() - started)
                 raise
             finally:
                 self._cancelled = _never
+                self._track = progress.ignore
             elapsed = time.monotonic() - started
         audio_s = samples.size / SAMPLE_RATE
         log.info(
@@ -868,7 +900,8 @@ class Engine:
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 
         voices = []
-        for label in sorted(turns_by_label):
+        for number, label in enumerate(sorted(turns_by_label)):
+            self._track("voices", number / len(turns_by_label))
             self._check()
             turns = turns_by_label[label]
             voices.append({

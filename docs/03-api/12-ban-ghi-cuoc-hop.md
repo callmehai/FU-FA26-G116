@@ -277,7 +277,19 @@ là tiếng đệm ("Ừ.", "À. Ừ.", "Ờm"). Câu dài luôn giữ nguyên. 
 "Người nói N", và các nhãn còn lại được đánh số lại theo thứ tự lên tiếng (`SPEAKER_00`, `SPEAKER_01`…), không
 nhảy số.
 
-Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
+Danh sách bản ghi trả thêm cho mỗi dòng: `transcriptStatus`, `transcriptProgressPercent` (0–99 khi `Processing`, 100
+khi `Completed`), `transcriptProcessingStartedAt` (lúc lượt chạy hiện tại hay lượt cuối bắt đầu; `null` khi đang chờ,
+hay với bản gỡ băng làm trước 23/11/2026) và `transcriptCompletedAt`.
+
+**Tiến độ và thời gian xử lý** (PO 23/11/2026: "hiện được process bar ko ? và hiện thời gian xử lí được ko"). Mỗi lượt
+chạy, `TranscriptionService` gửi worker một mã lượt (`run`, một GUID mới) cùng tệp âm thanh. Vòng kiểm tra cũ của lượt
+chạy (5 giây một lần, xem bản ghi còn `Processing` không) nay hỏi thêm worker `GET /v1/progress?run=…`
+([workers/speech/README.md](../../workers/speech/README.md#get-v1progressrun)) và ghi `progress_percent` khi số tăng:
+chỉ tăng, dừng ở 99 tới khi ghi kết quả (100). Worker không trả lời được trong 3 giây, hay trả lỗi, thì bỏ qua lần đó;
+tiến độ không bao giờ làm lượt chạy dừng hay lỗi. `processing_started_at` được đặt khi một lượt nhận bản ghi ra khỏi hàng
+chờ và xoá khi bản ghi quay lại `Pending` (chạy lại, thêm hay xoá lượt ghi, app khởi động lại giữa chừng). FE vẽ thanh
+tiến độ, đồng hồ chạy theo giây từ `processingStartedAt`, và thời gian còn lại ≈ đã chạy × (100 − p) / p khi p ≥ 5% và
+đã chạy ≥ 30 giây; bản đã xong hiện "chuyển chữ N phút" (`completedAt − processingStartedAt`).
 
 **Chuyển chữ lại giữ phần sửa tay** ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). Bản ghi mic
 phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 phút một lần, [ADR-0080](../05-decisions/0080-mic-phong-luot-30-phut.md)), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
@@ -300,6 +312,7 @@ phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 p
   "recordingId": "…", "status": "Completed",
   "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "progressPercent": 100, "processingStartedAt": "…",
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,

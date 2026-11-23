@@ -79,7 +79,7 @@ Không cần xác thực.
 {"status":"ok","models":{"asr":"gipformer-1.5-68m-int8@b528768939c7","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
 ```
 
-### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip][&context=…]`
+### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip][&context=…][&run=…]`
 
 - `diarize` mặc định `true`. Với `false`, worker chỉ cắt theo khoảng lặng, không tách người nói,
   `speaker` là `null` và `speakers` rỗng. Dùng cho bản ghi micro của riêng một người, khi đã biết
@@ -92,6 +92,8 @@ Không cần xác thực.
 - `context` (tuỳ chọn, tối đa 2000 ký tự, dùng khi không quá 60 từ): câu ngay trước đó của cùng người nói. Worker đọc
   nó trước đoạn đầu tiên khi thêm dấu câu, nên một câu trình duyệt cắt ở chỗ ngắt hơi được thêm dấu câu như một câu liền, và
   trả lại câu trước đã chấm lại ở trường `context` của kết quả (`null` khi không gửi hay không dùng được).
+- `run` (tuỳ chọn, chữ, số và `-`, tối đa 64 ký tự): mã bên gọi đặt cho lượt chạy này, để hỏi tiến độ ở
+  `GET /v1/progress`. Backend gửi một GUID mới mỗi lượt.
 
 ```json
 {
@@ -127,6 +129,25 @@ Không cần xác thực.
   đoạn trước thì bắt đầu bằng chữ thường; đoạn đầu của một lượt nói luôn viết hoa, và một đoạn bị bỏ ngỏ ngay trước
   một đoạn model viết hoa (câu mới sau chỗ ngắt hơi) được thêm dấu chấm. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
   sửa tay.
+
+### `GET /v1/progress?run=…`
+
+Lượt chạy có mã `run` đã đi đến đâu. Cùng xác thực như các route khác.
+
+```json
+{"state":"running","percent":42}
+```
+
+| `state` | Nghĩa |
+|---|---|
+| `queued` | Đã nhận, đang chờ sau một việc khác (process con mỗi lần chạy một việc) |
+| `running` | Đang chạy; `percent` 0–100, chỉ tăng |
+| `unknown` | Worker không có lượt nào mang mã này: đã trả kết quả, chưa gửi tới, hoặc worker đã khởi động lại |
+
+`percent` là tổng các bước đã xong, mỗi bước tính theo phần thời gian nó thường chiếm, đo trên 12 phút bản tin
+tiếng Việt (MacBook M1, 4 luồng): tách người nói 52%, chuyển chữ 32%, vector giọng 6%, dấu câu 5%, VAD 4%, giải mã 1%.
+Trong mỗi bước, tiến độ chạy theo phần việc đã làm (khung giọng, phần âm thanh đã chuyển chữ, đoạn văn đã chấm câu).
+Chạy không tách người nói thì các bước còn lại chia nhau cả 100%. Trọng số nằm ở `speech/progress.py`.
 
 ### `POST /v1/embed`
 
@@ -229,6 +250,9 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
   (giữa hai khung giọng, hai lô câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
   lượt mic phòng mới đến lúc bản cũ còn đang chạy. Đo trên máy dev: bên gọi ngắt ở giây thứ 6 của một bản ghi 9 phút, worker
   dừng chưa tới nửa giây sau đó, và request kế tiếp chạy ngay.
+- **Tiến độ đi theo chiều ngược lại.** Process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung mỗi khi
+  một bước báo tiến độ; process HTTP đọc cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà chưa phải việc
+  process con đang chạy là `queued`.
 
 ## Kiểm thử
 

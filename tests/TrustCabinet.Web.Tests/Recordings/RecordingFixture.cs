@@ -121,10 +121,16 @@ public sealed class RecordingFixture : IAsyncLifetime
                 : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
         }
 
+        internal Guid? LastRun;
+
+        /// <summary>A run here lasts less than one look of the watch, which the unit tests drive instead.</summary>
+        public Task<SpeechProgress?> ProgressAsync(Guid run, CancellationToken ct) => Task.FromResult<SpeechProgress?>(null);
+
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
-            CancellationToken ct, string? context = null)
+            CancellationToken ct, string? context = null, Guid? run = null)
         {
             Calls++;
+            LastRun = run;
             LastDiarize = diarize;
             LastClip = clip;
             LastContext = context;

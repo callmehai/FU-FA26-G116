@@ -259,6 +259,97 @@ public sealed class TranscriptionServiceTests
         Assert.Equal(TranscriptStatus.Processing, transcript.Status);
     }
 
+    /// <summary>Starts a held run and returns it once the worker has it, with the shutdown that ends it.</summary>
+    private async Task<(TranscriptionService Service, Task<bool> Run, CancellationTokenSource Shutdown)> HeldRun()
+    {
+        var started = new TaskCompletionSource();
+        _engine.Hold = started;
+        var shutdown = new CancellationTokenSource();
+        var service = Service();
+        var run = Task.Run(() => service.ProcessNextAsync(shutdown.Token));
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        return (service, run, shutdown);
+    }
+
+    /// <summary>One look of the run's watch: the clock moves on, and the look is over once it waits for the next.</summary>
+    private async Task Look(TranscriptionService service)
+    {
+        await _clock.WhenPendingAsync();
+        _clock.Advance(service.StaleCheckEvery);
+        await _clock.WhenPendingAsync();
+    }
+
+    [Fact]
+    public async Task A_running_transcript_writes_how_far_the_worker_got_only_ever_up_and_never_100_before_the_result()
+    {
+        // PO 23/11/2026: "hiện được process bar ko ?" — a bar that moves instead of a spinner for half an hour.
+        var transcript = Queued();
+        _engine.Progress.Enqueue(new SpeechProgress(SpeechRunState.Queued, 0));
+        _engine.Progress.Enqueue(new SpeechProgress(SpeechRunState.Running, 30));
+        _engine.Progress.Enqueue(new SpeechProgress(SpeechRunState.Running, 20));
+        _engine.Progress.Enqueue(new SpeechProgress(SpeechRunState.Running, 100));
+        var (service, run, shutdown) = await HeldRun();
+        Assert.Equal(Now, transcript.ProcessingStartedAt);
+
+        var seen = new List<int>();
+        for (var look = 0; look < 4; look++)
+        {
+            await Look(service);
+            seen.Add(transcript.ProgressPercent);
+        }
+
+        Assert.Equal([0, 30, 30, TranscriptionService.MaxRunningPercent], seen);
+        // Written only when it moved: the lower answer and the queued one wrote nothing.
+        Assert.Equal([30, 99], _transcripts.ProgressWrites.Select(w => w.Percent));
+        var id = Assert.Single(_engine.Runs);
+        Assert.NotNull(id);
+        Assert.All(_engine.ProgressAsked, asked => Assert.Equal(id, asked));
+        Assert.False(_engine.Cancelled);
+        await shutdown.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run);
+        shutdown.Dispose();
+    }
+
+    [Fact]
+    public async Task A_worker_that_cannot_say_or_a_progress_write_that_fails_never_stops_the_run()
+    {
+        var transcript = Queued();
+        _engine.Progress.Enqueue(null);
+        _engine.Progress.Enqueue(new SpeechProgress(SpeechRunState.Running, 40));
+        _transcripts.ProgressFails = new PersistenceUnavailableException();
+        var (service, run, shutdown) = await HeldRun();
+
+        await Look(service);
+        await Look(service);
+        Assert.Equal(0, transcript.ProgressPercent);
+        // The store is back: the next look writes what it missed.
+        _transcripts.ProgressFails = null;
+        await Look(service);
+
+        Assert.Equal(40, transcript.ProgressPercent);
+        Assert.False(run.IsCompleted);
+        Assert.False(_engine.Cancelled);
+        await shutdown.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run);
+        shutdown.Dispose();
+    }
+
+    [Fact]
+    public async Task The_transcript_tells_how_far_it_got_and_when_it_started_and_queueing_it_again_clears_both()
+    {
+        var transcript = Queued(TranscriptStatus.Completed);
+        transcript.ProgressPercent = 100;
+        transcript.ProcessingStartedAt = Now.AddMinutes(-30);
+        transcript.CompletedAt = Now.AddMinutes(-6);
+
+        var view = Assert.IsType<TranscriptView>((await Service().GetAsync(_recording.Id, _meeting.Member)).Data);
+        Assert.Equal((100, Now.AddMinutes(-30), Now.AddMinutes(-6)), (view.ProgressPercent, view.ProcessingStartedAt, view.CompletedAt));
+
+        Assert.Equal(TranscriptFailure.None, (await Service().RetryAsync(_recording.Id, _meeting.Secretary)).Failure);
+        Assert.Equal((TranscriptStatus.Pending, 0, (DateTimeOffset?)null),
+            (transcript.Status, transcript.ProgressPercent, transcript.ProcessingStartedAt));
+    }
+
     [Fact]
     public async Task An_unexpected_failure_discards_what_was_staged_and_marks_the_transcript_failed()
     {

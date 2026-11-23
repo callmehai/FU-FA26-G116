@@ -4598,6 +4598,18 @@ audio.recording-player { height: 40px; }
 .transcript-spinner { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .transcript-spinner { animation: none; } }
+/* A transcript being made: a thin bar on the player's track colour, then one line of per cent, clock and time left. */
+.transcribe-progress { display: flex; flex-direction: column; gap: 6px; }
+.transcribe-bar {
+  display: block; width: 100%; height: 4px; border: 0; border-radius: 2px; overflow: hidden;
+  background: var(--control-line); color: var(--brand); appearance: none;
+}
+.transcribe-bar::-webkit-progress-bar { background: var(--control-line); }
+.transcribe-bar::-webkit-progress-value { background: var(--brand); transition: width .4s ease-out; }
+.transcribe-bar::-moz-progress-bar { background: var(--brand); }
+/* The clock ticks every second: figures of one width keep the line from shaking. */
+.transcribe-clock { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.transcribe-clock, .transcribe-left { color: var(--muted-ink); }
 .transcript { container-type: inline-size; display: flex; flex-direction: column; gap: 8px; }
 .transcript-list { max-height: 480px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
 .transcript-editor { display: flex; flex: 1; min-width: 0; max-width: 75ch; flex-direction: column; gap: 6px; }
