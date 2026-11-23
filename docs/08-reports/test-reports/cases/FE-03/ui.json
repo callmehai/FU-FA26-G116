@@ -28,7 +28,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only"
+          "note": "UC-10 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: không có nhóm \"Biên bản\" và quyền \"Soạn biên bản\" (app chỉ có 4 quyền: Tạo, Phê duyệt cuộc họp, Quản trị người dùng, Thu giọng mẫu hộ); còn lại đúng, ô tick khớp DB. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/14-admin-RBAC_FT01-desktop-ma-tran.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "RBAC_FT02",
@@ -131,7 +134,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Only the \"Quản trị viên\" role holds AdminUsers."
           ],
-          "note": "UC-11 · Manual only"
+          "note": "UC-11 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 400 MSG17, dòng báo lỗi đỏ, tải lại không đổi. Evidence: tests/qa/out/MANUAL-R1/20261123-065936-03594e25/19-admin-RBAC_FT06-desktop-loi-mat-quan-tri.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "RBAC_FT07",

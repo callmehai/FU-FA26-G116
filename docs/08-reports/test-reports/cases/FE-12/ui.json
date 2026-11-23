@@ -69,7 +69,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting."
           ],
-          "note": "UC-59 EX-2 | BR-387 | Manual only"
+          "note": "UC-59 EX-2 | BR-387 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: tab Biên bản khoá trước khi kết thúc (PR #427) nên không có thẻ; API tạo bản nháp 409 MSG398. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/05-secretary-MIN_FT03-desktop-tab-bien-ban-chua-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT04",
@@ -175,7 +178,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user who is not on the meeting and did not create or approve it; the meeting's minutes are issued."
           ],
-          "note": "UC-58 EX-3 | Manual only"
+          "note": "UC-58 EX-3 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Người ngoài (tài khoản mới) thấy \"Không tìm thấy trang\"; API 404. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/06-qa-mr1-ngoai-3rq4k-trustcabinet-local-MIN_FT08-desktop-nguoi-ngoai-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -204,10 +210,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with draft minutes."
           ],
-          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view. · Evidence(AC3): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/01-secretary-AC3-desktop-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/03-secretary-AC3-desktop-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/04-secretary-AC3-phone-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/06-secretary-AC3-phone-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/07-secretary-AC3-phone-failure.png · E3 violated on phone: the new paragraph lands in the header table (index 215, glued to the header text) instead of after the closing line; desktop saves correctly. Suspected phone-editor quirk — needs a real-device check. · Chạy lại 2026-11-22 (AC3): desktop đạt, phone vẫn lỗi (vị trí 215, kỳ vọng > 1750) — tái hiện lần 3, nghi bug, theo dõi tại round1/bugs.md (SUS-01); cần thử điện thoại thật.",
-          "round1": "Failed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view. · Evidence(AC3): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/01-secretary-AC3-desktop-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/03-secretary-AC3-desktop-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/04-secretary-AC3-phone-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/06-secretary-AC3-phone-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/07-secretary-AC3-phone-failure.png · E3 violated on phone: the new paragraph lands in the header table (index 215, glued to the header text) instead of after the closing line; desktop saves correctly. Suspected phone-editor quirk — needs a real-device check. · Chạy lại 2026-11-22 (AC3): desktop đạt, phone vẫn lỗi (vị trí 215, kỳ vọng > 1750) — tái hiện lần 3. · Round1 chạy tay 23/11 (HuyNT): Passed. Chạy lại fe-12 AC3 trên bản build production (không qua Vite): desktop đạt, phone đạt 3/3 lần (giả lập chạm). Evidence: tests/qa/out/SCRUM-199/20261123-065346-03594e25; tests/qa/out/SCRUM-199/20261123-065541-03594e25; tests/qa/out/SCRUM-199/20261123-065547-03594e25",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT10",
@@ -245,7 +251,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with draft minutes."
           ],
-          "note": "UC-60 | Manual only"
+          "note": "UC-60 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: chạy trên họp Đã kết thúc (app chỉ cho tạo bản nháp sau khi kết thúc, MSG398). Huỷ không gửi PUT, tải lại không đổi. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/07-secretary-MIN_FT11-desktop-dang-sua.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/08-secretary-MIN_FT11-desktop-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT12",
@@ -402,7 +411,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an InProgress meeting with draft minutes."
           ],
-          "note": "UC-61 EX-2 | BR-405 | Manual only"
+          "note": "UC-61 EX-2 | BR-405 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: họp đang diễn ra không có bản nháp được (409 MSG398 \"Chỉ soạn biên bản khi cuộc họp đã kết thúc.\"), tab Biên bản khoá; tiền điều kiện của case không dựng được. Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/03-secretary-MIN_FT18-desktop-dang-hop-khong-gui-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT19",
@@ -418,7 +430,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair (not also Secretary) of an Ended meeting with draft minutes."
           ],
-          "note": "UC-61 EX-1 | BR-404 | Manual only"
+          "note": "UC-61 EX-1 | BR-404 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ có Tải xuống, Tạo lại, Sửa; không có Gửi duyệt. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/09-chair-MIN_FT19-desktop-chu-toa-ban-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT20",
@@ -457,7 +472,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting with draft minutes."
           ],
-          "note": "UC-61 | Manual only"
+          "note": "UC-61 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Không có POST submit, vẫn Bản nháp, Chủ toạ không có thông báo. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/10-secretary-MIN_FT21-desktop-hop-gui-duyet.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/11-secretary-MIN_FT21-desktop-sau-khi-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -506,7 +524,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Chair and Member of a Normal Ended meeting whose minutes are WaitingApproval, in two browsers; the Member uses a controlled inbox."
           ],
-          "note": "UC-64 | BR-411 | BR-412 | Manual only"
+          "note": "UC-64 | BR-411 | BR-412 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Thành viên có \"Biên bản đã ban hành\", Chủ toạ không; thư \"Biên bản cuộc họp đã ban hành: <tên>\" có link ?tab=minutes, mở ra có \"Tải xuống\". Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/12-chair-MIN_FT23-desktop-da-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT24",
@@ -522,7 +543,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary (not also Chair) of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-64 EX-1 | BR-406 | Manual only"
+          "note": "UC-64 EX-1 | BR-406 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Nhãn \"Chờ duyệt\", không có Trả lại / Duyệt và ban hành. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/13-secretary-MIN_FT24-desktop-thu-ky-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -587,7 +611,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-65 | Manual only"
+          "note": "UC-65 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Không có POST reject, vẫn Chờ duyệt. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/14-chair-MIN_FT27-desktop-hop-tra-lai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/15-chair-MIN_FT27-desktop-van-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT28",
@@ -672,7 +699,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Chair, Secretary and Member of a Normal Ended meeting whose minutes are issued and have a correction in Draft, in three browsers."
           ],
-          "note": "UC-64 AF-1 | BR-409 | Manual only"
+          "note": "UC-64 AF-1 | BR-409 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Nhãn hiện \"Đính chính · chờ duyệt\" rồi \"Đã ban hành\"; thư \"Bản đính chính…\"; \"Bản gốc\" có \"Đã thay thế\" và Tải xuống. Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/04-secretary-MIN_FT31-desktop-dinh-chinh-cho-duyet.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/05-member-MIN_FT31-desktop-thanh-vien-ban-dinh-chinh.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/06-member-MIN_FT31-desktop-ban-goc-da-thay-the.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MIN_FT32",

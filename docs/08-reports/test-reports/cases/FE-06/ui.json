@@ -291,8 +291,11 @@
             "A meeting in Published with its Chair, a Secretary and several Members on the roster.",
             "A controlled inbox for guest@example.test."
           ],
-          "note": "UC-28a · BR-88 · MSG96 · Manual only · Round1: để trống — nhóm H (E3 cần hộp thư thật (email lời mời trên họp Published); E1/E2 phủ bởi AC2 (da-moi-khach).)",
-          "id": "PART_FT13"
+          "note": "UC-28a · BR-88 · MSG96 · Manual only · Round1: để trống — nhóm H (E3 cần hộp thư thật (email lời mời trên họp Published); E1/E2 phủ bởi AC2 (da-moi-khach).) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 201 MSG96; mailpit nhận thư mời Khách có link /guest/<id>#token=. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/01-secretary-PART_FT13-desktop-da-moi-khach.png",
+          "id": "PART_FT13",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "description": "Empty name or a malformed email is refused before anything is sent.",

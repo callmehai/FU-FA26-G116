@@ -1062,8 +1062,11 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member who is a voter of an Open vote linking two documents."
           ],
-          "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: panel vote hỏi đọc trước khi bỏ phiếu — thuộc vùng vote FE-11 (cần biểu quyết + xác nhận đọc), chưa có AC.",
-          "id": "DOC_FT50"
+          "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: panel vote hỏi đọc trước khi bỏ phiếu — thuộc vùng vote FE-11 (cần biểu quyết + xác nhận đọc), chưa có AC. · Round1 chạy tay 23/11 (HuyNT, fe-11 AC17, app = origin/app e7dc0e7a, DB riêng): Passed. Biểu quyết đang mở có 1 tài liệu (case ghi 2): tài liệu hiện \"Chưa đọc\", câu \"Mở từng tài liệu, đọc tới trang cuối rồi xác nhận.\", \"Gửi phiếu\" khoá; xác nhận đọc xong thì gửi được. Evidence: tests/qa/out/SCRUM-198/20261123-073902-03594e25/03-member-AC17-desktop-chua-doc-khoa-gui.png; tests/qa/out/SCRUM-198/20261123-073902-03594e25/05-member-AC17-desktop-da-doc-da-gui.png",
+          "id": "DOC_FT50",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "description": "Verify the confirm button unlocks only at the last page and records the confirmation.",

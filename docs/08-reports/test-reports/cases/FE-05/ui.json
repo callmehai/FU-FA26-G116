@@ -65,7 +65,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting with one item that has two attached documents and one that has none."
           ],
-          "note": "UC-26 | Manual only"
+          "note": "UC-26 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: bấm tên tài liệu mở hộp xem tài liệu ngay trên tab (có Góp ý, Tải về), không chuyển sang /documents/<id>; mục không có tài liệu ghi \"Chưa có tài liệu.\". Evidence: tests/qa/out/MANUAL-R1/20261123-071614-03594e25/09-secretary-AGENDA_FT03-desktop-muc-co-hai-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/10-secretary-AGENDA_FT03-desktop-muc-chua-co-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/11-secretary-AGENDA_FT03-desktop-failure.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AGENDA_FT04",
@@ -436,7 +439,10 @@
             "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
             "The Chair signed in twice."
           ],
-          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current)"
+          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai trình duyệt Chủ toạ bấm cùng lúc: một 200 MSG64, một 409 MSG72; cả hai màn hình hiện \"Đang bàn\". Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/20-chair-AGENDA_FT20-desktop-trinh-duyet-1.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AGENDA_FT21",

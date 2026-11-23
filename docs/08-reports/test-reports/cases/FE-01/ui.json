@@ -459,7 +459,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The link is opened in a browser without a Guest session for it."
           ],
-          "note": "UC-04 | BR-152 | BR-153 | Manual only"
+          "note": "UC-04 | BR-152 | BR-153 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Trang đúng, email che \"kh***@example.test\"; mailpit nhận \"Mã xác minh truy cập cuộc họp TrustCabinet\" có mã 6 số; \"Gửi lại mã (1 phút)\" rồi đếm giây. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/02-anon-AUTH_FT20-desktop-nhap-ma.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AUTH_FT21",
@@ -480,7 +483,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The code email of the previous case has arrived (code less than 15 minutes old)."
           ],
-          "note": "UC-04 | BR-180 | Manual only"
+          "note": "UC-04 | BR-180 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mã đúng (xin lại mã sau 60 giây) → form hồ sơ → trang cuộc họp của Khách. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/03-anon-AUTH_FT21-desktop-form-ho-so.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/04-anon-AUTH_FT21-desktop-trang-cuoc-hop-cua-khach.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AUTH_FT22",
@@ -497,7 +503,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The verification screen is open with a code sent."
           ],
-          "note": "UC-04 EX-2 | Manual only"
+          "note": "UC-04 EX-2 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\", không vào được. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/10-anon-AUTH_FT22-desktop-ma-sai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AUTH_FT23",
@@ -534,7 +543,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The Guest has verified and is on \"Thông tin hiển thị\"."
           ],
-          "note": "UC-04 EX-7 | Manual only"
+          "note": "UC-04 EX-7 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Nhập tên hiển thị.\", không vào cuộc họp. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/11-anon-AUTH_FT24-desktop-ten-trong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "AUTH_FT25",
@@ -569,7 +581,10 @@
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The Guest is inside the meeting."
           ],
-          "note": "UC-04 | BR-155 | Manual only"
+          "note": "UC-04 | BR-155 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Phiên Khách mở /mgmt/meetings và /reports đều bị đưa về /login. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     }

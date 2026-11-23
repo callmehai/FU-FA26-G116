@@ -30,10 +30,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist."
           ],
-          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 violated: Back after create reopens the empty create dialog (see failure shot). E1/E3 verified; E4 reload+no-notif unverified. · Chạy lại 2026-11-22 (AC1, desktop + phone): vẫn Failed, E2 tái hiện — bug xác nhận, theo dõi tại round1/bugs.md (BUG-01).",
-          "round1": "Failed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 violated: Back after create reopens the empty create dialog (see failure shot). E1/E3 verified; E4 reload+no-notif unverified. · Chạy lại 2026-11-22 (AC1, desktop + phone): vẫn Failed, E2 tái hiện. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT02",
@@ -74,7 +74,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-14 | BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
+          "note": "UC-14 | BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Form báo đúng hai lỗi, không gửi request; API bắt đầu đã qua 400 MSG31. Evidence: tests/qa/out/MANUAL-R1/20261123-065936-03594e25/01-secretary-MEET_FT03-desktop-ket-thuc-truoc-bat-dau.png; tests/qa/out/MANUAL-R1/20261123-065936-03594e25/02-secretary-MEET_FT03-desktop-bat-dau-da-qua.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT04",
@@ -93,7 +96,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A second administrator session able to deactivate a user."
           ],
-          "note": "UC-14 | EX-3 | Manual only"
+          "note": "UC-14 | EX-3 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Quản trị vô hiệu hoá người đã chọn qua API khi form đang mở; 400 MSG277, lỗi hiện trong form, form giữ nguyên. Evidence: tests/qa/out/MANUAL-R1/20261123-065936-03594e25/03-secretary-MEET_FT04-desktop-loi-nguoi-bi-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT05",
@@ -130,7 +136,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-14 | Manual only"
+          "note": "UC-14 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Giả lập: xoá cookie làm mới và gửi token hỏng; app về /login, không tạo cuộc họp. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/01-secretary-MEET_FT06-desktop-ve-trang-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -314,7 +323,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Approver with one assigned WaitingApproval meeting."
           ],
-          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. chutoa@ có cả MeetingCreator nên phụ đề là \"Chờ bạn duyệt, công bố\" (đúng nhánh Organizer + MeetingApprover); thanhvien@ \"Chờ bạn công bố\" và \"Không có việc chờ bạn xử lý.\". Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/02-chair-MEET_FT14-desktop-can-xu-ly.png; tests/qa/out/MANUAL-R1/20261123-070359-03594e25/03-member-MEET_FT14-desktop-thanh-vien-khong-co-viec.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT15",
@@ -330,7 +342,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Năm lựa chọn đúng, không có chọn khoảng ngày; gửi timing=upcoming / timing=past. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/04-secretary-MEET_FT15-desktop-loc-thoi-diem.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT16",
@@ -348,7 +363,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "More than 20 meetings visible."
           ],
-          "note": "UC-17 | BR-32 | Manual only"
+          "note": "UC-17 | BR-32 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Trang 2 giữ sensitivity=Normal, \"‹ Cuộc họp\" quay về đúng bộ lọc và trang. Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/01-secretary-MEET_FT16-desktop-trang-2.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/02-secretary-MEET_FT16-desktop-quay-lai-trang-2.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT17",
@@ -426,7 +444,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an invited Member; an Online meeting InProgress."
           ],
-          "note": "UC-17 | Manual only"
+          "note": "UC-17 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Vào phòng họp\" mở phòng ở tab mới (/room), không chuyển tab hiện tại; họp trực tiếp có nút mắt. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/07-member-MEET_FT20-desktop-dong-dang-dien-ra.png; tests/qa/out/MANUAL-R1/20261123-070359-03594e25/08-member-MEET_FT20-desktop-sau-khi-bam.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -532,7 +553,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "A meeting left \"Đang diễn ra\" more than 24 hours after its planned end, after the overdue job has run (every 15 minutes)."
           ],
-          "note": "UC-22 | ADR-0062 | SCRUM-212 | Manual only"
+          "note": "UC-22 | ADR-0062 | SCRUM-212 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lùi giờ họp 3 ngày trong DB; job quá giờ tự kết thúc, lịch sử \"Tự kết thúc (quá giờ)\" bởi \"Hệ thống\"; call/join sau đó 409 MSG280. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/03-secretary-MEET_FT25-desktop-tu-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -603,7 +627,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Legacy Draft row without a valid schedule, prepared by QA lead in the database."
           ],
-          "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
+          "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Dữ liệu cũ dựng bằng SQL (giờ kết thúc trước giờ bắt đầu); thanh liệt kê lỗi, nút khoá có chú thích; API 400 MSG81. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/09-secretary-MEET_FT28-desktop-thieu-thong-tin.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -692,7 +719,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting WaitingApproval assigned to another Approver."
           ],
-          "note": "UC-19 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot)"
+          "note": "UC-19 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Phê duyệt viên thứ hai (tạo mới) không được giao: 404; Thành viên: 404. Evidence: tests/qa/out/MANUAL-R1/20261123-065936-03594e25/11-qa-mr1-duyet-2-cryst-trustcabinet-local-MEET_FT32-desktop-nguoi-duyet-khong-duoc-giao.png; tests/qa/out/MANUAL-R1/20261123-065936-03594e25/12-member-MEET_FT32-desktop-thanh-vien-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -742,7 +772,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Approved meeting whose roster has no Secretary."
           ],
-          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
+          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Bỏ Thư ký bằng SQL; 409 MSG137, toast đúng, vẫn \"Đã duyệt\". Evidence: tests/qa/out/MANUAL-R1/20261123-065936-03594e25/13-secretary-MEET_FT34-desktop-cong-bo-bi-tu-choi.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT35",
@@ -804,7 +837,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting whose Secretary was removed."
           ],
-          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not)"
+          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: nút \"Bắt đầu họp\" trong hộp \"Chưa thể bắt đầu\" bị khoá nên không có request; API Start trả 409 MSG112, vẫn Đã công bố. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/10-chair-MEET_FT37-desktop-chua-the-bat-dau.png; tests/qa/out/MANUAL-R1/20261123-070359-03594e25/11-chair-MEET_FT37-desktop-sau-khi-bam.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "MEET_FT38",

@@ -609,7 +609,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The signed-in account is the only active account holding AdminUsers."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 409 MSG12, hộp báo đúng câu và vẫn mở; vai trò không đổi. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/04-admin-USER_FT27-desktop-khong-the-ha-quan-tri.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "USER_FT28",
@@ -656,7 +659,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "An active target account with a password; SMTP to a controlled inbox."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hộp nói đủ bốn ý; 200 MSG13, toast; mailpit nhận thư có liên kết reset-password#token=. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/04-admin-USER_FT29-desktop-hop-dat-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "USER_FT30",
@@ -695,7 +701,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A fresh reset link sent to an active account with a password."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai lỗi đúng, không gửi request; 200 MSG92, về /login; mật khẩu mới đăng nhập 200, cũ 401. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/05-anon-USER_FT31-desktop-loi-mat-khau.png; tests/qa/out/MANUAL-R1/20261123-073358-03594e25/06-anon-USER_FT31-desktop-ve-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "USER_FT32",
@@ -711,7 +720,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A reset link that was already used."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 400 MSG93, báo và gợi ý đúng, có \"Về trang đăng nhập\". Chỉ kiểm link đã dùng, chưa kiểm link bị link mới thay. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/07-anon-USER_FT32-desktop-lien-ket-het-hieu-luc.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "USER_FT33",

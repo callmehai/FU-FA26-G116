@@ -730,7 +730,10 @@
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases.",
             "A and C busy at different times throughout the range."
           ],
-          "note": "UC-85a · AF-1 | Manual only"
+          "note": "UC-85a · AF-1 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ bận sáng, Thành viên bận chiều (chia sẻ lịch trực tiếp đã chấp nhận); thông báo đúng MSG445, \"14 khung giờ nhiều người rảnh nhất\", mỗi khung ghi ai bận/rảnh. Evidence: tests/qa/out/MANUAL-R1/20261123-071614-03594e25/12-secretary-CAL_FT34-desktop-khong-co-khung-chung.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "CAL_FT35",

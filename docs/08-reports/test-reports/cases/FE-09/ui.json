@@ -27,7 +27,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · UC-43b · Manual only"
+          "note": "UC-43a · UC-43b · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Tệp tải lên: \"Tải lên\", \"Có bản gỡ băng\", 00:02, 63 KB, ngày lưu; trình phát mở sẵn. Evidence: tests/qa/out/MANUAL-R1/20261123-071738-03594e25/01-secretary-REC_FT01-desktop-danh-sach-ban-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "REC_FT02",
@@ -280,7 +283,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
           ],
-          "note": "UC-43c · MSG356 · Manual only · Đã sửa case theo sản phẩm (2026-11-22)."
+          "note": "UC-43c · MSG356 · Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thư ký không có \"Tải MP3\"; API tải về 403 MSG356, nghe 200. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/21-chair-REC_FT13-desktop-chair-hop-mat-khong-tai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/22-secretary-REC_FT13-desktop-secretary-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "REC_FT14",
@@ -577,10 +583,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Tệp 301 MB qua màn hình: khay tải lên báo \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" thay vì \"Bản ghi vượt quá 300 MB.\" (API gọi trực tiếp vẫn trả 413 MSG293 ở AC9). Nghi do máy chủ đóng kết nối khi tệp còn đang gửi; chưa kiểm qua Caddy ở server test. · Bug xác nhận, theo dõi tại round1/bugs.md (BUG-02).",
-          "round1": "Failed",
-          "date1": "2026-11-22",
-          "tester1": "Nguyễn Trường Huy"
+          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Tệp 301 MB qua màn hình: khay tải lên báo \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" thay vì \"Bản ghi vượt quá 300 MB.\" (API gọi trực tiếp vẫn trả 413 MSG293 ở AC9). Nghi do máy chủ đóng kết nối khi tệp còn đang gửi; chưa kiểm qua Caddy ở server test. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "REC_FT28",
@@ -756,7 +762,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · MSG366 · Manual only"
+          "note": "UC-44d · MSG366 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Âm thanh là giọng máy tiếng Anh (Windows TTS) để có câu; hộp đúng hai câu; DELETE takes/2 200 MSG366, toast, còn \"2 lượt ghi\". Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/02-secretary-REC_FT35-desktop-ba-luot.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/03-secretary-REC_FT35-desktop-hoi-xoa-luot-2.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/04-secretary-REC_FT35-desktop-con-hai-luot.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "REC_FT36",
@@ -772,7 +781,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · Manual only"
+          "note": "UC-44d · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Giọng máy tiếng Anh, 3 lượt; Thành viên thấy \"Lượt 1/2/3\" có giờ, không có thùng rác. Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/01-member-REC_FT36-desktop-thanh-vien-khong-xoa-luot.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },

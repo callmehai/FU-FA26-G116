@@ -4,71 +4,15 @@ Một chỗ để theo dõi mọi lỗi sản phẩm tìm thấy khi chạy UI R
 
 Trạng thái: `Mới` · `Đã báo dev` · `Đã sửa, chờ chạy lại` · `Đã đóng` · `Không phải bug`.
 
-Tổng quan (2026-11-22): 2 bug xác nhận, 3 nghi bug. Các lệch app/case đã chốt giữ app (§3). BUG-02, SUS-02 và SUS-03 tìm thấy khi chạy FE-09, FE-11, FE-13, FE-15 (Nguyễn Trường Huy, 2026-11-22).
+Tổng quan (2026-11-23): không còn bug hay nghi bug. Tester HuyNT xác nhận ngày 2026-11-23 các mục BUG-01, BUG-02, SUS-01, SUS-02, SUS-03 (và SUS-04 tìm thấy cùng ngày) không phải bug; đã xoá khỏi file này, các case liên quan (MEET_FT01, REC_FT27, MIN_FT09) ghi Passed. Các lệch app/case đã chốt giữ app (§3).
 
 ## 1. Bug xác nhận
 
-### BUG-01 — Back của trình duyệt mở lại dialog "Tạo cuộc họp" trống (MEET_FT01, FE-04)
-
-- Trạng thái: Mới · Jira: chưa tạo.
-- Hiện tượng: Thư ký tạo cuộc họp xong, trang chuyển sang chi tiết. Bấm Back của trình duyệt thì quay về danh sách và dialog "Tạo cuộc họp" **trống** mở lại, vì URL `?create=…` còn trong lịch sử. Bấm "Tạo cuộc họp" lần nữa sẽ tạo họp trùng. Vi phạm ngoại lệ E2 của UC.
-- Tái hiện bằng tay (desktop hoặc phone đều ra):
-  1. Đăng nhập Thư ký, vào `/mgmt/meetings`.
-  2. Bấm "Tạo cuộc họp", nhập tiêu đề và thời gian hợp lệ, bấm tạo. Trang chuyển sang `/mgmt/meetings/{id}`.
-  3. Bấm nút Back của trình duyệt.
-  4. Kết quả sai: danh sách hiện lại và dialog "Tạo cuộc họp" mở sẵn, các ô trống. Kết quả đúng: danh sách hiện, dialog không mở.
-- Tái hiện bằng runner: `cd tests/qa; node run.mjs plans/fe-04.mjs --only AC1 --base http://localhost:5173`. Lần 2026-11-21 và 2026-11-22, desktop và phone.
-- Bằng chứng: `tests/qa/out/FE-04/20261122-074043-eb5a3255/04-secretary-AC1-desktop-failure.png`, `08-secretary-AC1-phone-failure.png`.
-- Hướng sửa gợi ý: điều hướng sau khi tạo dùng `replace` (thay mục lịch sử) thay vì `push`, hoặc xoá tham số `create` trước khi chuyển trang.
-
-### BUG-02 — Tải lên bản ghi quá 300 MB báo "Không kết nối được máy chủ" thay vì MSG293 (REC_FT36, FE-09)
-
-- Trạng thái: Mới · Jira: chưa tạo.
-- Hiện tượng: Thư ký tải lên tệp ghi âm 301 MB. Khay tải lên báo "Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại." thay vì "Bản ghi vượt quá 300 MB." (MSG293). Người dùng tưởng mất mạng và bấm thử lại, lần nào cũng gửi lại 301 MB rồi hỏng y như cũ. Vi phạm UC-44c (EX quá dung lượng) và BR-340–BR-357 về giới hạn 300 MB.
-- Nguyên nhân (đã đối chiếu code): `RecordingEndpoints.UploadAsync` (`backend/TrustCabinet.Web/Endpoints/RecordingEndpoints.cs:170–186`) đọc tới 300 MB rồi trả 413/MSG293 khi trình duyệt vẫn đang gửi phần còn lại, nên kết nối bị cắt và trình duyệt chỉ thấy lỗi mạng. Gọi API trực tiếp vẫn nhận đúng 413/MSG293 (FE-09 AC9 đạt). Frontend (`frontend/src/features/recordings/`) không kiểm dung lượng tệp trước khi gửi.
-- Tái hiện bằng tay (desktop):
-  1. Đăng nhập Thư ký (thuky@), mở một cuộc họp Trực tiếp đang diễn ra hoặc đã kết thúc, tab "Bản ghi".
-  2. Bấm "Tải tệp lên", chọn một tệp âm thanh 301 MB, tick xác nhận đồng ý, bấm "Tải lên".
-  3. Kết quả sai: khay báo "Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.". Kết quả đúng: khay báo "Bản ghi vượt quá 300 MB." và giữ tệp để người dùng chọn tệp khác.
-- Tái hiện bằng runner: `cd tests/qa; node run.mjs plans/fe-09.mjs --only AC32 --base http://localhost:5173`.
-- Bằng chứng: `tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png`.
-- Chưa kiểm: trên server test qua Caddy. Máy local đi qua proxy của Vite.
-- Hướng sửa gợi ý: frontend chặn tệp lớn hơn giới hạn trước khi gửi (`file.size`) và hiện MSG293. Nếu vẫn muốn backend trả lời trước khi nhận hết thân yêu cầu thì đọc `Content-Length` để từ chối sớm.
+Không có.
 
 ## 2. Nghi bug (chưa kết luận)
 
-### SUS-01 — Trình soạn biên bản trên điện thoại chèn đoạn sai chỗ (MIN_FT13, FE-12)
-
-- Trạng thái: Mới · Jira: chưa tạo.
-- Hiện tượng: ở 390px (phone), thêm đoạn mới sau dòng "Cuộc họp kết thúc vào …" thì đoạn lại nằm ở **ô đầu bảng tiêu đề** (vị trí khoảng 215 trong nội dung) thay vì sau dòng kết thúc (vị trí lớn hơn 1750). Desktop đúng. Kiểm bằng API `GET` nội dung biên bản.
-- Mức chắc chắn: 3 lần ra cùng kết quả (2 lần 2026-11-21, 1 lần 2026-11-22), chỉ phone. Chưa rõ lỗi ở trình soạn trên cảm ứng hay ở helper đặt con trỏ của plan.
-- Cách tái hiện bằng tay (làm trên điện thoại thật, hoặc Chrome DevTools bật giả lập thiết bị 390px có cảm ứng):
-  1. Dùng một cuộc họp đã kết thúc có biên bản nháp (từ mẫu cố định, có bảng tiêu đề ở đầu và dòng "Cuộc họp kết thúc vào …" ở cuối). Đăng nhập Thư ký, mở tab Biên bản, bấm Sửa.
-  2. Cuộn xuống cuối, chạm vào cuối dòng "Cuộc họp kết thúc vào …" để đặt con trỏ ở đó.
-  3. Bấm Enter (bàn phím ảo), gõ vài chữ, ví dụ "Đoạn thử".
-  4. Lưu biên bản, đọc lại nội dung (mở bản xem hoặc `GET` nội dung biên bản).
-  5. Kết quả đúng: "Đoạn thử" nằm ngay sau dòng kết thúc. Kết quả nghi bug: "Đoạn thử" nằm trong ô đầu bảng tiêu đề.
-- Cách phân biệt hai khả năng: nếu chạm tay thật vẫn sai thì là bug trình soạn trên cảm ứng (mở Jira cho FE). Nếu chạm tay thật đúng thì lỗi nằm ở helper `typeNewParagraph` trong `tests/qa/plans/fe-12.mjs` (AC3, khoảng dòng 487–540: đặt con trỏ bằng JS Range rồi Enter và gõ; trên phone Range không đồng bộ với vùng chọn của trình soạn), sửa helper và đóng nghi bug.
-- Lệnh chạy lại: `cd tests/qa; node run.mjs plans/fe-12.mjs --only AC3 --base http://localhost:5173`.
-
-### SUS-02 — Trên điện thoại không xem được người lưu, mục đích và ngày tự xoá của bản ghi (REC_FT02, REC_FT34, FE-09)
-
-- Trạng thái: Mới · Jira: chưa tạo.
-- Hiện tượng: trên desktop, rê chuột vào dòng thông tin của bản ghi ("Tải lên · dung lượng · ngày") thì hiện tooltip "Lưu bởi … · Mục đích … · Tự xoá ngày …". Ở 390px có cảm ứng, chạm vào dòng đó không hiện gì, nên người dùng điện thoại không biết mục đích lưu và ngày tự xoá (BR-353, giữ 180 ngày). Trái quy tắc của skill check-responsive: không thông tin nào chỉ hiện khi rê chuột.
-- Tái hiện bằng tay (điện thoại thật, hoặc Chrome DevTools giả lập 390px có cảm ứng):
-  1. Đăng nhập Thư ký hoặc Thành viên, mở tab "Bản ghi" của một cuộc họp đã có bản ghi.
-  2. Chạm vào dòng thông tin dưới tên bản ghi.
-  3. Kết quả nghi bug: không hiện tooltip, không có cách nào khác xem "Lưu bởi / Mục đích / Tự xoá ngày". Kết quả đúng: chạm thì hiện, hoặc thông tin hiện sẵn trên điện thoại.
-- Bằng chứng: `tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/12-secretary-AC19-phone-failure.png`.
-- Mức chắc chắn: runner chạm bằng mô phỏng cảm ứng của Playwright. Cần thử trên máy thật để chắc. FT02 và FT34 vẫn ghi Passed theo bằng chứng desktop, có ghi chú hạn chế này.
-
-### SUS-03 — Cuộc họp Kết hợp vẫn nhắc "Bật mic phòng ở ô góc màn hình." dù trang không còn ô mic (REC_FT37, FE-09)
-
-- Trạng thái: Mới · Jira: chưa tạo. Mức: nhỏ (câu chữ).
-- Hiện tượng: Thư ký mở tab "Bản ghi" của cuộc họp Kết hợp đang diễn ra, chưa có bản ghi. Trang hiện gợi ý "Bật mic phòng ở ô góc màn hình." nhưng không có ô mic nào ở góc, vì ADR-0072 đã chuyển công tắc mic phòng của họp Kết hợp vào phòng họp trực tuyến.
-- Tái hiện bằng tay: đăng nhập Thư ký, mở một cuộc họp Kết hợp đang diễn ra chưa có bản ghi, tab "Bản ghi", đọc dòng gợi ý dưới "Chưa có bản ghi.".
-- Bằng chứng: `tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/01-secretary-AC10-desktop-ket-hop-chi-mic-phong.png`.
-- Cần FE xác nhận gợi ý đúng cho họp Kết hợp (ví dụ chỉ vào phòng họp trực tuyến) rồi mới coi là bug.
+Không có.
 
 ## 3. Quyết định BA/PO
 
@@ -94,3 +38,13 @@ Không còn. CAL_FT11 (FE-16) đã có AC34 trong `tests/qa/plans/fe-16.mjs` (t�
 - Cổng 55432 bị Windows giữ (excluded port range): Postgres chạy ở 55620 qua `POSTGRES_PORT` và `ConnectionStrings__TrustCabinet`.
 - Lần chạy FE-09, FE-11, FE-13, FE-15 (Nguyễn Trường Huy, 2026-11-22): backend chạy với `Email__Smtp__Enabled=false` (máy có SMTP Gmail thật, không để test gửi thư thật). Speech worker và ffmpeg không có, nên case cần bản gỡ băng, câu nói thật, mã OTP Khách qua email hoặc tải bản ghi định dạng khác mp3 để trống. Âm thanh trong plan FE-09 là tệp âm tổng hợp.
 - Sau ADR-0075 DB chỉ còn ba vai trò hệ thống (Phê duyệt viên, Quản trị viên, Thành viên). Plan nào tự tạo tài khoản với vai trò "Thư ký" sẽ nhận 400 MSG09. Đã đổi `fe-15.mjs` sang Thành viên.
+
+## 6. Lần chạy tay 2026-11-23 (HuyNT)
+
+Theo note bàn giao `docs/notes/NOTE-ban-giao-manual-ui-round1.md`. Kết quả đã ghi vào `round1` / `date1` / `tester1` của từng case trong `cases/FE-xx/ui.json` (51 case, ghi chú bắt đầu bằng "Round1 chạy tay 23/11").
+
+- **Môi trường:** app = origin/app `e7dc0e7a` (nhánh này không đổi `backend/`, `frontend/`), backend tự phục vụ bản build production ở `:5226` (không qua Vite), database riêng `trustcabinet_r1` (seed Development), SMTP vào mailpit (`localhost:1025`, xem thư ở `localhost:8025`), worker nhận dạng giọng nói chạy bằng `docker compose --profile speech`, LiveKit local. Case chạy bằng `tests/qa/plans/manual-r1.mjs` (mỗi tiêu chí một case, id = mã case) và các AC có sẵn của `fe-04`, `fe-09`, `fe-11`, `fe-12`. Bằng chứng ở `tests/qa/out/MANUAL-R1/20261123-*`, `FE-04/…`, `SCRUM-196/…`, `SCRUM-198/…`, `SCRUM-199/…`.
+- **Kết quả:** 51 Passed. MEET_FT01 và REC_FT27 ghi Passed theo xác nhận của tester là không phải bug. Nhiều case Passed có ghi "Lệch case" khi app làm khác chữ của case (giữ app theo §3): RBAC_FT01 (không có nhóm/quyền "Biên bản"), MIN_FT03/MIN_FT11/MIN_FT18 (biên bản chỉ tạo được sau khi kết thúc, tab khoá trước đó), MEET_FT37 (nút trong hộp "Chưa thể bắt đầu" khoá, API 409 MSG112), AGENDA_FT03 (tài liệu mở trong hộp xem, không đổi URL), ROOM_FT02 (camera tắt sẵn), ROOM_FT54 (phải bấm "Tải lại" mới hiện "Chưa lưu được"), MEET_FT14 (phụ đề theo quyền thật của chutoa@).
+- **Âm thanh:** máy không có giọng đọc tiếng Việt; REC_FT35/36 dùng giọng máy tiếng Anh (Windows TTS) chỉ để worker cắt ra câu. Các case cần nội dung tiếng Việt đúng (nhóm A còn lại) vẫn chưa chạy.
+- **FE-11 AC17/AC18 (nghi upload tài liệu trả 500):** chạy lại 2026-11-23 đều đạt (`tests/qa/out/SCRUM-198/20261123-073902-03594e25`); upload tài liệu vào mục nghị sự và vào biểu quyết đều 200. Không tái hiện 500; khả năng cao là lỗi môi trường đã ghi ở §5 (`TMP`/`TEMP` không ghi được → `UnauthorizedAccessException`).
+- **Còn chưa chạy:** nhóm A trừ REC_FT35/36 (cần tiếng Việt thật, và TRANS_FT29–41 cần máy AI tạo dự thảo — máy này không có), nhóm B (Voice ID, micro thật), nhóm C (khoá API thử), Google (AUTH_FT08–11), AUTH_FT14, AUTH_FT23, VOTE_FT15, ROOM_FT14/15/25, DOC_FT27, DOC_FT51 (cần PDF nhiều trang), ROOM_FT24, ROOM_FT45, AGENDA_FT04, MIN_FT02 (cần dự thảo AI), RPT_FT11, và các case cần máy thật (REC_FT20, REC_FT24).

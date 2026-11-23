@@ -51,7 +51,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323, BR-330 | Manual only"
+          "note": "UC-37 | BR-323, BR-330 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. call/join 200, \"1 người trong phòng\", ô \"(Bạn)\"; camera tắt sẵn nên nút là \"Bật camera\" (case ghi \"Tắt camera\"). Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/12-member-ROOM_FT02-desktop-phong-cho.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/13-member-ROOM_FT02-desktop-trong-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "ROOM_FT03",
@@ -70,7 +73,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Secretary accounts of M1 supplied by QA lead; a second browser."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai trình duyệt; cả hai thấy \"2 người trong phòng\", ô Chủ toạ có chip \"Chủ toạ\". Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/14-chair-ROOM_FT03-desktop-chu-toa-trong-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "ROOM_FT04",
@@ -1207,7 +1213,10 @@
             "Secretary account of M1 supplied by QA lead; signed in.",
             "A way to create the draft minutes (UC-58)."
           ],
-          "note": "UC-82 | MSG417 | Manual only"
+          "note": "UC-82 | MSG417 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. PUT notes 409 MSG417, ô khoá, báo lỗi kèm \"Tải lại\"; bấm \"Tải lại\" thì hiện \"Chưa lưu được: Chung\" với Sao chép, Bỏ (case thiếu bước Tải lại). Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/15-secretary-ROOM_FT54-desktop-bi-tu-choi-o-khoa.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/16-secretary-ROOM_FT54-desktop-chua-luu-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     }

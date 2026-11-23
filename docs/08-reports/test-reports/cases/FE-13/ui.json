@@ -474,7 +474,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Approved meeting; Organizer; a participant mailbox supplied by QA lead; email transport enabled on the test build."
           ],
-          "note": "UC-20 · SCRUM-15 | Manual only"
+          "note": "UC-20 · SCRUM-15 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Lời mời tham dự cuộc họp: <tên>\" có link /mgmt/meetings/<id> và thu-moi-hop.ics (METHOD:REQUEST); công bố trả về trong ~0,2 giây. Evidence: tests/qa/out/MANUAL-R1/20261123-072818-03594e25/01-secretary-NOTI_FT22-desktop-da-cong-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "NOTI_FT23",
@@ -491,7 +494,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting with two participants with mailboxes; Organizer."
           ],
-          "note": "UC-15 · UC-20 | Manual only"
+          "note": "UC-15 · UC-20 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thành viên nhận \"Cuộc họp đã dời lịch\" có giờ cũ gạch ngang; chuông có ở Chủ toạ, Thành viên, không ở người dời. Người tổ chức thuky@ cũng là Thư ký nên cũng nhận thư. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/01-secretary-NOTI_FT23-desktop-form-doi-lich.png; tests/qa/out/MANUAL-R1/20261123-073358-03594e25/02-secretary-NOTI_FT23-desktop-da-doi-lich.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "NOTI_FT24",
@@ -507,7 +513,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting with a participant mailbox; Organizer."
           ],
-          "note": "UC-75 · UC-20 | Manual only"
+          "note": "UC-75 · UC-20 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Cuộc họp đã bị huỷ\" có huy-hop.ics (METHOD:CANCEL), không có link vào họp. Thư huỷ chỉ gửi người đã nhận thư mời. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/03-secretary-NOTI_FT24-desktop-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     }
