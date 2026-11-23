@@ -136,7 +136,7 @@ public sealed class VoiceCollectionServiceTests
     }
 
     [Fact]
-    public async Task ADR_0075_one_collector_may_fill_the_persons_whole_limit_of_fifty_and_no_more()
+    public async Task One_collector_may_fill_the_persons_whole_limit_of_five_and_no_more()
     {
         var consent = Consented();
         for (var i = 0; i < VoiceIdRules.MaxProxySamples - 1; i++) Collected(consent);

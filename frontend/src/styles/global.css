@@ -2204,13 +2204,13 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 /* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
-   controls), the toasts above it (--upload-tray-h, set by UploadTray). The Secretary's recorder card is moved by
-   hand and pushed by neither, but while it sits low in the toasts' column they start above it (--mic-dock-lift, set
-   by RecorderCard), so a notification never hides the card's status and switch. */
+   controls and the phone's tab bar), the toasts above it (--upload-tray-h, set by UploadTray). The Secretary's
+   recorder card moves nothing: it is dragged by hand, and toasts that followed it jumped around the screen (BA
+   23/11), so they keep their corner and are drawn over the card — a popover, in the top layer — for their few seconds. */
 .toast-stack {
   position: fixed;
   right: 16px;
-  bottom: max(calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px)), var(--mic-dock-lift, 0px));
+  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -2238,6 +2238,8 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
    count: inside the app shell it starts right of the 72px rail instead. */
 @media (max-width: 720px) {
   body:has(.shell) .toast-stack { left: calc(var(--sidebar-width-collapsed) + 16px); width: auto; }
+  /* The phone shell has no rail (ADR-0070): the bell is in the top bar, so the stack takes the screen's width. */
+  body:has(.shell-phone) .toast-stack { left: 16px; }
 }
 .toast-success .toast-dot { background: var(--chip-emerald-fg); }
 .toast-error { color: var(--danger); }
@@ -3380,11 +3382,13 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 .agenda-sheet .vote-item:has(.agenda-title:hover) .vote-turnout { background: var(--surface-alt); }
 .agenda-sheet .vote-item:has(.vote-turnout) .agenda-head { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .agenda-sheet .vote-item:last-child:not(.agenda-item-open) .vote-turnout { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+/* The track is --control-line, as the player's seek bar: --surface-alt vanished into the grey head of an open vote,
+   so a vote no one had voted on yet showed no bar at all (BA 23/11). */
 .vote-bar {
   display: block; width: 100%; height: 8px; border: 0; border-radius: 4px; overflow: hidden;
-  background: var(--surface-alt); color: var(--brand); appearance: none;
+  background: var(--control-line); color: var(--brand); appearance: none;
 }
-.vote-bar::-webkit-progress-bar { background: var(--surface-alt); }
+.vote-bar::-webkit-progress-bar { background: var(--control-line); }
 .vote-bar::-webkit-progress-value { background: var(--brand); }
 .vote-bar::-moz-progress-bar { background: var(--brand); }
 .vote-body { display: flex; flex-direction: column; gap: 12px; padding: 0 var(--agenda-pad) 12px var(--agenda-indent); }
@@ -4904,8 +4908,6 @@ audio.recording-player { height: 40px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
 /* The page scrolls past the card, so the last row of a list is never left under it. */
 body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
-/* Dragging the card into or out of the toasts' column moves them; they glide rather than jump. */
-body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized); }
 /* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
   .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }

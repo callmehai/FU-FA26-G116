@@ -54,7 +54,7 @@ alt Segment of a room recording transcript
             AuditService-->TranscriptionService: Entry saved
             deactivate AuditService
         end
-        TranscriptionService->TranscriptRepository: Save the text with the editor and edit time (BR-359)
+        TranscriptionService->TranscriptRepository: Save the text with the editor and edit time,\nso a later run carries it onto the matching new sentence (BR-359, BR-467)
         activate TranscriptRepository
         TranscriptRepository->Database: Update segment
         activate Database

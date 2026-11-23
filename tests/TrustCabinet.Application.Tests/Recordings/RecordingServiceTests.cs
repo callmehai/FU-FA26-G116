@@ -56,6 +56,15 @@ public sealed class RecordingServiceTests
         Assert.Empty(_storage.Deleted);
     }
 
+    [Fact]
+    public async Task The_list_tells_the_upload_limit_in_bytes()
+    {
+        var outcome = await Service().ListAsync(_meeting.Meeting.Id, _meeting.Secretary);
+
+        var list = Assert.IsType<RecordingList>(outcome.Data);
+        Assert.Equal(new RecordingOptions().MaxUploadMegabytes * 1024L * 1024, list.MaxUploadBytes);
+    }
+
     private Recording Stored(string contentType)
     {
         var recording = new Recording

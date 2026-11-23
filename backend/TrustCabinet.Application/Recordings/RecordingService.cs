@@ -32,7 +32,8 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var items = await ReadAsync(token => recordings.ListAsync(meetingId, token), ct);
             return new(Data: new RecordingList(meetingId,
                 secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.TakesUploads(meeting.Mode),
-                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
+                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId),
+                options.Value.MaxUploadBytes));
         }
         catch (PersistenceException ex)
         {

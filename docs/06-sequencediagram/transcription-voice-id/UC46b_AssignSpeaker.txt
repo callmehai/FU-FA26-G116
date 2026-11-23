@@ -129,7 +129,7 @@ opt Change the speaker of one sentence - AF-2
             TranscriptRepository-->TranscriptionService: Speaker created / Save failed
             deactivate TranscriptRepository
         end
-        TranscriptionService->TranscriptRepository: Move only this sentence to that voice\nand update the durations (BR-395)
+        TranscriptionService->TranscriptRepository: Move only this sentence to that voice,\nupdate the durations and mark who moved it and when, so a later run carries it again (BR-395, BR-467)
         activate TranscriptRepository
         TranscriptRepository->Database: Update the sentence and the durations
         activate Database

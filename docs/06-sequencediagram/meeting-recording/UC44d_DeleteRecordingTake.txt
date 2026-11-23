@@ -62,7 +62,7 @@ else Take can be deleted
     deactivate Database
     TranscriptRepository-->RoomTakeService: Transcript
     deactivate TranscriptRepository
-    RoomTakeService->RoomTakeService: Remove the take's sentences and move later ones up by its length,\nkeeping edited text and assigned names elsewhere; a transcript still\nbeing made is queued again instead (BR-349)
+    RoomTakeService->RoomTakeService: Remove the take's sentences and move later ones up by its length,\nkeeping edited text and assigned names on the shortened audio; a transcript still\nbeing made is cut and shifted the same way, then queued again (BR-349, BR-467)
     RoomTakeService->AuditService: Record the deleted take with its time and length
     activate AuditService
     AuditService-->RoomTakeService: Entry saved

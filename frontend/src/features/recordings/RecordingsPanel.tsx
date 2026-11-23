@@ -17,6 +17,7 @@ import { formatDuration, formatSize, probeDuration } from './format'
 import { PlayerBar } from './PlayerBar'
 import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { TranscriptView } from './TranscriptView'
+import { isTooLarge, limitHint, tooLargeMessage } from './uploadLimit'
 import { DEFAULT_PURPOSE, recordingsTarget, useRecordingSave } from './useRecordingSave'
 import { RECORDINGS_EVENTS } from './useRoomRecordings'
 
@@ -39,12 +40,23 @@ type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { ki
 /**
  * `existingOnly`: an online meeting has no room to record (ADR-0040) — show what it has, its combined recording built
  * after it ends from every mic (ADR-0069) or recordings made before, and nothing at all otherwise.
+ * `micInCall`: the room mic is switched on in the call room, not from the corner card — a hybrid meeting whose call room
+ * can be used (ADR-0072) — so the empty state points there.
  */
-export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId: string; existingOnly?: boolean }) {
+export function RecordingsPanel({
+  meetingId,
+  existingOnly = false,
+  micInCall = false,
+}: {
+  meetingId: string
+  existingOnly?: boolean
+  micInCall?: boolean
+}) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const save = useRecordingSave(meetingId)
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
+  const maxUploadBytes = state.kind === 'loaded' ? state.data.maxUploadBytes : undefined
+  const save = useRecordingSave(meetingId, maxUploadBytes)
   const [upload, setUpload] = useState<File | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
   const [erasing, setErasing] = useState<Recording | null>(null)
@@ -109,7 +121,7 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               type="button"
               className="btn btn-outline"
               onClick={() => fileInput.current?.click()}
-              data-tooltip="mp3, m4a, wav, webm, ogg"
+              data-tooltip={['mp3, m4a, wav, webm, ogg', limitHint(maxUploadBytes)].filter(Boolean).join(' · ')}
             >
               <Icon name="upload" size={18} />
               Tải tệp lên
@@ -122,7 +134,11 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 event.target.value = ''
-                if (file) setUpload(file)
+                if (!file) return
+                // MSG293 before a byte is sent: past the limit the server drops the connection mid-way, which the
+                // browser would only report as a network error.
+                if (isTooLarge(file.size, maxUploadBytes)) toast.show(tooLargeMessage(maxUploadBytes!), 'error')
+                else setUpload(file)
               }}
             />
           </div>
@@ -154,8 +170,11 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
           {/* The mic card is in the corner only while the meeting runs (canRecord); before or after it, a file is the
-              only way in. ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time. */}
-          {data.canRecord && canUpload ? (
+              only way in. ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time, and
+              ADR-0072 moved its switch into the call room: the card shows there only when the call cannot be used. */}
+          {data.canRecord && micInCall ? (
+            <p className="field-hint">Bật mic phòng trong phòng họp trực tuyến.</p>
+          ) : data.canRecord && canUpload ? (
             <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>
           ) : data.canRecord ? (
             <p className="field-hint">Bật mic phòng ở ô góc màn hình.</p>
@@ -400,7 +419,8 @@ function RecordingRow({
         <span className="recording-name" title={recording.fileName}>
           {recording.fileName}
         </span>
-        <span className="recording-meta" data-tooltip={details} tabIndex={0}>
+        {/* Who kept it, why and until when: behind an (i) a tap reaches too, never a hover on the line. */}
+        <span className="recording-meta">
           <Badge tone="slate">{SOURCE_LABEL[recording.source]}</Badge>
           {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
@@ -413,6 +433,7 @@ function RecordingRow({
             </>
           )}
           <span>{formatDateTime(recording.createdAt)}</span>
+          <InfoTip text={details} />
         </span>
       </div>
       {!deleted && (
