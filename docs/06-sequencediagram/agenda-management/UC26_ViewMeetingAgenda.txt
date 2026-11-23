@@ -1,73 +1,41 @@
 title UC-26 - View Meeting Agenda
 
-actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
-boundary "Meeting Management Page" as MeetingPage
+actor "User" as User
+boundary "Meeting Agenda Page" as AgendaPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
-participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Access Policy" as MeetingAccessPolicy
-participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Agenda Repository" as AgendaRepository
 database ":Database" as Database
 
-User->MeetingPage: Open Meeting Agenda
-activate MeetingPage
-MeetingPage->AgendaController: View Meeting Agenda
+User->AgendaPage: Open meeting agenda
+activate AgendaPage
+
+AgendaPage->AgendaController: Get agenda (meetingId)
 activate AgendaController
-AgendaController->AgendaService: getMeetingAgenda(meetingId, userId)
+
+AgendaController->AgendaService: getAgenda(meetingId, actor)
 activate AgendaService
 
-AgendaService->MeetingRepository: Get selected Meeting
-activate MeetingRepository
-MeetingRepository->Database: Get selected Meeting
+AgendaService->AgendaRepository: Find meeting and check access
+activate AgendaRepository
+AgendaRepository->Database: Retrieve agenda and access
 activate Database
-Database-->MeetingRepository: Meeting / Not found
+Database-->AgendaRepository: Agenda / not found
 deactivate Database
-MeetingRepository-->AgendaService: Meeting / Not found
-deactivate MeetingRepository
+AgendaRepository-->AgendaService: Agenda / not found
+deactivate AgendaRepository
 
-AgendaService->MeetingAccessPolicy: Verify current Meeting access (BR-29)
-activate MeetingAccessPolicy
-MeetingAccessPolicy-->AgendaService: Authorized / Not authorized
 alt Meeting not accessible - EX-1
-    AgendaService-->AgendaController: Not found; disclose no Agenda data
-    AgendaController-->MeetingPage: Not found
-    MeetingPage-->User: Meeting Agenda not found
-else Meeting accessible
-    loop Initial load or successful saved Agenda change while view remains open
-        AgendaService->MeetingAccessPolicy: Recheck Meeting access before displaying latest Agenda (BR-29)
-        MeetingAccessPolicy-->AgendaService: Still authorized / Access ended
-        alt Meeting access ended - EX-1
-            AgendaService-->AgendaController: Stop Agenda updates; disclose no further data
-            AgendaController-->MeetingPage: Close protected Agenda view
-            MeetingPage-->User: Meeting Agenda not accessible
-        else User remains authorized
-            AgendaService->AgendaItemRepository: Retrieve complete latest Agenda in saved order (BR-64, BR-73)
-            activate AgendaItemRepository
-            AgendaItemRepository->Database: Retrieve complete latest Agenda in saved order (BR-64, BR-73)
-            activate Database
-            Database-->AgendaItemRepository: Complete Agenda / Empty Agenda / Retrieval failed
-            deactivate Database
-            AgendaItemRepository-->AgendaService: Complete Agenda / Empty Agenda / Retrieval failed
-            deactivate AgendaItemRepository
+    AgendaService-->AgendaController: Meeting not accessible
+    AgendaController-->AgendaPage: Return not found
+    AgendaPage-->User: Meeting not accessible
 
-            alt Agenda retrieval failed - EX-2
-                AgendaService-->AgendaController: MSG128 - Unable to load the meeting agenda. Please try again.
-                AgendaController-->MeetingPage: Agenda refresh failed; do not represent old data as latest
-                MeetingPage-->User: MSG128 - Unable to load the meeting agenda. Please try again.
-            else Latest Agenda retrieved
-                AgendaService-->AgendaController: Complete Agenda with current order, execution data and Item conclusions
-                AgendaController-->MeetingPage: Complete latest saved Agenda
-                alt No Items exist - AF-1
-                    MeetingPage-->User: Display empty Agenda; keep view ready for saved changes
-                else Agenda contains Items
-                    MeetingPage-->User: Automatically display full Agenda: title, presenter, order, status, actual times\nand any Item conclusion with who last saved it and when (BR-311)
-                end
-            end
-        end
-    end
+else Accessible
+    AgendaService-->AgendaController: Agenda
+    AgendaController-->AgendaPage: Agenda
+    AgendaPage-->User: Show agenda (BR-311)
 end
 
 deactivate AgendaService
 deactivate AgendaController
-deactivate MeetingPage
-deactivate MeetingAccessPolicy
+deactivate AgendaPage

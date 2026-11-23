@@ -1,60 +1,41 @@
 title UC-17 - View Meeting List
 
-actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
-boundary "Meeting Management Page" as MeetingPage
+actor "User" as User
+boundary "Meeting List Page" as ListPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-User->MeetingPage: Request meeting list with current criteria\n(opens with status=InProgress preset)
-activate MeetingPage
+User->ListPage: Open Meetings
+activate ListPage
 
-MeetingPage->MeetingController: View meeting list
+ListPage->MeetingController: Get meeting list (criteria)
 activate MeetingController
 
-MeetingController->MeetingController: Validate search, filter, sorting, and paging criteria\n(status, timing=upcoming|past, from/to for Today and This week, excludeDeclined)
+MeetingController->MeetingService: getMeetingList(actor, criteria)
+activate MeetingService
 
-alt Query criteria are invalid - EX-2
-    MeetingController-->MeetingPage: MSG32 - Invalid query parameters
-    deactivate MeetingController
-    MeetingPage-->User: MSG32 - Invalid query parameters
+alt Criteria are invalid - EX-1
+    MeetingService-->MeetingController: MSG32 - Tiêu chí danh sách cuộc họp không hợp lệ.
+    MeetingController-->ListPage: Return criteria error
+    ListPage-->User: MSG32 - Tiêu chí danh sách cuộc họp không hợp lệ.
 
-else Query criteria are valid
-    activate MeetingController
-    MeetingController->MeetingService: getMeetingList(userId, criteria)
-    activate MeetingService
-    MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
+else Criteria are valid
+    MeetingService->MeetingRepository: Find authorized meetings matching criteria
     activate MeetingRepository
-    MeetingRepository->Database: Filter authorized meetings by name (ignoring case and diacritics, BR-439), status (including Cancelled), confidentiality,\nToday/This week overlapping Meeting Planned Start/End Time, or Not yet held/Already held by Planned Start Time\n(BR-30, BR-297); omit declined meetings only when excludeDeclined=true (calendar, BR-321)
+    MeetingRepository->Database: Retrieve meetings (BR-29, BR-30, BR-32)
     activate Database
+    Database-->MeetingRepository: Meetings
+    deactivate Database
+    MeetingRepository-->MeetingService: Meetings
+    deactivate MeetingRepository
 
-    alt Meeting list cannot be retrieved - EX-1
-        Database-->MeetingRepository: Retrieval failed
-        deactivate Database
-        MeetingRepository-->MeetingService: Meeting list retrieval failed
-        deactivate MeetingRepository
-        MeetingService-->MeetingController: MSG38 - Unable to load meetings.\nPlease try again
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Return meeting list loading failure
-        deactivate MeetingController
-        MeetingPage-->User: MSG38 - Unable to load meetings.\nPlease try again
-
-    else Meeting list retrieved successfully
-        activate Database
-        activate MeetingController
-        activate MeetingRepository
-        activate MeetingService
-        Database-->MeetingRepository: Authorized meeting page
-        deactivate Database
-        MeetingRepository-->MeetingService: Meeting list or empty list
-        deactivate MeetingRepository
-        MeetingService-->MeetingController: Meeting list or empty list
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Display meeting list
-        deactivate MeetingController
-        MeetingPage-->User: Meeting list with status, including Cancelled Meetings and Meetings the user declined,\nor no matching meetings
-    end
+    MeetingService-->MeetingController: Meeting list
+    MeetingController-->ListPage: Meeting list
+    ListPage-->User: Show meetings (BR-297, BR-321)
 end
 
-deactivate MeetingPage
+deactivate MeetingService
+deactivate MeetingController
+deactivate ListPage

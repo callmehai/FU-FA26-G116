@@ -1,4 +1,4 @@
-title UC-81d - Play Voice Sample
+﻿title UC-81d - Play Voice Sample
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage
@@ -30,17 +30,11 @@ alt Sample is not the actor's, or its recording was not kept under the notice co
 else Sample recording kept
     VoiceService->Protector: Unprotect the sample recording for its owner (BR-364)
     activate Protector
-    Protector-->VoiceService: Sample recording / Cannot be unprotected
+    Protector-->VoiceService: Sample recording
     deactivate Protector
-    alt Recording cannot be unprotected - EX-1
-        VoiceService-->VoiceController: No sample recording
-        VoiceController-->VoicePage: No sample recording
-        VoicePage-->Actor: Show the sample as not playable
-    else Recording available
-        VoiceService-->VoiceController: Sample recording
-        VoiceController-->VoicePage: Sample recording, not cached
-        VoicePage-->Actor: Play the sample
-    end
+    VoiceService-->VoiceController: Sample recording
+    VoiceController-->VoicePage: Sample recording, not cached
+    VoicePage-->Actor: Play the sample
 end
 
 deactivate VoiceService

@@ -1,4 +1,4 @@
-title UC-81e - Delete Voice Sample
+﻿title UC-81e - Delete Voice Sample
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage
@@ -18,9 +18,9 @@ VoiceService->VoiceRepository: Get the actor's own voice samples only (BR-364)
 activate VoiceRepository
 VoiceRepository->Database: Retrieve samples of the actor
 activate Database
-Database-->VoiceRepository: Own samples / Load failed
+Database-->VoiceRepository: Own samples
 deactivate Database
-VoiceRepository-->VoiceService: Own samples / Load failed
+VoiceRepository-->VoiceService: Own samples
 deactivate VoiceRepository
 
 alt Sample is not one of the actor's samples
@@ -36,17 +36,12 @@ else Sample belongs to the actor
     activate VoiceRepository
     VoiceRepository->Database: Delete voice sample
     activate Database
-    Database-->VoiceRepository: Sample deleted / Save failed
+    Database-->VoiceRepository: Sample deleted
     deactivate Database
-    VoiceRepository-->VoiceService: Sample deleted / Save failed
+    VoiceRepository-->VoiceService: Sample deleted
     deactivate VoiceRepository
 
-    alt Sample cannot be deleted - EX-1
-        VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
-        VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
-        VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
-    else Sample deleted
-        VoiceService->VoiceRepository: Get the updated Voice ID
+            VoiceService->VoiceRepository: Get the updated Voice ID
         activate VoiceRepository
         VoiceRepository->Database: Retrieve consent and samples of the actor
         activate Database
@@ -63,3 +58,4 @@ end
 deactivate VoiceService
 deactivate VoiceController
 deactivate VoicePage
+

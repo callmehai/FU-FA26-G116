@@ -6,75 +6,81 @@ control ":Report Controller" as ReportController
 control ":Report Service" as ReportService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Report Fact Query" as ReportFactQuery
-participant ":Audit Service" as AuditService
+control ":Audit Service" as AuditService
 participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Actor->ReportsPage: Export the table on screen to Excel
 activate ReportsPage
+
 ReportsPage->ReportController: Export the table on screen
 activate ReportController
+
 ReportController->ReportService: exportTable(actorId, entity, groupBy, sort, top, filters, fromMonth, toMonth)
 activate ReportService
-ReportService->ReportService: Check the start month is not after the end month\nand the period covers at most 24 months (BR-433)
+
 
 alt The period is not valid - EX-1
     ReportService-->ReportController: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
     ReportController-->ReportsPage: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
     ReportsPage-->Actor: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
+
 else The period is valid
-    ReportService->ReportService: Check the queried table, grouping, sorting, top N and filter values exist for that table (BR-433)
-    alt The query parameter is not valid - EX-3
+
+    alt The query parameter is not valid - EX-2
         ReportService-->ReportController: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
         ReportController-->ReportsPage: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
         ReportsPage-->Actor: MSG484 - The report parameters are invalid. Choose the data, grouping or filter again.
+
     else Query parameters valid
-        ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance,\nactual start and end times, and first minutes issue (BR-432, BR-434, BR-435, BR-436, BR-447)
+        ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance, actual start and end times, and first minutes issue (BR-432, BR-434, BR-435, BR-436, BR-447)
         activate MeetingRepository
+
         MeetingRepository->Database: Retrieve counts, attendance marks, actual start and end times, and issue times of readable Meetings
         activate Database
-        Database-->MeetingRepository: Figures / Read failure
+
+        Database-->MeetingRepository: Figures
         deactivate Database
-        MeetingRepository-->ReportService: Figures / Read failure
+
+        MeetingRepository-->ReportService: Figures
         deactivate MeetingRepository
-        ReportService->ReportFactQuery: Read the rows of the table on screen for readable Meetings only,\nkeeping draft votes and unissued minutes to current Chairs and Secretaries,\nrecordings to current participants, and no combined hours (BR-468)
+
+        ReportService->ReportFactQuery: Read the rows of the table on screen for readable Meetings only, keeping draft votes and unissued minutes to current Chairs and Secretaries, recordings to current participants, and no combined hours (BR-468)
         activate ReportFactQuery
+
         ReportFactQuery->Database: Retrieve readable rows of the table on screen
         activate Database
-        Database-->ReportFactQuery: Figures / Read failure
+
+        Database-->ReportFactQuery: Figures
         deactivate Database
-        ReportFactQuery-->ReportService: Figures / Read failure
+
+        ReportFactQuery-->ReportService: Figures
         deactivate ReportFactQuery
 
-        alt The data cannot be read - EX-2
-            ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
-            ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
-            ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
-        else Figures read, zero counts when no Meeting is readable - AF-1
-            ReportService->ReportService: Build the Excel file of the table on screen with its Total row,\nno meeting content, file name bao-cao-<table>_<from>_<to>.xlsx (BR-437, BR-438)
-            ReportService->AuditService: Record the export with the actor, the table, the grouping, the filters and the period (BR-438)
-            activate AuditService
-            AuditService->AuditLogRepository: add(audit entry)
-            AuditLogRepository->Database: Insert audit entry
-            activate Database
-            Database-->AuditLogRepository: Saved / Write failure
-            deactivate Database
-            AuditLogRepository-->AuditService: Saved / Write failure
-            AuditService-->ReportService: Recorded / Write failure
-            deactivate AuditService
+        ReportService->AuditService: Record the export with the actor, the table, the grouping, the filters and the period (BR-438)
+        activate AuditService
 
-            alt The export cannot be recorded - EX-2
-                ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
-                ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
-                ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
-            else Recorded
-                ReportService-->ReportController: Excel file
-                ReportController-->ReportsPage: Excel file
-                ReportsPage-->Actor: Save the Excel file
-            end
-        end
+        AuditService->AuditLogRepository: add(audit entry)
+        activate AuditLogRepository
+
+        AuditLogRepository->Database: Insert audit entry
+        activate Database
+
+        Database-->AuditLogRepository: Saved
+        deactivate Database
+
+        AuditLogRepository-->AuditService: Saved
+        deactivate AuditLogRepository
+
+        AuditService-->ReportService: Recorded
+        deactivate AuditService
+
+        ReportService-->ReportController: Excel file
+        ReportController-->ReportsPage: Excel file
+        ReportsPage-->Actor: Save the Excel file
     end
 end
+
 deactivate ReportService
 deactivate ReportController
 deactivate ReportsPage

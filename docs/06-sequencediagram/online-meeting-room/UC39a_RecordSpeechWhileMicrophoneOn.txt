@@ -13,7 +13,6 @@ database ":Database" as Database
 
 Actor->RoomPage: Speak a sentence while the own microphone is on
 activate RoomPage
-RoomPage->RoomPage: Cut the sentence at the pause and keep it on this device\nuntil the system accepts it (BR-352, BR-354)
 RoomPage->ClipController: Send the spoken sentence
 activate ClipController
 ClipController->ClipService: canCapture(meetingId, actorId)
@@ -26,23 +25,18 @@ Database-->MeetingRepository: Meeting and roster
 deactivate Database
 MeetingRepository-->ClipService: Meeting and roster
 deactivate MeetingRepository
-ClipService->ClipService: Check the actor is an internal user on the current roster (BR-350, BR-370)\nand the Meeting records per-mic speech: Online or Hybrid, In Progress\nor ended at most 7 days ago (BR-340, BR-354)
 
-alt Meeting cannot be recorded now - EX-5
+alt Meeting cannot be recorded now - EX-1
     ClipService-->ClipController: MSG320 - In-person meetings do not record per-mic speech, or the meeting is no longer running.
     ClipController-->RoomPage: MSG320 - In-person meetings do not record per-mic speech, or the meeting is no longer running.
-    RoomPage->RoomPage: Drop the sentence from this device
     RoomPage-->Actor: MSG320 - In-person meetings do not record per-mic speech, or the meeting is no longer running.
 else Meeting records per-mic speech
     ClipService-->ClipController: Sentence may be sent
-    ClipController->ClipController: Check the sentence audio type, start time, duration and size
     alt Sentence audio is longer than one sentence allows - AF-2
         ClipController-->RoomPage: MSG321 - A spoken sentence cannot exceed 60 seconds.
-        RoomPage->RoomPage: Drop the sentence from this device
         RoomPage-->Actor: MSG321 - A spoken sentence cannot exceed 60 seconds.
     else Sentence audio is invalid - AF-2
         ClipController-->RoomPage: MSG319 - Spoken sentence audio is invalid.
-        RoomPage->RoomPage: Drop the sentence from this device
         RoomPage-->Actor: MSG319 - Spoken sentence audio is invalid.
     else Sentence audio is valid
         ClipController->ClipService: add(meetingId, actorId, upload)
@@ -51,15 +45,9 @@ else Meeting records per-mic speech
         SpeechEngine-->ClipService: Text with word timings / Service unavailable
         deactivate SpeechEngine
 
-        alt Speech Recognition Service unavailable - EX-4
-            ClipService-->ClipController: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-            ClipController-->RoomPage: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-            RoomPage->RoomPage: Keep the sentence on this device and send it again later (BR-354)
-            RoomPage-->Actor: MSG312 - Speech recognition service is currently unavailable. Please try again later.
-        else Only silence or noise - AF-2
+        alt Only silence or noise - AF-2
             ClipService-->ClipController: Nothing to keep
             ClipController-->RoomPage: Nothing to keep
-            RoomPage->RoomPage: Drop the sentence from this device
         else Words recognised
             ClipService->RecordingStorage: Store the sentence audio
             activate RecordingStorage
@@ -79,7 +67,6 @@ else Meeting records per-mic speech
             deactivate Publisher
             ClipService-->ClipController: MSG318 - Spoken sentence recorded.
             ClipController-->RoomPage: MSG318 - Spoken sentence recorded.
-            RoomPage->RoomPage: Remove the sentence from this device
             RoomPage-->Actor: The sentence appears in the Meeting speech timeline (UC-43a) and in My Recorded Speech (UC-80)
         end
     end

@@ -36,10 +36,6 @@ else Google authentication successful
         AuthenticationService-->AuthController: Account deactivated
         AuthController-->LoginPage: MSG04 - Account unavailable
         LoginPage-->User: Display error message
-    else User has no active role or access
-        AuthenticationService-->AuthController: Access denied
-        AuthController-->LoginPage: MSG05 - No system access
-        LoginPage-->User: Display error message
     else User is authorized
         AuthenticationService-->AuthController: Sign in successful
         AuthController-->LoginPage: Sign in successful

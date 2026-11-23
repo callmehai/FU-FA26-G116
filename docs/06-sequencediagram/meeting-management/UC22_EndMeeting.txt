@@ -5,96 +5,46 @@ boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Participant Repository" as MeetingParticipantRepository
-participant ":Agenda Item Repository" as AgendaItemRepository
-participant ":Online Meeting Room" as MeetingRoom
 database ":Database" as Database
 
-Chair->MeetingPage: Confirm End Meeting
+Chair->MeetingPage: End meeting
 activate MeetingPage
-MeetingPage->MeetingController: End Meeting
+
+MeetingPage->MeetingController: End meeting (meetingId)
 activate MeetingController
-MeetingController->MeetingService: endMeeting(meetingId, chairId)
+
+MeetingController->MeetingService: endMeeting(meetingId, chair)
 activate MeetingService
 
-MeetingService->MeetingRepository: Get current meeting
+MeetingService->MeetingRepository: Find meeting and verify chair
 activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting and lifecycle status
+MeetingRepository->Database: Retrieve meeting and chair
 activate Database
-Database-->MeetingRepository: Meeting / Meeting not found
+Database-->MeetingRepository: Meeting and chair
 deactivate Database
-MeetingRepository-->MeetingService: Meeting / Meeting not found
+MeetingRepository-->MeetingService: Meeting and chair
 deactivate MeetingRepository
 
-MeetingService->MeetingParticipantRepository: Verify current active Chair assignment (BR-130)
-activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Retrieve Chair assignment
-activate Database
-Database-->MeetingParticipantRepository: Assignment / No assignment
-deactivate Database
-MeetingParticipantRepository-->MeetingService: Assignment / No assignment
-deactivate MeetingParticipantRepository
+alt Meeting cannot be ended - EX-1
+    MeetingService-->MeetingController: MSG114 - This meeting cannot be ended.
+    MeetingController-->MeetingPage: Return end error
+    MeetingPage-->Chair: MSG114 - This meeting cannot be ended.
 
-MeetingService->MeetingService: Revalidate active Chair and InProgress status (BR-130, BR-132)
+else Eligible
+    MeetingService->MeetingRepository: Complete agenda, delete draft votes, change status to Ended (BR-159, BR-189, BR-445)
+    activate MeetingRepository
+    MeetingRepository->Database: Save status, agenda, votes, history
+    activate Database
+    Database-->MeetingRepository: Ended
+    deactivate Database
+    MeetingRepository-->MeetingService: Ended
+    deactivate MeetingRepository
 
-alt Meeting or Chair is no longer eligible - EX-1
-    MeetingService-->MeetingController: MSG114 - This meeting cannot be ended
-    deactivate MeetingService
-    MeetingController-->MeetingPage: Return meeting end failure
-    deactivate MeetingController
-    MeetingPage-->Chair: MSG114 - This meeting cannot be ended
-
-else Meeting and Chair are eligible
-    activate MeetingController
-    activate MeetingService
-        MeetingService->AgendaItemRepository: Get the InProgress Agenda Item, if any (BR-159)
-        activate AgendaItemRepository
-        AgendaItemRepository->Database: Find InProgress Agenda Item of the Meeting
-        activate Database
-        Database-->AgendaItemRepository: Agenda Item / None
-        deactivate Database
-        AgendaItemRepository-->MeetingService: Agenda Item / None
-        deactivate AgendaItemRepository
-
-        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time); delete any Draft Vote not yet opened\n(with one audit log entry for each deleted Draft Vote); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history; preserve Open/Closed Vote statuses and ballots;\nno attendance or Vote-closure check (BR-38, BR-132, BR-159, BR-189)
-        activate MeetingRepository
-        MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
-        activate Database
-
-        alt Meeting end cannot be completed - EX-2
-            Database-->MeetingRepository: Save failed, transaction rolled back
-            deactivate Database
-            MeetingRepository-->MeetingService: Meeting end failed
-            deactivate MeetingRepository
-            MeetingService-->MeetingController: MSG116 - Unable to end the meeting. Please try again
-            deactivate MeetingService
-            MeetingController-->MeetingPage: Return meeting end failure
-            deactivate MeetingController
-            MeetingPage-->Chair: MSG116 - Unable to end the meeting. Please try again\nMeeting and Agenda Item keep their previous state
-
-        else Meeting status is Ended
-            activate Database
-            activate MeetingController
-            activate MeetingRepository
-            activate MeetingService
-            Database-->MeetingRepository: Changes committed
-            deactivate Database
-            MeetingRepository-->MeetingService: Meeting ended
-            deactivate MeetingRepository
-
-            MeetingService->MeetingService: Reject further ballot casting because Meeting is Ended (BR-160);\nChair may subsequently close existing Open Votes;\nAutomatically refresh the complete saved Agenda\nfor authorized users viewing this Meeting (BR-73)
-
-            MeetingService->MeetingRoom: Stop accepting joins and disconnect connected users (BR-143)
-            activate MeetingRoom
-            MeetingRoom-->MeetingService: Room closed; connected users disconnected
-            deactivate MeetingRoom
-
-            MeetingService-->MeetingController: Meeting ended successfully
-            deactivate MeetingService
-            MeetingController-->MeetingPage: MSG111 - Meeting ended successfully
-            deactivate MeetingController
-            MeetingPage-->Chair: MSG111 - Meeting ended successfully
-        end
+    MeetingService-->MeetingController: End successful
+    MeetingController-->MeetingPage: MSG111 - Meeting ended successfully.
+    MeetingPage-->Chair: MSG111 - Meeting ended successfully.
 end
 
+deactivate MeetingService
+deactivate MeetingController
 deactivate MeetingPage

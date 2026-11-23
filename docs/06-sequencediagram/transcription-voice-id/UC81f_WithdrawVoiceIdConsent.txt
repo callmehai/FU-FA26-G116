@@ -1,4 +1,4 @@
-title UC-81f - Withdraw Voice ID Consent
+﻿title UC-81f - Withdraw Voice ID Consent
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage
@@ -24,15 +24,14 @@ VoiceRepository-->VoiceService: Consent / None
 deactivate VoiceRepository
 
 alt Consent was already withdrawn
-    VoiceService->VoiceService: Nothing to change
 else Consent stands
     VoiceService->VoiceRepository: In one step: delete every voice sample of the actor, both those the actor recorded\nand those Secretaries recorded, clear every speaker suggestion pointing to the actor,\nkeep names a Secretary assigned, and mark the consent withdrawn (BR-365, BR-454)
     activate VoiceRepository
     VoiceRepository->Database: Delete samples, clear suggestions, update consent
     activate Database
-    Database-->VoiceRepository: Changes saved / Save failed
+    Database-->VoiceRepository: Changes saved
     deactivate Database
-    VoiceRepository-->VoiceService: Both sample sets deleted, suggestions cleared / Save failed
+    VoiceRepository-->VoiceService: Both sample sets deleted, suggestions cleared
     deactivate VoiceRepository
     VoiceService->AuditService: Record the withdrawal with the number of samples of both sets\nand suggestions erased
     activate AuditService
@@ -40,11 +39,6 @@ else Consent stands
     deactivate AuditService
 end
 
-alt Withdrawal cannot be saved; nothing is erased - EX-1
-    VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
-    VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
-    VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
-else Consent withdrawn
     VoiceService-->VoiceController: MSG306 - Voice identification disabled and all voice samples deleted.
     VoiceController-->VoicePage: MSG306 - Voice identification disabled and all voice samples deleted.
     VoicePage-->Actor: MSG306 - Voice identification disabled and all voice samples deleted.
@@ -53,3 +47,4 @@ end
 deactivate VoiceService
 deactivate VoiceController
 deactivate VoicePage
+
