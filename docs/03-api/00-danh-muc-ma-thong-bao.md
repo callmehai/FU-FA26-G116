@@ -780,6 +780,17 @@ bước 5–6 của UC-14; không cấp mã mới.
 | `MSG466` | — | — (FE) | Không có cuộc họp nào người xem đọc được trong khoảng (`total = 0`, UC-70a AF-2) | `Không có cuộc họp nào bạn xem được trong khoảng này.` | FE (đã làm) |
 | `MSG484` | 400 | `GET /api/reports/query`, `GET …/export` | Tham số truy vấn báo cáo không có: `entity`, `groupBy`, `sort`, `top` (1–500) hoặc giá trị một bộ lọc mà bảng đó không có. Không đọc gì, không ghi audit | `Tham số báo cáo không hợp lệ. Chọn lại dữ liệu, cách nhóm hoặc bộ lọc.` | BE |
 
+### Mã đã có ở phần contract, bổ sung vào bảng chính
+
+Bốn mã này đã triển khai và đã mô tả ở các mục contract phía trên (Attendance, Participants, Tài liệu); thêm vào đây để bảng chính đủ mọi mã.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG275` | 409 | Cập nhật roster (UC-27, UC-28) | Revision roster stale | `Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại.` | BE |
+| `MSG276` | 400 | Roster (UC-27, UC-28) | Query (kể cả lookup trước tạo họp) hoặc If-Match thiếu/sai | `Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu.` | BE |
+| `MSG278` | 400 | `GET /api/meetings/{id}/attendance` (UC-31) | Query GET attendance không hợp lệ | `Tham số phân trang điểm danh không hợp lệ.` | BE |
+| `MSG349` | 409 | Tài liệu và bình luận của cuộc họp (UC-32, UC-33, UC-35) | Cuộc họp `Cancelled` (BR-299) | `Cuộc họp đã huỷ nên không thay đổi được nữa.` | BE |
+
 ### Dành sẵn, chưa có code
 
 Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpoint và contract tiếng Việt ở mục Agenda phía trên; các mã còn lại chưa triển khai hoặc đã ngừng dùng như ghi chú từng dòng. Cột *Use case* theo danh mục 70 UC (10/10/2026); mã Meeting Session ghi số UC cũ. Người làm các use case còn lại dùng đúng các mã dưới đây.
