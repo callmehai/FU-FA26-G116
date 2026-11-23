@@ -580,8 +580,12 @@ FIX = {
     "4.9 Reschedule Meeting": [("and has not started (BR-014, BR-015)", "and has not started (BR-015)")],
     # BR-312: the minutes list each item with its Presenter (MinutesTemplate).
     "UC-59": [("the agenda and each item's recorded conclusion", "the agenda with each item's Presenter and recorded conclusion")],
-    # BR-431: a range the owner shortens must lie within the requested one.
-    "UC-84c": [("or a shorter range (BR-140, BR-141)", "or a shorter range within the requested one (BR-140, BR-141)")],
+    # BR-431: a range the owner shortens must lie within the requested one. Step 2 cited BR-142/143 twice.
+    "UC-84c": [("or a shorter range (BR-140, BR-141)", "or a shorter range within the requested one (BR-140, BR-141)"),
+               ("can only be declined (BR-142, BR-143). (BR-142, BR-143)", "can only be declined (BR-142, BR-143).")],
+    "UC-84e": [("(BR-142, BR-143). (BR-142, BR-143)", "(BR-142, BR-143).")],
+    # Step 1 states the search limits; BR-148 (Secret overlap) is cited where the Secret meeting is handled.
+    "UC-85a": [("a slot never starts in the past. (BR-148)", "a slot never starts in the past.")],
 }
 APPROVER_TOO = "An Approver can also do this, because the Approver role also holds the create-meeting permission."
 NFR_ADD = {
