@@ -60,4 +60,16 @@ public sealed class DeadlineGroundingTests
         Assert.Equal("- Hoàn thành kế hoạch — Phòng A — trước thứ Sáu",
             DeadlineGrounding.Apply("- Hoàn thành kế hoạch — Phòng A — trước thứ Sáu", facts));
     }
+
+    [Fact]
+    public void A_quarter_or_year_nobody_said_is_dropped()
+    {
+        // The 20/11 draft regenerated on 24/11 with "Quý I năm 2027" for every task: the prompt's number example.
+        var facts = Said("Hải kiểm tra lại hệ thống thu âm nhé.");
+        Assert.Equal("- Kiểm tra hệ thống thu âm — Trần Việt Hải",
+            DeadlineGrounding.Apply("- Kiểm tra hệ thống thu âm — Trần Việt Hải — Quý I năm 2027", facts));
+        // Said as words in the meeting, it stays.
+        Assert.Equal("- Lập kế hoạch — Phòng A — quý I năm 2027",
+            DeadlineGrounding.Apply("- Lập kế hoạch — Phòng A — quý I năm 2027", Said("làm xong trong quý một năm hai không hai bảy")));
+    }
 }

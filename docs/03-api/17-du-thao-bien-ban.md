@@ -72,7 +72,9 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 - **Hạn của nhiệm vụ** (dòng `- <nhiệm vụ> — <người phụ trách> — <hạn>`) chỉ giữ khi mọi mốc thời gian trong hạn (thứ,
   ngày, giờ, "mai", "tuần", "tháng") có trong lời thoại, chương trình hoặc kết luận của chủ trì (`DeadlineGrounding`).
   Ngày 24/11/2026, dự thảo cuộc họp "Test thu hộ 20/11" ghi "trước thứ Tư" cho cả 5 nhiệm vụ dù không ai nói tới thứ Tư:
-  model chép câu ví dụ trong prompt. Hạn không có trong hồ sơ bị bỏ, nhiệm vụ và người phụ trách vẫn giữ.
+  model chép câu ví dụ trong prompt. Bỏ ví dụ đó thì model lại ghi "Quý I năm 2027", chép ví dụ cách viết số trong quy
+  tắc chung, nên quý, năm và mọi con số trong hạn cũng phải có trong hồ sơ (năm của một ngày đầy đủ thì không cần).
+  Hạn không có trong hồ sơ bị bỏ, nhiệm vụ và người phụ trách vẫn giữ.
 - **Lỗi:**
   - `403` `MSG385` khi không phải Chủ toạ hay Thư ký.
   - `409` `MSG386` khi cuộc họp chưa kết thúc (kể cả đang diễn ra) hoặc đã huỷ, `409` `MSG481` khi chưa có câu nói nào, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
