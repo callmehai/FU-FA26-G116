@@ -400,7 +400,8 @@ function RecordingRow({
         <span className="recording-name" title={recording.fileName}>
           {recording.fileName}
         </span>
-        <span className="recording-meta" data-tooltip={details} tabIndex={0}>
+        {/* Who kept it, why and until when: behind an (i) a tap reaches too, never a hover on the line. */}
+        <span className="recording-meta">
           <Badge tone="slate">{SOURCE_LABEL[recording.source]}</Badge>
           {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
@@ -413,6 +414,7 @@ function RecordingRow({
             </>
           )}
           <span>{formatDateTime(recording.createdAt)}</span>
+          <InfoTip text={details} />
         </span>
       </div>
       {!deleted && (
