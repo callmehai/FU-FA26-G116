@@ -724,8 +724,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
         }
         var options = voiceOptions.Value;
-        return (SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold), nameable);
+        var suggestions = SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold,
+            options.SuggestMargin, options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold);
+        LogScores(meetingId, result.Speakers, candidates, suggestions);
+        return (suggestions, nameable);
+    }
+
+    /// <summary>
+    /// The two best scores of every voice, named or not, so a voice left "Người nói N" shows whether it fell short of
+    /// <see cref="VoiceIdOptions.SuggestThreshold"/> or tied within <see cref="VoiceIdOptions.SuggestMargin"/> (Hải,
+    /// 23/11/2026). Only labels, user ids and numbers are logged: never an embedding, a name or audio.
+    /// </summary>
+    private void LogScores(Guid meetingId, IReadOnlyList<SpeechSpeaker> speakers,
+        IReadOnlyList<SpeakerMatcher.Candidate> candidates, IReadOnlyDictionary<string, SpeakerMatcher.Suggestion> suggestions)
+    {
+        if (candidates.Count == 0 || !logger.IsEnabled(LogLevel.Information)) return;
+        foreach (var (label, ranked) in SpeakerMatcher.Scores(speakers, candidates).OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var top = string.Join(", ", ranked.Take(2).Select(x => $"{x.UserId}={x.Score:0.000}"));
+            var named = suggestions.TryGetValue(label, out var suggestion) ? suggestion.UserId.ToString() : "none";
+            logger.LogInformation("Voice scores in meeting {MeetingId}: {Label} best {Top}; suggested {Suggested}",
+                meetingId, label, top, named);
+        }
     }
 
     /// <summary>
