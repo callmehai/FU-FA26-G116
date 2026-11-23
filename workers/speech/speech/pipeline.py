@@ -52,6 +52,14 @@ VAD_THRESHOLD = 0.2
 # late onsets and early offsets do not clip the edges of words.
 VAD_PAD_S = 0.1
 
+# Pieces handed to the recogniser at once. It was 8: a batch is padded to its longest piece, and onnxruntime keeps the
+# memory of the largest batch it has seen, so a fresh worker grew from 1.05 GB to 4.7 GB in the recognition stage of an
+# 83-minute recording (Docker, 2 CPUs, 24/11/2026) — past the 2.5 GB the container may hold. One at a time the
+# recogniser's memory stays flat and it ran 1.6–1.8 times faster on 2 threads (560 s of random pieces: 24.5 s → 15 s);
+# WER on the real 300 s meeting of the README stayed within two words (13.90% → 14.06% of 1216 words). A sentence of
+# the "clip" profile is mostly one piece, so it was decoded on its own already.
+RECOGNISE_BATCH = 1
+
 # --- Punctuation ------------------------------------------------------------------------------
 # A speaker's consecutive segments are punctuated as one passage (speech/punctuation.py), so a
 # breath in the middle of a sentence does not end it. A longer pause than this starts a new one.
@@ -653,12 +661,13 @@ class Engine:
         # Done by audio rather than by pieces: a piece is anything from a word to 25 seconds.
         total = sum(piece.size for piece in pieces) or 1
         done = 0
-        for first in range(0, len(pieces), 8):
+        batch = RECOGNISE_BATCH
+        for first in range(0, len(pieces), batch):
             self._track("recognise", done / total)
-            done += sum(piece.size for piece in pieces[first : first + 8])
+            done += sum(piece.size for piece in pieces[first : first + batch])
             self._check()
             streams = []
-            for piece in pieces[first : first + 8]:
+            for piece in pieces[first : first + batch]:
                 stream = self._recognizer.create_stream()
                 stream.accept_waveform(SAMPLE_RATE, piece)
                 streams.append(stream)
