@@ -17,9 +17,7 @@ activate DocumentController
 DocumentController->DocumentService: moveLibraryDocument(userId, documentId, destinationFolderId)
 activate DocumentService
 
-DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
-
-DocumentService->DocumentRepository: Get the selected document owned by the actor (BR-242)
+DocumentService->DocumentRepository: Get the selected document owned by the actor
 activate DocumentRepository
 DocumentRepository->Database: Retrieve the document by id and owner
 activate Database
@@ -29,7 +27,7 @@ DocumentRepository-->DocumentService: Document / Not found
 deactivate DocumentRepository
 
 opt A destination folder is selected
-    DocumentService->FolderRepository: Get the destination folder owned by the actor (BR-225, BR-242)
+    DocumentService->FolderRepository: Get the destination folder owned by the actor
     activate FolderRepository
     FolderRepository->Database: Retrieve the folder by id and owner
     activate Database
@@ -50,26 +48,18 @@ else Destination is missing or does not belong to the actor - EX-2
     LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
 
 else Document and destination are available
-    DocumentService->DocumentRepository: Move only the library document to the destination folder or the library root\n(BR-225, BR-245)
+    DocumentService->DocumentRepository: Move only the library document to the destination folder or the library root
     activate DocumentRepository
     DocumentRepository->Database: Update the folder of the library document
     activate Database
-    Database-->DocumentRepository: Updated / Failed
+    Database-->DocumentRepository: Updated
     deactivate Database
-    DocumentRepository-->DocumentService: Moved document / Failed
+    DocumentRepository-->DocumentService: Moved document
     deactivate DocumentRepository
 
-    alt Document cannot be moved - EX-3
-        DocumentService-->DocumentController: MSG186 - Unable to move the document. Its location remains unchanged.
-        DocumentController-->LibraryScreen: MSG186 - Unable to move the document. Its location remains unchanged.
-        LibraryScreen-->Actor: MSG186 - Unable to move the document. Its location remains unchanged.
-
-    else Document moved
-        DocumentService-->DocumentController: Moved document
-        DocumentController-->LibraryScreen: Moved document
-        LibraryScreen->LibraryScreen: Refresh the library
-        LibraryScreen-->Actor: MSG185 - Document moved successfully.
-    end
+    DocumentService-->DocumentController: Moved document
+    DocumentController-->LibraryScreen: Moved document
+    LibraryScreen-->Actor: MSG185 - Document moved successfully.
 end
 
 deactivate DocumentService

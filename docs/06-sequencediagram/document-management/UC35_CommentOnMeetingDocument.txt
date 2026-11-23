@@ -12,64 +12,48 @@ database ":Database" as Database
 User->DocumentViewer: Send comment or reply
 activate DocumentViewer
 
-DocumentViewer->CommentController: Add comment (text, optional PDF page, optional parent comment)
+DocumentViewer->CommentController: Add comment
 activate CommentController
 
 CommentController->CommentService: addComment(meetingId, meetingDocumentId, actor, body, pageNumber, parentCommentId)
 activate CommentService
 
-CommentService->CommentService: Check comment is not blank (BR-246)
-and length is at most 4,000 characters (BR-247)
-
-alt Comment is empty - EX-1
+alt Comment is empty or too long - EX-1
     CommentService-->CommentController: MSG200 - Enter a comment.
     CommentController-->DocumentViewer: MSG200 - Enter a comment.
     DocumentViewer-->User: MSG200 - Enter a comment.
-
-else Comment exceeds 4,000 characters - EX-6
-    CommentService-->CommentController: MSG348 - The text is longer than allowed.
-    CommentController-->DocumentViewer: MSG348 - The text is longer than allowed.
-    DocumentViewer-->User: MSG348 - The text is longer than allowed.
-
-else Comment has valid length
-    CommentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-249, BR-275)
+else Comment is valid
+    CommentService->MeetingAccessPolicy: Check the actor can view the Meeting
     activate MeetingAccessPolicy
-    MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+    MeetingAccessPolicy->Database: Check the actor's relationship to the Meeting
     activate Database
     Database-->MeetingAccessPolicy: Access / No access
     deactivate Database
     MeetingAccessPolicy-->CommentService: Access / No access
     deactivate MeetingAccessPolicy
 
-    CommentService->MeetingDocumentRepository: Get document still attached, with Meeting status
+    CommentService->MeetingDocumentRepository: Get the document and the Meeting status
     activate MeetingDocumentRepository
-    MeetingDocumentRepository->Database: Retrieve Meeting document not removed and its Meeting
+    MeetingDocumentRepository->Database: Retrieve the document and its Meeting
     activate Database
-    Database-->MeetingDocumentRepository: Meeting document and Meeting status / Not found
+    Database-->MeetingDocumentRepository: Document and Meeting status / Not found
     deactivate Database
-    MeetingDocumentRepository-->CommentService: Meeting document and Meeting status / Not found
+    MeetingDocumentRepository-->CommentService: Document and Meeting status / Not found
     deactivate MeetingDocumentRepository
 
     alt Document is no longer available - EX-2
         CommentService-->CommentController: MSG156 - Meeting documents are not accessible.
         CommentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
         DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
-
-    else Meeting is cancelled - EX-7
-        CommentService-->CommentController: MSG349 - This meeting was cancelled and can no longer be modified.
-        CommentController-->DocumentViewer: MSG349 - This meeting was cancelled and can no longer be modified.
-        DocumentViewer-->User: MSG349 - This meeting was cancelled and can no longer be modified.
-
-    else Meeting has ended - EX-5
+    else Meeting no longer accepts comments - EX-3
         CommentService-->CommentController: MSG251 - Comments are read-only after the Meeting has ended.
         CommentController-->DocumentViewer: MSG251 - Comments are read-only after the Meeting has ended.
         DocumentViewer-->User: MSG251 - Comments are read-only after the Meeting has ended.
-
     else Commenting is permitted
         opt Reply to a comment - AF-2
-            CommentService->CommentRepository: Resolve the top-level comment of the thread\nin the same Meeting document (BR-317)
+            CommentService->CommentRepository: Get the top-level comment of the thread
             activate CommentRepository
-            CommentRepository->Database: Retrieve parent comment
+            CommentRepository->Database: Retrieve the parent comment
             activate Database
             Database-->CommentRepository: Top-level comment
             deactivate Database
@@ -77,27 +61,18 @@ else Comment has valid length
             deactivate CommentRepository
         end
 
-        CommentService->CommentService: Keep the page only for a PDF; a DOCX comment has no page (BR-248)
-
-        CommentService->CommentRepository: Save comment with author or Guest invitation,\npage, thread and posting time (BR-250)
+        CommentService->CommentRepository: Save the comment
         activate CommentRepository
-        CommentRepository->Database: Insert comment
+        CommentRepository->Database: Insert the comment
         activate Database
-        Database-->CommentRepository: Comment saved / Save failed
+        Database-->CommentRepository: Saved
         deactivate Database
-        CommentRepository-->CommentService: Comment saved / Save failed
+        CommentRepository-->CommentService: Saved
         deactivate CommentRepository
 
-        alt Comment cannot be saved - EX-3
-            CommentService-->CommentController: MSG202 - Unable to add the comment. No comment was saved. Please try again.
-            CommentController-->DocumentViewer: MSG202 - Unable to add the comment. No comment was saved. Please try again.
-            DocumentViewer-->User: MSG202 - Unable to add the comment. No comment was saved. Please try again.
-
-        else Comment saved
-            CommentService-->CommentController: MSG199 - Comment added successfully.
-            CommentController-->DocumentViewer: MSG199 - Comment added successfully.
-            DocumentViewer-->User: MSG199 - Comment added successfully.
-        end
+        CommentService-->CommentController: MSG199 - Comment added.
+        CommentController-->DocumentViewer: MSG199 - Comment added.
+        DocumentViewer-->User: MSG199 - Comment added.
     end
 end
 
