@@ -370,10 +370,11 @@ def build_book(book, m):
             [(ch['item'], 14.4), (ch['description'], 75.9), (ch['reference'], 48.1)], line_height=15)
 
     # Feature sheets, cloned from the prototype
-    group_style = styles_of(proto, 11, 15)
-    case_style = styles_of(proto, 12, 15)
+    group_style = styles_of(proto, 11, 16)
+    case_style = styles_of(proto, 12, 16)
     widths = {k: v.width for k, v in proto.column_dimensions.items()}
     widths['O'] = 32
+    widths['P'] = 32
     built = []
     for sheet in m['sheets']:
         doc = load(case_file(book, sheet))
@@ -382,6 +383,12 @@ def build_book(book, m):
         clear_from(ws, 11)
         for k, w in widths.items():
             ws.column_dimensions[k].width = w
+        # Column O stays visible but empty for the council; the real evidence lives in
+        # hidden column P so agents (openpyxl reads hidden cells normally) still fetch it.
+        ws.column_dimensions['P'].hidden = True
+        header_from = copy(ws['O10']._style)
+        ws['P10'] = 'Actual result / Evidence / Defect (hidden)'
+        ws['P10']._style = header_from
         ws['B2'] = sheet['sheet']
         ws['B3'] = sheet[book]['requirement']
         r, case_rows = 11, []
@@ -395,11 +402,11 @@ def build_book(book, m):
                 values = [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
                           bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
                           c.get('round2'), c.get('date2'), c.get('tester2'),
-                          c.get('round3'), c.get('date3'), c.get('tester3'), c['note']]
+                          c.get('round3'), c.get('date3'), c.get('tester3'), '', c['note']]
                 for col, v in enumerate(values, 1):
                     ws.cell(r, col, v)
                 ws.row_dimensions[r].height = height_for(
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[15], widths['P'])])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)
