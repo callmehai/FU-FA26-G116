@@ -4,15 +4,16 @@ Report 3 (`docs/08-reports/Report-3_Software_Requirement_Specification.md`) is t
 source. Two files are verbatim extracts of it:
 
 * `05-use-case-specifications.md` — section II, Use Case Specifications,
-* `06-business-rules.md` — the used rows of section V.1, Business Rules.
+* `06-business-rules.md` — section V.1, Business Rules (two columns, `ID | Rule`,
+  BR-001…BR-153 since ADR-0079). This file is generated whole; old ids and retired
+  rules live in `09-bang-anh-xa-br-dot-1.md`, not here.
 
-The extracts keep things the report does not have, and this script never touches
-them:
+The use case extract keeps things the report does not have, and this script never
+touches them:
 
 * the Vietnamese grouping note under a parent UC (`_UC gom — đặc tả nằm ở …_`),
 * the `Sequence Diagram:` link above or below each UC table,
-* the `Placeholder only` line for a UC the report does not specify yet,
-* the hand-written retired-BR notes after `## BR đã ngừng dùng`.
+* the `Placeholder only` line for a UC the report does not specify yet.
 
 Run:
     python scripts/sync_requirement_extracts.py --check   # list what is out of sync
@@ -54,8 +55,8 @@ UC_HEADING = re.compile(r"^(#{3,6}) (UC-\d+[a-z]?) – (.+)$")
 REPORT_HEADING = re.compile(r"^(#{4,5}) .*?\b(UC-\d+[a-z]?) – (.+)$")
 FE_HEADING = re.compile(r"^## (FE-\d+) — (.+)$")
 REPORT_FE_HEADING = re.compile(r"^### \d+\. (FE-\d+) – (.+)$")
-RULE_ROW = re.compile(r"^\| `?(BR-\d+)`? \| (.*?) \| (.*?) \| (.*?) \| (.*?) \|$")
-RULE_HEADER = "| BR-ID | Rule Statement (nguyên văn Report 3) | Applies To | Rationale | Enforced By |"
+RULE_ROW = re.compile(r"^\| `?(BR-\d{3})`? \| (.*) \|$")
+RULE_HEADER = "| ID | Rule |"
 
 
 def is_sub(uc: str) -> bool:
@@ -314,62 +315,75 @@ def sync_use_cases(check: bool, prune_missing: bool = False) -> int:
     return 0
 
 
-def parse_report_rules(lines: list[str]) -> tuple[list[tuple[str, tuple[str, ...]]], set[str]]:
-    """Return the used BR rows in report order, plus the ids the report marks retired."""
+def parse_report_rules(lines: list[str]) -> list[tuple[str, str]]:
+    """Return the BR rows of section V.1 in report order, as (id, rule)."""
     start = next(i for i, line in enumerate(lines) if line.startswith("### 1. Business Rules"))
     end = next(i for i, line in enumerate(lines) if line.startswith("### 2. System Messages"))
-    rows: list[tuple[str, tuple[str, ...]]] = []
-    retired: set[str] = set()
+    rows: list[tuple[str, str]] = []
     for line in lines[start:end]:
         match = RULE_ROW.match(line)
-        if not match:
-            continue
-        rule_id, values = match.group(1), match.groups()[1:]
-        if values[1].startswith("Retired"):
-            retired.add(rule_id)
-        else:
-            rows.append((rule_id, values))
-    return rows, retired
+        if match:
+            rows.append((match.group(1), match.group(2)))
+    return rows
 
 
-def render_rules(rows: list[tuple[str, tuple[str, ...]]]) -> list[str]:
-    return [f"| `{rule_id}` | " + " | ".join(values) + " |" for rule_id, values in rows]
+# The whole extract is generated: since ADR-0079 there is no hand-written part left. Old ids, the
+# rules retired before the renumbering and where each old rule went live in the mapping table.
+RULES_HEAD = """# Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
+
+> **GENERATED — DO NOT EDIT.** Bản trích nguyên văn Report 3 §V.1. Sửa DOCX trong
+> [`docs/08-reports/source/`](../08-reports/source/README.md) rồi chạy
+> `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
+> (hoặc `python scripts/sync_requirement_extracts.py`). Chi tiết: [08-reports/README.md](../08-reports/README.md).
+
+Có **{count} BR**, đánh số `BR-001` → `BR-{last}` theo [ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)
+và [kế hoạch gộp BR](08-ke-hoach-gop-business-rules.md). Mỗi BR một câu, một quyết định nghiệp vụ; giao diện, kiểm tra
+dữ liệu nhập và giới hạn kỹ thuật nằm trong UC Specification hoặc mục IV (NFR) của Report 3. Mã `BR` độc lập với mã
+thông báo `MSG`.
+
+## Quy ước
+
+- UC Specification và Sequence Diagram dẫn chiếu BR ID tại bước áp dụng, không chép lại nội dung.
+- Mã cũ (`BR-01` → `BR-468`) đã ngừng dùng; tra mã mới hoặc nơi chuyển đến ở
+  [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md). Bảng đó gồm cả các BR đã ngừng trước đợt đánh số lại.
+  ADR, note và test report cũ giữ mã cũ.
+
+## Danh mục BR
+
+{header}
+|---|---|
+"""
+
+
+def render_rules(rows: list[tuple[str, str]]) -> str:
+    head = RULES_HEAD.format(count=len(rows), last=rows[-1][0][3:] if rows else "000", header=RULE_HEADER)
+    return head + "".join(f"| `{rule_id}` | {rule} |\n" for rule_id, rule in rows)
 
 
 def sync_rules(check: bool) -> int:
-    report_lines = REPORT.read_text(encoding="utf-8").splitlines()
-    rows, retired = parse_report_rules(report_lines)
-    lines = RULES.read_text(encoding="utf-8").splitlines()
-    header = lines.index(RULE_HEADER)
-    start = header + 2
-    end = start
-    while end < len(lines) and lines[end].startswith("|"):
-        end += 1
+    rows = parse_report_rules(REPORT.read_text(encoding="utf-8").splitlines())
     expected = render_rules(rows)
+    current = RULES.read_text(encoding="utf-8") if RULES.is_file() else ""
 
     drift: list[str] = []
-    if lines[start:end] != expected:
-        current = {RULE_ROW.match(line).group(1) for line in lines[start:end] if RULE_ROW.match(line)}
-        wanted = {rule_id for rule_id, _values in rows}
-        for rule_id in sorted(wanted - current, key=lambda value: int(value[3:])):
+    if current != expected:
+        have = {m.group(1): line for line in current.splitlines() if (m := RULE_ROW.match(line))}
+        wanted = dict(rows)
+        for rule_id in sorted(set(wanted) - set(have), key=lambda value: int(value[3:])):
             drift.append(f"missing BR: {rule_id}")
-        for rule_id in sorted(current - wanted, key=lambda value: int(value[3:])):
-            drift.append(f"BR not used in report: {rule_id}")
-        for rule_id in sorted(wanted & current, key=lambda value: int(value[3:])):
-            if next(line for line in expected if line.startswith(f"| `{rule_id}`")) not in lines[start:end]:
+        for rule_id in sorted(set(have) - set(wanted), key=lambda value: int(value[3:])):
+            drift.append(f"BR not in report: {rule_id}")
+        for rule_id in sorted(set(wanted) & set(have), key=lambda value: int(value[3:])):
+            if have[rule_id] != f"| `{rule_id}` | {wanted[rule_id]} |":
                 drift.append(f"BR text out of date: {rule_id}")
         if not drift:
-            drift.append("BR table has stray rows or the wrong order")
-    documented = "\n".join(lines[lines.index("## BR đã ngừng dùng"):])
-    for rule_id in sorted(retired - set(re.findall(r"BR-\d+", documented)), key=lambda value: int(value[3:])):
-        drift.append(f"retired BR not documented: {rule_id}")
+            drift.append("BR extract header or order out of date")
 
     for item in drift:
         print(item)
     if check:
         return 1 if drift else 0
-    lines[start:end] = expected
-    RULES.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8", newline="\n")
+    RULES.write_text(expected, encoding="utf-8", newline="\n")
     print(f"Synced {RULES.relative_to(ROOT)}")
     return 0
 

@@ -3,8 +3,10 @@ tests that cite it, and render the result as one self-contained HTML page for re
 
 Source of truth for rules, messages and use cases:
 docs/08-reports/Report-3_Software_Requirement_Specification.md. Code and tests cite a rule or a
-message by writing its id (BR-158, MSG138) in a comment, a constant or a test name; this script greps
-for those ids.
+message by writing its id (BR-015, MSG138) in a comment, a constant or a test name; this script greps
+for those ids. Rules are numbered BR-001…BR-153 since ADR-0079, and an id is matched exactly as written:
+a comment still citing an old id (BR-24) is reported as unknown rather than read as BR-024. Old ids and
+where they went are in docs/01-requirements/09-bang-anh-xa-br-dot-1.md.
 
 Usage:
     python scripts/trace_br.py --html              # writes docs/uc-map.html, the main output
@@ -35,6 +37,7 @@ CODE_SUFFIXES = {".cs", ".ts", ".tsx"}
 SKIP_PARTS = {"bin", "obj", "node_modules", "wwwroot", "Migrations"}
 
 BR_RE = re.compile(r"\bBR-(\d{1,3})\b")
+RULE_ROW = re.compile(r"^\| (BR-\d{3}) \| (.*) \|$")
 MSG_RE = re.compile(r"\bMSG(\d{2,3})\b")
 UC_RE = re.compile(r"\bUC-(\d{2,3}[a-z]?)\b")
 FE_HEAD = re.compile(r"^### \d+\. (FE-\d+) – (.+)$")
@@ -44,7 +47,8 @@ BLOCK = re.compile(r"^((?:AF|EX|BF)-\d+)\s*[–-]\s*(.*)$")
 
 
 def norm_br(n: str) -> str:
-    return f"BR-{int(n):02d}"
+    """Keep the id as written: BR-24 (old) and BR-024 (new) are different rules."""
+    return f"BR-{n}"
 
 
 def split_row(line: str) -> list[str]:
@@ -109,14 +113,8 @@ def parse_report() -> dict:
                 if len(c) >= 2:
                     ucs[current].setdefault("rows", []).append(c)
         elif section.startswith("## V. "):
-            if re.match(r"^\| BR-\d+ \|", line):
-                c = split_row(line)
-                rules[norm_br(c[0][3:])] = {
-                    "text": c[1],
-                    "applies": sorted({f"UC-{u}" for u in UC_RE.findall(c[2])}),
-                    "rationale": c[3] if len(c) > 3 else "",
-                    "enforced": c[4] if len(c) > 4 else "",
-                }
+            if m := RULE_ROW.match(line):
+                rules[m[1]] = {"text": m[2]}
             elif re.match(r"^\| \d+ \| MSG\d+ \|", line):
                 c = split_row(line)
                 msgs[c[1]] = {"type": c[2], "context": c[3], "content": c[4] if len(c) > 4 else ""}
@@ -183,7 +181,7 @@ def build(model: dict, br_hits: dict, msg_hits: dict) -> dict:
             msg_in[m].add(uc["id"])
     for b, r in model["rules"].items():
         r["code"], r["test"] = br_hits[b]["code"], br_hits[b]["test"]
-        r["ucs"] = sorted(cited_in[b] | set(r["applies"]), key=lambda u: (int(re.sub(r"\D", "", u)), u))
+        r["ucs"] = sorted(cited_in[b], key=lambda u: (int(re.sub(r"\D", "", u)), u))
     for m, r in model["msgs"].items():
         r["code"], r["test"] = msg_hits[m]["code"], msg_hits[m]["test"]
         r["ucs"] = sorted(
@@ -207,9 +205,6 @@ def drift(model: dict, br_hits: dict, msg_hits: dict) -> dict:
                            key=lambda x: int(x[3:])),
         "unknown_br": sorted((b for b in br_hits if b not in model["rules"]), key=lambda x: int(x[3:])),
         "unknown_msg": sorted((m for m in msg_hits if m not in model["msgs"]), key=lambda x: int(x[3:])),
-        "br_missing_in_uc": sorted(
-            (b for b, r in model["rules"].items() if not r["ucs"]), key=lambda x: int(x[3:])
-        ),
     }
 
 
@@ -268,7 +263,6 @@ def main() -> int:
     print(f"Use cases {len(model['ucs'])} · BR {len(rules)} · MSG {len(model['msgs'])}")
     print(f"BR traced to code or test: {len(rules) - len(d['untraced'])}   with a test: {with_test}")
     print(f"BR with no code and no test: {len(d['untraced'])}")
-    print(f"BR cited in no use case and not listed in Applies To: {len(d['br_missing_in_uc'])}")
     print(f"Ids in code that Report 3 lacks — BR: {d['unknown_br']}  MSG: {d['unknown_msg']}")
 
     if args.html:

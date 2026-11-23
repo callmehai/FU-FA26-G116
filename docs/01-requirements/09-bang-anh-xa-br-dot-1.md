@@ -472,3 +472,8 @@
 | BR-466 | Không còn là BR; chuyển tới NFR nhận dạng giọng |
 | BR-467 | BR-125 |
 | BR-468 | BR-153 |
+| BR-158 | BR-015 — đính chính 24/11/2026 (review PR #509): dòng BR-158 ở trên ghi nhầm BR-014; dời lịch cuộc họp đã công bố là BR-015 |
+| BR-264 | Không còn là BR; chuyển tới UC-59 — đính chính 24/11/2026 (review PR #509): "BR-384" ở dòng trên là mã cũ BR-384, đã chuyển tới UC-59, không phải BR-384 mới |
+| BR-312 | Không còn là BR; chuyển tới UC-59 — đính chính 24/11/2026 (review PR #509): "BR-384" ở dòng trên là mã cũ BR-384, đã chuyển tới UC-59, không phải BR-384 mới |
+
+Một mã có hai dòng thì **dòng đính chính ở cuối bảng thay cho dòng trước**: mọi script đổi mã (kể cả `scripts/apply_br_cut_report3.py`) lấy dòng sau cùng. Phần sau dấu " — " chỉ là lời giải thích.
