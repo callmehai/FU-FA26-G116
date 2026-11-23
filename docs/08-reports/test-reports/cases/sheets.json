@@ -363,7 +363,7 @@
           { "title": "Generate Summary", "uc": ["UC-47"] },
           { "title": "View, Edit & Approve Summary", "uc": ["UC-48", "UC-49", "UC-50"] },
           { "title": "My Voice ID", "uc": ["UC-81"] },
-          { "title": "Collect Voice Samples", "uc": ["UC-81c"] },
+          { "title": "Collect Voice Samples", "uc": ["UC-86"] },
           { "title": "AI Settings", "uc": ["UC-47"] }
         ]
       },

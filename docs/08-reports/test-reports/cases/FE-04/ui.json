@@ -37,45 +37,6 @@
         },
         {
           "id": "MEET_FT02",
-          "description": "Verify the create dialog defaults and the recording hint follow the chosen mode.",
-          "procedure": [
-            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
-            "Look at \"Hình thức họp\" and \"Mức độ mật\".",
-            "Choose \"Trực tuyến\", then \"Kết hợp\".",
-            "Choose each \"Mức độ mật\"."
-          ],
-          "expected": [
-            "The dialog opens with \"Trực tiếp\" and \"Thường\" (InPerson and Normal).",
-            "The mode hint reads \"Ghi âm: Thư ký ghi cả phòng.\" for \"Trực tiếp\", \"Ghi âm: mỗi người ghi micro của mình.\" for \"Trực tuyến\" and \"Ghi âm: mic phòng và micro người trực tuyến.\" for \"Kết hợp\".",
-            "\"Địa điểm\" shows for \"Trực tiếp\" and \"Kết hợp\"; \"Link họp trực tuyến\" (placeholder \"Để trống: phòng họp TrustCabinet\") shows for \"Trực tuyến\" and \"Kết hợp\"; a hidden field is not sent.",
-            "The level hints read \"Người dự họp xem và tải tài liệu.\", \"Như Thường; dự thảo AI không gửi ra ngoài.\" and \"Không tải tài liệu, ghi âm, biên bản; mỗi lần xem được ghi nhật ký.\""
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-14 | ADR-0040 | Manual only"
-        },
-        {
-          "id": "MEET_FT03",
-          "description": "Verify the quick lengths set the end time from the start.",
-          "procedure": [
-            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
-            "Pick a date and \"Bắt đầu\" 09:00.",
-            "Click \"2 giờ\", then \"30 phút\"."
-          ],
-          "expected": [
-            "\"Kết thúc\" becomes 11:00 and then 09:30; the length is shown as text such as \"30 phút\".",
-            "An end that falls on another day shows the day count (for example \"1 ngày 2 giờ 30 phút\")."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-14 | Manual only"
-        },
-        {
-          "id": "MEET_FT04",
           "description": "Verify the create dialog blocks an empty title, missing date or times without calling the backend.",
           "procedure": [
             "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
@@ -96,7 +57,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT05",
+          "id": "MEET_FT03",
           "description": "Verify the create dialog rejects an end before the start and a start in the past.",
           "procedure": [
             "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
@@ -116,26 +77,7 @@
           "note": "UC-14 | BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
         },
         {
-          "id": "MEET_FT06",
-          "description": "Verify the create dialog requires exactly one Chair.",
-          "procedure": [
-            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
-            "Fill the required fields and add two people to \"Người dự họp\", leaving both as \"Thành viên\".",
-            "Click \"Tạo cuộc họp\".",
-            "Set one of them to \"Chủ toạ\" and set the other to \"Chủ toạ\" as well."
-          ],
-          "expected": [
-            "Step 3 shows \"Chọn một người làm Chủ toạ.\" and sends nothing.",
-            "Step 4: making the second person Chair turns the first one back into \"Thành viên\", so there is always one Chair."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
-        },
-        {
-          "id": "MEET_FT07",
+          "id": "MEET_FT04",
           "description": "Verify the create dialog shows the backend roster error next to the person it names.",
           "procedure": [
             "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
@@ -154,26 +96,7 @@
           "note": "UC-14 | EX-3 | Manual only"
         },
         {
-          "id": "MEET_FT08",
-          "description": "Verify cancelling the create dialog asks before discarding typed data.",
-          "procedure": [
-            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
-            "Type a title and click \"Huỷ\".",
-            "Click \"Tiếp tục soạn\", then \"Huỷ\" again and click \"Bỏ cuộc họp\"."
-          ],
-          "expected": [
-            "Step 1 opens the confirmation \"Bỏ cuộc họp đang soạn?\" with \"Tiếp tục soạn\" and \"Bỏ cuộc họp\".",
-            "Step 2: \"Tiếp tục soạn\" returns to the form with the title kept; \"Bỏ cuộc họp\" closes the dialog and nothing is created.",
-            "An untouched dialog closes at once with no question."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-14 | Manual only"
-        },
-        {
-          "id": "MEET_FT09",
+          "id": "MEET_FT05",
           "description": "Verify a Member does not see the create button and the create link does nothing.",
           "procedure": [
             "Sign in as a Member and go to /mgmt/meetings.",
@@ -193,7 +116,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT10",
+          "id": "MEET_FT06",
           "description": "Verify an expired session while creating sends the user to sign in.",
           "procedure": [
             "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
@@ -208,25 +131,6 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
           "note": "UC-14 | Manual only"
-        },
-        {
-          "id": "MEET_FT11",
-          "description": "Verify a meeting that cannot be saved keeps the form and says so.",
-          "procedure": [
-            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
-            "Fill in a valid title, time and roster.",
-            "Make POST /api/meetings fail on the server, then click \"Tạo cuộc họp\" in the dialog."
-          ],
-          "expected": [
-            "Backend answers 500/MSG35; the form shows \"Không thể tạo cuộc họp. Vui lòng thử lại.\" and keeps every typed value.",
-            "No new meeting appears in the list; clicking again after the failure is removed creates the meeting once."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-14 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_save_failure_returns_MSG35_and_500)"
         }
       ]
     },
@@ -237,7 +141,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT12",
+          "id": "MEET_FT07",
           "description": "Verify an Organizer edits a Draft meeting from its detail page.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -260,7 +164,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT13",
+          "id": "MEET_FT08",
           "description": "Verify saving without a change shows the no-change message and sends nothing.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -281,7 +185,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT14",
+          "id": "MEET_FT09",
           "description": "Verify editing a Rejected meeting keeps it Rejected.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -302,7 +206,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT15",
+          "id": "MEET_FT10",
           "description": "Verify an Organizer reschedules a Published meeting and the invitee is told.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -326,7 +230,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT16",
+          "id": "MEET_FT11",
           "description": "Verify the reschedule dialog refuses a past start.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -347,63 +251,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT17",
-          "description": "Verify a Draft saved with a start already past warns, and 24 hours past is refused.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Chỉnh sửa\" and set the start a few hours in the past; read the hint.",
-            "Set the start two days in the past and click \"Lưu thay đổi\"."
-          ],
-          "expected": [
-            "Step 2 shows \"Giờ bắt đầu đã qua. Quá 24 giờ mà chưa họp, cuộc họp sẽ bị tự huỷ.\" and the save is allowed (200/MSG30).",
-            "Step 3 shows \"Giờ bắt đầu đã qua hơn 24 giờ nên cuộc họp sẽ bị tự huỷ. Chọn giờ khác.\" and does not save."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A Draft meeting created by the Organizer."
-          ],
-          "note": "UC-15 | BR-301 | Manual only"
-        },
-        {
-          "id": "MEET_FT18",
-          "description": "Verify the edit dialog reacts when the meeting left the editable states meanwhile.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Chỉnh sửa\" and keep the dialog open.",
-            "In a second browser sign in as the same Organizer, open the meeting and click \"Gửi duyệt\" so it becomes \"Chờ duyệt\".",
-            "In the first browser change the title and click \"Lưu thay đổi\"."
-          ],
-          "expected": [
-            "Backend answers 409/MSG33.",
-            "The dialog closes, a toast shows \"Cuộc họp này không thể chỉnh sửa được nữa.\" and the page reloads showing \"Chờ duyệt\" with no \"Chỉnh sửa\" button."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A ready Draft meeting created by the Organizer; an approver exists."
-          ],
-          "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)"
-        },
-        {
-          "id": "MEET_FT19",
-          "description": "Verify validation errors from the edit dialog stay in the dialog.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Chỉnh sửa\", clear the title and click \"Lưu thay đổi\"."
-          ],
-          "expected": [
-            "\"Tên cuộc họp không được để trống.\" shows under the title field; the dialog stays open and the stored meeting is unchanged."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A Draft meeting created by the Organizer."
-          ],
-          "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)"
-        },
-        {
-          "id": "MEET_FT20",
+          "id": "MEET_FT12",
           "description": "Verify only the Organizer is offered the edit and reschedule button.",
           "procedure": [
             "Open the Draft meeting as its Chair.",
@@ -421,24 +269,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_FT21",
-          "description": "Verify an edit made while the meeting is open elsewhere shows after reload.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Chỉnh sửa\", change the location and save.",
-            "Reload the page and open the list at /mgmt/meetings."
-          ],
-          "expected": [
-            "The detail page and the list row show the new location after the reload; the data came from the backend, not the page state."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A Draft meeting created by the Organizer in mode \"Trực tiếp\"."
-          ],
-          "note": "UC-15 | Manual only"
         }
       ]
     },
@@ -449,7 +279,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT22",
+          "id": "MEET_FT13",
           "description": "Verify the list opens unfiltered with four cards.",
           "procedure": [
             "Sign in as the Organizer and go to /mgmt/meetings."
@@ -470,28 +300,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT23",
-          "description": "Verify clicking a card filters the list and clicking it again clears it.",
-          "procedure": [
-            "Go to /mgmt/meetings.",
-            "Click the card \"Đã công bố\".",
-            "Click it again.",
-            "Click \"Bản nháp\"."
-          ],
-          "expected": [
-            "Step 2: the URL gains status=Published and every row has the status \"Đã công bố\"; the search box and other filters are cleared.",
-            "Step 3: the filter is removed.",
-            "Step 4: only Draft rows (\"Nháp\") are shown."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Meetings in several statuses."
-          ],
-          "note": "UC-17 | Manual only"
-        },
-        {
-          "id": "MEET_FT24",
+          "id": "MEET_FT14",
           "description": "Verify the \"Cần xử lý\" card shows what waits on the user.",
           "procedure": [
             "Sign in as an Approver with a WaitingApproval meeting assigned and go to /mgmt/meetings.",
@@ -508,28 +317,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
         },
         {
-          "id": "MEET_FT25",
-          "description": "Verify search, filters and sorting are applied by the server and kept in the URL.",
-          "procedure": [
-            "Go to /mgmt/meetings?status=all.",
-            "Type \"giao ban\" in \"Tìm cuộc họp…\".",
-            "Open \"Bộ lọc\" and choose \"Trạng thái\" \"Đã công bố\", \"Mức độ\" \"Nội bộ\" and \"Thời điểm\" \"Tuần này\".",
-            "Click the header \"Tên cuộc họp\" twice.",
-            "Reload the page."
-          ],
-          "expected": [
-            "Each change sends GET /api/meetings with q, status, sensitivity, from/to and sortBy/sortDir and the rows match.",
-            "The URL holds every criterion and the page after the reload shows the same filters and order."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Many meetings with \"giao ban\" in the title."
-          ],
-          "note": "UC-17 | BR-30, BR-31, BR-32 | Manual only"
-        },
-        {
-          "id": "MEET_FT26",
+          "id": "MEET_FT15",
           "description": "Verify the \"Thời điểm\" filter offers only the fixed choices.",
           "procedure": [
             "Go to /mgmt/meetings?status=all and open \"Bộ lọc\", then open \"Thời điểm\"."
@@ -545,7 +333,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_FT27",
+          "id": "MEET_FT16",
           "description": "Verify paging keeps the filters and shows the right rows.",
           "procedure": [
             "Go to /mgmt/meetings?status=all with more than 20 meetings.",
@@ -563,7 +351,7 @@
           "note": "UC-17 | BR-32 | Manual only"
         },
         {
-          "id": "MEET_FT28",
+          "id": "MEET_FT17",
           "description": "Verify the empty states for no data, no match and a quiet day.",
           "procedure": [
             "Go to /mgmt/meetings as an Organizer with no meeting.",
@@ -585,7 +373,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT29",
+          "id": "MEET_FT18",
           "description": "Verify the list hides meetings the user may not read.",
           "procedure": [
             "Sign in as a Member on the roster of one Published meeting and one Draft meeting; go to /mgmt/meetings?status=all.",
@@ -605,7 +393,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT30",
+          "id": "MEET_FT19",
           "description": "Verify an invalid filter in the URL is ignored.",
           "procedure": [
             "Go to /mgmt/meetings?status=Khac."
@@ -624,7 +412,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT31",
+          "id": "MEET_FT20",
           "description": "Verify a meeting in progress shows the call to enter the room.",
           "procedure": [
             "Go to /mgmt/meetings with an Online meeting InProgress.",
@@ -639,22 +427,6 @@
             "Signed in as an invited Member; an Online meeting InProgress."
           ],
           "note": "UC-17 | Manual only"
-        },
-        {
-          "id": "MEET_FT32",
-          "description": "Verify a list that fails to load keeps the retry option.",
-          "procedure": [
-            "Stop the backend or block GET /api/meetings in DevTools, then reload /mgmt/meetings."
-          ],
-          "expected": [
-            "Backend answers 500/MSG38 or the request fails; the screen shows \"Không thể tải danh sách cuộc họp. Vui lòng thử lại.\" and cards that cannot count show \"Không tải được số lượng\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-17 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_MSG38_and_500_when_the_database_read_fails)"
         }
       ]
     },
@@ -665,7 +437,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT33",
+          "id": "MEET_FT21",
           "description": "Verify the detail page of a meeting shows its schedule, people and tabs.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title)."
@@ -686,7 +458,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT34",
+          "id": "MEET_FT22",
           "description": "Verify the status history lists each step in order with who did it.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -707,7 +479,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT35",
+          "id": "MEET_FT23",
           "description": "Verify a Member sees the timeline without the rejection reason.",
           "procedure": [
             "Sign in as a Member on the roster of a Published meeting that was rejected once, and open it."
@@ -725,7 +497,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT36",
+          "id": "MEET_FT24",
           "description": "Verify a meeting the user cannot read shows the not-found page.",
           "procedure": [
             "Sign in as an account with no relation to a meeting and go to /mgmt/meetings/<its id>.",
@@ -744,57 +516,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT37",
-          "description": "Verify a detail page that cannot load offers a retry.",
-          "procedure": [
-            "Block GET /api/meetings/<id> in DevTools and open the meeting."
-          ],
-          "expected": [
-            "Backend answers 500/MSG37; the page shows the backend message of MSG37 instead of the meeting; after unblocking and reloading the meeting loads."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-16 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_returns_MSG37_when_the_repository_fails)"
-        },
-        {
-          "id": "MEET_FT38",
-          "description": "Verify an invitee answers whether they attend.",
-          "procedure": [
-            "Sign in as a Member on the roster of a Published meeting and open it.",
-            "Answer the question \"Bạn có tham dự cuộc họp này?\" with the decline button.",
-            "Reload."
-          ],
-          "expected": [
-            "The question shows once for the Member (not for the Chair); after answering it disappears and the answer is kept after the reload, and the list still shows the meeting."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting with a Member who has not answered."
-          ],
-          "note": "UC-16 | SCRUM-20 | Manual only"
-        },
-        {
-          "id": "MEET_FT39",
-          "description": "Verify the selected tab lives in the URL.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click the tab \"Tài liệu\", then reload, then press the browser Back button."
-          ],
-          "expected": [
-            "The URL gains tab=documents; after the reload the same tab is open; Back returns to the previous tab or the list.",
-            "A link with tab=recordings for a user not on the roster opens \"Thông tin chung\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
-          ],
-          "note": "UC-16 | Manual only"
-        },
-        {
-          "id": "MEET_FT40",
+          "id": "MEET_FT25",
           "description": "Verify a meeting the Chair forgot to end shows the system end in its history.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -821,7 +543,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT41",
+          "id": "MEET_FT26",
           "description": "Verify an Organizer sends a ready Draft for approval.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -846,7 +568,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT42",
+          "id": "MEET_FT27",
           "description": "Verify the dialog requires an approver.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -866,24 +588,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT43",
-          "description": "Verify the dialog explains a missing approver list.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Gửi duyệt\" while no active account has MeetingApprover."
-          ],
-          "expected": [
-            "The dialog says an administrator must grant the approval right and the submit button is disabled; the Organizer is never offered as approver."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A ready Draft; no other account with MeetingApprover."
-          ],
-          "note": "UC-18 | Manual only"
-        },
-        {
-          "id": "MEET_FT44",
+          "id": "MEET_FT28",
           "description": "Verify an incomplete meeting lists what is missing and blocks the button.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -899,79 +604,6 @@
             "Legacy Draft row without a valid schedule, prepared by QA lead in the database."
           ],
           "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
-        },
-        {
-          "id": "MEET_FT45",
-          "description": "Verify an approver who lost the right is refused in the dialog.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Open \"Gửi duyệt\", choose an approver, then in another session remove that approver's MeetingApprover capability, and click \"Gửi duyệt\"."
-          ],
-          "expected": [
-            "Backend answers 400/MSG82 \"Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.\"; it shows under the approver field, the list reloads without that person and the dialog stays open."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A ready Draft; two Approvers; an administrator session."
-          ],
-          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)"
-        },
-        {
-          "id": "MEET_FT46",
-          "description": "Verify a Rejected meeting is resubmitted directly and the Organizer can withdraw a stuck request.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "On the Rejected meeting click \"Gửi duyệt lại\", pick the same or another approver and send.",
-            "On a WaitingApproval meeting whose approver was deactivated click \"Rút về nháp\" and confirm."
-          ],
-          "expected": [
-            "Step 2: backend 200/MSG78, the history shows \"Gửi duyệt lại\" and the earlier rejection stays.",
-            "Step 3: the bar shows \"Người duyệt không còn quyền duyệt\"; confirming \"Rút về nháp\" answers 200/MSG79 (\"Đã đưa cuộc họp về bản nháp.\"), the status becomes \"Nháp\" and the history shows \"Rút về nháp\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "One Rejected meeting; one WaitingApproval meeting whose approver was deactivated."
-          ],
-          "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible)"
-        },
-        {
-          "id": "MEET_FT47",
-          "description": "Verify a submit that fails to save stays in the dialog.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Open \"Gửi duyệt\", choose an approver, make the backend fail and click \"Gửi duyệt\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG42 \"Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.\"; the dialog stays open so the click can be retried; the meeting stays \"Nháp\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A ready Draft; a way to make the backend fail."
-          ],
-          "note": "UC-18 | EX | Manual only"
-        },
-        {
-          "id": "MEET_FT48",
-          "description": "Verify a stale submit reloads the meeting.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Open \"Gửi duyệt\" and keep it open.",
-            "In a second browser submit the same meeting.",
-            "In the first browser click \"Gửi duyệt\"."
-          ],
-          "expected": [
-            "Backend answers 409/MSG41.",
-            "The dialog closes, a toast shows the reason and the page reloads showing \"Chờ duyệt\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A ready Draft; an approver exists."
-          ],
-          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
         }
       ]
     },
@@ -982,7 +614,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT49",
+          "id": "MEET_FT29",
           "description": "Verify the assigned approver approves a meeting.",
           "procedure": [
             "Sign in as the assigned Approver and open the WaitingApproval meeting.",
@@ -1005,7 +637,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT50",
+          "id": "MEET_FT30",
           "description": "Verify the approver rejects a meeting with a reason.",
           "procedure": [
             "As the assigned Approver click \"Từ chối\".",
@@ -1026,7 +658,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT51",
+          "id": "MEET_FT31",
           "description": "Verify the rejection dialog needs a reason and keeps the typed text on error.",
           "procedure": [
             "As the approver open \"Từ chối\" and click \"Từ chối\" with the reason empty.",
@@ -1046,7 +678,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT52",
+          "id": "MEET_FT32",
           "description": "Verify a user who is not the assigned approver gets no approval buttons.",
           "procedure": [
             "Sign in as a second Approver who is not assigned and open the WaitingApproval meeting by its link.",
@@ -1061,38 +693,6 @@
             "Meeting WaitingApproval assigned to another Approver."
           ],
           "note": "UC-19 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot)"
-        },
-        {
-          "id": "MEET_FT53",
-          "description": "Verify a decision on a meeting that changed meanwhile reloads the page.",
-          "procedure": [
-            "As the Approver open \"Duyệt cuộc họp\" and keep it open.",
-            "In a second browser let the Organizer cancel the meeting.",
-            "Click \"Duyệt\"."
-          ],
-          "expected": [
-            "Backend answers 409/MSG132; the dialog closes, a toast shows \"Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.\" and the page reloads showing \"Đã huỷ\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Meeting WaitingApproval assigned to the Approver; the Organizer signed in elsewhere."
-          ],
-          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
-        },
-        {
-          "id": "MEET_FT54",
-          "description": "Verify a decision that fails to save stays in the dialog.",
-          "procedure": [
-            "As the Approver open \"Duyệt cuộc họp\", make the backend fail and click \"Duyệt\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG88 \"Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.\"; the dialog stays open for a retry; the status stays \"Chờ duyệt\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Meeting WaitingApproval assigned to the Approver; a way to make the backend fail."
-          ],
-          "note": "UC-19 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_persistence_failures_to_action_specific_codes)"
         }
       ]
     },
@@ -1103,7 +703,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT55",
+          "id": "MEET_FT33",
           "description": "Verify the Organizer publishes an Approved meeting.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1128,7 +728,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT56",
+          "id": "MEET_FT34",
           "description": "Verify Publish is refused when the roster lacks a Secretary.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1145,41 +745,7 @@
           "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
         },
         {
-          "id": "MEET_FT57",
-          "description": "Verify Publish by an Organizer who lost MeetingCreator reloads the session.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "In another session remove MeetingCreator from the Organizer's role, then click \"Công bố\" and confirm."
-          ],
-          "expected": [
-            "Backend answers 403/MSG46 \"Cuộc họp này không còn có thể công bố.\"; a toast shows it, the page and the session capabilities reload and the \"Công bố\" button is gone."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Approved meeting; an administrator session."
-          ],
-          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability)"
-        },
-        {
-          "id": "MEET_FT58",
-          "description": "Verify a publish that fails to save keeps the meeting Approved.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Công bố\", make the backend fail and confirm."
-          ],
-          "expected": [
-            "Backend answers 503/MSG47; the dialog stays open with the error and the meeting remains \"Đã duyệt\" with no notification."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Approved meeting; a way to make the backend fail."
-          ],
-          "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs)"
-        },
-        {
-          "id": "MEET_FT59",
+          "id": "MEET_FT35",
           "description": "Verify only the Organizer is offered \"Công bố\".",
           "procedure": [
             "Open the Approved meeting as its approver and as its Chair."
@@ -1206,7 +772,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT60",
+          "id": "MEET_FT36",
           "description": "Verify the Chair starts a Published meeting.",
           "procedure": [
             "Sign in as the Chair, open the Published meeting and click \"Bắt đầu họp\".",
@@ -1226,23 +792,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT61",
-          "description": "Verify starting well before the planned time asks for confirmation.",
-          "procedure": [
-            "As the Chair click \"Bắt đầu họp\" on a meeting planned more than 15 minutes ahead.",
-            "Read the dialog and click \"Vẫn bắt đầu\"."
-          ],
-          "expected": [
-            "The dialog \"Bắt đầu sớm hơn lịch?\" shows \"“<tên>” được xếp lịch lúc <giờ>.\"; confirming answers 200/MSG110; \"Huỷ\" or closing leaves the meeting Published."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting planned several hours ahead with a Chair and a Secretary."
-          ],
-          "note": "UC-21 | Manual only"
-        },
-        {
-          "id": "MEET_FT62",
+          "id": "MEET_FT37",
           "description": "Verify Start is blocked without a Secretary.",
           "procedure": [
             "As the Chair click \"Bắt đầu họp\" on a meeting without a Secretary."
@@ -1257,7 +807,7 @@
           "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not)"
         },
         {
-          "id": "MEET_FT63",
+          "id": "MEET_FT38",
           "description": "Verify the Chair and the Secretary see Start, and only the Chair sees End.",
           "procedure": [
             "Open the Published meeting as its Organizer who is not the Chair, as a Member and as the Secretary; then open the InProgress meeting as the Secretary."
@@ -1275,7 +825,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT64",
+          "id": "MEET_FT39",
           "description": "Verify the Chair ends the meeting after confirming.",
           "procedure": [
             "As the Chair open the InProgress meeting and click \"Kết thúc họp\".",
@@ -1297,7 +847,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT65",
+          "id": "MEET_FT40",
           "description": "Verify cancelling the End dialog changes nothing.",
           "procedure": [
             "As the Chair click \"Kết thúc họp\" and then close the dialog without confirming."
@@ -1313,39 +863,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_FT66",
-          "description": "Verify a start or end that fails to save can be retried.",
-          "procedure": [
-            "As the Chair click \"Bắt đầu họp\" with the backend failing.",
-            "Repeat for \"Kết thúc họp\" on an InProgress meeting."
-          ],
-          "expected": [
-            "Step 1: backend 503/MSG115 and a toast \"Không thể bắt đầu cuộc họp. Vui lòng thử lại.\"; the button is usable again.",
-            "Step 2: backend 503/MSG116 \"Không thể kết thúc cuộc họp. Vui lòng thử lại.\"; the meeting stays \"Đang diễn ra\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Published and an InProgress meeting of the Chair; a way to make the backend fail."
-          ],
-          "note": "UC-21 | UC-22 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)"
-        },
-        {
-          "id": "MEET_FT67",
-          "description": "Verify a second Start from a stale page reloads the meeting.",
-          "procedure": [
-            "Open the Published meeting in two browsers as the Chair.",
-            "Click \"Bắt đầu họp\" in the first, then in the second."
-          ],
-          "expected": [
-            "The second click answers 409/MSG112; a toast shows the reason and the page reloads to \"Đang diễn ra\" with \"Kết thúc họp\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting; the Chair signed in twice."
-          ],
-          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Invalid_state_does_not_mutate)"
         }
       ]
     },
@@ -1356,7 +873,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT68",
+          "id": "MEET_FT41",
           "description": "Verify the Organizer cancels a Published meeting with a reason.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1380,25 +897,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT69",
-          "description": "Verify the cancel dialog warns by status about who is told.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Huỷ cuộc họp\" on a WaitingApproval meeting and read the dialog, then on a Draft meeting."
-          ],
-          "expected": [
-            "WaitingApproval: \"Người duyệt sẽ nhận thông báo kèm lý do, không cần duyệt nữa. Không hoàn tác được.\"",
-            "Draft: \"Cuộc họp chưa công bố nên không ai nhận thông báo. Không hoàn tác được.\""
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "One WaitingApproval and one Draft meeting of the Organizer."
-          ],
-          "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody)"
-        },
-        {
-          "id": "MEET_FT70",
+          "id": "MEET_FT42",
           "description": "Verify the cancel dialog needs a reason.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1420,7 +919,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT71",
+          "id": "MEET_FT43",
           "description": "Verify a started meeting can no longer be cancelled.",
           "procedure": [
             "Open an InProgress meeting as its Organizer.",
@@ -1441,7 +940,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MEET_FT72",
+          "id": "MEET_FT44",
           "description": "Verify only the Organizer is offered the cancel button.",
           "procedure": [
             "Open the Published meeting as its Chair and as a Member."
@@ -1457,40 +956,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "MEET_FT73",
-          "description": "Verify a cancel that fails to save stays in the dialog.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Click \"Huỷ cuộc họp\", type a reason, make the backend fail and confirm."
-          ],
-          "expected": [
-            "Backend answers 503/MSG264 \"Không thể huỷ cuộc họp. Vui lòng thử lại.\"; the dialog stays open with the reason and the meeting keeps its status."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "A Draft meeting; a way to make the backend fail."
-          ],
-          "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)"
-        },
-        {
-          "id": "MEET_FT74",
-          "description": "Verify a meeting not started 24 hours after its planned start is cancelled by the system.",
-          "procedure": [
-            "Open the meeting from the list at /mgmt/meetings (click its title).",
-            "Wait for the system check (about 15 minutes) after the planned start has passed by more than 24 hours, then reload the meeting."
-          ],
-          "expected": [
-            "The status is \"Đã huỷ\" with the bar \"Cuộc họp đã tự huỷ\", \"Hệ thống huỷ lúc <giờ>.\" and the reason; the history shows \"Tự huỷ (quá hạn)\" by \"Hệ thống\"; only the Organizer has a notification."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
-            "Draft meeting whose planned start was set more than 24 hours in the past by QA lead in the database."
-          ],
-          "note": "UC-75 | BR-301 | Manual only"
         }
       ]
     }

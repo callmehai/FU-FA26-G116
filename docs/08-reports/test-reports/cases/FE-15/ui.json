@@ -151,24 +151,6 @@
         },
         {
           "id": "RPT_FT08",
-          "description": "A malformed month in the URL is ignored.",
-          "procedure": [
-            "Open /mgmt/reports?from=2026-13&to=abc."
-          ],
-          "expected": [
-            "The page shows the default twelve months; no error message; the pickers show the default months."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user."
-          ],
-          "note": "UC-70a | BR-433 | Manual only · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/13-secretary-AC7-desktop-url-sai-dang-dung-mac-dinh.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/17-secretary-AC7-phone-url-sai-dang-dung-mac-dinh.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Nguyễn Trường Huy"
-        },
-        {
-          "id": "RPT_FT09",
           "description": "Period with no readable meeting shows the empty message.",
           "procedure": [
             "Sign in as an account that can read no meeting in the period (for example a Member who is on none of the meetings) and open /mgmt/reports?from=2027-05&to=2027-06."
@@ -187,7 +169,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT10",
+          "id": "RPT_FT09",
           "description": "Report shows an error with a retry button when the backend fails.",
           "procedure": [
             "Open /mgmt/reports while the report request fails (QA lead stops the database, or the response is overridden with 500/MSG464 in the browser).",
@@ -207,7 +189,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT11",
+          "id": "RPT_FT10",
           "description": "Report counts only the meetings the viewer may read.",
           "procedure": [
             "As user A (Organizer) open /mgmt/reports?from=2026-01&to=2026-12 and note \"<n> cuộc họp\".",
@@ -227,7 +209,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT12",
+          "id": "RPT_FT11",
           "description": "Report is reachable without any capability, and a Guest cannot use it.",
           "procedure": [
             "Sign in as a Member with no administrative capability and click \"Báo cáo\".",
@@ -242,24 +224,6 @@
             "A Member account and a Guest invitation link."
           ],
           "note": "UC-70a | BR-432 | Manual only"
-        },
-        {
-          "id": "RPT_FT13",
-          "description": "Report page asks a signed-out visitor to sign in.",
-          "procedure": [
-            "Without signing in, open /mgmt/reports."
-          ],
-          "expected": [
-            "The app redirects to /login; no report data is returned (the API answers 401)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "No active session."
-          ],
-          "note": "UC-70a | Manual only · Round1 Passed (2026-11-22): AC1: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/01-anon-AC1-desktop-chua-dang-nhap-ve-dang-nhap.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -270,7 +234,7 @@
       ],
       "cases": [
         {
-          "id": "RPT_FT14",
+          "id": "RPT_FT12",
           "description": "Excel export downloads the figures of the period on screen.",
           "procedure": [
             "Open /mgmt/reports?from=2026-02&to=2026-03.",
@@ -292,7 +256,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT15",
+          "id": "RPT_FT13",
           "description": "Excel export is disabled for an invalid period.",
           "procedure": [
             "Open /mgmt/reports?from=2024-01&to=2026-12."
@@ -310,7 +274,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT16",
+          "id": "RPT_FT14",
           "description": "Export failure shows an error toast and no file is saved.",
           "procedure": [
             "Open /mgmt/reports.",
@@ -330,7 +294,7 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "RPT_FT17",
+          "id": "RPT_FT15",
           "description": "Excel export works for a period with no readable meeting.",
           "procedure": [
             "Sign in as an account that can read no meeting in the period and open /mgmt/reports?from=2027-05&to=2027-06.",

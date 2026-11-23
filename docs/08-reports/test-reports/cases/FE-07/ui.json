@@ -117,22 +117,6 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify the \"Đang dùng\" column shows how many meetings use a document.",
-          "procedure": [
-            "Look at the row of a document that was added to two meetings you can view.",
-            "Hover the \"2 cuộc họp\" label."
-          ],
-          "expected": [
-            "The cell shows \"2 cuộc họp\"; the tooltip reads \"Số cuộc họp đang dùng tài liệu này\"; meetings you cannot view or that no longer use the file are not counted (BR-251)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A document added to two visible meetings."
-          ],
-          "note": "UC-34 · BR-251 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Meeting_count_only_includes_meetings_the_owner_can_view_and_still_using_the_file) · Chưa làm: cột loại trừ họp không xem được (BR-251) cần dàn dựng hai phiên (tài liệu của chủ ở cuộc họp chủ không xem được — Chủ toạ không thêm được tài liệu của người khác, API 400 MSG249 đã chứng minh ở AC13). Hiển thị \"n cuộc họp\" đã kiểm ở AC5.",
-          "id": "DOC_FT06"
-        },
-        {
           "description": "Verify opening a document shows it in the library viewer and the viewer can go back.",
           "procedure": [
             "Click the name of a PDF in the table.",
@@ -148,27 +132,11 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active internal user (the Owner) with a personal library. A PDF in a folder."
           ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good) · Evidence(AC2): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/13-member-AC2-desktop-xem-pdf-trong-kho.png — Case cũ: đòi route /mgmt/documents/<id> fullscreen + back-link, nhưng trình xem kho là overlay (không đổi URL, nút Đóng) — cùng họ với DOC_FT70/ADR-0066. Nội dung viewer (tên, Trang 1/3, zoom, Tải về, vẽ trang) vẫn đúng. · Đã sửa case theo sản phẩm (2026-11-22). · Chạy lại 2026-11-22 (AC2): đạt desktop + phone (overlay, Trang 1/3, Tải về); chưa có AC kiểm \"Đóng\" về đúng thư mục nên để trống. · Chạy lại 2026-11-22 (AC2 đạt desktop + phone): sau \"Đóng\", dòng PDF hiện lại trong đúng thư mục chứa nó. Evidence(AC2): tests/qa/out/SCRUM-194/20261122-074401-eb5a3255",
-          "id": "DOC_FT07",
+          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good) · Evidence(AC2): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/13-member-AC2-desktop-xem-pdf-trong-kho.png — Case cũ: đòi route /mgmt/documents/<id> fullscreen + back-link, nhưng trình xem kho là overlay (không đổi URL, nút Đóng) — cùng họ với DOC_FT35/ADR-0066. Nội dung viewer (tên, Trang 1/3, zoom, Tải về, vẽ trang) vẫn đúng. · Đã sửa case theo sản phẩm (2026-11-22). · Chạy lại 2026-11-22 (AC2): đạt desktop + phone (overlay, Trang 1/3, Tải về); chưa có AC kiểm \"Đóng\" về đúng thư mục nên để trống. · Chạy lại 2026-11-22 (AC2 đạt desktop + phone): sau \"Đóng\", dòng PDF hiện lại trong đúng thư mục chứa nó. Evidence(AC2): tests/qa/out/SCRUM-194/20261122-074401-eb5a3255",
+          "id": "DOC_FT06",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a missing stored file shows the error without a retry button.",
-          "procedure": [
-            "Remove the object of a document from the file store (QA lead).",
-            "Click the document name in the library."
-          ],
-          "expected": [
-            "Backend answers 410/MSG382; the viewer shows the alert \"Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.\" and no \"Thử lại\" button."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A document whose object was removed from the bucket."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good) · Chưa làm (đề nghị AX): cần QA lead xoá object trên kho (410 MSG382, không retry) — không có API dựng.",
-          "id": "DOC_FT08"
         },
         {
           "description": "Verify a folder link that is gone or belongs to someone else returns to the root with the message.",
@@ -184,42 +152,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A folder id owned by another user."
           ],
           "note": "UC-34 · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable) · Evidence(AC11): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/48-member-AC11-desktop-thu-muc-nguoi-khac.png",
-          "id": "DOC_FT09",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a failed load shows the error with a retry.",
-          "procedure": [
-            "Make the backend fail reading the library (QA lead), then open /mgmt/documents.",
-            "Restore the backend and click \"Thử lại\"."
-          ],
-          "expected": [
-            "Backend answers 500/MSG176; the table shows \"Không tải được kho tài liệu của bạn. Vui lòng thử lại.\" and the button \"Thử lại\"; it is not shown as an empty library.",
-            "The list loads normally."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. QA lead can inject a read failure."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes) · Chưa làm (nhóm AX): cần chèn lỗi đọc kho 500 MSG176 + nút Thử lại — không dựng được bằng API/UI đơn phiên.",
-          "id": "DOC_FT10"
-        },
-        {
-          "description": "Verify a signed-out visitor is asked to sign in.",
-          "procedure": [
-            "Without signing in, open /mgmt/documents."
-          ],
-          "expected": [
-            "Backend answers 401 to the first call; the app goes to the sign-in page and the library is not shown."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in."
-          ],
-          "note": "UC-34 · Manual only · Evidence(AC11): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/49-anon-AC11-desktop-chua-dang-nhap-ve-login.png",
-          "id": "DOC_FT11",
+          "id": "DOC_FT07",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -250,7 +183,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. Two valid sample files."
           ],
           "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_uploads_into_a_folder_and_sees_the_documents_and_the_storage_used) · Evidence(AC2): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/12-member-AC2-desktop-da-tai-len.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/15-member-AC2-phone-da-tai-len.png",
-          "id": "DOC_FT12",
+          "id": "DOC_FT08",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -268,44 +201,10 @@
             "Signed in as an active internal user (the Owner) with a personal library. A PNG file."
           ],
           "note": "UC-36 · BR-214 · Manual only · Evidence(AC3): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/18-member-AC3-desktop-tep-txt-bi-tu-choi.png",
-          "id": "DOC_FT13",
+          "id": "DOC_FT09",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify picking more than 10 files shows the limit message (boundary: 11).",
-          "procedure": [
-            "Click \"Tải tài liệu lên\" and pick 11 valid PDFs."
-          ],
-          "expected": [
-            "The alert \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.\" appears with \"Đang chọn 11 tệp, ...\"; the upload button is disabled until files are removed (BR-319)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. 11 valid PDFs."
-          ],
-          "note": "UC-36 · BR-319 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits) · Evidence(AC3): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/19-member-AC3-desktop-muoi-mot-tep-bi-khoa.png",
-          "id": "DOC_FT14",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a pick that does not fit the system storage is refused before sending.",
-          "procedure": [
-            "Lower the system storage limit so that less than the picked size is left (QA lead).",
-            "Click \"Tải tài liệu lên\" and pick a file larger than the room left."
-          ],
-          "expected": [
-            "The alert \"Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.\" with \"Đang chọn <size>, hệ thống còn <size>.\" appears; nothing is sent (the server would answer 409/MSG346)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. QA lead can lower the storage limit."
-          ],
-          "note": "UC-36 · ADR-0034 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_past_the_storage_limit_adds_nothing) · Chưa làm (đề nghị AX): cần QA lead hạ hạn mức hệ thống để hết chỗ chứa — không dựng được bằng API/UI đơn phiên.",
-          "id": "DOC_FT15"
         },
         {
           "description": "Verify a picked file can be removed and cancelling asks before dropping the selection.",
@@ -325,7 +224,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. Two sample files."
           ],
           "note": "UC-36 · Manual only · Evidence(AC25): tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/01-secretary-AC25-desktop-hoi-bo-tep-da-chon.png",
-          "id": "DOC_FT16",
+          "id": "DOC_FT10",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -343,26 +242,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A PNG renamed to .pdf."
           ],
           "note": "UC-36 · BR-187 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits) · Evidence(AC3): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/20-member-AC3-desktop-khay-bao-loi-noi-dung.png — Case cũ: đòi dòng chữ chung MSG164 + nút \"Thử lại <tên>\". Sản phẩm hiện lỗi cụ thể từng tệp (\"<tên>: không phải tệp PDF...\") và KHÔNG có nút thử lại cho lỗi nội dung — đúng UC-36 EX-1 (người dùng sửa lại lựa chọn, không thử lại). · Đã sửa case theo sản phẩm (2026-11-22).",
-          "id": "DOC_FT17",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify uploading into a folder that was deleted meanwhile reports it.",
-          "procedure": [
-            "Open a folder, click \"Tải tài liệu lên\" and pick a file.",
-            "In a second tab delete that folder, then click \"Tải lên 1 tài liệu\"."
-          ],
-          "expected": [
-            "Backend answers 404/MSG179; the tray row shows \"Thư mục đích không còn trong kho tài liệu của bạn.\" and the library is read again; no document is stored."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A folder and a sample file."
-          ],
-          "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits) · Evidence(AC30): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/15-secretary-AC30-desktop-tai-vao-thu-muc-da-xoa.png",
-          "id": "DOC_FT18",
+          "id": "DOC_FT11",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -393,7 +273,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A PDF also added to a meeting."
           ],
           "note": "UC-71b · BR-276 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_the_extension_and_leaves_meeting_copies_alone) · Evidence(AC5): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/27-secretary-AC5-desktop-doi-ten-tai-lieu.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/28-secretary-AC5-desktop-ten-moi.png",
-          "id": "DOC_FT19",
+          "id": "DOC_FT12",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -412,7 +292,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A document."
           ],
           "note": "UC-71b · Manual only · Evidence(AC6): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/31-member-AC6-desktop-ten-trong-bi-khoa.png",
-          "id": "DOC_FT20",
+          "id": "DOC_FT13",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -435,7 +315,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A document at the root and a folder."
           ],
           "note": "UC-71c · BR-245 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Move_goes_to_an_owned_folder_or_the_root) · Evidence(AC7): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/34-member-AC7-desktop-chon-thu-muc-dich.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/35-member-AC7-desktop-trong-thu-muc-dich.png",
-          "id": "DOC_FT21",
+          "id": "DOC_FT14",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -457,7 +337,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A document added to a meeting."
           ],
           "note": "UC-71a · BR-186 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Deleting_from_the_library_leaves_the_meeting_copy_readable) · Evidence(AC10): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/47-secretary-AC10-desktop-xoa-tai-lieu-dang-dung.png",
-          "id": "DOC_FT22",
+          "id": "DOC_FT15",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -475,26 +355,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A document."
           ],
           "note": "UC-71a · Manual only · Evidence(AC9): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/42-member-AC9-desktop-xac-nhan-xoa-tai-lieu.png",
-          "id": "DOC_FT23",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify an action on a document that was deleted in another tab refreshes the list.",
-          "procedure": [
-            "Open the library in two tabs and delete a document in the first tab.",
-            "In the second tab click \"Đổi tên\" on the same document, change the name and click \"Lưu\"."
-          ],
-          "expected": [
-            "Backend answers 404/MSG175; the dialog closes, a red toast reads \"Mục này không còn trong kho tài liệu của bạn.\" and the list is reloaded without the document."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A document; two tabs."
-          ],
-          "note": "UC-71b · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_document_is_not_there) · Evidence(AC30): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/16-secretary-AC30-desktop-doi-ten-tai-lieu-da-xoa.png",
-          "id": "DOC_FT24",
+          "id": "DOC_FT16",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -512,25 +373,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A PDF."
           ],
           "note": "UC-34 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/13-member-AC2-desktop-xem-pdf-trong-kho.png (Tải về từ dòng kho lưu đúng tên + đúng byte (API content cũng 200). Nút khoá trong lúc tải là thoáng qua với tệp 1 KB nên không assert.)",
-          "id": "DOC_FT25",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the row actions on a phone show their words.",
-          "procedure": [
-            "Set the viewport to 390px wide and open /mgmt/documents."
-          ],
-          "expected": [
-            "The page does not scroll sideways; the button reads \"Tải lên\"; the actions \"Đổi tên\", \"Chuyển đến\" and \"Xoá\" show a word beside their icon, since a phone has no hover; the touch targets are 40px."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A document; browser emulating a 390px touch screen."
-          ],
-          "note": "UC-71 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/17-member-AC2-phone-thao-tac-dien-thoai.png (Điện thoại: 3 thao tác dòng hiện chữ cạnh icon (tải về nằm trong trình xem, đúng DocumentsPage); mục tiêu chạm ≥40px đã assert.)",
-          "id": "DOC_FT26",
+          "id": "DOC_FT17",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -558,64 +401,7 @@
             "Signed in as an active internal user (the Owner) with a personal library."
           ],
           "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_creates_nested_folders_with_duplicate_names_and_sees_them_in_the_library) · Evidence(AC1): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/02-member-AC1-desktop-hop-thoai-thu-muc-moi.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/03-member-AC1-desktop-thu-muc-da-tao.png",
-          "id": "DOC_FT27",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a sub-folder can have the same name as a folder elsewhere.",
-          "procedure": [
-            "Create a folder \"Hồ sơ họp\" at the root.",
-            "Open it and create another folder \"Hồ sơ họp\" inside."
-          ],
-          "expected": [
-            "Both are created (BR-221); the second dialog reads \"Tạo thư mục trong Hồ sơ họp.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library."
-          ],
-          "note": "UC-72a · BR-221 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_creates_nested_folders_with_duplicate_names_and_sees_them_in_the_library) · Evidence(AC1): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/05-member-AC1-desktop-thu-muc-con-trung-ten.png (Tên trùng ở cha khác được chấp nhận (BR-221); hộp tạo nêu \"Tạo thư mục trong <tên>\".)",
-          "id": "DOC_FT28",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the create button is disabled for a blank name and the field stops at 400 characters (boundary).",
-          "procedure": [
-            "Click \"Thư mục mới\" and type only spaces.",
-            "Paste a text of 450 characters."
-          ],
-          "expected": [
-            "Step 1: \"Tạo thư mục\" is disabled.",
-            "Step 2: the field keeps only the first 400 characters, so MSG348 cannot be reached from the screen."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library."
-          ],
-          "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_name_must_not_be_blank_or_too_long) · Evidence(AC1+AC6): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/32-member-AC6-desktop-thu-muc-ten-moi.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/33-member-AC6-desktop-ten-thu-muc-cat-400.png (Nút Tạo khoá khi tên trống (AC1); ô Tên thư mục mới cắt ở 400 ký tự nên MSG348 không tới được từ màn hình (AC6).)",
-          "id": "DOC_FT29",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify \"Thư mục mới\" is disabled at the fifth level.",
-          "procedure": [
-            "Open a folder at level 5 and hover \"Thư mục mới\"."
-          ],
-          "expected": [
-            "The button is disabled and the tooltip reads \"Thư mục chỉ lồng tối đa 5 cấp\" (BR-191)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. Five nested folders."
-          ],
-          "note": "UC-72a · BR-191 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_sixth_level_is_refused_on_create_and_on_move) · Evidence(AC8): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/38-member-AC8-desktop-cap-5-khoa-thu-muc-moi.png",
-          "id": "DOC_FT30",
+          "id": "DOC_FT18",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -634,7 +420,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A folder with a document."
           ],
           "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_place_and_contents) · Evidence(AC6): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/32-member-AC6-desktop-thu-muc-ten-moi.png",
-          "id": "DOC_FT31",
+          "id": "DOC_FT19",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -655,25 +441,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A folder with a sub-folder and a second folder."
           ],
           "note": "UC-72c · BR-222 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_folder_cannot_move_into_itself_or_a_subfolder_but_can_move_to_the_root) · Evidence(AC8): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/39-member-AC8-desktop-khong-cho-chuyen-vao-chinh-no.png",
-          "id": "DOC_FT32",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a move that would exceed five levels is refused in the dialog.",
-          "procedure": [
-            "Click \"Chuyển đến…\" on a folder with a 3-level subtree and choose a folder at level 4."
-          ],
-          "expected": [
-            "Backend answers 409/MSG189; the dialog stays open with the red message \"Thư mục chỉ lồng tối đa 5 cấp.\" and nothing moves (BR-191)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an active internal user (the Owner) with a personal library. A level-4 folder and a 3-level subtree."
-          ],
-          "note": "UC-72c · BR-191 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_sixth_level_is_refused_on_create_and_on_move) · Evidence(AC8): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/40-member-AC8-desktop-chuyen-qua-5-cap-bi-chan.png",
-          "id": "DOC_FT33",
+          "id": "DOC_FT20",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -693,7 +461,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. An empty folder."
           ],
           "note": "UC-72d · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Only_an_empty_folder_is_deleted) · Evidence(AC9): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/43-member-AC9-desktop-da-xoa.png",
-          "id": "DOC_FT34",
+          "id": "DOC_FT21",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -713,7 +481,7 @@
             "Signed in as an active internal user (the Owner) with a personal library. A folder with a sub-folder and a folder with a document."
           ],
           "note": "UC-72d · BR-223 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Only_an_empty_folder_is_deleted) · Evidence(AC9): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/41-member-AC9-desktop-thu-muc-con-con.png",
-          "id": "DOC_FT35",
+          "id": "DOC_FT22",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -727,113 +495,6 @@
       ],
       "cases": [
         {
-          "description": "Verify the Users screen offers the library only for a deactivated account.",
-          "procedure": [
-            "Open the Users screen (/mgmt/admin/users).",
-            "Look at the folder icon on the row of an active user and of a deactivated user."
-          ],
-          "expected": [
-            "Active user: the icon is disabled with the tooltip \"Chỉ xem được kho của tài khoản đã vô hiệu hoá\".",
-            "Deactivated user: the link \"Xem kho\" with the tooltip \"Xem kho tài liệu\" is enabled."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator (AdminUsers); an active user and a deactivated user supplied by QA lead."
-          ],
-          "note": "UC-34b · Manual only · Evidence(AC24): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/17-admin-AC24-desktop-tai-khoan-hoat-dong-nut-khoa.png (Nút kho của tài khoản đang hoạt động bị khoá kèm chú thích \"Chỉ xem được kho của tài khoản đã vô hiệu hoá\" (máy tính; điện thoại ẩn nút theo bảng Người dùng).)",
-          "id": "DOC_FT36",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the Administrator reads a deactivated user's library read-only.",
-          "procedure": [
-            "Click \"Xem kho\" on the deactivated user's row."
-          ],
-          "expected": [
-            "The route /mgmt/admin/users/<userId>/library opens; the breadcrumb starts with \"Người dùng\"; the title is \"Kho tài liệu của <name>\" with the line \"Chỉ xem. Mỗi lần mở thư mục hoặc tài liệu đều được ghi vào nhật ký.\".",
-            "The table lists the folders and documents; the only row action is the download icon \"Tải về <file name>\" - no rename, move or delete.",
-            "Backend answers 200 and records an audit row \"library.read\" for the owner (checked by QA lead)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator; a deactivated user with a folder and a document."
-          ],
-          "note": "UC-34b · BR-334 · BR-335 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_reads_a_deactivated_library_and_every_read_is_audited) · Evidence(AC24): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/13-admin-AC24-desktop-kho-tai-khoan-da-khoa.png",
-          "id": "DOC_FT37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify opening a folder and a document in the locked library.",
-          "procedure": [
-            "Click a folder row, then click the crumb \"Kho của <name>\".",
-            "Click a document name, then \"Tải về\" in the viewer, then the back link \"Kho tài liệu\"."
-          ],
-          "expected": [
-            "Folder: /mgmt/admin/users/<userId>/library?folder=<id> opens and the crumb leads back to the root.",
-            "Document: the viewer opens at /mgmt/admin/users/<userId>/library/<documentId> and downloads the file; the back link returns to the same folder; each read is audited."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator; a deactivated user with a nested folder and a document."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_reads_a_deactivated_library_and_every_read_is_audited) · Evidence(AC24): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/14-admin-AC24-desktop-thu-muc-kho-khoa.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/15-admin-AC24-desktop-trinh-xem-kho-khoa.png (Mở thư mục/con + tài liệu + tải về đúng tên; quay lại bằng Đóng (trình xem PDF là overlay, không có back-link riêng — URL giữ nguyên thư mục).)",
-          "id": "DOC_FT38",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify an account that became active again sends the Administrator back to the Users screen.",
-          "procedure": [
-            "Open a deactivated user's library URL, then reactivate the user in another tab and reload."
-          ],
-          "expected": [
-            "Backend answers 404/MSG175; the red toast \"Tài khoản này đang hoạt động hoặc không còn tồn tại: kho tài liệu chỉ chủ tài khoản xem được.\" appears and the app returns to the Users screen; no audit row is written."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator; a deactivated user that QA lead can reactivate."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused) · Chưa làm (nhóm AX): kích hoạt lại tài khoản giữa chừng rồi kiểm tra toast + về Users — cần hai phiên/dàn dựng, chưa có AC.",
-          "id": "DOC_FT39"
-        },
-        {
-          "description": "Verify a folder that is gone or restricted returns to the root of that library.",
-          "procedure": [
-            "Open /mgmt/admin/users/<userId>/library?folder=<folderOfASecretMeeting>."
-          ],
-          "expected": [
-            "Backend answers 404/MSG175; a toast shows the message and the app goes to the library root; folders and files of any Secret meeting are not listed, even if the Administrator belongs to that meeting."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator; a deactivated user who uploaded into a Secret meeting."
-          ],
-          "note": "UC-34b · BR-334 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_does_not_see_files_or_folders_of_a_secret_meeting_even_one_they_can_view) · Chưa làm: thư mục của cuộc họp Mật trong kho khoá — cần tài khoản có MeetingCreator bị khoá (seed không có) hoặc dàn dựng phức tạp; chưa có AC.",
-          "id": "DOC_FT40"
-        },
-        {
-          "description": "Verify an empty locked library and a failed load.",
-          "procedure": [
-            "Open the library of a deactivated user without documents.",
-            "Make the backend fail the read and reload."
-          ],
-          "expected": [
-            "Step 1: \"Kho tài liệu này chưa có gì.\".",
-            "Step 2: backend answers 500/MSG176 and the table shows \"Không tải được kho tài liệu của bạn. Vui lòng thử lại.\" with \"Thử lại\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Administrator; QA lead can inject a read failure."
-          ],
-          "note": "UC-34b · Manual only · Chưa làm (nhóm AX): kho khoá trống + lỗi đọc 500 — nửa 500 cần chèn lỗi backend, chưa có AC.",
-          "id": "DOC_FT41"
-        },
-        {
           "description": "Verify a user without AdminUsers cannot open the route.",
           "procedure": [
             "Signed in as a Member, open /mgmt/admin/users/<userId>/library."
@@ -846,7 +507,7 @@
             "A Member account and a deactivated user supplied by QA lead."
           ],
           "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused) · Evidence(AC24): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/16-member-AC24-desktop-thanh-vien-khong-mo-duoc-kho-khoa.png",
-          "id": "DOC_FT42",
+          "id": "DOC_FT23",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -873,7 +534,7 @@
             "Signed in as a Member of the meeting; a Published meeting with documents on items, a vote and in the general group."
           ],
           "note": "UC-32a · BR-277 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Member_sees_documents_grouped_by_agenda_item_in_order_with_general_and_without_removed) · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/03-member-AC17-desktop-bieu-quyet-trong.png",
-          "id": "DOC_FT43",
+          "id": "DOC_FT24",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -892,40 +553,10 @@
             "Signed in as a Member of the meeting; a meeting without documents."
           ],
           "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Empty_meeting_has_empty_groups_and_no_current_item) · Evidence(AC26): tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/07-secretary-AC26-desktop-khong-co-noi-dung.png; tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/08-secretary-AC26-desktop-nhom-nao-cung-trong.png",
-          "id": "DOC_FT44",
+          "id": "DOC_FT25",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the Biểu quyết group shows the reader's own read state.",
-          "procedure": [
-            "As a voter of an Open vote, open the group \"Biểu quyết\"."
-          ],
-          "expected": [
-            "Each vote is a collapsible block with its status chip and \"k tài liệu\"; a document you confirmed shows the green \"Đã đọc\" (tooltip \"Bạn xác nhận đã đọc lúc <time>\"), one you still must read shows \"Chưa đọc\", and nobody who is not a voter sees either label (UC-32a AF-1)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter of an Open vote with two documents, one confirmed."
-          ],
-          "note": "UC-32a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (The_documents_tab_groups_documents_by_vote_with_the_readers_own_confirmation) · Chưa làm: trạng thái đọc của cử tri trong nhóm Biểu quyết — thuộc vùng vote FE-11 (cần biểu quyết + xác nhận đọc), chưa có AC.",
-          "id": "DOC_FT45"
-        },
-        {
-          "description": "Verify a document attached only to a Draft vote is invisible to a Member.",
-          "procedure": [
-            "As the Secretary attach a document to a Draft vote only; as a Member open the Tài liệu tab and the group \"Biểu quyết\"."
-          ],
-          "expected": [
-            "The Member sees no row for it, the counts do not include it and opening its URL shows \"Không tìm thấy trang\" (BR-253); the Secretary sees it under the draft vote."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Secretary and Member in two browsers; a Draft vote with a document."
-          ],
-          "note": "UC-32a · BR-253 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (A_vote_document_shows_only_under_its_vote_and_one_only_on_a_draft_is_the_managers) · Chưa làm: tài liệu vote Nháp ẩn với Thành viên — cần dàn dựng biểu quyết (FE-11), chưa có AC.",
-          "id": "DOC_FT46"
         },
         {
           "description": "Verify the add and remove buttons are hidden from a Member and when the meeting is Ended or Cancelled.",
@@ -942,78 +573,10 @@
             "A Member and a Secretary of the same meeting; an Ended and a Cancelled meeting."
           ],
           "note": "UC-33a · BR-184 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends) · Evidence(AC17+AC23): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/01-member-AC17-desktop-theo-noi-dung-hop.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/09-secretary-AC23-desktop-da-ket-thuc-chi-doc.png",
-          "id": "DOC_FT47",
+          "id": "DOC_FT26",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a document added by the Secretary appears for a Member without a reload.",
-          "procedure": [
-            "Open the Tài liệu tab as a Member in browser B and keep it open.",
-            "In browser A as the Secretary add a document to the general group."
-          ],
-          "expected": [
-            "Browser B's list refreshes by itself (the hub sends documentsChanged) and shows the new document under \"Tài liệu chung\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Secretary in browser A and Member in browser B, both on the Tài liệu tab."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_tells_the_meeting_room_to_reload_its_documents) · Chưa làm (nhóm AX): tài liệu mới tự hiện qua hub realtime — cần hai trình duyệt đồng thời, chưa có AC.",
-          "id": "DOC_FT48"
-        },
-        {
-          "description": "Verify the hover text of a row tells who added the document and when.",
-          "procedure": [
-            "Hover a document row on the Tài liệu tab."
-          ],
-          "expected": [
-            "The tooltip reads \"<full name> thêm lúc <date and time>\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member of the meeting."
-          ],
-          "note": "UC-32a · Manual only · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/01-member-AC17-desktop-theo-noi-dung-hop.png (Tooltip dòng \"… thêm lúc …\" assert qua data-tooltip.)",
-          "id": "DOC_FT49",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a person who lost access sees the not-readable message and a failed load shows a retry.",
-          "procedure": [
-            "Remove the Member from the meeting in another browser, then reload the Tài liệu tab.",
-            "Make the backend fail the list read and reload as an allowed user."
-          ],
-          "expected": [
-            "Step 1: backend answers 404/MSG156 and the tab reads \"Bạn không còn xem được tài liệu của cuộc họp này.\".",
-            "Step 2: backend answers 500/MSG157; a red alert shows \"Không tải được danh sách tài liệu. Vui lòng thử lại.\" with \"Thử lại\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Member that the Organizer can remove; QA lead can inject a read failure."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (List_read_failure_is_MSG157_not_an_empty_list) · Chưa làm (nhóm AX): mất quyền xem (404 MSG156) + lỗi đọc 500 + Thử lại — cần đổi quyền giữa chừng và chèn lỗi backend, chưa có AC.",
-          "id": "DOC_FT50"
-        },
-        {
-          "description": "Verify the online room panel is read-only and opens documents in a new tab.",
-          "procedure": [
-            "Join the online room of an InProgress meeting and open the \"Tài liệu\" panel.",
-            "Click a document."
-          ],
-          "expected": [
-            "The panel title is \"Tài liệu (n)\"; the item under discussion comes first as \"Đang bàn: n. <title>\", the others are folded; there are no add, remove or download buttons.",
-            "The tooltip reads \"Mở ở tab mới, bạn vẫn ở trong phòng\" and the viewer opens in a new tab while the call keeps running (BR-315, BR-316)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a participant in the online room of an InProgress meeting with documents."
-          ],
-          "note": "UC-32a · BR-315 · BR-316 · Manual only · Chưa làm: panel Tài liệu phòng online chỉ đọc — cần phòng LiveKit thật, chưa có AC.",
-          "id": "DOC_FT51"
         },
         {
           "description": "Verify a Guest sees the documents of the invited meeting and nothing to change.",
@@ -1028,7 +591,7 @@
             "A verified Guest invitation to a Published meeting with documents."
           ],
           "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting) · Chưa làm (đề nghị H): khách xem tài liệu cần OTP hộp thư thật, không làm tự động.",
-          "id": "DOC_FT52"
+          "id": "DOC_FT27"
         }
       ]
     },
@@ -1054,7 +617,7 @@
             "Signed in as the Secretary of a Published meeting; two documents in the Secretary's library."
           ],
           "note": "UC-33a · BR-197 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Secretary_adds_own_library_documents_as_general_documents_under_their_current_name) · Evidence(AC13): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/56-secretary-AC13-desktop-chon-tu-kho.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/57-secretary-AC13-desktop-da-them-tu-kho.png",
-          "id": "DOC_FT53",
+          "id": "DOC_FT28",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1072,7 +635,7 @@
             "Signed in as the Secretary of the meeting; a library document already added to the meeting."
           ],
           "note": "UC-33a · BR-193 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Library_selection_must_be_the_actors_own_available_and_not_yet_in_the_meeting) · Evidence(AC13): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/56-secretary-AC13-desktop-chon-tu-kho.png",
-          "id": "DOC_FT54",
+          "id": "DOC_FT29",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1094,7 +657,7 @@
             "Signed in as the Secretary of the meeting of a Published meeting; a valid PDF."
           ],
           "note": "UC-33a AF-1 · BR-192 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Secretary_uploads_three_pdfs_and_a_docx_into_library_folder_and_meeting) · Evidence(AC12): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/50-secretary-AC12-desktop-chon-tep-tu-may.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/51-secretary-AC12-desktop-tai-lieu-chung.png",
-          "id": "DOC_FT55",
+          "id": "DOC_FT30",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1112,7 +675,7 @@
             "Signed in as the Secretary of the meeting."
           ],
           "note": "UC-33a AF-1 · Manual only · Evidence(AC12): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/52-secretary-AC12-desktop-tep-txt-trong-hop-bi-tu-choi.png",
-          "id": "DOC_FT56",
+          "id": "DOC_FT31",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1131,7 +694,7 @@
             "Signed in as the Secretary of the meeting; a library document."
           ],
           "note": "UC-33a · Manual only · Evidence(AC25): tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/02-secretary-AC25-desktop-hoi-bo-tai-lieu-da-chon.png",
-          "id": "DOC_FT57",
+          "id": "DOC_FT32",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1153,7 +716,7 @@
             "Signed in as the Chair of a Published meeting; a document with comments."
           ],
           "note": "UC-33c · BR-281 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_removes_a_document_keeping_its_comments_and_links_out_of_every_list) · Evidence(AC16): tests/qa/out/SCRUM-194/20261121-195259-eb5a3255/05-secretary-AC16-desktop-xac-nhan-go-khoi-cuoc-hop.png; tests/qa/out/SCRUM-194/20261121-195259-eb5a3255/06-secretary-AC16-desktop-da-go-khoi-cuoc-hop.png",
-          "id": "DOC_FT58",
+          "id": "DOC_FT33",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1171,27 +734,10 @@
             "Signed in as the Secretary of the meeting."
           ],
           "note": "UC-33c · Manual only · Evidence(AC25): tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/03-secretary-AC25-desktop-giu-tai-lieu-khi-go.png",
-          "id": "DOC_FT59",
+          "id": "DOC_FT34",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a role lost while the dialog is open closes it with the server's message.",
-          "procedure": [
-            "Open \"Thêm tài liệu chung\" and tick a library document.",
-            "In another browser the Organizer removes the Secretary from the meeting.",
-            "Click \"Thêm 1 tài liệu\"."
-          ],
-          "expected": [
-            "Backend answers 404/MSG174; the dialog closes, a red toast reads \"Không truy cập được cuộc họp này.\" and the meeting is reloaded without the add buttons (SCRUM-22)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of the meeting and an Organizer in a second browser."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Changes_are_refused_to_a_removed_manager_another_meetings_chair_and_a_deactivated_account) · Chưa làm (nhóm AX): mất vai trò giữa chừng (404 MSG174) — cần đổi thành phần giữa chừng; đổi shared fixture rủi ro, chưa có AC.",
-          "id": "DOC_FT60"
         },
         {
           "description": "Verify a meeting that ended while the dialog was open refuses the add.",
@@ -1208,7 +754,7 @@
             "Signed in as the Secretary of the meeting of an InProgress meeting that the Chair can end."
           ],
           "note": "UC-33a · BR-185 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends) · Evidence(AC31): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/19-chair-AC31-desktop-hop-ket-thuc-giua-chung.png (409 MSG172 hiện ở khay tải (không phải toast) — hộp đã đóng khi gửi, hết nút thêm; đề nghị BA ghi rõ mặt hiển thị trong case.)",
-          "id": "DOC_FT61",
+          "id": "DOC_FT35",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1223,65 +769,6 @@
       ],
       "cases": [
         {
-          "description": "Verify the attach menu of an agenda item offers three sources.",
-          "procedure": [
-            "Open the tab \"Nội dung\" and click the paperclip \"Thêm tài liệu: <item title>\" of an item.",
-            "On the Tài liệu tab click the paperclip \"Thêm tài liệu cho mục n\" of an item."
-          ],
-          "expected": [
-            "Step 1: the menu \"Thêm tài liệu từ\" lists \"Tải tệp lên từ máy\", \"Chọn từ tài liệu cuộc họp\" and \"Chọn từ kho của tôi\".",
-            "Step 2: the dialog \"Thêm tài liệu cho mục n\" opens with the tooltip \"Thêm tài liệu cho mục này\" on the button."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a Published meeting with an agenda."
-          ],
-          "note": "UC-33b · Manual only · Evidence(AC29): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/09-chair-AC29-desktop-menu-them-tai-lieu-tu.png (Menu đủ 3 nguồn; tooltip nút kẹp ở tab Nội dung là \"Thêm tài liệu\" (case ghi \"Thêm tài liệu cho mục này\" là tooltip của kẹp ở tab Tài liệu — đề nghị BA ghi rõ).)",
-          "id": "DOC_FT62",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify linking documents already in the meeting to an item keeps their other links.",
-          "procedure": [
-            "In the dialog \"Thêm tài liệu cho mục 2\" stay on \"Trong cuộc họp\", tick two documents in \"Tài liệu của cuộc họp\" and click \"Gắn 2 tài liệu\".",
-            "Open the Tài liệu tab."
-          ],
-          "expected": [
-            "The note reads \"Tài liệu vẫn ở các mục đang gắn, chỉ thêm vào mục này.\"; backend answers 200/MSG238 and the toast \"Đã gắn tài liệu vào mục nghị sự.\" appears.",
-            "Both documents are listed under item 2 and a document that was under item 1 is still there too (BR-277)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair; a meeting with three documents and two items, one document linked to item 1."
-          ],
-          "note": "UC-33b · BR-277 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_links_meeting_documents_to_an_item_keeping_their_other_links) · Evidence(AC29): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/10-chair-AC29-desktop-chon-gan-them-muc-2.png (Gắn mục 2 giữ liên kết mục 1 (BR-277); hộp ghi \"Tài liệu vẫn ở các mục đang gắn, chỉ thêm vào mục này.\")",
-          "id": "DOC_FT63",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the \"Trong cuộc họp\" tab explains when nothing is left to link.",
-          "procedure": [
-            "Open the dialog of an item that already has every meeting document.",
-            "Open it in a meeting that has no documents."
-          ],
-          "expected": [
-            "\"Mọi tài liệu của cuộc họp đã gắn với mục này.\" and \"Cuộc họp chưa có tài liệu.\" respectively."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair."
-          ],
-          "note": "UC-33b · Manual only · Evidence(AC26): tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/09-secretary-AC26-desktop-trong-cuoc-hop-chua-co-gi.png; tests/qa/out/SCRUM-194/20261121-195433-eb5a3255/10-secretary-AC26-desktop-da-gan-het.png",
-          "id": "DOC_FT64",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
           "description": "Verify adding a library document to an item links it in one step.",
           "procedure": [
             "In the dialog of an item click \"Từ kho của tôi\", tick a document and click \"Thêm 1 tài liệu\"."
@@ -1294,7 +781,7 @@
             "Signed in as the Chair; a document in the Chair's library."
           ],
           "note": "UC-33b AF-2 · BR-304 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go) · Evidence(AC14): tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/60-chair-AC14-desktop-chon-tai-lieu-cuoc-hop.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/61-chair-AC14-desktop-da-gan-muc-1.png; tests/qa/out/SCRUM-194/20261121-195738-eb5a3255/62-chair-AC14-desktop-nhom-chung-khong-con.png",
-          "id": "DOC_FT65",
+          "id": "DOC_FT36",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1312,47 +799,7 @@
             "Signed in as the Chair; a valid PDF."
           ],
           "note": "UC-33b AF-1 · BR-192 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item) · Evidence(AC29): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/11-chair-AC29-desktop-tai-tu-may-vao-muc.png",
-          "id": "DOC_FT66",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify unlinking a document from one item keeps it in the meeting.",
-          "procedure": [
-            "On the Tài liệu tab click the detach icon \"Gỡ <file name> khỏi mục này\" under item 2.",
-            "Read the text and click \"Gỡ khỏi mục\"."
-          ],
-          "expected": [
-            "The confirm \"Gỡ tài liệu khỏi mục này?\" reads \"<name> vẫn còn trong cuộc họp, chỉ không còn gắn với mục “<item title>”.\" with \"Gỡ khỏi mục\" and \"Giữ tài liệu\".",
-            "Backend answers 200/MSG239; the toast \"Đã gỡ tài liệu khỏi mục nghị sự.\" appears; the document is gone from item 2, still under other items, and moves to \"Tài liệu chung\" when no link is left (BR-280)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair; a document linked to two items."
-          ],
-          "note": "UC-33d · BR-280 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_drops_one_link_and_the_document_stays_in_the_meeting) · Evidence(AC15): tests/qa/out/SCRUM-194/20261121-195259-eb5a3255/01-secretary-AC15-desktop-xac-nhan-go-khoi-muc.png; tests/qa/out/SCRUM-194/20261121-195259-eb5a3255/02-secretary-AC15-desktop-ve-nhom-chung.png",
-          "id": "DOC_FT67",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a stale item or link tells the user to reload.",
-          "procedure": [
-            "Open the dialog for an item, delete that item in another browser, then submit.",
-            "Unlink a document whose link was already removed in another browser."
-          ],
-          "expected": [
-            "Step 1: backend answers 404/MSG242; the dialog closes and a red toast reads \"Hãy chọn một mục nghị sự còn trong cuộc họp này.\".",
-            "Step 2: backend answers 404/MSG246; a red toast reads \"Tài liệu này không còn gắn với mục nghị sự đã chọn. Hãy tải lại danh sách tài liệu.\" and the list reloads."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair and a second browser that can delete items."
-          ],
-          "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure) · Evidence(AC31): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/20-chair-AC31-desktop-muc-cu-giua-chung.png; tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/21-chair-AC31-desktop-lien-ket-cu-giua-chung.png",
-          "id": "DOC_FT68",
+          "id": "DOC_FT37",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1370,7 +817,7 @@
             "Signed in as a Member of the meeting."
           ],
           "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure) · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/01-member-AC17-desktop-theo-noi-dung-hop.png",
-          "id": "DOC_FT69",
+          "id": "DOC_FT38",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1397,7 +844,7 @@
             "Signed in as a Member of a Published meeting with a PDF."
           ],
           "note": "UC-32c · BR-216 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (View_streams_the_stored_bytes_unchanged_as_an_attachment) · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/04-member-AC17-desktop-trinh-xem-pdf.png — Case cũ: đòi route /mgmt/meetings/<id>/documents/<documentId> fullscreen + back-link \"Tài liệu\" + đếm khi cuộn; sản phẩm mở overlay trên tab (ADR-0066, URL giữ ?tab=documents, nút Đóng). · Đã sửa case theo sản phẩm (2026-11-22). · Chạy lại 2026-11-22 (AC17): đạt desktop + phone (overlay, URL giữ ?tab=documents, Góp ý, Tải về, Đóng); chưa có AC kiểm đếm trang khi cuộn nên để trống. · Thêm bước cuộn vào AC17 (tests/qa/plans/fe-07.mjs): cuộn hết trình xem thì bộ đếm thành \"Trang 3 / 3\"; đạt desktop + phone. Evidence(AC17): tests/qa/out/SCRUM-194/20261122-075848-eb5a3255/05-member-AC17-desktop-trinh-xem-pdf-da-cuon.png; tests/qa/out/SCRUM-194/20261122-075848-eb5a3255/11-member-AC17-phone-trinh-xem-pdf-da-cuon.png",
-          "id": "DOC_FT70",
+          "id": "DOC_FT39",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1415,7 +862,7 @@
             "Signed in as a Member; a DOCX document."
           ],
           "note": "UC-32c · Manual only · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/05-member-AC17-desktop-trinh-xem-docx.png",
-          "id": "DOC_FT71",
+          "id": "DOC_FT40",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1433,7 +880,7 @@
             "Signed in as a Member; a PDF in a Normal meeting."
           ],
           "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (View_streams_the_stored_bytes_unchanged_as_an_attachment) · Evidence(AC17): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/04-member-AC17-desktop-trinh-xem-pdf.png (Tải về đúng byte (API 200 + attachment); nút khoá trong lúc tải là thoáng qua với tệp nhỏ nên không assert.)",
-          "id": "DOC_FT72",
+          "id": "DOC_FT41",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1451,27 +898,10 @@
             "Signed in as a Member of a Secret meeting with a PDF."
           ],
           "note": "UC-32c · BR-188 · BR-318 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Secret_meeting_documents_are_viewable_and_audited_but_not_downloadable) · Evidence(AC18): tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/11-member-AC18-desktop-mat-khong-tai-ve.png; tests/qa/out/SCRUM-194/20261121-195320-eb5a3255/12-member-AC18-desktop-trinh-xem-mat.png (Xem 200 + tải 403 MSG159 (API); dòng audit document.viewed của Thành viên đã kiểm qua /api/audit-log (BR-318).)",
-          "id": "DOC_FT73",
+          "id": "DOC_FT42",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a meeting that became Secret while the viewer was open refuses the download.",
-          "procedure": [
-            "Open a document of a Normal meeting in the viewer.",
-            "In another browser the Organizer raises the meeting to Secret.",
-            "Click \"Tải về\"."
-          ],
-          "expected": [
-            "Backend answers 403/MSG159; a red toast reads \"Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về.\" and the meeting is re-read, so the download button is replaced by \"Chỉ xem trực tuyến\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; an Organizer who can change the sensitivity."
-          ],
-          "note": "UC-32c · BR-188 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Secret_download_checks_attachment_before_refusing_and_refuses_before_touching_the_store) · Chưa làm (nhóm AX): họp lên Mật khi viewer đang mở (403 MSG159 + thay nút) — cần đổi mức mật giữa chừng, chưa có AC.",
-          "id": "DOC_FT74"
         },
         {
           "description": "Verify a document removed while it is open shows the not-found page.",
@@ -1487,93 +917,10 @@
             "Signed in as a Member; a Secretary in a second browser."
           ],
           "note": "UC-32c · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Removed_document_and_a_document_of_another_meeting_are_MSG156) · Evidence(AC32): tests/qa/out/SCRUM-194/20261121-195601-eb5a3255/01-member-AC32-desktop-tai-lieu-bi-go-khi-dang-mo.png (Mở viewer + bảng góp ý, gỡ qua API, tải lại thì \"Không tìm thấy trang\" (API 404 MSG156); bản trong kho giữ nguyên.)",
-          "id": "DOC_FT75",
+          "id": "DOC_FT43",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a stored file that is gone shows the error without a retry, and a temporary failure shows a retry.",
-          "procedure": [
-            "Remove the object from the file store and open the document.",
-            "Restore it, make the store fail (QA lead) and open the document again."
-          ],
-          "expected": [
-            "Step 1: backend answers 410/MSG382; the alert \"Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.\" has no \"Thử lại\".",
-            "Step 2: backend answers 503/MSG158; the alert \"Không hiển thị được tài liệu. Vui lòng thử lại.\" has \"Thử lại\", which loads the file once the store works."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; QA lead can remove an object and inject a store failure."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Missing_object_is_gone_for_good_MSG382_while_an_unconfigured_store_is_try_again_and_neither_is_audited) · Chưa làm (nhóm AX): object mất 410 + store lỗi 503 + Thử lại — cần QA lead xoá object/dừng kho, chưa có AC.",
-          "id": "DOC_FT76"
-        },
-        {
-          "description": "Verify a file the browser cannot draw shows its own message.",
-          "procedure": [
-            "Open a DOCX or PDF that the viewer cannot render (a damaged but accepted file)."
-          ],
-          "expected": [
-            "The viewer shows \"Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ.\" (FE message MSG383) and no \"Thử lại\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; a file that passes the upload checks but fails to render."
-          ],
-          "note": "UC-32c · Manual only · Chưa làm: tệp qua được server nhưng trình duyệt không vẽ được (MSG383) — không dựng được tệp mẫu quyết định được, chưa có AC.",
-          "id": "DOC_FT77"
-        },
-        {
-          "description": "Verify the viewer opens in a new tab from the online room and the back link closes it.",
-          "procedure": [
-            "In the online room open the panel \"Tài liệu\" and click a document.",
-            "Click the back link \"Tài liệu\" in the new tab."
-          ],
-          "expected": [
-            "The viewer opens in a new tab with ?from=room while the call continues; the back link closes that tab."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in in the online room of an InProgress meeting."
-          ],
-          "note": "UC-32c · BR-315 · Manual only · Chưa làm: viewer tab mới từ phòng online + back-link đóng tab — cần phòng LiveKit thật, chưa có AC.",
-          "id": "DOC_FT78"
-        },
-        {
-          "description": "Verify an outsider opening the viewer URL sees the not-found page.",
-          "procedure": [
-            "As a user who is not a participant, open /mgmt/meetings/<id>/documents/<documentId>."
-          ],
-          "expected": [
-            "The page \"Không tìm thấy trang\" is shown (backend 404/MSG156 or MSG174); nothing reveals that the meeting or document exists (SCRUM-22)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "An outsider account and a document URL supplied by QA lead."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Caller_who_cannot_view_the_meeting_gets_the_same_404_as_a_missing_meeting) · Evidence(AC19): tests/qa/out/SCRUM-194/20261121-195342-eb5a3255/02-admin-AC19-desktop-nguoi-ngoai-khong-tim-thay.png (Người ngoài trên Đã công bố cũng 404 MSG156 cùng body; trang không lộ tên tệp.)",
-          "id": "DOC_FT79",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest views and downloads a document of the invited meeting but not in a Secret meeting.",
-          "procedure": [
-            "Open the Guest invitation link, verify, and open a document at /guest/<invitationId>/documents/<documentId>.",
-            "Repeat for a Secret meeting."
-          ],
-          "expected": [
-            "Normal meeting: the viewer shows \"Tải về\" and both work.",
-            "Secret meeting: the viewer shows \"Chỉ xem trực tuyến\"; viewing works and is audited with the invitation."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Verified Guest invitations to a Normal and a Secret meeting."
-          ],
-          "note": "UC-32c · BR-188 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting) · Chưa làm (đề nghị H): khách xem/tải + họp Mật chỉ xem — cần OTP hộp thư thật, không làm tự động.",
-          "id": "DOC_FT80"
         }
       ]
     },
@@ -1596,7 +943,7 @@
             "Signed in as a Member of an InProgress meeting; a document without comments."
           ],
           "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page) · Evidence(AC27): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/01-member-AC27-desktop-bang-gop-y-trong.png",
-          "id": "DOC_FT81",
+          "id": "DOC_FT44",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1615,26 +962,7 @@
             "Signed in as a Member of an InProgress meeting; a PDF of at least 3 pages."
           ],
           "note": "UC-35 AF-1 · BR-250 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page) · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/01-member-AC22-desktop-soan-gop-y.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
-          "id": "DOC_FT82",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify unticking \"Gắn trang\" and a DOCX comment carry no page.",
-          "procedure": [
-            "On a PDF untick \"Gắn trang 3\" and send a comment.",
-            "On a DOCX send a comment."
-          ],
-          "expected": [
-            "Both comments appear without \"Trang n\"; a DOCX shows no \"Gắn trang\" checkbox (BR-248)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; a PDF and a DOCX."
-          ],
-          "note": "UC-35 · BR-248 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page) · Evidence(AC27): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/03-member-AC27-desktop-gop-y-khong-trang.png; tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/04-member-AC27-desktop-gop-y-docx.png",
-          "id": "DOC_FT83",
+          "id": "DOC_FT45",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1654,47 +982,7 @@
             "Signed in as a Member; a document with a comment."
           ],
           "note": "UC-35 AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment) · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
-          "id": "DOC_FT84",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify replying to a reply stays in the root thread.",
-          "procedure": [
-            "Click \"Trả lời\" under a root comment, send a reply, then reply again to the root comment's thread."
-          ],
-          "expected": [
-            "There is a single level: every answer is listed under the root comment (BR-317)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; a document with a comment."
-          ],
-          "note": "UC-35 AF-2 · BR-317 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment) · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png (Trả lời-của-trả lời về luồng gốc (API, BR-317).)",
-          "id": "DOC_FT85",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the send button needs text, Ctrl+Enter sends and the field stops at 4000 characters (boundary).",
-          "procedure": [
-            "Type only spaces.",
-            "Type a comment and press Ctrl+Enter.",
-            "Paste 4100 characters."
-          ],
-          "expected": [
-            "Step 1: \"Gửi góp ý\" stays disabled.",
-            "Step 2: the comment is sent (MSG199).",
-            "Step 3: the field keeps 4.000 characters and the counter reads \"4.000/4.000\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_comment_must_have_text_within_the_limit) · Evidence(AC27+AC22): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/02-member-AC27-desktop-ctrl-enter-da-gui.png (Gửi khi trống bị khoá + Ctrl+Enter gửi + đếm 4.000/4.000 (UI); trống/quá dài 400/MSG200/MSG348 (API ở AC22).)",
-          "id": "DOC_FT86",
+          "id": "DOC_FT46",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1712,7 +1000,7 @@
             "Signed in as a Member; an Ended and a Cancelled meeting with commented documents."
           ],
           "note": "UC-35 · BR-282 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended) · Evidence(AC23): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/09-secretary-AC23-desktop-da-ket-thuc-chi-doc.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/10-secretary-AC23-desktop-gop-y-chi-doc.png",
-          "id": "DOC_FT87",
+          "id": "DOC_FT47",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1730,7 +1018,7 @@
             "Signed in as a Member of an InProgress meeting that the Chair can end."
           ],
           "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended) · Evidence(AC33): tests/qa/out/SCRUM-194/20261121-194219-eb5a3255/01-member-AC33-desktop-ket-thuc-khi-dang-go.png (409 MSG251; chữ đã gõ còn nguyên; bảng thành chỉ đọc. Bắt khoảnh khắc bằng delay GET comments 2 giây (nếu không bảng tải lại quá nhanh).)",
-          "id": "DOC_FT88",
+          "id": "DOC_FT48",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1749,59 +1037,7 @@
             "Two users who can view the meeting in two browsers."
           ],
           "note": "UC-35 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png (Câu trả lời tự hiện không cần bấm (nút \"Làm mới\" đã bỏ vì thừa — CommentsPanel.tsx); case ghi bấm refresh, đề nghị BA cập nhật cơ chế.)",
-          "id": "DOC_FT89",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a document removed while the panel is open leaves the viewer.",
-          "procedure": [
-            "Open the comments, have the Secretary remove the document, then click \"Gửi góp ý\"."
-          ],
-          "expected": [
-            "Backend answers 404/MSG156 and the page \"Không tìm thấy trang\" is shown; the earlier comments stay in the database but are no longer listed (BR-284)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member; a Secretary in another browser."
-          ],
-          "note": "UC-35 · BR-284 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Outsiders_removed_documents_and_other_meetings_get_the_same_answer) · Evidence(AC32): tests/qa/out/SCRUM-194/20261121-195601-eb5a3255/01-member-AC32-desktop-tai-lieu-bi-go-khi-dang-mo.png (Cùng bằng chứng DOC_FT75 (bảng góp ý đang mở khi gỡ).)",
-          "id": "DOC_FT90",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest's comment carries the label \"Khách\".",
-          "procedure": [
-            "As a Guest open a document, click \"Góp ý\" and send a comment.",
-            "As a Member open the same panel."
-          ],
-          "expected": [
-            "The comment shows the name the Guest declared with the badge \"Khách\" for both viewers (BR-181)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A verified Guest invitation to a Published meeting and a Member in a second browser."
-          ],
-          "note": "UC-35 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_comments_and_replies_under_the_invitation_with_the_name_they_declared) · Chưa làm (đề nghị H): nhãn \"Khách\" ở góp ý — cần OTP hộp thư thật, không làm tự động.",
-          "id": "DOC_FT91"
-        },
-        {
-          "description": "Verify the same file in two meetings has separate discussions.",
-          "procedure": [
-            "Comment on a file in meeting A, then open the same file in meeting B and open \"Góp ý\"."
-          ],
-          "expected": [
-            "Meeting B shows \"Chưa có góp ý nào.\"; each meeting keeps its own comments."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member of two meetings that use the same file."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (The_same_file_in_two_meetings_has_two_separate_discussions) · Evidence(AC34): tests/qa/out/SCRUM-194/20261121-195720-eb5a3255/01-secretary-AC34-desktop-gop-y-rieng-tung-hop.png (Cùng tệp ở Đã công bố và Nháp: Nháp trống, Đã công bố có 1 (API commentCount 1/0).)",
-          "id": "DOC_FT92",
+          "id": "DOC_FT49",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1827,7 +1063,7 @@
             "Signed in as a Member who is a voter of an Open vote linking two documents."
           ],
           "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: panel vote hỏi đọc trước khi bỏ phiếu — thuộc vùng vote FE-11 (cần biểu quyết + xác nhận đọc), chưa có AC.",
-          "id": "DOC_FT93"
+          "id": "DOC_FT50"
         },
         {
           "description": "Verify the confirm button unlocks only at the last page and records the confirmation.",
@@ -1847,114 +1083,7 @@
             "Signed in as a voter of an Open vote linking a PDF of several pages."
           ],
           "note": "UC-74 · BR-290 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: \"Xác nhận đã đọc\" ở trang cuối + 200 MSG253 — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT94"
-        },
-        {
-          "description": "Verify a one-page document is confirmable at once.",
-          "procedure": [
-            "Open a one-page document of the vote with ?read=1."
-          ],
-          "expected": [
-            "Because the whole document fits the screen the button already reads \"Xác nhận đã đọc\" and is enabled."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter; a one-page PDF on the vote."
-          ],
-          "note": "UC-74 · Manual only · Chưa làm: tài liệu một trang xác nhận ngay — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT95"
-        },
-        {
-          "description": "Verify the confirmation counts for every vote that links the document.",
-          "procedure": [
-            "Confirm a document linked to two Open votes, then open the second vote's panel and the Tài liệu tab's group \"Biểu quyết\"."
-          ],
-          "expected": [
-            "The document is \"Đã đọc\" in both votes with the tooltip \"Bạn xác nhận đã đọc lúc <time>\" (BR-291)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter of two Open votes sharing one document."
-          ],
-          "note": "UC-74 · BR-291 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach) · Chưa làm: một xác nhận cho mọi vote gắn tài liệu — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT96"
-        },
-        {
-          "description": "Verify a repeated confirmation is harmless.",
-          "procedure": [
-            "Confirm a document in tab 1, then in tab 2 open the same viewer URL and click \"Xác nhận đã đọc\"."
-          ],
-          "expected": [
-            "Backend answers 200/MSG253 with alreadyConfirmed true; the first time is kept and the same toast \"Đã xác nhận đọc tài liệu.\" appears."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter; the same document open in two tabs."
-          ],
-          "note": "UC-74 AF-1 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: xác nhận lặp harmless — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT97"
-        },
-        {
-          "description": "Verify a vote closed meanwhile refuses the confirmation.",
-          "procedure": [
-            "Open a vote document with ?read=1 and scroll to the end.",
-            "In another browser the Chair closes the vote.",
-            "Click \"Xác nhận đã đọc\"."
-          ],
-          "expected": [
-            "Backend answers 409/MSG225; a red toast reads \"Biểu quyết này không còn nhận phiếu.\" and the button is enabled again; nothing is recorded."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter; a Chair who can close the vote."
-          ],
-          "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach) · Chưa làm (nhóm AX): vote đóng giữa chừng → 409 MSG225 — cần dàn dựng biểu quyết (FE-11) + hai nhịp, chưa có AC.",
-          "id": "DOC_FT98"
-        },
-        {
-          "description": "Verify a file the viewer cannot draw cannot be confirmed.",
-          "procedure": [
-            "Open a vote document with ?read=1 that the browser cannot render."
-          ],
-          "expected": [
-            "The viewer shows \"Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ.\" and the header button reads \"Báo Thư ký về tệp này\" and is disabled."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a voter; a vote document that fails to render."
-          ],
-          "note": "UC-74 · Manual only · Chưa làm: tệp không vẽ được không xác nhận được — xem DOC_FT77, chưa có AC.",
-          "id": "DOC_FT99"
-        },
-        {
-          "description": "Verify someone who is not a voter sees no read state.",
-          "procedure": [
-            "As the Chair who is not on the voter list open the group \"Biểu quyết\" on the Tài liệu tab and open a vote document."
-          ],
-          "expected": [
-            "No \"Chưa đọc\" label and no confirm button are shown (canConfirmRead is false); a call to the endpoint would answer 409/MSG224."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair, not on the voter list of an Open vote."
-          ],
-          "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (Not_read_is_asked_only_of_a_voter_of_an_open_vote_while_the_meeting_is_in_progress) · Chưa làm: không phải cử tri không thấy trạng thái đọc — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT100"
-        },
-        {
-          "description": "Verify a Guest voter confirms a document and then votes.",
-          "procedure": [
-            "As a Guest voter open the vote document from the guest page, scroll to the end, click \"Xác nhận đã đọc\", then cast the ballot."
-          ],
-          "expected": [
-            "Backend answers 200/MSG253; the ballot is accepted afterwards; the confirmation says nothing about the choice (BR-293)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A verified Guest invitation on the voter list of an Open secret vote."
-          ],
-          "note": "UC-74 · BR-293 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_guest_confirms_and_casts_a_secret_ballot_and_the_confirmation_says_nothing_about_the_choice) · Chưa làm (đề nghị H): khách cử tri xác nhận + bỏ phiếu — cần OTP hộp thư thật, không làm tự động.",
-          "id": "DOC_FT101"
+          "id": "DOC_FT51"
         }
       ]
     }

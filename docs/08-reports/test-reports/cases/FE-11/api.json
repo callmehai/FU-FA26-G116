@@ -53,29 +53,12 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify GET /api/meetings/{meetingId}/votes without a token answers 401.",
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "id": "VOTE_API_IT03",
-          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteList_RequiresToken)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "procedure": [
-            "Send GET /api/meetings/{meetingId}/votes with no Authorization header."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
           "description": "Verify GET /api/meetings/{meetingId}/votes answers 500 Internal Server Error MSG206 when the database fails.",
           "expected": [
             "HTTP 500 Internal Server Error: { \"code\": \"MSG206\", \"message\": \"Không tải được danh sách biểu quyết. Vui lòng thử lại.\" }.",
             "No vote is returned with the error."
           ],
-          "id": "VOTE_API_IT04",
+          "id": "VOTE_API_IT03",
           "note": "UC-52a | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -108,7 +91,7 @@
             "Body: { \"id\", \"title\", \"description\", \"status\": \"Closed\", \"options\": [ { \"id\", \"position\", \"label\" } ], \"documents\": [ { \"id\", \"fileName\", \"readConfirmedAt\" } ], \"result\": { \"ballotCount\", \"options\": [ { \"count\", \"percentage\" } ], \"voters\": [ ... ] } }.",
             "A secret vote returns \"voters\": null; a public one names each voter and choice."
           ],
-          "id": "VOTE_API_IT05",
+          "id": "VOTE_API_IT04",
           "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -128,7 +111,7 @@
           "expected": [
             "HTTP 404 Not Found, body code \"MSG205\"."
           ],
-          "id": "VOTE_API_IT06",
+          "id": "VOTE_API_IT05",
           "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDetail_UnknownOrForeignVoteIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -149,7 +132,7 @@
             "HTTP 500 Internal Server Error: { \"code\": \"MSG208\", \"message\": \"Không tải được trạng thái hoặc kết quả biểu quyết. Vui lòng thử lại.\" }.",
             "No option, count or ballot is returned with the error."
           ],
-          "id": "VOTE_API_IT07",
+          "id": "VOTE_API_IT06",
           "note": "UC-52b | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -182,7 +165,7 @@
             "Body: { \"code\": \"MSG210\", \"message\": \"Tạo biểu quyết nháp thành công.\", \"meetingId\", \"voteId\" }.",
             "GET /api/meetings/{meetingId}/votes lists the new draft for the Chair and Secretary, not for the Member."
           ],
-          "id": "VOTE_API_IT08",
+          "id": "VOTE_API_IT07",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -205,7 +188,7 @@
             "Body: { \"code\": \"MSG209\", \"message\": \"Thông tin biểu quyết không hợp lệ. Kiểm tra các trường được đánh dấu.\", \"errors\": { \"title\": [...], \"options\": [...], \"isAnonymous\": [...], \"eligibleRoles\": [...] } }.",
             "No draft is saved: the list is unchanged."
           ],
-          "id": "VOTE_API_IT09",
+          "id": "VOTE_API_IT08",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Invalid_configuration_is_rejected_and_saves_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -227,7 +210,7 @@
             "A Member: HTTP 404, body code \"MSG205\" — the draft box is invisible to them.",
             "An Approved meeting managed by a Chair without the role: HTTP 409, body code \"MSG213\"."
           ],
-          "id": "VOTE_API_IT10",
+          "id": "VOTE_API_IT09",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_the_current_chair_or_secretary_manage_drafts_and_only_before_or_during_the_sitting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -236,52 +219,6 @@
           "procedure": [
             "Sign in as the Member and send POST /api/meetings/{meetingId}/votes with a valid draft body.",
             "Sign in as the Chair and repeat it."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/votes with openImmediately opens at once and leaves no draft on failure.",
-          "expected": [
-            "Happy path: HTTP 200, body code \"MSG217\".",
-            "No eligible voter: HTTP 409, body code \"MSG220\", and no draft is left behind."
-          ],
-          "id": "VOTE_API_IT11",
-          "note": "UC-53 | UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_form_opens_at_once_or_leaves_no_draft)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting in InProgress chaired by the Chair."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/votes with a valid draft body plus \"openImmediately\": true and eligibleRoles covering the roster.",
-            "Repeat it with \"eligibleRoles\": [\"Guest\"] while no Guest may vote."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/votes answers 503 Service Unavailable MSG214 when the database fails.",
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG214\", \"message\": \"Không tạo được biểu quyết nháp. Chưa có nháp nào được tạo. Vui lòng thử lại.\" }.",
-            "GET the vote list: no new draft."
-          ],
-          "id": "VOTE_API_IT12",
-          "note": "UC-53 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active Chair account of the meeting.",
-            "A meeting InProgress with no open vote.",
-            "QA lead can make the database fail for one request."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database fail for the next request.",
-            "Send POST /api/meetings/{meetingId}/votes",
-            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
-            "Body: a valid draft with two options."
           ],
           "round1": "Passed",
           "date1": "2026-11-21",
@@ -301,7 +238,7 @@
             "HTTP 200 OK, body code \"MSG211\".",
             "GET the vote shows the new title, options and roles."
           ],
-          "id": "VOTE_API_IT13",
+          "id": "VOTE_API_IT10",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -323,7 +260,7 @@
             "HTTP 409 with the open error (e.g. code \"MSG219\").",
             "The draft keeps its previous configuration: GET shows the old title and options."
           ],
-          "id": "VOTE_API_IT14",
+          "id": "VOTE_API_IT11",
           "note": "UC-53 | UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_edit_form_keeps_the_edits_only_when_the_vote_opens)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -343,7 +280,7 @@
           "expected": [
             "HTTP 404 Not Found, body code \"MSG205\"."
           ],
-          "id": "VOTE_API_IT15",
+          "id": "VOTE_API_IT12",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -371,7 +308,7 @@
             "HTTP 200 OK, body code \"MSG212\".",
             "The vote is gone from the list."
           ],
-          "id": "VOTE_API_IT16",
+          "id": "VOTE_API_IT13",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -391,7 +328,7 @@
             "Member: HTTP 404, body code \"MSG205\".",
             "Open vote by the Chair: HTTP 409, body code \"MSG213\"."
           ],
-          "id": "VOTE_API_IT17",
+          "id": "VOTE_API_IT14",
           "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -419,7 +356,7 @@
             "HTTP 200 OK, body code \"MSG265\" with \"documents\": the linked meeting documents.",
             "The vote detail shows the documents; the meeting documents stay in the meeting."
           ],
-          "id": "VOTE_API_IT18",
+          "id": "VOTE_API_IT15",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -441,7 +378,7 @@
             "HTTP 404, body code \"MSG170\".",
             "Nothing is linked."
           ],
-          "id": "VOTE_API_IT19",
+          "id": "VOTE_API_IT16",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachForeignDocumentIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -460,7 +397,7 @@
           "expected": [
             "HTTP 409, body code \"MSG266\"."
           ],
-          "id": "VOTE_API_IT20",
+          "id": "VOTE_API_IT17",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachDuplicateIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -479,7 +416,7 @@
           "expected": [
             "HTTP 409, body code \"MSG213\"."
           ],
-          "id": "VOTE_API_IT21",
+          "id": "VOTE_API_IT18",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Documents_change_only_while_the_vote_is_a_draft_and_only_by_the_chair_or_secretary)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -507,7 +444,7 @@
             "HTTP 200 OK, body code \"MSG265\".",
             "The files become meeting documents and appear on the vote."
           ],
-          "id": "VOTE_API_IT22",
+          "id": "VOTE_API_IT19",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -528,7 +465,7 @@
           "expected": [
             "HTTP 400, body code \"MSG249\"."
           ],
-          "id": "VOTE_API_IT23",
+          "id": "VOTE_API_IT20",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachFromEmptyLibraryIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -556,7 +493,7 @@
             "HTTP 200 OK, body code \"MSG265\" with \"documents\": the new meeting document.",
             "The file is also in the uploader's personal library."
           ],
-          "id": "VOTE_API_IT24",
+          "id": "VOTE_API_IT21",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -576,7 +513,7 @@
             "HTTP 400, body code \"MSG164\".",
             "Nothing is added to the meeting or the vote."
           ],
-          "id": "VOTE_API_IT25",
+          "id": "VOTE_API_IT22",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadNonPdfIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -596,7 +533,7 @@
             "HTTP 400, body code \"MSG288\".",
             "Nothing is added to the meeting or the vote."
           ],
-          "id": "VOTE_API_IT26",
+          "id": "VOTE_API_IT23",
           "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadElevenFilesIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -616,7 +553,7 @@
             "HTTP 409: { \"code\": \"MSG346\", \"message\": \"Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.\" }.",
             "Nothing is added to the meeting, the vote or the personal library; no stored object is left (ADR-0034)."
           ],
-          "id": "VOTE_API_IT27",
+          "id": "VOTE_API_IT24",
           "note": "UC-76a | ADR-0034 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadWhenStorageFullIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -624,27 +561,6 @@
           ],
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify uploading to a draft answers 503 MSG166 when the file store fails.",
-          "expected": [
-            "HTTP 503: { \"code\": \"MSG166\", \"message\": \"Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại.\" }.",
-            "Nothing is added to the meeting or the vote, and the uploaded bytes are deleted again."
-          ],
-          "id": "VOTE_API_IT28",
-          "note": "UC-76a | BR-286 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (A_failed_save_attaches_detaches_and_adds_nothing)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A draft vote; a PDF file under 50 MB; QA lead can make the file store fail."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the file store fail for the next request.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
@@ -665,7 +581,7 @@
             "HTTP 200 OK, body code \"MSG268\".",
             "The vote detail no longer shows the document; GET /api/meetings/{meetingId}/documents still lists it."
           ],
-          "id": "VOTE_API_IT29",
+          "id": "VOTE_API_IT25",
           "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -684,7 +600,7 @@
           "expected": [
             "HTTP 404, body code \"MSG269\"."
           ],
-          "id": "VOTE_API_IT30",
+          "id": "VOTE_API_IT26",
           "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_DetachNeverLinkedIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -712,7 +628,7 @@
             "HTTP 200 OK, body code \"MSG217\".",
             "The vote status is Open; the eligible list is the active role holders at this instant (later roster changes change nothing)."
           ],
-          "id": "VOTE_API_IT31",
+          "id": "VOTE_API_IT27",
           "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_fixes_who_may_vote_from_the_selected_roles_regardless_of_attendance)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -731,7 +647,7 @@
           "expected": [
             "HTTP 409, body code \"MSG218\"."
           ],
-          "id": "VOTE_API_IT32",
+          "id": "VOTE_API_IT28",
           "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteOpen_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -751,7 +667,7 @@
             "HTTP 409, body code \"MSG219\".",
             "The first vote stays open; the draft stays a draft."
           ],
-          "id": "VOTE_API_IT33",
+          "id": "VOTE_API_IT29",
           "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Simultaneous_opens_leave_one_vote_open)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -771,7 +687,7 @@
             "HTTP 409, body code \"MSG220\".",
             "The vote stays a draft."
           ],
-          "id": "VOTE_API_IT34",
+          "id": "VOTE_API_IT30",
           "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_vote_with_nobody_eligible_does_not_open)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -780,30 +696,6 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/open answers 503 Service Unavailable MSG221 when the database fails.",
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG221\", \"message\": \"Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại.\" }.",
-            "The vote stays a draft; nobody is told a vote opened."
-          ],
-          "id": "VOTE_API_IT35",
-          "note": "UC-54 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active Chair account of the meeting.",
-            "A draft vote and no other open vote.",
-            "QA lead can make the database fail for one request."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database fail for the next request.",
-            "Send POST /api/meetings/{meetingId}/votes/{voteId}/open",
-            "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
           "date1": "2026-11-21",
@@ -823,7 +715,7 @@
             "HTTP 200 OK, body code \"MSG227\".",
             "The option count grows by one."
           ],
-          "id": "VOTE_API_IT36",
+          "id": "VOTE_API_IT31",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -845,7 +737,7 @@
             "HTTP 409, body code \"MSG226\".",
             "The counts stay as after the first ballot."
           ],
-          "id": "VOTE_API_IT37",
+          "id": "VOTE_API_IT32",
           "note": "UC-55 | BR-265 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; Simultaneous_ballots_from_one_person_record_exactly_one)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -866,7 +758,7 @@
             "HTTP 409, body code \"MSG224\".",
             "No ballot is saved."
           ],
-          "id": "VOTE_API_IT38",
+          "id": "VOTE_API_IT33",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_holders_of_the_selected_roles_at_opening_may_vote)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -885,7 +777,7 @@
           "expected": [
             "HTTP 409, body code \"MSG225\"."
           ],
-          "id": "VOTE_API_IT39",
+          "id": "VOTE_API_IT34",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Ballot_OnClosedVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -905,7 +797,7 @@
             "HTTP 400, body code \"MSG222\".",
             "No ballot is saved."
           ],
-          "id": "VOTE_API_IT40",
+          "id": "VOTE_API_IT35",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -925,7 +817,7 @@
             "HTTP 400, body code \"MSG223\".",
             "No ballot is saved."
           ],
-          "id": "VOTE_API_IT41",
+          "id": "VOTE_API_IT36",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -945,7 +837,7 @@
             "HTTP 409, body code \"MSG252\" with \"documents\": the unread vote documents.",
             "After confirming each document read (POST .../read-confirmation with lastPageReached true), the ballot returns HTTP 200, code \"MSG227\"."
           ],
-          "id": "VOTE_API_IT42",
+          "id": "VOTE_API_IT37",
           "note": "UC-55 | UC-74 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -966,7 +858,7 @@
             "HTTP 200 OK, body code \"MSG227\".",
             "A second ballot answers 409, code \"MSG226\"."
           ],
-          "id": "VOTE_API_IT43",
+          "id": "VOTE_API_IT38",
           "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_verified_guest_votes_once_by_invitation)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -981,36 +873,12 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/ballots answers 503 Service Unavailable MSG228 when the database fails.",
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG228\", \"message\": \"Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại.\" }.",
-            "GET the vote: the counts are unchanged and the Member has not voted; the same ballot sent again is accepted (MSG227)."
-          ],
-          "id": "VOTE_API_IT44",
-          "note": "UC-55 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_ballot_that_fails_at_commit_leaves_neither_receipt_nor_count)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An open vote with the Member on its eligible list.",
-            "QA lead can make the database fail for one request."
-          ],
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database fail for the next request.",
-            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
-            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
-            "Body: { \"optionId\": \"<option id>\" }"
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
           "description": "Verify a read confirmation refused with MSG254 does not unlock the ballot.",
           "expected": [
             "Step 2: HTTP 400: { \"code\": \"MSG254\", \"message\": \"Hãy cuộn tới trang cuối của tài liệu trước khi xác nhận đã đọc.\" }; nothing is recorded.",
             "Step 3: HTTP 409, body code \"MSG252\" with the document still in \"documents\"; no ballot is recorded."
           ],
-          "id": "VOTE_API_IT45",
+          "id": "VOTE_API_IT39",
           "note": "UC-55 | UC-74 | BR-290 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1039,7 +907,7 @@
             "HTTP 200 OK, body code \"MSG229\" with \"result\": { \"ballotCount\", \"options\": [ { \"count\", \"percentage\" } ] }.",
             "No further ballot is accepted (HTTP 409, code \"MSG225\")."
           ],
-          "id": "VOTE_API_IT46",
+          "id": "VOTE_API_IT40",
           "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1059,7 +927,7 @@
           "expected": [
             "HTTP 409, body code \"MSG230\"."
           ],
-          "id": "VOTE_API_IT47",
+          "id": "VOTE_API_IT41",
           "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteClose_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1068,30 +936,6 @@
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/close answers 503 Service Unavailable MSG231 when the database fails.",
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG231\", \"message\": \"Không đóng được biểu quyết. Biểu quyết và các phiếu đã ghi vẫn giữ nguyên. Vui lòng thử lại.\" }.",
-            "The vote stays open and every recorded ballot is kept."
-          ],
-          "id": "VOTE_API_IT48",
-          "note": "UC-56 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active Chair account of the meeting.",
-            "An open vote with some ballots.",
-            "QA lead can make the database fail for one request."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database fail for the next request.",
-            "Send POST /api/meetings/{meetingId}/votes/{voteId}/close",
-            "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
           "date1": "2026-11-21",
@@ -1111,7 +955,7 @@
             "HTTP 200 OK, body code \"MSG235\".",
             "The detail shows the conclusion; recording again answers 409, code \"MSG233\"."
           ],
-          "id": "VOTE_API_IT49",
+          "id": "VOTE_API_IT42",
           "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1133,7 +977,7 @@
           "expected": [
             "HTTP 400, body code \"MSG232\"."
           ],
-          "id": "VOTE_API_IT50",
+          "id": "VOTE_API_IT43",
           "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OutsideAllowedSetIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1152,7 +996,7 @@
           "expected": [
             "HTTP 409, body code \"MSG234\"."
           ],
-          "id": "VOTE_API_IT51",
+          "id": "VOTE_API_IT44",
           "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OnOpenVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1161,31 +1005,6 @@
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Passed\" }."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/conclusion answers 503 Service Unavailable MSG236 when the database fails.",
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG236\", \"message\": \"Không ghi được kết luận biểu quyết. Chưa có kết luận nào được ghi. Vui lòng thử lại.\" }.",
-            "The vote has no conclusion; the Chair can record it once the failure is removed."
-          ],
-          "id": "VOTE_API_IT52",
-          "note": "UC-57 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active Chair account of the meeting.",
-            "A closed vote without a conclusion.",
-            "QA lead can make the database fail for one request."
-          ],
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database fail for the next request.",
-            "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion",
-            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
-            "Body: { \"conclusion\": \"Passed\" }"
           ],
           "round1": "Passed",
           "date1": "2026-11-21",

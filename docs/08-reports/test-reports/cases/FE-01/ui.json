@@ -327,26 +327,6 @@
         },
         {
           "id": "AUTH_FT15",
-          "description": "Verify a user deactivated mid-session is sent to sign-in with a notice.",
-          "procedure": [
-            "As Admin, in another browser, deactivate the account.",
-            "In the user's browser, click any sidebar item."
-          ],
-          "expected": [
-            "The app opens /login with \"Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.\"",
-            "Signing in again with that account shows MSG02."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in with a disposable account supplied by QA lead; an Admin account in a second browser."
-          ],
-          "note": "UC-01 | SCRUM-12 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/26-anon-AC22-desktop-giua-phien-ve-dang-nhap.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT16",
           "description": "Verify a signed-out user cannot open an inner screen by URL.",
           "procedure": [
             "Paste /mgmt/admin/users into the address bar."
@@ -373,7 +353,7 @@
       ],
       "cases": [
         {
-          "id": "AUTH_FT17",
+          "id": "AUTH_FT16",
           "description": "Verify the user signs out after confirming.",
           "procedure": [
             "Click the avatar at the foot of the sidebar.",
@@ -396,7 +376,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AUTH_FT18",
+          "id": "AUTH_FT17",
           "description": "Verify cancelling the dialog keeps the session.",
           "procedure": [
             "Open the account menu and click \"Đăng xuất\".",
@@ -415,7 +395,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AUTH_FT19",
+          "id": "AUTH_FT18",
           "description": "Verify a failed sign-out keeps the user signed in and says so.",
           "procedure": [
             "In DevTools > Network, set \"Offline\".",
@@ -436,27 +416,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AUTH_FT20",
-          "description": "Verify signing out in one tab ends the session in the other tabs of the same browser.",
-          "procedure": [
-            "Open the app in two tabs.",
-            "Sign out in tab 1.",
-            "Go to tab 2 and click any sidebar item."
-          ],
-          "expected": [
-            "Tab 2 opens /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-03 | Manual only · Evidence(AC23): tests/qa/out/SCRUM-188/20261121-214545-eb5a3255/01-member-AC23-desktop-tab2-cung-ve-login.png · Tab 2 là trang mới cùng trình duyệt (chung cookie), tương đương tab thứ hai của người dùng.",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT21",
+          "id": "AUTH_FT19",
           "description": "Verify signing out on one device leaves the other devices signed in.",
           "procedure": [
             "Sign in as the Secretary in Chrome and in a second browser (e.g. Edge).",
@@ -484,7 +444,7 @@
       ],
       "cases": [
         {
-          "id": "AUTH_FT22",
+          "id": "AUTH_FT20",
           "description": "Verify opening the invitation link sends a code to the invited email.",
           "procedure": [
             "Open the link in the invitation email."
@@ -502,7 +462,7 @@
           "note": "UC-04 | BR-152 | BR-153 | Manual only"
         },
         {
-          "id": "AUTH_FT23",
+          "id": "AUTH_FT21",
           "description": "Verify the right code leads to the profile form and then into the meeting.",
           "procedure": [
             "Type the 6-digit code from the email into the 6 boxes.",
@@ -523,24 +483,7 @@
           "note": "UC-04 | BR-180 | Manual only"
         },
         {
-          "id": "AUTH_FT24",
-          "description": "Verify an incomplete code is caught before sending.",
-          "procedure": [
-            "Type only 4 digits.",
-            "Click \"Xác minh\"."
-          ],
-          "expected": [
-            "The page shows \"Nhập đủ 6 chữ số của mã.\" and sends no request."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The verification screen is open."
-          ],
-          "note": "UC-04 | Manual only"
-        },
-        {
-          "id": "AUTH_FT25",
+          "id": "AUTH_FT22",
           "description": "Verify a wrong code is refused.",
           "procedure": [
             "Type 6 digits that are not the code.",
@@ -557,7 +500,7 @@
           "note": "UC-04 EX-2 | Manual only"
         },
         {
-          "id": "AUTH_FT26",
+          "id": "AUTH_FT23",
           "description": "Verify 5 wrong codes lock the code until a new one is sent.",
           "procedure": [
             "Submit 5 wrong codes.",
@@ -577,29 +520,7 @@
           "note": "UC-04 EX-4 | Manual only"
         },
         {
-          "id": "AUTH_FT27",
-          "description": "Verify \"Gửi lại mã\" waits for its countdown and the old code stops working.",
-          "procedure": [
-            "Note the first code C1.",
-            "Wait until the countdown ends; click \"Gửi lại mã\"; note the new code C2.",
-            "Enter C1 and click \"Xác minh\".",
-            "Enter C2 and click \"Xác minh\"."
-          ],
-          "expected": [
-            "Before the countdown ends \"Gửi lại mã\" cannot be clicked.",
-            "Step 2 shows \"Đang gửi…\", then a new countdown; a second email arrives.",
-            "Step 3 shows MSG126.",
-            "Step 4 succeeds."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The verification screen is open with a code sent."
-          ],
-          "note": "UC-04 EX-5 | Manual only"
-        },
-        {
-          "id": "AUTH_FT28",
+          "id": "AUTH_FT24",
           "description": "Verify an empty display name is not accepted.",
           "procedure": [
             "Leave \"Tên hiển thị\" empty.",
@@ -616,76 +537,7 @@
           "note": "UC-04 EX-7 | Manual only"
         },
         {
-          "id": "AUTH_FT29",
-          "description": "Verify reopening the link with a live session needs no new code.",
-          "procedure": [
-            "Close the tab.",
-            "Open the invitation link again in the same browser."
-          ],
-          "expected": [
-            "The meeting page opens directly; no code is requested and no new email arrives."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The Guest is inside the meeting (verified and named) in this browser, less than 12 hours ago."
-          ],
-          "note": "UC-04 AF-1 | Manual only"
-        },
-        {
-          "id": "AUTH_FT30",
-          "description": "Verify a second device reuses the declared name.",
-          "procedure": [
-            "On another browser, open the invitation link.",
-            "Enter the code from the new email and click \"Xác minh\"."
-          ],
-          "expected": [
-            "After verification the meeting page opens directly, without the \"Thông tin hiển thị\" form; the name is still \"Nguyễn Văn Khách\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The Guest has declared the name \"Nguyễn Văn Khách\" on the first device."
-          ],
-          "note": "UC-04 EX-9 | Manual only"
-        },
-        {
-          "id": "AUTH_FT31",
-          "description": "Verify \"Thoát\" ends the Guest session on this device.",
-          "procedure": [
-            "Click \"Thoát\".",
-            "Click \"Vào lại cuộc họp\"."
-          ],
-          "expected": [
-            "Step 1 shows \"Bạn đã thoát khỏi cuộc họp\" and \"Mở lại để nhập mã mới.\"",
-            "Step 2 returns to the verification screen and a new code is sent; the meeting is not shown until it is entered."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The Guest is inside the meeting."
-          ],
-          "note": "UC-04 | Manual only"
-        },
-        {
-          "id": "AUTH_FT32",
-          "description": "Verify the Guest is put out when the meeting ends or the invitation is revoked.",
-          "procedure": [
-            "As Secretary, in another browser, remove the Guest from the participants (UC-28c) — or as Chair, end the meeting (UC-22).",
-            "Wait up to 20 seconds, or switch away from the Guest tab and back."
-          ],
-          "expected": [
-            "The Guest page shows \"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi\"; the meeting content is no longer shown."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting.",
-            "The Guest is inside the meeting."
-          ],
-          "note": "UC-04 EX-8 | BR-157 | Manual only"
-        },
-        {
-          "id": "AUTH_FT33",
+          "id": "AUTH_FT25",
           "description": "Verify a broken or revoked link cannot be opened.",
           "procedure": [
             "Open the invitation link with the part after \"#token=\" changed.",
@@ -704,7 +556,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AUTH_FT34",
+          "id": "AUTH_FT26",
           "description": "Verify a Guest session does not open internal screens.",
           "procedure": [
             "In the same browser, open /calendar."

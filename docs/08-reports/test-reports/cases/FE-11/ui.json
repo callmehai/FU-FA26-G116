@@ -70,28 +70,6 @@
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Nguyễn Trường Huy"
-        },
-        {
-          "description": "Verify a vote list that cannot load offers a retry.",
-          "expected": [
-            "Step 2: backend answers 500/MSG206; the tab shows \"Không tải được danh sách biểu quyết. Vui lòng thử lại.\" with a \"Thử lại\" button instead of the list.",
-            "Step 3: the list loads."
-          ],
-          "id": "VOTE_FT04",
-          "note": "UC-52a | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing) · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/72-chair-AC26-desktop-loi-tai-danh-sach.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/73-chair-AC26-desktop-thu-lai-thanh-cong.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/74-chair-AC26-phone-loi-tai-danh-sach.png",
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a meeting with votes.",
-            "A way to make the backend fail."
-          ],
-          "procedure": [
-            "Make GET /api/meetings/<id>/votes fail on the server.",
-            "Open the meeting from /mgmt/meetings and click the tab \"Biểu quyết\".",
-            "Remove the failure and click \"Thử lại\"."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -107,7 +85,7 @@
             "\"Tạo biểu quyết\" opens the dialog with \"Nội dung biểu quyết\", three \"Phương án\" rows (Đồng ý, Không đồng ý, Không ý kiến), \"Hình thức\" (\"Công khai\" / \"Bỏ phiếu kín\"), \"Người được bỏ phiếu\" (Chủ toạ/Thư ký/Thành viên/Khách) and \"Mô tả\".",
             "\"Lưu nháp\" shows \"Đang lưu…\", then the toast \"Tạo biểu quyết nháp thành công.\" and the new row appears with chip \"Nháp\" and the roles Chủ toạ, Thành viên."
           ],
-          "id": "VOTE_FT05",
+          "id": "VOTE_FT04",
           "note": "UC-53 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC27+AC1: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/76-chair-AC27-desktop-form-da-nhap.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/77-chair-AC27-desktop-dang-luu.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/78-chair-AC27-desktop-nhap-da-tao.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/02-secretary-AC1-desktop-nhap-da-tao.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -130,7 +108,7 @@
             "No role: \"Chọn ít nhất một vai trò.\".",
             "No request leaves the browser in any of the three cases."
           ],
-          "id": "VOTE_FT06",
+          "id": "VOTE_FT05",
           "note": "UC-53 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/05-secretary-AC2-desktop-loi-tung-truong.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -151,7 +129,7 @@
             "\"Sửa\" reopens \"Sửa biểu quyết\" with the saved values; saving updates the row.",
             "Delete asks \"Xoá biểu quyết nháp\" — \"Xoá nháp …?\"; \"Xoá\" removes the row."
           ],
-          "id": "VOTE_FT07",
+          "id": "VOTE_FT06",
           "note": "UC-53 | Manual only · Round1 Passed (2026-11-22): AC3+AC4: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/08-chair-AC3-desktop-form-sua.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/09-chair-AC3-desktop-nhap-da-sua.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/12-secretary-AC4-desktop-xac-nhan-xoa.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/13-secretary-AC4-desktop-da-xoa.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -171,7 +149,7 @@
             "Step 4 closes both dialogs.",
             "The list shows no \"Nháp bỏ dở\" row; DevTools > Network shows no POST /api/meetings/{meetingId}/votes."
           ],
-          "id": "VOTE_FT08",
+          "id": "VOTE_FT07",
           "note": "UC-53 | Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/06-secretary-AC2-desktop-huy-giua-chung-hoi-bo-thay-doi.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/07-secretary-AC2-desktop-khong-co-nhap-bo-do.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -201,7 +179,7 @@
             "The paperclip menu attaches the chosen meeting documents; the draft shows the paperclip count and lists the files; once the vote is open, its voters see \"Đã đọc\"/\"Chưa đọc\" beside each file.",
             "\"Gỡ khỏi biểu quyết\" asks \"Gỡ … khỏi biểu quyết? Tài liệu vẫn ở trong cuộc họp.\"; \"Gỡ\" removes the link, the meeting keeps the file."
           ],
-          "id": "VOTE_FT09",
+          "id": "VOTE_FT08",
           "note": "UC-76 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC17+AC18: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/52-chair-AC17-desktop-chon-tai-lieu.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/53-chair-AC17-desktop-da-gan-tai-lieu.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/57-secretary-AC18-desktop-xac-nhan-go.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/58-secretary-AC18-desktop-da-go.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -221,7 +199,7 @@
             "The draft row is not listed for the Member at all.",
             "An open vote shows its documents but no paperclip menu and no \"Gỡ khỏi biểu quyết\" button."
           ],
-          "id": "VOTE_FT10",
+          "id": "VOTE_FT09",
           "note": "UC-76 | BR-253 | Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/54-member-AC17-desktop-chua-doc-khoa-gui.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -240,7 +218,7 @@
           "expected": [
             "The dialog shows \"Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.\" with the size chosen and the space left, before anything is sent; the add button stays disabled and no upload request is sent."
           ],
-          "id": "VOTE_FT11",
+          "id": "VOTE_FT10",
           "note": "UC-76a | ADR-0034 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/82-chair-AC28-desktop-kho-day.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -269,7 +247,7 @@
             "\"Mở\" asks \"Mở …\" — \"Người bỏ phiếu (…) chốt ngay lúc mở.\"; confirming starts the vote and shows the toast \"Mở biểu quyết thành công.\".",
             "The row chip becomes \"Đang mở\" with turnout 0/n and a \"Đóng phiếu\" button."
           ],
-          "id": "VOTE_FT12",
+          "id": "VOTE_FT11",
           "note": "UC-54 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC7: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/19-chair-AC7-desktop-xac-nhan-mo.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/20-chair-AC7-desktop-dang-mo.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -287,7 +265,7 @@
           "expected": [
             "\"Mở biểu quyết\" (enabled only for the Chair while the meeting is running) creates and opens in one step; the row is \"Đang mở\"."
           ],
-          "id": "VOTE_FT13",
+          "id": "VOTE_FT12",
           "note": "UC-54 | Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/23-chair-AC8-desktop-form-co-nut-mo.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/24-chair-AC8-desktop-mo-them-bi-chan.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -314,7 +292,7 @@
             "The ballot box lists one radio per option; \"Gửi phiếu\" stays disabled until an option is chosen and every document shows \"Đã đọc\" (after \"Xác nhận đã đọc\" in the viewer).",
             "After \"Gửi phiếu\": \"Bạn đã gửi phiếu.\"; the box no longer accepts input (\"Gửi rồi không đổi, không rút được.\" is shown before sending)."
           ],
-          "id": "VOTE_FT14",
+          "id": "VOTE_FT13",
           "note": "UC-55 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/54-member-AC17-desktop-chua-doc-khoa-gui.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/55-member-AC17-desktop-trinh-xem-xac-nhan.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/56-member-AC17-desktop-da-doc-da-gui.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -334,7 +312,7 @@
           "expected": [
             "The box shows \"Bạn không có trong danh sách bỏ phiếu.\" and no radio buttons."
           ],
-          "id": "VOTE_FT15",
+          "id": "VOTE_FT14",
           "note": "UC-55 | Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/33-member-AC11-desktop-khong-trong-danh-sach.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -353,7 +331,7 @@
             "The Guest sees the ballot box without voter names.",
             "After voting the Guest sees \"Bạn đã gửi phiếu.\"; the secret tally grows by one with no name attached."
           ],
-          "id": "VOTE_FT16",
+          "id": "VOTE_FT15",
           "note": "UC-55 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -369,7 +347,7 @@
             "Step 2: backend answers 503/MSG228; an error toast reads \"Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại.\" and the ballot is still open for this voter.",
             "Step 3: the ballot is recorded once (MSG227) and the turnout grows by one."
           ],
-          "id": "VOTE_FT17",
+          "id": "VOTE_FT16",
           "note": "UC-55 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_ballot_that_fails_at_commit_leaves_neither_receipt_nor_count) · Round1 Passed (2026-11-22): AC29: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/83-member-AC29-desktop-loi-ghi-phieu.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/84-member-AC29-desktop-gui-lai-thanh-cong.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/85-member-AC29-phone-loi-ghi-phieu.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/86-member-AC29-phone-gui-lai-thanh-cong.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -399,7 +377,7 @@
             "\"Đóng phiếu\" asks \"Đóng …? Đã bỏ n/m; đóng rồi không ai bỏ thêm được.\"; confirming shows the result bars at once.",
             "Further ballots are refused."
           ],
-          "id": "VOTE_FT18",
+          "id": "VOTE_FT17",
           "note": "UC-56 | Manual only · Round1 Passed (2026-11-22): AC13: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/37-chair-AC13-desktop-xac-nhan-dong.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/38-chair-AC13-desktop-ket-qua-cong-khai.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -419,7 +397,7 @@
             "The dialog closes; the row chip stays \"Đang mở\".",
             "DevTools > Network shows no POST /api/meetings/{meetingId}/votes/{voteId}/close."
           ],
-          "id": "VOTE_FT19",
+          "id": "VOTE_FT18",
           "note": "UC-56 | Manual only · Round1 Passed (2026-11-22): AC30: tests/qa/out/SCRUM-198/20261122-133832-39c00e3b/02-chair-AC30-desktop-hop-thoai-dong.png; tests/qa/out/SCRUM-198/20261122-133832-39c00e3b/03-chair-AC30-desktop-van-dang-mo.png; tests/qa/out/SCRUM-198/20261122-133832-39c00e3b/04-chair-AC30-phone-hop-thoai-dong.png; tests/qa/out/SCRUM-198/20261122-133832-39c00e3b/05-chair-AC30-phone-van-dang-mo.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -438,7 +416,7 @@
           "expected": [
             "The vote shows no \"Đóng phiếu\" button: only the current Chair closes (otherwise the backend answers 409/MSG230)."
           ],
-          "id": "VOTE_FT20",
+          "id": "VOTE_FT19",
           "note": "UC-56 | Manual only · Round1 Passed (2026-11-22): AC16: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/51-secretary-AC16-desktop-thu-ky-khong-co-nut-dong.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -465,7 +443,7 @@
             "The form requires \"Kết luận\" (\"Thông qua\" / \"Không thông qua\" / \"Hoãn\") and accepts an optional \"Ghi chú\" (\"Ghi rồi không sửa được.\").",
             "After \"Ghi kết luận\" the vote shows the conclusion chip (\"Thông qua\"/\"Không thông qua\"/\"Hoãn\"); the form is gone."
           ],
-          "id": "VOTE_FT21",
+          "id": "VOTE_FT20",
           "note": "UC-57 | Manual only · Round1 Passed (2026-11-22): AC14: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/41-chair-AC14-desktop-da-ghi-ket-luan.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -480,33 +458,12 @@
           "tester1": "Nguyễn Trường Huy"
         },
         {
-          "description": "Verify leaving without recording keeps the vote unconcluded.",
-          "expected": [
-            "Chair: the vote has no conclusion chip and the \"Ghi kết luận\" form is shown again, empty; DevTools > Network shows no POST /api/meetings/{meetingId}/votes/{voteId}/conclusion.",
-            "Member: the vote shows \"Chưa có kết luận.\"."
-          ],
-          "id": "VOTE_FT22",
-          "note": "UC-57 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC31: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/89-chair-AC31-desktop-chon-chua-ghi.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/90-chair-AC31-desktop-quay-lai-van-chua-ket-luan.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/91-member-AC31-desktop-thanh-vien-chua-co-ket-luan.png",
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair on a closed vote with no conclusion."
-          ],
-          "procedure": [
-            "Open the closed vote as the Chair, choose \"Thông qua\" and type a note, but do not submit.",
-            "Open the \"Thông tin chung\" tab, then come back to the \"Biểu quyết\" tab.",
-            "Open the same vote as a Member."
-          ],
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Nguyễn Trường Huy"
-        },
-        {
           "description": "Verify a Member sees the recorded conclusion after reloading.",
           "expected": [
             "Step 2 shows the conclusion chip (\"Thông qua\"/\"Không thông qua\"/\"Hoãn\") with the note.",
             "Step 3 shows the same conclusion; it cannot be edited."
           ],
-          "id": "VOTE_FT23",
+          "id": "VOTE_FT21",
           "note": "UC-57 | BR-262 | Manual only · Round1 Passed (2026-11-22): AC14: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/42-member-AC14-desktop-thanh-vien-thay-ket-luan.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/43-member-AC14-desktop-thanh-vien-sau-khi-tai-lai.png",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",

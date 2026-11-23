@@ -106,41 +106,6 @@
         },
         {
           "id": "AGENDA_FT06",
-          "description": "Verify a load failure is shown as an error with a retry, never as an empty agenda.",
-          "procedure": [
-            "Block GET /api/meetings/<id>/agenda in DevTools and open the agenda tab.",
-            "Unblock it and click \"Thử lại\"."
-          ],
-          "expected": [
-            "Backend answers 500/MSG128; the tab shows an error alert with the message and the button \"Thử lại\" and not the \"Chưa có nội dung nào\" hint.",
-            "After retrying the items load."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting with items."
-          ],
-          "note": "UC-26 | EX-2 | Manual only · Evidence(AC20+AC22): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/53-member-AC20-desktop-thu-lai-thanh-cong.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/62-secretary-AC22-desktop-nhap-thu-lai-duoc.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT07",
-          "description": "Verify a Guest with a valid invitation sees the agenda read-only.",
-          "procedure": [
-            "Open the Guest invitation link, verify the session and open the meeting agenda."
-          ],
-          "expected": [
-            "The list is shown with presenters and documents names but no \"Thêm nội dung\", \"Bắt đầu\", \"Xong\", edit, delete or drag controls; after the meeting ends the Guest can no longer open it."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting with a Guest invitation (email in a controlled inbox)."
-          ],
-          "note": "UC-26 | BR-181 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_snapshot_has_member_document_metadata_but_no_write_permissions_or_user_identity)"
-        },
-        {
-          "id": "AGENDA_FT08",
           "description": "Verify the agenda is hidden from someone who cannot read the meeting.",
           "procedure": [
             "Sign in as an unrelated account and go to /mgmt/meetings/<id>?tab=agenda."
@@ -168,7 +133,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_FT09",
+          "id": "AGENDA_FT07",
           "description": "Verify the Secretary adds an item with a presenter.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -192,7 +157,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT10",
+          "id": "AGENDA_FT08",
           "description": "Verify the presenter list offers roster members and Guests only and is optional.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -212,7 +177,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT11",
+          "id": "AGENDA_FT09",
           "description": "Verify an item cannot be saved without a title.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -231,7 +196,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT12",
+          "id": "AGENDA_FT10",
           "description": "Verify the Chair can add and edit items like the Secretary.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -250,7 +215,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT13",
+          "id": "AGENDA_FT11",
           "description": "Verify the Secretary edits the title, presenter and note of an item.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -272,28 +237,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT14",
-          "description": "Verify removing the presenter of an item leaves no old name behind.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Remove the presenter of an item and save it, then open its edit dialog again."
-          ],
-          "expected": [
-            "The row shows no presenter and no old name; the backend clears the presenter (presenterId and legacy name null).",
-            "The edit dialog shows no old name; the presenter field is empty."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Published meeting with three agenda items.",
-            "An item with a legacy typed presenter name, prepared by QA lead."
-          ],
-          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments) · Evidence(AC24): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/68-secretary-AC24-desktop-nguoi-trinh-bay-bi-go-mat-ten.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/69-secretary-AC24-desktop-sua-khong-con-ten-cu.png · Case cũ: E1 đòi dòng giữ tên cũ + tooltip “Trước đây:…” nhưng backend xoá presenter khi gỡ (presenterId=null, legacy=null, event PresenterCleared) — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT15",
+          "id": "AGENDA_FT12",
           "description": "Verify cancelling an edit with changes asks before discarding.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -314,7 +258,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT16",
+          "id": "AGENDA_FT13",
           "description": "Verify the Secretary deletes a Pending item and keeps its documents.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -338,7 +282,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT17",
+          "id": "AGENDA_FT14",
           "description": "Verify an item that has started cannot be deleted.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -359,7 +303,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT18",
+          "id": "AGENDA_FT15",
           "description": "Verify a Member and a finished meeting give no planning controls.",
           "procedure": [
             "Open the agenda tab as a Member.",
@@ -379,7 +323,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT19",
+          "id": "AGENDA_FT16",
           "description": "Verify a save refused because the role or state changed is explained and the list reloads.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -398,26 +342,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT20",
-          "description": "Verify a save that fails keeps the dialog and the typed values.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Open \"Thêm nội dung\", type a title, make the backend fail and click \"Lưu\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG68 \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\"; the message shows in the dialog, the typed values stay and \"Lưu\" can be pressed again; no item appears."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Published meeting with three agenda items.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-23a | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Evidence(AC34): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/81-secretary-AC34-desktop-post-503-hop-o-lai.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -428,7 +352,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_FT21",
+          "id": "AGENDA_FT17",
           "description": "Verify the Secretary drags an item to a new position.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -449,27 +373,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT22",
-          "description": "Verify an item can be moved with the keyboard.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Focus the handle of an item, press Space, press the Down arrow twice and press Space; repeat but end with Esc."
-          ],
-          "expected": [
-            "Space lifts, arrows move and Space drops with announcements \"Đã chọn \"<tên>\" ở vị trí N.\" and \"Đã chuyển ...\"; Esc ends with \"Đã huỷ, \"<tên>\" giữ nguyên vị trí.\" and the order is unchanged.",
-            "The help text reads \"Nhấn phím cách để nhấc nội dung lên, dùng phím mũi tên để di chuyển, phím cách để thả, Esc để huỷ.\""
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Published meeting with three agenda items."
-          ],
-          "note": "UC-23d | Manual only · Evidence(AC41): tests/qa/out/SCRUM-192/20261122-004537-eb5a3255/01-secretary-AC41-desktop-ban-phim-dang-nhac.png; tests/qa/out/SCRUM-192/20261122-004537-eb5a3255/02-secretary-AC41-desktop-ban-phim-da-tha.png; tests/qa/out/SCRUM-192/20261122-004537-eb5a3255/03-secretary-AC41-desktop-ban-phim-huy.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT23",
+          "id": "AGENDA_FT18",
           "description": "Verify dragging is not offered with a single item or to a Member.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -487,85 +391,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT24",
-          "description": "Verify a finished and a current item can be reordered too.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Drag a \"Đã xong\" item below a Pending one."
-          ],
-          "expected": [
-            "Backend answers 200/MSG63; the item keeps \"Đã xong\" and its times."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a meeting InProgress with a Done, an InProgress and a Pending item."
-          ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at) · Evidence(AC35): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/87-secretary-AC35-desktop-keo-muc-da-xong.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT25",
-          "description": "Verify a reorder from a stale list is refused and the list reloads.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "In browser 1 as the Secretary keep the agenda open; in browser 2 let the Chair add an item.",
-            "In browser 1 drag an item to a new position."
-          ],
-          "expected": [
-            "Backend answers 409/MSG143 \"Chương trình nghị sự đã thay đổi. Vui lòng tải lại.\"; the list reloads with the new item and the old drag is not applied."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Published meeting with three agenda items.",
-            "A second browser signed in as the Chair."
-          ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite) · Evidence(AC35): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/88-secretary-AC35-desktop-stale-order-409-reload.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT26",
-          "description": "Verify two users reordering from one snapshot do not overwrite each other silently.",
-          "procedure": [
-            "In two browsers as the Secretary and the Chair open the agenda and drag different items at about the same time."
-          ],
-          "expected": [
-            "One drag is saved with 200/MSG63 and the other answers 409/MSG143; both screens end on the saved order.",
-            "The requests may be handled in any order: the case passes whichever one wins."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Published meeting with three items; the Secretary and the Chair signed in."
-          ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite) · Evidence(AC36): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/89-secretary-AC36-desktop-hai-nguoi-sap-xep-409.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT27",
-          "description": "Verify a reorder that fails to save reverts the list.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Make the backend fail and drag an item to a new position."
-          ],
-          "expected": [
-            "Backend answers 503/MSG71 \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\"; an error message is shown and the list returns to the saved order after the reload."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Published meeting with three agenda items.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-23d | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Evidence(AC34): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/83-secretary-AC34-desktop-order-503-tra-lai-thu-tu.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -576,7 +401,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_FT28",
+          "id": "AGENDA_FT19",
           "description": "Verify the Chair starts any Pending item of a meeting in progress.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -596,7 +421,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT29",
+          "id": "AGENDA_FT20",
           "description": "Verify only one item can be current.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -614,7 +439,7 @@
           "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current)"
         },
         {
-          "id": "AGENDA_FT30",
+          "id": "AGENDA_FT21",
           "description": "Verify Start is only offered to the Chair of a meeting that is in progress.",
           "procedure": [
             "Open the agenda as the Secretary of the InProgress meeting.",
@@ -631,59 +456,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT31",
-          "description": "Verify starting an item already started elsewhere reloads the list.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Keep the page open, let the Chair start the same item in a second browser, then click \"Bắt đầu\" on it here."
-          ],
-          "expected": [
-            "Backend answers 409/MSG73 \"Mục nghị sự không còn ở trạng thái chờ.\" or MSG72; a toast shows the reason and the list reloads showing the item \"Đang bàn\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
-            "The Chair signed in twice."
-          ],
-          "note": "UC-24 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
-        },
-        {
-          "id": "AGENDA_FT32",
-          "description": "Verify a start that fails to save leaves the item Pending.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Make the backend fail and click \"Bắt đầu\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG75 \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\"; the item stays Pending and \"Bắt đầu\" can be clicked again."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-24 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Evidence(AC39): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/86-chair-AC39-desktop-current-503-muc-cho-nut-lai.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT33",
-          "description": "Verify Start from the online room panel is the same action.",
-          "procedure": [
-            "As the Chair of an Online meeting in progress open /mgmt/meetings/<id>/room and open the panel \"Nội dung họp\".",
-            "Click \"Bắt đầu\" on an item."
-          ],
-          "expected": [
-            "The room panel lists the items without drag handles and with the Chair's \"Bắt đầu\" or \"Xong\"; the action answers 200/MSG64 and the meeting tab shows the same state after a reload."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of an Online meeting InProgress with agenda items; LiveKit configured."
-          ],
-          "note": "UC-24 | Manual only"
         }
       ]
     },
@@ -694,7 +466,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_FT34",
+          "id": "AGENDA_FT22",
           "description": "Verify the Chair completes the current item and no other starts.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -714,7 +486,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT35",
+          "id": "AGENDA_FT23",
           "description": "Verify \"Xong\" is only offered for the current item and to the Chair.",
           "procedure": [
             "Open the agenda as the Secretary during the meeting.",
@@ -734,23 +506,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT36",
-          "description": "Verify a completion on a stale page reloads the list.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Keep the page open, complete the item in a second browser as the Chair, then click \"Xong\" here."
-          ],
-          "expected": [
-            "Backend answers 409/MSG74 \"Chỉ được hoàn thành mục nghị sự đang diễn ra.\"; a toast shows it and the list reloads showing \"Đã xong\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Meeting InProgress with an item \"Đang bàn\"; the Chair signed in twice."
-          ],
-          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
-        },
-        {
-          "id": "AGENDA_FT37",
+          "id": "AGENDA_FT24",
           "description": "Verify ending the meeting finishes the item being discussed.",
           "procedure": [
             "As the Chair click \"Kết thúc họp\" on the meeting page and confirm.",
@@ -767,25 +523,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT38",
-          "description": "Verify a completion that fails to save leaves the item in progress.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Make the backend fail and click \"Xong\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG76 \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\"; the item stays \"Đang bàn\" and \"Xong\" can be clicked again."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Meeting InProgress with an item \"Đang bàn\"; a way to make the backend fail."
-          ],
-          "note": "UC-25 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event) · Evidence(AC39): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/85-chair-AC39-desktop-complete-503-muc-dang-ban-nut-lai.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -796,7 +533,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_FT39",
+          "id": "AGENDA_FT25",
           "description": "Verify the Chair records the conclusion of an item being discussed.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -819,7 +556,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT40",
+          "id": "AGENDA_FT26",
           "description": "Verify the Secretary edits an existing conclusion and the last save wins.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -839,45 +576,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT41",
-          "description": "Verify a conclusion can be recorded on a Done item after the meeting ended, until minutes exist.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "On an Ended meeting without minutes click \"Ghi kết luận\" on a \"Đã xong\" item and save.",
-            "Create a minutes draft for the meeting and look at the same item."
-          ],
-          "expected": [
-            "Step 1: backend answers 200/MSG271.",
-            "Step 2: the \"Ghi kết luận\" and \"Sửa kết luận\" buttons are gone; the saved text stays visible."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an Ended meeting with a Done item and no minutes."
-          ],
-          "note": "UC-77 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)"
-        },
-        {
-          "id": "AGENDA_FT42",
-          "description": "Verify the editor stops typing at 2,000 characters.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Click \"Ghi kết luận\" and paste 2,100 characters."
-          ],
-          "expected": [
-            "The field keeps 2,000 characters and the counter reads \"2.000/2.000\"; saving succeeds (200/MSG271) and a request with 2,001 characters would be refused with 400/MSG272."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
-            "The first item is \"Đang bàn\"."
-          ],
-          "note": "UC-77 | Boundary | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC15): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/36-secretary-AC15-desktop-dem-2000-2000.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT43",
+          "id": "AGENDA_FT27",
           "description": "Verify cancelling the editor keeps the saved conclusion.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -896,7 +595,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT44",
+          "id": "AGENDA_FT28",
           "description": "Verify no conclusion button for a Pending item or a Member.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -916,25 +615,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_FT45",
-          "description": "Verify a conclusion refused because minutes now exist keeps the text and says why.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Click \"Ghi kết luận\" and type a text.",
-            "In another session generate the minutes draft of the meeting.",
-            "Click \"Lưu kết luận\"."
-          ],
-          "expected": [
-            "Backend answers 409/MSG273; the typed text stays in the editor and the message \"Không thể sửa kết luận của mục nghị sự này nữa.\" shows under it; the list reloads."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Meeting Ended with a Done item; a second session of the Secretary able to generate the minutes."
-          ],
-          "note": "UC-77 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
-        },
-        {
-          "id": "AGENDA_FT46",
+          "id": "AGENDA_FT29",
           "description": "Verify a conclusion on a meeting the user can no longer see shows the access message.",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
@@ -949,26 +630,6 @@
             "An administrator or Chair session able to remove the Secretary; sign in as the Secretary."
           ],
           "note": "UC-77 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC33): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/80-secretary-AC33-desktop-mat-quyen-gone.png · Case cũ: E1 đòi thông báo hiện dưới editor và giữ chữ đã gõ nhưng sản phẩm thay cả tab bằng “Bạn không còn xem được nội dung của cuộc họp này.” (PUT 404 MSG174 đúng) — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AGENDA_FT47",
-          "description": "Verify a conclusion that fails to save keeps the editor open.",
-          "procedure": [
-            "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
-            "Click \"Ghi kết luận\", type a text, make the backend fail and click \"Lưu kết luận\"."
-          ],
-          "expected": [
-            "Backend answers 503/MSG274 \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\"; the editor stays with the text and the button can be pressed again; the earlier conclusion is kept."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
-            "A way to make the backend fail."
-          ],
-          "note": "UC-77 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC34): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/84-secretary-AC34-desktop-conclusion-503-giu-editor.png",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

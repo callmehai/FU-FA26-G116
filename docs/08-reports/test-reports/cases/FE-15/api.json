@@ -231,23 +231,6 @@
         },
         {
           "id": "RPT_API_IT11",
-          "description": "Verify GET /api/reports/meetings answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/reports/meetings with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-70a | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "RPT_API_IT12",
           "description": "Verify GET /api/reports/meetings answers 403 to a Guest token and to a deactivated account.",
           "procedure": [
             "Open a Guest session from an invitation link (UC-04) and keep the guest token.",
@@ -268,7 +251,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT13",
+          "id": "RPT_API_IT12",
           "description": "Verify GET /api/reports/meetings answers 500 MSG464 when the database cannot be read.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -290,7 +273,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT14",
+          "id": "RPT_API_IT13",
           "description": "Verify viewing the report through GET /api/reports/meetings writes no audit row.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -320,7 +303,7 @@
       ],
       "cases": [
         {
-          "id": "RPT_API_IT15",
+          "id": "RPT_API_IT14",
           "description": "Verify GET /api/reports/meetings/export returns the report as an Excel file and records the export.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -346,7 +329,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT16",
+          "id": "RPT_API_IT15",
           "description": "Verify GET /api/reports/meetings/export without a period exports the twelve months ending this month.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -366,7 +349,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT17",
+          "id": "RPT_API_IT16",
           "description": "Verify GET /api/reports/meetings/export rejects an invalid period and writes no audit row.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -388,45 +371,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT18",
-          "description": "Verify GET /api/reports/meetings/export answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/reports/meetings/export with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized.",
-            "No audit row is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-70b | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "RPT_API_IT19",
-          "description": "Verify GET /api/reports/meetings/export answers 403 to a Guest token and to a deactivated account.",
-          "procedure": [
-            "Open a Guest session from an invitation link and keep the guest token.",
-            "Send GET /api/reports/meetings/export with Authorization: Bearer <guestToken>.",
-            "Repeat with the earlier token of an account that has since been deactivated."
-          ],
-          "expected": [
-            "Each call: HTTP 403 Forbidden with no message code, no file, and no \"report.exported\" audit row."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A Guest invitation link; an internal account that QA lead can deactivate."
-          ],
-          "note": "UC-70b | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "RPT_API_IT20",
+          "id": "RPT_API_IT17",
           "description": "Verify GET /api/reports/meetings/export answers 500 MSG465 when the database cannot be read.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -449,7 +394,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "RPT_API_IT21",
+          "id": "RPT_API_IT18",
           "description": "Verify GET /api/reports/meetings/export returns no file when the export cannot be recorded in the audit log.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",

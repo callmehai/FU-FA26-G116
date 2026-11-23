@@ -199,46 +199,6 @@
         },
         {
           "id": "ROOM_API_IT10",
-          "description": "Verify GET /api/meetings/{id}/call without a token answers 401.",
-          "procedure": [
-            "Send GET /api/meetings/{M1}/call with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Anonymous_callers_are_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT11",
-          "description": "Verify a deactivated account is refused with 403.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "As Admin, deactivate the Member account.",
-            "Within 15 minutes, send GET /api/meetings/{M1}/call with the token from step 1."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A disposable Member account on M1 and an Admin account, supplied by QA lead."
-          ],
-          "note": "UC-37 PRE-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_reads_nothing)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT12",
           "description": "Verify a verified Guest reads the room with the Guest role.",
           "procedure": [
             "Send GET /api/meetings/{M1}/call with Authorization: Bearer <Guest accessToken>."
@@ -258,7 +218,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT13",
+          "id": "ROOM_API_IT11",
           "description": "Verify a Guest token of another meeting gets an empty 404.",
           "procedure": [
             "Send GET /api/meetings/{M1}/call with a Guest accessToken issued for another meeting M2."
@@ -276,27 +236,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT14",
-          "description": "Verify a database failure while reading the room answers 500 MSG283.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send GET /api/meetings/{M1}/call."
-          ],
-          "expected": [
-            "HTTP 500, body { \"code\": \"MSG283\", \"message\": \"Không thể tải trạng thái phòng họp. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-37 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Database_failures_have_their_own_codes)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -307,7 +246,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT15",
+          "id": "ROOM_API_IT12",
           "description": "Verify POST /api/meetings/{id}/call/join issues a LiveKit ticket to a member on the roster.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -330,7 +269,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT16",
+          "id": "ROOM_API_IT13",
           "description": "Verify joining a Published meeting answers 409 MSG117.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -351,7 +290,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT17",
+          "id": "ROOM_API_IT14",
           "description": "Verify joining an Ended meeting answers 409 MSG117.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -371,7 +310,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT18",
+          "id": "ROOM_API_IT15",
           "description": "Verify joining an in-person meeting answers 409 MSG280.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -391,27 +330,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT19",
-          "description": "Verify joining when LiveKit is not configured answers 503 MSG281.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/call/join."
-          ],
-          "expected": [
-            "HTTP 503, body { \"code\": \"MSG281\", \"message\": \"Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A build where the LiveKit settings are empty (QA lead's local build)."
-          ],
-          "note": "UC-37 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Join_without_livekit_configured_is_503)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT20",
+          "id": "ROOM_API_IT16",
           "description": "Verify the Organizer who is not on the roster cannot join.",
           "procedure": [
             "Sign in as the Organizer of M1 (not on the roster) and keep the access token.",
@@ -432,47 +351,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT21",
-          "description": "Verify POST /api/meetings/{id}/call/join without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/call/join with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized; no ticket is issued."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Anonymous_callers_are_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT22",
-          "description": "Verify a deactivated account cannot join.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "As Admin, deactivate the Member account.",
-            "Within 15 minutes, send POST /api/meetings/{M1}/call/join with the token from step 1."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with no body; no ticket is issued."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A disposable Member account on M1 and an Admin account, supplied by QA lead."
-          ],
-          "note": "UC-37 PRE-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_joins_nothing)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT23",
+          "id": "ROOM_API_IT17",
           "description": "Verify a Guest who has not confirmed the recording notice is refused with 400 MSG380.",
           "procedure": [
             "Send POST /api/meetings/{M1}/call/join with Authorization: Bearer <Guest accessToken> and no body.",
@@ -494,7 +373,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT24",
+          "id": "ROOM_API_IT18",
           "description": "Verify only a JSON true counts as the Guest's confirmation.",
           "procedure": [
             "Send POST /api/meetings/{M1}/call/join with the Guest token and Body: { \"recordingNoticeAcknowledged\": \"true\" } (a string).",
@@ -517,7 +396,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT25",
+          "id": "ROOM_API_IT19",
           "description": "Verify a Guest who confirms the recording notice gets a ticket and the confirmation is audited first.",
           "procedure": [
             "Send POST /api/meetings/{M1}/call/join",
@@ -542,7 +421,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT26",
+          "id": "ROOM_API_IT20",
           "description": "Verify a Guest token of another meeting cannot join.",
           "procedure": [
             "Send POST /api/meetings/{M1}/call/join with a Guest accessToken of meeting M2 and Body: { \"recordingNoticeAcknowledged\": true }."
@@ -562,7 +441,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT27",
+          "id": "ROOM_API_IT21",
           "description": "Verify a Guest of an Ended meeting gets 404, not MSG117.",
           "procedure": [
             "As the Chair, end M1 (UC-22).",
@@ -581,28 +460,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT28",
-          "description": "Verify a database failure while joining answers 500 MSG118.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send POST /api/meetings/{M1}/call/join."
-          ],
-          "expected": [
-            "HTTP 500, body { \"code\": \"MSG118\", \"message\": \"Không thể vào phòng họp. Vui lòng thử lại.\" }; no ticket."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-37 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Database_failures_have_their_own_codes)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -613,7 +470,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT29",
+          "id": "ROOM_API_IT22",
           "description": "Verify the Chair mutes a member whose microphone is on.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -635,28 +492,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT30",
-          "description": "Verify muting someone already muted answers 204 and never unmutes.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute for the Member, whose microphone is published but muted."
-          ],
-          "expected": [
-            "HTTP 204 No Content; the microphone stays off (mute is one-way)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with the microphone switched off after being on."
-          ],
-          "note": "UC-41 | BR-325 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Muting_someone_absent_or_already_muted)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT31",
+          "id": "ROOM_API_IT23",
           "description": "Verify a member who is not the Chair is refused with 403 MSG123.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -678,7 +514,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT32",
+          "id": "ROOM_API_IT24",
           "description": "Verify the former Chair is refused right after handing the Chair role over.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -700,28 +536,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT33",
-          "description": "Verify muting someone who is not in the room, or has no microphone, answers 409 MSG282.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute for the Member, who is not connected to the room."
-          ],
-          "expected": [
-            "HTTP 409, body { \"code\": \"MSG282\", \"message\": \"Người này không còn trong phòng hoặc chưa bật micro.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is on the roster but not connected to the room (or connected without ever publishing a microphone)."
-          ],
-          "note": "UC-41 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT34",
+          "id": "ROOM_API_IT25",
           "description": "Verify muting when the meeting is no longer InProgress answers 409 MSG117.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -741,7 +556,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT35",
+          "id": "ROOM_API_IT26",
           "description": "Verify the Chair mutes a Guest by the Guest's room identity.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -762,7 +577,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT36",
+          "id": "ROOM_API_IT27",
           "description": "Verify an identity that is neither a user id nor guest-{guestSessionId} answers 404.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -782,7 +597,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT37",
+          "id": "ROOM_API_IT28",
           "description": "Verify a Guest token can never mute anyone.",
           "procedure": [
             "Send POST /api/meetings/{M1}/call/participants/{memberUserId}/mute with Authorization: Bearer <Guest accessToken>."
@@ -802,7 +617,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT38",
+          "id": "ROOM_API_IT29",
           "description": "Verify a signed-in user not on the roster gets 404.",
           "procedure": [
             "Sign in as the Organizer of M1 (not on the roster) and keep the access token.",
@@ -820,87 +635,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT39",
-          "description": "Verify the mute endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_mute_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT40",
-          "description": "Verify muting when LiveKit is not configured answers 503 MSG281.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute for the Member."
-          ],
-          "expected": [
-            "HTTP 503, code \"MSG281\", message \"Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A build where the LiveKit settings are empty (QA lead's local build)."
-          ],
-          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Mute_without_livekit_is_unavailable)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT41",
-          "description": "Verify muting when LiveKit does not respond answers 502 MSG124.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead stops the LiveKit service.",
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute for the Member."
-          ],
-          "expected": [
-            "HTTP 502, body { \"code\": \"MSG124\", \"message\": \"Máy chủ phòng họp không phản hồi. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart the LiveKit service of the build."
-          ],
-          "note": "UC-41 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT42",
-          "description": "Verify a database failure while muting answers 500 MSG284.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send POST /api/meetings/{M1}/call/participants/{identity}/mute for the Member."
-          ],
-          "expected": [
-            "HTTP 500, body { \"code\": \"MSG284\", \"message\": \"Không thể tắt micro. Vui lòng thử lại.\" }; the microphone stays as it was."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-41 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Database_failures_have_their_own_codes)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -912,7 +646,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT43",
+          "id": "ROOM_API_IT30",
           "description": "Verify POST /api/livekit/webhook rejects a missing or wrong signature.",
           "procedure": [
             "Send POST /api/livekit/webhook with Content-Type: application/webhook+json, Body: {} and no Authorization header.",
@@ -936,44 +670,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT44",
-          "description": "Verify the webhook answers 503 when LiveKit is not configured.",
-          "procedure": [
-            "Send POST /api/livekit/webhook with any body."
-          ],
-          "expected": [
-            "HTTP 503 Service Unavailable; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A build where the LiveKit settings are empty (QA lead's local build)."
-          ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Webhook_is_503_when_livekit_is_not_configured)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT45",
-          "description": "Verify a webhook body over 1 MB answers 413.",
-          "procedure": [
-            "Send POST /api/livekit/webhook with a correctly signed body of 1 MB + 1 byte."
-          ],
-          "expected": [
-            "HTTP 413 Payload Too Large; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "A signing helper run by the QA lead that signs a body with the test build's LiveKit API key and secret (bare JWT in Authorization, claim sha256 = SHA-256 of the body); the secret never appears in the case."
-          ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Oversized_webhook_body_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT46",
+          "id": "ROOM_API_IT31",
           "description": "Verify participant_joined opens one session and one stint, and a repeat adds nothing.",
           "procedure": [
             "As the Member, open the M1 room in a browser and click \"Vào phòng\" (LiveKit sends participant_joined).",
@@ -999,99 +696,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT47",
-          "description": "Verify participant_left closes the person's stint and lowers that person's raised hand.",
-          "procedure": [
-            "As the Member in the room, raise a hand (POST /api/meetings/{M1}/speaking-requests answers 201).",
-            "Click \"Rời phòng\" and confirm (LiveKit sends participant_left).",
-            "Read call_participants for the Member and GET /api/meetings/{M1}/speaking-requests as the Chair."
-          ],
-          "expected": [
-            "The Member's stint has left_at set; the session stays Active for the others.",
-            "The Member's request is Cancelled and no longer in the queue; readers receive speakingChanged with changeType \"Left\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Chair and the Member are connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room).",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-38 | UC-79 EX-3 | BR-337 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Livekit_webhooks_close_the_hand_of_whoever_left_and_room_finished_closes_the_rest)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT48",
-          "description": "Verify room_finished ends the session, closes every open stint and every raised hand.",
-          "procedure": [
-            "As the Chair, end M1 (UC-22); LiveKit closes the room and sends room_finished.",
-            "Read call_sessions, call_participants and speaking_requests for M1."
-          ],
-          "expected": [
-            "The call_sessions row is Ended; every call_participants row has left_at.",
-            "Every Queued/Invited request is Cancelled and a Speaking one is Finished with endedAt."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Chair and the Member are connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room); the Member has a hand raised.",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-38 EX-1 | BR-337 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Livekit_webhooks_close_the_hand_of_whoever_left_and_room_finished_closes_the_rest)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT49",
-          "description": "Verify participant_joined with an old ticket after the meeting ended closes the room again at once.",
-          "procedure": [
-            "As the Member, get a ticket with POST /api/meetings/{M1}/call/join.",
-            "As the Chair, end M1.",
-            "Within 10 minutes, connect to LiveKit with the ticket from step 1 (e.g. LiveKit's own test client)."
-          ],
-          "expected": [
-            "The join is recorded as a stint, then the room is deleted and the session ended at once; the client is disconnected.",
-            "No meeting status changes: M1 stays Ended."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-22 | BR-143 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Joining_a_closed_room_with_an_old_ticket_closes_it_again_at_once)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT50",
-          "description": "Verify a member removed from the roster who joins with an old ticket is taken out at once.",
-          "procedure": [
-            "As the Member, get a ticket with POST /api/meetings/{M1}/call/join.",
-            "As the Secretary, remove the Member from the roster.",
-            "Connect to LiveKit with the ticket from step 1."
-          ],
-          "expected": [
-            "participant_joined is answered 200, the stint is recorded, then LiveKit removes the Member from the room immediately (not at the 30-second reconciliation)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-37 EX-4 | BR-101 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Member_removed_from_the_roster_joining_with_an_old_ticket_is_taken_out_at_once) | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_joining_with_an_old_ticket_after_losing_access_is_taken_out_at_once)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT51",
+          "id": "ROOM_API_IT32",
           "description": "Verify track_published for a screen share stops the previous presenter's share.",
           "procedure": [
             "As the Member, click \"Chia sẻ màn hình\" and share a tab.",
@@ -1110,50 +715,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT52",
-          "description": "Verify events for a room that is not meeting-… or an unknown identity are ignored.",
-          "procedure": [
-            "Send a signed participant_joined for room \"other-room\".",
-            "Send a signed participant_joined for room meeting-{M1} with identity \"bot-1\"."
-          ],
-          "expected": [
-            "Both: HTTP 200 OK; no call_sessions or call_participants row is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A signing helper run by the QA lead that signs a body with the test build's LiveKit API key and secret (bare JWT in Authorization, claim sha256 = SHA-256 of the body); the secret never appears in the case.",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Webhooks_for_other_rooms_or_synthetic_identities_are_ignored)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT53",
-          "description": "Verify a Guest's visit is recorded as a Guest stint.",
-          "procedure": [
-            "As the verified Guest, join the M1 room in a browser.",
-            "Read call_participants for M1."
-          ],
-          "expected": [
-            "One open row with guest_session_id = the Guest session and no user_id."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken.",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-37 POST-4 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_visit_is_a_guest_stint_and_a_guest_may_open_the_room)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1164,7 +725,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT54",
+          "id": "ROOM_API_IT33",
           "description": "Verify GET /api/meetings/{meetingId}/speaking-requests gives the Chair the queue with canManage true.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1186,7 +747,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT55",
+          "id": "ROOM_API_IT34",
           "description": "Verify a member reads the queue without the Chair's controls.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1207,7 +768,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT56",
+          "id": "ROOM_API_IT35",
           "description": "Verify the Organizer who is not on the roster still reads the queue.",
           "procedure": [
             "Sign in as the Organizer of M1 (not on the roster) and keep the access token.",
@@ -1226,7 +787,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT57",
+          "id": "ROOM_API_IT36",
           "description": "Verify a user who cannot read the meeting gets 404.",
           "procedure": [
             "Sign in as a user with no relation to M1 and keep the access token.",
@@ -1244,89 +805,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT58",
-          "description": "Verify a verified Guest reads the queue, and gets 404 once the meeting is over.",
-          "procedure": [
-            "Send GET /api/meetings/{M1}/speaking-requests with Authorization: Bearer <Guest accessToken>.",
-            "As the Chair, end M1.",
-            "Repeat step 1."
-          ],
-          "expected": [
-            "Step 1: HTTP 200 OK, \"canManage\": false.",
-            "Step 3: HTTP 404 Not Found."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_guest_raises_a_hand_takes_the_turn_and_shows_as_a_guest)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT59",
-          "description": "Verify GET speaking-requests without a token answers 401.",
-          "procedure": [
-            "Send GET /api/meetings/{M1}/speaking-requests with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Anonymous_callers_get_401_and_a_deactivated_account_gets_403_without_a_body)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT60",
-          "description": "Verify a deactivated account gets 403 without a body.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "As Admin, deactivate the Member.",
-            "Within 15 minutes, send GET /api/meetings/{M1}/speaking-requests with the token from step 1."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A disposable Member account on M1 and an Admin account."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Anonymous_callers_get_401_and_a_deactivated_account_gets_403_without_a_body)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT61",
-          "description": "Verify a database failure while reading the queue answers 500 MSG461.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send GET /api/meetings/{M1}/speaking-requests."
-          ],
-          "expected": [
-            "HTTP 500, body { \"code\": \"MSG461\", \"message\": \"Không tải được danh sách phát biểu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-79 | Deviation: UC-79 EX-5 names MSG124; the code never calls LiveKit here and answers MSG461 (read) / MSG462 (save). | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_database_failure_reads_nothing_and_saves_nothing)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1337,7 +815,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT62",
+          "id": "ROOM_API_IT37",
           "description": "Verify POST /api/meetings/{meetingId}/speaking-requests raises a hand at the end of the queue.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1359,7 +837,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT63",
+          "id": "ROOM_API_IT38",
           "description": "Verify raising a hand again keeps the one open request.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1382,31 +860,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT64",
-          "description": "Verify simultaneous raises by one person store one request.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests five times in parallel (Postman runner or curl &)."
-          ],
-          "expected": [
-            "Every response is 2xx; exactly one is 201 Created.",
-            "speaking_requests holds one row for the Member.",
-            "The requests may be handled in any order: any one of them may be the 201."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with no hand raised.",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-79 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Simultaneous_raises_by_one_person_store_one_request)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT65",
+          "id": "ROOM_API_IT39",
           "description": "Verify raising a hand outside the room answers 409 MSG458.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1424,112 +878,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT66",
-          "description": "Verify raising a hand when the meeting is not InProgress answers 409 MSG117.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/speaking-requests for a Published meeting the Member is on."
-          ],
-          "expected": [
-            "HTTP 409, body { \"code\": \"MSG117\", \"message\": \"Phòng họp chỉ mở khi cuộc họp đang diễn ra.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A Published Online meeting with the Member on its roster."
-          ],
-          "note": "UC-79 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting; Ending_the_meeting_finishes_the_turn_and_cancels_the_queue)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT67",
-          "description": "Verify a user who cannot read the meeting gets 404.",
-          "procedure": [
-            "Sign in as a user with no relation to M1.",
-            "Send POST /api/meetings/{M1}/speaking-requests."
-          ],
-          "expected": [
-            "HTTP 404 Not Found; nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT68",
-          "description": "Verify a verified Guest in the room raises a hand shown as a Guest.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests with Authorization: Bearer <Guest accessToken>.",
-            "As the Chair, send GET /api/meetings/{M1}/speaking-requests."
-          ],
-          "expected": [
-            "Step 1: HTTP 201 Created.",
-            "Step 2: the row has \"kind\": \"Guest\", \"role\": \"Guest\" and the Guest's declared name as displayName."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken.",
-            "The Guest is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room)."
-          ],
-          "note": "UC-79 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_guest_raises_a_hand_takes_the_turn_and_shows_as_a_guest)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT69",
-          "description": "Verify raising a hand without a token answers 401, and with a deactivated account 403.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests with no Authorization header.",
-            "Sign in as a disposable Member in the room, have Admin deactivate it, then send POST /api/meetings/{M1}/speaking-requests with that token."
-          ],
-          "expected": [
-            "Step 1: HTTP 401 Unauthorized.",
-            "Step 2: HTTP 403 Forbidden with no body; nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A disposable Member account on M1 and an Admin account."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Anonymous_callers_get_401_and_a_deactivated_account_gets_403_without_a_body)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT70",
-          "description": "Verify a database failure while raising answers 503 MSG462 and stores nothing.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send POST /api/meetings/{M1}/speaking-requests."
-          ],
-          "expected": [
-            "HTTP 503, body { \"code\": \"MSG462\", \"message\": \"Không lưu được thay đổi lượt phát biểu. Vui lòng thử lại.\" }; no request is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-79 EX-5 | Deviation: UC-79 EX-5 names MSG124; the code answers 503 MSG462. | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_database_failure_reads_nothing_and_saves_nothing)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1540,7 +888,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT71",
+          "id": "ROOM_API_IT40",
           "description": "Verify DELETE /api/meetings/{meetingId}/speaking-requests/{requestId} lowers the caller's queued hand.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1562,29 +910,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT72",
-          "description": "Verify an invited person can still lower the hand before starting.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{M1}/speaking-requests/{requestId} for the Member's Invited request.",
-            "As the Chair, send GET /api/meetings/{M1}/speaking-requests."
-          ],
-          "expected": [
-            "HTTP 200 OK; the request is Cancelled and the floor is free: the Chair can invite the next person."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room); the Chair has invited the Member's request."
-          ],
-          "note": "UC-79 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Invited_person_lowers_the_hand_and_frees_the_floor)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT73",
+          "id": "ROOM_API_IT41",
           "description": "Verify someone else's request answers 404, even for the Chair.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1604,87 +930,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT74",
-          "description": "Verify an unknown requestId answers 404.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{M1}/speaking-requests/{random GUID}."
-          ],
-          "expected": [
-            "HTTP 404 Not Found."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT75",
-          "description": "Verify lowering a hand during one's own speaking turn answers 409 MSG460.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{M1}/speaking-requests/{requestId} for the Member's request in status Speaking."
-          ],
-          "expected": [
-            "HTTP 409, body { \"code\": \"MSG460\", \"message\": \"Yêu cầu phát biểu này đã thay đổi. Hãy tải lại danh sách.\" }; the turn stays Speaking (it is closed with finish)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) and has started speaking."
-          ],
-          "note": "UC-79 AF-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Lowering_a_hand_while_speaking_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT76",
-          "description": "Verify lowering one's hand from outside the room answers 409 MSG458.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/{M1}/speaking-requests/{requestId} for the Member's Queued request."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG458\"; the request stays Queued."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member raised a hand, then the browser lost its room connection without LiveKit reporting it yet (stint still open is not enough: the stint is closed)."
-          ],
-          "note": "UC-79 step 2 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Lowering_a_hand_from_outside_the_room_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT77",
-          "description": "Verify DELETE speaking-requests without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/meetings/{M1}/speaking-requests/{requestId} with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_lower_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1695,7 +940,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT78",
+          "id": "ROOM_API_IT42",
           "description": "Verify POST …/{requestId}/invite gives the floor to a queued person.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1718,7 +963,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT79",
+          "id": "ROOM_API_IT43",
           "description": "Verify the Chair can invite from the meeting page without being in the room.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1739,7 +984,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT80",
+          "id": "ROOM_API_IT44",
           "description": "Verify inviting while someone holds the floor answers 409 MSG459.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1760,7 +1005,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT81",
+          "id": "ROOM_API_IT45",
           "description": "Verify a member who is not the Chair is refused with 403 MSG457.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1779,67 +1024,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT82",
-          "description": "Verify inviting a request that is no longer queued answers 409 MSG460.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/invite for a request the Member has just lowered."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG460\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member raised then lowered a hand."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Inviting_a_lowered_hand_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT83",
-          "description": "Verify inviting after the meeting ended answers 409 MSG117.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "End M1 (UC-22).",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/invite for a request that was Queued before the end."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG117\"; the request is already Cancelled by the end of the meeting."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member had a hand raised."
-          ],
-          "note": "UC-79 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Ending_the_meeting_finishes_the_turn_and_cancels_the_queue)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT84",
-          "description": "Verify the invite endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/invite with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Anonymous_callers_get_401_and_a_deactivated_account_gets_403_without_a_body)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1850,7 +1034,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT85",
+          "id": "ROOM_API_IT46",
           "description": "Verify POST …/{requestId}/start starts the invited person's turn.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1869,87 +1053,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT86",
-          "description": "Verify starting a turn that was not invited answers 409 MSG460.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/start for the Member's Queued request."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG460\"; the request stays Queued."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with a hand raised, not invited."
-          ],
-          "note": "UC-79 step 6 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Starting_a_turn_that_was_not_invited_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT87",
-          "description": "Verify starting someone else's turn answers 404.",
-          "procedure": [
-            "Sign in as the Secretary.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/start for the Member's Invited request."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body; the request stays Invited."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member has been invited."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Someone_elses_request_answers_404_whatever_the_meeting_status)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT88",
-          "description": "Verify starting one's turn from outside the room answers 409 MSG458.",
-          "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/start for the Member's Invited request."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG458\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member was invited, then left the room while the request stayed open long enough to test (or the stint was closed by the reconciliation)."
-          ],
-          "note": "UC-79 step 6 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Starting_a_turn_from_outside_the_room_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT89",
-          "description": "Verify the start endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/start with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_start_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1960,7 +1063,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT90",
+          "id": "ROOM_API_IT47",
           "description": "Verify POST …/{requestId}/finish closes the speaker's own turn and keeps its times.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1984,7 +1087,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT91",
+          "id": "ROOM_API_IT48",
           "description": "Verify finishing an invited turn that never started cancels it.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2006,7 +1109,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT92",
+          "id": "ROOM_API_IT49",
           "description": "Verify the Chair finishes someone's turn from outside the room, and the speaker outside the room cannot.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2029,7 +1132,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT93",
+          "id": "ROOM_API_IT50",
           "description": "Verify a member who neither owns the request nor chairs is refused with 403 MSG457.",
           "procedure": [
             "Sign in as the Secretary.",
@@ -2050,7 +1153,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT94",
+          "id": "ROOM_API_IT51",
           "description": "Verify the former Chair loses the controls at the next request after a handover.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2070,45 +1173,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT95",
-          "description": "Verify finishing a turn that is already closed answers 409 MSG460.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/finish for a request that is already Finished."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG460\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A turn of the Member was just finished."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (The_chair_finishes_a_turn_from_outside_the_room_and_the_speaker_cannot)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT96",
-          "description": "Verify the finish endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/finish with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_finish_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2119,7 +1183,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT97",
+          "id": "ROOM_API_IT52",
           "description": "Verify POST …/{requestId}/decline lowers a queued hand.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2141,7 +1205,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT98",
+          "id": "ROOM_API_IT53",
           "description": "Verify declining an invited person withdraws the invitation and frees the floor.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2164,28 +1228,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT99",
-          "description": "Verify declining a request that is already closed answers 409 MSG460.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/decline twice for the same Queued request."
-          ],
-          "expected": [
-            "First: HTTP 200 OK. Second: HTTP 409, body { \"code\": \"MSG460\", \"message\": \"Yêu cầu phát biểu này đã thay đổi. Hãy tải lại danh sách.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member has a hand raised."
-          ],
-          "note": "UC-79 AF-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT100",
+          "id": "ROOM_API_IT54",
           "description": "Verify a member who is not the Chair cannot decline.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2204,24 +1247,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT101",
-          "description": "Verify the decline endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/decline with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_decline_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2232,7 +1257,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT102",
+          "id": "ROOM_API_IT55",
           "description": "Verify POST …/{requestId}/move-up swaps a request with the queued one above it.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2253,7 +1278,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT103",
+          "id": "ROOM_API_IT56",
           "description": "Verify moving the first request up changes nothing and sends no event.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2274,28 +1299,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT104",
-          "description": "Verify an invited request cannot be moved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/move-up for the Invited request."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG460\": the invited person is out of the reorderable queue."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "One request is Invited and another is Queued."
-          ],
-          "note": "UC-79 AF-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT105",
+          "id": "ROOM_API_IT57",
           "description": "Verify a member who is not the Chair cannot reorder.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2314,24 +1318,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT106",
-          "description": "Verify the move-up endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/move-up with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_move_up_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2342,7 +1328,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT107",
+          "id": "ROOM_API_IT58",
           "description": "Verify POST …/{requestId}/move-down swaps a request with the queued one below it.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2363,49 +1349,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT108",
-          "description": "Verify moving the last request down changes nothing.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/move-down for the last queued request."
-          ],
-          "expected": [
-            "HTTP 200 OK; the order is unchanged and no event is sent."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "Two hands are raised."
-          ],
-          "note": "UC-79 AF-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT109",
-          "description": "Verify a lowered hand cannot be moved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/move-down for a request its owner has lowered."
-          ],
-          "expected": [
-            "HTTP 409, code \"MSG460\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member raised and then lowered a hand."
-          ],
-          "note": "UC-79 AF-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT110",
+          "id": "ROOM_API_IT59",
           "description": "Verify a member who is not the Chair cannot move a request down.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2424,24 +1368,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT111",
-          "description": "Verify the move-down endpoint without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/move-down with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_speaking_move_down_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2452,7 +1378,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT112",
+          "id": "ROOM_API_IT60",
           "description": "Verify GET /api/meetings/{meetingId}/notes gives the Secretary the notes and the right to write.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2472,7 +1398,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT113",
+          "id": "ROOM_API_IT61",
           "description": "Verify the Chair reads the notes read-only.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2492,7 +1418,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT114",
+          "id": "ROOM_API_IT62",
           "description": "Verify a member or the organizer is answered as if there were no notes.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2513,7 +1439,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT115",
+          "id": "ROOM_API_IT63",
           "description": "Verify an administrator who is not on the meeting sees no notes.",
           "procedure": [
             "Sign in as an Admin holding every capability but no role on M1.",
@@ -2533,7 +1459,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT116",
+          "id": "ROOM_API_IT64",
           "description": "Verify a replaced Secretary loses the notes and the new one starts blank.",
           "procedure": [
             "As the Secretary of M1 save a note.",
@@ -2555,7 +1481,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT117",
+          "id": "ROOM_API_IT65",
           "description": "Verify the state tells a Secret meeting apart.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2574,7 +1500,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT118",
+          "id": "ROOM_API_IT66",
           "description": "Verify canWrite is false before the sitting starts and after a cancellation.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2592,68 +1518,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT119",
-          "description": "Verify GET notes without a token answers 401, and an unknown meeting 404.",
-          "procedure": [
-            "Send GET /api/meetings/{M1}/notes with no Authorization header.",
-            "As the Secretary, send GET /api/meetings/{random GUID}/notes."
-          ],
-          "expected": [
-            "Step 1: HTTP 401 Unauthorized.",
-            "Step 2: HTTP 404 Not Found."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT120",
-          "description": "Verify a deactivated Secretary is refused with 403.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "As Admin, deactivate the Secretary.",
-            "Within 15 minutes, send GET /api/meetings/{M1}/notes with the token from step 1."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "A disposable Secretary account on M1 and an Admin account."
-          ],
-          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_secretary_reads_no_notes)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT121",
-          "description": "Verify a database failure while reading notes answers 500 MSG421.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send GET /api/meetings/{M1}/notes."
-          ],
-          "expected": [
-            "HTTP 500, body { \"code\": \"MSG421\", \"message\": \"Không tải được ghi chú.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-82 EX-6 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Database_failures_answer_with_their_own_codes)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2664,7 +1528,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_API_IT122",
+          "id": "ROOM_API_IT67",
           "description": "Verify PUT /api/meetings/{meetingId}/notes saves the Secretary's first note on an agenda item.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2687,7 +1551,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT123",
+          "id": "ROOM_API_IT68",
           "description": "Verify editing a note with the updatedAt last read saves it.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2707,72 +1571,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT124",
-          "description": "Verify an out-of-date copy never overwrites a newer note.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Save the item note from window A (keep updatedAt T1).",
-            "Save it again from window B with updatedAt T1 (new updatedAt T2).",
-            "From window A, send PUT /api/meetings/{M1}/notes with \"updatedAt\": T1 and body \"Bản cũ ghi đè.\"."
-          ],
-          "expected": [
-            "Step 4: HTTP 409, body { \"code\": \"MSG418\", \"message\": \"Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.\" }.",
-            "The stored body is still window B's text."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-82 EX-3 | BR-399 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (An_out_of_date_copy_never_overwrites_a_newer_note)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT125",
-          "description": "Verify a window that never saw a note cannot create it a second time, nor claim to have read one that does not exist.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{M1}/notes for an item that already has a note, with \"updatedAt\": null.",
-            "Send PUT /api/meetings/{M1}/notes for an item with no note, with \"updatedAt\": \"2026-12-01T09:00:00+07:00\"."
-          ],
-          "expected": [
-            "Both: HTTP 409, code \"MSG418\"; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The first item has a saved note; the second has none."
-          ],
-          "note": "UC-82 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (An_out_of_date_copy_never_overwrites_a_newer_note)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT126",
-          "description": "Verify two first saves of the same note at once keep one.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send two PUT /api/meetings/{M1}/notes for the same item with \"updatedAt\": null in parallel."
-          ],
-          "expected": [
-            "One answers HTTP 200 (MSG415), the other HTTP 409 MSG418; meeting_notes holds one row for that item.",
-            "The requests may be handled in any order: the case passes whichever one wins."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "No note on that item yet.",
-            "Read-only database access supplied by QA lead."
-          ],
-          "note": "UC-82 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Two_first_saves_at_once_keep_one_note_and_refuse_the_other)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT127",
+          "id": "ROOM_API_IT69",
           "description": "Verify the Chair cannot write notes.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -2791,7 +1590,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT128",
+          "id": "ROOM_API_IT70",
           "description": "Verify a member or the organizer who reads the meeting gets MSG416 when writing.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -2811,26 +1610,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT129",
-          "description": "Verify a user who cannot read the meeting gets 404.",
-          "procedure": [
-            "Sign in as a user with no relation to M1.",
-            "Send PUT /api/meetings/{M1}/notes with Body: { \"agendaItemId\": null, \"body\": \"x\", \"updatedAt\": null }."
-          ],
-          "expected": [
-            "HTTP 404 Not Found; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT130",
+          "id": "ROOM_API_IT71",
           "description": "Verify notes are refused before the sitting starts and after a cancellation.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2850,7 +1630,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT131",
+          "id": "ROOM_API_IT72",
           "description": "Verify notes are accepted after the meeting ends until the minutes draft is built.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -2873,52 +1653,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_API_IT132",
-          "description": "Verify a note holds at most 20,000 characters and may be empty.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{M1}/notes for the meeting-wide note with a body of 20,001 characters and \"updatedAt\": null.",
-            "Send it with exactly 20,000 characters.",
-            "Send \"body\": \"\" with the updatedAt from step 3."
-          ],
-          "expected": [
-            "Step 2: HTTP 400, body { \"code\": \"MSG419\", \"message\": \"Ghi chú quá dài, tối đa 20.000 ký tự.\" }.",
-            "Step 3: HTTP 200, MSG415.",
-            "Step 4: HTTP 200, MSG415, note.body is \"\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "No meeting-wide note yet."
-          ],
-          "note": "UC-82 EX-4 | BR-400 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_note_holds_at_most_twenty_thousand_characters_and_may_be_empty)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT133",
-          "description": "Verify a note on an item of another meeting or a removed item is refused.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{M1}/notes with \"agendaItemId\" of an item of meeting M2.",
-            "Repeat with a random GUID as agendaItemId."
-          ],
-          "expected": [
-            "Both: HTTP 409, body { \"code\": \"MSG420\", \"message\": \"Mục nghị sự này không còn trong cuộc họp.\" }; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "Another meeting M2 with an agenda item."
-          ],
-          "note": "UC-82 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_note_on_an_item_of_another_meeting_or_a_removed_item_is_refused)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT134",
+          "id": "ROOM_API_IT73",
           "description": "Verify a save notifies only the Chair's and the Secretary's windows, without the text.",
           "procedure": [
             "Open M1 as the Chair and as the Member in two browsers (both join the meeting hub).",
@@ -2933,47 +1668,6 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
           "note": "UC-82 | BR-399 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_save_tells_the_chair_and_secretary_windows_but_nobody_else)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT135",
-          "description": "Verify PUT notes without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/meetings/{M1}/notes with no Authorization header and Body: { \"agendaItemId\": null, \"body\": \"x\", \"updatedAt\": null }."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized; nothing is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
-          ],
-          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Anonymous_notes_save_is_rejected)",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "ROOM_API_IT136",
-          "description": "Verify a database failure while saving answers 503 MSG422 and keeps the old text.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "QA lead makes the database unavailable while the backend keeps running.",
-            "Send PUT /api/meetings/{M1}/notes for the meeting-wide note with its updatedAt and a new body."
-          ],
-          "expected": [
-            "HTTP 503, body { \"code\": \"MSG422\", \"message\": \"Không lưu được ghi chú. Nội dung vẫn giữ trên máy này và sẽ gửi lại.\" }.",
-            "After the database is back, GET notes still shows the earlier text."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The meeting-wide note \"Trước sự cố.\" is saved.",
-            "QA lead can stop and restart PostgreSQL on the build."
-          ],
-          "note": "UC-82 EX-7 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Database_failures_answer_with_their_own_codes)",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

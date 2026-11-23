@@ -117,26 +117,6 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify meetingCount counts only the meetings the Owner can view and still using the file.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "For a document added to one visible meeting, to a meeting the Owner was removed from, and to a meeting it was then removed from, meetingCount is 1 (BR-251)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document added to the three meetings described."
-          ],
-          "note": "UC-34 · BR-251 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Meeting_count_only_includes_meetings_the_owner_can_view_and_still_using_the_file)",
-          "id": "DOC_API_IT06",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
           "description": "Verify inMeeting is true only for a file already in the meeting, and only for a Chair or Secretary of that meeting.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -154,65 +134,7 @@
             "Secretary and Member of one meeting; the Secretary has the file in the library and in the meeting."
           ],
           "note": "UC-34 · BR-193 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (In_meeting_marks_files_already_in_a_meeting_the_owner_may_add_to_and_nothing_else)",
-          "id": "DOC_API_IT07",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents?folderId= answers 404 for a folder that belongs to someone else.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/documents?folderId=<folderOfAnotherUser> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found.",
-            "Body: { \"code\": \"MSG175\", \"message\": \"Mục này không còn trong kho tài liệu của bạn.\" } - the same body as for a folder that does not exist (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-34 · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT08",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents answers 500 MSG176 when the library cannot be read.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database read of the folders fail (test fault injection).",
-            "Send GET /api/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG176\", \"message\": \"Không tải được kho tài liệu của bạn. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database read failure."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT09",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents without a token answers 401.",
-          "procedure": [
-            "Send GET /api/documents with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Library_without_a_token_answers_401)",
-          "id": "DOC_API_IT10",
+          "id": "DOC_API_IT06",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -231,7 +153,7 @@
             "A verified Guest session, invitation supplied by QA lead."
           ],
           "note": "UC-34 · BR-204 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Guest_token_is_refused_on_the_library_with_an_empty_403)",
-          "id": "DOC_API_IT11",
+          "id": "DOC_API_IT07",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -260,7 +182,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder and two valid sample files."
           ],
           "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_uploads_into_a_folder_and_sees_the_documents_and_the_storage_used)",
-          "id": "DOC_API_IT12",
+          "id": "DOC_API_IT08",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -281,27 +203,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A valid PDF."
           ],
           "note": "UC-36 · BR-229 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_uploads_into_a_folder_and_sees_the_documents_and_the_storage_used)",
-          "id": "DOC_API_IT13",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload answers 404 MSG179 for a destination folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/documents/upload?folderId=<folderOfAnotherUser> with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 404 Not Found.",
-            "Body: { \"code\": \"MSG179\", \"message\": \"Thư mục đích không còn trong kho tài liệu của bạn.\" }; checked before the body is read and nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits)",
-          "id": "DOC_API_IT14",
+          "id": "DOC_API_IT09",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -322,7 +224,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PNG renamed to .pdf."
           ],
           "note": "UC-36 · BR-187 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits)",
-          "id": "DOC_API_IT15",
+          "id": "DOC_API_IT10",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -342,109 +244,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead."
           ],
           "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits)",
-          "id": "DOC_API_IT16",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload rejects more than 10 files in one request (boundary: 11 files).",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/documents/upload with Authorization: Bearer <accessToken> and 11 valid PDF files in part \"files\"."
-          ],
-          "expected": [
-            "HTTP 400 Bad Request.",
-            "Body: { \"code\": \"MSG288\", \"message\": \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.\" }.",
-            "No document is added."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. 11 valid PDFs."
-          ],
-          "note": "UC-36 · BR-319 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits)",
-          "id": "DOC_API_IT17",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload answers 409 MSG346 when the system storage is full and adds nothing.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Fill the system document storage up to FileStorage:MaxTotalGigabytes (test configuration).",
-            "Send POST /api/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG346\", \"message\": \"Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.\" }.",
-            "No document and no stored object is added, whoever filled the storage (ADR-0034)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can lower the storage limit."
-          ],
-          "note": "UC-36 · ADR-0034 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_past_the_storage_limit_adds_nothing)",
-          "id": "DOC_API_IT18",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload answers 503 MSG178 when the file store fails and leaves no object behind.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the file store fail on the second file (test fault injection).",
-            "Send POST /api/documents/upload with Authorization: Bearer <accessToken> and two valid PDFs."
-          ],
-          "expected": [
-            "HTTP 503 Service Unavailable.",
-            "Body: { \"code\": \"MSG178\", \"message\": \"Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại.\" }.",
-            "No document is added and the object already pushed is deleted."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a file store failure."
-          ],
-          "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_failed_store_adds_nothing_and_leaves_no_object)",
-          "id": "DOC_API_IT19",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload answers 503 MSG178 when the file store is not configured.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Run the backend without the FileStorage settings.",
-            "Send POST /api/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG178\", ... }; nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. Backend started without FileStorage settings."
-          ],
-          "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_checks_destination_files_and_limits)",
-          "id": "DOC_API_IT20",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/documents/upload without a token answers 401.",
-          "procedure": [
-            "Send POST /api/documents/upload with no Authorization header and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-36 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Library_upload_without_a_token_answers_401)",
-          "id": "DOC_API_IT21",
+          "id": "DOC_API_IT11",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -473,7 +273,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF in the library."
           ],
           "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good)",
-          "id": "DOC_API_IT22",
+          "id": "DOC_API_IT12",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -492,7 +292,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF in the library."
           ],
           "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Owner_downloads_their_own_file_with_the_same_bytes)",
-          "id": "DOC_API_IT23",
+          "id": "DOC_API_IT13",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -512,88 +312,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document id owned by another user."
           ],
           "note": "UC-34 · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_document_is_not_there)",
-          "id": "DOC_API_IT24",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents/{documentId}/content answers 410 MSG382 when the stored object is gone.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Delete the object of the document from the file store directly.",
-            "Send GET /api/documents/<documentId>/content with Authorization: Bearer <accessToken>.",
-            "Repeat with ?download=true."
-          ],
-          "expected": [
-            "Both requests: HTTP 410 Gone.",
-            "Body: { \"code\": \"MSG382\", \"message\": \"Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can remove an object from the bucket."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good)",
-          "id": "DOC_API_IT25",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents/{documentId}/content answers 503 MSG158 when the file store is not configured.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Run the backend without the FileStorage settings.",
-            "Send GET /api/documents/<documentId>/content with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503.",
-            "Body: { \"code\": \"MSG158\", \"message\": \"Không hiển thị được tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. Backend started without FileStorage settings."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_opens_their_document_and_a_missing_object_is_gone_for_good)",
-          "id": "DOC_API_IT26",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents/{documentId}/content?download=true answers 503 MSG160 when the file store fails.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the file store fail (test fault injection).",
-            "Send GET /api/documents/<documentId>/content?download=true with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503.",
-            "Body: { \"code\": \"MSG160\", \"message\": \"Không tải về được tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a file store failure."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Download_answers_MSG160_when_the_store_is_not_configured)",
-          "id": "DOC_API_IT27",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/documents/{documentId}/content without a token answers 401.",
-          "procedure": [
-            "Send GET /api/documents/<documentId>/content with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-34 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Library_content_without_a_token_answers_401)",
-          "id": "DOC_API_IT28",
+          "id": "DOC_API_IT14",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -622,7 +341,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF \"Tờ trình.pdf\" also added to a meeting."
           ],
           "note": "UC-71b · BR-276 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_the_extension_and_leaves_meeting_copies_alone)",
-          "id": "DOC_API_IT29",
+          "id": "DOC_API_IT15",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -642,7 +361,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF document."
           ],
           "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_the_extension_and_leaves_meeting_copies_alone)",
-          "id": "DOC_API_IT30",
+          "id": "DOC_API_IT16",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -661,7 +380,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF document."
           ],
           "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_the_extension_and_leaves_meeting_copies_alone)",
-          "id": "DOC_API_IT31",
+          "id": "DOC_API_IT17",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -680,83 +399,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF document."
           ],
           "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_the_extension_and_leaves_meeting_copies_alone)",
-          "id": "DOC_API_IT32",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/name rejects a name longer than 255 characters (boundary: 256).",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/documents/<documentId>/name with Authorization: Bearer <accessToken> and a fileName of 252 letters plus \".pdf\" (256 characters)."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG347\", ... }; a name of exactly 255 characters is accepted."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A PDF document."
-          ],
-          "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Rename_rejects_256_characters_with_MSG347_and_accepts_255)",
-          "id": "DOC_API_IT33",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/name answers 404 MSG175 for another user's document.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/documents/<documentOfAnotherUser>/name with Authorization: Bearer <accessToken> and body { \"fileName\": \"x.pdf\" }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... }; the other user's document is unchanged (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document id owned by another user."
-          ],
-          "note": "UC-71b · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_document_is_not_there)",
-          "id": "DOC_API_IT34",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/name answers 503 MSG184 when the rename cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on documents fail (test fault injection).",
-            "Send PUT /api/documents/<documentId>/name with Authorization: Bearer <accessToken> and body { \"fileName\": \"b.pdf\" }."
-          ],
-          "expected": [
-            "HTTP 503.",
-            "Body: { \"code\": \"MSG184\", \"message\": \"Không đổi được tên tài liệu. Tên vẫn giữ nguyên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Document_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT35",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/name without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/documents/<documentId>/name with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-71b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Rename_without_a_token_answers_401)",
-          "id": "DOC_API_IT36",
+          "id": "DOC_API_IT18",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -785,7 +428,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document at the root and a folder."
           ],
           "note": "UC-71c · BR-245 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Move_goes_to_an_owned_folder_or_the_root)",
-          "id": "DOC_API_IT37",
+          "id": "DOC_API_IT19",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -804,82 +447,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document inside a folder."
           ],
           "note": "UC-71c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Move_goes_to_an_owned_folder_or_the_root)",
-          "id": "DOC_API_IT38",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/folder answers 404 MSG179 for a destination folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/documents/<documentId>/folder with Authorization: Bearer <accessToken> and body { \"folderId\": \"<folderOfAnotherUser>\" }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG179\", \"message\": \"Thư mục đích không còn trong kho tài liệu của bạn.\" }; the document does not move."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-71c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Move_goes_to_an_owned_folder_or_the_root)",
-          "id": "DOC_API_IT39",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/folder answers 404 MSG175 for another user's document.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/documents/<documentOfAnotherUser>/folder with Authorization: Bearer <accessToken> and body { \"folderId\": null }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... } (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document id owned by another user."
-          ],
-          "note": "UC-71c · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_document_is_not_there)",
-          "id": "DOC_API_IT40",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/folder answers 503 MSG186 when the move cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on documents fail (test fault injection).",
-            "Send PUT /api/documents/<documentId>/folder with Authorization: Bearer <accessToken> and body { \"folderId\": null }."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG186\", \"message\": \"Không chuyển được tài liệu. Vị trí vẫn giữ nguyên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-71c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Document_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT41",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/documents/{documentId}/folder without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/documents/<documentId>/folder with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-71c · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Move_without_a_token_answers_401)",
-          "id": "DOC_API_IT42",
+          "id": "DOC_API_IT20",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -908,105 +476,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document in the library."
           ],
           "note": "UC-71a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Deleting_from_the_library_leaves_the_meeting_copy_readable)",
-          "id": "DOC_API_IT43",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a meeting that uses the deleted document can still be read, even after the Owner is deactivated.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Add the library document to a meeting (POST /api/meetings/{meetingId}/documents).",
-            "Send DELETE /api/documents/<documentId> with Authorization: Bearer <accessToken>.",
-            "Deactivate the Secretary's account, then sign in as a Member and send GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content."
-          ],
-          "expected": [
-            "Step 3: HTTP 200 MSG180.",
-            "Step 4: HTTP 200 and the bytes of the file are returned; the meeting document keeps its stored file (BR-186, BR-232)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Secretary and Member of one meeting; a document in the Secretary's library."
-          ],
-          "note": "UC-71a · BR-186 · BR-232 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Deleting_from_the_library_leaves_the_meeting_copy_readable)",
-          "id": "DOC_API_IT44",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/documents/{documentId} answers 404 MSG175 for another user's document.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/documents/<documentOfAnotherUser> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... }; the other user's library is unchanged (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document id owned by another user."
-          ],
-          "note": "UC-71a · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_document_is_not_there)",
-          "id": "DOC_API_IT45",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/documents/{documentId} answers 404 MSG175 for a document already deleted.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/documents/<documentId> with Authorization: Bearer <accessToken> twice."
-          ],
-          "expected": [
-            "First call: 200 MSG180.",
-            "Second call: HTTP 404 with { \"code\": \"MSG175\", ... }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A document in the library."
-          ],
-          "note": "UC-71a · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Deleting_twice_answers_MSG175_the_second_time)",
-          "id": "DOC_API_IT46",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/documents/{documentId} answers 503 MSG181 when the delete cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on documents fail (test fault injection).",
-            "Send DELETE /api/documents/<documentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG181\", \"message\": \"Không xoá được tài liệu. Kho tài liệu của bạn không thay đổi.\" }; the document is still listed."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-71a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Document_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT47",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/documents/{documentId} without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/documents/<documentId> with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-71a · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Delete_without_a_token_answers_401)",
-          "id": "DOC_API_IT48",
+          "id": "DOC_API_IT21",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1035,7 +505,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead."
           ],
           "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_creates_nested_folders_with_duplicate_names_and_sees_them_in_the_library)",
-          "id": "DOC_API_IT49",
+          "id": "DOC_API_IT22",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1055,7 +525,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder named \"Hồ sơ họp\"."
           ],
           "note": "UC-72a · BR-221 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Owner_creates_nested_folders_with_duplicate_names_and_sees_them_in_the_library)",
-          "id": "DOC_API_IT50",
+          "id": "DOC_API_IT23",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1075,103 +545,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead."
           ],
           "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_name_must_not_be_blank_or_too_long)",
-          "id": "DOC_API_IT51",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/folders rejects a name longer than 400 characters (boundary: 401).",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/folders with Authorization: Bearer <accessToken> and a name of 401 characters."
-          ],
-          "expected": [
-            "HTTP 400 Bad Request.",
-            "Body: { \"code\": \"MSG348\", \"message\": \"Nội dung vượt quá độ dài cho phép.\" }; a name of exactly 400 characters is accepted."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead."
-          ],
-          "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_name_must_not_be_blank_or_too_long)",
-          "id": "DOC_API_IT52",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/folders rejects a sixth level (boundary: depth 6).",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/folders with Authorization: Bearer <accessToken> and parentId = a folder at level 5."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG189\", \"message\": \"Thư mục chỉ lồng tối đa 5 cấp.\" } (BR-191); no folder is created."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. Five nested folders."
-          ],
-          "note": "UC-72a · BR-191 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_sixth_level_is_refused_on_create_and_on_move)",
-          "id": "DOC_API_IT53",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/folders answers 404 MSG179 for a parent folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/folders with Authorization: Bearer <accessToken> and body { \"name\": \"A\", \"parentId\": \"<folderOfAnotherUser>\" }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG179\", \"message\": \"Thư mục đích không còn trong kho tài liệu của bạn.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-72a · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT54",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/folders answers 503 MSG190 when the folder cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on folders fail (test fault injection).",
-            "Send POST /api/folders with Authorization: Bearer <accessToken> and body { \"name\": \"A\" }."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG190\", \"message\": \"Không tạo được thư mục. Chưa có thư mục nào được tạo.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT55",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/folders without a token answers 401.",
-          "procedure": [
-            "Send POST /api/folders with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-72a · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Create_folder_without_a_token_answers_401)",
-          "id": "DOC_API_IT56",
+          "id": "DOC_API_IT24",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1200,7 +574,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder with one document."
           ],
           "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Rename_keeps_place_and_contents)",
-          "id": "DOC_API_IT57",
+          "id": "DOC_API_IT25",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1219,82 +593,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder."
           ],
           "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_name_must_not_be_blank_or_too_long)",
-          "id": "DOC_API_IT58",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/name rejects a name longer than 400 characters (boundary: 401).",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/folders/<folderId>/name with Authorization: Bearer <accessToken> and a name of 401 characters."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG348\", ... }; the name is unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder."
-          ],
-          "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_name_must_not_be_blank_or_too_long)",
-          "id": "DOC_API_IT59",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/name answers 404 MSG175 for a folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/folders/<folderOfAnotherUser>/name with Authorization: Bearer <accessToken> and body { \"name\": \"B\" }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", \"message\": \"Mục này không còn trong kho tài liệu của bạn.\" } (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-72b · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT60",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/name answers 503 MSG192 when the rename cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on folders fail (test fault injection).",
-            "Send PUT /api/folders/<folderId>/name with Authorization: Bearer <accessToken> and body { \"name\": \"B\" }."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG192\", \"message\": \"Không đổi được tên thư mục. Tên vẫn giữ nguyên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT61",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/name without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/folders/<folderId>/name with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-72b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Rename_folder_without_a_token_answers_401)",
-          "id": "DOC_API_IT62",
+          "id": "DOC_API_IT26",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1323,7 +622,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder with a sub-folder and a second, empty target folder."
           ],
           "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_folder_cannot_move_into_itself_or_a_subfolder_but_can_move_to_the_root)",
-          "id": "DOC_API_IT63",
+          "id": "DOC_API_IT27",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1342,7 +641,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A nested folder."
           ],
           "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_folder_cannot_move_into_itself_or_a_subfolder_but_can_move_to_the_root)",
-          "id": "DOC_API_IT64",
+          "id": "DOC_API_IT28",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1362,7 +661,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder."
           ],
           "note": "UC-72c · BR-222 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_folder_cannot_move_into_itself_or_a_subfolder_but_can_move_to_the_root)",
-          "id": "DOC_API_IT65",
+          "id": "DOC_API_IT29",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1381,46 +680,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder with a child and a grandchild."
           ],
           "note": "UC-72c · BR-222 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_folder_cannot_move_into_itself_or_a_subfolder_but_can_move_to_the_root)",
-          "id": "DOC_API_IT66",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/parent rejects a move that makes the deepest sub-folder exceed level 5.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/folders/<subtreeRootId>/parent with Authorization: Bearer <accessToken> and parentId = a folder at level 4, where the moved subtree is 3 levels deep."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG189\", \"message\": \"Thư mục chỉ lồng tối đa 5 cấp.\" } (BR-191); the deepest sub-folder after the move is what is checked."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A level-4 folder and a separate 3-level subtree."
-          ],
-          "note": "UC-72c · BR-191 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (A_sixth_level_is_refused_on_create_and_on_move)",
-          "id": "DOC_API_IT67",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify two crossing moves sent at once never create a cycle.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/folders/<A>/parent with parentId <B> and PUT /api/folders/<B>/parent with parentId <A> at the same time, with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "Exactly one request answers 200 MSG194 and the other answers 409 MSG193; the library has no folder that is its own ancestor.",
-            "The requests may be handled in any order: the case passes whichever one wins."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. Two sibling folders A and B."
-          ],
-          "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Two_crossing_moves_at_once_never_make_a_cycle)",
-          "id": "DOC_API_IT68",
+          "id": "DOC_API_IT30",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1439,63 +699,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder."
           ],
           "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT69",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/parent answers 404 MSG175 for a folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/folders/<folderOfAnotherUser>/parent with Authorization: Bearer <accessToken> and body { \"parentId\": null }."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... } (BR-242)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-72c · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT70",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/parent answers 503 MSG195 when the move cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on folders fail (test fault injection).",
-            "Send PUT /api/folders/<folderId>/parent with Authorization: Bearer <accessToken> and body { \"parentId\": null }."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG195\", \"message\": \"Không chuyển được thư mục. Vị trí vẫn giữ nguyên.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT71",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify PUT /api/folders/{folderId}/parent without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/folders/<folderId>/parent with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-72c · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Move_folder_without_a_token_answers_401)",
-          "id": "DOC_API_IT72",
+          "id": "DOC_API_IT31",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1524,7 +728,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. An empty folder."
           ],
           "note": "UC-72d · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Only_an_empty_folder_is_deleted)",
-          "id": "DOC_API_IT73",
+          "id": "DOC_API_IT32",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1544,7 +748,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder with one document."
           ],
           "note": "UC-72d · BR-223 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Only_an_empty_folder_is_deleted)",
-          "id": "DOC_API_IT74",
+          "id": "DOC_API_IT33",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1563,85 +767,7 @@
             "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder with an empty sub-folder."
           ],
           "note": "UC-72d · BR-223 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Only_an_empty_folder_is_deleted)",
-          "id": "DOC_API_IT75",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify deleting a meeting's upload folder makes the next upload to that meeting create it again at the root.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Upload a file to the meeting (POST /api/meetings/{meetingId}/documents/upload) so the meeting folder is created.",
-            "Delete the file from the library (DELETE /api/documents/<documentId>) and the folder (DELETE /api/folders/<folderId>) with Authorization: Bearer <accessToken>.",
-            "Upload another file to the same meeting."
-          ],
-          "expected": [
-            "Step 3: HTTP 200 MSG197.",
-            "Step 4: HTTP 201; a new folder named \"<meeting title> – dd/mm/yyyy\" exists at the library root (BR-228)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Secretary of a Published meeting; valid PDFs."
-          ],
-          "note": "UC-72d · BR-228 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Later_uploads_reuse_the_folder_even_renamed_and_moved_and_recreate_it_once_deleted)",
-          "id": "DOC_API_IT76",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/folders/{folderId} answers 404 MSG175 for a folder of another user.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/folders/<folderOfAnotherUser> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... } (BR-242); the other user's folder remains."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. A folder id owned by another user."
-          ],
-          "note": "UC-72d · BR-242 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Someone_elses_folder_is_neither_a_parent_nor_renamable_nor_deletable)",
-          "id": "DOC_API_IT77",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/folders/{folderId} answers 503 MSG198 when the delete cannot be saved.",
-          "procedure": [
-            "Sign in as the Owner (POST /api/auth/login) and keep the access token.",
-            "Make the database write on folders fail (test fault injection).",
-            "Send DELETE /api/folders/<folderId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG198\", \"message\": \"Không xoá được thư mục. Thư mục không thay đổi.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Active internal user (the Owner) with a personal library, account supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-72d · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Folder_changes_that_cannot_be_saved_answer_their_own_codes)",
-          "id": "DOC_API_IT78",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE /api/folders/{folderId} without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/folders/<folderId> with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-72d · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Delete_folder_without_a_token_answers_401)",
-          "id": "DOC_API_IT79",
+          "id": "DOC_API_IT34",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1654,46 +780,6 @@
         "UC-34b"
       ],
       "cases": [
-        {
-          "description": "Verify GET /api/users/{userId}/library lets an Administrator read a deactivated user's library and audits the read.",
-          "procedure": [
-            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/users/<deactivatedUserId>/library?folderId=<folderId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK, same body shape as GET /api/documents; documents lists \"Bàn giao.pdf\".",
-            "One audit row \"library.read\" (objectType User, objectId = the library owner, details.folderId) is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Administrator with AdminUsers and a deactivated user with a folder \"Hồ sơ\" holding \"Bàn giao.pdf\", supplied by QA lead."
-          ],
-          "note": "UC-34b · BR-334 · BR-335 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_reads_a_deactivated_library_and_every_read_is_audited)",
-          "id": "DOC_API_IT80",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/users/{userId}/library answers 404 MSG175 for a user whose account is still active.",
-          "procedure": [
-            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/users/<activeUserId>/library with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... }, the same body as a library that does not exist.",
-            "No audit row is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Administrator with AdminUsers and an active user, supplied by QA lead."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused)",
-          "id": "DOC_API_IT81",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
         {
           "description": "Verify GET /api/users/{userId}/library answers 403 for a caller without AdminUsers.",
           "procedure": [
@@ -1709,7 +795,7 @@
             "A Member account and a deactivated user, supplied by QA lead."
           ],
           "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused)",
-          "id": "DOC_API_IT82",
+          "id": "DOC_API_IT35",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1729,24 +815,7 @@
             "Administrator with AdminUsers and a deactivated user with a folder \"Hồ sơ\" holding \"Bàn giao.pdf\", supplied by QA lead. The deactivated user also uploaded a file into a Secret meeting the Administrator belongs to."
           ],
           "note": "UC-34b · BR-334 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_does_not_see_files_or_folders_of_a_secret_meeting_even_one_they_can_view)",
-          "id": "DOC_API_IT83",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/users/{userId}/library answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/users/<deactivatedUserId>/library with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Admin_library_without_a_token_answers_401)",
-          "id": "DOC_API_IT84",
+          "id": "DOC_API_IT36",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1759,45 +828,6 @@
         "UC-34b"
       ],
       "cases": [
-        {
-          "description": "Verify an Administrator can open a file in a deactivated user's library and the read is audited.",
-          "procedure": [
-            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/users/<deactivatedUserId>/library/documents/<documentId>/content with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK; the bytes equal the stored file; Content-Disposition \"attachment\".",
-            "One audit row \"library.read\" with details.documentId and details.fileName is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Administrator with AdminUsers and a deactivated user with a folder \"Hồ sơ\" holding \"Bàn giao.pdf\", supplied by QA lead."
-          ],
-          "note": "UC-34b · BR-334 · BR-335 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_reads_a_deactivated_library_and_every_read_is_audited)",
-          "id": "DOC_API_IT85",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the content of a file of an active user's library answers 404 MSG175.",
-          "procedure": [
-            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/users/<activeUserId>/library/documents/<documentId>/content with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG175\", ... }; no audit row is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Administrator with AdminUsers and an active user with a document, supplied by QA lead."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused)",
-          "id": "DOC_API_IT86",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
         {
           "description": "Verify a file that belonged to a Secret meeting cannot be opened through the library, even by an Administrator who is a member of that meeting.",
           "procedure": [
@@ -1812,7 +842,7 @@
             "Administrator with AdminUsers and a deactivated user with a folder \"Hồ sơ\" holding \"Bàn giao.pdf\", supplied by QA lead. The file was uploaded into a Secret meeting."
           ],
           "note": "UC-34b · BR-188 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Administrator_does_not_see_files_or_folders_of_a_secret_meeting_even_one_they_can_view)",
-          "id": "DOC_API_IT87",
+          "id": "DOC_API_IT37",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1832,43 +862,7 @@
             "Administrator with AdminUsers and a deactivated user with a folder \"Hồ sơ\" holding \"Bàn giao.pdf\", supplied by QA lead. QA lead can remove an object from the bucket."
           ],
           "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Missing_object_in_a_deactivated_library_is_MSG382_without_audit)",
-          "id": "DOC_API_IT88",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the content endpoint answers 403 for a caller without AdminUsers.",
-          "procedure": [
-            "Sign in as a Member without AdminUsers (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/users/<deactivatedUserId>/library/documents/<documentId>/content with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with an empty body; no audit row is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A Member account and a deactivated user with a document, supplied by QA lead."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Nobody_else_reads_an_active_library_and_a_non_administrator_is_refused)",
-          "id": "DOC_API_IT89",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the content endpoint answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/users/<deactivatedUserId>/library/documents/<documentId>/content with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-34b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Admin_library_without_a_token_answers_401)",
-          "id": "DOC_API_IT90",
+          "id": "DOC_API_IT38",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1897,7 +891,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Published meeting with documents linked to agenda items, one general document and one removed document."
           ],
           "note": "UC-32a · BR-277 · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Member_sees_documents_grouped_by_agenda_item_in_order_with_general_and_without_removed)",
-          "id": "DOC_API_IT91",
+          "id": "DOC_API_IT39",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1917,26 +911,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Published meeting with no documents."
           ],
           "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Empty_meeting_has_empty_groups_and_no_current_item)",
-          "id": "DOC_API_IT92",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the documents of an Ended meeting stay readable.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK with the same groups as before the meeting ended."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting with documents."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Ended_meeting_documents_stay_readable)",
-          "id": "DOC_API_IT93",
+          "id": "DOC_API_IT40",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1957,7 +932,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting with an Open vote and a Draft vote, each with one document."
           ],
           "note": "UC-32a AF-1 · BR-253 · BR-280 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (A_vote_document_shows_only_under_its_vote_and_one_only_on_a_draft_is_the_managers)",
-          "id": "DOC_API_IT94",
+          "id": "DOC_API_IT41",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1979,7 +954,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting with an Open vote linking two documents."
           ],
           "note": "UC-32a AF-1 · Automated: Votes/VoteReadConfirmationTests.cs (Not_read_is_asked_only_of_a_voter_of_an_open_vote_while_the_meeting_is_in_progress)",
-          "id": "DOC_API_IT95",
+          "id": "DOC_API_IT42",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2001,47 +976,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Draft meeting where the Member is listed."
           ],
           "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Caller_who_cannot_view_the_meeting_gets_the_same_404_as_a_missing_meeting)",
-          "id": "DOC_API_IT96",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/meetings/{meetingId}/documents answers 500 MSG157 when the list cannot be read.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database read of documents fail (test fault injection).",
-            "Send GET /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG157\", \"message\": \"Không tải được danh sách tài liệu. Vui lòng thử lại.\" }; it is not an empty list."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database read failure."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (List_read_failure_is_MSG157_not_an_empty_list)",
-          "id": "DOC_API_IT97",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest with a current UC-04 session can list every document of the invited meeting.",
-          "procedure": [
-            "Verify the Guest invitation (POST /api/guest-access/invitations/{id}/verify) and keep the guest token; set the display name (PUT .../session/profile).",
-            "Send GET /api/meetings/<meetingId>/documents with Authorization: Bearer <guestToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK with the same groups a Member sees, including documents linked to no agenda item (PO 30/10/2026)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A Published or InProgress meeting with documents and a verified Guest invitation, supplied by QA lead."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting)",
-          "id": "DOC_API_IT98",
+          "id": "DOC_API_IT43",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2060,44 +995,7 @@
             "A verified Guest invitation; QA lead can end the meeting and expire the session."
           ],
           "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Logout_revocation_expiry_meeting_end_and_a_missing_profile_each_close_the_documents)",
-          "id": "DOC_API_IT99",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/meetings/{meetingId}/documents answers an empty 403 for a deactivated account.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Deactivate the account (PATCH .../status by an Administrator).",
-            "Send GET /api/meetings/<meetingId>/documents with the old token."
-          ],
-          "expected": [
-            "HTTP 403 Forbidden with an empty body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (An_inactive_user_still_gets_an_empty_403_on_both_reads)",
-          "id": "DOC_API_IT100",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET /api/meetings/{meetingId}/documents answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/meetings/<meetingId>/documents with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Meeting_documents_without_a_token_answers_401)",
-          "id": "DOC_API_IT101",
+          "id": "DOC_API_IT44",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2126,7 +1024,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two documents in the Secretary's library; the meeting is not Ended or Cancelled."
           ],
           "note": "UC-33a · BR-197 · BR-276 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Secretary_adds_own_library_documents_as_general_documents_under_their_current_name)",
-          "id": "DOC_API_IT102",
+          "id": "DOC_API_IT45",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2146,7 +1044,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a · BR-209 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Library_selection_must_be_the_actors_own_available_and_not_yet_in_the_meeting)",
-          "id": "DOC_API_IT103",
+          "id": "DOC_API_IT46",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2165,7 +1063,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document id owned by another user."
           ],
           "note": "UC-33a · BR-286 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Library_selection_must_be_the_actors_own_available_and_not_yet_in_the_meeting)",
-          "id": "DOC_API_IT104",
+          "id": "DOC_API_IT47",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2185,7 +1083,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A library document."
           ],
           "note": "UC-33a · BR-193 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Library_selection_must_be_the_actors_own_available_and_not_yet_in_the_meeting)",
-          "id": "DOC_API_IT105",
+          "id": "DOC_API_IT48",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2204,7 +1102,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document in the Chair's library."
           ],
           "note": "UC-33a · BR-184 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends)",
-          "id": "DOC_API_IT106",
+          "id": "DOC_API_IT49",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2224,46 +1122,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a · BR-184 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends)",
-          "id": "DOC_API_IT107",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents answers 404 MSG174 for a caller who cannot view the meeting.",
-          "procedure": [
-            "Sign in as an outsider (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken> and any documentIds."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG174\", \"message\": \"Không truy cập được cuộc họp này.\" }, the same body as a meeting that does not exist."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends)",
-          "id": "DOC_API_IT108",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents answers 409 MSG172 once the meeting has ended.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken> and one library document."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG172\", \"message\": \"Không thể thêm tài liệu sau khi cuộc họp đã kết thúc.\" } (BR-185)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting."
-          ],
-          "note": "UC-33a · BR-185 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends)",
-          "id": "DOC_API_IT109",
+          "id": "DOC_API_IT50",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2282,47 +1141,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33a · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT110",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents answers 503 MSG166 when the documents cannot be saved.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Make the database write on meeting documents fail (test fault injection).",
-            "Send POST /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken> and one library document."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG166\", \"message\": \"Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại.\" }; nothing is added."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_from_the_library_is_for_the_current_chair_or_secretary_until_the_meeting_ends)",
-          "id": "DOC_API_IT111",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a successful add tells the meeting room to reload its documents.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token. A Member has joined the meeting hub /hubs/meetings.",
-            "Send POST /api/meetings/<meetingId>/documents with Authorization: Bearer <accessToken> and one library document."
-          ],
-          "expected": [
-            "HTTP 201 MSG161.",
-            "The joined Member receives a documentsChanged event { \"eventId\", \"meetingId\", \"occurredAt\" } and a user who has not joined does not."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Member connected to the meeting hub."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_tells_the_meeting_room_to_reload_its_documents)",
-          "id": "DOC_API_IT112",
+          "id": "DOC_API_IT51",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2342,24 +1161,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A verified Guest invitation."
           ],
           "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Changes_are_refused_to_a_removed_manager_another_meetings_chair_and_a_deactivated_account)",
-          "id": "DOC_API_IT113",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents answers 401 without a token.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/documents with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33a · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Add_from_library_without_a_token_answers_401)",
-          "id": "DOC_API_IT114",
+          "id": "DOC_API_IT52",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2372,27 +1174,6 @@
         "UC-33a"
       ],
       "cases": [
-        {
-          "description": "Verify the Secretary uploads three PDFs and a DOCX into the meeting and the library folder at once.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/upload\nHeaders: Authorization: Bearer <accessToken>\nBody: multipart/form-data with four \"files\" parts (3 PDF, 1 DOCX)."
-          ],
-          "expected": [
-            "HTTP 201 Created.",
-            "Body: { \"code\": \"MSG161\", \"message\": \"Đã thêm tài liệu vào cuộc họp.\", \"meetingId\", \"addedCount\": 4, \"documents\": [ { \"id\", \"fileName\", \"contentType\", \"byteSize\", \"pageCount\" } ] }; pageCount is set for PDFs and null for the DOCX (counted by the server).",
-            "GET /api/documents shows the files in a folder \"<meeting title> – dd/mm/yyyy\" of the Secretary's library and the meeting lists them as general documents (BR-192, BR-210)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Published meeting; sample files."
-          ],
-          "note": "UC-33a AF-1 · BR-192 · BR-210 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Secretary_uploads_three_pdfs_and_a_docx_into_library_folder_and_meeting)",
-          "id": "DOC_API_IT115",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
         {
           "description": "Verify the Chair may upload too.",
           "procedure": [
@@ -2407,26 +1188,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Chair_may_upload_too)",
-          "id": "DOC_API_IT116",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the next upload reuses the meeting's library folder, also after it was renamed or moved.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Upload a file, rename and move the created folder (PUT /api/folders/{id}/name and /parent), then upload again."
-          ],
-          "expected": [
-            "Both uploads answer 201; the second file lands in the same, renamed and moved, folder (BR-227)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33a AF-1 · BR-227 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Later_uploads_reuse_the_folder_even_renamed_and_moved_and_recreate_it_once_deleted)",
-          "id": "DOC_API_IT117",
+          "id": "DOC_API_IT53",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2446,26 +1208,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a AF-1 · BR-187 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Html_disguised_with_a_pdf_marker_and_mismatched_names_are_rejected)",
-          "id": "DOC_API_IT118",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload rejects a file larger than 10 MB (boundary).",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF of 11 MB."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG164\", \"message\": \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.\", \"errors\": { \"files[0]\": [ \"<name>: tệp lớn hơn 10 MB.\" ] } }; nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An 11 MB PDF."
-          ],
-          "note": "UC-33a AF-1 · BR-214 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (A_file_over_10_MB_is_invalid)",
-          "id": "DOC_API_IT119",
+          "id": "DOC_API_IT54",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2484,45 +1227,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (No_file_or_a_body_that_is_not_multipart_is_invalid)",
-          "id": "DOC_API_IT120",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload rejects 11 files (boundary: more than 10).",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and 11 valid files."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG288\", \"message\": \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.\" } (BR-319); nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33a AF-1 · BR-319 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Eleven_files_is_over_the_submission_limit)",
-          "id": "DOC_API_IT121",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a request declaring more than 100 MB is refused before it is read (boundary).",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and a Content-Length of 102 MB."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG288\", ... } immediately; the body is not read."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33a AF-1 · BR-319 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (A_request_declaring_more_than_100_MB_is_refused_before_it_is_read)",
-          "id": "DOC_API_IT122",
+          "id": "DOC_API_IT55",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2544,7 +1249,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Member_and_organizer_without_a_managing_role_are_refused_outsiders_get_404)",
-          "id": "DOC_API_IT123",
+          "id": "DOC_API_IT56",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2563,26 +1268,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (A_secretary_who_was_removed_from_the_meeting_loses_access_and_an_inactive_account_gets_403)",
-          "id": "DOC_API_IT124",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload answers 409 MSG172 for an Ended meeting.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG172\", ... }; nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting."
-          ],
-          "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Ended_meeting_refuses_uploads)",
-          "id": "DOC_API_IT125",
+          "id": "DOC_API_IT57",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2601,7 +1287,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can end the meeting during the upload."
           ],
           "note": "UC-33a AF-1 · BR-194 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Meeting_that_ends_while_files_upload_is_refused_and_its_objects_deleted)",
-          "id": "DOC_API_IT126",
+          "id": "DOC_API_IT58",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2620,27 +1306,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33a AF-1 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Cancelled_meeting_refuses_uploads)",
-          "id": "DOC_API_IT127",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload answers 409 MSG346 when the system storage is full.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Fill the system document storage up to its limit.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG346\", ... }; no document, no stored object (ADR-0034)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can lower the storage limit."
-          ],
-          "note": "UC-33a AF-1 · ADR-0034 · Automated: tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs (Upload_past_the_storage_limit_adds_nothing)",
-          "id": "DOC_API_IT128",
+          "id": "DOC_API_IT59",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2661,44 +1327,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a file store failure."
           ],
           "note": "UC-33a AF-1 · BR-194 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Store_failure_on_the_second_file_deletes_the_first_and_adds_nothing)",
-          "id": "DOC_API_IT129",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload answers 503 MSG166 when the file store is not configured.",
-          "procedure": [
-            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
-            "Run the backend without the FileStorage settings.",
-            "Send POST /api/meetings/<meetingId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG166\", ... }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Backend started without FileStorage settings."
-          ],
-          "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentEndpointsTests.cs (Without_a_configured_store_uploads_answer_MSG166)",
-          "id": "DOC_API_IT130",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST /api/meetings/{meetingId}/documents/upload without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/documents/upload with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33a AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Meeting_upload_without_a_token_answers_401)",
-          "id": "DOC_API_IT131",
+          "id": "DOC_API_IT60",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2727,7 +1356,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Published meeting with an uploaded PDF."
           ],
           "note": "UC-32c · BR-183 · BR-216 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (View_streams_the_stored_bytes_unchanged_as_an_attachment)",
-          "id": "DOC_API_IT132",
+          "id": "DOC_API_IT61",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2748,48 +1377,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Secret meeting with an uploaded PDF."
           ],
           "note": "UC-32c · BR-188 · BR-318 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Secret_meeting_documents_are_viewable_and_audited_but_not_downloadable)",
-          "id": "DOC_API_IT133",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Secret download is refused before the file store is touched.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Remove the object from the file store.",
-            "Send GET .../content?download=true with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 403 with { \"code\": \"MSG159\", ... } - not 410 or 503, so the refusal does not depend on the store."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Secret meeting; QA lead can remove the object."
-          ],
-          "note": "UC-32c · BR-188 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Secret_download_checks_attachment_before_refusing_and_refuses_before_touching_the_store)",
-          "id": "DOC_API_IT134",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a removed document and a document of another meeting both answer 404 MSG156.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Request .../content of a document that was removed (DELETE .../documents/{id}).",
-            "Request the content of a document id belonging to another meeting.",
-            "Request ?download=true for a removed document in a Secret meeting."
-          ],
-          "expected": [
-            "All: HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" } - the same body as an unknown id, never 403 (BR-211)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two meetings with documents; one document removed."
-          ],
-          "note": "UC-32c · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Removed_document_and_a_document_of_another_meeting_are_MSG156)",
-          "id": "DOC_API_IT135",
+          "id": "DOC_API_IT62",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2810,69 +1398,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document attached only to a Draft vote."
           ],
           "note": "UC-32c · BR-253 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (A_vote_document_shows_only_under_its_vote_and_one_only_on_a_draft_is_the_managers)",
-          "id": "DOC_API_IT136",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../content answers 410 MSG382 when the object is gone and 503 MSG158 when the store is not configured.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Remove the object from the file store and send GET .../content, then with ?download=true.",
-            "Run the backend without FileStorage settings and send GET .../content."
-          ],
-          "expected": [
-            "Step 1: HTTP 410 with { \"code\": \"MSG382\", \"message\": \"Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.\" } for both; no audit row.",
-            "Step 2: HTTP 503 with { \"code\": \"MSG158\", \"message\": \"Không hiển thị được tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Missing_object_is_gone_for_good_MSG382_while_an_unconfigured_store_is_try_again_and_neither_is_audited)",
-          "id": "DOC_API_IT137",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a failed document lookup answers 503 MSG158 when viewing and 503 MSG160 when downloading.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database read of the document fail.",
-            "Send GET .../content with Authorization: Bearer <accessToken>, then GET .../content?download=true."
-          ],
-          "expected": [
-            "View: HTTP 503 with { \"code\": \"MSG158\", ... }.",
-            "Download: HTTP 503 with { \"code\": \"MSG160\", \"message\": \"Không tải về được tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database read failure."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Content_lookup_failure_is_MSG158_when_viewing_and_MSG160_when_downloading)",
-          "id": "DOC_API_IT138",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the file is withheld when the audit row of a Secret view cannot be written.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the audit write fail.",
-            "Send GET .../content with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG158\", ... } and no bytes are sent."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Secret meeting; QA lead can inject an audit failure."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Audit_failure_withholds_the_content)",
-          "id": "DOC_API_IT139",
+          "id": "DOC_API_IT63",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2892,61 +1418,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Verified Guest invitations for a Normal and a Secret meeting."
           ],
           "note": "UC-32c · BR-188 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting)",
-          "id": "DOC_API_IT140",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest cannot reach another meeting's documents.",
-          "procedure": [
-            "With a Guest token of meeting A, send GET /api/meetings/<meetingB>/documents/<docId>/content."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two meetings and a Guest invitation to the first."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_cannot_reach_another_meetings_documents_or_change_any)",
-          "id": "DOC_API_IT141",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../content?download=maybe answers 400 without a code.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET .../content?download=maybe with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 400 Bad Request produced by the framework binder, with an empty body (no \"code\" field); only true and false are accepted."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Download_flag_must_be_true_or_false)",
-          "id": "DOC_API_IT142",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../content answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/content with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-32c · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Meeting_content_without_a_token_answers_401)",
-          "id": "DOC_API_IT143",
+          "id": "DOC_API_IT64",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2975,26 +1447,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document linked to an agenda item with two comments."
           ],
           "note": "UC-33c · BR-281 · BR-284 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_removes_a_document_keeping_its_comments_and_links_out_of_every_list)",
-          "id": "DOC_API_IT144",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify adding the same file again after removal is a new document without the old comments.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Remove a document, then add the same library document again (POST /api/meetings/{meetingId}/documents)."
-          ],
-          "expected": [
-            "Both succeed; the new meeting document has a new id and GET .../comments is empty (BR-212)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document with comments."
-          ],
-          "note": "UC-33c · BR-212 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Adding_a_removed_file_again_is_a_new_document_without_the_old_comments)",
-          "id": "DOC_API_IT145",
+          "id": "DOC_API_IT65",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3013,65 +1466,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Removing_is_refused_to_others_after_the_end_for_another_meetings_document_and_on_failure)",
-          "id": "DOC_API_IT146",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 404 MSG174 for a caller who cannot view the meeting.",
-          "procedure": [
-            "Sign in as an outsider (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG174\", ... }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Changes_are_refused_to_a_removed_manager_another_meetings_chair_and_a_deactivated_account)",
-          "id": "DOC_API_IT147",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 404 MSG170 for an already removed document and for a document of another meeting.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send DELETE for a document already removed with Authorization: Bearer <accessToken>.",
-            "Send DELETE with a document id of another meeting."
-          ],
-          "expected": [
-            "Both: HTTP 404 with { \"code\": \"MSG170\", \"message\": \"Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu.\" } - the same body (BR-211)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33c · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Removing_is_refused_to_others_after_the_end_for_another_meetings_document_and_on_failure)",
-          "id": "DOC_API_IT148",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 409 MSG248 once the meeting has ended.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG248\", \"message\": \"Không thể gỡ tài liệu sau khi cuộc họp đã kết thúc.\" } (BR-185)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting."
-          ],
-          "note": "UC-33c · BR-185 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Removing_is_refused_to_others_after_the_end_for_another_meetings_document_and_on_failure)",
-          "id": "DOC_API_IT149",
+          "id": "DOC_API_IT66",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3090,44 +1485,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33c · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT150",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 503 MSG171 when the removal cannot be saved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Make the database write on meeting documents fail.",
-            "Send DELETE /api/meetings/<meetingId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG171\", \"message\": \"Không gỡ được tài liệu. Tài liệu vẫn còn trong cuộc họp. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-33c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Removing_is_refused_to_others_after_the_end_for_another_meetings_document_and_on_failure)",
-          "id": "DOC_API_IT151",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/meetings/<meetingId>/documents/<meetingDocumentId> with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33c · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Remove_meeting_document_without_a_token_answers_401)",
-          "id": "DOC_API_IT152",
+          "id": "DOC_API_IT67",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3156,46 +1514,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two meeting documents and two agenda items; one document already linked to the second item."
           ],
           "note": "UC-33b · BR-277 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_links_meeting_documents_to_an_item_keeping_their_other_links)",
-          "id": "DOC_API_IT153",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 409 MSG243 for a document already linked to the item.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents with Authorization: Bearer <accessToken> for a document already linked to this item."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG243\", \"message\": \"Một hoặc nhiều tài liệu đã chọn đã được gắn vào mục nghị sự này.\" } (BR-277); nothing changes."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document linked to the item."
-          ],
-          "note": "UC-33b · BR-277 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_links_meeting_documents_to_an_item_keeping_their_other_links)",
-          "id": "DOC_API_IT154",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 404 MSG242 for an agenda item of another meeting.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<itemOfAnotherMeeting>/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG242\", \"message\": \"Hãy chọn một mục nghị sự còn trong cuộc họp này.\" } (BR-278)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An agenda item of a second meeting."
-          ],
-          "note": "UC-33b · BR-278 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_checks_the_item_and_that_every_document_is_still_in_the_meeting_all_or_none)",
-          "id": "DOC_API_IT155",
+          "id": "DOC_API_IT68",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3215,7 +1534,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. One removed document."
           ],
           "note": "UC-33b · BR-304 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_checks_the_item_and_that_every_document_is_still_in_the_meeting_all_or_none)",
-          "id": "DOC_API_IT156",
+          "id": "DOC_API_IT69",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3236,26 +1555,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT157",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 409 MSG247 once the meeting has ended.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG247\", \"message\": \"Không thể thay đổi liên kết tài liệu sau khi cuộc họp đã kết thúc.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting."
-          ],
-          "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT158",
+          "id": "DOC_API_IT70",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3274,44 +1574,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33b · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT159",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 503 MSG244 when the links cannot be saved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Make the database write on links fail.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG244\", \"message\": \"Không gắn được tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT160",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Link_documents_without_a_token_answers_401)",
-          "id": "DOC_API_IT161",
+          "id": "DOC_API_IT71",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3340,28 +1603,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document in the Chair's library."
           ],
           "note": "UC-33b AF-2 · BR-304 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT162",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a library document whose file is already in the meeting is linked as the existing meeting document, not refused.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/from-library with Authorization: Bearer <accessToken> for a library document whose file is already in the meeting, for an item it is not linked to.",
-            "Repeat for the same item."
-          ],
-          "expected": [
-            "Step 1: HTTP 200 MSG238 with documents [] - the existing meeting document is linked, no new row and no rename.",
-            "Step 2: HTTP 409 with { \"code\": \"MSG243\", ... } - already linked to this item."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document already in the meeting and in the Chair's library."
-          ],
-          "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT163",
+          "id": "DOC_API_IT72",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3380,7 +1622,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT164",
+          "id": "DOC_API_IT73",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3401,27 +1643,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT165",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../from-library answers 503 MSG166 when the new documents cannot be saved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Make the database write on meeting documents fail.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/from-library with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG166\", ... } (UC-33a's code, because documents are added); nothing is added or linked."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT166",
+          "id": "DOC_API_IT74",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3440,24 +1662,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33b AF-2 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT167",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../from-library without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/from-library with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Link_from_library_without_a_token_answers_401)",
-          "id": "DOC_API_IT168",
+          "id": "DOC_API_IT75",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3486,26 +1691,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT169",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../upload answers 404 MSG242 for an unknown item before the body is read.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<randomGuid>/documents/upload with Authorization: Bearer <accessToken> and an invalid file."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG242\", ... } - not MSG164, because the item is checked before the files."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT170",
+          "id": "DOC_API_IT76",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3524,26 +1710,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · BR-187 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT171",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../upload rejects 11 files (boundary).",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/upload with Authorization: Bearer <accessToken> and 11 valid files."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG288\", \"message\": \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33b AF-1 · BR-319 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Uploading_11_files_to_an_item_is_MSG288)",
-          "id": "DOC_API_IT172",
+          "id": "DOC_API_IT77",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3562,27 +1729,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT173",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../upload answers 409 MSG346 when the system storage is full and adds nothing.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Fill the system document storage up to its limit.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG346\", ... }; no document, link or object is added (ADR-0034)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can lower the storage limit."
-          ],
-          "note": "UC-33b AF-1 · ADR-0034 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_past_the_storage_limit_adds_nothing)",
-          "id": "DOC_API_IT174",
+          "id": "DOC_API_IT78",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3602,44 +1749,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. One Ended and one Cancelled meeting."
           ],
           "note": "UC-33b AF-1 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT175",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../upload answers 503 MSG166 when the file store fails.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Make the file store fail.",
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/upload with Authorization: Bearer <accessToken> and a valid PDF."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG166\", ... }; nothing is added, linked or left in the store."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a file store failure."
-          ],
-          "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Item_upload_answers_MSG166_when_the_store_is_not_configured)",
-          "id": "DOC_API_IT176",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../upload without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/upload with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Item_upload_without_a_token_answers_401)",
-          "id": "DOC_API_IT177",
+          "id": "DOC_API_IT79",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3652,68 +1762,6 @@
         "UC-33d"
       ],
       "cases": [
-        {
-          "description": "Verify DELETE removes one link and keeps the document in the meeting.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "Body: { \"code\": \"MSG239\", \"message\": \"Đã gỡ tài liệu khỏi mục nghị sự.\", \"meetingId\", \"agendaItemId\", \"meetingDocumentId\" }.",
-            "The document keeps its links to other items; with no link left it moves to the general group (BR-280)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document linked to two items."
-          ],
-          "note": "UC-33d · BR-280 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_drops_one_link_and_the_document_stays_in_the_meeting)",
-          "id": "DOC_API_IT178",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 404 MSG246 for a document that is not linked to the item.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken> twice."
-          ],
-          "expected": [
-            "First: HTTP 200 MSG239.",
-            "Second: HTTP 404 with { \"code\": \"MSG246\", \"message\": \"Tài liệu này không còn gắn với mục nghị sự đã chọn. Hãy tải lại danh sách tài liệu.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT179",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 404 MSG170 for a removed document and 404 MSG242 for an unknown item, in that order.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/<removedDocumentId> with Authorization: Bearer <accessToken>.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/<randomGuid>/documents/<meetingDocumentId>."
-          ],
-          "expected": [
-            "Step 1: HTTP 404 with { \"code\": \"MSG170\", ... }.",
-            "Step 2: HTTP 404 with { \"code\": \"MSG242\", ... }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT180",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
         {
           "description": "Verify DELETE answers 403 MSG241 for a Member.",
           "procedure": [
@@ -3728,7 +1776,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT181",
+          "id": "DOC_API_IT80",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3748,44 +1796,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33d · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT182",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE answers 503 MSG245 when the unlink cannot be saved.",
-          "procedure": [
-            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Make the database write on links fail.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/<meetingDocumentId> with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG245\", \"message\": \"Không gỡ được liên kết tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT183",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify DELETE without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/meetings/<meetingId>/agenda/<agendaItemId>/documents/<meetingDocumentId> with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Unlink_without_a_token_answers_401)",
-          "id": "DOC_API_IT184",
+          "id": "DOC_API_IT81",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3814,7 +1825,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting; a document with a comment and a reply."
           ],
           "note": "UC-35 · BR-317 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT185",
+          "id": "DOC_API_IT82",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3833,119 +1844,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-35 · BR-282 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended)",
-          "id": "DOC_API_IT186",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify the same file in two meetings has two separate discussions.",
-          "procedure": [
-            "Sign in as a Member of both meetings (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments for the document in meeting A and for the same file in meeting B."
-          ],
-          "expected": [
-            "Each answer lists only the comments written under its own meeting document."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two meetings that use the same file, with different comments."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (The_same_file_in_two_meetings_has_two_separate_discussions)",
-          "id": "DOC_API_IT187",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest's comment is listed with isGuest true and the name the Guest declared.",
-          "procedure": [
-            "With a verified Guest token that has already commented, send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments."
-          ],
-          "expected": [
-            "HTTP 200; the Guest's comment has author.isGuest true, author.guestInvitationId set, author.userId null and name equal to the declared display name."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A verified Guest invitation."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_comments_and_replies_under_the_invitation_with_the_name_they_declared)",
-          "id": "DOC_API_IT188",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../comments answers the same 404 MSG156 for an outsider, a removed document and a document of another meeting.",
-          "procedure": [
-            "Sign in as an outsider (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken>.",
-            "Sign in as a Member (POST /api/auth/login) and keep the access token. Request the comments of a removed document and of a document id of another meeting."
-          ],
-          "expected": [
-            "All: HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" } - the same body (BR-211, BR-284)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-35 · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Outsiders_removed_documents_and_other_meetings_get_the_same_answer)",
-          "id": "DOC_API_IT189",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../comments answers 500 MSG204 when the comments cannot be read.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database read of comments fail.",
-            "Send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 500 with { \"code\": \"MSG204\", \"message\": \"Không tải được góp ý của tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database read failure."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Failures_to_save_or_load_answer_their_own_codes)",
-          "id": "DOC_API_IT190",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest of an Ended meeting or with a revoked invitation gets 404 MSG156.",
-          "procedure": [
-            "With a Guest token, revoke the invitation and send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments; on another meeting let it end and repeat."
-          ],
-          "expected": [
-            "Both: HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" } - a Guest loses the meeting altogether (BR-181)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A verified Guest invitation; QA lead can revoke it and end the meeting."
-          ],
-          "note": "UC-35 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (A_guest_cannot_comment_on_another_meeting_or_once_the_meeting_ends)",
-          "id": "DOC_API_IT191",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify GET .../comments answers 401 without a token.",
-          "procedure": [
-            "Send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (List_comments_without_a_token_answers_401)",
-          "id": "DOC_API_IT192",
+          "id": "DOC_API_IT83",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -3974,27 +1873,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting with a PDF of at least 3 pages."
           ],
           "note": "UC-35 AF-1 · BR-250 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page)",
-          "id": "DOC_API_IT193",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a comment on a DOCX or on a page beyond the PDF's page count is stored without a page.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> for a DOCX and pageNumber 2.",
-            "Send it for a 5-page PDF with pageNumber 9."
-          ],
-          "expected": [
-            "Both: HTTP 201 MSG199 and comment.pageNumber is null (BR-248)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A DOCX and a 5-page PDF."
-          ],
-          "note": "UC-35 · BR-248 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page)",
-          "id": "DOC_API_IT194",
+          "id": "DOC_API_IT84",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4013,45 +1892,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document with one comment."
           ],
           "note": "UC-35 AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT195",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a reply to a reply joins the thread of the root comment.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and parentCommentId = the id of a reply."
-          ],
-          "expected": [
-            "HTTP 201 MSG199; the new comment appears in replies of the root comment, not nested deeper (BR-317)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document with a comment and a reply."
-          ],
-          "note": "UC-35 AF-2 · BR-317 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT196",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a parent comment that belongs to another document answers 404 MSG156.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and parentCommentId = a comment of a different document."
-          ],
-          "expected": [
-            "HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" }; nothing is saved."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two documents with comments."
-          ],
-          "note": "UC-35 AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT197",
+          "id": "DOC_API_IT85",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4071,26 +1912,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-35 · BR-246 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_comment_must_have_text_within_the_limit)",
-          "id": "DOC_API_IT198",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a comment over 4000 characters is rejected (boundary: 4001).",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and a body of 4001 characters."
-          ],
-          "expected": [
-            "HTTP 400 with { \"code\": \"MSG348\", \"message\": \"Nội dung vượt quá độ dài cho phép.\" }; a body of exactly 4000 characters is accepted."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_comment_must_have_text_within_the_limit)",
-          "id": "DOC_API_IT199",
+          "id": "DOC_API_IT86",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4110,27 +1932,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Approver of the meeting."
           ],
           "note": "UC-35 · BR-249 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Organizer_and_approver_comment_as_anyone_who_views_the_meeting)",
-          "id": "DOC_API_IT200",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 409 MSG251 once the meeting has ended.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and a valid body."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG251\", \"message\": \"Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc.\" } (BR-282)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Ended meeting."
-          ],
-          "note": "UC-35 · BR-282 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended)",
-          "id": "DOC_API_IT201",
+          "id": "DOC_API_IT87",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4149,102 +1951,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-35 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT202",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 404 MSG156 for an outsider, a removed document and a document of another meeting, and saves nothing.",
-          "procedure": [
-            "Sign in as an outsider (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and a valid body.",
-            "Sign in as a Member (POST /api/auth/login) and keep the access token. Repeat for a removed document and a document of another meeting."
-          ],
-          "expected": [
-            "All: HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" }; earlier comments of the removed document stay in the database but nothing new is saved."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-35 · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Outsiders_removed_documents_and_other_meetings_get_the_same_answer)",
-          "id": "DOC_API_IT203",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 503 MSG202 when the comment cannot be saved.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database write on comments fail.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with Authorization: Bearer <accessToken> and a valid body."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG202\", \"message\": \"Không gửi được góp ý. Chưa có góp ý nào được lưu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Failures_to_save_or_load_answer_their_own_codes)",
-          "id": "DOC_API_IT204",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a verified Guest can comment and reply under the invitation.",
-          "procedure": [
-            "With a verified Guest token that has set a display name, send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with a valid body, then a reply."
-          ],
-          "expected": [
-            "Both: HTTP 201 MSG199; author.isGuest is true and name is the declared display name; the row is stored with the invitation id and no user id."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A verified Guest invitation to a Published or InProgress meeting."
-          ],
-          "note": "UC-35 · BR-181 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_comments_and_replies_under_the_invitation_with_the_name_they_declared)",
-          "id": "DOC_API_IT205",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a revoked invitation stops the next Guest comment but old comments keep their author.",
-          "procedure": [
-            "Revoke the Guest invitation, then send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with the old guest token.",
-            "As a Member, send GET /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments."
-          ],
-          "expected": [
-            "Step 1: HTTP 404 with { \"code\": \"MSG156\", \"message\": \"Không truy cập được tài liệu của cuộc họp.\" }.",
-            "Step 2: the Guest's earlier comments are still listed under the Guest's name."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Guest who already commented; QA lead can revoke the invitation."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Revoking_the_invitation_stops_the_next_comment_and_keeps_the_guests_old_ones)",
-          "id": "DOC_API_IT206",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../comments answers 401 without a token.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/comments with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Add_comment_without_a_token_answers_401)",
-          "id": "DOC_API_IT207",
+          "id": "DOC_API_IT88",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4274,7 +1981,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting; an Open vote linking one document; the Member is on the voter list."
           ],
           "note": "UC-74 · BR-290 · Automated: Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
-          "id": "DOC_API_IT208",
+          "id": "DOC_API_IT89",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4293,65 +2000,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A voter who has confirmed the document."
           ],
           "note": "UC-74 AF-1 · BR-291 · Automated: Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
-          "id": "DOC_API_IT209",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 400 MSG254 when lastPageReached is not true.",
-          "procedure": [
-            "Sign in as a Member who is a voter (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation with Authorization: Bearer <accessToken> and { \"lastPageReached\": false }, then with {}."
-          ],
-          "expected": [
-            "Both: HTTP 400 Bad Request.",
-            "Body: { \"code\": \"MSG254\", \"message\": \"Hãy cuộn tới trang cuối của tài liệu trước khi xác nhận đã đọc.\" }; nothing is recorded."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A voter who has not confirmed the document."
-          ],
-          "note": "UC-74 · Automated: Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
-          "id": "DOC_API_IT210",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify one confirmation counts for every vote that links the document and outlives a detach.",
-          "procedure": [
-            "Sign in as a Member who is a voter (POST /api/auth/login) and keep the access token.",
-            "Confirm a document attached to two votes, then detach it from one vote (DELETE .../votes/{voteId}/documents/{meetingDocumentId})."
-          ],
-          "expected": [
-            "The confirmation is recorded once per user and document; the document shows readConfirmedAt in both votes and keeps it after the detach (BR-291, BR-305)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two votes linking the same document."
-          ],
-          "note": "UC-74 · BR-291 · Automated: Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach)",
-          "id": "DOC_API_IT211",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 404 MSG156 for a document the caller cannot see as a vote document.",
-          "procedure": [
-            "Sign in as a Member (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation for a document linked to no vote, for a document only on a Draft vote, and as an outsider; send it as the Secretary for a random id."
-          ],
-          "expected": [
-            "All: HTTP 404 with { \"code\": \"MSG156\", ... } so a Draft vote is not revealed (BR-253)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
-          ],
-          "note": "UC-74 · BR-253 · Automated: Votes/VoteReadConfirmationTests.cs (Only_a_document_of_a_vote_the_reader_may_see_can_be_confirmed)",
-          "id": "DOC_API_IT212",
+          "id": "DOC_API_IT90",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -4372,81 +2021,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Open vote whose fixed voter list excludes this Member."
           ],
           "note": "UC-74 · Automated: Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach)",
-          "id": "DOC_API_IT213",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 409 MSG225 once the vote is closed or the meeting is not InProgress.",
-          "procedure": [
-            "Sign in as a Member who was a voter (POST /api/auth/login) and keep the access token.",
-            "Close the vote (POST .../votes/{voteId}/close), then send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation with { \"lastPageReached\": true }."
-          ],
-          "expected": [
-            "HTTP 409 with { \"code\": \"MSG225\", \"message\": \"Biểu quyết này không còn nhận phiếu.\" }; nothing is recorded."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Open vote with a document and a voter who has not confirmed it."
-          ],
-          "note": "UC-74 · Automated: Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach)",
-          "id": "DOC_API_IT214",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST answers 503 MSG255 when the confirmation cannot be saved.",
-          "procedure": [
-            "Sign in as a Member who is a voter (POST /api/auth/login) and keep the access token.",
-            "Make the database write on read confirmations fail.",
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation with Authorization: Bearer <accessToken> and { \"lastPageReached\": true }."
-          ],
-          "expected": [
-            "HTTP 503 with { \"code\": \"MSG255\", \"message\": \"Không xác nhận được việc đọc tài liệu. Vui lòng thử lại.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. QA lead can inject a database failure."
-          ],
-          "note": "UC-74 · Automated: Votes/VoteDocumentEndpointTests.cs (A_failed_save_attaches_detaches_and_adds_nothing)",
-          "id": "DOC_API_IT215",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify a Guest voter confirms reading and the confirmation says nothing about the choice.",
-          "procedure": [
-            "With a verified Guest token on the voter list, send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation with { \"lastPageReached\": true }, then cast a secret ballot."
-          ],
-          "expected": [
-            "HTTP 200 MSG253; the ballot is accepted afterwards; the confirmation row holds no reference to a vote, option or ballot (BR-293)."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Guest voter on an Open secret vote."
-          ],
-          "note": "UC-74 · BR-293 · Automated: Votes/VoteReadConfirmationTests.cs (A_guest_confirms_and_casts_a_secret_ballot_and_the_confirmation_says_nothing_about_the_choice)",
-          "id": "DOC_API_IT216",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "description": "Verify POST .../read-confirmation answers 401 without a token.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/documents/<meetingDocumentId>/read-confirmation with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentRound1GapTests.cs (Confirm_read_without_a_token_answers_401)",
-          "id": "DOC_API_IT217",
+          "id": "DOC_API_IT91",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

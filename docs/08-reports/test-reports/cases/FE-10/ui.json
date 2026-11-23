@@ -52,23 +52,6 @@
         },
         {
           "id": "TRANS_FT03",
-          "description": "Verify a room-mic recording shows the meeting's clock and a divider where each take starts.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Click \"Nghe và xem bản gỡ băng\" on the recording row."
-          ],
-          "expected": [
-            "Times read as the wall clock (hh:mm:ss) instead of an offset into the file.",
-            "A divider \"Lượt 2 · hh:mm:ss–hh:mm:ss\" marks where each new take begins and a run of lines never crosses it."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab of an in-person meeting whose room recording has two takes and a completed transcript."
-          ],
-          "note": "UC-45a | Manual only"
-        },
-        {
-          "id": "TRANS_FT04",
           "description": "Verify a transcript waiting or running shows its progress and refreshes itself.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -88,7 +71,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT05",
+          "id": "TRANS_FT04",
           "description": "Verify a recording without words and one not yet transcribed show their own messages.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -106,7 +89,7 @@
           "note": "UC-45a | Manual only"
         },
         {
-          "id": "TRANS_FT06",
+          "id": "TRANS_FT05",
           "description": "Verify a failed transcript shows the reason and a retry for the Secretary.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -123,7 +106,7 @@
           "note": "UC-45a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)"
         },
         {
-          "id": "TRANS_FT07",
+          "id": "TRANS_FT06",
           "description": "Verify a Member reads the transcript but sees no editing tools and no machine guess.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -142,7 +125,7 @@
           "note": "UC-45a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
         },
         {
-          "id": "TRANS_FT08",
+          "id": "TRANS_FT07",
           "description": "Verify the Secretary saves the transcript as a text file.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -163,7 +146,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT09",
+          "id": "TRANS_FT08",
           "description": "Verify the download is not offered to a Member and not on a Secret meeting.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -184,7 +167,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT10",
+          "id": "TRANS_FT09",
           "description": "Verify the per-mic record of an online meeting lists the sentences live and exports them.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -203,7 +186,7 @@
           "note": "UC-45b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_per_mic_transcript_is_saved_without_the_sentences_taken_out)"
         },
         {
-          "id": "TRANS_FT11",
+          "id": "TRANS_FT10",
           "description": "Verify a meeting with no sentences shows the empty state.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\"."
@@ -221,7 +204,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT12",
+          "id": "TRANS_FT11",
           "description": "Verify the transcript is still there after a reload and is hidden from a user not on the roster.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -252,7 +235,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT13",
+          "id": "TRANS_FT12",
           "description": "Verify the Secretary starts the transcript of a recording that has none.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -272,7 +255,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT14",
+          "id": "TRANS_FT13",
           "description": "Verify \"Chạy lại\" retries a failed transcript.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -288,7 +271,7 @@
           "note": "UC-45c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_failure_is_explained_and_only_the_secretary_runs_it_again)"
         },
         {
-          "id": "TRANS_FT15",
+          "id": "TRANS_FT14",
           "description": "Verify the Secretary confirms before a finished transcript is redone.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -309,7 +292,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT16",
+          "id": "TRANS_FT15",
           "description": "Verify cancelling the redo keeps the transcript and its corrections.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -330,22 +313,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT17",
-          "description": "Verify a second request while the transcript is running is refused with its message.",
-          "procedure": [
-            "As the Secretary click \"Chuyển thành chữ\" on a recording; in a second tab open the same recording and, while it is still waiting, send the retry again."
-          ],
-          "expected": [
-            "The second request shows the error \"Bản ghi đang chờ hoặc đang được chuyển thành chữ, chưa chạy lại được.\" (409/MSG301) and the panel stays on the waiting state."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary in two tabs on the \"Bản ghi\" tab; QA lead can slow the speech worker."
-          ],
-          "note": "UC-45c | Manual only"
-        },
-        {
-          "id": "TRANS_FT18",
+          "id": "TRANS_FT16",
           "description": "Verify a Member or the Chair does not see the retry controls.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -362,38 +330,6 @@
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_FT19",
-          "description": "Verify the combined recording of a hybrid meeting is for listening only.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Open the recording whose source reads \"Tổng hợp\"."
-          ],
-          "expected": [
-            "The panel reads \"Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.\" with no transcript and no \"Chuyển thành chữ\" button; the backend would answer 409/MSG479."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab of an ended hybrid meeting that has a combined recording."
-          ],
-          "note": "UC-45c | ADR-0061 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)"
-        },
-        {
-          "id": "TRANS_FT20",
-          "description": "Verify a recording erased while its transcript runs gets no transcript back.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Queue a transcript, then delete the recording (\"Xoá bản ghi\" and confirm), wait for the worker."
-          ],
-          "expected": [
-            "The recording row shows as deleted and no transcript appears for it; the other recordings are unaffected."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab; QA lead can slow the speech worker."
-          ],
-          "note": "UC-45c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/TranscriptEndpointTests.cs (A_recording_erased_while_the_worker_runs_gets_no_transcript_back)"
         }
       ]
     },
@@ -405,7 +341,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT21",
+          "id": "TRANS_FT17",
           "description": "Verify the Secretary corrects a transcript line in place and the correction is marked.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -427,7 +363,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT22",
+          "id": "TRANS_FT18",
           "description": "Verify Esc and \"Huỷ\" leave a line as it was.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -447,7 +383,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT23",
+          "id": "TRANS_FT19",
           "description": "Verify an empty line cannot be saved.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -468,45 +404,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT24",
-          "description": "Verify the editor stops at 8000 characters.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Click a line and paste a text longer than 8000 characters."
-          ],
-          "expected": [
-            "The textarea accepts at most 8000 characters; saving the 8000-character text works and shows \"Đã lưu đoạn gỡ băng.\""
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices."
-          ],
-          "note": "UC-46a | Boundary 8000 | Manual only · Evidence(AC4): tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/03-secretary-AC4-desktop-sua-cau-8000-ky-tu.png; tests/qa/out/SCRUM-197/20261121-181236-eb5a3255/06-secretary-AC4-phone-sua-cau-8000-ky-tu.png",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_FT25",
-          "description": "Verify a failed save keeps the editor open with the message.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Click a line, change it, stop the backend database (QA lead) and press Enter."
-          ],
-          "expected": [
-            "The editor stays open with the draft text and shows the server's message \"Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.\" (503/MSG304); nothing is lost and a retry after recovery saves it."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab of a meeting whose recording has a Completed transcript with two voices.",
-            "QA lead can make the database refuse writes."
-          ],
-          "note": "UC-46a | Manual only"
-        },
-        {
-          "id": "TRANS_FT26",
+          "id": "TRANS_FT20",
           "description": "Verify the Secretary names a whole voice and the lines take the name.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -527,42 +425,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT27",
-          "description": "Verify the machine's guess leads the picker as \"Khớp giọng nhất\" and a suggested match is named automatically.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Hover the picker of a voice the machine matched, then open it."
-          ],
-          "expected": [
-            "The tooltip reads \"Khớp giọng nhất: <name>\" for a suggestion, or \"Máy tự gán vì giọng khớp rõ với <name> — chọn lại nếu sai\" for an automatic name.",
-            "The suggested person is first in the list with the hint \"Khớp giọng nhất\"; picking someone else replaces an automatic name."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab; a participant with Voice ID consent to notice 1.2 or later whose voice matches."
-          ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Every_suggested_match_is_named_by_the_machine_and_the_name_goes_with_the_consent) · Evidence(AC18): tests/qa/out/SCRUM-197/20261121-174413-eb5a3255/13-secretary-AC18-desktop-goi-y-khop-giong-nhat.png"
-        },
-        {
-          "id": "TRANS_FT28",
-          "description": "Verify two voices the machine split from one person can be named together.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Open the picker of the weaker voice (tooltip \"Cùng giọng với <name>\" mention) and choose the entry that names both."
-          ],
-          "expected": [
-            "The picker offers an entry for both voices (hint \"Cả <name>\"); choosing it names both voices and they fold into one speaker with the icon \"Gộp 2 giọng\" (tooltip \"Gộp 2 giọng máy nghe là cùng một người\") and their times added."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; a transcript where the machine suggested one person for two voices."
-          ],
-          "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary)"
-        },
-        {
-          "id": "TRANS_FT29",
+          "id": "TRANS_FT21",
           "description": "Verify the Secretary changes who said one line only.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -583,7 +446,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT30",
+          "id": "TRANS_FT22",
           "description": "Verify a Member cannot reach any naming or editing control.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -600,7 +463,7 @@
           "note": "UC-46b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included)"
         },
         {
-          "id": "TRANS_FT31",
+          "id": "TRANS_FT23",
           "description": "Verify the Secretary corrects a sentence of the per-mic record.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -618,24 +481,6 @@
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_FT32",
-          "description": "Verify a correction made by the Secretary shows on the second user's screen.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "In a second browser as a Member open the same meeting and tab.",
-            "As the Secretary correct a line.",
-            "Reload the Member's page (or wait for the live refresh)."
-          ],
-          "expected": [
-            "The Member sees the corrected text and the tag \"đã sửa\"; the Member's screen has no editing tools."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Secretary and Member signed in in two browsers on the \"Bản ghi\" tab of the same meeting."
-          ],
-          "note": "UC-46a | Manual only"
         }
       ]
     },
@@ -647,7 +492,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT33",
+          "id": "TRANS_FT24",
           "description": "Verify the Chair or Secretary takes a sentence out of the record and puts it back.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -668,24 +513,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT34",
-          "description": "Verify a sentence that is a quiet copy of a neighbour's mic is flagged and removed as a leak.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "Look at the flagged sentence and click \"Bỏ khỏi biên bản\"."
-          ],
-          "expected": [
-            "A chip reads \"Có thể là <name>\" (whole sentence) or \"Có đoạn của <name>\" with the tooltip \"Micro của <name> thu cùng câu này to hơn\" or \"Phần tô màu có thể là lời của <name>: micro của họ thu to hơn\".",
-            "After exclusion the tooltip reads \"<name> đã bỏ vì lẫn tiếng micro khác\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab; two speakers whose mics overheard each other."
-          ],
-          "note": "UC-46c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)"
-        },
-        {
-          "id": "TRANS_FT35",
+          "id": "TRANS_FT25",
           "description": "Verify a Member has no exclude or restore control and an excluded sentence is hidden from normal reading.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -705,7 +533,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT36",
+          "id": "TRANS_FT26",
           "description": "Verify the Secretary deletes a sentence after confirming.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -725,7 +553,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT37",
+          "id": "TRANS_FT27",
           "description": "Verify a speaker withdraws their own sentence from \"Ghi âm của tôi\".",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -742,7 +570,7 @@
           "note": "UC-46d | UC-80 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
         },
         {
-          "id": "TRANS_FT38",
+          "id": "TRANS_FT28",
           "description": "Verify a Member cannot delete another person's sentence.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
@@ -759,22 +587,6 @@
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "TRANS_FT39",
-          "description": "Verify deleting a sentence the Secretary already deleted elsewhere reports it cleanly.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
-            "In a second tab the Secretary deletes a sentence; in the first tab click \"Xoá câu\" on the same sentence and confirm."
-          ],
-          "expected": [
-            "The first tab shows the error \"Yêu cầu không thành công (HTTP 404).\" in the dialog (the 404 carries no message) and the list refreshes without that sentence."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Secretary signed in in two tabs on the \"Bản ghi\" tab."
-          ],
-          "note": "UC-46d | Manual only"
         }
       ]
     },
@@ -785,7 +597,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT40",
+          "id": "TRANS_FT29",
           "description": "Verify the Secretary asks the AI for the first draft and the card shows its progress.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -802,27 +614,7 @@
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Secretary_asks_for_a_draft_which_is_queued_then_written_per_agenda_item)"
         },
         {
-          "id": "TRANS_FT41",
-          "description": "Verify the empty card explains how to start, and before the meeting has ended the tab is locked.",
-          "procedure": [
-            "Open an Ended meeting that has a transcript from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "Look at the card before any draft exists.",
-            "Open a Published meeting that has not started and hover or tap the tab \"Biên bản\".",
-            "Open the address \"?tab=minutes\" of that Published meeting."
-          ],
-          "expected": [
-            "Step 2: \"Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.\" with the button \"Tạo dự thảo\".",
-            "Step 3: the tab is dimmed with a lock and says \"Mở khi cuộc họp kết thúc\" (a Cancelled meeting says \"Cuộc họp đã huỷ\"); it does not open.",
-            "Step 4: the page opens the overview tab, not the minutes (the backend would answer 409/MSG386)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary; an Ended meeting with a transcript and no draft, and a Published meeting."
-          ],
-          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_draft_is_asked_for_only_once_the_meeting_has_ended)"
-        },
-        {
-          "id": "TRANS_FT42",
+          "id": "TRANS_FT30",
           "description": "Verify the readiness note lists what the draft would miss.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -839,7 +631,7 @@
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind)"
         },
         {
-          "id": "TRANS_FT43",
+          "id": "TRANS_FT31",
           "description": "Verify the Secretary names the voices from the card before generating.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -858,7 +650,7 @@
           "note": "UC-47 | Manual only"
         },
         {
-          "id": "TRANS_FT44",
+          "id": "TRANS_FT32",
           "description": "Verify regenerating asks for confirmation and warns that edits are replaced.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -876,24 +668,7 @@
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_rerun_keeps_the_last_draft_readable_then_replaces_it_and_its_review)"
         },
         {
-          "id": "TRANS_FT45",
-          "description": "Verify a draft that is behind the transcript is flagged and can be regenerated.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "In the \"Bản ghi\" tab correct a transcript line, then return to \"Biên bản\"."
-          ],
-          "expected": [
-            "A notice reads \"Bản ghi đã được sửa sau khi tạo dự thảo: dự thảo chưa có các chỗ sửa đó.\" with a \"Tạo lại\" button that opens the same confirm dialog."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Biên bản\" tab of an InProgress meeting with an agenda and recorded speech; the AI server is running.",
-            "A Ready draft."
-          ],
-          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_line_corrected_while_the_AI_writes_is_not_in_the_draft_so_the_draft_reads_as_behind)"
-        },
-        {
-          "id": "TRANS_FT46",
+          "id": "TRANS_FT33",
           "description": "Verify a draft that failed shows the reason and keeps the earlier one.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -910,7 +685,7 @@
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_model_failure_leaves_the_draft_failed_with_its_message)"
         },
         {
-          "id": "TRANS_FT47",
+          "id": "TRANS_FT34",
           "description": "Verify the request button is disabled with a reason when the AI is not ready or edits are unsaved.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -927,23 +702,7 @@
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write)"
         },
         {
-          "id": "TRANS_FT48",
-          "description": "Verify a second request while the draft is being written is refused.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "In a second tab as the Chair click \"Tạo dự thảo\" at the same time as the Secretary."
-          ],
-          "expected": [
-            "The later request shows \"AI đang viết dự thảo, vui lòng chờ.\" (409/MSG387) and the card refreshes to the running state; only one draft is written."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary signed in in two tabs on the \"Biên bản\" tab of an InProgress meeting."
-          ],
-          "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (A_second_request_while_one_is_queued_is_busy)"
-        },
-        {
-          "id": "TRANS_FT49",
+          "id": "TRANS_FT35",
           "description": "Verify a Member and a user outside the meeting get no way to ask for a draft.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -973,7 +732,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT50",
+          "id": "TRANS_FT36",
           "description": "Verify the Chair or Secretary reads the draft as three folded sections.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -991,7 +750,7 @@
           "note": "UC-48 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Secretary_asks_for_a_draft_which_is_queued_then_written_per_agenda_item)"
         },
         {
-          "id": "TRANS_FT51",
+          "id": "TRANS_FT37",
           "description": "Verify a Member sees the draft only after it is reviewed, read-only and without the sources.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -1009,7 +768,7 @@
           "note": "UC-48 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)"
         },
         {
-          "id": "TRANS_FT52",
+          "id": "TRANS_FT38",
           "description": "Verify the Secretary edits a section and the save bar appears.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -1027,7 +786,7 @@
           "note": "UC-49 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Editing_saves_the_three_sections_and_takes_the_review_back)"
         },
         {
-          "id": "TRANS_FT53",
+          "id": "TRANS_FT39",
           "description": "Verify saving an edit of a reviewed draft warns that it must be reviewed again.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -1044,7 +803,7 @@
           "note": "UC-49 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Editing_saves_the_three_sections_and_takes_the_review_back)"
         },
         {
-          "id": "TRANS_FT54",
+          "id": "TRANS_FT40",
           "description": "Verify \"Hoàn tác\" discards unsaved edits after confirming.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -1061,42 +820,7 @@
           "note": "UC-49 | Manual only"
         },
         {
-          "id": "TRANS_FT55",
-          "description": "Verify a section over its limit cannot be saved.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "Open section I and paste a text longer than 2000 characters."
-          ],
-          "expected": [
-            "A counter \"<n>/2.000 ký tự\" shows from 80% of the limit and turns red; the bar reads \"Mục I quá dài\" and \"Lưu dự thảo\" is disabled; the folded heading carries the flag \"Quá dài\".",
-            "At exactly 2000 characters (II: 12.000, III: 8.000) saving works."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Biên bản\" tab of an InProgress meeting with an agenda and recorded speech; the AI server is running.",
-            "A Ready draft."
-          ],
-          "note": "UC-49 | Boundary 2000/12000/8000 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)"
-        },
-        {
-          "id": "TRANS_FT56",
-          "description": "Verify an empty section is refused by the server with its field flagged.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "Open section III, delete all text and click \"Lưu dự thảo\"."
-          ],
-          "expected": [
-            "A toast shows \"Nội dung dự thảo không hợp lệ.\" (400/MSG389); the folded heading carries the flag \"Cần sửa\" and the section shows the field message \"Nhập nội dung, tối đa …\"; nothing is saved."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Biên bản\" tab of an InProgress meeting with an agenda and recorded speech; the AI server is running.",
-            "A Ready draft."
-          ],
-          "note": "UC-49 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (An_edit_with_an_empty_or_too_long_section_is_refused_and_saves_nothing)"
-        },
-        {
-          "id": "TRANS_FT57",
+          "id": "TRANS_FT41",
           "description": "Verify the Secretary approves the draft and others can then read it.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
@@ -1113,39 +837,6 @@
             "A Ready, unreviewed draft; a Member in a second browser."
           ],
           "note": "UC-50 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Members_see_nothing_until_the_draft_is_reviewed_then_read_it)"
-        },
-        {
-          "id": "TRANS_FT58",
-          "description": "Verify editing or approving is refused while the AI writes the draft again.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "In a second tab as the Chair click \"Tạo lại\"; in the first tab edit a section and click \"Lưu dự thảo\" at once."
-          ],
-          "expected": [
-            "The save shows \"AI đang viết dự thảo, vui lòng chờ.\" (409/MSG387) and the card changes to the running state, closing the editor; the same happens to \"Duyệt\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary signed in in two tabs on the \"Biên bản\" tab; a Ready draft."
-          ],
-          "note": "UC-49 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed)"
-        },
-        {
-          "id": "TRANS_FT59",
-          "description": "Verify the draft and its review state survive a reload.",
-          "procedure": [
-            "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "Save an edit and approve the draft, then reload the page."
-          ],
-          "expected": [
-            "The same text, the chip \"Đã duyệt\" and the footer with the editor's name are shown again."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Biên bản\" tab of an InProgress meeting with an agenda and recorded speech; the AI server is running.",
-            "A Ready draft."
-          ],
-          "note": "UC-48 | Manual only"
         }
       ]
     },
@@ -1156,7 +847,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT60",
+          "id": "TRANS_FT42",
           "description": "Verify a person reads the notice in full before agreeing and the button needs the tick.",
           "procedure": [
             "Click \"Giọng nói của tôi\" in the sidebar (\"/mgmt/my-voice\")."
@@ -1175,7 +866,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT61",
+          "id": "TRANS_FT43",
           "description": "Verify agreeing turns Voice ID on.",
           "procedure": [
             "Open \"/mgmt/my-voice\", tick the box and click \"Đồng ý và bật\"."
@@ -1191,7 +882,7 @@
           "note": "UC-81b | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)"
         },
         {
-          "id": "TRANS_FT62",
+          "id": "TRANS_FT44",
           "description": "Verify the person records a sample and hears it before keeping it.",
           "procedure": [
             "Open \"/mgmt/my-voice\" and click \"Ghi giọng mẫu\".",
@@ -1209,7 +900,7 @@
           "note": "UC-81c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
         },
         {
-          "id": "TRANS_FT63",
+          "id": "TRANS_FT45",
           "description": "Verify a rejected recording shows the reason and keeps the dialog open.",
           "procedure": [
             "Open \"Ghi giọng mẫu\" and record a take of about 9 seconds of silence, then click \"Lưu giọng mẫu\"."
@@ -1225,7 +916,7 @@
           "note": "UC-81c | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)"
         },
         {
-          "id": "TRANS_FT64",
+          "id": "TRANS_FT46",
           "description": "Verify the sixth sample is blocked at 5.",
           "procedure": [
             "Open \"/mgmt/my-voice\" with 5 samples and look at \"Ghi giọng mẫu\"."
@@ -1243,7 +934,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT65",
+          "id": "TRANS_FT47",
           "description": "Verify the person plays a saved sample back.",
           "procedure": [
             "Open \"/mgmt/my-voice\" and click \"Nghe lại giọng mẫu 1\"."
@@ -1258,7 +949,7 @@
           "note": "UC-81d | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it)"
         },
         {
-          "id": "TRANS_FT66",
+          "id": "TRANS_FT48",
           "description": "Verify deleting one sample asks first and frees a place.",
           "procedure": [
             "Open \"/mgmt/my-voice\" and click \"Xoá giọng mẫu 1\"."
@@ -1276,7 +967,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT67",
+          "id": "TRANS_FT49",
           "description": "Verify turning Voice ID off erases every sample after a warning.",
           "procedure": [
             "Open \"/mgmt/my-voice\" and click \"Tắt và xoá giọng mẫu\".",
@@ -1293,7 +984,7 @@
           "note": "UC-81f | Law 91/2025/QH15 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Withdrawing_erases_samples_and_suggestions_but_keeps_what_the_secretary_decided; Withdrawing_erases_both_sets_at_once)"
         },
         {
-          "id": "TRANS_FT68",
+          "id": "TRANS_FT50",
           "description": "Verify the card \"Người khác thu hộ\" lists what collectors recorded and lets the person hear and delete it.",
           "procedure": [
             "Open \"/mgmt/my-voice\" (or click the notification about a sample recorded for you)."
@@ -1309,7 +1000,7 @@
           "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
         },
         {
-          "id": "TRANS_FT69",
+          "id": "TRANS_FT51",
           "description": "Verify a person on an older notice is asked to agree again before anything new applies.",
           "procedure": [
             "Open \"/mgmt/my-voice\" and click \"Xem và đồng ý\" in the notice \"Điều khoản Voice ID đã thay đổi.\""
@@ -1323,47 +1014,17 @@
             "Signed in as a user whose consent is to notice 1.2."
           ],
           "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed)"
-        },
-        {
-          "id": "TRANS_FT70",
-          "description": "Verify a notice changed while the page was open is refused with a reload hint.",
-          "procedure": [
-            "Open the consent card, tick the box, and (QA lead) raise the server's notice version before clicking \"Đồng ý và bật\"."
-          ],
-          "expected": [
-            "The card shows \"Nội dung thông báo đã thay đổi. Hãy tải lại trang và đọc lại trước khi đồng ý.\" (400/MSG313) and no consent is recorded."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a user without consent; QA lead can change the notice version."
-          ],
-          "note": "UC-81b | Manual only"
-        },
-        {
-          "id": "TRANS_FT71",
-          "description": "Verify the page is for the signed-in person only and needs a session.",
-          "procedure": [
-            "Open \"/mgmt/my-voice\" while signed out."
-          ],
-          "expected": [
-            "The app redirects to the login page; after sign-in only the signed-in person's own Voice ID is shown and no screen offers to enable it for someone else."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in; a second user with Voice ID on."
-          ],
-          "note": "UC-81a | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)"
         }
       ]
     },
     {
       "title": "Collect Voice Samples",
       "uc": [
-        "UC-81c"
+        "UC-86"
       ],
       "cases": [
         {
-          "id": "TRANS_FT72",
+          "id": "TRANS_FT52",
           "description": "Verify an account with \"Thu giọng mẫu hộ\" opens one person's voice collection from the user list.",
           "procedure": [
             "Open \"/mgmt/users\" and click \"Quản lý giọng nói thu hộ của <name>\" on a row."
@@ -1379,22 +1040,7 @@
           "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
         },
         {
-          "id": "TRANS_FT73",
-          "description": "Verify the voice collection is hidden from accounts without \"Thu giọng mẫu hộ\".",
-          "procedure": [
-            "Open \"/mgmt/users\" as an account that has \"Quản lý người dùng\" but not \"Thu giọng mẫu hộ\" (and as a Chair or a Secretary)."
-          ],
-          "expected": [
-            "No button \"Quản lý giọng nói thu hộ của <name>\" and no column of it appears; a direct API request answers 403 with the capability missing and 401 when not signed in."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "An account with \"Quản lý người dùng\" but without \"Thu giọng mẫu hộ\"; a Chair and a Secretary account."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
-        },
-        {
-          "id": "TRANS_FT74",
+          "id": "TRANS_FT53",
           "description": "Verify the collector records a person who agreed, with no meeting involved.",
           "procedure": [
             "In the dialog click \"Thu\", tick \"Đã hỏi, <name> đồng ý cho thu giọng mẫu lần này\".",
@@ -1412,54 +1058,7 @@
           "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (A_collector_records_a_consenting_person_with_no_meeting_and_the_person_is_told_and_sees_it)"
         },
         {
-          "id": "TRANS_FT75",
-          "description": "Verify the collector hears and deletes any sample taken for the person.",
-          "procedure": [
-            "Click \"Nghe lại mẫu 1 của <name>\".",
-            "Click \"Xoá mẫu 1 của <name>\" and confirm."
-          ],
-          "expected": [
-            "Step 1: the sample plays and the button turns to \"Dừng\".",
-            "Step 2: a dialog \"Xoá mẫu thu hộ?\" says \"Mẫu này của <name> bị xoá hẳn. Muốn thay thì thu lại mẫu mới.\"; \"Xoá\" shows \"Đã xoá giọng mẫu thu hộ.\" (200/MSG474) and the count falls; the play is audited."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a person with at least one proxy sample."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
-        },
-        {
-          "id": "TRANS_FT76",
-          "description": "Verify \"Thu\" is refused at the limit of 50 proxy samples.",
-          "procedure": [
-            "Open the dialog of a person who already has 50 proxy samples and try to record one more."
-          ],
-          "expected": [
-            "The count reads \"50/50 mẫu thu hộ\"; the take is refused with 409/MSG476 and nothing is stored. No rule ties the take to a meeting, so a Published, Ended or missing meeting changes nothing."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a person with 50 proxy samples."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0075_one_collector_may_take_all_fifty_proxy_samples_and_no_more)"
-        },
-        {
-          "id": "TRANS_FT77",
-          "description": "Verify a person who withdrew meanwhile cannot be recorded and the dialog says why.",
-          "procedure": [
-            "Open \"Thu\" for a person, and while the dialog is open the person turns Voice ID off in a second browser; then click \"Lưu giọng mẫu\"."
-          ],
-          "expected": [
-            "The dialog shows \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\" (409/MSG475), the list refreshes and the person now reads as not agreed; nothing is stored."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a consenting person in a second browser."
-          ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
-        },
-        {
-          "id": "TRANS_FT78",
+          "id": "TRANS_FT54",
           "description": "Verify a rejected take shows the reason in the dialog.",
           "procedure": [
             "Record a take that is too short or too quiet for a person and click \"Lưu giọng mẫu\"."
@@ -1472,6 +1071,58 @@
             "Signed in as an account holding \"Thu giọng mẫu hộ\"; a consenting person; microphone permission granted."
           ],
           "note": "UC-86 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-197/20261121-180832-eb5a3255/10-secretary-AC15-desktop-mau-thu-ho-khong-dat.png"
+        },
+        {
+          "description": "Verify the collector plays back a sample collected for a person.",
+          "procedure": [
+            "Open \"/mgmt/users\" and click \"Quản lý giọng nói thu hộ của <name>\" on a row whose person has a collected sample.",
+            "Click the play button (\"Nghe lại\") on the first sample, then click it again."
+          ],
+          "expected": [
+            "The sample plays, the button changes to \"Dừng\" and shows as pressed.",
+            "A second click stops the playback and the button returns to \"Nghe lại\".",
+            "The playback is written to the audit log (UC-86c, BR-453)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an account holding \"Thu giọng mẫu hộ\" (Quản trị viên by default); a person with at least one collected sample; speakers on."
+          ],
+          "note": "UC-86 | Manual only",
+          "id": "TRANS_FT55"
+        },
+        {
+          "description": "Verify deleting a collected sample asks first and removes it only after the collector confirms.",
+          "procedure": [
+            "In the dialog click the trash icon \"Xoá mẫu 1 của <name>\".",
+            "In the confirmation \"Xoá mẫu thu hộ?\" click \"Giữ lại\".",
+            "Click the trash icon again and click \"Xoá\"."
+          ],
+          "expected": [
+            "The confirmation says \"Mẫu này của <name> bị xoá hẳn. Muốn thay thì thu lại mẫu mới.\"",
+            "\"Giữ lại\" closes it and the sample and the count \"<n>/50 mẫu thu hộ\" stay as they were.",
+            "\"Xoá\" shows a success toast (200/MSG474), the sample leaves the list and the count drops by one; \"Thu\" still works to record a new one."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an account holding \"Thu giọng mẫu hộ\"; a person with at least one collected sample."
+          ],
+          "note": "UC-86 | Manual only",
+          "id": "TRANS_FT56"
+        },
+        {
+          "description": "Verify an account without \"Thu giọng mẫu hộ\" has no voice collection on the user list.",
+          "procedure": [
+            "Sign in as an account that can open \"/mgmt/users\" but does not hold \"Thu giọng mẫu hộ\" and open the user list."
+          ],
+          "expected": [
+            "No row shows the \"Giọng nói\" button or \"Quản lý giọng nói thu hộ của <name>\"; the other row actions are unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "An account with the user administration permission but without \"Thu giọng mẫu hộ\", set in the role matrix."
+          ],
+          "note": "UC-86 | Manual only",
+          "id": "TRANS_FT57"
         }
       ]
     },
@@ -1482,7 +1133,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_FT79",
+          "id": "TRANS_FT58",
           "description": "Verify the Administrator opens \"Cấu hình AI\" and sees what is in use.",
           "procedure": [
             "Click \"Cấu hình AI\" in the sidebar (\"/mgmt/admin/ai\")."
@@ -1501,7 +1152,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT80",
+          "id": "TRANS_FT59",
           "description": "Verify the Administrator switches to the API and saves with a key that is never shown again.",
           "procedure": [
             "Open \"/mgmt/admin/ai\", choose \"API\", fill \"Địa chỉ API\", \"Mô hình\" and \"Khoá API\", and click \"Lưu\"."
@@ -1517,7 +1168,7 @@
           "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_key_is_stored_encrypted_and_only_its_last_four_characters_come_back)"
         },
         {
-          "id": "TRANS_FT81",
+          "id": "TRANS_FT60",
           "description": "Verify the form flags each invalid field.",
           "procedure": [
             "Choose \"API\", type \"http://x\" in \"Địa chỉ API\", leave \"Mô hình\" and \"Khoá API\" empty and click \"Lưu\"."
@@ -1535,7 +1186,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT82",
+          "id": "TRANS_FT61",
           "description": "Verify \"Thử kết nối\" tests the chosen machine without saving.",
           "procedure": [
             "Choose \"API\" with a working form and click \"Thử kết nối\".",
@@ -1552,7 +1203,7 @@
           "note": "UC-47 | ADR-0056 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/AiSettingsEndpointTests.cs (The_test_call_uses_the_form_or_the_stored_key_and_reports_the_api_s_refusal; Testing_the_in_house_model_calls_it_as_drafts_do_and_never_the_api)"
         },
         {
-          "id": "TRANS_FT83",
+          "id": "TRANS_FT62",
           "description": "Verify a failed test shows the API's reason in red.",
           "procedure": [
             "Choose \"API\" with a wrong key and click \"Thử kết nối\"."
@@ -1570,7 +1221,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT84",
+          "id": "TRANS_FT63",
           "description": "Verify a non-administrator cannot reach the page.",
           "procedure": [
             "Sign in as a Secretary and open \"/mgmt/admin/ai\" directly."
@@ -1588,7 +1239,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_FT85",
+          "id": "TRANS_FT64",
           "description": "Verify the saved choice drives the next draft and persists after a reload.",
           "procedure": [
             "Save the API as the writer, reload \"/mgmt/admin/ai\", then as the Secretary ask for a draft of a Normal and of an Internal meeting."

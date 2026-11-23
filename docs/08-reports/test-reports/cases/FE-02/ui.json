@@ -54,26 +54,6 @@
         },
         {
           "id": "USER_FT03",
-          "description": "Verify searching by name or email ignores case and diacritics.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Type \"nguyen\" in \"Tìm theo tên hoặc email…\".",
-            "Type part of an email, e.g. \"trustcabinet\"."
-          ],
-          "expected": [
-            "Step 2: the list narrows at once to accounts whose name contains \"Nguyễn\" (and \"Nguyen\"), with no extra API call.",
-            "Step 3: rows whose email contains the text remain.",
-            "The URL gets \"?q=\" after a short pause and the page goes back to page 1."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "Accounts named \"Nguyễn …\" and \"Đặng …\" exist."
-          ],
-          "note": "UC-05 · Manual only"
-        },
-        {
-          "id": "USER_FT04",
           "description": "Verify the role and status filters combine with the search.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -95,7 +75,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT05",
+          "id": "USER_FT04",
           "description": "Verify an empty result shows \"Không có tài khoản nào khớp bộ lọc.\" and \"Xoá bộ lọc\" restores the list.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -116,7 +96,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT06",
+          "id": "USER_FT05",
           "description": "Verify filters and page survive a reload and a shared link.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -138,7 +118,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT07",
+          "id": "USER_FT06",
           "description": "Verify paging and the page-size selector.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -159,7 +139,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT08",
+          "id": "USER_FT07",
           "description": "Verify a caller without AdminUsers cannot open the user list.",
           "procedure": [
             "Sign in as the Secretary (no AdminUsers).",
@@ -177,25 +157,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT09",
-          "description": "Verify losing AdminUsers while the page is open sends the user away with a message.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser, an Administrator moves the first account to the \"Thành viên\" role.",
-            "In the first browser click \"Sửa\" on any row (or reload the list)."
-          ],
-          "expected": [
-            "The backend answers 403; the page shows the toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" and goes to the meeting list.",
-            "The sidebar no longer offers \"Quản trị\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second Administrator in another browser."
-          ],
-          "note": "UC-05 · Manual only"
         }
       ]
     },
@@ -206,7 +167,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT10",
+          "id": "USER_FT08",
           "description": "Verify an Administrator creates an account with \"Tạo tài khoản\".",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -231,7 +192,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT11",
+          "id": "USER_FT09",
           "description": "Verify the dialog opens with the default role and \"Tạo mật khẩu\" shows the generated password.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -253,7 +214,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT12",
+          "id": "USER_FT10",
           "description": "Verify the dialog marks every empty or invalid field and focuses the first one, without calling the API.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -274,7 +235,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT13",
+          "id": "USER_FT11",
           "description": "Verify a duplicate email shows \"Email đã được sử dụng.\" under the email field.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -295,7 +256,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT14",
+          "id": "USER_FT12",
           "description": "Verify a role deleted after the dialog was opened shows the server's field error.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -317,7 +278,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT15",
+          "id": "USER_FT13",
           "description": "Verify closing the dialog with typed input asks before discarding.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -336,25 +297,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT16",
-          "description": "Verify a caller who lost AdminUsers is turned away when saving a new account.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Tạo tài khoản\" and fill valid values.",
-            "In a second browser remove AdminUsers from this Administrator's role, then submit."
-          ],
-          "expected": [
-            "POST /api/users answers 403; the toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" shows and the app goes to the meeting list.",
-            "No account is created."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second Administrator in another browser."
-          ],
-          "note": "UC-06a · Manual only"
         }
       ]
     },
@@ -365,7 +307,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT17",
+          "id": "USER_FT14",
           "description": "Verify \"Sửa\" loads the account and \"Lưu thay đổi\" saves name and email.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -387,25 +329,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT18",
-          "description": "Verify the dialog shows the sign-in methods and where the password is changed.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\" on a Google-linked account, then on a password-only account."
-          ],
-          "expected": [
-            "The line \"Đăng nhập bằng: Google\" / \"mật khẩu\" / \"mật khẩu, Google\" matches the row.",
-            "Its tooltip says that changing the email does not change the linked Google account, or that the first Google sign-in with the same email links it, and that the password is changed with \"Gửi liên kết đặt lại mật khẩu\" in the list."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "One password-only and one Google-linked account."
-          ],
-          "note": "UC-06b · Manual only"
-        },
-        {
-          "id": "USER_FT19",
+          "id": "USER_FT15",
           "description": "Verify an email change warns that the person will be signed out.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -426,7 +350,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT20",
+          "id": "USER_FT16",
           "description": "Verify the other person is signed out after their email changes.",
           "procedure": [
             "In browser B, sign in as the target and open /mgmt/meetings.",
@@ -448,7 +372,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT21",
+          "id": "USER_FT17",
           "description": "Verify a duplicate email on edit shows \"Email đã được sử dụng.\" and keeps the dialog open.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -467,7 +391,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT22",
+          "id": "USER_FT18",
           "description": "Verify invalid input on edit is marked per field, and closing with edits asks first.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -488,7 +412,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT23",
+          "id": "USER_FT19",
           "description": "Verify the edit dialog shows the load error when the account cannot be loaded.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -515,7 +439,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT24",
+          "id": "USER_FT20",
           "description": "Verify deactivating an account asks for confirmation and updates the row.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -538,7 +462,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT25",
+          "id": "USER_FT21",
           "description": "Verify a deactivated person is signed out and cannot sign in.",
           "procedure": [
             "In browser B, sign in as the target and open /mgmt/meetings.",
@@ -559,7 +483,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT26",
+          "id": "USER_FT22",
           "description": "Verify reactivating an account restores sign-in.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -581,7 +505,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT27",
+          "id": "USER_FT23",
           "description": "Verify the status button is disabled on your own row.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -600,7 +524,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT28",
+          "id": "USER_FT24",
           "description": "Verify cancelling the confirmation changes nothing.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -617,50 +541,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT29",
-          "description": "Verify a stale list is told so when the account is already in the requested state.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser deactivate account X.",
-            "Here, still showing X as active, click \"Vô hiệu hoá\" on X and confirm."
-          ],
-          "expected": [
-            "The backend answers 409 \"MSG12\"; the page re-reads the account and the dialog shows \"Tài khoản này đã bị vô hiệu hoá từ trước. Danh sách đã được cập nhật.\"; the row now shows \"Đã vô hiệu hoá\".",
-            "The reverse case shows \"Tài khoản này đã được kích hoạt từ trước. Danh sách đã được cập nhật.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second browser signed in as another Administrator."
-          ],
-          "note": "UC-06c · Manual only · Evidence(AC8): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/32-admin-AC8-desktop-da-vo-hieu-hoa-tu-truoc.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT30",
-          "description": "Verify a deactivated account's library opens from the row, and an active one's does not.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Hover the folder button on an active row, then on a deactivated row.",
-            "Click \"Xem kho\" on the deactivated row."
-          ],
-          "expected": [
-            "Active row: the folder button is disabled with the tooltip \"Chỉ xem được kho của tài khoản đã vô hiệu hoá\".",
-            "Deactivated row: the link \"Xem kho tài liệu\" opens /mgmt/admin/users/{id}/library showing the person's documents read-only."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A deactivated account with documents in its personal library."
-          ],
-          "note": "UC-06c · SCRUM-113 · Manual only · Evidence(AC31): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/17-admin-AC31-desktop-nut-kho-bi-khoa.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/18-admin-AC31-desktop-kho-cua-tai-khoan-vo-hieu-hoa.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -671,7 +551,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT31",
+          "id": "USER_FT25",
           "description": "Verify an Administrator changes a person's role in the edit dialog.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -692,7 +572,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT32",
+          "id": "USER_FT26",
           "description": "Verify the changed role applies to the person at once without signing them out.",
           "procedure": [
             "In browser B, sign in as the target Member and keep /mgmt/meetings open.",
@@ -714,24 +594,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT33",
-          "description": "Verify editing your own role refreshes the shell.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\" on your own row, change only \"Vai trò\" to a role that keeps AdminUsers, and save."
-          ],
-          "expected": [
-            "\"MSG10\" toast; the session reloads from /api/auth/me and the sidebar and name stay consistent with the saved role."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role that also holds AdminUsers."
-          ],
-          "note": "UC-08 · Manual only"
-        },
-        {
-          "id": "USER_FT34",
+          "id": "USER_FT27",
           "description": "Verify demoting the last administrator is refused with a clear message.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -749,27 +612,7 @@
           "note": "UC-08 · Manual only"
         },
         {
-          "id": "USER_FT35",
-          "description": "Verify a role deleted meanwhile is reported on the field.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\", choose a custom role, and in a second browser delete that role, then save."
-          ],
-          "expected": [
-            "PUT /api/users/{id} answers 400 \"MSG09\"; \"Vai trò không tồn tại.\" shows under \"Vai trò\"; the dialog stays open."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role without members and a second browser."
-          ],
-          "note": "UC-08 · Manual only · Evidence(AC15): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/32-admin-AC15-desktop-vai-tro-khong-ton-tai.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT36",
+          "id": "USER_FT28",
           "description": "Verify the role filter list matches the roles that exist.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -797,7 +640,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT37",
+          "id": "USER_FT29",
           "description": "Verify the Administrator sends a reset link from the list.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -816,25 +659,7 @@
           "note": "UC-07 · Manual only"
         },
         {
-          "id": "USER_FT38",
-          "description": "Verify the reset button is disabled for deactivated and Google-only accounts.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Hover the key button on a deactivated row, then on a Google-only row."
-          ],
-          "expected": [
-            "Google-only: disabled, tooltip \"Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại\".",
-            "Deactivated: disabled, tooltip \"Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu\".",
-            "A Google-only account that is also deactivated shows the Google message first."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT39",
+          "id": "USER_FT30",
           "description": "Verify the dialog warns when you reset your own password.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -854,43 +679,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT40",
-          "description": "Verify a stale list is corrected when the account was deactivated meanwhile.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser deactivate the target, then here click \"Gửi liên kết\" without reloading."
-          ],
-          "expected": [
-            "POST answers 409 \"MSG14\"; the dialog shows \"Tài khoản này đã bị vô hiệu hoá nên không đặt lại mật khẩu được. Danh sách đã được cập nhật.\" and \"Gửi liên kết\" is disabled; the row now shows \"Đã vô hiệu hoá\".",
-            "For an account that has no password the text is \"Tài khoản này chỉ đăng nhập bằng Google, không có mật khẩu để đặt lại. Danh sách đã được cập nhật.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second browser signed in as another Administrator."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT41",
-          "description": "Verify a mail failure keeps the dialog open so the Administrator can retry.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Turn the mail server off, click \"Gửi liên kết\", then turn it on and click again."
-          ],
-          "expected": [
-            "POST answers 503 \"MSG15\"; the dialog shows \"Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.\" and stays open.",
-            "The retry succeeds with \"MSG13\" and the toast \"Đã gửi email đặt lại mật khẩu.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "The QA lead can stop and start the mail server."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT42",
+          "id": "USER_FT31",
           "description": "Verify the person sets a new password from the emailed link.",
           "procedure": [
             "Open the link from the email (/reset-password#token=...).",
@@ -909,7 +698,7 @@
           "note": "UC-07 · Manual only"
         },
         {
-          "id": "USER_FT43",
+          "id": "USER_FT32",
           "description": "Verify a used, expired or replaced link shows the dead-link notice.",
           "procedure": [
             "Use the link once successfully, then open the same link again, type a valid password and submit."
@@ -925,7 +714,7 @@
           "note": "UC-07 · Manual only"
         },
         {
-          "id": "USER_FT44",
+          "id": "USER_FT33",
           "description": "Verify the page without a token does not call the API and keeps the link usable.",
           "procedure": [
             "Go to /reset-password with no \"#token=\"."
@@ -940,21 +729,6 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "USER_FT45",
-          "description": "Verify a too-short password the server rejects keeps the form and the link.",
-          "procedure": [
-            "Open a valid link, fill a password of exactly 11 characters in both fields only if the client check is bypassed (QA lead disables the client check), then submit."
-          ],
-          "expected": [
-            "POST answers 400 \"MSG94\"; the message under \"Mật khẩu mới\" is \"Mật khẩu phải có ít nhất 12 ký tự.\"; the form stays and a corrected password then succeeds with the same link."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A fresh reset link; QA lead can bypass the client-side check (for example with a proxy)."
-          ],
-          "note": "UC-07 · Manual only"
         }
       ]
     }

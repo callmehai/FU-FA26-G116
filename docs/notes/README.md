@@ -6,7 +6,7 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
-- [Bàn giao case UI Round 1 làm manual](NOTE-ban-giao-manual-ui-round1.md) — 23/11/2026; các case FE-09/11/13/15 chưa chạy tự động (tiếng nói, email/OTP, hai người trong phòng, môi trường), kết luận BUG-02 và SUS-01/02/03, chỗ chưa kết luận (FE-11 AC17/AC18 trả 500).
+- [Bàn giao case UI Round 1 làm manual](NOTE-ban-giao-manual-ui-round1.md) — 23/11/2026; ID đã đánh lại sau khi thu gọn bộ case: 3 case Failed, 110 case UI chưa chạy chia theo cách làm (tiếng nói, Voice ID, email, Guest, hai người, case dễ), 12 case API chưa chạy.
 - [Kế hoạch BE SCRUM-137](NOTE-ke-hoach-be-scrum-137.md) — 11/11/2026; kế hoạch triển khai từng bước tìm giờ họp (UC-85a, UC-85b):
   tham số và mặc định (BR-421, BR-422), cách sinh khung, kiểm lại khung khi tạo nháp (BR-428), API, test, chỗ lệch cần ghi Jira.
 - [Kế hoạch BE SCRUM-142](NOTE-ke-hoach-be-scrum-142.md) — 08/11/2026, sửa theo PO 09/11/2026; kế hoạch triển khai từng bước chia sẻ lịch
