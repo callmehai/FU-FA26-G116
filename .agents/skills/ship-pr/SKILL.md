@@ -36,7 +36,7 @@ Check the diff (`git diff origin/app...`) against this table:
 | a new or changed `/api/...` endpoint | `docs/03-api/` |
 | a new `MSGnn` code | `docs/03-api/00-danh-muc-ma-thong-bao.md`: the table row **and** "Mã tiếp theo" |
 | an entity or migration | `docs/02-design/02-erd.md` |
-| scope | `docs/01-requirements/` **and** `frontend/src/pages/scopeData.ts` |
+| scope | `docs/01-requirements/` |
 | a significant technical decision | a new ADR in `docs/05-decisions/` (never edit an accepted one) |
 | a new folder under `docs/` | a `README.md` in it |
 
