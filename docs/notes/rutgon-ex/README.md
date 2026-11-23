@@ -7,6 +7,7 @@ Ghi chú làm việc cho đợt rút gọn EX trong UC Specification (Report 3) 
 - Mỗi nhóm tính năng sinh thêm `<nhom>-spec-patch.md`, `<nhom>-ba-chon.md` và
   `<nhom>-bao-cao.md` trong thư mục này khi làm.
 
-Công cụ: [scripts/rutgon_ex_report.py](../../../scripts/rutgon_ex_report.py) (chỉ đọc).
+Công cụ (chỉ đọc): [scripts/rutgon_ex_report.py](../../../scripts/rutgon_ex_report.py) báo EX nên giữ/bỏ;
+[scripts/check_sequence_lifelines.py](../../../scripts/check_sequence_lifelines.py) bắt thanh activation bị cắt sớm.
 Nguồn spec và sequence nằm ở [docs/01-requirements/](../../01-requirements/README.md) và
 [docs/06-sequencediagram/](../../06-sequencediagram/README.md).

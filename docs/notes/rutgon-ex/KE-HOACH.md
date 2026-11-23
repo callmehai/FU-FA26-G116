@@ -27,6 +27,18 @@ Mẫu chuẩn đã làm xong: `docs/06-sequencediagram/document-management/UC32a
 8. Nhãn `- EX-n` trong sequence **đánh lại liền mạch** và bằng đúng số EX trong spec patch.
 9. AF là thao tác giao diện thuần (đổi thứ tự hiển thị, ẩn nút) thì bỏ khỏi sequence.
 10. Không đổi MSG, BR trong danh mục. Chỉ gộp hoặc bỏ EX trong tài liệu.
+11. **Thanh activation (lifeline) phải liền mạch từ đầu đến cuối.** Lỗi hay gặp (cả nhóm calendar-sharing
+    bị): ở nhánh lỗi đầu tiên (`alt ... EX-1`) có `deactivate Service` và `deactivate Controller`, nên
+    thanh của Service và Controller bị cắt ngay ở đó trong khi các mũi tên ở nhánh sau vẫn trỏ vào.
+    Cách đúng:
+    - `activate` ở đầu luồng, `deactivate` **một lần duy nhất ở cuối diagram**, sau `end` ngoài cùng,
+      theo thứ tự ngược với lúc mở (Service rồi Controller rồi View);
+    - **tuyệt đối không** `deactivate` Service, Controller hay View **bên trong** nhánh `alt`/`opt`/`else`
+      (kể cả nhánh trả lỗi sớm);
+    - chỉ các participant gọi trong một nhánh (Repository, Database, Policy) được `activate` và
+      `deactivate` gọn trong cùng nhánh đó;
+    - sau khi sửa, **mở ảnh PNG** và xem thanh trắng của Controller và Service chạy suốt từ mũi tên đầu
+      đến mũi tên cuối.
 
 **Không chắc thì không đoán.** UC còn hơn 3 EX nghiệp vụ, hoặc EX khó phân loại (hạ tầng hay
 nghiệp vụ, gộp có mất nghĩa không), ghi vào `<nhom>-ba-chon.md` rồi bỏ qua UC đó.
@@ -81,6 +93,11 @@ Với mỗi UC của nhóm:
 - `grep -riE "save failed|load failed|read failure|try again" docs/06-sequencediagram/<thu-muc>`
   không còn trong các `.txt` đã sửa.
 - Mỗi `.png` đã xuất lại và mở được.
+- `python scripts/check_sequence_lifelines.py docs/06-sequencediagram/<thu-muc>` báo `0 of N diagrams
+  flagged` (kiểm quy tắc 11). Nhóm đang sai sẵn: calendar-sharing 9/9, meeting-management 10/11,
+  transcription-voice-id 5, user-management 2, meeting-recording 1, reporting 1: **sửa luôn khi viết
+  lại**, kể cả UC không đổi EX nào.
+- Đã mở ít nhất 3 `.png` mỗi nhóm và nhìn bằng mắt: thanh Controller và Service không bị cắt giữa chừng.
 - `git status` chỉ có file trong phạm vi mục 3.
 - Báo cáo của nhóm đã viết.
 
