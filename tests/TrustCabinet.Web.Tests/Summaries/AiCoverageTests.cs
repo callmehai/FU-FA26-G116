@@ -34,7 +34,7 @@ public sealed class AiCoverageTests(SummaryFixture f) : IClassFixture<SummaryFix
     [Fact]
     public async Task A_role_that_lost_admin_users_is_refused_with_its_old_token()
     {
-        // TRANS_API_IT165: the capability is re-read from the database, not taken from the token.
+        // The capability is re-read from the database, not taken from the token.
         using var admin = await AdminWithRole();
         Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync(Url)).StatusCode);
         await using (var db = f.Db())
@@ -46,7 +46,6 @@ public sealed class AiCoverageTests(SummaryFixture f) : IClassFixture<SummaryFix
     [Fact]
     public async Task Api_mode_needs_an_address_and_a_known_mode()
     {
-        // TRANS_API_IT170.
         using var admin = await AdminWithRole();
         var missing = await AssertCode(await admin.PutAsJsonAsync(Url, new
         {
@@ -67,7 +66,7 @@ public sealed class AiCoverageTests(SummaryFixture f) : IClassFixture<SummaryFix
     [Fact]
     public async Task Key_and_model_limits_are_checked_character_by_character()
     {
-        // TRANS_API_IT171: keys of 8 to 500 characters without spaces, models of at most 100 without spaces.
+        // Keys of 8 to 500 characters without spaces, models of at most 100 without spaces.
         using var admin = await AdminWithRole();
         foreach (var key in new[] { "short", "khoa co khoang trang", new string('k', 501) })
         {
@@ -99,7 +98,6 @@ public sealed class AiCoverageTests(SummaryFixture f) : IClassFixture<SummaryFix
     [Fact]
     public async Task The_api_key_cannot_be_removed_while_the_api_is_in_use()
     {
-        // TRANS_API_IT172.
         using var admin = await AdminWithRole();
         await AssertCode(await admin.PutAsJsonAsync(Url, new
         {
@@ -118,7 +116,7 @@ public sealed class AiCoverageTests(SummaryFixture f) : IClassFixture<SummaryFix
     [Fact]
     public async Task Testing_the_local_machine_reports_when_it_is_not_configured()
     {
-        // TRANS_API_IT178: 502 MSG413 while the in-house model is not configured; nothing is saved.
+        // 502 MSG413 while the in-house model is not configured; nothing is saved.
         using var admin = await AdminWithRole();
         f.Model.Configured = false;
         try

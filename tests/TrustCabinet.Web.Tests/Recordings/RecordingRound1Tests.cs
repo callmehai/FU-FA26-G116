@@ -170,7 +170,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Recordings_list_needs_a_token()
     {
-        // REC_API_IT04.
         var s = await fixture.Seed();
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(s.Url)).StatusCode);
@@ -179,7 +178,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Upload_rejects_a_non_multipart_or_fileless_request()
     {
-        // REC_API_IT15: the two MSG291 refusals, each with its own message, and nothing is stored.
+        // The two MSG291 refusals, each with its own message, and nothing is stored.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
 
@@ -196,7 +195,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Recording_upload_needs_a_token()
     {
-        // REC_API_IT24.
         var s = await fixture.Seed();
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsync(s.Url, Form())).StatusCode);
@@ -205,7 +203,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Take_part_upload_needs_a_token()
     {
-        // REC_API_IT35: the mic part route answers before any byte is read.
+        // The mic part route answers before any byte is read.
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.PutAsync($"/api/recordings/{Guid.CreateVersion7()}/parts/1", new ByteArrayContent(Audio))).StatusCode);
@@ -214,7 +212,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Completing_a_take_needs_the_roster_or_a_token()
     {
-        // REC_API_IT43: an outsider's completion is the same empty 404 as an unknown take.
+        // An outsider's completion is the same empty 404 as an unknown take.
         var s = await fixture.Seed();
         using var secretary = fixture.Client(s.Secretary);
         var take = await Open(secretary, s);
@@ -230,7 +228,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Beginning_a_take_needs_a_token()
     {
-        // REC_API_IT52.
         var s = await fixture.Seed();
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsync(Takes(s), null)).StatusCode);
@@ -239,7 +236,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Deleting_a_take_needs_the_roster_or_a_token()
     {
-        // REC_API_IT57: the room recording keeps both of its takes.
+        // The room recording keeps both of its takes.
         var s = await fixture.Seed();
         using var secretary = fixture.Client(s.Secretary);
         var room = await Record(secretary, await Open(secretary, s), Tape(2 * Part + 12, 1));
@@ -263,7 +260,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Erasing_a_recording_needs_a_token()
     {
-        // REC_API_IT62.
         var s = await fixture.Seed(MeetingStatus.Ended);
         var id = await Upload(s);
         using var anonymous = fixture.Client();
@@ -273,7 +269,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Playback_needs_a_token_and_stays_closed_to_guests()
     {
-        // REC_API_IT69: a guest admitted to the call still does not listen to the room recording (403, no body).
+        // A guest admitted to the call still does not listen to the room recording (403, no body).
         var s = await fixture.Seed(mode: MeetingMode.Online);
         var guest = await InviteGuest(s);
         using var guestClient = GuestClient(guest);
@@ -289,7 +285,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Downloading_an_erased_recording_needs_the_roster_or_a_token()
     {
-        // REC_API_IT82: an erased recording is gone for the Chair as for anyone else.
+        // An erased recording is gone for the Chair as for anyone else.
         var s = await fixture.Seed(MeetingStatus.Ended);
         var id = await Upload(s);
         using var secretary = fixture.Client(s.Secretary);
@@ -305,7 +301,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Speech_clips_list_needs_a_token()
     {
-        // REC_API_IT90.
         var s = await fixture.Seed(mode: MeetingMode.Online);
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -315,7 +310,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Sending_a_sentence_needs_the_roster_or_a_token()
     {
-        // REC_API_IT101: an outsider's sentence is the same empty 404 as an unknown meeting.
+        // An outsider's sentence is the same empty 404 as an unknown meeting.
         var s = await fixture.Seed(mode: MeetingMode.Online);
         var clipId = Guid.NewGuid();
         var started = Uri.EscapeDataString(fixture.Clock.Now.AddSeconds(-3).ToString("O"));
@@ -335,7 +330,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Sentence_playback_needs_a_token()
     {
-        // REC_API_IT108.
         using var anonymous = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.GetAsync($"/api/speech-clips/{Guid.CreateVersion7()}/playback")).StatusCode);
@@ -344,7 +338,7 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Excluding_a_sentence_needs_the_roster_or_a_token()
     {
-        // REC_API_IT120: only the roster reaches the sentence; anyone else gets the same empty 404.
+        // Only the roster reaches the sentence; anyone else gets the same empty 404.
         var s = await fixture.Seed(mode: MeetingMode.Online);
         var clip = await StoreSentence(s);
 
@@ -360,7 +354,6 @@ public sealed class RecordingRound1Tests(RecordingFixture fixture) : IClassFixtu
     [Fact]
     public async Task Deleting_a_sentence_needs_the_roster_or_a_token()
     {
-        // REC_API_IT125.
         var s = await fixture.Seed(mode: MeetingMode.Online);
         var clip = await StoreSentence(s);
 

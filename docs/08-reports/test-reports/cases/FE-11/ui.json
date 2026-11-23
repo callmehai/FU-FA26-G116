@@ -54,11 +54,11 @@
           "description": "Verify a closed vote shows bars, counts and — for a public vote — each choice.",
           "expected": [
             "Each option shows a bar with its count and percentage.",
-            "A public vote lists every voter under \"Phiếu từng người\" with \"(khách)\" for Guests and \"Không bỏ phiếu\" for abstainers.",
+            "A public vote lists every voter under \"Phiếu từng người\" with \"Không bỏ phiếu\" for abstainers. The \"(khách)\" Guest rendering is not covered by this run (no Guest in the data).",
             "A secret vote shows only the totals, nothing that pairs a choice with its voter."
           ],
           "id": "VOTE_FT03",
-          "note": "UC-52 | Manual only · Round1 Passed (2026-11-22): AC13+AC15: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/38-chair-AC13-desktop-ket-qua-cong-khai.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/48-member-AC15-desktop-kin-ket-qua.png (chưa kiểm \"(khách)\": dữ liệu chạy không có Khách)",
+          "note": "UC-52 | Manual only · Round1 Passed (2026-11-22): AC13+AC15: tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/38-chair-AC13-desktop-ket-qua-cong-khai.png; tests/qa/out/SCRUM-198/20261122-133407-39c00e3b/48-member-AC15-desktop-kin-ket-qua.png · Passed cho nhánh không khách; nhánh \"(khách)\" chưa kiểm (dữ liệu chạy không có Khách).",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on the Votes tab of a meeting with a closed public vote and a closed secret vote."

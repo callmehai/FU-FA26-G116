@@ -2,7 +2,7 @@
   "feature": "FE-03",
   "code": "RBAC",
   "sheet": "Access Control",
-  "precondition": "Backend running on the test build (GET /api/health answers 200). An Administrator account holding AdminUsers and a Secretary account without it, supplied by QA lead; the four built-in roles (\"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\") and a few custom roles; some audit-log entries written by earlier actions.",
+  "precondition": "Backend running on the test build (GET /api/health answers 200). An Administrator account holding AdminUsers and a Secretary account without it, supplied by QA lead; the three built-in roles (\"Thành viên\", \"Phê duyệt viên\", \"Quản trị viên\") and a few custom roles; some audit-log entries written by earlier actions.",
   "groups": [
     {
       "title": "GET /api/roles",
@@ -20,13 +20,13 @@
           "expected": [
             "HTTP 200 OK.",
             "Body: an array; each item has { \"id\", \"name\", \"description\", \"isBuiltIn\", \"isDefault\", \"userCount\" } and no \"capabilities\".",
-            "The order is \"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\", then custom roles by creation time.",
+            "The order is \"Thành viên\", \"Phê duyệt viên\", \"Quản trị viên\", then custom roles by creation time.",
             "Exactly one role has \"isDefault\": true (\"Thành viên\"); \"userCount\" counts accounts holding the role, deactivated ones included."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-10 · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (List_returns_every_role_with_its_user_count_in_display_order) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (List_puts_built_in_roles_first_then_custom_roles_by_creation)",
           "round1": "Passed",
@@ -66,19 +66,19 @@
           "description": "Verify POST /api/roles creates a custom role with its initial capabilities.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/roles with Authorization: Bearer <accessToken>; Content-Type: application/json and Body: { \"name\": \"Thư ký phó\", \"description\": \"Hỗ trợ Thư ký soạn biên bản.\", \"capabilities\": [\"MinutesEditor\"] }.",
+            "Send POST /api/roles with Authorization: Bearer <accessToken>; Content-Type: application/json and Body: { \"name\": \"Trợ lý thu giọng\", \"description\": \"Hỗ trợ thu giọng mẫu Voice ID.\", \"capabilities\": [\"VoiceCollector\"] }.",
             "Send GET /api/roles/capabilities."
           ],
           "expected": [
             "HTTP 201 Created, header Location: /api/roles/{newId}.",
-            "Body: { \"code\": \"MSG19\", \"message\": \"Tạo vai trò thành công.\", \"role\": { \"id\", \"name\": \"Thư ký phó\", \"description\", \"isBuiltIn\": false, \"isDefault\": false, \"userCount\": 0 } }.",
-            "The matrix lists the new role holding only \"MinutesEditor\".",
+            "Body: { \"code\": \"MSG19\", \"message\": \"Tạo vai trò thành công.\", \"role\": { \"id\", \"name\": \"Trợ lý thu giọng\", \"description\", \"isBuiltIn\": false, \"isDefault\": false, \"userCount\": 0 } }.",
+            "The matrix lists the new role holding only \"VoiceCollector\".",
             "One audit entry \"role.created\" names the Administrator as actor and records the capabilities."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "No role named \"Thư ký phó\" exists."
+            "No role named \"Trợ lý thu giọng\" exists."
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG19_with_201_and_a_location; Create_records_the_signed_in_administrator_as_the_actor) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_saves_the_role_with_its_capabilities_and_answers_with_it; Create_records_role_created_with_what_was_created)",
           "round1": "Passed",
@@ -151,7 +151,7 @@
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
             "Send POST /api/roles with Authorization: Bearer <accessToken> and the name of an existing custom role.",
-            "Repeat with the same name in other letter case, then typed with combining marks, then with the name of a built-in role such as \"Thư ký\"."
+            "Repeat with the same name in other letter case, then typed with combining marks, then with the name of a built-in role such as \"Thành viên\"."
           ],
           "expected": [
             "Each answer is HTTP 409 Conflict, body { \"code\": \"MSG21\", \"message\": \"Đã có vai trò dùng tên này. Hãy đặt một tên khác.\" }.",
@@ -160,7 +160,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12a · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Create_answers_MSG21_with_409_for_a_name_already_used) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Create_answers_MSG21_for_a_name_already_used_in_any_casing; Create_answers_MSG21_for_the_same_name_typed_with_combining_marks; Create_answers_MSG21_for_the_name_of_a_built_in_role)",
           "round1": "Passed",
@@ -189,7 +189,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_renames_a_custom_role_and_answers_with_it; Update_records_before_and_after)",
           "round1": "Passed",
@@ -211,7 +211,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_with_nothing_changed_answers_MSG22_but_writes_nothing) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role)",
           "round1": "Passed",
@@ -231,7 +231,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_may_change_only_the_case_of_its_own_name) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG22_with_the_updated_role)",
           "round1": "Passed",
@@ -253,7 +253,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG20_for_an_invalid_name) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_MSG20_for_invalid_information)",
           "round1": "Passed",
@@ -274,7 +274,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles."
           ],
           "note": "UC-12b · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Update_answers_MSG21_for_the_name_of_another_role) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Update_answers_MSG21_for_the_name_of_another_role)",
           "round1": "Passed",
@@ -368,7 +368,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles. It holds the capability \"MinutesEditor\"."
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles. It holds the capability \"VoiceCollector\"."
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG23) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_removes_a_custom_role_nobody_holds_and_its_capabilities; Delete_records_the_name_and_capabilities_that_are_about_to_disappear)",
           "round1": "Passed",
@@ -401,7 +401,7 @@
           "description": "Verify DELETE /api/roles/{id} answers 409 MSG24 for every built-in role.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/roles/{builtInId} with Authorization: Bearer <accessToken> for each of \"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\" (including one nobody holds)."
+            "Send DELETE /api/roles/{builtInId} with Authorization: Bearer <accessToken> for each of \"Thành viên\", \"Phê duyệt viên\", \"Quản trị viên\" (including one nobody holds)."
           ],
           "expected": [
             "Each answer is HTTP 409 Conflict, code \"MSG24\"; no role is removed."
@@ -429,7 +429,7 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts, created through POST /api/roles.",
+            "A custom role \"Trợ lý thu giọng\" with no accounts, created through POST /api/roles.",
             "QA lead can make the database reject the delete."
           ],
           "note": "UC-12c · Automated: tests/TrustCabinet.Web.Tests/Access/RoleEndpointsTests.cs (Delete_answers_MSG28_when_the_database_refuses) · Automated: tests/TrustCabinet.Web.Tests/Access/RoleServiceTests.cs (Delete_answers_save_failed_when_the_database_refuses_for_another_reason)",
@@ -455,8 +455,8 @@
           "expected": [
             "HTTP 200 OK.",
             "Body: { \"capabilities\": [ { \"code\", \"name\", \"description\", \"functionalGroup\" } ], \"roles\": [ { \"id\", \"name\", \"description\", \"isBuiltIn\", \"capabilities\": [ \"MeetingCreator\", ... ] } ] }.",
-            "The catalogue lists every capability the system enforces (\"MeetingCreator\", \"MeetingApprover\", \"MinutesEditor\", \"VoiceCollector\", \"AdminUsers\"), grouped \"Cuộc họp\", \"Biên bản\", \"Quản trị\", each with a Vietnamese name such as \"Tạo cuộc họp\" and \"Quản trị người dùng\".",
-            "Every role appears, even one with no capability; the seeded \"Quản trị viên\" holds \"AdminUsers\" and the \"Thư ký\" role holds \"MeetingCreator\" and \"MinutesEditor\"."
+            "The catalogue lists every capability the system enforces (\"MeetingCreator\", \"MeetingApprover\", \"VoiceCollector\", \"AdminUsers\"), grouped \"Cuộc họp\", \"Quản trị\", each with a Vietnamese name such as \"Tạo cuộc họp\", \"Phê duyệt cuộc họp\", \"Thu giọng mẫu hộ\" and \"Quản trị người dùng\".",
+            "Every role appears, even one with no capability; the seeded \"Thành viên\" holds \"MeetingCreator\", \"Phê duyệt viên\" holds \"MeetingCreator\" and \"MeetingApprover\", and \"Quản trị viên\" holds \"MeetingCreator\", \"VoiceCollector\" and \"AdminUsers\"."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -476,7 +476,7 @@
             "Send GET /api/roles/capabilities with Authorization: Bearer <accessToken>."
           ],
           "expected": [
-            "HTTP 200; \"roles\" is ordered \"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\", then custom roles oldest first."
+            "HTTP 200; \"roles\" is ordered \"Thành viên\", \"Phê duyệt viên\", \"Quản trị viên\", then custom roles oldest first."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -542,7 +542,7 @@
           "description": "Verify PUT /api/roles/capabilities accepts an empty list and removes every capability from a role.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/roles/capabilities with Authorization: Bearer <accessToken> and Body: { \"roleId\": \"<Thư ký role id>\", \"capabilities\": [] }."
+            "Send PUT /api/roles/capabilities with Authorization: Bearer <accessToken> and Body: { \"roleId\": \"<custom role id>\", \"capabilities\": [] }."
           ],
           "expected": [
             "HTTP 200, code \"MSG16\"; the role holds no capability in the returned matrix."
@@ -604,7 +604,7 @@
           "description": "Verify PUT /api/roles/capabilities refuses a body without the capability list instead of reading it as empty.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/roles/capabilities with Authorization: Bearer <accessToken> and Body: { \"roleId\": \"<Thư ký role id>\" }.",
+            "Send PUT /api/roles/capabilities with Authorization: Bearer <accessToken> and Body: { \"roleId\": \"<custom role id>\" }.",
             "Send GET /api/roles/capabilities."
           ],
           "expected": [

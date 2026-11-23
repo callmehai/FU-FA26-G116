@@ -288,7 +288,7 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Report loaded; QA lead can stop the database of the test build."
           ],
-          "note": "UC-70b EX-2 | MSG465 | Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/24-secretary-AC11-desktop-msg465-toast.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/27-secretary-AC11-phone-msg465-toast.png Lỗi 500 giả lập trong trình duyệt nên mệnh đề \"không ghi audit\" không kiểm được và đã bỏ khỏi expected.",
+          "note": "UC-70b EX-2 | MSG465 | Manual only · Đã sửa case theo sản phẩm (2026-11-22): the 500 was simulated in the browser, so the \"không ghi audit\" clause could not be checked and was dropped from expected. · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/24-secretary-AC11-desktop-msg465-toast.png; tests/qa/out/SCRUM-202/20261122-132744-39c00e3b/27-secretary-AC11-phone-msg465-toast.png",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Nguyễn Trường Huy"

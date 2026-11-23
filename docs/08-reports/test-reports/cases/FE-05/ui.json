@@ -59,13 +59,13 @@
           ],
           "expected": [
             "The first lists the file names with a PDF or document icon; the second shows \"Chưa có tài liệu.\"",
-            "The document opens at /mgmt/meetings/<id>/documents/<documentId> and the Back action returns to the agenda tab."
+            "The document opens in the in-tab viewer over the agenda (with \"Góp ý\" and \"Tải về\"); it does not navigate away to /documents/<id>."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting with one item that has two attached documents and one that has none."
           ],
-          "note": "UC-26 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: bấm tên tài liệu mở hộp xem tài liệu ngay trên tab (có Góp ý, Tải về), không chuyển sang /documents/<id>; mục không có tài liệu ghi \"Chưa có tài liệu.\". Evidence: tests/qa/out/MANUAL-R1/20261123-071614-03594e25/09-secretary-AGENDA_FT03-desktop-muc-co-hai-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/10-secretary-AGENDA_FT03-desktop-muc-chua-co-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/11-secretary-AGENDA_FT03-desktop-failure.png",
+          "note": "UC-26 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Evidence: tests/qa/out/MANUAL-R1/20261123-071614-03594e25/09-secretary-AGENDA_FT03-desktop-muc-co-hai-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/10-secretary-AGENDA_FT03-desktop-muc-chua-co-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/11-secretary-AGENDA_FT03-desktop-failure.png",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"
@@ -161,20 +161,20 @@
         },
         {
           "id": "AGENDA_FT08",
-          "description": "Verify the presenter list offers roster members and Guests only and is optional.",
+          "description": "Verify the presenter list offers roster members and is optional (non-guest path).",
           "procedure": [
             "Open the meeting from /mgmt/meetings and click the tab \"Nội dung cuộc họp\".",
             "Click \"Thêm nội dung\" and open \"Người trình bày\"."
           ],
           "expected": [
-            "The options are \"Chưa phân công\", the active internal roster members and Guests marked \"(khách)\"; a hint says \"Không bắt buộc, có thể chọn sau.\"; saving without a presenter works."
+            "The options are \"Chưa phân công\" and the active internal roster members; a hint says \"Không bắt buộc, có thể chọn sau.\"; saving without a presenter works. The Guest \"(khách)\" branch is not covered by this run."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting with three agenda items.",
-            "A Guest invitation and a person not on the roster."
+            "A person not on the roster."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Evidence(AC23): tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/01-secretary-AC23-desktop-danh-sach-nguoi-trinh-bay.png; tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/02-secretary-AC23-desktop-muc-khong-giao-ai.png · Nhánh Khách “(khách)” chưa kiểm: cuộc họp không có lời mời Khách (cần OTP email).",
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Evidence(AC23): tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/01-secretary-AC23-desktop-danh-sach-nguoi-trinh-bay.png; tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/02-secretary-AC23-desktop-muc-khong-giao-ai.png · Passed cho nhánh không khách; nhánh Khách \"(khách)\" chưa kiểm (cuộc họp không có lời mời Khách — cần OTP email).",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

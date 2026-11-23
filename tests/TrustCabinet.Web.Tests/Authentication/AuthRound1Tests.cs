@@ -141,7 +141,7 @@ public sealed class AuthRound1Tests : IDisposable
     private sealed record CurrentUserBody(
         string Id, string Email, string FullName, string RoleId, string RoleName, string[] Capabilities);
 
-    // AUTH_API_IT04: empty credentials take the MSG01 branch and set no cookie.
+    // Empty credentials take the MSG01 branch and set no cookie.
     [Fact]
     public async Task Login_rejects_empty_credentials_with_MSG01_and_sets_no_cookie()
     {
@@ -156,7 +156,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.False(HasRefreshCookie(response));
     }
 
-    // AUTH_API_IT03: an unknown email answers exactly like a wrong password, without a cookie.
+    // An unknown email answers exactly like a wrong password, without a cookie.
     [Fact]
     public async Task Unknown_email_answers_exactly_like_a_wrong_password()
     {
@@ -175,7 +175,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.False(HasRefreshCookie(unknown));
     }
 
-    // AUTH_API_IT06: the password is checked before the account status, so a wrong password
+    // The password is checked before the account status, so a wrong password
     // answers MSG01 even for a deactivated account — only someone holding the password learns
     // the account is deactivated (MSG02).
     [Fact]
@@ -192,7 +192,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal("MSG02", (await rightPassword.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
-    // AUTH_API_IT23: a capability change reaches the next refresh without signing in again.
+    // A capability change reaches the next refresh without signing in again.
     [Fact]
     public async Task Capability_change_reaches_the_next_refresh_without_signing_in_again()
     {
@@ -211,7 +211,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Empty(body.User.Capabilities);
     }
 
-    // AUTH_API_IT27: signing out on one device leaves the other devices signed in.
+    // Signing out on one device leaves the other devices signed in.
     [Fact]
     public async Task Logout_on_one_device_leaves_the_other_signed_in()
     {
@@ -228,7 +228,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, (await PostWithCookie(client, "/api/auth/refresh", cookieA)).StatusCode);
     }
 
-    // AUTH_API_IT30: /api/auth/me reads the account from the database on every request, so a
+    // /api/auth/me reads the account from the database on every request, so a
     // still-valid access token stops working once the account is deactivated — 401, not 403.
     [Fact]
     public async Task Me_refuses_a_deactivated_account_with_401()
@@ -244,7 +244,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // AUTH_API_IT16, step 2: after the reactivation the same Gmail signs in and links.
+    // After the reactivation the same Gmail signs in and links.
     [Fact]
     public async Task Google_sign_in_links_after_reactivation()
     {
@@ -276,7 +276,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal("google-sub-1", user.GoogleSubjectId);
     }
 
-    // AUTH_API_IT17, step 2: switching Google off removes only /google; password sign-in works.
+    // Switching Google off removes only /google; password sign-in works.
     [Fact]
     public async Task Password_sign_in_still_works_when_google_is_switched_off()
     {
@@ -301,7 +301,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
     }
 
-    // AUTH_API_IT18, step 3: replaying a spent refresh token answers MSG01.
+    // Replaying a spent refresh token answers MSG01.
     [Fact]
     public async Task Refresh_replay_answers_MSG01()
     {
@@ -316,7 +316,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal("MSG01", (await replay.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
-    // AUTH_API_IT20: a refresh token sent in the body is ignored — 401 MSG01, cookie only.
+    // A refresh token sent in the body is ignored — 401 MSG01, cookie only.
     [Fact]
     public async Task Refresh_ignores_a_token_in_the_body_with_MSG01()
     {
@@ -329,7 +329,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal("MSG01", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
-    // AUTH_API_IT25, step 3: after the logout the same cookie refreshes to 401 MSG01.
+    // After the logout the same cookie refreshes to 401 MSG01.
     [Fact]
     public async Task Refresh_after_logout_answers_MSG01()
     {
@@ -344,7 +344,7 @@ public sealed class AuthRound1Tests : IDisposable
         Assert.Equal("MSG01", (await refresh.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
-    // AUTH_API_IT24: refresh and logout are not rate limited — ten chained refreshes stay 200
+    // Refresh and logout are not rate limited — ten chained refreshes stay 200
     // even with the per-IP budget down to one.
     [Fact]
     public async Task Refresh_stays_200_when_the_sign_in_limit_is_tight()
@@ -376,7 +376,7 @@ public sealed class AuthRound1Tests : IDisposable
 }
 
 /// <summary>
-/// AUTH_API_IT21 over the real Redis store with a controllable clock: replaying a spent refresh
+/// Over the real Redis store with a controllable clock: replaying a spent refresh
 /// token past the 60-second grace period ends every session of the account (RT2 dies with RT1).
 /// The in-memory fake cannot prove this — the reuse marker lives in the Redis store.
 /// </summary>
@@ -489,7 +489,7 @@ public sealed class AuthReuseRound1Tests : IDisposable
 /// </summary>
 public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<GuestAccessFixture>
 {
-    // AUTH_API_IT31: a Guest token never opens an internal endpoint — 401, not 403 or 200.
+    // A Guest token never opens an internal endpoint — 401, not 403 or 200.
     [Fact]
     public async Task Me_refuses_a_guest_token()
     {
@@ -502,7 +502,7 @@ public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<G
         Assert.Equal(HttpStatusCode.Unauthorized, (await caller.GetAsync("/api/auth/me")).StatusCode);
     }
 
-    // AUTH_API_IT35: opening an invitation the Secretary has since revoked is refused (MSG371),
+    // Opening an invitation the Secretary has since revoked is refused (MSG371),
     // and no session is created.
     [Fact]
     public async Task Revoked_invitation_is_refused_at_open()
@@ -520,7 +520,7 @@ public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<G
         Assert.False(await check.GuestSessions.AnyAsync(x => x.InvitationId == s.InvitationId));
     }
 
-    // AUTH_API_IT43: a code that is not 6 digits is refused with MSG126, before any guess counting.
+    // A code that is not 6 digits is refused with MSG126, before any guess counting.
     [Fact]
     public async Task Verify_refuses_malformed_codes()
     {
@@ -536,7 +536,7 @@ public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<G
             400, "MSG126");
     }
 
-    // AUTH_API_IT53: a blank display name is rejected and the profile stays incomplete.
+    // A blank display name is rejected and the profile stays incomplete.
     [Fact]
     public async Task Guest_profile_rejects_a_blank_display_name()
     {
@@ -553,7 +553,7 @@ public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<G
         Assert.False(session.GetProperty("profileCompleted").GetBoolean());
     }
 
-    // AUTH_API_IT54: over-long and control-character names are rejected, on either field.
+    // Over-long and control-character names are rejected, on either field.
     [Fact]
     public async Task Guest_profile_rejects_overlong_and_control_character_values()
     {
@@ -582,7 +582,7 @@ public sealed class AuthGuestRound1Tests(GuestAccessFixture f) : IClassFixture<G
         Assert.False(session.GetProperty("profileCompleted").GetBoolean());
     }
 
-    // AUTH_API_IT41: the verify answer says the profile is still missing, with the expiry and the
+    // The verify answer says the profile is still missing, with the expiry and the
     // meeting, and no internal user account is created for the Guest.
     [Fact]
     public async Task Verify_response_says_the_profile_is_missing()

@@ -94,7 +94,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Calls_without_signing_in_are_refused()
     {
-        // TRANS_API_IT08/16/23/28/35/42, IT53/62 (401 step), IT102/109/117/130/135/140 (401 step).
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -123,7 +122,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_deactivated_account_is_refused_while_its_token_is_still_valid()
     {
-        // TRANS_API_IT09 (transcribe) and TRANS_API_IT102 (voice profile): the gate re-reads the account.
+        // The gate re-reads the account.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -151,7 +150,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Redoing_a_finished_transcript_keeps_corrections_and_names_and_is_audited()
     {
-        // TRANS_API_IT03. ADR-0077: a rerun puts the Secretary's hand edits back on the new result.
+        // ADR-0077: a rerun puts the Secretary's hand edits back on the new result.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -182,7 +181,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_recording_the_caller_may_not_hear_is_not_confirmed_to_exist()
     {
-        // TRANS_API_IT06: a stranger's request and a deleted recording both read as 404.
+        // A stranger's request and a deleted recording both read as 404.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -200,7 +199,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Chair_may_read_and_export_but_not_edit()
     {
-        // TRANS_API_IT12.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -225,7 +223,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_recording_not_yet_sent_has_no_transcript()
     {
-        // TRANS_API_IT13.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -242,7 +239,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Strangers_learn_nothing_about_a_transcript_or_its_text_file()
     {
-        // TRANS_API_IT15 and TRANS_API_IT22: the roster check answers 404 with no body.
+        // The roster check answers 404 with no body.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -263,7 +260,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Chair_saves_the_finished_transcript_as_text()
     {
-        // TRANS_API_IT18.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -281,7 +277,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Strangers_learn_nothing_about_the_per_mic_text_file()
     {
-        // TRANS_API_IT27.
         var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         await StoreSentence(s);
         using var outsider = fixture.Client(s.Outsider);
@@ -293,7 +288,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Segment_text_boundary_is_8000_characters()
     {
-        // TRANS_API_IT31 and TRANS_API_IT32.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -313,7 +307,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Strangers_and_unknown_sentences_learn_nothing_about_corrections()
     {
-        // TRANS_API_IT41: an unknown sentence and a caller outside the roster both read as 404.
+        // An unknown sentence and a caller outside the roster both read as 404.
         var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s);
         using var secretary = fixture.Client(s.Secretary);
@@ -329,7 +323,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Speech_clip_text_boundary_is_8000_characters()
     {
-        // TRANS_API_IT38.
         var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s);
         using var secretary = fixture.Client(s.Secretary);
@@ -346,7 +339,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Moving_a_line_to_its_own_voice_writes_nothing()
     {
-        // TRANS_API_IT47.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -375,7 +367,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_hundredth_voice_is_the_last_one()
     {
-        // TRANS_API_IT50: SPEAKER_00 to SPEAKER_99 taken leaves no free label.
+        // SPEAKER_00 to SPEAKER_99 taken leaves no free label.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -399,7 +391,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Unknown_voices_learn_nothing_and_change_nothing()
     {
-        // TRANS_API_IT51 (a label that is not a voice of the recording) and TRANS_API_IT60
         // (a label the recording does not have): 404 with no body, the line and the voices unchanged.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
@@ -425,7 +416,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Clearing_a_voice_name_takes_it_back_to_speaker_numbers()
     {
-        // TRANS_API_IT57.
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -445,7 +435,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Strangers_learn_nothing_about_naming_voices()
     {
-        // TRANS_API_IT62 (404 step).
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         var id = await Upload(s);
@@ -458,7 +447,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Withdrawing_nothing_answers_200_and_changes_nothing()
     {
-        // TRANS_API_IT112.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         var withdrawn = await AssertCode(await client.DeleteAsync("/api/me/voice/consent"), 200, "MSG306");
@@ -470,7 +458,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Sample_quality_checks_reject_short_quiet_and_oversize_audio()
     {
-        // TRANS_API_IT124 and TRANS_API_IT125.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         await AssertCode(await Consent(client), 200, "MSG305");
@@ -512,7 +499,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Unsupported_audio_and_missing_files_are_refused_before_the_worker()
     {
-        // TRANS_API_IT126 and TRANS_API_IT127.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         await AssertCode(await Consent(client), 200, "MSG305");
@@ -532,7 +518,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Own_samples_are_refused_when_the_worker_is_down()
     {
-        // TRANS_API_IT128: nothing is stored.
+        // Nothing is stored.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         await AssertCode(await Consent(client), 200, "MSG305");
@@ -552,7 +538,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Sample_audio_of_unknown_ids_learns_nothing()
     {
-        // TRANS_API_IT135 (404 step).
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         Assert.Equal(HttpStatusCode.NotFound,
@@ -562,7 +547,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Deleting_a_sample_frees_a_place_under_the_limit()
     {
-        // TRANS_API_IT137.
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Member);
         await AssertCode(await Consent(client), 200, "MSG305");
@@ -581,7 +565,6 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Proxy_samples_pass_the_same_quality_checks()
     {
-        // TRANS_API_IT152.
         var s = await fixture.Seed(MeetingStatus.Ended);
         await VoiceCollection.MakeCollectors(fixture, s.Outsider);
         await VoiceCollection.Agree(fixture, s.Member);
@@ -613,7 +596,7 @@ public sealed class TranscriptCoverageTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Proxy_samples_are_refused_when_the_worker_is_down()
     {
-        // TRANS_API_IT153: nothing is stored and nobody is told.
+        // Nothing is stored and nobody is told.
         var s = await fixture.Seed(MeetingStatus.Ended);
         await VoiceCollection.MakeCollectors(fixture, s.Outsider);
         await VoiceCollection.Agree(fixture, s.Member);

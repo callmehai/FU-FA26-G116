@@ -28,26 +28,26 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 819 case (807 Passed, 12 Pending ở FE-10). UI: 556 case (494 Passed, 62 chưa chạy). Mọi vòng đều `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
-| FE-01 | Authentication | 34 | 57 |
-| FE-02 | User Management | 45 | 61 |
-| FE-03 | Access Control | 45 | 63 |
-| FE-04 | Meeting Management | 74 | 116 |
-| FE-05 | Agenda | 47 | 83 |
-| FE-06 | Participants | 90 | 195 |
-| FE-07 | Documents | 101 | 217 |
-| FE-08 | Online Room | 98 | 136 |
-| FE-09 | Recording | 69 | 126 |
-| FE-10 | Transcription & Summary | 85 | 181 |
-| FE-11 | Voting | 23 | 53 |
-| FE-12 | Minutes | 44 | 83 |
-| FE-13 | Notifications | 35 | 47 |
-| FE-15 | Reporting | 17 | 21 |
-| FE-16 | Calendar | 68 | 98 |
-| | **Tổng** | **875** | **1537** |
+| FE-01 | Authentication | 26 | 34 |
+| FE-02 | User Management | 33 | 36 |
+| FE-03 | Access Control | 28 | 33 |
+| FE-04 | Meeting Management | 44 | 66 |
+| FE-05 | Agenda | 29 | 46 |
+| FE-06 | Participants | 50 | 84 |
+| FE-07 | Documents | 51 | 91 |
+| FE-08 | Online Room | 54 | 73 |
+| FE-09 | Recording | 44 | 60 |
+| FE-10 | Transcription & Summary | 64 | 101 |
+| FE-11 | Voting | 21 | 44 |
+| FE-12 | Minutes | 32 | 51 |
+| FE-13 | Notifications | 24 | 31 |
+| FE-15 | Reporting | 15 | 18 |
+| FE-16 | Calendar | 41 | 51 |
+| | **Tổng** | **556** | **819** |
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
 

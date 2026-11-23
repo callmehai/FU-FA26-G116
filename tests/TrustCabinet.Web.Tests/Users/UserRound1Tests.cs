@@ -134,7 +134,7 @@ public class UserRound1Tests : IDisposable
     private static async Task<JsonElement> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
 
-    // USER_API_IT23: invalid profile fields are refused with MSG09 naming each field,
+    // Invalid profile fields are refused with MSG09 naming each field,
     // and the stored account keeps its old values.
     [Fact]
     public async Task Update_rejects_invalid_information_with_messages()
@@ -159,7 +159,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal("thanhvien@trustcabinet.local", target.Email);
     }
 
-    // USER_API_IT08: reading one account without a token is refused before anything is read.
+    // Reading one account without a token is refused before anything is read.
     [Fact]
     public async Task Get_answers_401_without_a_token()
     {
@@ -170,7 +170,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // USER_API_IT09: without AdminUsers the account is refused and none of its data is shown.
+    // Without AdminUsers the account is refused and none of its data is shown.
     [Fact]
     public async Task Get_answers_403_without_admin_users_and_shows_nothing()
     {
@@ -187,7 +187,7 @@ public class UserRound1Tests : IDisposable
         Assert.DoesNotContain(target.FullName, body);
     }
 
-    // USER_API_IT14: an over-long name and an over-long email are refused with MSG09, naming
+    // An over-long name and an over-long email are refused with MSG09, naming
     // the field, and no account is created.
     [Fact]
     public async Task Create_rejects_overlong_name_and_email_with_MSG09()
@@ -222,7 +222,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal(before, _factory.Accounts.Users.Count);
     }
 
-    // USER_API_IT12, message half: every invalid field is reported at once, with its message.
+    // Every invalid field is reported at once, with its message.
     [Fact]
     public async Task Create_reports_every_invalid_field_with_its_message()
     {
@@ -245,7 +245,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal("Mật khẩu phải có ít nhất 12 ký tự.", errors.GetProperty("password").GetString());
     }
 
-    // USER_API_IT19: creating an account without a token is refused before anything is stored.
+    // Creating an account without a token is refused before anything is stored.
     [Fact]
     public async Task Create_answers_401_without_a_token_and_stores_nothing()
     {
@@ -263,7 +263,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal(before, _factory.Accounts.Users.Count);
     }
 
-    // USER_API_IT59: deactivating the account after the link was sent kills the link, even
+    // Deactivating the account after the link was sent kills the link, even
     // after the reactivation — 400 MSG93, without saying what became of the account.
     [Fact]
     public async Task Reset_link_dies_when_the_account_was_deactivated_after_the_send()
@@ -290,7 +290,7 @@ public class UserRound1Tests : IDisposable
         Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, ValidPassword));
     }
 
-    // USER_API_IT34, step 1: editing an account without a token is refused (401, not 403).
+    // Editing an account without a token is refused (401, not 403).
     [Fact]
     public async Task Update_answers_401_without_a_token()
     {
@@ -306,7 +306,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // USER_API_IT44, step 1: changing the status without a token is refused (401, not 403).
+    // Changing the status without a token is refused (401, not 403).
     [Fact]
     public async Task Status_change_answers_401_without_a_token()
     {
@@ -319,7 +319,7 @@ public class UserRound1Tests : IDisposable
         Assert.True(target.IsActive);
     }
 
-    // USER_API_IT38: a status body that does not state the status is refused with MSG09,
+    // A status body that does not state the status is refused with MSG09,
     // naming isActive, and nothing happens.
     [Fact]
     public async Task Status_change_refuses_a_body_without_isActive_with_MSG09()
@@ -340,7 +340,7 @@ public class UserRound1Tests : IDisposable
         Assert.Empty(_factory.Audit.Records);
     }
 
-    // USER_API_IT53, step 1: requesting a reset link without a token is refused (401, not 403).
+    // Requesting a reset link without a token is refused (401, not 403).
     [Fact]
     public async Task Reset_request_answers_401_without_a_token()
     {
@@ -353,7 +353,7 @@ public class UserRound1Tests : IDisposable
         Assert.Empty(_factory.ResetEmail.Sent);
     }
 
-    // USER_API_IT29, step 3: changing the email ends the sessions — the old cookie no longer
+    // Changing the email ends the sessions — the old cookie no longer
     // refreshes (401 MSG01), while the account itself keeps working.
     [Fact]
     public async Task Changing_the_email_ends_the_sessions()
@@ -378,7 +378,7 @@ public class UserRound1Tests : IDisposable
         Assert.Equal("MSG01", (await JsonOf(refresh)).GetProperty("code").GetString());
     }
 
-    // USER_API_IT28, step 3: after a role change the next refresh succeeds and /api/auth/me
+    // After a role change the next refresh succeeds and /api/auth/me
     // lists the capabilities of the new role.
     [Fact]
     public async Task Changed_role_reaches_refresh_and_me()
@@ -410,7 +410,7 @@ public class UserRound1Tests : IDisposable
         Assert.Contains("MeetingApprover", capabilities);
     }
 
-    // USER_API_IT54, step 3 (second half): after the reset the new password signs in and the
+    // After the reset the new password signs in and the
     // old one answers MSG01.
     [Fact]
     public async Task After_reset_the_new_password_signs_in_and_the_old_one_does_not()

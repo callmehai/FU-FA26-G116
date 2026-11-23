@@ -17,7 +17,7 @@ namespace TrustCabinet.Web.Tests.Agenda;
 /// </summary>
 public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<AgendaFixture>
 {
-    // AGENDA_API_IT07: reading the agenda without a token is refused before anything is read.
+    // Reading the agenda without a token is refused before anything is read.
     [Fact]
     public async Task Get_agenda_requires_a_token()
     {
@@ -26,7 +26,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Equal(HttpStatusCode.Unauthorized, (await fixture.Client().GetAsync(s.Url)).StatusCode);
     }
 
-    // AGENDA_API_IT14: editor-options answers 401 without a token and 404 for a stranger.
+    // Editor-options answers 401 without a token and 404 for a stranger.
     [Fact]
     public async Task Editor_options_answers_404_for_a_stranger_and_401_without_a_token()
     {
@@ -41,7 +41,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Empty(await hidden.Content.ReadAsStringAsync());
     }
 
-    // AGENDA_API_IT15: when the agenda cannot be read, the answer is 500 MSG128, not a 200.
+    // When the agenda cannot be read, the answer is 500 MSG128, not a 200.
     [Fact]
     public async Task Editor_options_answers_500_MSG128_when_it_cannot_be_read()
     {
@@ -59,7 +59,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         }
     }
 
-    // AGENDA_API_IT42: updating an item that is not in the meeting answers 404, empty body.
+    // Updating an item that is not in the meeting answers 404, empty body.
     [Fact]
     public async Task Put_item_answers_404_for_an_item_that_is_not_in_the_meeting()
     {
@@ -78,7 +78,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Equal(3, await check.AgendaItems.CountAsync(i => i.MeetingId == s.MeetingId));
     }
 
-    // AGENDA_API_IT49: deleting without a token is 401; deleting an item outside the meeting
+    // Deleting without a token is 401; deleting an item outside the meeting
     // is 404 with an empty body.
     [Fact]
     public async Task Delete_item_answers_401_without_a_token_and_404_outside_the_meeting()
@@ -94,7 +94,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Empty(await missing.Content.ReadAsStringAsync());
     }
 
-    // AGENDA_API_IT64: starting without a token is 401; starting an item outside the meeting
+    // Starting without a token is 401; starting an item outside the meeting
     // is 404 with an empty body.
     [Fact]
     public async Task Start_answers_401_without_a_token_and_404_outside_the_meeting()
@@ -110,7 +110,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Empty(await missing.Content.ReadAsStringAsync());
     }
 
-    // AGENDA_API_IT37: PUT with unchanged data succeeds without writing — updatedAt keeps its
+    // PUT with unchanged data succeeds without writing — updatedAt keeps its
     // value and no agenda event is pushed to viewers.
     [Fact]
     public async Task Put_unchanged_item_succeeds_without_writing()
@@ -134,7 +134,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         }
     }
 
-    // AGENDA_API_IT44, steps 3–4: a mistyped PUT body is 415 MSG34, an oversized one 413 MSG87.
+    // A mistyped PUT body is 415 MSG34, an oversized one 413 MSG87.
     [Fact]
     public async Task Put_item_rejects_a_mistyped_and_an_oversized_body()
     {
@@ -149,7 +149,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         await AssertCode(await client.PutAsync(s.Url + $"/{s.Items[0]}", huge), 413, "MSG87");
     }
 
-    // AGENDA_API_IT58, step 1: reordering without a token is 401.
+    // Reordering without a token is 401.
     [Fact]
     public async Task Reorder_answers_401_without_a_token()
     {
@@ -164,7 +164,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // AGENDA_API_IT71, steps 1 and 3: completing without a token is 401; completing an item
+    // Completing without a token is 401; completing an item
     // outside the meeting is 404 with an empty body.
     [Fact]
     public async Task Complete_answers_401_without_a_token_and_404_outside_the_meeting()
@@ -180,7 +180,7 @@ public sealed class AgendaRound1Tests(AgendaFixture fixture) : IClassFixture<Age
         Assert.Empty(await missing.Content.ReadAsStringAsync());
     }
 
-    // AGENDA_API_IT31, steps 1–2: creating without a token is 401; an unrelated signed-in
+    // Creating without a token is 401; an unrelated signed-in
     // account gets 404 with an empty body (a resource it may not read is hidden, not refused).
     [Fact]
     public async Task Create_answers_401_without_a_token_and_404_for_an_unrelated_account()

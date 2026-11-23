@@ -708,19 +708,18 @@
         },
         {
           "id": "USER_FT32",
-          "description": "Verify a used, expired or replaced link shows the dead-link notice.",
+          "description": "Verify a used link shows the dead-link notice.",
           "procedure": [
             "Use the link once successfully, then open the same link again, type a valid password and submit."
           ],
           "expected": [
-            "POST answers 400 \"MSG93\"; the form gives way to the error \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\" with the hint \"Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.\" and a link \"Về trang đăng nhập\".",
-            "An older link replaced by a newer one behaves the same."
+            "POST answers 400 \"MSG93\"; the form gives way to the error \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\" with the hint \"Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.\" and a link \"Về trang đăng nhập\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A reset link that was already used."
           ],
-          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 400 MSG93, báo và gợi ý đúng, có \"Về trang đăng nhập\". Chỉ kiểm link đã dùng, chưa kiểm link bị link mới thay. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/07-anon-USER_FT32-desktop-lien-ket-het-hieu-luc.png",
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 400 MSG93, báo và gợi ý đúng, có \"Về trang đăng nhập\". Passed cho nhánh link đã dùng; nhánh link bị link mới thay chưa kiểm. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/07-anon-USER_FT32-desktop-lien-ket-het-hieu-luc.png",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"

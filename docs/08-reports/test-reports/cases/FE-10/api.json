@@ -1239,7 +1239,7 @@
           ],
           "expected": [
             "HTTP 200 OK.",
-            "Body: { \"consent\": null, \"samples\": [], \"maxSamples\": 5, \"noticeVersion\": \"1.3\", \"purpose\", \"controller\", \"proxy\": { \"allowed\": false, \"samples\": [], \"maxSamples\": 5 } }.",
+            "Body: { \"consent\": null, \"samples\": [], \"maxSamples\": 5, \"noticeVersion\": \"1.5\", \"purpose\", \"controller\", \"proxy\": { \"allowed\": false, \"samples\": [], \"maxSamples\": 5 } }.",
             "\"purpose\" is the first-person purpose text and \"controller\" names who decides how the voice is processed."
           ],
           "preconditions": [
@@ -1260,7 +1260,7 @@
           ],
           "expected": [
             "HTTP 200 OK.",
-            "\"consent\": { \"grantedAt\", \"noticeVersion\": \"1.3\", \"purpose\" } and \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"playable\" } ] with two entries.",
+            "\"consent\": { \"grantedAt\", \"noticeVersion\": \"1.5\", \"purpose\" } and \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"playable\" } ] with two entries.",
             "The body holds no embedding, ciphertext or audio bytes, only the sample's id and length."
           ],
           "preconditions": [
@@ -1306,11 +1306,11 @@
           "description": "Verify POST /api/me/voice/consent records the person's consent to the current notice.",
           "procedure": [
             "Sign in as the user (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.3\" }"
+            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.5\" }"
           ],
           "expected": [
             "HTTP 200 OK.",
-            "Body: { \"code\": \"MSG305\", \"message\": \"Đã bật nhận diện giọng nói cho tài khoản của bạn.\", \"data\": { \"consent\": { \"grantedAt\", \"noticeVersion\": \"1.3\", \"purpose\" }, \"samples\": [], … } }.",
+            "Body: { \"code\": \"MSG305\", \"message\": \"Đã bật nhận diện giọng nói cho tài khoản của bạn.\", \"data\": { \"consent\": { \"grantedAt\", \"noticeVersion\": \"1.5\", \"purpose\" }, \"samples\": [], … } }.",
             "An audit row \"VoiceConsentGranted\" records the notice version and purpose."
           ],
           "preconditions": [
@@ -1327,7 +1327,7 @@
           "description": "Verify POST /api/me/voice/consent called again keeps the one consent.",
           "procedure": [
             "Sign in as the user already enabled (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.3\" }"
+            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.5\" }"
           ],
           "expected": [
             "HTTP 200 OK with \"code\": \"MSG305\".",
@@ -1335,7 +1335,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A user with a standing consent to notice 1.3."
+            "A user with a standing consent to notice 1.5."
           ],
           "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Consent_is_explicit_versioned_and_given_once)",
           "round1": "Passed",
@@ -1385,13 +1385,13 @@
         },
         {
           "id": "TRANS_API_IT59",
-          "description": "Verify there is no second consent to give for the Secretary's recording.",
+          "description": "Verify one consent to notice 1.5 covers own and proxy samples; no second consent exists.",
           "procedure": [
             "Sign in as the user (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.3\", \"collection\": true }"
+            "Send POST /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>; Content-Type: application/json\nBody: { \"noticeVersion\": \"1.5\", \"collection\": true }"
           ],
           "expected": [
-            "HTTP 200 OK \"MSG305\": the one consent to notice 1.3 already covers samples the person records and samples a Secretary records; the extra field is ignored and no separate collection consent exists."
+            "HTTP 200 OK \"MSG305\": the one consent to notice 1.5 already covers samples the person records and samples a VoiceCollector holder records; the extra \"collection\" field is ignored and no separate collection consent exists."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1414,7 +1414,7 @@
           "id": "TRANS_API_IT60",
           "description": "Verify DELETE /api/me/voice/consent withdraws consent and erases every sample and machine suggestion of the person.",
           "procedure": [
-            "Sign in as the user with Voice ID on, two own samples and one Secretary-recorded sample (POST /api/auth/login) and keep the access token.",
+            "Sign in as the user with Voice ID on, two own samples and one proxy sample a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
             "Send DELETE /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>",
             "Send GET /api/me/voice.",
             "As the Secretary send GET /api/recordings/{recordingId}/transcript for a recording where the machine had suggested or named this person."
@@ -1436,19 +1436,19 @@
         },
         {
           "id": "TRANS_API_IT61",
-          "description": "Verify DELETE /api/me/voice/consent erases the Secretary-recorded set together with the person's own.",
+          "description": "Verify DELETE /api/me/voice/consent erases the own and proxy sample sets together.",
           "procedure": [
-            "Sign in as the user with one own sample and one sample a Secretary recorded (POST /api/auth/login) and keep the access token.",
+            "Sign in as the user with one own sample and one proxy sample a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
             "Send DELETE /api/me/voice/consent\nHeaders: Authorization: Bearer <accessToken>",
-            "As the Secretary send GET /api/meetings/{meetingId}/voice-collection."
+            "As a VoiceCollector holder send GET /api/users/{userId}/voice-collection."
           ],
           "expected": [
             "Step 2: HTTP 200 \"MSG306\".",
-            "Step 3: the person shows \"consented\": false, \"sampleCount\": 0 and no samples in that meeting."
+            "Step 3: the person shows \"consented\": false with an empty \"samples\" list (0 samples) and no proxy samples."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A user with samples of both sets; the Secretary of the meeting where one was recorded."
+            "A user with consent and samples of both the own and the proxy sets; an account holding \"Thu giọng mẫu hộ\" (VoiceCollector)."
           ],
           "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Withdrawing_erases_both_sets_at_once)",
           "round1": "Passed",
@@ -1517,7 +1517,7 @@
           "description": "Verify turning Voice ID on again after withdrawal restores nothing.",
           "procedure": [
             "Sign in as the user who withdrew earlier (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/me/voice/consent with Body: { \"noticeVersion\": \"1.3\" }.",
+            "Send POST /api/me/voice/consent with Body: { \"noticeVersion\": \"1.5\" }.",
             "Send GET /api/me/voice."
           ],
           "expected": [
@@ -1578,7 +1578,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A user with consent to notice 1.3 and fewer than 5 own samples.",
+            "A user with consent to notice 1.5 and fewer than 5 own samples.",
             "The speech worker is running."
           ],
           "note": "UC-81c | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Samples_need_consent_pass_the_worker_checks_and_are_stored_only_encrypted)",
@@ -1616,7 +1616,7 @@
           ],
           "expected": [
             "HTTP 409 Conflict, body { \"code\": \"MSG310\", \"message\": \"Đã đủ 5 giọng mẫu. Xoá bớt rồi ghi lại.\" }.",
-            "Samples a Secretary recorded do not count towards these 5; after one own sample is deleted the same request returns 201."
+            "Samples a VoiceCollector holder recorded for the person do not count towards these 5; after one own sample is deleted the same request returns 201."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1632,7 +1632,7 @@
           "id": "TRANS_API_IT70",
           "description": "Verify POST /api/me/voice/samples counts only the samples the person recorded.",
           "procedure": [
-            "Sign in as the user with 4 own samples and 5 Secretary-recorded samples (POST /api/auth/login) and keep the access token.",
+            "Sign in as the user with 4 own samples and 5 proxy samples a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
             "Send POST /api/me/voice/samples\nHeaders: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\nBody: form field \"file\" = a valid recording."
           ],
           "expected": [
@@ -1811,8 +1811,8 @@
           "id": "TRANS_API_IT78",
           "description": "Verify GET /api/me/voice/samples/{sampleId}/audio lets the person hear a sample a collector recorded.",
           "procedure": [
-            "Sign in as the person the Secretary recorded (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/me/voice/samples/{proxySampleId}/audio\nHeaders: Authorization: Bearer <accessToken>"
+            "Sign in as the person a VoiceCollector holder recorded samples for (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/me/voice/samples/{sampleId}/audio\nHeaders: Authorization: Bearer <accessToken>"
           ],
           "expected": [
             "HTTP 200 OK with the audio and Cache-Control: no-store."

@@ -8,8 +8,8 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
 
-/// <summary>Round 1 Report 5.2.2 FE-12: the minutes cases that had no test yet (MIN_API_IT05, IT20, IT24, IT26–IT28,
-/// IT58, IT65, IT66, IT73–IT75, IT82, IT83), plus the content the issued/returned/waiting notifications and the issued
+/// <summary>Round 1 Report 5.2.2 FE-12: the minutes cases that had no test yet,
+/// plus the content the issued/returned/waiting notifications and the issued
 /// email carry that the older tests only counted.</summary>
 public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<SummaryFixture>
 {
@@ -57,7 +57,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Draft_state_tells_each_officer_what_they_may_do()
     {
-        // MIN_API_IT01 + IT03 + IT04 + IT13 + IT14 + IT15: the flags and the history around a draft. Before anything
+        // The flags and the history around a draft. Before anything
         // is built the officers see an empty state; once built, the officers see the draft and its single history
         // line while a reader sees nothing; rebuilding replaces the text in place.
         var s = await f.Seed(MeetingStatus.Ended);
@@ -104,7 +104,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Rebuilding_a_returned_revision_keeps_it_returned()
     {
-        // MIN_API_IT05: UC-59, BR-407. A returned revision is edited again, so rebuilding it from the template
+        // UC-59, BR-407. A returned revision is edited again, so rebuilding it from the template
         // replaces the text in place without sending it anywhere.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
@@ -134,7 +134,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Deactivated_and_guest_callers_are_refused_the_minutes()
     {
-        // MIN_API_IT20: UC-58, BR-412. A deactivated account and a Guest (UC-04) are refused with an empty 403:
+        // UC-58, BR-412. A deactivated account and a Guest (UC-04) are refused with an empty 403:
         // the gate runs before the minutes are read.
         var (s, _) = await IssuedMinutes();
         await using (var db = f.Db())
@@ -154,7 +154,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Chair_and_secretary_open_any_revision()
     {
-        // MIN_API_IT24: UC-58, BR-386. Both officers read the correction in progress and the issued revision.
+        // UC-58, BR-386. Both officers read the correction in progress and the issued revision.
         var (s, issued) = await IssuedMinutes();
         using var secretary = f.Client(s.Secretary);
         using var chair = f.Client(s.Chair);
@@ -177,7 +177,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Strangers_and_unknown_ids_learn_nothing_about_a_revision()
     {
-        // MIN_API_IT26: UC-58 EX-3. An outsider asking for the issued revision, and an officer asking for a revision
+        // UC-58 EX-3. An outsider asking for the issued revision, and an officer asking for a revision
         // that does not exist, both get an empty 404.
         var (s, issued) = await IssuedMinutes();
         using var outsider = f.Client(s.Outsider);
@@ -194,7 +194,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Reading_a_revision_without_signing_in_is_refused()
     {
-        // MIN_API_IT27: UC-58.
+        // UC-58.
         var (s, issued) = await IssuedMinutes();
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -204,7 +204,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Submitting_without_signing_in_is_refused()
     {
-        // MIN_API_IT58: UC-61.
+        // UC-61.
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.PostAsync($"/api/minutes/{Guid.NewGuid()}/submit", null)).StatusCode);
@@ -213,7 +213,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Approving_without_signing_in_is_refused()
     {
-        // MIN_API_IT66: UC-64.
+        // UC-64.
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.PostAsync($"/api/minutes/{Guid.NewGuid()}/approve", null)).StatusCode);
@@ -222,7 +222,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Only_the_latest_return_reason_is_kept()
     {
-        // MIN_API_IT73: UC-65, BR-407. Returning twice overwrites the first reason; the Secretary is told with the
+        // UC-65, BR-407. Returning twice overwrites the first reason; the Secretary is told with the
         // exact title and body of the second return.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
@@ -259,7 +259,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Returning_without_signing_in_is_refused()
     {
-        // MIN_API_IT75: UC-65.
+        // UC-65.
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.PostAsync($"/api/minutes/{Guid.NewGuid()}/reject", null)).StatusCode);
@@ -268,7 +268,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Correcting_without_signing_in_is_refused()
     {
-        // MIN_API_IT83: UC-83.
+        // UC-83.
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
             (await anonymous.PostAsync($"/api/minutes/{Guid.NewGuid()}/corrections", null)).StatusCode);
@@ -277,7 +277,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task A_two_thousand_character_return_reason_is_accepted()
     {
-        // MIN_API_IT69 (boundary): UC-65 EX-3. 2,001 characters are refused; exactly 2,000 are kept.
+        // UC-65 EX-3. 2,001 characters are refused; exactly 2,000 are kept.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
         using var chair = f.Client(s.Chair);
@@ -294,7 +294,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Issued_minutes_tell_every_reader_with_the_exact_words()
     {
-        // MIN_API_IT50 + MIN_API_IT60: the waiting notification and the issued notification carry the exact title
+        // The waiting notification and the issued notification carry the exact title
         // and body, and the issued email points at the minutes tab and names the Word/PDF downloads.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
@@ -335,7 +335,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
             });
         }
 
-        // MIN_API_IT16: a reader sees the issued minutes without the officers' working facts.
+        // A reader sees the issued minutes without the officers' working facts.
         using var member = f.Client(s.Member);
         var seen = (await State(member, s)).GetProperty("minutes");
         Assert.Equal("Issued", seen.GetProperty("status").GetString());
@@ -351,7 +351,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Issuing_a_correction_tells_readers_it_is_a_correction()
     {
-        // MIN_API_IT61: the correction issue tells readers it is a correction, by bell and by email, and the
+        // The correction issue tells readers it is a correction, by bell and by email, and the
         // superseded revision keeps the text it was issued with.
         var (s, issued) = await IssuedMinutes();
         using var secretary = f.Client(s.Secretary);
@@ -388,7 +388,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task A_revision_that_cannot_be_read_answers_MSG403()
     {
-        // MIN_API_IT28: UC-58 EX-1,[chèn lỗi]. When the minutes cannot be read, the revision answers 500 MSG403.
+        // UC-58 EX-1,[chèn lỗi]. When the minutes cannot be read, the revision answers 500 MSG403.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
         var id = Id(await Build(secretary, s));
@@ -407,7 +407,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Approving_when_the_save_fails_issues_nothing()
     {
-        // MIN_API_IT65: UC-64 EX-4 [chèn lỗi]. A failed save issues nothing: no audit row, no bell, no email.
+        // UC-64 EX-4 [chèn lỗi]. A failed save issues nothing: no audit row, no bell, no email.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
         using var chair = f.Client(s.Chair);
@@ -438,7 +438,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Returning_when_the_save_fails_changes_nothing()
     {
-        // MIN_API_IT74: UC-65 EX-4 [chèn lỗi]. A failed save returns nothing and tells nobody.
+        // UC-65 EX-4 [chèn lỗi]. A failed save returns nothing and tells nobody.
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
         using var chair = f.Client(s.Chair);
@@ -466,7 +466,7 @@ public sealed class MinutesCoverageTests(SummaryFixture f) : IClassFixture<Summa
     [Fact]
     public async Task Correcting_when_the_save_fails_creates_nothing()
     {
-        // MIN_API_IT82: UC-83 EX-4 [chèn lỗi]. A failed save creates no revision: the history still has only the issue.
+        // UC-83 EX-4 [chèn lỗi]. A failed save creates no revision: the history still has only the issue.
         var (s, issued) = await IssuedMinutes();
         using var chair = f.Client(s.Chair);
 

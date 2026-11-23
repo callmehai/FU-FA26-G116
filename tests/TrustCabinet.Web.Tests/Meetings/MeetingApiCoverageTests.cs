@@ -120,7 +120,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         return meeting;
     }
 
-    // MEET_API_IT03: a blank online link is stored as null.
+    // A blank online link is stored as null.
     [Fact]
     public async Task Post_stores_a_blank_online_link_as_null()
     {
@@ -138,7 +138,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Null((await db.Meetings.AsNoTracking().SingleAsync(m => m.Id == id)).OnlineLink);
     }
 
-    // MEET_API_IT08: title of exactly 300 characters passes, 301 is refused.
+    // Title of exactly 300 characters passes, 301 is refused.
     [Fact]
     public async Task Post_accepts_a_300_character_title_and_rejects_301()
     {
@@ -161,7 +161,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(1, await db.Meetings.CountAsync(m => m.Title.Length >= 300));
     }
 
-    // MEET_API_IT10: location over 300 and description over 4000 are both refused at once.
+    // Location over 300 and description over 4000 are both refused at once.
     [Fact]
     public async Task Post_rejects_an_over_long_location_and_description_together()
     {
@@ -182,7 +182,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(0, await db.Meetings.CountAsync(m => m.Title == "Họp giao ban"));
     }
 
-    // MEET_API_IT13: a body that is not valid JSON is refused with 400.
+    // A body that is not valid JSON is refused with 400.
     // The framework rejects the malformed JSON before the endpoint runs, so the
     // answer is an empty 400, not the MSG31 the PUT path builds by hand.
     [Fact]
@@ -199,7 +199,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(0, await db.Meetings.CountAsync(m => m.Title == "Họp giao ban"));
     }
 
-    // MEET_API_IT18: PUT with unchanged data succeeds without writing.
+    // PUT with unchanged data succeeds without writing.
     [Fact]
     public async Task Put_with_unchanged_data_succeeds_without_writing()
     {
@@ -233,7 +233,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(organizer.Id, again.GetProperty("createdById").GetGuid());
     }
 
-    // MEET_API_IT27: a Draft start that is already past is allowed on update.
+    // A Draft start that is already past is allowed on update.
     [Fact]
     public async Task Put_allows_a_draft_start_that_is_already_past()
     {
@@ -260,7 +260,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(now.AddHours(-1), moved.GetProperty("meeting").GetProperty("plannedStartTime").GetDateTimeOffset());
     }
 
-    // MEET_API_IT37: search ignores case and accents; % and _ match literally.
+    // Search ignores case and accents; % and _ match literally.
     [Fact]
     public async Task Get_searches_titles_without_case_or_accents_and_matches_wildcards_literally()
     {
@@ -286,7 +286,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Empty(Titles(underscore));
     }
 
-    // MEET_API_IT38: from/to keep the meetings whose planned time overlaps the range.
+    // From/to keep the meetings whose planned time overlaps the range.
     [Fact]
     public async Task Get_filters_by_overlap_of_the_planned_time_with_from_and_to()
     {
@@ -314,7 +314,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.DoesNotContain(after.Id, ids);
     }
 
-    // MEET_API_IT39: sort by title ascending with paging; ties break by id.
+    // Sort by title ascending with paging; ties break by id.
     [Fact]
     public async Task Get_sorts_and_pages_as_asked()
     {
@@ -341,7 +341,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(new[] { twinA.Id, twinB.Id }.Order().ToArray(), twinIds);
     }
 
-    // MEET_API_IT44: upcoming/past split on the request time; anything else is 400/MSG32.
+    // Upcoming/past split on the request time; anything else is 400/MSG32.
     [Fact]
     public async Task Get_splits_upcoming_from_past_and_rejects_other_timing_values()
     {
@@ -370,7 +370,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
             invalid.GetProperty("message").GetString());
     }
 
-    // MEET_API_IT46: excludeDeclined hides meetings the caller declined; other values are 400/MSG32.
+    // ExcludeDeclined hides meetings the caller declined; other values are 400/MSG32.
     [Fact]
     public async Task Get_exclude_declined_hides_meetings_the_caller_declined()
     {
@@ -420,7 +420,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         }
     }
 
-    // MEET_API_IT48: the list is open to any signed-in account, without MeetingCreator.
+    // The list is open to any signed-in account, without MeetingCreator.
     [Fact]
     public async Task Get_list_is_open_to_any_signed_in_account_without_meeting_creator()
     {
@@ -460,7 +460,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.DoesNotContain(hiddenId, ids);
     }
 
-    // MEET_API_IT55: the detail shows the caller's own invitation answer; never for the Chair.
+    // The detail shows the caller's own invitation answer; never for the Chair.
     [Fact]
     public async Task Get_detail_shows_the_caller_their_invitation_answer()
     {
@@ -511,7 +511,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.False(asChair.GetProperty("canRespond").GetBoolean());
     }
 
-    // MEET_API_IT56: the detail requires a token.
+    // The detail requires a token.
     [Fact]
     public async Task Get_detail_requires_a_token()
     {
@@ -526,7 +526,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
     }
 
-    // MEET_API_IT64: submission-readiness is for the Organizer only.
+    // Submission-readiness is for the Organizer only.
     [Fact]
     public async Task Get_submission_readiness_is_for_the_organizer_only()
     {
@@ -568,7 +568,7 @@ public sealed class MeetingApiCoverageTests(MeetingLifecycleFixture fixture) : I
             (await anonymous.GetAsync($"/api/meetings/{meetingId}/submission-readiness")).StatusCode);
     }
 
-    // MEET_API_IT115: history requires a token and hides meetings the caller cannot read.
+    // History requires a token and hides meetings the caller cannot read.
     [Fact]
     public async Task Get_history_requires_a_token_and_hides_unreadable_meetings()
     {

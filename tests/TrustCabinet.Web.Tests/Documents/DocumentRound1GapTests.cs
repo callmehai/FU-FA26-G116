@@ -19,9 +19,7 @@ using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
 namespace TrustCabinet.Web.Tests.Documents;
 
 /// <summary>Round 1 gap tests for FE-07 Documents: the cases of cases/FE-07/api.json
-/// that had no automated test (DOC_API_IT05, IT10–IT11, IT21, IT23, IT27–IT28, IT33, IT36,
-/// IT42, IT46, IT48, IT56, IT62, IT72, IT79, IT84, IT88, IT90, IT101, IT114, IT131,
-/// IT142–IT143, IT152, IT161, IT168, IT172, IT176–IT177, IT184, IT192, IT207, IT217).</summary>
+/// that had no automated test.</summary>
 [Collection("Documents")]
 public sealed class DocumentRound1GapTests(DocumentFixture fixture) : IAsyncLifetime
 {

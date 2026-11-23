@@ -13,7 +13,7 @@ using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Participants;
 
-/// <summary>Round 1 API tests for FE-06 Participants (PART_API_IT02-IT177 Manual-only cases).</summary>
+/// <summary>Round 1 API tests for FE-06 Participants.</summary>
 public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture<ParticipantFixture>
 {
     private async Task<HttpClient> CreatorClientAsync(Guid userId)
@@ -48,7 +48,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         return guest;
     }
 
-    // PART_API_IT02
     [Fact]
     public async Task ParticipantOptions_NeverListsDeactivatedAccounts()
     {
@@ -66,7 +65,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Empty(page.GetProperty("items").EnumerateArray());
     }
 
-    // PART_API_IT03
     [Fact]
     public async Task ParticipantOptions_SearchIgnoresCaseAndTreatsWildcardsLiterally()
     {
@@ -90,7 +88,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Empty(underscore.GetProperty("items").EnumerateArray());
     }
 
-    // PART_API_IT04
     [Fact]
     public async Task ParticipantOptions_EmptyPagePastTheEnd()
     {
@@ -103,7 +100,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(999, page.GetProperty("page").GetInt32());
     }
 
-    // PART_API_IT05
     [Fact]
     public async Task ParticipantOptions_AcceptsPageSize100And200CharQuery()
     {
@@ -117,7 +113,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Empty(body.GetProperty("items").EnumerateArray());
     }
 
-    // PART_API_IT06
     [Fact]
     public async Task ParticipantOptions_RejectsOversizedPaging()
     {
@@ -128,7 +123,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync("/api/meetings/participant-options?q=" + new string('a', 201)), 400, "MSG276");
     }
 
-    // PART_API_IT07
     [Fact]
     public async Task ParticipantOptions_RejectsUnknownOrRepeatedKeys()
     {
@@ -138,7 +132,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync("/api/meetings/participant-options?page=1&page=2"), 400, "MSG276");
     }
 
-    // PART_API_IT08
     [Fact]
     public async Task ParticipantOptions_AnonymousIs401()
     {
@@ -147,7 +140,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/meetings/participant-options")).StatusCode);
     }
 
-    // PART_API_IT09
     [Fact]
     public async Task ParticipantOptions_MemberWithoutCreatorIs403()
     {
@@ -156,7 +148,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Forbidden, (await member.GetAsync("/api/meetings/participant-options")).StatusCode);
     }
 
-    // PART_API_IT21
     [Fact]
     public async Task ParticipantContext_UnknownMeetingIs404()
     {
@@ -167,7 +158,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT22
     [Fact]
     public async Task ParticipantContext_AnonymousIs401()
     {
@@ -176,7 +166,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(s.Url + "/participant-context")).StatusCode);
     }
 
-    // PART_API_IT24
     [Fact]
     public async Task ParticipantContext_RejectsQueryString()
     {
@@ -185,7 +174,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync(s.Url + "/participant-context?page=1"), 400, "MSG276");
     }
 
-    // PART_API_IT29
     [Fact]
     public async Task Participants_SearchesNameEmailAndInvitedName()
     {
@@ -203,7 +191,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Contains(byName.GetProperty("items").EnumerateArray(), i => i.GetProperty("displayName").GetString() == "Trần Thành Viên");
     }
 
-    // PART_API_IT31
     [Fact]
     public async Task Participants_AcceptsPageSize100ButNot101()
     {
@@ -214,7 +201,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync(s.Url + "/participants?pageSize=101"), 400, "MSG276");
     }
 
-    // PART_API_IT32
     [Fact]
     public async Task Participants_RejectsBadPagingKeys()
     {
@@ -225,7 +211,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync(s.Url + "/participants?role=Member"), 400, "MSG276");
     }
 
-    // PART_API_IT37
     [Fact]
     public async Task Participants_AnonymousIs401()
     {
@@ -234,7 +219,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(s.Url + "/participants")).StatusCode);
     }
 
-    // PART_API_IT40
     [Fact]
     public async Task EditorOptions_SearchesNameAndEmailWithPaging()
     {
@@ -255,7 +239,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.NotEqual(firstId, Assert.Single(second.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
     }
 
-    // PART_API_IT41
     [Fact]
     public async Task EditorOptions_RejectsOversizedPageAndUnknownKeys()
     {
@@ -265,7 +248,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync(s.Url + "/participants/editor-options?foo=1"), 400, "MSG276");
     }
 
-    // PART_API_IT44
     [Fact]
     public async Task EditorOptions_StrangerIs404()
     {
@@ -276,7 +258,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT45
     [Fact]
     public async Task EditorOptions_AnonymousIs401()
     {
@@ -285,7 +266,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(s.Url + "/participants/editor-options")).StatusCode);
     }
 
-    // PART_API_IT55
     [Fact]
     public async Task Participants_RefusesSecondChair()
     {
@@ -297,7 +277,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Chair));
     }
 
-    // PART_API_IT59
     [Fact]
     public async Task Participants_RejectsQueryString()
     {
@@ -309,7 +288,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.False(await db.MeetingParticipants.AnyAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Outsider));
     }
 
-    // PART_API_IT66
     [Fact]
     public async Task Participants_StrangerIs404()
     {
@@ -321,7 +299,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT67
     [Fact]
     public async Task Participants_CreateAnonymousIs401()
     {
@@ -332,7 +309,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // PART_API_IT71
     [Fact]
     public async Task Assignments_SameRoleIsNoOp()
     {
@@ -349,7 +325,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         }
     }
 
-    // PART_API_IT77
     [Fact]
     public async Task Assignments_DraftMeetingMayHaveNoSecretary()
     {
@@ -362,7 +337,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.DoesNotContain(roster.GetProperty("items").EnumerateArray(), i => i.GetProperty("role").GetString() == "Secretary");
     }
 
-    // PART_API_IT82
     [Fact]
     public async Task Assignments_RejectsEmptyDuplicateUnknownAndOversizedChanges()
     {
@@ -389,7 +363,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(MeetingRole.Member, (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!.Role);
     }
 
-    // PART_API_IT85
     [Fact]
     public async Task Assignments_UnknownParticipantIs404()
     {
@@ -402,7 +375,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT88
     [Fact]
     public async Task Assignments_StrangerIs404AndAnonymousIs401()
     {
@@ -418,7 +390,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, noToken.StatusCode);
     }
 
-    // PART_API_IT89
     [Fact]
     public async Task Assignments_PublishedChangeNotifiesNewRoleHolderAndAudits()
     {
@@ -442,7 +413,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Contains("bạn đã được giao làm Thư ký", note.GetProperty("body").GetString());
     }
 
-    // PART_API_IT91
     [Fact]
     public async Task Remove_ClearsAgendaPresenterAndSpeakingQueue()
     {
@@ -466,7 +436,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         }
     }
 
-    // PART_API_IT95
     [Fact]
     public async Task Remove_UnknownAssignmentIs404()
     {
@@ -478,7 +447,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT96
     [Fact]
     public async Task Remove_RejectsRequestBody()
     {
@@ -490,7 +458,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.NotNull(await db.MeetingParticipants.FindAsync(s.MemberAssignment));
     }
 
-    // PART_API_IT100
     [Fact]
     public async Task Remove_StrangerIs404AndAnonymousIs401()
     {
@@ -504,7 +471,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, noToken.StatusCode);
     }
 
-    // PART_API_IT101
     [Fact]
     public async Task Remove_PublishedRemovalNotifiesPersonAndAudits()
     {
@@ -524,7 +490,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.NotEmpty(inbox.GetProperty("items").EnumerateArray());
     }
 
-    // PART_API_IT104
     [Fact]
     public async Task GuestInvite_TrimsNameAndAcceptsBoundaryLengths()
     {
@@ -540,7 +505,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(name200, (await db.MeetingGuestInvitations.FindAsync(invitationId))!.InvitedName);
     }
 
-    // PART_API_IT108
     [Fact]
     public async Task GuestInvite_RejectsEmailOfCurrentInternalParticipant()
     {
@@ -555,7 +519,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         }
     }
 
-    // PART_API_IT114
     [Fact]
     public async Task GuestInvite_StrangerIs404()
     {
@@ -567,7 +530,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT115
     [Fact]
     public async Task GuestInvite_AnonymousIs401()
     {
@@ -578,7 +540,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // PART_API_IT117
     [Fact]
     public async Task Revoke_ClearsGuestAsAgendaPresenter()
     {
@@ -600,7 +561,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         }
     }
 
-    // PART_API_IT119
     [Fact]
     public async Task Revoke_UnknownOrRevokedInvitationIs404()
     {
@@ -616,7 +576,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await revoked.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT122
     [Fact]
     public async Task Revoke_MemberIs403StrangerIs404AnonymousIs401()
     {
@@ -635,7 +594,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Null((await db.MeetingGuestInvitations.FindAsync(guest.Id))!.RevokedAt);
     }
 
-    // PART_API_IT126
     [Fact]
     public async Task OwnResponse_DraftMeetingIs404()
     {
@@ -646,7 +604,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT127
     [Fact]
     public async Task OwnResponse_OrganizerWithoutSeatIs404()
     {
@@ -657,7 +614,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT128
     [Fact]
     public async Task OwnResponse_StrangerIs404AndAnonymousIs401()
     {
@@ -670,7 +626,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(s.Url + "/invitation-response")).StatusCode);
     }
 
-    // PART_API_IT129
     [Fact]
     public async Task OwnResponse_RejectsQueryString()
     {
@@ -679,7 +634,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         await Code(await client.GetAsync(s.Url + "/invitation-response?x=1"), 400, "MSG276");
     }
 
-    // PART_API_IT138
     [Fact]
     public async Task Respond_OrganizerWithoutSeatIs404()
     {
@@ -690,7 +644,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    // PART_API_IT139
     [Fact]
     public async Task Respond_StrangerIs404AndAnonymousIs401()
     {
@@ -704,7 +657,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(HttpStatusCode.Unauthorized, noToken.StatusCode);
     }
 
-    // PART_API_IT146
     [Fact]
     public async Task Attendance_PagesListAndEmptyPagePastEnd()
     {
@@ -721,7 +673,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal(5, past.GetProperty("total").GetInt32());
     }
 
-    // PART_API_IT153
     [Fact]
     public async Task Attendance_CanMarkGuest()
     {
@@ -734,7 +685,6 @@ public sealed class ParticipantRound1Tests(ParticipantFixture f) : IClassFixture
         Assert.Equal("Present", row.GetProperty("attendance").GetString());
     }
 
-    // PART_API_IT177
     [Fact]
     public async Task ChairCandidates_DeactivatedChairIs403()
     {

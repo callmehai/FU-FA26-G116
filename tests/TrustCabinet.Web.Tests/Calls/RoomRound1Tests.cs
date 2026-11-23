@@ -99,7 +99,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Unconfigured_livekit_reports_the_room_unavailable()
     {
-        // ROOM_API_IT06: the build has no LiveKit settings, but the room state itself still loads.
+        // The build has no LiveKit settings, but the room state itself still loads.
         var member = GivenUser("member@trustcabinet.local");
         _factory.Calls.Invite(_meetingId, member.Id);
         _factory.LiveKit.IsConfigured = false;
@@ -113,7 +113,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Deactivated_member_reads_nothing()
     {
-        // ROOM_API_IT11: the token is still valid, but the account is gone.
+        // The token is still valid, but the account is gone.
         var member = GivenUser("member@trustcabinet.local");
         _factory.Calls.Invite(_meetingId, member.Id);
         var client = _factory.ClientFor(member);
@@ -125,7 +125,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Deactivated_member_joins_nothing()
     {
-        // ROOM_API_IT22: the token is still valid, but the account is gone, so no ticket is issued.
+        // The token is still valid, but the account is gone, so no ticket is issued.
         var member = GivenUser("member@trustcabinet.local");
         _factory.Calls.Invite(_meetingId, member.Id);
         var client = _factory.ClientFor(member);
@@ -138,7 +138,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Former_chair_mutes_nothing_after_handover()
     {
-        // ROOM_API_IT32: the role is re-read on every request, so the handed-over Chair is refused at once.
+        // The role is re-read on every request, so the handed-over Chair is refused at once.
         var chair = GivenUser("chair@trustcabinet.local");
         var member = GivenUser("member@trustcabinet.local");
         var secretary = GivenUser("secretary@trustcabinet.local");
@@ -163,7 +163,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Outsider_mutes_nothing()
     {
-        // ROOM_API_IT38: someone not on the roster learns nothing about the room, as for an unknown meeting.
+        // Someone not on the roster learns nothing about the room, as for an unknown meeting.
         var member = GivenUser("member@trustcabinet.local");
         _factory.Calls.Invite(_meetingId, member.Id);
         var outsider = GivenUser("outsider@trustcabinet.local");
@@ -176,7 +176,6 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Anonymous_mute_is_rejected()
     {
-        // ROOM_API_IT39.
         var response = await _factory.CreateClient()
             .PostAsync($"{CallPath}/participants/{Guid.CreateVersion7()}/mute", null);
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -185,7 +184,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Mute_without_livekit_is_unavailable()
     {
-        // ROOM_API_IT40: the Chair asks, but the room provider is not configured on this build.
+        // The Chair asks, but the room provider is not configured on this build.
         var chair = GivenUser("chair@trustcabinet.local");
         var member = GivenUser("member@trustcabinet.local");
         _factory.Calls.Invite(_meetingId, chair.Id, MeetingRole.Chair).Invite(_meetingId, member.Id);
@@ -204,7 +203,7 @@ public sealed class RoomCallRound1Tests : IDisposable
     [Fact]
     public async Task Oversized_webhook_body_is_rejected()
     {
-        // ROOM_API_IT45: a webhook body is a few KB; anything over 1 MB is not LiveKit.
+        // A webhook body is a few KB; anything over 1 MB is not LiveKit.
         var body = new ByteArrayContent(new byte[1024 * 1024 + 1]);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge,
             (await _factory.CreateClient().PostAsync("/api/livekit/webhook", body)).StatusCode);
@@ -263,7 +262,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Delegated_member_reads_no_room()
     {
-        // ROOM_API_IT09: a member who delegated attendance gave their seat away (UC-37 PRE-3, BR-323).
+        // A member who delegated attendance gave their seat away (UC-37 PRE-3, BR-323).
         var s = await f.Seed(MeetingStatus.InProgress);
         await using (var db = f.Db())
         {
@@ -282,7 +281,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Organizer_outside_the_roster_still_reads_the_queue()
     {
-        // ROOM_API_IT56: any reader of the meeting sees the queue, but only the Chair manages it.
+        // Any reader of the meeting sees the queue, but only the Chair manages it.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var organizer = f.Client(s.Organizer);
 
@@ -293,7 +292,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Invited_person_lowers_the_hand_and_frees_the_floor()
     {
-        // ROOM_API_IT72: lowering an invited hand cancels it, so the Chair can invite the next person.
+        // Lowering an invited hand cancels it, so the Chair can invite the next person.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var secretary = f.Client(s.Secretary); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
@@ -314,7 +313,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Lowering_a_hand_while_speaking_is_refused()
     {
-        // ROOM_API_IT75: a speaking turn is closed with finish, not by lowering the hand (409 MSG460).
+        // A speaking turn is closed with finish, not by lowering the hand (409 MSG460).
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member));
@@ -329,7 +328,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Lowering_a_hand_from_outside_the_room_is_refused()
     {
-        // ROOM_API_IT76: the browser lost its room connection, so the hand stays raised (409 MSG458).
+        // The browser lost its room connection, so the hand stays raised (409 MSG458).
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member);
         await InRoom(s, CallMember.User(s.Member));
@@ -343,7 +342,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_lower_is_rejected()
     {
-        // ROOM_API_IT77.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -353,7 +351,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Chair_invites_from_the_meeting_page()
     {
-        // ROOM_API_IT79: the Chair runs the queue from the room or the meeting page alike (BR-338).
+        // The Chair runs the queue from the room or the meeting page alike (BR-338).
         // Deviation on UC-79 PRE-2 (noted on SCRUM-27): the code lets the Chair invite without being in the room.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var chair = f.Client(s.Chair);
@@ -366,7 +364,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Inviting_a_lowered_hand_is_refused()
     {
-        // ROOM_API_IT82: a lowered hand is no longer queued (409 MSG460).
+        // A lowered hand is no longer queued (409 MSG460).
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member));
@@ -379,7 +377,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Starting_a_turn_that_was_not_invited_is_refused()
     {
-        // ROOM_API_IT86: only an invited hand can start (409 MSG460).
+        // Only an invited hand can start (409 MSG460).
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member);
         await InRoom(s, CallMember.User(s.Member));
@@ -392,7 +390,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Starting_a_turn_from_outside_the_room_is_refused()
     {
-        // ROOM_API_IT88: an invited person who left the room cannot start (409 MSG458).
+        // An invited person who left the room cannot start (409 MSG458).
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member));
@@ -407,7 +405,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_start_is_rejected()
     {
-        // ROOM_API_IT89.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -417,7 +414,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Chair_finishes_an_invited_turn_that_never_started()
     {
-        // ROOM_API_IT91: finishing an invited turn cancels it and frees the floor for the next person.
+        // Finishing an invited turn cancels it and frees the floor for the next person.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var secretary = f.Client(s.Secretary); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
@@ -438,7 +435,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_finish_is_rejected()
     {
-        // ROOM_API_IT96.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -448,7 +444,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Declining_an_invited_person_frees_the_floor()
     {
-        // ROOM_API_IT98: declining withdraws the invitation (AF-3), so the next hand can be invited at once.
+        // Declining withdraws the invitation (AF-3), so the next hand can be invited at once.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var member = f.Client(s.Member); using var secretary = f.Client(s.Secretary); using var chair = f.Client(s.Chair);
         await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
@@ -464,7 +460,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_decline_is_rejected()
     {
-        // ROOM_API_IT101.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -474,7 +469,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_move_up_is_rejected()
     {
-        // ROOM_API_IT106.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -484,7 +478,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_speaking_move_down_is_rejected()
     {
-        // ROOM_API_IT111.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized,
@@ -494,7 +487,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Deactivated_secretary_reads_no_notes()
     {
-        // ROOM_API_IT120: the token is still valid, but the account is gone.
+        // The token is still valid, but the account is gone.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var secretary = f.Client(s.Secretary);
         Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(Notes(s))).StatusCode);
@@ -509,7 +502,7 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Anonymous_notes_save_is_rejected()
     {
-        // ROOM_API_IT135: nothing is written without a signed-in Secretary.
+        // Nothing is written without a signed-in Secretary.
         var s = await f.Seed(MeetingStatus.InProgress);
         using var anonymous = f.Client();
         var response = await anonymous.PutAsJsonAsync(Notes(s),

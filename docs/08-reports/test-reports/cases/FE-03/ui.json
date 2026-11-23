@@ -2,7 +2,7 @@
   "feature": "FE-03",
   "code": "RBAC",
   "sheet": "Access Control",
-  "precondition": "Test build of frontend + backend; an Administrator account (AdminUsers), a Secretary and a Member account without it supplied by QA lead; the four built-in roles (\"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\") plus a custom role; audit-log entries from earlier actions. Chrome and a second browser for the two-user cases.",
+  "precondition": "Test build of frontend + backend; an Administrator account (AdminUsers), a Secretary and a Member account without it supplied by QA lead; the three built-in roles (\"Thành viên\", \"Phê duyệt viên\", \"Quản trị viên\") plus a custom role; audit-log entries from earlier actions. Chrome and a second browser for the two-user cases.",
   "groups": [
     {
       "title": "Role & Permission Matrix",
@@ -19,8 +19,8 @@
             "Click the tab \"Ma trận phân quyền\"."
           ],
           "expected": [
-            "GET /api/roles/capabilities succeeds; the table has a \"Vai trò\" column and one column per capability, under group headings \"Cuộc họp\", \"Biên bản\", \"Quản trị\".",
-            "Each column header is the capability name (\"Tạo cuộc họp\", \"Phê duyệt cuộc họp\", \"Soạn biên bản\", \"Thu giọng mẫu hộ\", \"Quản trị người dùng\") with an info tip carrying its description.",
+            "GET /api/roles/capabilities succeeds; the table has a \"Vai trò\" column and one column per capability, under group headings \"Cuộc họp\", \"Quản trị\".",
+            "Each column header is the capability name (\"Tạo cuộc họp\", \"Phê duyệt cuộc họp\", \"Quản trị người dùng\", \"Thu giọng mẫu hộ\") with an info tip carrying its description.",
             "Each role row shows its name, the chip \"Mặc định\" for built-in roles and \"Vai trò của bạn\" on the signed-in account's role; checked boxes match the roles' capabilities.",
             "The tab \"Danh sách vai trò\" shows the number of roles."
           ],
@@ -28,7 +28,7 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-10 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: không có nhóm \"Biên bản\" và quyền \"Soạn biên bản\" (app chỉ có 4 quyền: Tạo, Phê duyệt cuộc họp, Quản trị người dùng, Thu giọng mẫu hộ); còn lại đúng, ô tick khớp DB. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/14-admin-RBAC_FT01-desktop-ma-tran.png",
+          "note": "UC-10 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/14-admin-RBAC_FT01-desktop-ma-tran.png",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"
@@ -221,7 +221,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts."
+            "A custom role \"Trợ lý thu giọng\" with no accounts."
           ],
           "note": "UC-12 · Manual only · Evidence(AC1): tests/qa/out/FE-03/20261121-222446-eb5a3255/01-admin-AC1-desktop-danh-sach-vai-tro.png",
           "round1": "Passed",
@@ -234,18 +234,18 @@
           "procedure": [
             "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
             "Click \"Tạo vai trò\".",
-            "Type \"Thư ký phó\" in \"Tên vai trò\", a description in \"Mô tả\", tick \"Soạn biên bản\" under \"Quyền ban đầu (tuỳ chọn)\", then click \"Tạo vai trò\" in the footer.",
+            "Type \"Trợ lý thu giọng\" in \"Tên vai trò\", a description in \"Mô tả\", tick \"Thu giọng mẫu hộ\" under \"Quyền ban đầu (tuỳ chọn)\", then click \"Tạo vai trò\" in the footer.",
             "Open the tab \"Ma trận phân quyền\"."
           ],
           "expected": [
             "POST /api/roles answers 201 \"MSG19\"; the dialog closes, the toast \"Tạo vai trò thành công.\" shows and the new row appears in the list with 0 tài khoản.",
-            "The matrix has a row for the new role with only \"Soạn biên bản\" ticked.",
+            "The matrix has a row for the new role with only \"Thu giọng mẫu hộ\" ticked.",
             "The new role is available in \"Vai trò\" in the user dialogs."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "No role named \"Thư ký phó\" exists."
+            "No role named \"Trợ lý thu giọng\" exists."
           ],
           "note": "UC-12a · Manual only · Evidence(AC3): tests/qa/out/FE-03/20261121-221238-eb5a3255/07-admin-AC3-desktop-form-tao-vai-tro.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/08-admin-AC3-desktop-vai-tro-moi-trong-danh-sach.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/09-admin-AC3-desktop-vai-tro-moi-trong-ma-tran.png",
           "round1": "Passed",
@@ -265,7 +265,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts."
+            "A custom role \"Trợ lý thu giọng\" with no accounts."
           ],
           "note": "UC-12a · Manual only · Evidence(AC6): tests/qa/out/FE-03/20261121-221238-eb5a3255/15-admin-AC6-desktop-trung-ten-thu-ky.png",
           "round1": "Passed",
@@ -287,7 +287,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts."
+            "A custom role \"Trợ lý thu giọng\" with no accounts."
           ],
           "note": "UC-12b · Manual only · Evidence(AC7): tests/qa/out/FE-03/20261121-221238-eb5a3255/16-admin-AC7-desktop-form-sua-dien-san.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/17-admin-AC7-desktop-ten-moi-trong-danh-sach.png",
           "round1": "Passed",
@@ -307,7 +307,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts."
+            "A custom role \"Trợ lý thu giọng\" with no accounts."
           ],
           "note": "UC-12b · Manual only · Evidence(AC8): tests/qa/out/FE-03/20261121-221720-eb5a3255/07-admin-AC8-desktop-sua-trung-ten.png",
           "round1": "Passed",
@@ -319,7 +319,7 @@
           "description": "Verify built-in roles offer no edit or delete.",
           "procedure": [
             "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
-            "Look at the \"Thao tác\" cell of \"Chủ toạ\", \"Thư ký\", \"Thành viên\" and \"Quản trị viên\"."
+            "Look at the \"Thao tác\" cell of \"Thành viên\", \"Phê duyệt viên\" and \"Quản trị viên\"."
           ],
           "expected": [
             "No pencil or trash button shows on built-in rows; their permissions are changed only in the matrix."
@@ -369,7 +369,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts."
+            "A custom role \"Trợ lý thu giọng\" with no accounts."
           ],
           "note": "UC-12c · Manual only · Evidence(AC10): tests/qa/out/FE-03/20261121-221238-eb5a3255/19-admin-AC10-desktop-xac-nhan-xoa.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/20-admin-AC10-desktop-da-xoa.png",
           "round1": "Passed",
@@ -410,7 +410,7 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role \"Thư ký phó\" with no accounts.",
+            "A custom role \"Trợ lý thu giọng\" with no accounts.",
             "A second Administrator in another browser."
           ],
           "note": "UC-12b · Manual only · Evidence(AC33): tests/qa/out/FE-03/20261121-221720-eb5a3255/36-admin-AC33-desktop-sua-da-mat-noi-khac.png",

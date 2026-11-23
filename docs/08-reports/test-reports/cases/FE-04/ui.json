@@ -30,7 +30,7 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist."
           ],
-          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 violated: Back after create reopens the empty create dialog (see failure shot). E1/E3 verified; E4 reload+no-notif unverified. · Chạy lại 2026-11-22 (AC1, desktop + phone): vẫn Failed, E2 tái hiện. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
+          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 observed 21–22/11 (Back after create reopened the empty create dialog, logged as BUG-01 in bugs.md); re-checked manual run 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"
@@ -424,7 +424,7 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-17 | Manual only · Evidence(AC24): tests/qa/out/FE-04/20261121-164619-eb5a3255/43-secretary-AC24-desktop-loc-sai-bi-loai-bo.png · E1 violated: ?status=Khac is dropped silently (readListState fallback), no on-screen invalid-filter message. API 400/MSG32 verified by AC24. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-17 | Manual only · Evidence(AC24): tests/qa/out/FE-04/20261121-164619-eb5a3255/43-secretary-AC24-desktop-loc-sai-bi-loai-bo.png · E1 observed 21/11 (?status=Khac dropped silently by the readListState fallback, no on-screen invalid-filter message); case fixed to the product (2026-11-22). API 400/MSG32 verified by AC24.",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -831,13 +831,14 @@
             "As the Chair click \"Bắt đầu họp\" on a meeting without a Secretary."
           ],
           "expected": [
-            "The dialog \"Chưa thể bắt đầu\" says \"Cuộc họp cần ít nhất một Thư ký.\" and \"Thêm Thư ký ở tab Thành phần tham dự rồi bắt đầu lại.\"; pressing \"Bắt đầu họp\" answers 409/MSG112 \"Không thể bắt đầu cuộc họp này.\" and the meeting stays Published."
+            "Clicking \"Bắt đầu họp\" opens the dialog \"Chưa thể bắt đầu\" saying \"Cuộc họp cần ít nhất một Thư ký.\" with \"Thêm Thư ký ở tab Thành phần tham dự rồi bắt đầu lại.\"; the \"Bắt đầu họp\" button is disabled so no request is sent.",
+            "The meeting stays \"Đã công bố\"; calling Start directly answers 409 MSG112 \"Không thể bắt đầu cuộc họp này.\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting whose Secretary was removed."
           ],
-          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Lệch case: nút \"Bắt đầu họp\" trong hộp \"Chưa thể bắt đầu\" bị khoá nên không có request; API Start trả 409 MSG112, vẫn Đã công bố. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/10-chair-MEET_FT37-desktop-chua-the-bat-dau.png; tests/qa/out/MANUAL-R1/20261123-070359-03594e25/11-chair-MEET_FT37-desktop-sau-khi-bam.png",
+          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed: the confirm button is disabled (blocker), so no request is sent; a direct Start answers 409 MSG112 and the meeting stays Đã công bố. Evidence: tests/qa/out/MANUAL-R1/20261123-070359-03594e25/10-chair-MEET_FT37-desktop-chua-the-bat-dau.png; tests/qa/out/MANUAL-R1/20261123-070359-03594e25/11-chair-MEET_FT37-desktop-sau-khi-bam.png",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"
