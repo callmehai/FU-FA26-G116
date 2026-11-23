@@ -247,6 +247,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 transcript.Status = TranscriptStatus.Pending;
                 transcript.ErrorMessage = "";
                 transcript.ProgressPercent = 0;
+                transcript.ProcessingStartedAt = null;
                 transcript.UpdatedAt = now;
             }
             recordings.Remove(take);
@@ -336,6 +337,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             transcript.Status = TranscriptStatus.Pending;
             transcript.ErrorMessage = "";
             transcript.ProgressPercent = 0;
+            transcript.ProcessingStartedAt = null;
         }
         var start = gone.OffsetMs;
         var end = gone.OffsetMs + gone.DurationMs;

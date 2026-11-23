@@ -451,7 +451,8 @@ erDiagram
         string Status "Pending|Processing|Completed|Failed"
         string Provider "ghi rõ nếu là dịch vụ ngoài"
         string Language
-        int ProgressPercent
+        int ProgressPercent "0–99 khi đang chạy, theo worker; 100 khi xong"
+        timestamptz ProcessingStartedAt "lượt chạy bắt đầu; null khi chờ"
         string ErrorMessage
     }
     TranscriptSegment {

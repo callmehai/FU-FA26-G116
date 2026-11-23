@@ -29,7 +29,8 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     {
         // SKIP LOCKED: two app instances never take the same recording, and neither waits on the other.
         var claimed = await db.Database.SqlQuery<Guid>($"""
-            UPDATE transcripts SET status = 'Processing', progress_percent = 0, error_message = '', updated_at = {now}
+            UPDATE transcripts SET status = 'Processing', progress_percent = 0, processing_started_at = {now},
+                error_message = '', updated_at = {now}
             WHERE id = (SELECT id FROM transcripts WHERE status = 'Pending' ORDER BY created_at, id LIMIT 1 FOR UPDATE SKIP LOCKED)
             RETURNING id AS "Value"
             """).ToListAsync(ct);
@@ -38,7 +39,12 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
 
     public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct)
         => db.Transcripts.Where(t => t.Status == TranscriptStatus.Processing)
-            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, TranscriptStatus.Pending).SetProperty(t => t.UpdatedAt, now), ct);
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, TranscriptStatus.Pending).SetProperty(t => t.ProgressPercent, 0)
+                .SetProperty(t => t.ProcessingStartedAt, (DateTimeOffset?)null).SetProperty(t => t.UpdatedAt, now), ct);
+
+    public Task<int> SetProgressAsync(Guid transcriptId, int percent, CancellationToken ct)
+        => db.Transcripts.Where(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing && t.ProgressPercent < percent)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.ProgressPercent, percent), ct);
 
     public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct)
         => db.Transcripts.Include(t => t.Recording).SingleOrDefaultAsync(t => t.Id == transcriptId, ct);

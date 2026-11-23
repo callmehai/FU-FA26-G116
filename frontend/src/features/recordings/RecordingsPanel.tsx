@@ -16,6 +16,7 @@ import { ConsentDialog } from './ConsentDialog'
 import { formatDuration, formatSize, probeDuration } from './format'
 import { PlayerBar } from './PlayerBar'
 import { rememberSpeed, storedSpeed } from './playerSpeed'
+import { formatSpan, processingTime } from './transcribeTime'
 import { TranscriptView } from './TranscriptView'
 import { isTooLarge, limitHint, tooLargeMessage } from './uploadLimit'
 import { DEFAULT_PURPOSE, recordingsTarget, useRecordingSave } from './useRecordingSave'
@@ -274,7 +275,7 @@ const SOURCE_LABEL: Record<RecordingSource, string> = {
 }
 
 const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; label: string }>> = {
-  Pending: { tone: 'amber', label: 'Đang chuyển chữ' },
+  Pending: { tone: 'amber', label: 'Chờ chuyển chữ' },
   Processing: { tone: 'amber', label: 'Đang chuyển chữ' },
   Completed: { tone: 'emerald', label: 'Có bản gỡ băng' },
   Failed: { tone: 'red', label: 'Lỗi chuyển chữ' },
@@ -356,6 +357,12 @@ function RecordingRow({
     setCurrentMs(element.currentTime * 1000)
   }
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
+  // The list is read again every few seconds while a transcript is made: its per cent rides on the badge.
+  const percent = transcriptStatus === 'Processing' ? recording.transcriptProgressPercent : 0
+  const tookMs =
+    transcriptStatus === 'Completed'
+      ? processingTime(recording.transcriptProcessingStartedAt, recording.transcriptCompletedAt)
+      : null
 
   // Where the player was when the file grew, to carry on from there once the longer file is loaded.
   const resume = useRef<{ ms: number; playing: boolean } | null>(null)
@@ -427,8 +434,14 @@ function RecordingRow({
             <Badge tone="red">Đã xoá</Badge>
           ) : (
             <>
-              {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
+              {badge && (
+                <Badge tone={badge.tone}>
+                  {badge.label}
+                  {percent > 0 && ` ${percent}%`}
+                </Badge>
+              )}
               {recording.durationMs > 0 && <span>{formatDuration(recording.durationMs)}</span>}
+              {tookMs !== null && <span>chuyển chữ {formatSpan(tookMs)}</span>}
               <span>{formatSize(recording.byteSize)}</span>
             </>
           )}

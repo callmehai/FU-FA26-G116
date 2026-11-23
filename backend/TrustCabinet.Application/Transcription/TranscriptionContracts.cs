@@ -14,9 +14,28 @@ public interface ISpeechEngine
     /// since those are mostly a neighbour overheard.</param>
     /// <param name="context">What the same speaker said just before (their previous sentence): read ahead of this one so
     /// a sentence cut at a breath is punctuated as one; the worker sends it back punctuated again.</param>
+    /// <param name="run">An id for this run, to ask <see cref="ProgressAsync"/> how far it got; none for a run nobody follows.</param>
     Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
-        string? context = null);
+        string? context = null, Guid? run = null);
+
+    /// <summary>
+    /// How far the run sent with <paramref name="run"/> has got. Null when the worker could not say (unreachable, slow,
+    /// older than progress reports): never a reason to stop the run.
+    /// </summary>
+    Task<SpeechProgress?> ProgressAsync(Guid run, CancellationToken ct);
 }
+
+public enum SpeechRunState
+{
+    /// <summary>The worker holds no run of that id: answered already, never received, or the worker restarted since.</summary>
+    Unknown,
+    /// <summary>Received, waiting behind another job: the worker runs one at a time.</summary>
+    Queued,
+    Running,
+}
+
+/// <param name="Percent">0–100 while <see cref="SpeechRunState.Running"/>, only ever rising.</param>
+public sealed record SpeechProgress(SpeechRunState State, int Percent);
 
 /// <param name="Context">The <c>context</c> sent, punctuated again with this audio's words after it; null when none was
 /// sent, or the worker could not use it.</param>
@@ -78,10 +97,15 @@ public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? Su
 /// <summary>Someone a voice can be named as: a person of the meeting, or a guest invited to it (<c>Guest</c>).</summary>
 public sealed record TranscriptPerson(Guid Id, string FullName, bool Guest = false);
 
+/// <summary>
+/// <c>ProgressPercent</c>: how far a Processing run has got (0–99; 100 once Completed). <c>ProcessingStartedAt</c>: when
+/// the current or last run started, null while it waits; with <c>CompletedAt</c> it tells how long the run took.
+/// </summary>
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
     IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
-    IReadOnlyList<TranscriptPerson> People, bool CanExport = false);
+    IReadOnlyList<TranscriptPerson> People, bool CanExport = false, int ProgressPercent = 0,
+    DateTimeOffset? ProcessingStartedAt = null);
 
 public interface ITranscriptionService
 {
@@ -119,6 +143,11 @@ public interface ITranscriptRepository
     Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct);
     /// <summary>Whether the transcript is still Processing, read without tracking anything.</summary>
     Task<bool> IsProcessingAsync(Guid transcriptId, CancellationToken ct);
+    /// <summary>
+    /// Raises a Processing transcript's progress to <paramref name="percent"/>, in one statement that never lowers it and
+    /// leaves a transcript no longer Processing alone. Returns the number of rows changed (0 or 1).
+    /// </summary>
+    Task<int> SetProgressAsync(Guid transcriptId, int percent, CancellationToken ct);
     /// <summary>Reads the transcript's own columns again, as they are once its recording's row is locked.</summary>
     Task ReloadAsync(Transcript transcript, CancellationToken ct);
     /// <summary>

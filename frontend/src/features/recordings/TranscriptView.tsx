@@ -15,6 +15,7 @@ import { formatDuration } from './format'
 import { LineSpeakerPicker, SpeakerList } from './SpeakerList'
 import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
 import { SpokenWords } from './SpokenWords'
+import { TranscribeProgress } from './TranscribeProgress'
 
 /**
  * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a line jumps the
@@ -170,21 +171,17 @@ export function TranscriptView({
 
   const { transcript } = state
   const running = transcript.status === 'Pending' || transcript.status === 'Processing'
+  const progress = running && (
+    <TranscribeProgress
+      status={transcript.status === 'Pending' ? 'Pending' : 'Processing'}
+      percent={transcript.progressPercent}
+      startedAt={transcript.processingStartedAt}
+      durationMs={transcript.durationMs}
+      again={transcript.segments.length > 0}
+    />
+  )
   // A room recording that just had a take appended keeps showing what it said so far while the whole is redone.
-  if (running && transcript.segments.length === 0)
-    return (
-      <p className="transcript-status transcript-running" role="status">
-        <span className="transcript-spinner" aria-hidden="true" />
-        {transcript.status === 'Pending' ? 'Đang chờ chuyển thành chữ…' : 'Đang chuyển thành chữ…'}
-        {transcript.durationMs > 0 && (
-          <span className="field-hint">
-            {' '}
-            Bản ghi dài {formatDuration(transcript.durationMs)}, thường xong trong khoảng{' '}
-            {Math.max(1, Math.ceil(transcript.durationMs / 60000 / 4))} phút.
-          </span>
-        )}
-      </p>
-    )
+  if (running && transcript.segments.length === 0) return progress
   if (transcript.status === 'None' || transcript.status === 'Failed')
     return (
       <div className={`transcript-status alert ${transcript.status === 'Failed' ? 'alert-error' : 'alert-info'}`}>
@@ -220,12 +217,7 @@ export function TranscriptView({
   const marked = takes && takes.length > 1 ? takes : null
   return (
     <div className="transcript">
-      {running && (
-        <p className="transcript-status transcript-running" role="status">
-          <span className="transcript-spinner" aria-hidden="true" />
-          Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.
-        </p>
-      )}
+      {progress}
       <div className="transcript-note">
         <Badge tone="outline">Máy nhận dạng</Badge>
         <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào một câu để nghe lại.</span>

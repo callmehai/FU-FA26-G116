@@ -310,6 +310,62 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
+    public async Task A_run_shows_when_it_started_how_far_it_got_and_how_long_it_took()
+    {
+        var s = await fixture.Seed();
+        await ProcessAll();
+        fixture.Speech.Failure = null;
+        var id = await Upload(s);
+        using var member = fixture.Client(s.Member);
+        var queued = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        Assert.Equal(JsonValueKind.Null, queued.GetProperty("transcriptProcessingStartedAt").ValueKind);
+        Assert.Equal(0, queued.GetProperty("transcriptProgressPercent").GetInt32());
+
+        JsonElement running = default, listed = default;
+        int[] written = [];
+        fixture.Speech.During = async () =>
+        {
+            running = await Transcript(member, id);
+            using var scope = fixture.Host.Services.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<ITranscriptRepository>();
+            var transcriptId = (await repository.FindByRecordingAsync(id, false, CancellationToken.None))!.Id;
+            // Only ever up: a lower count from a late answer leaves the bar where it is.
+            written = [await repository.SetProgressAsync(transcriptId, 42, CancellationToken.None),
+                await repository.SetProgressAsync(transcriptId, 30, CancellationToken.None)];
+            listed = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        };
+        try { await ProcessAll(); }
+        finally { fixture.Speech.During = null; }
+
+        Assert.NotNull(fixture.Speech.LastRun);
+        Assert.Equal("Processing", running.GetProperty("status").GetString());
+        var started = running.GetProperty("processingStartedAt").GetDateTimeOffset();
+        Assert.Equal([1, 0], written);
+        Assert.Equal(42, listed.GetProperty("transcriptProgressPercent").GetInt32());
+        Assert.Equal(started, listed.GetProperty("transcriptProcessingStartedAt").GetDateTimeOffset());
+
+        var done = await Transcript(member, id);
+        Assert.Equal(100, done.GetProperty("progressPercent").GetInt32());
+        Assert.Equal(started, done.GetProperty("processingStartedAt").GetDateTimeOffset());
+        Assert.True(done.GetProperty("completedAt").GetDateTimeOffset() >= started);
+        var row = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        Assert.Equal(done.GetProperty("completedAt").GetDateTimeOffset(), row.GetProperty("transcriptCompletedAt").GetDateTimeOffset());
+
+        // Done, nothing moves it any more; queued again, it waits with no start of its own.
+        await using var db = fixture.Db();
+        var transcript = await db.Transcripts.AsNoTracking().SingleAsync(t => t.RecordingId == id);
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<ITranscriptRepository>()
+                .SetProgressAsync(transcript.Id, 99, CancellationToken.None));
+        using var secretary = fixture.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
+        var again = await Transcript(secretary, id);
+        Assert.Equal("Pending", again.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, again.GetProperty("processingStartedAt").ValueKind);
+        Assert.Equal(0, again.GetProperty("progressPercent").GetInt32());
+    }
+
+    [Fact]
     public async Task Interrupted_runs_are_requeued_and_outages_have_their_codes()
     {
         var s = await fixture.Seed();

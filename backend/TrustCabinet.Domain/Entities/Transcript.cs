@@ -23,8 +23,17 @@ public class Transcript : Entity
 
     public string Language { get; set; } = "vi";
 
-    /// <summary>0–100 while running, so the UI can show progress instead of an indefinite spinner.</summary>
+    /// <summary>
+    /// 0–100 while running, so the UI can show progress instead of an indefinite spinner: the speech worker's own count,
+    /// only ever rising and held at 99 until the result is written, then 100.
+    /// </summary>
     public int ProgressPercent { get; set; }
+
+    /// <summary>
+    /// When the current or last run was taken off the queue; null while it waits. With <see cref="CompletedAt"/> it
+    /// tells how long making the transcript took, and while it runs, how long it has been at it.
+    /// </summary>
+    public DateTimeOffset? ProcessingStartedAt { get; set; }
 
     /// <summary>Why it failed, shown to the user with the option to run it again.</summary>
     public string ErrorMessage { get; set; } = string.Empty;

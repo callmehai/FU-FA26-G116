@@ -2390,6 +2390,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("language");
 
+                    b.Property<DateTimeOffset?>("ProcessingStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_started_at");
+
                     b.Property<int>("ProgressPercent")
                         .HasColumnType("integer")
                         .HasColumnName("progress_percent");
