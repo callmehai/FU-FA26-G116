@@ -51,8 +51,13 @@ public sealed record RecordingView(Guid Id, string FileName, string ContentType,
     string TranscriptStatus, bool CanDownload = false, Guid CreatedById = default,
     IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false);
 
-/// <summary><c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041).</summary>
-public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false);
+/// <summary>
+/// <c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041). <c>MaxUploadBytes</c>: the largest file the
+/// upload takes. A browser checks it before sending: the server refuses a bigger body while it is still arriving, and the
+/// browser then sees the connection drop rather than the 413 (MSG293).
+/// </summary>
+public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false,
+    long MaxUploadBytes = 0);
 
 /// <summary>
 /// Switching the room mic on. The participants are told once, before the meeting's first take: a later take is

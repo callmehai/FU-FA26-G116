@@ -108,7 +108,11 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
         await AssertCode(await client.PostAsync(s.Url, Form(audio: [])), 400, "MSG291");
         await AssertCode(await client.PostAsync(s.Url, JsonContent.Create(new { file = "x" })), 400, "MSG291");
         await AssertCode(await client.PostAsync(s.Url, Form(type: "text/plain")), 415, "MSG292");
-        var big = new byte[RecordingFixture.MaxUploadMegabytes * 1024 * 1024 + 1];
+        // The list says the limit, so a browser refuses a bigger file before sending it: past the limit the server
+        // drops the connection mid-body and the browser only sees a network error, not this 413.
+        var limit = (await client.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("maxUploadBytes").GetInt64();
+        Assert.Equal(RecordingFixture.MaxUploadMegabytes * 1024L * 1024, limit);
+        var big = new byte[limit + 1];
         await AssertCode(await client.PostAsync(s.Url, Form(audio: big)), 413, "MSG293");
 
         Assert.Equal(before, fixture.StoredFileCount());

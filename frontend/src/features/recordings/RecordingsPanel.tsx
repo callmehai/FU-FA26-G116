@@ -17,6 +17,7 @@ import { formatDuration, formatSize, probeDuration } from './format'
 import { PlayerBar } from './PlayerBar'
 import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { TranscriptView } from './TranscriptView'
+import { isTooLarge, limitHint, tooLargeMessage } from './uploadLimit'
 import { DEFAULT_PURPOSE, recordingsTarget, useRecordingSave } from './useRecordingSave'
 import { RECORDINGS_EVENTS } from './useRoomRecordings'
 
@@ -43,8 +44,9 @@ type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { ki
 export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId: string; existingOnly?: boolean }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const save = useRecordingSave(meetingId)
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
+  const maxUploadBytes = state.kind === 'loaded' ? state.data.maxUploadBytes : undefined
+  const save = useRecordingSave(meetingId, maxUploadBytes)
   const [upload, setUpload] = useState<File | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
   const [erasing, setErasing] = useState<Recording | null>(null)
@@ -109,7 +111,7 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               type="button"
               className="btn btn-outline"
               onClick={() => fileInput.current?.click()}
-              data-tooltip="mp3, m4a, wav, webm, ogg"
+              data-tooltip={['mp3, m4a, wav, webm, ogg', limitHint(maxUploadBytes)].filter(Boolean).join(' · ')}
             >
               <Icon name="upload" size={18} />
               Tải tệp lên
@@ -122,7 +124,11 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 event.target.value = ''
-                if (file) setUpload(file)
+                if (!file) return
+                // MSG293 before a byte is sent: past the limit the server drops the connection mid-way, which the
+                // browser would only report as a network error.
+                if (isTooLarge(file.size, maxUploadBytes)) toast.show(tooLargeMessage(maxUploadBytes!), 'error')
+                else setUpload(file)
               }}
             />
           </div>
