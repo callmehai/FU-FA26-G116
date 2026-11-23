@@ -253,6 +253,11 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
 - **Tiến độ đi theo chiều ngược lại.** Process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung mỗi khi
   một bước báo tiến độ; process HTTP đọc cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà chưa phải việc
   process con đang chạy là `queued`.
+- **Khởi động lại process con sau mỗi bản ghi dài.** Sau một việc không phải câu mic cá nhân (bản ghi phòng, tệp tải
+  lên), khi không còn việc nào đang chạy hay chờ, process HTTP tắt process con và mở process mới. Process cũ giữ phần
+  bộ nhớ của lần chạy dài (vùng nhớ của onnxruntime, âm thanh đã giải mã, các khung tách người nói) suốt đời nó. Trên
+  server test ngày 23/11/2026, sau bản ghi 35 phút nó vẫn giữ 2,4 GB RAM và 1,8 GB swap khi rảnh, nên lần chạy sau
+  chậm vì phải đọc swap. Process mới chỉ giữ model; nạp model mất khoảng 6 giây, request đến trong lúc đó chờ.
 
 ## Kiểm thử
 

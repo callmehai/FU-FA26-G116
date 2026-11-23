@@ -48,8 +48,12 @@ class ChildCase(unittest.TestCase):
         process._runs = {}
         process._runs_lock = threading.Lock()
         process._jobs = itertools.count(1)
-        process._pool = ProcessPoolExecutor(max_workers=1, mp_context=process._context, initializer=runner._share,
-                                            initargs=(process._cancelled, process._progress))
+        process._init_recycling()
+        process._start = lambda: ProcessPoolExecutor(max_workers=1, mp_context=process._context,
+                                                      initializer=runner._share,
+                                                      initargs=(process._cancelled, process._progress))
+        process._warm = lambda: process._pool.submit(_quick).result()
+        process._pool = process._start()
         self.process = process
 
     def tearDown(self):
@@ -105,5 +109,54 @@ class ProgressTests(ChildCase):
         self.assertEqual(process.progress("run-b"), {"state": "unknown", "percent": 0})
 
 
+
+def _pid() -> int:
+    import os
+    return os.getpid()
+
+
+class RecycleTests(ChildCase):
+    """After a whole recording the child is started afresh, to give back the memory the run kept (23/11/2026)."""
+
+    def _settle(self):
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            with self.process._gate:
+                if not self.process._recycling:
+                    return
+            time.sleep(0.05)
+        self.fail("the recycle never finished")
+
+    def test_a_heavy_run_restarts_the_child_and_the_next_job_runs_in_the_new_one(self):
+        before = self.process._call(_pid)
+        self.assertEqual(self.process._call(_quick, heavy=True), "done")
+        self._settle()
+        after = self.process._call(_pid)
+        self.assertNotEqual(before, after)
+        self.assertFalse(self.process._dirty)
+
+    def test_a_clip_keeps_the_child(self):
+        before = self.process._call(_pid)
+        self.process._call(_quick)
+        self._settle()
+        self.assertEqual(self.process._call(_pid), before)
+
+    def test_the_restart_waits_for_a_job_still_running(self):
+        gone = threading.Event()
+        threading.Timer(1.5, gone.set).start()
+        before = self.process._call(_pid)
+        # A long job holds the child while a heavy one finishes beside it: no restart until both are done.
+        worker = threading.Thread(target=lambda: self.assertRaises(
+            pipeline.Cancelled, self.process._call, _long_run, 9, cancelled=gone.is_set, job=9))
+        worker.start()
+        time.sleep(0.3)
+        with self.process._gate:
+            self.process._dirty = True
+        worker.join(30)
+        self._settle()
+        self.assertNotEqual(self.process._call(_pid), before)
+
+
 if __name__ == "__main__":
     unittest.main()
+
