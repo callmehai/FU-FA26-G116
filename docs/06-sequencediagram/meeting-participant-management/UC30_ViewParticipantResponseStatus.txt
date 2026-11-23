@@ -1,44 +1,43 @@
 title UC-30 - View Participant Response Status
 
-actor "Secretary / Chair / Member / Guest" as User
-boundary "Meeting Management Page" as MeetingPage
-control ":Meeting Participant Controller" as ParticipantController
-control ":Meeting Participant Service" as ParticipantService
-participant ":Meeting Participant Repository" as ParticipantRepository
+actor "User" as User
+boundary "Participants Page" as ParticipantsPage
+control ":Participant Controller" as ParticipantController
+control ":Participant Service" as ParticipantService
+participant ":Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
-User->MeetingPage: Open the Participants tab
-activate MeetingPage
-MeetingPage->ParticipantController: Request View Participant Response Status
+User->ParticipantsPage: View response status
+activate ParticipantsPage
+
+ParticipantsPage->ParticipantController: Get responses (meetingId)
 activate ParticipantController
-ParticipantController->ParticipantService: viewInvitationResponses(meeting, user)
+
+ParticipantController->ParticipantService: getResponses(meetingId, actor)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles
+
+ParticipantService->ParticipantRepository: Find meeting and check access
 activate ParticipantRepository
-ParticipantRepository->Database: Retrieve current Meeting and roster information
+ParticipantRepository->Database: Retrieve responses and access
 activate Database
-Database-->ParticipantRepository: Current information / Read failure
+Database-->ParticipantRepository: Responses / not found
 deactivate Database
-ParticipantRepository-->ParticipantService: Current information / Read failure
+ParticipantRepository-->ParticipantService: Responses / not found
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify active current assignment or verified current Guest invitation; from Published onward Secretary and Chair have default access;\nMember or Guest needs View Invitation Responses, independently of roster-view permission (BR-117, BR-121, BR-176)
-ParticipantService->ParticipantService: Require Published or a later readable Meeting status (BR-176)
-alt Meeting does not exist or viewing is not permitted - EX-1
-ParticipantService-->ParticipantController: Meeting not found; no roster or response information disclosed
-ParticipantController-->MeetingPage: Meeting not found; no roster or response information disclosed
-MeetingPage-->User: Meeting not found; no roster or response information disclosed
-else Information cannot be loaded - EX-2
-ParticipantService-->ParticipantController: MSG95 - Unable to load meeting participants. Please try again.
-ParticipantController-->MeetingPage: MSG95 - Unable to load meeting participants. Please try again.
-MeetingPage-->User: MSG95 - Unable to load meeting participants. Please try again.
-else Viewing is permitted
-ParticipantService->ParticipantService: Limit response-view access to response rows; do not grant roster browsing or search (BR-176)
-ParticipantService->ParticipantService: Exclude removed/revoked entries from current results (BR-103)
-ParticipantService-->ParticipantController: Current invitee names, emails and raw response values (including Pending and the Chair's); no totals; no information changed
-ParticipantController-->MeetingPage: Current invitee names, emails and raw response values (including Pending and the Chair's); no totals; no information changed
-MeetingPage->MeetingPage: Label each invitee Accepted or Declined; no label for unanswered invitees; hide the Chair's response;\nno totals are computed (BR-115, BR-321)
-MeetingPage-->User: Current invitee names, emails and response labels; no totals; no information changed
+
+alt Responses are not accessible - EX-1
+    ParticipantService-->ParticipantController: Not accessible
+    ParticipantController-->ParticipantsPage: Return not found
+    ParticipantsPage-->User: Responses not accessible
+
+else Accessible
+    ParticipantService-->ParticipantController: Responses
+    ParticipantController-->ParticipantsPage: Responses
+    ParticipantsPage-->User: Show responses (BR-181)
 end
+
 deactivate ParticipantService
 deactivate ParticipantController
-deactivate MeetingPage
+deactivate ParticipantsPage
+EOF
+echo done

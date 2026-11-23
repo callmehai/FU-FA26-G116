@@ -1,81 +1,57 @@
 title UC-23c - Delete Agenda Item
 
 actor "Secretary" as Secretary
-boundary "Meeting Management Page" as MeetingPage
+boundary "Meeting Agenda Page" as AgendaPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
-participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Participant Repository" as MeetingParticipantRepository
-participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Agenda Repository" as AgendaRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Select Pending Item and confirm Delete
-activate MeetingPage
-MeetingPage->AgendaController: Delete Agenda Item
+Secretary->AgendaPage: Delete agenda item
+activate AgendaPage
+
+AgendaPage->AgendaController: Delete item (meetingId, itemId)
 activate AgendaController
-AgendaController->AgendaService: deleteAgendaItem(meetingId, agendaItemId, secretaryId)
+
+AgendaController->AgendaService: deleteAgendaItem(meetingId, itemId)
 activate AgendaService
 
-AgendaService->MeetingRepository: Get selected Meeting and current status
-activate MeetingRepository
-MeetingRepository->Database: Get selected Meeting and current status
+AgendaService->AgendaRepository: Find item and verify secretary
+activate AgendaRepository
+AgendaRepository->Database: Retrieve item and meeting
 activate Database
-Database-->MeetingRepository: Meeting / Not found
+Database-->AgendaRepository: Item and meeting
 deactivate Database
-MeetingRepository-->AgendaService: Meeting / Not found
-deactivate MeetingRepository
+AgendaRepository-->AgendaService: Item and meeting
+deactivate AgendaRepository
 
-AgendaService->MeetingParticipantRepository: Check active current Secretary assignment
-activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Check active current Secretary assignment
-activate Database
-Database-->MeetingParticipantRepository: Active Secretary / Not eligible
-deactivate Database
-MeetingParticipantRepository-->AgendaService: Active Secretary / Not eligible
-deactivate MeetingParticipantRepository
-
-AgendaService->AgendaItemRepository: Get selected Item, Meeting membership and latest status
-activate AgendaItemRepository
-AgendaItemRepository->Database: Get selected Item, Meeting membership and latest status
-activate Database
-Database-->AgendaItemRepository: Item and status / Not found
-deactivate Database
-AgendaItemRepository-->AgendaService: Item and status / Not found
-deactivate AgendaItemRepository
-
-AgendaService->AgendaService: Verify Secretary, Item membership and permitted Meeting status (BR-65, BR-74)
 alt Agenda planning no longer permitted - EX-1
     AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
-    AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
-    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
-else Agenda planning permitted
-    alt Selected Item is InProgress or Done - EX-2
-        AgendaService-->AgendaController: MSG142 - Only Pending agenda items can be deleted.\nItem and order unchanged
-        AgendaController-->MeetingPage: MSG142 - Only Pending agenda items can be deleted.\nItem and order unchanged
-        MeetingPage-->Secretary: MSG142 - Only Pending agenda items can be deleted.\nItem and order unchanged
-    else Selected Item remains Pending
-        AgendaService->AgendaItemRepository: Delete the selected Pending Item and its document links;\nkeep the documents in the Meeting and every remaining Item position (BR-237, BR-239, BR-283)
-        activate AgendaItemRepository
-        AgendaItemRepository->Database: Delete the selected Pending Item and its document links;\nkeep the documents in the Meeting and every remaining Item position (BR-237, BR-239, BR-283)
-        activate Database
-        Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
-        deactivate Database
-        AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
-        deactivate AgendaItemRepository
+    AgendaController-->AgendaPage: Return planning error
+    AgendaPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 
-        alt Change cannot be saved - EX-3
-            AgendaService-->AgendaController: MSG70 - Unable to delete the agenda item. Please try again.
-            AgendaController-->MeetingPage: MSG70 - Unable to delete the agenda item. Please try again.
-            MeetingPage-->Secretary: MSG70 - Unable to delete the agenda item. Please try again.
-        else Change saved successfully
-            AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
-            AgendaService-->AgendaController: MSG62 - Agenda item deleted successfully.
-            AgendaController-->MeetingPage: MSG62 - Agenda item deleted successfully.
-            MeetingPage-->Secretary: MSG62 - Agenda item deleted successfully.
-        end
-    end
+else Agenda item has already started - EX-2
+    AgendaService-->AgendaController: MSG142 - Only Pending agenda items can be deleted.
+    AgendaController-->AgendaPage: Return status error
+    AgendaPage-->Secretary: MSG142 - Only Pending agenda items can be deleted.
+
+else Eligible
+    AgendaService->AgendaRepository: Remove pending item and its links (BR-283)
+    activate AgendaRepository
+    AgendaRepository->Database: Delete agenda item
+    activate Database
+    Database-->AgendaRepository: Deleted
+    deactivate Database
+    AgendaRepository-->AgendaService: Deleted
+    deactivate AgendaRepository
+
+    AgendaService-->AgendaController: Item deleted successfully
+    AgendaController-->AgendaPage: MSG62 - Agenda item deleted successfully.
+    AgendaPage-->Secretary: MSG62 - Agenda item deleted successfully.
 end
 
 deactivate AgendaService
 deactivate AgendaController
-deactivate MeetingPage
+deactivate AgendaPage
+EOF
+echo done

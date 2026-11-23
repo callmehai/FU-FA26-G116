@@ -5,114 +5,54 @@ boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
-participant ":User Repository" as UserRepository
-participant ":Meeting Participant Repository" as ParticipantRepository
-participant ":Notification Service" as NotificationService
-participant ":Notification Repository" as NotificationRepository
-participant ":Meeting Invitation Queue" as InvitationQueue
+control ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Organizer->MeetingPage: Publish Approved meeting
+Organizer->MeetingPage: Publish meeting
 activate MeetingPage
-MeetingPage->MeetingController: Publish meeting
+
+MeetingPage->MeetingController: Publish meeting (meetingId)
 activate MeetingController
-MeetingController->MeetingService: publishMeeting(meetingId, organizerId)
+
+MeetingController->MeetingService: publishMeeting(meetingId)
 activate MeetingService
 
-MeetingService->MeetingRepository: Get meeting and current publication state
+MeetingService->MeetingRepository: Find meeting and verify eligibility
 activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting and Organizer assignment
+MeetingRepository->Database: Retrieve meeting, status, chair/secretary
 activate Database
-Database-->MeetingRepository: Meeting and publication state
+Database-->MeetingRepository: Meeting and participants
 deactivate Database
-MeetingRepository-->MeetingService: Meeting and publication state
+MeetingRepository-->MeetingService: Meeting and participants
 deactivate MeetingRepository
 
-MeetingService->UserRepository: Verify current Organizer is active and has MeetingCreator
-activate UserRepository
-UserRepository->Database: Check Organizer account and capability
-activate Database
-Database-->UserRepository: Organizer eligibility
-deactivate Database
-UserRepository-->MeetingService: Organizer eligibility
-deactivate UserRepository
+alt Meeting is no longer eligible for publication - EX-1
+    MeetingService-->MeetingController: MSG46 - This meeting can no longer be published.
+    MeetingController-->MeetingPage: Return eligibility error
+    MeetingPage-->Organizer: MSG46 - This meeting can no longer be published.
 
-MeetingService->ParticipantRepository: Get current Chair and Secretary assignments with active accounts (BR-124, BR-125)
-activate ParticipantRepository
-ParticipantRepository->Database: Retrieve current required-role holders and account status
-activate Database
-Database-->ParticipantRepository: Active Chair and Secretary assignments
-deactivate Database
-ParticipantRepository-->MeetingService: Required-role readiness
-deactivate ParticipantRepository
-
-MeetingService->MeetingService: Revalidate Organizer, Approved status,\nexactly one active current Chair and at least one active Secretary (BR-37, BR-124, BR-125)
-
-alt Meeting is not Approved, Organizer is ineligible, or required active Chair/Secretary is missing - EX-1
-    MeetingService-->MeetingController: MSG46 - This meeting can no longer be published
-    deactivate MeetingService
-    MeetingController-->MeetingPage: Return publication restriction
-    deactivate MeetingController
-    MeetingPage-->Organizer: MSG46 - This meeting can no longer be published
-
-else Organizer is eligible, meeting is Approved, and required active roles exist
-    activate MeetingController
-    activate MeetingService
-    MeetingService->MeetingRepository: Revalidate publication readiness; record Published status\nand publication history together (BR-37, BR-38, BR-41, BR-124, BR-125)
+else Eligible
+    MeetingService->MeetingRepository: Change status to Published, record history (BR-37, BR-445)
     activate MeetingRepository
-    MeetingRepository->Database: Save Published status and publication history as one complete action
+    MeetingRepository->Database: Save status and history
     activate Database
+    Database-->MeetingRepository: Published
+    deactivate Database
+    MeetingRepository-->MeetingService: Published
+    deactivate MeetingRepository
 
-        alt Publication cannot be completed - EX-2
-            Database-->MeetingRepository: Status or history could not be completed; Meeting remains Approved and previous information unchanged
-            deactivate Database
-            MeetingRepository-->MeetingService: Publication failed
-            deactivate MeetingRepository
-            MeetingService-->MeetingController: MSG47 - Unable to publish the meeting. Please try again
-            deactivate MeetingService
-            MeetingController-->MeetingPage: Return publication failure; no notification or invitation issued
-            deactivate MeetingController
-            MeetingPage-->Organizer: MSG47 - Unable to publish the meeting. Please try again
+    MeetingService->NotificationService: Notify participants and send invitations (BR-39, BR-40)
+    activate NotificationService
+    NotificationService-->MeetingService: Invitations queued
+    deactivate NotificationService
 
-        else Meeting published
-            activate Database
-            activate MeetingController
-            activate MeetingRepository
-            activate MeetingService
-            Database-->MeetingRepository: Published status and publication history recorded together
-            deactivate Database
-            MeetingRepository-->MeetingService: Published meeting
-            deactivate MeetingRepository
-
-
-            MeetingService->NotificationService: Notify current internal participants except the publishing Organizer (BR-39)
-            activate NotificationService
-            NotificationService->NotificationRepository: Create invitation notifications, excluding the publishing Organizer
-            activate NotificationRepository
-            NotificationRepository->Database: Record internal participant notifications
-            activate Database
-            Database-->NotificationRepository: Notifications recorded / delivery unavailable
-            deactivate Database
-            NotificationRepository-->NotificationService: Notification result
-            deactivate NotificationRepository
-            NotificationService-->MeetingService: Notifications issued / retry delivery; Meeting remains Published (BR-40)
-            deactivate NotificationService
-
-            MeetingService->InvitationQueue: Send invitation emails to all current internal participants,\nincluding the publishing Organizer (BR-39)
-            activate InvitationQueue
-            InvitationQueue-->MeetingService: Email delivery arranged / retry delivery; Meeting remains Published (BR-40)
-            deactivate InvitationQueue
-
-            MeetingService->InvitationQueue: Send a separate email invitation to each current external Guest\nto verify the invited email address and access only this Meeting (BR-39, BR-152, BR-153)
-            activate InvitationQueue
-            InvitationQueue-->MeetingService: Guest invitation delivery arranged / retry delivery; Meeting remains Published (BR-40)
-            deactivate InvitationQueue
-
-            MeetingService-->MeetingController: Publication successful
-            deactivate MeetingService
-            MeetingController-->MeetingPage: MSG45 - Meeting published successfully
-            deactivate MeetingController
-            MeetingPage-->Organizer: MSG45 - Meeting published successfully
-    end
+    MeetingService-->MeetingController: Publication successful
+    MeetingController-->MeetingPage: MSG45 - Meeting published successfully.
+    MeetingPage-->Organizer: MSG45 - Meeting published successfully.
 end
+
+deactivate MeetingService
+deactivate MeetingController
 deactivate MeetingPage
+EOF
+echo done
