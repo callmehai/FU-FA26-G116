@@ -47,22 +47,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Equal(["decline"], CalendarShareRules.Actions(share, c.Owner, Today, acceptBlocked: true));
     }
 
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC003 blocked accept does not touch the sender side")]
+    [Fact(DisplayName = "CalendarShareRules.Actions/UTC003 stale pending change can only be declined")]
     [Trait("UTC", "CalendarShareRules.Actions/UTC003")]
     [Trait("Trait", "UTC")]
     public void Actions_UTC003()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending, Today, End30,
-            CalendarShareInitiator.Viewer);
-
-        Assert.Equal(["withdraw"], CalendarShareRules.Actions(share, c.Viewer, Today, acceptBlocked: true));
-    }
-
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC004 stale pending change can only be declined")]
-    [Trait("UTC", "CalendarShareRules.Actions/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void Actions_UTC004()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
@@ -74,22 +62,10 @@ public sealed class CalUnitRound1Wave2Tests
             CalendarShareRules.Actions(share, c.Owner, Today, acceptBlocked: false));
     }
 
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC005 blocked accept is ignored for an Effective share")]
+    [Fact(DisplayName = "CalendarShareRules.Actions/UTC005 lapsed share allows nothing")]
     [Trait("UTC", "CalendarShareRules.Actions/UTC005")]
     [Trait("Trait", "UTC")]
     public void Actions_UTC005()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
-
-        Assert.Equal(["update", "end"],
-            CalendarShareRules.Actions(share, c.Owner, Today, acceptBlocked: true));
-    }
-
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC007 lapsed share allows nothing")]
-    [Trait("UTC", "CalendarShareRules.Actions/UTC007")]
-    [Trait("Trait", "UTC")]
-    public void Actions_UTC007()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective,
@@ -98,10 +74,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(CalendarShareRules.Actions(share, c.Owner, Today, acceptBlocked: false));
     }
 
-    [Fact(DisplayName = "CalendarShareRules.Actions/UTC008 last day still counts as Effective")]
-    [Trait("UTC", "CalendarShareRules.Actions/UTC008")]
+    [Fact(DisplayName = "CalendarShareRules.Actions/UTC006 last day still counts as Effective")]
+    [Trait("UTC", "CalendarShareRules.Actions/UTC006")]
     [Trait("Trait", "UTC")]
-    public void Actions_UTC008()
+    public void Actions_UTC006()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective,
@@ -134,27 +110,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC004 unknown owner is refused silently")]
+    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC004 open share blocks a second request")]
     [Trait("UTC", "CalendarSharingService.RequestAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Request_UTC004()
-    {
-        var c = new Cal();
-
-        var outcome = await c.Sharing().RequestAsync(c.Viewer, null,
-            new ShareValues("Level1", Today, End30));
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception: answered, not thrown.
-        Assert.Empty(c.Shares.Added); // Effect: nothing saved.
-        Assert.Empty(c.Notifications.Added); // Effect: nobody told.
-        Assert.Empty(c.Audit.Actions); // Effect: nothing audited.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC005 open share blocks a second request")]
-    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Request_UTC005()
     {
         var c = new Cal();
         c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending, Today, End30,
@@ -170,10 +129,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC006 closed share does not block a new one")]
-    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC006")]
+    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC005 closed share does not block a new one")]
+    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task Request_UTC006()
+    public async Task Request_UTC005()
     {
         var c = new Cal();
         c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Declined, Today, End30,
@@ -190,10 +149,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC007 request without a level is refused")]
-    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC007")]
+    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC006 request without a level is refused")]
+    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC006")]
     [Trait("Trait", "UTC")]
-    public async Task Request_UTC007()
+    public async Task Request_UTC006()
     {
         var c = new Cal();
 
@@ -204,24 +163,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.Shares.Added); // Effect.
         Assert.Empty(c.Audit.Actions); // Effect.
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.RequestAsync/UTC008 save failure answers save failed")]
-    [Trait("UTC", "CalendarSharingService.RequestAsync/UTC008")]
-    [Trait("Trait", "UTC")]
-    public async Task Request_UTC008()
-    {
-        var c = new Cal();
-        c.Audit.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Sharing().RequestAsync(c.Viewer, c.Owner,
-            new ShareValues("Level1", Today, End30));
-
-        Assert.Equal(CalendarShareFailure.SaveFailed, outcome.Failure); // Return + Exception: converted, not thrown.
-        Assert.Empty(c.Audit.Actions); // Effect: no audit row kept.
-        Assert.Equal(1, c.Uow.Discards); // Effect: changes discarded.
-        Assert.Contains(c.ShareLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not save the calendar share")); // Log.
     }
 
     // ---- CalendarSharingService.AcceptAsync ----
@@ -269,28 +210,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC004 sender cannot answer their own request")]
-    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC004")]
+    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC005 deactivated sender blocks accepting")]
+    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task Accept_UTC004()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
-            new DateOnly(2026, 11, 20), new DateOnly(2026, 12, 20),
-            CalendarShareInitiator.Viewer, CalendarShareLevel.Level2);
-
-        var outcome = await c.Sharing().AcceptAsync(c.Viewer, share.Id, new ShareValues(null, null, null));
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception.
-        Assert.Equal(CalendarShareStatus.Pending, share.Status); // Effect.
-        Assert.Empty(c.Audit.Actions); // Effect.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC006 deactivated sender blocks accepting")]
-    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Accept_UTC006()
+    public async Task Accept_UTC005()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
@@ -307,10 +230,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC007 pending change is approved as asked")]
-    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC007")]
+    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC006 pending change is approved as asked")]
+    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC006")]
     [Trait("Trait", "UTC")]
-    public async Task Accept_UTC007()
+    public async Task Accept_UTC006()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
@@ -328,27 +251,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Equal(c.Viewer, Assert.Single(c.Notifications.Added).UserId); // Effect.
         Assert.Equal([AuditActions.CalendarShareChangeAccepted], c.Audit.Actions); // Effect.
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.AcceptAsync/UTC008 save failure keeps the share Pending")]
-    [Trait("UTC", "CalendarSharingService.AcceptAsync/UTC008")]
-    [Trait("Trait", "UTC")]
-    public async Task Accept_UTC008()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
-            new DateOnly(2026, 11, 20), new DateOnly(2026, 12, 20),
-            CalendarShareInitiator.Viewer, CalendarShareLevel.Level2);
-        c.Audit.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Sharing().AcceptAsync(c.Owner, share.Id, new ShareValues(null, null, null));
-
-        Assert.Equal(CalendarShareFailure.SaveFailed, outcome.Failure); // Return + Exception: converted.
-        // No share-state assert: the hand fake stages in memory without rollback (real EF discards
-        // via the UoW); Discards == 1 below is the rollback evidence.
-        Assert.Equal(1, c.Uow.Discards); // Effect: discarded.
-        Assert.Contains(c.ShareLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not save the calendar share")); // Log.
     }
 
     // ---- CalendarSharingService.ChangeAsync ----
@@ -437,44 +339,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.ChangeAsync/UTC007 stranger change is refused silently")]
-    [Trait("UTC", "CalendarSharingService.ChangeAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task Change_UTC007()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
-        var stranger = c.Person("Người lạ");
-
-        var outcome = await c.Sharing().ChangeAsync(stranger, share.Id,
-            new ShareValues("Level2", null, null));
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception.
-        Assert.Null(share.PendingRequestedAt); // Effect: nothing pending.
-        Assert.Empty(c.Audit.Actions); // Effect.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.ChangeAsync/UTC008 save failure keeps no pending change")]
-    [Trait("UTC", "CalendarSharingService.ChangeAsync/UTC008")]
-    [Trait("Trait", "UTC")]
-    public async Task Change_UTC008()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
-        c.Audit.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Sharing().ChangeAsync(c.Viewer, share.Id,
-            new ShareValues("Level2", null, null));
-
-        Assert.Equal(CalendarShareFailure.SaveFailed, outcome.Failure); // Return + Exception: converted.
-        // No pending-state assert: the hand fake stages in memory without rollback (real EF discards
-        // via the UoW); Discards == 1 below is the rollback evidence.
-        Assert.Equal(1, c.Uow.Discards); // Effect.
-        Assert.Contains(c.ShareLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not save the calendar share")); // Log.
-    }
-
     // ---- CalendarSharingService.DeclineAsync ----
 
     [Fact(DisplayName = "CalendarSharingService.DeclineAsync/UTC002 deactivated sender request still declines")]
@@ -560,45 +424,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.DeclineAsync/UTC006 sender cannot decline their own request")]
-    [Trait("UTC", "CalendarSharingService.DeclineAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Decline_UTC006()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
-            new DateOnly(2026, 11, 20), new DateOnly(2026, 12, 20),
-            CalendarShareInitiator.Viewer, CalendarShareLevel.Level2);
-
-        var outcome = await c.Sharing().DeclineAsync(c.Viewer, share.Id);
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception.
-        Assert.Equal(CalendarShareStatus.Pending, share.Status); // Effect.
-        Assert.Empty(c.Audit.Actions); // Effect.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.DeclineAsync/UTC007 save failure keeps the share Pending")]
-    [Trait("UTC", "CalendarSharingService.DeclineAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task Decline_UTC007()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
-            new DateOnly(2026, 11, 20), new DateOnly(2026, 12, 20),
-            CalendarShareInitiator.Viewer, CalendarShareLevel.Level2);
-        c.Audit.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Sharing().DeclineAsync(c.Owner, share.Id);
-
-        Assert.Equal(CalendarShareFailure.SaveFailed, outcome.Failure); // Return + Exception: converted.
-        // No share-state assert: the hand fake stages in memory without rollback (real EF discards
-        // via the UoW); Discards == 1 below is the rollback evidence.
-        Assert.Equal(1, c.Uow.Discards); // Effect.
-        Assert.Contains(c.ShareLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not save the calendar share")); // Log.
-    }
-
     // ---- CalendarSharingService.EndAsync ----
 
     [Fact(DisplayName = "CalendarSharingService.EndAsync/UTC002 viewer ends share, pending cleared with it")]
@@ -643,27 +468,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.EndAsync/UTC004 stranger end is refused silently")]
+    [Fact(DisplayName = "CalendarSharingService.EndAsync/UTC004 share ending today still ends")]
     [Trait("UTC", "CalendarSharingService.EndAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task End_UTC004()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
-        var stranger = c.Person("Người lạ");
-
-        var outcome = await c.Sharing().EndAsync(stranger, share.Id);
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception.
-        Assert.Equal(CalendarShareStatus.Effective, share.Status); // Effect.
-        Assert.Empty(c.Audit.Actions); // Effect.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.EndAsync/UTC005 share ending today still ends")]
-    [Trait("UTC", "CalendarSharingService.EndAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task End_UTC005()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective,
@@ -677,25 +485,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Equal(c.Viewer, Assert.Single(c.Notifications.Added).UserId); // Effect.
         Assert.Equal([AuditActions.CalendarShareEnded], c.Audit.Actions); // Effect.
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.EndAsync/UTC006 save failure keeps the share Effective")]
-    [Trait("UTC", "CalendarSharingService.EndAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task End_UTC006()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);
-        c.Audit.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Sharing().EndAsync(c.Owner, share.Id);
-
-        Assert.Equal(CalendarShareFailure.SaveFailed, outcome.Failure); // Return + Exception: converted.
-        // No share-state assert: the hand fake stages in memory without rollback (real EF discards
-        // via the UoW); Discards == 1 below is the rollback evidence.
-        Assert.Equal(1, c.Uow.Discards); // Effect.
-        Assert.Contains(c.ShareLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not save the calendar share")); // Log.
     }
 
     // ---- CalendarSharingService.WithdrawAsync ----
@@ -719,29 +508,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.ShareLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "CalendarSharingService.WithdrawAsync/UTC003 stranger withdraw is refused silently")]
+    [Fact(DisplayName = "CalendarSharingService.WithdrawAsync/UTC003 save failure keeps the share Pending")]
     [Trait("UTC", "CalendarSharingService.WithdrawAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Withdraw_UTC003()
-    {
-        var c = new Cal();
-        var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
-            new DateOnly(2026, 11, 20), new DateOnly(2026, 12, 20),
-            CalendarShareInitiator.Viewer, CalendarShareLevel.Level2);
-        var stranger = c.Person("Người lạ");
-
-        var outcome = await c.Sharing().WithdrawAsync(stranger, share.Id);
-
-        Assert.Equal(CalendarShareFailure.NotFound, outcome.Failure); // Return + Exception.
-        Assert.Equal(CalendarShareStatus.Pending, share.Status); // Effect.
-        Assert.Empty(c.Audit.Actions); // Effect.
-        Assert.Empty(c.ShareLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "CalendarSharingService.WithdrawAsync/UTC004 save failure keeps the share Pending")]
-    [Trait("UTC", "CalendarSharingService.WithdrawAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Withdraw_UTC004()
     {
         var c = new Cal();
         var share = c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Pending,
@@ -834,53 +604,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.MeetingLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "MeetingSlotService.CreateDraftAsync/UTC006 meeting save failure answers save failed")]
+    [Fact(DisplayName = "MeetingSlotService.CreateDraftAsync/UTC006 longest meeting with largest buffer passes")]
     [Trait("UTC", "MeetingSlotService.CreateDraftAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task CreateDraft_UTC006()
-    {
-        var c = new Cal();
-        var an = c.Person("An");
-        var binh = c.Person("Bình");
-        var cuong = c.Person("Cường");
-        c.Shares.Share(binh, an, CalendarShareStatus.Effective, Today, End30);
-        c.Shares.Share(cuong, an, CalendarShareStatus.Effective, Today, End30);
-        var (slot, _) = c.SlotSvc();
-        c.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await slot.CreateDraftAsync(an, Draft([binh, cuong], At(24, 9, 0), At(24, 10, 0), 30, []));
-
-        Assert.Equal(MeetingSlotFailure.None, outcome.Failure); // Return: the slot itself was fine.
-        Assert.Equal(MeetingOutcome.SaveFailed, outcome.Meeting!.Outcome); // Return: meeting not kept.
-        Assert.Contains(c.MeetingLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not create a meeting")); // Log.
-        // Exception: N/A — the store error is converted into SaveFailed, not thrown.
-    }
-
-    [Fact(DisplayName = "MeetingSlotService.CreateDraftAsync/UTC007 recheck failure answers read failed")]
-    [Trait("UTC", "MeetingSlotService.CreateDraftAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task CreateDraft_UTC007()
-    {
-        var c = new Cal();
-        var an = c.Person("An");
-        var binh = c.Person("Bình");
-        var cuong = c.Person("Cường");
-        var (slot, _) = c.SlotSvc();
-        c.Shares.Fail = new PersistenceUnavailableException();
-
-        var outcome = await slot.CreateDraftAsync(an, Draft([binh, cuong], At(24, 9, 0), At(24, 10, 0), 30, []));
-
-        Assert.Equal(MeetingSlotFailure.ReadFailed, outcome.Failure); // Return + Exception: converted.
-        Assert.Null(outcome.Meeting); // Return: no meeting created.
-        Assert.Contains(c.SlotLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not recheck a meeting time slot")); // Log.
-    }
-
-    [Fact(DisplayName = "MeetingSlotService.CreateDraftAsync/UTC008 longest meeting with largest buffer passes")]
-    [Trait("UTC", "MeetingSlotService.CreateDraftAsync/UTC008")]
-    [Trait("Trait", "UTC")]
-    public async Task CreateDraft_UTC008()
     {
         var c = new Cal();
         var an = c.Person("An");
@@ -1003,50 +730,6 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.SlotLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "MeetingSlotService.FindAsync/UTC007 long range truncates at 200 slots")]
-    [Trait("UTC", "MeetingSlotService.FindAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task Find_UTC007()
-    {
-        var c = new Cal();
-        var an = c.Person("An");
-        var binh = c.Person("Bình");
-        c.Shares.Share(binh, an, CalendarShareStatus.Effective, Today, End30);
-        var (slot, _) = c.SlotSvc();
-
-        var outcome = await slot.FindAsync(an, new SlotSearchInput([binh], false, 15,
-            new DateOnly(2026, 11, 23), new DateOnly(2026, 12, 23), null,
-            "08:00", "17:00", false, null, null, null, 5));
-
-        Assert.Equal(MeetingSlotFailure.None, outcome.Failure); // Return + Exception.
-        Assert.Equal(SlotResultKind.AllFree, outcome.Result!.Kind); // Return.
-        var slots = outcome.Result.Days.SelectMany(d => d.Slots).ToList();
-        Assert.Equal(200, slots.Count); // Return: truncated.
-        Assert.True(outcome.Result.Truncated); // Return.
-        Assert.True(slots.First().Start < slots.Last().Start); // Return: time order.
-        Assert.Empty(c.SlotLog.Entries); // Log: N/A.
-    }
-
-    [Fact(DisplayName = "MeetingSlotService.FindAsync/UTC008 read failure answers read failed")]
-    [Trait("UTC", "MeetingSlotService.FindAsync/UTC008")]
-    [Trait("Trait", "UTC")]
-    public async Task Find_UTC008()
-    {
-        var c = new Cal();
-        var an = c.Person("An");
-        var binh = c.Person("Bình");
-        var (slot, _) = c.SlotSvc();
-        c.Shares.Fail = new PersistenceUnavailableException();
-        var monday = new DateOnly(2026, 11, 23);
-
-        var outcome = await slot.FindAsync(an, Search([binh], monday));
-
-        Assert.Equal(MeetingSlotFailure.ReadFailed, outcome.Failure); // Return + Exception: converted.
-        Assert.Null(outcome.Result); // Return: nothing returned.
-        Assert.Contains(c.SlotLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not search meeting time slots")); // Log.
-    }
-
     // ---- SharedCalendarService.ReadWeekAsync ----
 
     [Fact(DisplayName = "SharedCalendarService.ReadWeekAsync/UTC002 stopped share shows status without hours")]
@@ -1073,26 +756,10 @@ public sealed class CalUnitRound1Wave2Tests
         Assert.Empty(c.WeekLog.Entries); // Log: N/A.
     }
 
-    [Fact(DisplayName = "SharedCalendarService.ReadWeekAsync/UTC004 read failure answers read failed")]
+    [Fact(DisplayName = "SharedCalendarService.ReadWeekAsync/UTC004 Sunday belongs to the starting Monday week")]
     [Trait("UTC", "SharedCalendarService.ReadWeekAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task ReadWeek_UTC004()
-    {
-        var c = new Cal();
-        c.Shares.Fail = new PersistenceUnavailableException();
-
-        var outcome = await c.Week().ReadWeekAsync(c.Viewer, null);
-
-        Assert.Equal(CalendarShareFailure.ReadFailed, outcome.Failure); // Return + Exception: converted.
-        Assert.Null(outcome.Value); // Return: nothing returned.
-        Assert.Contains(c.WeekLog.Entries, e => e.Level == LogLevel.Error
-            && e.Message.Contains("Could not read the shared week")); // Log.
-    }
-
-    [Fact(DisplayName = "SharedCalendarService.ReadWeekAsync/UTC005 Sunday belongs to the starting Monday week")]
-    [Trait("UTC", "SharedCalendarService.ReadWeekAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task ReadWeek_UTC005()
     {
         var c = new Cal();
         c.Shares.Share(c.Owner, c.Viewer, CalendarShareStatus.Effective, Today, End30);

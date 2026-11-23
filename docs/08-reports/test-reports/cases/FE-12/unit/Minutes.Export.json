@@ -24,27 +24,11 @@
           "type": "Normal",
           "note": "UC-58 · BR-412",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "No revision has the given id.",
-            "Actor is the current Secretary."
-          ],
-          "inputs": "minutesId: unknown; actor: the current Secretary; format: Docx.",
-          "return": "Failure NotFound; 404 with no message code; no file.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-58",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Draft revision exists.",
             "Actor is a Member who reads the meeting."
@@ -56,11 +40,11 @@
           "type": "Abnormal",
           "note": "UC-58 · BR-412",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Issued revision of a Secret meeting.",
             "Actor is the current Chair."
@@ -72,11 +56,11 @@
           "type": "Abnormal",
           "note": "UC-58 · BR-188 · MSG405",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Issued revision of a meeting whose title makes the file name longer than 120 characters.",
             "Actor is the current Secretary."
@@ -88,24 +72,7 @@
           "type": "Boundary",
           "note": "UC-58",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Issued revision.",
-            "Actor is the current Secretary.",
-            "The database fails while reading."
-          ],
-          "inputs": "minutesId: the Issued revision; actor: the current Secretary; format: Docx.",
-          "return": "Failure ReadFailed; 500 MSG403; no file.",
-          "exception": "N/A",
-          "log": "Error logged with the minutes id.",
-          "type": "Abnormal",
-          "note": "UC-58 · MSG403",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

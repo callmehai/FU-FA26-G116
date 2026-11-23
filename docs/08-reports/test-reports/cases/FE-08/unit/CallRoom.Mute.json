@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-41",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Abnormal",
           "note": "UC-41 · MSG123",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Abnormal",
           "note": "UC-41 · MSG117",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,39 +71,7 @@
           "type": "Abnormal",
           "note": "UC-41 · MSG281",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is the current Chair.",
-            "LiveKit is configured but the target is not in the room (or has no microphone track)."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Chair; target: that identity.",
-          "return": "TargetNotInRoom; 409 \"Người này không còn trong phòng hoặc chưa bật micro.\" (MSG282).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-41 · MSG282",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is the current Chair; the target has a microphone.",
-            "The provider refuses the mute call."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Chair; target: the member identity.",
-          "return": "ProviderFailed; 502 \"Máy chủ phòng họp không phản hồi. Vui lòng thử lại.\" (MSG124).",
-          "exception": "N/A",
-          "log": "Could not mute {Identity} in meeting {MeetingId}.",
-          "type": "Abnormal",
-          "note": "UC-41 · MSG124",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

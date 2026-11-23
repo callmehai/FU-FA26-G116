@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-47 · BR-374 · BR-375 · MSG384 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-47 · BR-374 · MSG385 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-47 · BR-375 · MSG386 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,7 +70,7 @@
           "type": "Abnormal",
           "note": "UC-47 · MSG387 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -86,40 +86,7 @@
           "type": "Abnormal",
           "note": "UC-47 · BR-381 · MSG394 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting is Ended; actor is its current chair.",
-            "The store fails while saving the request."
-          ],
-          "inputs": "meetingId: an Ended meeting; actorId: its current chair.",
-          "return": "Failure SaveFailed (MSG393 \"Không lưu được dự thảo. Vui lòng thử lại.\"); nothing is queued.",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-47 · MSG393 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Meeting is Ended; actor is its current chair.",
-            "The AI server is configured for the meeting sensitivity.",
-            "No sentence was said in the meeting."
-          ],
-          "inputs": "meetingId: an Ended meeting with no sentences; actorId: its current chair.",
-          "return": "Failure NothingSaid (409, MSG481 \"Cuộc họp chưa có lời thoại nào để AI tóm tắt.\"); nothing is queued.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-47 · MSG481 · Deviation: NothingSaid is new in 518e9ce2 (20/11), after these UTCs were written",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

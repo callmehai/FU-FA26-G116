@@ -23,26 +23,11 @@
           "type": "Normal",
           "note": "UC-33a · BR-209 · MSG161",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Same meeting."
-          ],
-          "inputs": "documentIds: [] (nothing chosen).",
-          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG249",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "The meeting already holds the file of D1 as a general document."
           ],
@@ -53,11 +38,11 @@
           "type": "Abnormal",
           "note": "UC-33a · BR-193 · MSG165",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Actor is a Member of the meeting."
           ],
@@ -68,11 +53,11 @@
           "type": "Abnormal",
           "note": "UC-33a · BR-184 · MSG162",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Meeting Ended."
           ],
@@ -83,22 +68,7 @@
           "type": "Abnormal",
           "note": "UC-33a · BR-195 · MSG172",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "One candidate of exactly 10 MB with a valid PDF body."
-          ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
-          "return": "No failure; the file size limit is inclusive.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG174",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

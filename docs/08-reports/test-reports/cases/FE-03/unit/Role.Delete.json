@@ -17,7 +17,7 @@
           "return": "RoleResult Success (MSG23); the role and its capability grants are removed.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -33,7 +33,7 @@
           "return": "RoleResult Failure(BuiltInRole) (MSG24); the role stays.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -49,28 +49,12 @@
           "return": "RoleResult InUse with userCount 2 (MSG25); nothing deleted.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "id: unused custom role.",
-          "log": "Error log \"Deleting role {RoleId} failed.\"",
-          "note": "UC-12c · MSG28",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "The database fails while deleting (connection lost or timeout)."
-          ],
-          "return": "RoleResult Failure(SaveFailed) (MSG28); the role and its grants remain.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "id: that role.",
           "log": "N/A",
           "note": "UC-12c · MSG25",
@@ -81,12 +65,12 @@
           "return": "RoleResult InUse with userCount 1 (MSG25): deactivated accounts still count.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "id: that role.",
           "log": "Audit row RoleDeleted.",
           "note": "UC-12c · BR-16 · MSG23",
@@ -97,7 +81,7 @@
           "return": "RoleResult Success (MSG23); audit details list capabilities as an empty array.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

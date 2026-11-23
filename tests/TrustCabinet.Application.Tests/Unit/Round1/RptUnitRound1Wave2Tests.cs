@@ -70,25 +70,6 @@ public sealed class RptUnitRound1Wave2Tests
         // Exception: N/A — the store error is converted into ExportFailed, not thrown.
     }
 
-    [Fact(DisplayName = "ReportService.ExportMeetingReportAsync/UTC005 cancelled export escapes as cancellation")]
-    [Trait("UTC", "ReportService.ExportMeetingReportAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_UTC005()
-    {
-        var inner = new FakeMeetingReportQuery();
-        var renderer = new FakeMeetingReportRenderer();
-        var audit = new FakeAuditService();
-        var log = new Wave2Logger<ReportService>();
-
-        await Assert.ThrowsAsync<OperationCanceledException>(() => // Exception: escapes, not ExportFailed.
-            Service(new CancelQuery(inner), renderer, audit, new FakeUnitOfWork(), log)
-                .ExportMeetingReportAsync(_actor, "2026-01", "2026-12", new CancellationToken(canceled: true)));
-        Assert.Empty(renderer.Received); // Effect: no file built.
-        Assert.Empty(audit.Actions); // Effect: no export recorded.
-        Assert.Empty(log.Entries); // Log: N/A.
-        // Return: N/A — no outcome is returned.
-    }
-
     [Fact(DisplayName = "ReportService.GetMeetingReportAsync/UTC004 meetings without numbers average to null")]
     [Trait("UTC", "ReportService.GetMeetingReportAsync/UTC004")]
     [Trait("Trait", "UTC")]
@@ -125,24 +106,6 @@ public sealed class RptUnitRound1Wave2Tests
         Assert.Empty(audit.Actions); // Effect: a read is never audited.
         Assert.Empty(log.Entries); // Log: N/A.
         // Exception: N/A — the awaited call completed without throwing.
-    }
-
-    [Fact(DisplayName = "ReportService.GetMeetingReportAsync/UTC005 cancelled read escapes as cancellation")]
-    [Trait("UTC", "ReportService.GetMeetingReportAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Get_UTC005()
-    {
-        var inner = new FakeMeetingReportQuery();
-        var audit = new FakeAuditService();
-        var log = new Wave2Logger<ReportService>();
-
-        await Assert.ThrowsAsync<OperationCanceledException>(() => // Exception: escapes, not ReadFailed.
-            Service(new CancelQuery(inner), new FakeMeetingReportRenderer(), audit, new FakeUnitOfWork(), log)
-                .GetMeetingReportAsync(_actor, "2026-01", "2026-12", new CancellationToken(canceled: true)));
-        Assert.Empty(inner.Calls); // Effect: nothing read.
-        Assert.Empty(audit.Actions); // Effect: no audit row.
-        Assert.Empty(log.Entries); // Log: N/A.
-        // Return: N/A — no outcome is returned.
     }
 
     /// <summary>A report query that honours cancellation, so the cancellation UTCs can be

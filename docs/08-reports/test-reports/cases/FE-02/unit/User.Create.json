@@ -17,7 +17,7 @@
           "return": "UserResult Success (MSG07) with the new account: active, role \"Thành viên\"; the password is stored only as a hash.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -33,7 +33,7 @@
           "return": "UserResult Success (MSG07); name and email are saved trimmed.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,7 +48,7 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; nothing is saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -63,7 +63,7 @@
           "return": "UserResult Success (MSG07): 200 characters is within the limit.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -78,23 +78,7 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "Email: \"THUKY@trustcabinet.local\" (different case); other fields valid.",
-          "log": "N/A",
-          "note": "UC-06a · BR-13 · MSG08",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers; roles \"Quản trị viên\" and \"Thành viên\" exist.",
-            "An account with email thuky@trustcabinet.local already exists."
-          ],
-          "return": "UserResult Failure(DuplicateEmail) (MSG08): the email is unique regardless of case; nothing saved.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

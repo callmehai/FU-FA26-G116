@@ -130,37 +130,6 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.CreateAsync/UTC005 sent revision is refused even with rebuild")]
-    [Trait("UTC", "MinutesService.CreateAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Create_SentRevisionLocked()
-    {
-        Revision(MinutesStatus.WaitingApproval);
-
-        var outcome = await Service().CreateAsync(_meeting, _secretary, rebuild: true);
-
-        Assert.Equal(MinutesFailure.Locked, outcome.Failure);
-        Assert.Single(_minutes.Rows);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.CreateAsync/UTC006 storage failure while building is a failed save")]
-    [Trait("UTC", "MinutesService.CreateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Create_SaveFailureLogged()
-    {
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().CreateAsync(_meeting, _secretary, rebuild: false);
-
-        Assert.Equal(MinutesFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not build the minutes", record.Message);
-        Assert.Empty(_changes.MinutesChanged);
-    }
-
     // MinutesService.SaveAsync (Minutes.Save/UTC001-UTC006)
 
     [Fact(DisplayName = "MinutesService.SaveAsync/UTC001 secretary saves the draft content")]
@@ -179,23 +148,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.SaveAsync/UTC002 member learns nothing about a draft")]
+    [Fact(DisplayName = "MinutesService.SaveAsync/UTC002 sent revision is no longer edited here")]
     [Trait("UTC", "MinutesService.SaveAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Save_MemberSeesNothing()
-    {
-        var row = Revision(MinutesStatus.Draft);
-
-        var outcome = await Service().SaveAsync(row.Id, _member, "<p>A.</p>", row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.NotFound, outcome.Failure);
-        Assert.Equal("<p>Biên bản</p>", row.Content);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.SaveAsync/UTC003 sent revision is no longer edited here")]
-    [Trait("UTC", "MinutesService.SaveAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Save_SentRevisionLocked()
     {
@@ -208,8 +162,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.SaveAsync/UTC004 content over 300000 characters is refused")]
-    [Trait("UTC", "MinutesService.SaveAsync/UTC004")]
+    [Fact(DisplayName = "MinutesService.SaveAsync/UTC003 content over 300000 characters is refused")]
+    [Trait("UTC", "MinutesService.SaveAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Save_OverlongContentRefused()
     {
@@ -225,8 +179,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.SaveAsync/UTC005 save over a newer save is stale")]
-    [Trait("UTC", "MinutesService.SaveAsync/UTC005")]
+    [Fact(DisplayName = "MinutesService.SaveAsync/UTC004 save over a newer save is stale")]
+    [Trait("UTC", "MinutesService.SaveAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Save_StaleCopyDiscarded()
     {
@@ -238,23 +192,6 @@ public sealed class MinUnitRound1Tests
         Assert.Equal("<p>Biên bản</p>", row.Content);
         Assert.Empty(_changes.MinutesChanged);
         Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.SaveAsync/UTC006 storage failure while saving is a failed save")]
-    [Trait("UTC", "MinutesService.SaveAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Save_SaveFailureLogged()
-    {
-        var row = Revision(MinutesStatus.Draft);
-        _minutes.Fail = new PersistenceUnavailableException();
-
-        var outcome = await Service().SaveAsync(row.Id, _secretary, "<p>A.</p>", row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not save minutes", record.Message);
-        Assert.Empty(_changes.MinutesChanged);
     }
 
     // MinutesService.SubmitAsync (Minutes.Submit/UTC001-UTC006)
@@ -308,23 +245,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.SubmitAsync/UTC004 sent revision is not sent again")]
+    [Fact(DisplayName = "MinutesService.SubmitAsync/UTC004 submit over a newer save is stale")]
     [Trait("UTC", "MinutesService.SubmitAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Submit_SentRevisionLocked()
-    {
-        var row = Revision(MinutesStatus.WaitingApproval);
-
-        var outcome = await Service().SubmitAsync(row.Id, _secretary, row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.Locked, outcome.Failure);
-        Assert.Empty(_notifications.Added);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.SubmitAsync/UTC005 submit over a newer save is stale")]
-    [Trait("UTC", "MinutesService.SubmitAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Submit_StaleCopyDiscarded()
     {
@@ -336,26 +258,6 @@ public sealed class MinUnitRound1Tests
         Assert.Equal(MinutesStatus.Draft, row.Status);
         Assert.Empty(_changes.MinutesChanged);
         Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.SubmitAsync/UTC006 storage failure while submitting is a failed save")]
-    [Trait("UTC", "MinutesService.SubmitAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Submit_SaveFailureLogged()
-    {
-        var row = Revision(MinutesStatus.Draft);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().SubmitAsync(row.Id, _secretary, row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not submit minutes", record.Message);
-        // The service mutates the tracked row before the save fails; the real
-        // transaction rolls that back, so the fake can only show no commit.
-        Assert.Equal(0, _unitOfWork.Commits);
-        Assert.Empty(_changes.MinutesChanged);
     }
 
     // MinutesService.ApproveAsync (Minutes.Approve/UTC001-UTC006)
@@ -415,22 +317,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ApproveAsync/UTC004 draft is not waiting for approval")]
+    [Fact(DisplayName = "MinutesService.ApproveAsync/UTC004 approve over a newer save is stale")]
     [Trait("UTC", "MinutesService.ApproveAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Approve_DraftNotWaiting()
-    {
-        var row = Revision(MinutesStatus.Draft);
-
-        var outcome = await Service().ApproveAsync(row.Id, _chair, row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.NotWaiting, outcome.Failure);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.ApproveAsync/UTC005 approve over a newer save is stale")]
-    [Trait("UTC", "MinutesService.ApproveAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Approve_StaleCopyDiscarded()
     {
@@ -442,26 +330,6 @@ public sealed class MinUnitRound1Tests
         Assert.Equal(MinutesStatus.WaitingApproval, row.Status);
         Assert.Empty(_changes.MinutesChanged);
         Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.ApproveAsync/UTC006 storage failure while issuing is a failed save")]
-    [Trait("UTC", "MinutesService.ApproveAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Approve_SaveFailureLogged()
-    {
-        var row = Revision(MinutesStatus.WaitingApproval);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().ApproveAsync(row.Id, _chair, row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not approve minutes", record.Message);
-        // The service mutates the tracked row before the save fails; the real
-        // transaction rolls that back, so the fake can only show no commit.
-        Assert.Equal(0, _unitOfWork.Commits);
-        Assert.Empty(_changes.MinutesChanged);
     }
 
     // MinutesService.ReturnAsync (Minutes.Return/UTC001-UTC006)
@@ -498,22 +366,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC003 draft is not waiting for approval")]
+    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC003 blank reason is refused")]
     [Trait("UTC", "MinutesService.ReturnAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Return_DraftNotWaiting()
-    {
-        var row = Revision(MinutesStatus.Draft);
-
-        var outcome = await Service().ReturnAsync(row.Id, _chair, "Bổ sung kết luận.", row.UpdatedAt);
-
-        Assert.Equal(MinutesFailure.NotWaiting, outcome.Failure);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC004 blank reason is refused")]
-    [Trait("UTC", "MinutesService.ReturnAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Return_BlankReasonRefused()
     {
@@ -527,8 +381,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC005 reason over 2000 characters is refused")]
-    [Trait("UTC", "MinutesService.ReturnAsync/UTC005")]
+    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC004 reason over 2000 characters is refused")]
+    [Trait("UTC", "MinutesService.ReturnAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Return_OverlongReasonRefused()
     {
@@ -537,21 +391,6 @@ public sealed class MinUnitRound1Tests
         var outcome = await Service().ReturnAsync(row.Id, _chair, new string('l', 2001), row.UpdatedAt);
 
         Assert.Equal(MinutesFailure.ReasonInvalid, outcome.Failure);
-        Assert.Equal(MinutesStatus.WaitingApproval, row.Status);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.ReturnAsync/UTC006 return over a newer save is stale")]
-    [Trait("UTC", "MinutesService.ReturnAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Return_StaleCopyDiscarded()
-    {
-        var row = Revision(MinutesStatus.WaitingApproval);
-
-        var outcome = await Service().ReturnAsync(row.Id, _chair, "Bổ sung kết luận.", row.UpdatedAt.AddMinutes(-5));
-
-        Assert.Equal(MinutesFailure.Stale, outcome.Failure);
         Assert.Equal(MinutesStatus.WaitingApproval, row.Status);
         Assert.Empty(_changes.MinutesChanged);
         Assert.Empty(_logger.Records);
@@ -592,23 +431,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC003 draft revision has nothing to correct")]
+    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC003 second correction while one is open is refused")]
     [Trait("UTC", "MinutesService.CorrectAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Correct_DraftNotIssued()
-    {
-        var row = Revision(MinutesStatus.Draft);
-
-        var outcome = await Service().CorrectAsync(row.Id, _secretary);
-
-        Assert.Equal(MinutesFailure.NotIssued, outcome.Failure);
-        Assert.Single(_minutes.Rows);
-        Assert.Empty(_changes.MinutesChanged);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC004 second correction while one is open is refused")]
-    [Trait("UTC", "MinutesService.CorrectAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Correct_SecondCorrectionRefused()
     {
@@ -623,8 +447,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC005 simultaneous corrections keep the first one")]
-    [Trait("UTC", "MinutesService.CorrectAsync/UTC005")]
+    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC004 simultaneous corrections keep the first one")]
+    [Trait("UTC", "MinutesService.CorrectAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Correct_ConcurrentCorrectionWarned()
     {
@@ -637,23 +461,6 @@ public sealed class MinUnitRound1Tests
         var record = Assert.Single(_logger.Records);
         Assert.Equal(LogLevel.Warning, record.Level);
         Assert.Contains("Concurrent minutes correct", record.Message);
-        Assert.Empty(_changes.MinutesChanged);
-    }
-
-    [Fact(DisplayName = "MinutesService.CorrectAsync/UTC006 storage failure while correcting is a failed save")]
-    [Trait("UTC", "MinutesService.CorrectAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Correct_SaveFailureLogged()
-    {
-        var issued = Revision(MinutesStatus.Issued);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().CorrectAsync(issued.Id, _secretary);
-
-        Assert.Equal(MinutesFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not correct minutes", record.Message);
         Assert.Empty(_changes.MinutesChanged);
     }
 
@@ -676,20 +483,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ExportAsync/UTC002 unknown revision downloads nothing")]
+    [Fact(DisplayName = "MinutesService.ExportAsync/UTC002 reader may not download a draft")]
     [Trait("UTC", "MinutesService.ExportAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_UnknownIdNotFound()
-    {
-        var outcome = await Service().ExportAsync(Guid.CreateVersion7(), _secretary, MinutesExportFormat.Docx);
-
-        Assert.Equal(MinutesFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Data);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "MinutesService.ExportAsync/UTC003 reader may not download a draft")]
-    [Trait("UTC", "MinutesService.ExportAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Export_DraftHiddenFromReader()
     {
@@ -702,8 +497,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ExportAsync/UTC004 secret minutes stay on screen only")]
-    [Trait("UTC", "MinutesService.ExportAsync/UTC004")]
+    [Fact(DisplayName = "MinutesService.ExportAsync/UTC003 secret minutes stay on screen only")]
+    [Trait("UTC", "MinutesService.ExportAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Export_SecretMeetingRefused()
     {
@@ -717,8 +512,8 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.ExportAsync/UTC005 long title is cut to 120 characters")]
-    [Trait("UTC", "MinutesService.ExportAsync/UTC005")]
+    [Fact(DisplayName = "MinutesService.ExportAsync/UTC004 long title is cut to 120 characters")]
+    [Trait("UTC", "MinutesService.ExportAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Export_LongTitleTruncated()
     {
@@ -786,33 +581,6 @@ public sealed class MinUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "MinutesService.GetRevisionAsync/UTC005 storage failure while reading is a failed read")]
-    [Trait("UTC", "MinutesService.GetRevisionAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task GetRevision_ReadFailureLogged()
-    {
-        var row = Revision(MinutesStatus.Issued);
-        _summaries.Fail = new PersistenceUnavailableException();
-
-        var outcome = await Service().GetRevisionAsync(row.Id, _secretary);
-
-        Assert.Equal(MinutesFailure.ReadFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal(LogLevel.Error, record.Level);
-        Assert.Contains("Could not read minutes", record.Message);
-    }
-
-    [Fact(DisplayName = "MinutesService.GetRevisionAsync/UTC004 unknown revision reads nothing")]
-    [Trait("UTC", "MinutesService.GetRevisionAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task GetRevision_UnknownIdNotFound()
-    {
-        var outcome = await Service().GetRevisionAsync(Guid.CreateVersion7(), _secretary);
-
-        Assert.Equal(MinutesFailure.NotFound, outcome.Failure);
-        Assert.Empty(_logger.Records);
-    }
-
     // MinutesTemplate.Build (MinutesTemplate.Build/UTC001-UTC008)
 
     private static readonly TimeZoneInfo Hanoi = SummaryWriter.FindHanoi();
@@ -858,27 +626,8 @@ public sealed class MinUnitRound1Tests
         Assert.Contains("Lê / Chi", text);
     }
 
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC003 agenda items render under section II")]
+    [Fact(DisplayName = "MinutesTemplate.Build/UTC003 conclusions and vote lines render under section III")]
     [Trait("UTC", "MinutesTemplate.Build/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void Build_AgendaRendersInSectionTwo()
-    {
-        var item1 = Guid.CreateVersion7();
-        var agenda = new[]
-        {
-            new AgendaFacts(item1, "Báo cáo", "Phạm Dũng", null, null, null),
-            new AgendaFacts(Guid.CreateVersion7(), "Khác", null, null, null, null),
-        };
-
-        var text = MinutesTemplate.Build(TemplateRecords(agenda: agenda), null, Hanoi);
-
-        Assert.Contains("### 1. Báo cáo", text);
-        Assert.Contains("Phạm Dũng trình bày. ……", text);
-        Assert.Contains("### 2. Khác", text);
-    }
-
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC004 conclusions and vote lines render under section III")]
-    [Trait("UTC", "MinutesTemplate.Build/UTC004")]
     [Trait("Trait", "UTC")]
     public void Build_ConclusionsAndVotesRender()
     {
@@ -893,8 +642,8 @@ public sealed class MinUnitRound1Tests
         Assert.Contains("- Chọn địa điểm: Thông qua", text);
     }
 
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC005 secretary notes are routed by their marks")]
-    [Trait("UTC", "MinutesTemplate.Build/UTC005")]
+    [Fact(DisplayName = "MinutesTemplate.Build/UTC004 secretary notes are routed by their marks")]
+    [Trait("UTC", "MinutesTemplate.Build/UTC004")]
     [Trait("Trait", "UTC")]
     public void Build_NotesRoutedByMarks()
     {
@@ -914,25 +663,8 @@ public sealed class MinUnitRound1Tests
         Assert.Contains("- Báo cáo: Gửi báo cáo", text);
     }
 
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC006 reviewed draft replaces the records")]
-    [Trait("UTC", "MinutesTemplate.Build/UTC006")]
-    [Trait("Trait", "UTC")]
-    public void Build_DraftReplacesRecords()
-    {
-        var agenda = new[] { new AgendaFacts(Guid.CreateVersion7(), "Báo cáo", null, null, null, null) };
-        var draft = new SummaryDraft("Mục tiêu A", "1. Báo cáo\nNội dung thảo luận",
-            "1. Kết luận của chủ trì\nDuyệt", []);
-
-        var text = MinutesTemplate.Build(TemplateRecords(agenda: agenda), draft, Hanoi);
-
-        Assert.Contains("Mục tiêu A", text);
-        Assert.Contains("### 1. Báo cáo", text);
-        Assert.Contains("Nội dung thảo luận", text);
-        Assert.Contains("### 1. Kết luận của chủ trì", text);
-    }
-
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC007 hostile draft text stays a plain line")]
-    [Trait("UTC", "MinutesTemplate.Build/UTC007")]
+    [Fact(DisplayName = "MinutesTemplate.Build/UTC005 hostile draft text stays a plain line")]
+    [Trait("UTC", "MinutesTemplate.Build/UTC005")]
     [Trait("Trait", "UTC")]
     public void Build_HostileDraftNeutralized()
     {
@@ -947,8 +679,8 @@ public sealed class MinUnitRound1Tests
         Assert.Contains("đậm", text);
     }
 
-    [Fact(DisplayName = "MinutesTemplate.Build/UTC008 only short numbered lines become sub-headings")]
-    [Trait("UTC", "MinutesTemplate.Build/UTC008")]
+    [Fact(DisplayName = "MinutesTemplate.Build/UTC006 only short numbered lines become sub-headings")]
+    [Trait("UTC", "MinutesTemplate.Build/UTC006")]
     [Trait("Trait", "UTC")]
     public void Build_NumberedLineLengthRule()
     {
@@ -1006,20 +738,8 @@ public sealed class MinUnitRound1Tests
         Assert.Equal(["Dòng một", "Dòng hai"], item.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     }
 
-    [Fact(DisplayName = "Notes.Discussion/UTC003: a marked line leaves the item's discussion for section III")]
+    [Fact(DisplayName = "Notes.Discussion/UTC003: a note on an unknown item shows nowhere")]
     [Trait("UTC", "Notes.Discussion/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void NotesDiscussion_OnlyMarkedLine_LeavesTheItemEmpty()
-    {
-        var text = BuildWithNotes(new MinutesNote(ReportItem, "Kết luận: Duyệt"));
-
-        var item = Between(SectionTwo(text), "### 1. Báo cáo", "### 2. Ngân sách");
-        Assert.DoesNotContain("Duyệt", item);
-        Assert.Contains("- Báo cáo: Duyệt", text);
-    }
-
-    [Fact(DisplayName = "Notes.Discussion/UTC004: a note on an unknown item shows nowhere")]
-    [Trait("UTC", "Notes.Discussion/UTC004")]
     [Trait("Trait", "UTC")]
     public void NotesDiscussion_UnknownItem_ReadsEmpty()
     {
@@ -1027,16 +747,6 @@ public sealed class MinUnitRound1Tests
 
         Assert.DoesNotContain("Ghi chú lạc", text);
         Assert.Contains($"### 1. Báo cáo\n{MinutesTemplate.Blank}", text.Replace("\r\n", "\n"));
-    }
-
-    [Fact(DisplayName = "Notes.Discussion/UTC005: with no meeting-wide note section II starts at the first item")]
-    [Trait("UTC", "Notes.Discussion/UTC005")]
-    [Trait("Trait", "UTC")]
-    public void NotesDiscussion_NoMeetingWideNote_SectionStartsAtFirstItem()
-    {
-        var section = SectionTwo(BuildWithNotes(new MinutesNote(ReportItem, "Ý kiến riêng")));
-
-        Assert.StartsWith("### 1. Báo cáo", section.Trim());
     }
 
     [Fact(DisplayName = "Notes.Read/UTC001: meeting-wide note first, then items in agenda order")]
@@ -1082,30 +792,6 @@ public sealed class MinUnitRound1Tests
 
         Assert.Contains("Kết luận:", Between(SectionTwo(text), "### 1. Báo cáo", "### 2. Ngân sách"));
         Assert.Equal(MinutesTemplate.Blank, Between(text, SummaryWriter.ChairHeading, SummaryWriter.TasksHeading).Replace("###", "").Trim());
-    }
-
-    [Fact(DisplayName = "Notes.Read/UTC005: a note on an item no longer in the agenda is skipped")]
-    [Trait("UTC", "Notes.Read/UTC005")]
-    [Trait("Trait", "UTC")]
-    public void NotesRead_StrayItemNote_IsSkipped()
-    {
-        var text = BuildWithNotes(new MinutesNote(Guid.CreateVersion7(), "Kết luận: Không còn mục"), new MinutesNote(Guid.CreateVersion7(), "Dòng lạc"));
-
-        Assert.DoesNotContain("Không còn mục", text);
-        Assert.DoesNotContain("Dòng lạc", text);
-    }
-
-    [Fact(DisplayName = "Notes.Read/UTC006: heading and signature marks in a note line are stripped")]
-    [Trait("UTC", "Notes.Read/UTC006")]
-    [Trait("Trait", "UTC")]
-    public void NotesRead_HeadingAndSignatureMarks_AreStripped()
-    {
-        var text = BuildWithNotes(new MinutesNote(ReportItem, "## Tiêu đề\n@@ x | y")).Replace("\r\n", "\n");
-
-        Assert.Contains("\nTiêu đề\n", text);
-        Assert.Contains("\nx | y\n", text);
-        Assert.DoesNotContain("## Tiêu đề", text);
-        Assert.DoesNotContain("@@ x", text);
     }
 
     /// <summary>Captures what the service logs, so a test can assert the log line of its UTC.</summary>

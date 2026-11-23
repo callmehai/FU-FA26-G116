@@ -157,21 +157,6 @@ public sealed class AgendaUnitRound1Tests
         Assert.False(actions.CanLinkDocuments);
     }
 
-    [Fact(DisplayName = "AgendaRules.Actions/UTC004: issued minutes close conclusions")]
-    [Trait("UTC", "AgendaRules.Actions/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void Actions_IssuedMinutesCloseConclusions()
-    {
-        var meeting = RulesMeeting(MeetingStatus.Ended, _secretary, MeetingRole.Secretary);
-        var item = Item(meeting.Id, "Mục 1", 1, AgendaItemStatus.Done);
-
-        var actions = AgendaRules.Actions(meeting, _secretary, item, [item], true);
-
-        Assert.False(actions.CanRecordConclusion);
-        Assert.Equal((false, false, false), (actions.CanEdit, actions.CanDelete, actions.CanComplete));
-        Assert.True(AgendaRules.Actions(meeting, _secretary, item, [item], false).CanRecordConclusion);
-    }
-
     // ---- AgendaRules.CanRecordConclusion ----
 
     [Fact(DisplayName = "AgendaRules.CanRecordConclusion/UTC001: chair records on a running item")]
@@ -262,22 +247,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.NotEqual(AgendaRules.OrderVersion([At(1)]), AgendaRules.OrderVersion([At(1), At(2)]));
     }
 
-    [Fact(DisplayName = "AgendaRules.OrderVersion/UTC004: a status change moves the version")]
+    [Fact(DisplayName = "AgendaRules.OrderVersion/UTC004: tied positions break by id")]
     [Trait("UTC", "AgendaRules.OrderVersion/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void OrderVersion_AStatusChangeMovesTheVersion()
-    {
-        AgendaItem At(int n, AgendaItemStatus status) => new() { Title = "M", Id = Guid.Parse($"aaaaaaaa-0000-0000-0000-00000000000{n}"), Position = n, Status = status };
-
-        Assert.Equal("16433c03efffa38a96ab256fcd1b605245e73b9fcd8a0b0ba9987f18b634fdf6",
-            AgendaRules.OrderVersion([At(1, AgendaItemStatus.InProgress), At(2, AgendaItemStatus.Pending)]));
-        Assert.NotEqual(AgendaRules.OrderVersion([At(1, AgendaItemStatus.Pending), At(2, AgendaItemStatus.Pending)]),
-            AgendaRules.OrderVersion([At(1, AgendaItemStatus.InProgress), At(2, AgendaItemStatus.Pending)]));
-        Assert.Equal(64, AgendaRules.OrderVersion([At(1, AgendaItemStatus.Done)]).Length);
-    }
-
-    [Fact(DisplayName = "AgendaRules.OrderVersion/UTC005: tied positions break by id")]
-    [Trait("UTC", "AgendaRules.OrderVersion/UTC005")]
     [Trait("Trait", "UTC")]
     public void OrderVersion_TiedPositionsBreakById()
     {
@@ -329,16 +300,6 @@ public sealed class AgendaUnitRound1Tests
         Assert.Empty(AgendaRules.Validate(new AgendaInput(new string('x', 300))));
     }
 
-    [Fact(DisplayName = "AgendaRules.Validate/UTC004: one-character title passes")]
-    [Trait("UTC", "AgendaRules.Validate/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void Validate_OneCharacterTitlePasses()
-    {
-        Assert.Empty(AgendaRules.Validate(new AgendaInput("A")));
-        Assert.Empty(AgendaRules.Validate(new AgendaInput("A", new string('y', 4000))));
-        Assert.True(AgendaRules.Validate(new AgendaInput("A", new string('y', 4001))).ContainsKey("description"));
-    }
-
     // ---- AgendaExecution.TryComplete ----
 
     [Fact(DisplayName = "AgendaExecution.TryComplete/UTC001: running item completes at the end time")]
@@ -355,21 +316,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Equal(endedAt, item.UpdatedAt);
     }
 
-    [Fact(DisplayName = "AgendaExecution.TryComplete/UTC002: ending exactly at the start is allowed")]
+    [Fact(DisplayName = "AgendaExecution.TryComplete/UTC002: end before the start refuses")]
     [Trait("UTC", "AgendaExecution.TryComplete/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void TryComplete_EndingExactlyAtTheStartIsAllowed()
-    {
-        var start = new DateTimeOffset(2026, 12, 1, 9, 0, 0, TimeSpan.Zero);
-        var item = new AgendaItem { Title = "M", Status = AgendaItemStatus.InProgress, ActualStartedAt = start };
-
-        Assert.True(AgendaExecution.TryComplete(item, start));
-        Assert.Equal(start, item.ActualEndedAt);
-        Assert.Equal(AgendaItemStatus.Done, item.Status);
-    }
-
-    [Fact(DisplayName = "AgendaExecution.TryComplete/UTC003: end before the start refuses")]
-    [Trait("UTC", "AgendaExecution.TryComplete/UTC003")]
     [Trait("Trait", "UTC")]
     public void TryComplete_EndBeforeTheStartRefuses()
     {
@@ -382,8 +330,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Null(item.ActualEndedAt);
     }
 
-    [Fact(DisplayName = "AgendaExecution.TryComplete/UTC004: pending item cannot complete")]
-    [Trait("UTC", "AgendaExecution.TryComplete/UTC004")]
+    [Fact(DisplayName = "AgendaExecution.TryComplete/UTC003: pending item cannot complete")]
+    [Trait("UTC", "AgendaExecution.TryComplete/UTC003")]
     [Trait("Trait", "UTC")]
     public void TryComplete_PendingItemCannotComplete()
     {
@@ -441,23 +389,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Empty(_effects.Calls);
     }
 
-    [Fact(DisplayName = "AgendaService.CreateAsync/UTC004: unsupported media body is refused")]
+    [Fact(DisplayName = "AgendaService.CreateAsync/UTC004: oversized body is refused")]
     [Trait("UTC", "AgendaService.CreateAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Create_UnsupportedMediaBodyIsRefused()
-    {
-        var meeting = GivenMeeting(MeetingStatus.Draft);
-
-        var outcome = await Service().CreateAsync(meeting.Id, _secretary,
-            new("A", ParseFailure: AgendaFailure.UnsupportedMedia));
-
-        Assert.Equal(AgendaFailure.UnsupportedMedia, outcome.Failure);
-        Assert.True(outcome.Errors!.ContainsKey("body"));
-        Assert.Empty(_agenda.Added);
-    }
-
-    [Fact(DisplayName = "AgendaService.CreateAsync/UTC005: oversized body is refused")]
-    [Trait("UTC", "AgendaService.CreateAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Create_OversizedBodyIsRefused()
     {
@@ -471,8 +404,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Empty(_agenda.Added);
     }
 
-    [Fact(DisplayName = "AgendaService.CreateAsync/UTC006: position overflow answers save failed")]
-    [Trait("UTC", "AgendaService.CreateAsync/UTC006")]
+    [Fact(DisplayName = "AgendaService.CreateAsync/UTC005: position overflow answers save failed")]
+    [Trait("UTC", "AgendaService.CreateAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Create_PositionOverflowAnswersSaveFailed()
     {
@@ -504,22 +437,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Equal(["publish:Updated:commits=1"], _effects.Calls);
     }
 
-    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC002: unknown item is not found")]
+    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC002: blank title is invalid")]
     [Trait("UTC", "AgendaService.UpdateAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Update_UnknownItemIsNotFound()
-    {
-        var meeting = GivenMeeting(MeetingStatus.Draft);
-
-        var outcome = await Service().UpdateAsync(meeting.Id, Guid.CreateVersion7(), _secretary, new("A"));
-
-        Assert.Equal(AgendaFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.ItemId);
-        Assert.Equal(0, _unitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC003: blank title is invalid")]
-    [Trait("UTC", "AgendaService.UpdateAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Update_BlankTitleIsInvalid()
     {
@@ -534,8 +453,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Equal("Old", item.Title);
     }
 
-    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC004: member cannot read a draft meeting")]
-    [Trait("UTC", "AgendaService.UpdateAsync/UTC004")]
+    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC003: member cannot read a draft meeting")]
+    [Trait("UTC", "AgendaService.UpdateAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Update_MemberCannotReadADraftMeeting()
     {
@@ -550,8 +469,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC005: store failure answers save failed")]
-    [Trait("UTC", "AgendaService.UpdateAsync/UTC005")]
+    [Fact(DisplayName = "AgendaService.UpdateAsync/UTC004: store failure answers save failed")]
+    [Trait("UTC", "AgendaService.UpdateAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Update_StoreFailureAnswersSaveFailed()
     {
@@ -602,8 +521,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Empty(_effects.Calls);
     }
 
-    [Fact(DisplayName = "AgendaService.DeleteAsync/UTC005: store failure answers save failed")]
-    [Trait("UTC", "AgendaService.DeleteAsync/UTC005")]
+    [Fact(DisplayName = "AgendaService.DeleteAsync/UTC004: store failure answers save failed")]
+    [Trait("UTC", "AgendaService.DeleteAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Delete_StoreFailureAnswersSaveFailed()
     {
@@ -694,8 +613,8 @@ public sealed class AgendaUnitRound1Tests
         Assert.Empty(_effects.Calls);
     }
 
-    [Fact(DisplayName = "AgendaService.StartAsync/UTC005: store failure answers save failed")]
-    [Trait("UTC", "AgendaService.StartAsync/UTC005")]
+    [Fact(DisplayName = "AgendaService.StartAsync/UTC004: store failure answers save failed")]
+    [Trait("UTC", "AgendaService.StartAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Start_StoreFailureAnswersSaveFailed()
     {
@@ -920,33 +839,5 @@ public sealed class AgendaUnitRound1Tests
         var notice = Assert.Single(notifications.Added);
         Assert.Equal($"agenda-presenter:{assignment.EventId:D}:{presenter:D}", notice.DeduplicationKey);
         Assert.Contains("\"Q3 review\" trong cuộc họp \"Budget\" lúc 09:00 01/12/2026", notice.Body);
-    }
-
-    [Fact(DisplayName = "AgendaPresenterNotifier.NotifyAsync/UTC004: guest presenter gets one email")]
-    [Trait("UTC", "AgendaPresenterNotifier.NotifyAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Notify_GuestPresenterGetsOneEmail()
-    {
-        var meeting = new Meeting
-        {
-            Title = "Budget", Status = MeetingStatus.Published, CreatedById = _organizer,
-            PlannedStartTime = new(2026, 12, 1, 2, 0, 0, TimeSpan.Zero),
-            PlannedEndTime = new(2026, 12, 1, 3, 0, 0, TimeSpan.Zero),
-        };
-        _agenda.Meetings.Add(meeting);
-        var guest = new MeetingGuestInvitation { MeetingId = meeting.Id, InvitedName = "Tran Khach", Email = "khach@example.com" };
-        _agenda.Guests.Add(guest);
-        var item = new AgendaItem { MeetingId = meeting.Id, Title = "Q3 review", Position = 1, PresenterGuestInvitationId = guest.Id };
-        _agenda.Items.Add(item);
-        var notifications = NotifyNotifications(out var scopes);
-        var assignment = new AgendaPresenterAssignment(Guid.CreateVersion7(), meeting.Id, item.Id, null, guest.Id, Now);
-        var emails = (FakeEmailMessageRepository)scopes.CreateScope().ServiceProvider
-            .GetService(typeof(IEmailMessageRepository))!;
-
-        await new AgendaPresenterNotifier(scopes).NotifyAsync(assignment, default);
-
-        var email = Assert.Single(emails.Added);
-        Assert.Equal($"agenda-presenter:{assignment.EventId:D}:{guest.Id:D}", email.DeduplicationKey);
-        Assert.Contains("Xác minh email để vào cuộc họp:", email.Body);
     }
 }

@@ -22,7 +22,7 @@
           "type": "Normal",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,7 +37,7 @@
           "type": "Boundary",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,26 +52,11 @@
           "type": "Boundary",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "U1 was already reminded for M1 at the same planned start (the key exists); U2 was not."
-          ],
-          "inputs": "Clock 03:00Z.",
-          "return": "1 (only U2).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-303",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "The same user appears twice for the same meeting in the upcoming list."
           ],
@@ -82,22 +67,7 @@
           "type": "Abnormal",
           "note": "BR-303",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The meeting is Draft or Cancelled, or the participant is inactive: the recipient query leaves them out, so it returns no row."
-          ],
-          "inputs": "Clock 03:00Z; the recipient query returns nothing.",
-          "return": "0; nothing is queued and nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "BR-303 · The Draft/Cancelled/inactive filter is the query's own and runs against the database in NotificationRepositoryPostgresTests; this case covers what the service does with an empty answer.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

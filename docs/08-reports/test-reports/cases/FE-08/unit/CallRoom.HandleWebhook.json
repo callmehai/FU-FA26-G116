@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,26 +39,11 @@
           "type": "Normal",
           "note": "UC-38 · UC-79 · BR-337",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Meeting InProgress with an active session and two open visits."
-          ],
-          "inputs": "event: room_finished; roomName: \"meeting-{id}\".",
-          "return": "The session is ended at the event time and every open visit is closed with it.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; two members share their screen at once (one presenter at a time)."
           ],
@@ -69,26 +54,11 @@
           "type": "Normal",
           "note": "UC-39c · BR-326",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Any event arrives for a room that is not a meeting room."
-          ],
-          "inputs": "event: participant_joined; roomName: \"lobby-general\"; participantIdentity: any.",
-          "return": "Ignored; no session or visit is touched.",
-          "exception": "N/A",
-          "log": "Ignoring webhook {Event} for room {Room}.",
-          "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "A participant_joined event arrives with an identity that is neither a user id nor a guest identity."
           ],
@@ -99,7 +69,7 @@
           "type": "Abnormal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

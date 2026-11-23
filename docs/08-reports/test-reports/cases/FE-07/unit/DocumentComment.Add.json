@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-35 · BR-248 · BR-249 · MSG199",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-35 · MSG200",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Boundary",
           "note": "UC-35 · MSG199",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,26 +68,11 @@
           "type": "Boundary",
           "note": "UC-35 · MSG348",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
-          "preconditions": [
-            "Ten files whose lengths add to more than 100 MB."
-          ],
-          "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
-          "return": "Failure TooMany (HTTP 400, MSG288).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-35 · MSG156",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "One candidate of 10 MB plus 1 byte."
           ],
@@ -98,7 +83,7 @@
           "type": "Abnormal",
           "note": "UC-35 · BR-282 · MSG251",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

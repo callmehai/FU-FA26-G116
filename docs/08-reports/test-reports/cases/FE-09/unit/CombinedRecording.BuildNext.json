@@ -26,7 +26,7 @@
           "type": "Normal",
           "note": "UC-43a · BR-456",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,26 +41,11 @@
           "type": "Abnormal",
           "note": "UC-43a · BR-456",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Hybrid meeting whose only recordings are online sentences; it has no available room-mic recording."
-          ],
-          "inputs": "No arguments.",
-          "return": "false; a combined recording is built only for a meeting heard both in the room and online.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43a · BR-456",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Newest source change was exactly 1 minute ago (equal to the settle limit)."
           ],
@@ -71,11 +56,11 @@
           "type": "Boundary",
           "note": "UC-43a · BR-456",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "A combined recording exists, status Deleted (the Secretary erased it)."
           ],
@@ -86,11 +71,11 @@
           "type": "Abnormal",
           "note": "UC-43a · UC-44e · BR-456 · BR-457",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "The room take and the online sentences together would make a track longer than 12 hours (sources spread over 13 hours of sound)."
           ],
@@ -101,7 +86,7 @@
           "type": "Boundary",
           "note": "UC-43a · BR-456",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-15 · BR-76 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "UC-15 · BR-76",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

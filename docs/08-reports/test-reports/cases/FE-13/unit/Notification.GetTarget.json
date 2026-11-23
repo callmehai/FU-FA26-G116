@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-68",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-68",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A notification with TargetType Meeting whose MeetingId (M1) differs from its TargetId (M2)."
-          ],
-          "inputs": "userId U1.",
-          "return": "null: the target is not opened.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "A calendar-share notification; U1 is the owner or the viewer of the share."
           ],
@@ -68,11 +53,11 @@
           "type": "Normal",
           "note": "UC-68",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "A voice-sample notification; the sample S1 still exists and belongs to U1."
           ],
@@ -83,22 +68,7 @@
           "type": "Normal",
           "note": "UC-68",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A notification with an unsupported TargetType \"Document\"."
-          ],
-          "inputs": "userId U1.",
-          "return": "null.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-68",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

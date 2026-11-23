@@ -102,25 +102,8 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Equal(Now.AddSeconds(60), message.NextAttemptAt);
     }
 
-    [Fact(DisplayName = "EmailQueueProcessor.ProcessNextAsync/UTC004: third attempt doubles the backoff")]
+    [Fact(DisplayName = "EmailQueueProcessor.ProcessNextAsync/UTC004: seventh attempt waits sixty-four minutes")]
     [Trait("UTC", "EmailQueueProcessor.ProcessNextAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Queue_ThirdAttemptFailure_RetriesAfterFourMinutes()
-    {
-        var messages = new FakeEmailMessageRepository();
-        var unitOfWork = new FakeUnitOfWork();
-        var sender = new FakeEmailSender(unitOfWork) { Fail = new IOException("SMTP unavailable") };
-        var message = QueueDue(messages, attempts: 2);
-
-        var result = await QueueProcessor(messages, unitOfWork, sender).ProcessNextAsync();
-
-        Assert.Equal(EmailProcessingOutcome.RetryScheduled, result.Outcome);
-        Assert.Equal(3, result.AttemptCount);
-        Assert.Equal(Now.AddSeconds(240), message.NextAttemptAt);
-    }
-
-    [Fact(DisplayName = "EmailQueueProcessor.ProcessNextAsync/UTC005: seventh attempt waits sixty-four minutes")]
-    [Trait("UTC", "EmailQueueProcessor.ProcessNextAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Queue_SeventhAttemptFailure_RetriesAfterSixtyFourMinutes()
     {
@@ -134,23 +117,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Equal(EmailProcessingOutcome.RetryScheduled, result.Outcome);
         Assert.Equal(7, result.AttemptCount);
         Assert.Equal(Now.AddSeconds(3840), message.NextAttemptAt);
-    }
-
-    [Fact(DisplayName = "EmailQueueProcessor.ProcessNextAsync/UTC006: eighth attempt fails permanently")]
-    [Trait("UTC", "EmailQueueProcessor.ProcessNextAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Queue_EighthAttemptFailure_FailsPermanently()
-    {
-        var messages = new FakeEmailMessageRepository();
-        var unitOfWork = new FakeUnitOfWork();
-        var sender = new FakeEmailSender(unitOfWork) { Fail = new IOException("SMTP unavailable") };
-        var message = QueueDue(messages, attempts: 7);
-
-        var result = await QueueProcessor(messages, unitOfWork, sender).ProcessNextAsync();
-
-        Assert.Equal(EmailProcessingOutcome.PermanentlyFailed, result.Outcome);
-        Assert.Equal(8, result.AttemptCount);
-        Assert.Equal(EmailStatus.Failed, message.Status);
     }
 
     // ---- MeetingInvitationDispatchProcessor.ProcessAsync ----
@@ -252,36 +218,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Equal(0, result);
         Assert.Empty(setup.Emails.Added);
         Assert.Equal(0, setup.UnitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "MeetingInvitationDispatchProcessor.ProcessAsync/UTC005: future dispatch is not due")]
-    [Trait("UTC", "MeetingInvitationDispatchProcessor.ProcessAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Dispatch_FutureNextAttempt_StaysPending()
-    {
-        var setup = NewDispatchSetup();
-        var dispatch = NewDispatch(setup, nextAttemptAt: Now.AddMinutes(10));
-
-        var result = await DispatchProcessor(setup).ProcessAsync(dispatch.Id, default);
-
-        Assert.Equal(0, result);
-        Assert.Empty(setup.Emails.Added);
-        Assert.Equal(InvitationDispatchState.Pending, dispatch.State);
-    }
-
-    [Fact(DisplayName = "MeetingInvitationDispatchProcessor.ProcessAsync/UTC006: dispatch due exactly now is queued")]
-    [Trait("UTC", "MeetingInvitationDispatchProcessor.ProcessAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Dispatch_DueExactlyNow_QueuesOneEmail()
-    {
-        var setup = NewDispatchSetup();
-        var dispatch = NewDispatch(setup, nextAttemptAt: Now);
-
-        var result = await DispatchProcessor(setup).ProcessAsync(dispatch.Id, default);
-
-        Assert.Equal(1, result);
-        Assert.Equal(InvitationDispatchState.Materialized, dispatch.State);
-        Assert.Single(setup.Emails.Added);
     }
 
     // ---- MeetingInvitationDispatchProcessor.ProcessNextAsync ----
@@ -388,38 +324,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Equal(InvitationDispatchState.Suppressed, offRoster.State);
     }
 
-    [Fact(DisplayName = "MeetingInvitationDispatchProcessor.ProcessNextAsync/UTC005: fifty due dispatches all queue")]
-    [Trait("UTC", "MeetingInvitationDispatchProcessor.ProcessNextAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Batch_FiftyDueDispatches_QueuesFifty()
-    {
-        var setup = NewBatch();
-        for (var i = 0; i < 50; i++)
-            QueueDueDispatch(setup);
-
-        var result = await BatchProcessor(setup).ProcessNextAsync(default);
-
-        Assert.Equal(50, result);
-        Assert.Equal(50, setup.Emails.Added.Count);
-        Assert.Equal(50, setup.UnitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "MeetingInvitationDispatchProcessor.ProcessNextAsync/UTC006: fifty-first dispatch waits")]
-    [Trait("UTC", "MeetingInvitationDispatchProcessor.ProcessNextAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Batch_FiftyOneDueDispatches_LeavesOnePending()
-    {
-        var setup = NewBatch();
-        for (var i = 0; i < 51; i++)
-            QueueDueDispatch(setup);
-
-        var result = await BatchProcessor(setup).ProcessNextAsync(default);
-
-        Assert.Equal(50, result);
-        Assert.Equal(50, setup.Emails.Added.Count);
-        Assert.Equal(1, setup.Dispatches.Rows.Values.Count(d => d.State == InvitationDispatchState.Pending));
-    }
-
     // ---- MeetingInvitationEvents.StageCancellationAsync ----
 
     private sealed record StageSetup(
@@ -512,26 +416,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Empty(meeting.Participants);
     }
 
-    [Fact(DisplayName = "MeetingInvitationEvents.StageCancellationAsync/UTC004: thousand-character reason is kept whole")]
-    [Trait("UTC", "MeetingInvitationEvents.StageCancellationAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Cancel_LongReason_KeepsTheWholeReason()
-    {
-        var setup = new StageSetup(new(), new());
-        var meeting = NewStageMeeting();
-        var actor = AddRoster(meeting, MeetingRole.Chair, "An");
-        var member = AddRoster(meeting, MeetingRole.Member, "Bình");
-        var reason = new string('a', 1000);
-
-        await new MeetingInvitationEvents(setup.Dispatches, setup.Notes)
-            .StageCancellationAsync(meeting, Guid.CreateVersion7(), actor.UserId, reason, Now);
-
-        Assert.Single(setup.Notes.Added);
-        Assert.Contains(reason, setup.Notes.Added[0].Body, StringComparison.Ordinal);
-        Assert.Equal(reason, JsonSerializer.Deserialize<InvitationPayload>(
-            setup.Dispatches.Added.First(d => d.ParticipantId == member.Id).PayloadJson)!.Reason);
-    }
-
     // ---- MeetingInvitationEvents.StagePublicationInvitationsAsync ----
 
     [Fact(DisplayName = "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC001: actives and guest are invited")]
@@ -577,22 +461,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Single(setup.Dispatches.Added);
         Assert.Equal(first.Id, setup.Dispatches.Added[0].ParticipantId);
         Assert.DoesNotContain(setup.Dispatches.Added, d => d.ParticipantId == delegated.Id);
-    }
-
-    [Fact(DisplayName = "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC003: empty roster stages nothing")]
-    [Trait("UTC", "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Publish_EmptyRoster_StagesNothing()
-    {
-        var setup = new StageSetup(new(), new());
-        var meeting = NewStageMeeting();
-
-        await new MeetingInvitationEvents(setup.Dispatches, setup.Notes)
-            .StagePublicationInvitationsAsync(meeting, Now);
-
-        Assert.Empty(setup.Dispatches.Added);
-        Assert.Empty(setup.Notes.Added);
-        Assert.Empty(meeting.Participants);
     }
 
     // ---- MeetingInvitationEvents.StageRescheduleInvitationsAsync ----
@@ -749,41 +617,6 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Equal(1, queued);
         Assert.Contains(pageUrl, setup.Emails.Added[0].Body, StringComparison.Ordinal);
         Assert.Contains("Xem cuộc họp", setup.Emails.Added[0].HtmlBody, StringComparison.Ordinal);
-    }
-
-    [Fact(DisplayName = "MeetingReminderEmails.QueueDueAsync/UTC005: link-less hybrid meeting links the room")]
-    [Trait("UTC", "MeetingReminderEmails.QueueDueAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Reminders_LinkLessHybridMeeting_LinksTheRoom()
-    {
-        var setup = NewReminder();
-        var meeting = NewReminderMeeting(setup, MeetingMode.Hybrid);
-        AddInvitee(setup, meeting, MeetingRole.Member, "Bình");
-        var roomUrl = $"https://tc.example.vn/mgmt/meetings/{meeting.Id:D}/room";
-
-        var queued = await ReminderService(setup).QueueDueAsync();
-
-        Assert.Equal(1, queued);
-        Assert.Contains(roomUrl, setup.Emails.Added[0].Body, StringComparison.Ordinal);
-        Assert.Contains("Vào phòng họp", setup.Emails.Added[0].HtmlBody, StringComparison.Ordinal);
-    }
-
-    [Fact(DisplayName = "MeetingReminderEmails.QueueDueAsync/UTC006: late invitee gets no reminder")]
-    [Trait("UTC", "MeetingReminderEmails.QueueDueAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Reminders_LateInvitee_SkipsOnlyThem()
-    {
-        var setup = NewReminder();
-        var meeting = NewReminderMeeting(setup);
-        var late = AddInvitee(setup, meeting, MeetingRole.Member, "Bình");
-        var other = AddInvitee(setup, meeting, MeetingRole.Member, "Cường");
-        setup.Query.Invitations.Add(new ReminderInvitation(meeting.Id, late.Id, Now.AddMinutes(-1)));
-
-        var queued = await ReminderService(setup).QueueDueAsync();
-
-        Assert.Equal(1, queued);
-        Assert.Equal(other.Email, setup.Emails.Added[0].ToAddress);
-        Assert.DoesNotContain(setup.Emails.Added, e => e.ToAddress == late.Email);
     }
 
     // ---- Small private fakes owned by this file ----

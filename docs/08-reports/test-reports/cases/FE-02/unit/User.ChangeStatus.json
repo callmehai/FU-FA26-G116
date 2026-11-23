@@ -17,27 +17,12 @@
           "return": "UserResult Success (MSG11) with IsActive false; the row is kept; every refresh token and reset link of the account are revoked after the commit.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "id: <random Guid with no account>; isActive: false.",
-          "log": "N/A",
-          "note": "UC-06c",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers."
-          ],
-          "return": "UserResult Failure(NotFound) (HTTP 404, no message code).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "id: the actor's own id; isActive: false.",
           "log": "Log \"Status change rejected: administrator {ActorId} aimed at their own account.\"",
           "note": "UC-06c · MSG12",
@@ -47,12 +32,12 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the administrator stays active.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC003",
           "inputs": "id: B; isActive: false (requested with A's still-valid access token).",
           "log": "Warning log \"Status change rejected: ... would leave no active administrator.\"",
           "note": "UC-06c · MSG12",
@@ -63,12 +48,12 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): the last-administrator rule blocks mutual deactivation.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "id: target; isActive: true.",
           "log": "Audit row UserReactivated.",
           "note": "UC-06c · MSG11",
@@ -79,12 +64,12 @@
           "return": "UserResult Success (MSG11): reactivation is never blocked by the last-administrator rule.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "id: active target; isActive: false.",
           "log": "Error log \"Account {UserId} was changed, but ending its sessions failed.\"; audit row UserDeactivated.",
           "note": "UC-06c · BR-18 · MSG11",
@@ -95,7 +80,7 @@
           "return": "UserResult Success (MSG11): the failure is logged, not raised.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

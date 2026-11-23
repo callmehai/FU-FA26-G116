@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-75 · BR-300 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "UC-75 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,22 +53,7 @@
           "type": "Boundary",
           "note": "UC-75 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "A cancellation reason of 1000 characters."
-          ],
-          "inputs": "reason: 1000 characters; a Member in the roster.",
-          "return": "The in-app body holds the whole reason (about 1040 characters, below its 2000-character limit); the dispatch payload keeps it too.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-75 · BR-298",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

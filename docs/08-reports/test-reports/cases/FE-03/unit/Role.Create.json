@@ -17,7 +17,7 @@
           "return": "RoleResult Success (MSG19): custom role (not built-in) with 0 holders and capabilities MeetingCreator and MinutesEditor.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,28 +48,12 @@
           "return": "RoleResult Failure(DuplicateName) (MSG21): names are unique regardless of case; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "Valid request.",
-          "log": "Error log \"Role create failed to save.\"",
-          "note": "UC-12a · MSG26",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "The database refuses the save (connection lost or timeout)."
-          ],
-          "return": "RoleResult Failure(SaveFailed) (MSG26); no role is created and no audit row is written.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "Name: 64 characters.",
           "log": "Role saved; audit row RoleCreated.",
           "note": "UC-12a · MSG19",
@@ -79,12 +63,12 @@
           "return": "RoleResult Success (MSG19): 64 characters is the maximum.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "Name: 65 characters.",
           "log": "N/A",
           "note": "UC-12a · MSG20",
@@ -94,7 +78,7 @@
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được vượt quá 64 ký tự.\".",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

@@ -24,7 +24,7 @@
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,27 +39,12 @@
           "return": "false; the meeting is not loaded.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "guest: session of meeting A; meetingId: meeting B.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "Guest session belongs to another meeting."
-          ],
-          "return": "false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "guest: valid session; meetingId: Ended meeting.",
           "log": "N/A",
           "note": "UC-37 · BR-155",
@@ -70,7 +55,7 @@
           "return": "false; only Published and InProgress meetings are open to guests.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

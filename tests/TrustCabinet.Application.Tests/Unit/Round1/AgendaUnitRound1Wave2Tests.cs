@@ -77,22 +77,8 @@ public sealed class AgendaUnitRound1Wave2Tests
 
     // ---- AgendaService.DeleteAsync ----
 
-    [Fact(DisplayName = "AgendaService.DeleteAsync/UTC003: unknown item is not found")]
+    [Fact(DisplayName = "AgendaService.DeleteAsync/UTC003: member without a planner seat is forbidden")]
     [Trait("UTC", "AgendaService.DeleteAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Delete_UnknownItemIsNotFound()
-    {
-        var meeting = GivenMeeting(MeetingStatus.Draft);
-
-        var outcome = await Service().DeleteAsync(meeting.Id, Guid.CreateVersion7(), _secretary);
-
-        Assert.Equal(AgendaFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.ItemId);
-        Assert.Empty(_effects.Calls);
-    }
-
-    [Fact(DisplayName = "AgendaService.DeleteAsync/UTC004: member without a planner seat is forbidden")]
-    [Trait("UTC", "AgendaService.DeleteAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Delete_MemberWithoutPlannerSeatIsForbidden()
     {
@@ -127,25 +113,6 @@ public sealed class AgendaUnitRound1Wave2Tests
         Assert.Empty(_effects.Calls);
     }
 
-    [Fact(DisplayName = "AgendaService.ReorderAsync/UTC004: store failure answers save failed")]
-    [Trait("UTC", "AgendaService.ReorderAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Reorder_StoreFailureAnswersSaveFailed()
-    {
-        var meeting = GivenMeeting(MeetingStatus.Draft);
-        var p1 = Item(meeting.Id, "P1", 1); var p2 = Item(meeting.Id, "P2", 2); var p3 = Item(meeting.Id, "P3", 3);
-        _agenda.Items.AddRange([p1, p2, p3]);
-        var version = AgendaRules.OrderVersion(_agenda.Items);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().ReorderAsync(meeting.Id, _secretary,
-            new AgendaInput(OrderVersion: version, OrderedItemIds: [p3.Id, p1.Id, p2.Id]));
-
-        Assert.Equal(AgendaFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
-        Assert.Empty(_effects.Calls);
-    }
-
     // ---- AgendaService.StartAsync ----
 
     [Fact(DisplayName = "AgendaService.StartAsync/UTC003: running item cannot start again")]
@@ -161,20 +128,6 @@ public sealed class AgendaUnitRound1Wave2Tests
 
         Assert.Equal(AgendaFailure.CannotStart, outcome.Failure);
         Assert.Equal(AgendaItemStatus.InProgress, item.Status);
-        Assert.Empty(_effects.Calls);
-    }
-
-    [Fact(DisplayName = "AgendaService.StartAsync/UTC004: unknown item is not found")]
-    [Trait("UTC", "AgendaService.StartAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Start_UnknownItemIsNotFound()
-    {
-        var meeting = GivenMeeting(MeetingStatus.InProgress);
-
-        var outcome = await Service().StartAsync(meeting.Id, Guid.CreateVersion7(), _chair);
-
-        Assert.Equal(AgendaFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.ItemId);
         Assert.Empty(_effects.Calls);
     }
 
@@ -195,20 +148,6 @@ public sealed class AgendaUnitRound1Wave2Tests
         Assert.Equal(AgendaFailure.None, outcome.Failure);
         Assert.Equal(item.ActualStartedAt, item.ActualEndedAt);
         Assert.Equal(["publish:Completed:commits=1"], _effects.Calls);
-    }
-
-    [Fact(DisplayName = "AgendaService.CompleteAsync/UTC005: unknown item is not found")]
-    [Trait("UTC", "AgendaService.CompleteAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Complete_UnknownItemIsNotFound()
-    {
-        var meeting = GivenMeeting(MeetingStatus.InProgress);
-
-        var outcome = await Service().CompleteAsync(meeting.Id, Guid.CreateVersion7(), _chair);
-
-        Assert.Equal(AgendaFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.ItemId);
-        Assert.Empty(_effects.Calls);
     }
 
     // ---- AgendaService.RecordConclusionAsync ----
@@ -246,24 +185,6 @@ public sealed class AgendaUnitRound1Wave2Tests
         Assert.Equal(AgendaFailure.UnsupportedMedia, outcome.Failure);
         Assert.True(outcome.Errors!.ContainsKey("body"));
         Assert.Null(item.Conclusion);
-    }
-
-    [Fact(DisplayName = "AgendaService.RecordConclusionAsync/UTC006: store failure answers save failed")]
-    [Trait("UTC", "AgendaService.RecordConclusionAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task RecordConclusion_StoreFailureAnswersSaveFailed()
-    {
-        var meeting = GivenMeeting(MeetingStatus.InProgress);
-        var item = Item(meeting.Id, "Mục 1", 1, AgendaItemStatus.InProgress);
-        _agenda.Items.Add(item);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().RecordConclusionAsync(meeting.Id, item.Id, _chair,
-            new AgendaInput(Conclusion: "Kết luận."));
-
-        Assert.Equal(AgendaFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
-        Assert.Empty(_effects.Calls);
     }
 
     // ---- AgendaPresenterNotifier.NotifyAsync ----

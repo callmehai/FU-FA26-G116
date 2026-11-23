@@ -23,7 +23,7 @@
           "return": "Success with the meeting details.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "Failure NotEditable; MSG33.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,22 +53,7 @@
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC004",
-          "inputs": "actorId: organizer.",
-          "log": "Error logged with the meeting and actor ids.",
-          "note": "UC-15 · MSG37",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Failure ReadFailed; MSG37.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

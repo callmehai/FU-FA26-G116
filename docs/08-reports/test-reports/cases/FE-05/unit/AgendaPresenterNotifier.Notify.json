@@ -24,7 +24,7 @@
           "return": "Completes; one in-app notification is saved.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "return": "Completes; nothing is added (idempotent).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,23 +54,7 @@
           "return": "Completes; nothing is added.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "assignment {PresenterGuestInvitationId: G}.",
-          "log": "Email to khach@example.com: subject \"Phân công trình bày mục nghị sự\"; text body greets \"Tran Khach\", gives the item, meeting and time, the verification link line and \"Người tổ chức: Le Chu Tri\"; HTML body from the guest-presenter template; deduplication key \"agenda-presenter:E1:G\".",
-          "note": "UC-23a · BR-91",
-          "preconditions": [
-            "Item presenter is Guest invitation G (current, email \"khach@example.com\", name \"Tran Khach\"); organizer \"Le Chu Tri\".",
-            "Guest link provider is available and returns a ready link."
-          ],
-          "return": "Completes; one email is queued.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

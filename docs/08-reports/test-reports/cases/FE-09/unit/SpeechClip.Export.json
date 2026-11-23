@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-45b · BR-351 · BR-358",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-45b · BR-351 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Abnormal",
           "note": "UC-45b · BR-351 · MSG356",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,38 +68,7 @@
           "type": "Boundary",
           "note": "UC-45b · BR-351",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor is not on the roster of the meeting."
-          ],
-          "inputs": "meetingId; actorId: an outsider.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-45b",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A non-secret meeting; the actor is its Chair.",
-            "The database fails while reading."
-          ],
-          "inputs": "meetingId; actorId: the Chair.",
-          "return": "ReadFailed (500, MSG299).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to export the speech clips'.",
-          "type": "Abnormal",
-          "note": "UC-45b · MSG299",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

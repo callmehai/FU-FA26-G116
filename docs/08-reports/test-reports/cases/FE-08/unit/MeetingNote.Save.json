@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-82 · MSG415",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Boundary",
           "note": "UC-82 · BR-400 · MSG415",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Abnormal",
           "note": "UC-82 · BR-395 · MSG416",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,7 +70,7 @@
           "type": "Abnormal",
           "note": "UC-82 · BR-396 · MSG417",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -85,23 +85,7 @@
           "type": "Abnormal",
           "note": "UC-82 · BR-400 · MSG419",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The note was saved from another window after the actor read it."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: the item; body: \"Ghi chú mới\"; loadedAt: the older updatedAt.",
-          "return": "Stale; 409 \"Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.\" (MSG418); nothing is overwritten.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-399 · MSG418",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

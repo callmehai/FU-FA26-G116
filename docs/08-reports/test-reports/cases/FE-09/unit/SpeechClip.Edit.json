@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-46a · BR-359 · MSG302",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-46a · BR-359 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,41 +53,11 @@
           "type": "Boundary",
           "note": "UC-46a · BR-359 · MSG303",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "No sentence with this id."
-          ],
-          "inputs": "clipId: a random id; actorId: a Secretary.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a · BR-359",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "clipId; actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a · BR-359",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "An existing sentence; the actor is its meeting's Secretary.",
             "The database fails while saving."
@@ -99,7 +69,7 @@
           "type": "Abnormal",
           "note": "UC-46a · BR-359 · MSG304",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

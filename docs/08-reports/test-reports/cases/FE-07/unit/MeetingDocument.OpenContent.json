@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-32b · BR-183 · BR-216",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-32b · BR-188 · MSG159",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Abnormal",
           "note": "UC-32b · MSG156",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,7 +68,7 @@
           "type": "Boundary",
           "note": "UC-32b · BR-253",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -83,22 +83,7 @@
           "type": "Abnormal",
           "note": "UC-32b · MSG382",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Storage is down or not configured; viewing."
-          ],
-          "inputs": "meetingDocumentId: M1; download: false.",
-          "return": "Failure ReadFailed (HTTP 503, MSG158).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-32b · MSG158",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

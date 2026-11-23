@@ -23,7 +23,7 @@
           "return": "Returns 0; the lifecycle service is not called.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "Returns 3.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "return": "Returns 2 (the skipped one is not counted).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,22 +68,7 @@
           "return": "Cutoff is now-48h and the reason text says 48 giờ.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "60 overrun meetings.",
-          "log": "N/A",
-          "note": "UC-22 · BR-460",
-          "preconditions": [
-            "More than 50 meetings are overrun."
-          ],
-          "return": "Only the first 50 (by planned end) are handled in one sweep; returns at most 50.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

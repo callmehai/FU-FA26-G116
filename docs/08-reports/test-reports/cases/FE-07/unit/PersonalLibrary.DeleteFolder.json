@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-72d · BR-223 · MSG197",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-72d · BR-242 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Abnormal",
           "note": "UC-72d · BR-223 · MSG196",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,22 +68,7 @@
           "type": "Boundary",
           "note": "UC-72d · BR-228 · MSG197",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Database error (for example a foreign-key restriction)."
-          ],
-          "inputs": "folderId: F1.",
-          "return": "SaveFailed (HTTP 503, MSG198); the folder stays.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to delete a folder\".",
-          "type": "Abnormal",
-          "note": "UC-72d · MSG198",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

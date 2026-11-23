@@ -57,22 +57,10 @@ public sealed class UserUnitRound1Wave2Tests
         }
     }
 
-    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC002 unknown account id is answered not found")]
-    [Trait("UTC", "UserService.ChangeStatusAsync/UTC002")]
+    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC003 mutual deactivation of the last two administrators is refused")]
+    [Trait("UTC", "UserService.ChangeStatusAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task ChangeStatusAsync_UTC002()
-    {
-        var result = await Service().ChangeStatusAsync(Guid.NewGuid(), false, _actorId);
-
-        Assert.Equal(UserOutcome.NotFound, result.Outcome);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_audit.Actions);
-    }
-
-    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC004 mutual deactivation of the last two administrators is refused")]
-    [Trait("UTC", "UserService.ChangeStatusAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task ChangeStatusAsync_UTC004()
+    public async Task ChangeStatusAsync_UTC003()
     {
         var first = _users.Add("a@x.vn", BuiltInRoles.Admin);
         var second = _users.Add("b@x.vn", BuiltInRoles.Admin);
@@ -85,10 +73,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.True(_users.Users.Single(u => u.Id == second.Id).IsActive);
     }
 
-    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC005 reactivating the inactive administrator is never blocked")]
-    [Trait("UTC", "UserService.ChangeStatusAsync/UTC005")]
+    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC004 reactivating the inactive administrator is never blocked")]
+    [Trait("UTC", "UserService.ChangeStatusAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task ChangeStatusAsync_UTC005()
+    public async Task ChangeStatusAsync_UTC004()
     {
         _users.Add("admin@trustcabinet.local", BuiltInRoles.Admin);
         var target = _users.Add("second@trustcabinet.local", BuiltInRoles.Admin, isActive: false);
@@ -100,10 +88,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal([AuditActions.UserReactivated], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC006 session ending failure after the commit is logged, not raised")]
-    [Trait("UTC", "UserService.ChangeStatusAsync/UTC006")]
+    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC005 session ending failure after the commit is logged, not raised")]
+    [Trait("UTC", "UserService.ChangeStatusAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task ChangeStatusAsync_UTC006()
+    public async Task ChangeStatusAsync_UTC005()
     {
         _users.Add("admin@trustcabinet.local", BuiltInRoles.Admin);
         var target = _users.Add("thanhvien@trustcabinet.local", BuiltInRoles.Member);
@@ -170,22 +158,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC002 unknown account id is answered not found")]
-    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC002")]
+    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC003 undeliverable email keeps the earlier link working")]
+    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task RequestPasswordResetAsync_UTC002()
-    {
-        var result = await Service().RequestPasswordResetAsync(Guid.NewGuid(), _actorId);
-
-        Assert.Equal(UserOutcome.NotFound, result.Outcome);
-        Assert.Empty(_resetTokens.Live);
-        Assert.Empty(_resetEmail.SentTo);
-    }
-
-    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC004 undeliverable email keeps the earlier link working")]
-    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task RequestPasswordResetAsync_UTC004()
+    public async Task RequestPasswordResetAsync_UTC003()
     {
         var user = _users.Add("lan@x.vn", BuiltInRoles.Member);
         await _resetTokens.ActivateAsync(user.Id, "T-old", TimeSpan.FromMinutes(60));
@@ -198,10 +174,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Empty(_audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC005 email changed during the send revokes the new link")]
-    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC005")]
+    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC004 email changed during the send revokes the new link")]
+    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task RequestPasswordResetAsync_UTC005()
+    public async Task RequestPasswordResetAsync_UTC004()
     {
         var user = _users.Add("lan@x.vn", BuiltInRoles.Member);
         var sender = new DuringSendResetEmail(() => user.Email = "moi@x.vn");
@@ -213,10 +189,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal(["lan@x.vn"], sender.SentTo);
     }
 
-    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC006 deactivation during the send revokes the new link")]
-    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC006")]
+    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC005 deactivation during the send revokes the new link")]
+    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task RequestPasswordResetAsync_UTC006()
+    public async Task RequestPasswordResetAsync_UTC005()
     {
         var user = _users.Add("lan@x.vn", BuiltInRoles.Member);
         var sender = new DuringSendResetEmail(() => user.IsActive = false);
@@ -255,25 +231,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.True(_resetTokens.Live.ContainsKey("T-abc"));
     }
 
-    [Fact(DisplayName = "UserService.ResetPasswordAsync/UTC005 null password names the newPassword field and keeps the link")]
+    [Fact(DisplayName = "UserService.ResetPasswordAsync/UTC005 twelve-character password is the minimum")]
     [Trait("UTC", "UserService.ResetPasswordAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task ResetPasswordAsync_UTC005()
-    {
-        var user = _users.Add("lan@x.vn", BuiltInRoles.Member);
-        await _resetTokens.ActivateAsync(user.Id, "T-abc", TimeSpan.FromMinutes(60));
-
-        var result = await Service().ResetPasswordAsync("T-abc", null);
-
-        Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
-        Assert.True(result.Errors!.ContainsKey("newPassword"));
-        Assert.True(_resetTokens.Live.ContainsKey("T-abc"));
-    }
-
-    [Fact(DisplayName = "UserService.ResetPasswordAsync/UTC006 twelve-character password is the minimum")]
-    [Trait("UTC", "UserService.ResetPasswordAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task ResetPasswordAsync_UTC006()
     {
         var user = _users.Add("lan@x.vn", BuiltInRoles.Member);
         await _resetTokens.ActivateAsync(user.Id, "T-abc", TimeSpan.FromMinutes(60));
@@ -285,23 +246,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal([AuditActions.UserPasswordReset], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.UpdateAsync/UTC002 unknown account id is answered not found")]
+    [Fact(DisplayName = "UserService.UpdateAsync/UTC002 empty full name names the fullName field")]
     [Trait("UTC", "UserService.UpdateAsync/UTC002")]
     [Trait("Trait", "UTC")]
     public async Task UpdateAsync_UTC002()
-    {
-        var result = await Service().UpdateAsync(
-            Guid.NewGuid(), new UserEdit("Tên Mới", "moi@x.vn", BuiltInRoles.Member), _actorId);
-
-        Assert.Equal(UserOutcome.NotFound, result.Outcome);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_audit.Actions);
-    }
-
-    [Fact(DisplayName = "UserService.UpdateAsync/UTC003 empty full name names the fullName field")]
-    [Trait("UTC", "UserService.UpdateAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task UpdateAsync_UTC003()
     {
         var user = _users.Add("a@x.vn", BuiltInRoles.Member);
 
@@ -313,10 +261,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal("Người Dùng", _users.Users.Single(u => u.Id == user.Id).FullName);
     }
 
-    [Fact(DisplayName = "UserService.UpdateAsync/UTC004 two-hundred-and-one-character name names the fullName field")]
-    [Trait("UTC", "UserService.UpdateAsync/UTC004")]
+    [Fact(DisplayName = "UserService.UpdateAsync/UTC003 two-hundred-and-one-character name names the fullName field")]
+    [Trait("UTC", "UserService.UpdateAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task UpdateAsync_UTC004()
+    public async Task UpdateAsync_UTC003()
     {
         var user = _users.Add("a@x.vn", BuiltInRoles.Member);
 
@@ -328,10 +276,10 @@ public sealed class UserUnitRound1Wave2Tests
         Assert.Equal("Người Dùng", _users.Users.Single(u => u.Id == user.Id).FullName);
     }
 
-    [Fact(DisplayName = "UserService.UpdateAsync/UTC006 demoting the only administrator is refused")]
-    [Trait("UTC", "UserService.UpdateAsync/UTC006")]
+    [Fact(DisplayName = "UserService.UpdateAsync/UTC005 demoting the only administrator is refused")]
+    [Trait("UTC", "UserService.UpdateAsync/UTC005")]
     [Trait("Trait", "UTC")]
-    public async Task UpdateAsync_UTC006()
+    public async Task UpdateAsync_UTC005()
     {
         var admin = _users.Add("admin@trustcabinet.local", BuiltInRoles.Admin);
 

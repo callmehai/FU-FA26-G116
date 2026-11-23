@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG64.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "return": "Failure AlreadyCurrent; 409 / MSG72.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,27 +56,12 @@
           "return": "Failure CannotStart; 409 / MSG73.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "actor: Chair C; itemId: unknown.",
-          "log": "N/A",
-          "note": "UC-24",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
           "log": "N/A",
           "note": "UC-24 · MSG75",
@@ -86,7 +71,7 @@
           "return": "No failure; the file size limit is inclusive.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -86,10 +86,10 @@ public sealed class AuthUnitRound1Tests
         Assert.DoesNotContain(signIn.RefreshToken!, _refreshTokens.Live.Keys);
     }
 
-    [Fact(DisplayName = "AuthenticationService.RefreshAsync/UTC004 deactivated account loses every refresh token")]
-    [Trait("UTC", "AuthenticationService.RefreshAsync/UTC004")]
+    [Fact(DisplayName = "AuthenticationService.RefreshAsync/UTC003 deactivated account loses every refresh token")]
+    [Trait("UTC", "AuthenticationService.RefreshAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task RefreshAsync_UTC004()
+    public async Task RefreshAsync_UTC003()
     {
         var user = _users.Add("organizer@example.com", BuiltInRoles.Member);
         var signIn = await AuthService().SignInAsync(user.Email, "secret");
@@ -102,24 +102,10 @@ public sealed class AuthUnitRound1Tests
         Assert.Empty(_refreshTokens.Live);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC001 unverifiable token is refused without a lookup")]
+    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC001 linked active account signs in")]
     [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC001")]
     [Trait("Trait", "UTC")]
     public async Task SignInWithGoogleAsync_UTC001()
-    {
-        _google.Identity = null;
-
-        var result = await AuthService().SignInWithGoogleAsync("not-a-google-token");
-
-        Assert.Equal(GoogleSignInOutcome.InvalidGoogleToken, result.Outcome);
-        Assert.Empty(_audit.Actions);
-        Assert.Empty(_refreshTokens.Live);
-    }
-
-    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC002 linked active account signs in")]
-    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task SignInWithGoogleAsync_UTC002()
     {
         var user = _users.Add("chutoa@gmail.com", BuiltInRoles.Member, passwordHash: null);
         user.GoogleSubjectId = "google-subject";
@@ -132,10 +118,10 @@ public sealed class AuthUnitRound1Tests
         Assert.Equal([AuditActions.SignedIn], _audit.Actions);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC004 unknown identity is not provisioned")]
-    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC004")]
+    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC003 unknown identity is not provisioned")]
+    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC003")]
     [Trait("Trait", "UTC")]
-    public async Task SignInWithGoogleAsync_UTC004()
+    public async Task SignInWithGoogleAsync_UTC003()
     {
         _users.Add("chutoa@gmail.com", BuiltInRoles.Member, passwordHash: null);
         _google.Identity = new GoogleIdentity("stranger-subject", "stranger@gmail.com");

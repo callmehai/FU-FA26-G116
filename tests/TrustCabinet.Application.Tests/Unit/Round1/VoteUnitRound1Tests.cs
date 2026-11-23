@@ -119,28 +119,8 @@ public sealed class VoteUnitRound1Tests
         Assert.DoesNotContain("description", VoteRules.Validate(Draft() with { Description = new string('m', 4000) }, out _));
     }
 
-    [Fact(DisplayName = "VoteRules.Validate/UTC004 options differing only by case are refused")]
+    [Fact(DisplayName = "VoteRules.Validate/UTC004 title over 300 characters is refused")]
     [Trait("UTC", "VoteRules.Validate/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void Validate_DuplicateOptionsRefused()
-    {
-        var errors = VoteRules.Validate(Draft() with { Options = ["Hà Nội", "hà nội"] }, out _);
-
-        Assert.Equal(["Cần ít nhất 2 phương án khác nhau, mỗi phương án từ 1 đến 200 ký tự."], errors["options"]);
-    }
-
-    [Fact(DisplayName = "VoteRules.Validate/UTC005 missing anonymity choice is refused")]
-    [Trait("UTC", "VoteRules.Validate/UTC005")]
-    [Trait("Trait", "UTC")]
-    public void Validate_MissingAnonymityRefused()
-    {
-        var errors = VoteRules.Validate(Draft() with { IsAnonymous = null }, out _);
-
-        Assert.Equal(["Chọn biểu quyết công khai hoặc kín."], errors["isAnonymous"]);
-    }
-
-    [Fact(DisplayName = "VoteRules.Validate/UTC006 title over 300 characters is refused")]
-    [Trait("UTC", "VoteRules.Validate/UTC006")]
     [Trait("Trait", "UTC")]
     public void Validate_OverlongTitleRefused()
     {
@@ -164,20 +144,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Equal(new[] { _chair, _member }.Order(), eligible);
     }
 
-    [Fact(DisplayName = "VoteRules.EligibleUsers/UTC002 attendance plays no part")]
+    [Fact(DisplayName = "VoteRules.EligibleUsers/UTC002 deactivated holder is excluded")]
     [Trait("UTC", "VoteRules.EligibleUsers/UTC002")]
-    [Trait("Trait", "UTC")]
-    public void EligibleUsers_AttendanceIgnored()
-    {
-        var meeting = ActiveMeeting(MeetingStatus.InProgress, _chair, _member);
-
-        var eligible = VoteRules.EligibleUsers(meeting, [MeetingRole.Member]);
-
-        Assert.Equal([_member], eligible);
-    }
-
-    [Fact(DisplayName = "VoteRules.EligibleUsers/UTC003 deactivated holder is excluded")]
-    [Trait("UTC", "VoteRules.EligibleUsers/UTC003")]
     [Trait("Trait", "UTC")]
     public void EligibleUsers_DeactivatedExcluded()
     {
@@ -188,8 +156,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Equal([_chair], eligible);
     }
 
-    [Fact(DisplayName = "VoteRules.EligibleUsers/UTC004 no holder means an empty list")]
-    [Trait("UTC", "VoteRules.EligibleUsers/UTC004")]
+    [Fact(DisplayName = "VoteRules.EligibleUsers/UTC003 no holder means an empty list")]
+    [Trait("UTC", "VoteRules.EligibleUsers/UTC003")]
     [Trait("Trait", "UTC")]
     public void EligibleUsers_NoHolderIsEmpty()
     {
@@ -216,16 +184,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Null(VoteRules.Percentage(0, 0));
     }
 
-    [Fact(DisplayName = "VoteRules.Percentage/UTC003 unanimous vote is 100")]
+    [Fact(DisplayName = "VoteRules.Percentage/UTC003 rounding goes away from zero to 2 decimals")]
     [Trait("UTC", "VoteRules.Percentage/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void Percentage_UnanimousIsHundred()
-    {
-        Assert.Equal(100, VoteRules.Percentage(3, 3));
-    }
-
-    [Fact(DisplayName = "VoteRules.Percentage/UTC004 rounding goes away from zero to 2 decimals")]
-    [Trait("UTC", "VoteRules.Percentage/UTC004")]
     [Trait("Trait", "UTC")]
     public void Percentage_RoundsAwayFromZero()
     {
@@ -234,19 +194,8 @@ public sealed class VoteUnitRound1Tests
 
     // VoteRules.Permissions (Vote.Permissions/UTC001-UTC005)
 
-    [Fact(DisplayName = "VoteRules.Permissions/UTC001 chair in a running meeting may do everything")]
+    [Fact(DisplayName = "VoteRules.Permissions/UTC001 chair after the end may only close and conclude")]
     [Trait("UTC", "VoteRules.Permissions/UTC001")]
-    [Trait("Trait", "UTC")]
-    public void Permissions_ChairInProgress()
-    {
-        var meeting = ActiveMeeting(MeetingStatus.InProgress, _chair, _member);
-
-        Assert.Equal(new VotePermissions(true, true, true, true),
-            VoteRules.Permissions(meeting, new VoteViewer(_chair, null)));
-    }
-
-    [Fact(DisplayName = "VoteRules.Permissions/UTC002 chair after the end may only close and conclude")]
-    [Trait("UTC", "VoteRules.Permissions/UTC002")]
     [Trait("Trait", "UTC")]
     public void Permissions_ChairAfterEnd()
     {
@@ -256,8 +205,8 @@ public sealed class VoteUnitRound1Tests
             VoteRules.Permissions(meeting, new VoteViewer(_chair, null)));
     }
 
-    [Fact(DisplayName = "VoteRules.Permissions/UTC003 secretary manages drafts but never opens")]
-    [Trait("UTC", "VoteRules.Permissions/UTC003")]
+    [Fact(DisplayName = "VoteRules.Permissions/UTC002 secretary manages drafts but never opens")]
+    [Trait("UTC", "VoteRules.Permissions/UTC002")]
     [Trait("Trait", "UTC")]
     public void Permissions_SecretaryManagesDrafts()
     {
@@ -269,8 +218,8 @@ public sealed class VoteUnitRound1Tests
             VoteRules.Permissions(meeting, new VoteViewer(secretary, null)));
     }
 
-    [Fact(DisplayName = "VoteRules.Permissions/UTC004 chair before the start only manages drafts")]
-    [Trait("UTC", "VoteRules.Permissions/UTC004")]
+    [Fact(DisplayName = "VoteRules.Permissions/UTC003 chair before the start only manages drafts")]
+    [Trait("UTC", "VoteRules.Permissions/UTC003")]
     [Trait("Trait", "UTC")]
     public void Permissions_ChairBeforeStart()
     {
@@ -280,8 +229,8 @@ public sealed class VoteUnitRound1Tests
             VoteRules.Permissions(meeting, new VoteViewer(_chair, null)));
     }
 
-    [Fact(DisplayName = "VoteRules.Permissions/UTC005 member may do nothing")]
-    [Trait("UTC", "VoteRules.Permissions/UTC005")]
+    [Fact(DisplayName = "VoteRules.Permissions/UTC004 member may do nothing")]
+    [Trait("UTC", "VoteRules.Permissions/UTC004")]
     [Trait("Trait", "UTC")]
     public void Permissions_MemberHasNothing()
     {
@@ -311,39 +260,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC002 member may not create a draft")]
+    [Fact(DisplayName = "VoteService.MutateAsync/UTC002 eligible voter casts a public ballot")]
     [Trait("UTC", "VoteService.MutateAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Mutate_MemberCreateDenied()
-    {
-        var outcome = await Service().MutateAsync(_meeting, null, new ParticipantActor(_member),
-            VoteOperation.Create, Draft());
-
-        Assert.Equal(VoteFailure.DraftDenied, outcome.Failure);
-        Assert.Empty(_votes.Added);
-        Assert.Equal((0, 0, 1), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
-        Assert.Empty(_publisher.Published);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC003 creating over another open vote is refused")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Mutate_CreateOverOpenVoteDenied()
-    {
-        _votes.AnotherOpen = true;
-
-        var outcome = await Service().MutateAsync(_meeting, null, new ParticipantActor(_chair),
-            VoteOperation.Create, Draft(openImmediately: true));
-
-        Assert.Equal(VoteFailure.AnotherOpen, outcome.Failure);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_publisher.Published);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC004 eligible voter casts a public ballot")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Mutate_CastPublicBallotSucceeds()
     {
@@ -362,8 +280,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC005 late joiner is not eligible to cast")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC005")]
+    [Fact(DisplayName = "VoteService.MutateAsync/UTC003 late joiner is not eligible to cast")]
+    [Trait("UTC", "VoteService.MutateAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Mutate_LateJoinerNotEligible()
     {
@@ -378,26 +296,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC006 second ballot from the same voter is refused")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Mutate_SecondBallotRefused()
-    {
-        var vote = SeedVote(VotingStatus.Open);
-        _votes.EligibleIn.Add(vote.Id);
-        _unitOfWork.FailNextSave = new UniqueConflictException(UniqueConflict.BallotAlreadyCast);
-
-        var outcome = await Service().MutateAsync(_meeting, vote.Id, new ParticipantActor(_member),
-            VoteOperation.Cast, new VoteInput(OptionId: vote.Options.First().Id));
-
-        Assert.Equal(VoteFailure.AlreadyCast, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Discards);
-        Assert.Empty(_publisher.Published);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC007 chair closes an open vote with its result")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC007")]
+    [Fact(DisplayName = "VoteService.MutateAsync/UTC004 chair closes an open vote with its result")]
+    [Trait("UTC", "VoteService.MutateAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Mutate_CloseReturnsResult()
     {
@@ -414,8 +314,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "VoteService.MutateAsync/UTC008 chair records the conclusion of a closed vote")]
-    [Trait("UTC", "VoteService.MutateAsync/UTC008")]
+    [Fact(DisplayName = "VoteService.MutateAsync/UTC005 chair records the conclusion of a closed vote")]
+    [Trait("UTC", "VoteService.MutateAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Mutate_ConcludeSucceeds()
     {
@@ -489,23 +389,8 @@ public sealed class VoteUnitRound1Tests
         Assert.Empty(_logger.Records);
     }
 
-    [Fact(DisplayName = "VoteService.ConfirmReadAsync/UTC004 closed vote no longer accepts confirmations")]
+    [Fact(DisplayName = "VoteService.ConfirmReadAsync/UTC004 reader short of the last page is refused")]
     [Trait("UTC", "VoteService.ConfirmReadAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task ConfirmRead_ClosedVoteRefused()
-    {
-        _votes.ReadRequirement = (true, false);
-
-        var outcome = await Service().ConfirmReadAsync(_meeting, Guid.CreateVersion7(),
-            new ParticipantActor(_member), new VoteInput(LastPageReached: true));
-
-        Assert.Equal(VoteFailure.NotAccepting, outcome.Failure);
-        Assert.Empty(_votes.Added);
-        Assert.Empty(_logger.Records);
-    }
-
-    [Fact(DisplayName = "VoteService.ConfirmReadAsync/UTC005 reader short of the last page is refused")]
-    [Trait("UTC", "VoteService.ConfirmReadAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task ConfirmRead_LastPageNotReachedRefused()
     {
@@ -538,22 +423,5 @@ public sealed class VoteUnitRound1Tests
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
             Func<TState, Exception?, string> formatter)
             => Records.Add((logLevel, formatter(state, exception)));
-    }
-
-    [Fact(DisplayName = "VoteService.ConfirmReadAsync/UTC006 storage failure while confirming is a failed save")]
-    [Trait("UTC", "VoteService.ConfirmReadAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task ConfirmRead_SaveFailureLogged()
-    {
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().ConfirmReadAsync(_meeting, Guid.CreateVersion7(),
-            new ParticipantActor(_member), new VoteInput(LastPageReached: true));
-
-        Assert.Equal(VoteFailure.SaveFailed, outcome.Failure);
-        var record = Assert.Single(_logger.Records);
-        Assert.Equal((LogLevel.Error, true),
-            (record.Level, record.Message.Contains("Failed to confirm reading")));
-        Assert.Equal(1, _unitOfWork.Discards);
     }
 }

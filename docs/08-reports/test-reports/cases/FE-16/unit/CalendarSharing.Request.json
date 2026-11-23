@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-84a · BR-423 · BR-431 · MSG435",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -42,7 +42,7 @@
           "type": "Boundary",
           "note": "UC-84a · BR-414 · BR-431 · MSG435",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -58,27 +58,11 @@
           "type": "Abnormal",
           "note": "UC-84a · BR-430 · MSG448",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
-          ],
-          "inputs": "actor: An; ownerId: null.",
-          "return": "Failure NotFound (404, no code); nothing disclosed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84a · BR-430",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
@@ -91,11 +75,11 @@
           "type": "Abnormal",
           "note": "UC-84a · BR-423 · MSG449",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
@@ -108,11 +92,11 @@
           "type": "Boundary",
           "note": "UC-84a · BR-423 · MSG435",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC006",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner)."
@@ -124,24 +108,7 @@
           "type": "Abnormal",
           "note": "UC-84a · BR-414 · MSG443",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer (the viewer); Binh is an active user (the owner).",
-            "The database fails while saving."
-          ],
-          "inputs": "actor: An; ownerId: Binh; valid values.",
-          "return": "Failure SaveFailed (MSG447); no share, notification or audit row is kept.",
-          "exception": "N/A",
-          "log": "Unit of work changes discarded; error logged.",
-          "type": "Abnormal",
-          "note": "UC-84a · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

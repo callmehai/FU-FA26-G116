@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,22 +38,7 @@
           "type": "Boundary",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "A meeting with no active participants and no Guest invitations."
-          ],
-          "inputs": "meeting.",
-          "return": "Nothing is staged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

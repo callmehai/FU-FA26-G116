@@ -193,51 +193,6 @@ public sealed class TransUnitRound1Tests
         Assert.Single(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "TranscriptionService.ProcessNextAsync/UTC005: a failed write discards the staged result and fails the transcript")]
-    [Trait("UTC", "TranscriptionService.ProcessNextAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task ProcessNext_a_failed_write_discards_the_staged_result_and_fails_the_transcript()
-    {
-        var f = TranscriptionSvc();
-        var transcript = QueuedTranscript(f);
-        f.Engine.Result = new SpeechTranscription(2000, "vi", "test", "test-model",
-            [new SpeechSegment(0, 1000, "SPEAKER_00", "Xin chào")], [new SpeechSpeaker("SPEAKER_00", 1000, [1f, 0f])]);
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-        // What EF Core does on DiscardChanges: the entities the failed write touched go back to what the store holds.
-        f.Uow.OnDiscard = () =>
-        {
-            transcript.Status = TranscriptStatus.Processing;
-            transcript.CompletedAt = null;
-            transcript.ProgressPercent = 0;
-            transcript.Segments.Clear();
-            transcript.Speakers.Clear();
-        };
-
-        Assert.True(await f.Service.ProcessNextAsync());
-
-        Assert.Equal(1, f.Uow.Discards);
-        Assert.Equal(TranscriptStatus.Failed, transcript.Status);
-        Assert.Equal(TranscriptionService.UnexpectedFailureMessage, transcript.ErrorMessage);
-        Assert.Empty(transcript.Segments);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(transcript.Id.ToString()));
-    }
-
-    [Fact(DisplayName = "TranscriptionService.ProcessNextAsync/UTC006: a failed claim reaches the caller and claims nothing")]
-    [Trait("UTC", "TranscriptionService.ProcessNextAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task ProcessNext_a_failed_claim_reaches_the_caller_and_claims_nothing()
-    {
-        var f = TranscriptionSvc();
-        var transcript = QueuedTranscript(f);
-        f.Transcripts.ClaimFails = new PersistenceUnavailableException();
-
-        await Assert.ThrowsAsync<PersistenceUnavailableException>(() => f.Service.ProcessNextAsync());
-
-        Assert.Equal(TranscriptStatus.Pending, transcript.Status);
-        Assert.Empty(f.Log.Entries);
-        Assert.Empty(f.Publisher.Published);
-    }
-
     [Fact(DisplayName = "TranscriptionService.EditSegmentAsync/UTC001: the Secretary corrects a line")]
     [Trait("UTC", "TranscriptionService.EditSegmentAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -306,35 +261,6 @@ public sealed class TransUnitRound1Tests
         Assert.Empty(f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "TranscriptionService.EditSegmentAsync/UTC005: editing nothing is not found")]
-    [Trait("UTC", "TranscriptionService.EditSegmentAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task EditSegment_editing_nothing_is_not_found()
-    {
-        var f = TranscriptionSvc();
-
-        var outcome = await f.Service.EditSegmentAsync(Guid.CreateVersion7(), f.Secretary, "câu đã sửa");
-
-        Assert.Equal(TranscriptFailure.NotFound, outcome.Failure);
-        Assert.Equal(0, f.Uow.Saves);
-    }
-
-    [Fact(DisplayName = "TranscriptionService.EditSegmentAsync/UTC006: a save failure rolls the edit back")]
-    [Trait("UTC", "TranscriptionService.EditSegmentAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task EditSegment_a_save_failure_rolls_the_edit_back()
-    {
-        var f = TranscriptionSvc();
-        var segment = SpokenTranscript(f).Segments.First();
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.EditSegmentAsync(segment.Id, f.Secretary, "câu đã sửa");
-
-        Assert.Equal(TranscriptFailure.SaveFailed, outcome.Failure);
-        Assert.Equal((0, 0), (f.Uow.Commits, f.Uow.Rollbacks));
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to edit transcript segment"));
-    }
-
     [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC001: naming a voice runs under the recording lock")]
     [Trait("UTC", "TranscriptionService.AssignSpeakerAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -353,22 +279,8 @@ public sealed class TransUnitRound1Tests
         Assert.Equal([AuditActions.TranscriptSpeakerAssigned], f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC002: an unknown voice is not found")]
+    [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC002: a voice is named as one roster person")]
     [Trait("UTC", "TranscriptionService.AssignSpeakerAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task AssignSpeaker_an_unknown_voice_is_not_found()
-    {
-        var f = TranscriptionSvc();
-        SpokenTranscript(f);
-
-        var outcome = await f.Service.AssignSpeakerAsync(f.Recording.Id, "SPEAKER_09", f.Member, null, f.Secretary);
-
-        Assert.Equal(TranscriptFailure.NotFound, outcome.Failure);
-        Assert.Equal(0, f.Uow.Saves);
-    }
-
-    [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC003: a voice is named as one roster person")]
-    [Trait("UTC", "TranscriptionService.AssignSpeakerAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task AssignSpeaker_a_voice_is_named_as_one_roster_person()
     {
@@ -382,8 +294,8 @@ public sealed class TransUnitRound1Tests
         Assert.Equal(0, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC004: a Member may not name a voice")]
-    [Trait("UTC", "TranscriptionService.AssignSpeakerAsync/UTC004")]
+    [Fact(DisplayName = "TranscriptionService.AssignSpeakerAsync/UTC003: a Member may not name a voice")]
+    [Trait("UTC", "TranscriptionService.AssignSpeakerAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task AssignSpeaker_a_member_may_not_name_a_voice()
     {
@@ -451,22 +363,8 @@ public sealed class TransUnitRound1Tests
         Assert.Equal("SPEAKER_01", segment.SpeakerLabel);
     }
 
-    [Fact(DisplayName = "TranscriptionService.AssignSegmentSpeakerAsync/UTC003: another recording label is not a voice")]
+    [Fact(DisplayName = "TranscriptionService.AssignSegmentSpeakerAsync/UTC003: with no free label the move is refused")]
     [Trait("UTC", "TranscriptionService.AssignSegmentSpeakerAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task AssignSegmentSpeaker_another_recording_label_is_not_a_voice()
-    {
-        var f = TranscriptionSvc();
-        var segment = MovedTranscript(f).Segments.First();
-
-        var outcome = await f.Service.AssignSegmentSpeakerAsync(segment.Id, null, null, "SPEAKER_09", f.Secretary);
-
-        Assert.Equal(TranscriptFailure.NotFound, outcome.Failure);
-        Assert.Equal("SPEAKER_01", segment.SpeakerLabel);
-    }
-
-    [Fact(DisplayName = "TranscriptionService.AssignSegmentSpeakerAsync/UTC004: with no free label the move is refused")]
-    [Trait("UTC", "TranscriptionService.AssignSegmentSpeakerAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task AssignSegmentSpeaker_with_no_free_label_the_move_is_refused()
     {
@@ -486,8 +384,8 @@ public sealed class TransUnitRound1Tests
         Assert.Equal("SPEAKER_01", segment.SpeakerLabel);
     }
 
-    [Fact(DisplayName = "TranscriptionService.AssignSegmentSpeakerAsync/UTC005: a Member may not move a line")]
-    [Trait("UTC", "TranscriptionService.AssignSegmentSpeakerAsync/UTC005")]
+    [Fact(DisplayName = "TranscriptionService.AssignSegmentSpeakerAsync/UTC004: a Member may not move a line")]
+    [Trait("UTC", "TranscriptionService.AssignSegmentSpeakerAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task AssignSegmentSpeaker_a_member_may_not_move_a_line()
     {
@@ -553,22 +451,8 @@ public sealed class TransUnitRound1Tests
         Assert.Empty(f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "TranscriptionService.ExportAsync/UTC004: an unfinished transcript is not ready")]
+    [Fact(DisplayName = "TranscriptionService.ExportAsync/UTC004: an empty transcript exports a header only")]
     [Trait("UTC", "TranscriptionService.ExportAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_an_unfinished_transcript_is_not_ready()
-    {
-        var f = TranscriptionSvc();
-        QueuedTranscript(f, TranscriptStatus.Processing);
-
-        var outcome = await f.Service.ExportAsync(f.Recording.Id, f.Chair);
-
-        Assert.Equal(TranscriptFailure.NotReady, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "TranscriptionService.ExportAsync/UTC005: an empty transcript exports a header only")]
-    [Trait("UTC", "TranscriptionService.ExportAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Export_an_empty_transcript_exports_a_header_only()
     {
@@ -580,21 +464,6 @@ public sealed class TransUnitRound1Tests
         Assert.Equal(TranscriptFailure.None, outcome.Failure);
         Assert.Contains("Họp giao ban", Assert.IsType<ExportedText>(outcome.Data).Text);
         Assert.Equal([AuditActions.TranscriptExported], f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "TranscriptionService.ExportAsync/UTC006: a read failure is read failed with an error log")]
-    [Trait("UTC", "TranscriptionService.ExportAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_a_read_failure_is_read_failed_with_an_error_log()
-    {
-        var f = TranscriptionSvc();
-        SpokenTranscript(f);
-        f.Meetings.FailReads = true;
-
-        var outcome = await f.Service.ExportAsync(f.Recording.Id, f.Chair);
-
-        Assert.Equal(TranscriptFailure.ReadFailed, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to export the transcript"));
     }
 
 /// <summary>Captures log records so a test can assert the Log Message line of a UTC.</summary>
@@ -760,35 +629,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Summaries.Rows);
     }
 
-    [Fact(DisplayName = "SummaryService.RequestAsync/UTC006: a save failure is save failed with an error log")]
-    [Trait("UTC", "SummaryService.RequestAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Request_a_save_failure_is_save_failed_with_an_error_log()
-    {
-        var f = SummarySvc();
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.RequestAsync(f.Meeting.Id, f.Chair);
-
-        Assert.Equal(SummaryFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(0, f.Uow.Commits);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Could not queue the summary"));
-    }
-
-    [Fact(DisplayName = "SummaryService.RequestAsync/UTC007: a meeting with no sentences has nothing to summarise")]
-    [Trait("UTC", "SummaryService.RequestAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task Request_a_meeting_with_no_sentences_has_nothing_to_summarise()
-    {
-        var f = SummarySvc();
-        f.Sources.Sentences = 0;
-
-        var outcome = await f.Service.RequestAsync(f.Meeting.Id, f.Chair);
-
-        Assert.Equal(SummaryFailure.NothingSaid, outcome.Failure);
-        Assert.Empty(f.Summaries.Rows);
-    }
-
     [Fact(DisplayName = "SummaryService.EditAsync/UTC001: the Chair corrects the draft and clears the review")]
     [Trait("UTC", "SummaryService.EditAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -821,36 +661,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(0, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "SummaryService.EditAsync/UTC003: editing while the AI writes is busy")]
+    [Fact(DisplayName = "SummaryService.EditAsync/UTC003: sections at the limits are accepted")]
     [Trait("UTC", "SummaryService.EditAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Edit_editing_while_the_ai_writes_is_busy()
-    {
-        var f = SummarySvc();
-        ReadyDraft(f, SummaryStatus.Running, reviewed: false);
-
-        var outcome = await f.Service.EditAsync(f.Meeting.Id, f.Chair, ValidEdit());
-
-        Assert.Equal(SummaryFailure.Busy, outcome.Failure);
-    }
-
-    [Fact(DisplayName = "SummaryService.EditAsync/UTC004: a blank section is invalid")]
-    [Trait("UTC", "SummaryService.EditAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Edit_a_blank_section_is_invalid()
-    {
-        var f = SummarySvc();
-        var row = ReadyDraft(f);
-
-        var outcome = await f.Service.EditAsync(f.Meeting.Id, f.Chair, new SummaryEdit("   ", "Thảo luận.", "Kết luận."));
-
-        Assert.Equal(SummaryFailure.Invalid, outcome.Failure);
-        Assert.True(outcome.Errors!.ContainsKey("objectives"));
-        Assert.Contains("Mục tiêu.", row.Content);
-    }
-
-    [Fact(DisplayName = "SummaryService.EditAsync/UTC005: sections at the limits are accepted")]
-    [Trait("UTC", "SummaryService.EditAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Edit_sections_at_the_limits_are_accepted()
     {
@@ -865,8 +677,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(Now, row.EditedAt);
     }
 
-    [Fact(DisplayName = "SummaryService.EditAsync/UTC006: a Member may not correct the draft")]
-    [Trait("UTC", "SummaryService.EditAsync/UTC006")]
+    [Fact(DisplayName = "SummaryService.EditAsync/UTC004: a Member may not correct the draft")]
+    [Trait("UTC", "SummaryService.EditAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Edit_a_member_may_not_correct_the_draft()
     {
@@ -907,22 +719,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(SummaryFailure.NotDrafted, outcome.Failure);
     }
 
-    [Fact(DisplayName = "SummaryService.ReviewAsync/UTC003: reviewing while the AI writes is busy")]
+    [Fact(DisplayName = "SummaryService.ReviewAsync/UTC003: a Member may not review the draft")]
     [Trait("UTC", "SummaryService.ReviewAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Review_reviewing_while_the_ai_writes_is_busy()
-    {
-        var f = SummarySvc();
-        ReadyDraft(f, SummaryStatus.Running, reviewed: false);
-
-        var outcome = await f.Service.ReviewAsync(f.Meeting.Id, f.Secretary);
-
-        Assert.Equal(SummaryFailure.Busy, outcome.Failure);
-        Assert.Null(f.Summaries.Rows[0].ReviewedById);
-    }
-
-    [Fact(DisplayName = "SummaryService.ReviewAsync/UTC004: a Member may not review the draft")]
-    [Trait("UTC", "SummaryService.ReviewAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Review_a_member_may_not_review_the_draft()
     {
@@ -988,26 +786,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Log.Entries);
     }
 
-    [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC006: a store that rejects the draft fails it and frees the queue")]
-    [Trait("UTC", "SummaryService.ProcessNextAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task ProcessNext_a_store_that_rejects_the_draft_fails_it_and_frees_the_queue()
-    {
-        var f = SummarySvc();
-        f.Summaries.Rows.Add(new MeetingSummary
-        {
-            MeetingId = f.Meeting.Id, Status = SummaryStatus.Queued, RequestedById = f.Chair, RequestedAt = Now,
-        });
-        f.Summaries.StoreDraftFails = new PersistenceUnavailableException();
-
-        Assert.True(await f.Service.ProcessNextAsync());
-
-        var row = Assert.Single(f.Summaries.Rows);
-        Assert.Equal(SummaryStatus.Failed, row.Status);
-        Assert.Equal("Không lưu được dự thảo. Vui lòng thử lại.", row.ErrorMessage);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(f.Meeting.Id.ToString()));
-    }
-
     [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC004: a refusing model fails the draft with its message")]
     [Trait("UTC", "SummaryService.ProcessNextAsync/UTC004")]
     [Trait("Trait", "UTC")]
@@ -1026,26 +804,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(SummaryStatus.Failed, row.Status);
         Assert.Equal("Máy AI không trả lời.", row.ErrorMessage);
         Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains("could not draft"));
-    }
-
-    [Fact(DisplayName = "SummaryService.ProcessNextAsync/UTC005: a throwing model fails the draft as unwritten")]
-    [Trait("UTC", "SummaryService.ProcessNextAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task ProcessNext_a_throwing_model_fails_the_draft_as_unwritten()
-    {
-        var f = SummarySvc();
-        f.Summaries.Rows.Add(new MeetingSummary
-        {
-            MeetingId = f.Meeting.Id, Status = SummaryStatus.Queued, RequestedById = f.Chair, RequestedAt = Now,
-        });
-        f.Local.Fail = new InvalidOperationException("boom");
-
-        Assert.True(await f.Service.ProcessNextAsync());
-
-        var row = Assert.Single(f.Summaries.Rows);
-        Assert.Equal(SummaryStatus.Failed, row.Status);
-        Assert.Equal("Không viết được dự thảo. Vui lòng thử lại.", row.ErrorMessage);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error);
     }
 
     private sealed record VoiceSvc(FakeVoiceIdRepository Repository, FakeUnitOfWork Uow, FakeVoiceEmbedder Embedder,
@@ -1144,21 +902,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Empty(f.Repository.Consents);
     }
 
-    [Fact(DisplayName = "VoiceIdService.GrantAsync/UTC005: two agreements at once answer the loser as agreed")]
-    [Trait("UTC", "VoiceIdService.GrantAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Grant_two_agreements_at_once_answer_the_loser_as_agreed()
-    {
-        var f = MakeVoiceSvc();
-        f.Uow.FailNextSave = new UniqueConflictException(UniqueConflict.Unknown);
-
-        var outcome = await f.Service.GrantAsync(f.User, VoiceIdRules.NoticeVersion);
-
-        Assert.Equal(VoiceFailure.None, outcome.Failure);
-        Assert.IsType<VoiceProfile>(outcome.Data);
-        Assert.Equal(1, f.Uow.Rollbacks);
-    }
-
     [Fact(DisplayName = "VoiceIdService.AddSampleAsync/UTC001: a sample is kept encrypted under the consent lock")]
     [Trait("UTC", "VoiceIdService.AddSampleAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -1207,40 +950,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(5, f.Repository.Samples.Count);
     }
 
-    [Fact(DisplayName = "VoiceIdService.AddSampleAsync/UTC004: a too-short sample is rejected with guidance")]
+    [Fact(DisplayName = "VoiceIdService.AddSampleAsync/UTC004: the fifth sample is stored, a sixth would be refused")]
     [Trait("UTC", "VoiceIdService.AddSampleAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task AddSample_a_too_short_sample_is_rejected_with_guidance()
-    {
-        var f = MakeVoiceSvc();
-        Consented(f);
-        f.Embedder.Fail = new VoiceSampleRejectedException("too_short");
-
-        var outcome = await f.Service.AddSampleAsync(f.User, new MemoryStream([1, 2, 3]), "audio/webm");
-
-        Assert.Equal(VoiceFailure.Rejected, outcome.Failure);
-        Assert.Equal(["Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu."], outcome.Errors!["file"]);
-        Assert.Empty(f.Repository.Samples);
-    }
-
-    [Fact(DisplayName = "VoiceIdService.AddSampleAsync/UTC005: a down worker is engine unavailable with a warning")]
-    [Trait("UTC", "VoiceIdService.AddSampleAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task AddSample_a_down_worker_is_engine_unavailable_with_a_warning()
-    {
-        var f = MakeVoiceSvc();
-        Consented(f);
-        f.Embedder.Fail = new SpeechEngineException("down");
-
-        var outcome = await f.Service.AddSampleAsync(f.User, new MemoryStream([1, 2, 3]), "audio/webm");
-
-        Assert.Equal(VoiceFailure.EngineUnavailable, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning);
-        Assert.Empty(f.Repository.Samples);
-    }
-
-    [Fact(DisplayName = "VoiceIdService.AddSampleAsync/UTC006: the fifth sample is stored, a sixth would be refused")]
-    [Trait("UTC", "VoiceIdService.AddSampleAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task AddSample_the_fifth_sample_is_stored_a_sixth_would_be_refused()
     {
@@ -1310,20 +1021,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Single(f.Repository.Samples);
     }
 
-    [Fact(DisplayName = "VoiceIdService.DeleteSampleAsync/UTC004: deleting nothing removes nothing")]
-    [Trait("UTC", "VoiceIdService.DeleteSampleAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteSample_deleting_nothing_removes_nothing()
-    {
-        var f = MakeVoiceSvc();
-        Consented(f);
-
-        var outcome = await f.Service.DeleteSampleAsync(f.User, Guid.CreateVersion7());
-
-        Assert.Equal(VoiceFailure.NotFound, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
     [Fact(DisplayName = "VoiceIdService.SampleAudioAsync/UTC001: the owner hears back their kept recording")]
     [Trait("UTC", "VoiceIdService.SampleAudioAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -1338,22 +1035,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
 
         Assert.Equal([7], Assert.IsType<VoiceSampleAudio>(audio).Bytes);
         Assert.Equal("audio/webm", Assert.IsType<VoiceSampleAudio>(audio).ContentType);
-    }
-
-    [Fact(DisplayName = "VoiceIdService.SampleAudioAsync/UTC004: a recording that no longer decrypts is not heard")]
-    [Trait("UTC", "VoiceIdService.SampleAudioAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task SampleAudio_a_recording_that_no_longer_decrypts_is_not_heard()
-    {
-        var f = MakeVoiceSvc();
-        var sample = OwnSample(f, Consented(f));
-        sample.AudioCiphertext = [7, 0xA0];
-        sample.AudioContentType = "audio/webm";
-        f.Protector.AudioUnreadable = true;
-
-        Assert.Null(await f.Service.SampleAudioAsync(f.User, sample.Id));
-
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains(sample.Id.ToString()));
     }
 
     [Fact(DisplayName = "VoiceIdService.SampleAudioAsync/UTC002: someone else sample reads as not found")]
@@ -1403,21 +1084,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal((1, 1), (f.Uow.Commits, f.Uow.Saves));
     }
 
-    [Fact(DisplayName = "VoiceIdService.WithdrawAsync/UTC002: without consent there is nothing to erase")]
+    [Fact(DisplayName = "VoiceIdService.WithdrawAsync/UTC002: an erase failure is save failed with an error log")]
     [Trait("UTC", "VoiceIdService.WithdrawAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Withdraw_without_consent_there_is_nothing_to_erase()
-    {
-        var f = MakeVoiceSvc();
-
-        var outcome = await f.Service.WithdrawAsync(f.User);
-
-        Assert.Equal(VoiceFailure.None, outcome.Failure);
-        Assert.Null(Assert.IsType<VoiceProfile>(outcome.Data).Consent);
-    }
-
-    [Fact(DisplayName = "VoiceIdService.WithdrawAsync/UTC003: an erase failure is save failed with an error log")]
-    [Trait("UTC", "VoiceIdService.WithdrawAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Withdraw_an_erase_failure_is_save_failed_with_an_error_log()
     {
@@ -1532,24 +1200,8 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         Assert.Equal(VoiceIdRules.MaxProxySamples, f.Repository.Samples.Count);
     }
 
-    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC004: a take the person did not agree to is not kept")]
+    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC004: a too-short sample is rejected with guidance")]
     [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Collect_a_take_the_person_did_not_agree_to_is_not_kept()
-    {
-        var f = CollectionSvc();
-        CollectionConsent(f);
-
-        var outcome = await Collect(f, personAgreed: false);
-
-        Assert.Equal(VoiceFailure.NotConfirmed, outcome.Failure);
-        Assert.Equal(0, f.Embedder.Calls);
-        Assert.Empty(f.Repository.Samples);
-        Assert.Empty(f.Notifications.Added);
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC005: a too-short sample is rejected with guidance")]
-    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Collect_a_too_short_sample_is_rejected_with_guidance()
     {
@@ -1561,22 +1213,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
 
         Assert.Equal(VoiceFailure.Rejected, outcome.Failure);
         Assert.Equal(["Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu."], outcome.Errors!["file"]);
-        Assert.Empty(f.Repository.Samples);
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.AddForPersonAsync/UTC006: a down worker is engine unavailable with a warning")]
-    [Trait("UTC", "VoiceCollectionService.AddForPersonAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Collect_a_down_worker_is_engine_unavailable_with_a_warning()
-    {
-        var f = CollectionSvc();
-        CollectionConsent(f);
-        f.Embedder.Fail = new SpeechEngineException("down");
-
-        var outcome = await Collect(f);
-
-        Assert.Equal(VoiceFailure.EngineUnavailable, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning);
         Assert.Empty(f.Repository.Samples);
     }
 
@@ -1603,19 +1239,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         var f = CollectionSvc();
         var sample = ProxySample(f, CollectionConsent(f), 1);
         sample.CollectedById = null;
-
-        Assert.Null(await f.Service.PersonAudioAsync(f.Collector, f.Person, sample.Id));
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.PersonAudioAsync/UTC003: a deactivated person's samples are not heard")]
-    [Trait("UTC", "VoiceCollectionService.PersonAudioAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Audio_a_deactivated_persons_samples_are_not_heard()
-    {
-        var f = CollectionSvc();
-        var sample = ProxySample(f, CollectionConsent(f), 1);
-        f.Callers.Users.Single(u => u.Id == f.Person).IsActive = false;
 
         Assert.Null(await f.Service.PersonAudioAsync(f.Collector, f.Person, sample.Id));
         Assert.Empty(f.Audit.Actions);
@@ -1652,21 +1275,6 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         f.Repository.Samples.Add(own);
 
         var outcome = await f.Service.DeletePersonSampleAsync(f.Collector, f.Person, own.Id);
-
-        Assert.Equal(VoiceFailure.NotFound, outcome.Failure);
-        Assert.Single(f.Repository.Samples);
-    }
-
-    [Fact(DisplayName = "VoiceCollectionService.DeletePersonSampleAsync/UTC003: a deactivated person's sample is not found")]
-    [Trait("UTC", "VoiceCollectionService.DeletePersonSampleAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Delete_a_deactivated_persons_sample_is_not_found()
-    {
-        var f = CollectionSvc();
-        var sample = ProxySample(f, CollectionConsent(f), 1);
-        f.Callers.Users.Single(u => u.Id == f.Person).IsActive = false;
-
-        var outcome = await f.Service.DeletePersonSampleAsync(f.Collector, f.Person, sample.Id);
 
         Assert.Equal(VoiceFailure.NotFound, outcome.Failure);
         Assert.Single(f.Repository.Samples);

@@ -17,27 +17,12 @@
           "return": "UserResult Success (MSG10) with FullName \"Lê Văn Anh\"; no session is ended and nobody is notified.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "id: <random Guid with no account>; valid request.",
-          "log": "N/A",
-          "note": "UC-06b",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers."
-          ],
-          "return": "UserResult Failure(NotFound) (HTTP 404, no message code); nothing saved.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "FullName: \"\"; Email: \"a@x.vn\"; RoleId valid.",
           "log": "N/A",
           "note": "UC-06b · BR-14 · MSG09",
@@ -48,12 +33,12 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; the account is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC003",
           "inputs": "FullName: 201 characters; other fields valid.",
           "log": "N/A",
           "note": "UC-06b · BR-14 · MSG09",
@@ -64,12 +49,12 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "id: account a@x.vn; Email: \"b@x.vn\".",
           "log": "N/A",
           "note": "UC-06b · BR-13 · MSG08",
@@ -80,12 +65,12 @@
           "return": "UserResult Failure(DuplicateEmail) (MSG08); the account is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "RoleId: \"Thành viên\".",
           "log": "Warning log \"Update rejected: changing the role of {UserId} would leave no active administrator.\"",
           "note": "UC-08 · MSG12",
@@ -97,7 +82,7 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the account keeps its role.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

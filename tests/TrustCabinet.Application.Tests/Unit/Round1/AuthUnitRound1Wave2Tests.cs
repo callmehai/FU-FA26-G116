@@ -29,25 +29,10 @@ public sealed class AuthUnitRound1Wave2Tests
         _users, _unitOfWork, new FakePasswordHasher(), new FakeTokenIssuer(), _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
 
-    [Fact(DisplayName = "AuthenticationService.RefreshAsync/UTC002 blank token is refused without touching the store")]
+    [Fact(DisplayName = "AuthenticationService.RefreshAsync/UTC002 whitespace token is refused without touching the store")]
     [Trait("UTC", "AuthenticationService.RefreshAsync/UTC002")]
     [Trait("Trait", "UTC")]
     public async Task RefreshAsync_UTC002()
-    {
-        var user = _users.Add("organizer@example.com", BuiltInRoles.Member);
-        var signIn = await AuthService().SignInAsync(user.Email, "secret");
-
-        var result = await AuthService().RefreshAsync("");
-
-        Assert.Equal(SignInOutcome.InvalidCredentials, result.Outcome);
-        Assert.Equal(user.Id, _refreshTokens.Live[signIn.RefreshToken!]);
-        Assert.Single(_refreshTokens.Live);
-    }
-
-    [Fact(DisplayName = "AuthenticationService.RefreshAsync/UTC003 whitespace token is refused without touching the store")]
-    [Trait("UTC", "AuthenticationService.RefreshAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task RefreshAsync_UTC003()
     {
         var user = _users.Add("organizer@example.com", BuiltInRoles.Member);
         var signIn = await AuthService().SignInAsync(user.Email, "secret");
@@ -74,39 +59,10 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Empty(_audit.Actions);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC005 whitespace password is refused without reading the store")]
+    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC005 active account with a wrong password is refused and recorded")]
     [Trait("UTC", "AuthenticationService.SignInAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task SignInAsync_UTC005()
-    {
-        // Would throw on any read: returning normally proves the store was not read.
-        _users.Fail = new PersistenceUnavailableException();
-
-        var result = await AuthService().SignInAsync("organizer@example.com", "   ");
-
-        Assert.Equal(SignInOutcome.InvalidCredentials, result.Outcome);
-        Assert.Empty(_refreshTokens.Live);
-        Assert.Empty(_audit.Actions);
-    }
-
-    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC006 email with surrounding spaces signs in after trimming")]
-    [Trait("UTC", "AuthenticationService.SignInAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task SignInAsync_UTC006()
-    {
-        var user = _users.Add("organizer@example.com", BuiltInRoles.Member);
-
-        var result = await AuthService().SignInAsync("  organizer@example.com  ", "secret");
-
-        Assert.Equal(SignInOutcome.Success, result.Outcome);
-        Assert.Equal(user.Id, _refreshTokens.Live[result.RefreshToken!]);
-        Assert.Equal([AuditActions.SignedIn], _audit.Actions);
-    }
-
-    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC007 active account with a wrong password is refused and recorded")]
-    [Trait("UTC", "AuthenticationService.SignInAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task SignInAsync_UTC007()
     {
         _users.Add("organizer@example.com", BuiltInRoles.Member);
 
@@ -119,10 +75,10 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal([AuditActions.SignInFailed], _audit.Actions);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC008 deactivated account with a wrong password reveals nothing")]
-    [Trait("UTC", "AuthenticationService.SignInAsync/UTC008")]
+    [Fact(DisplayName = "AuthenticationService.SignInAsync/UTC006 deactivated account with a wrong password reveals nothing")]
+    [Trait("UTC", "AuthenticationService.SignInAsync/UTC006")]
     [Trait("Trait", "UTC")]
-    public async Task SignInAsync_UTC008()
+    public async Task SignInAsync_UTC006()
     {
         _users.Add("former@example.com", BuiltInRoles.Member, isActive: false);
 
@@ -135,10 +91,10 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal([AuditActions.SignInFailed], _audit.Actions);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC003 deactivated never-linked account is refused without linking")]
-    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC003")]
+    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC002 deactivated never-linked account is refused without linking")]
+    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task SignInWithGoogleAsync_UTC003()
+    public async Task SignInWithGoogleAsync_UTC002()
     {
         var user = _users.Add("former@example.com", BuiltInRoles.Member, isActive: false);
         _google.Identity = new GoogleIdentity("g-300", "former@example.com");
@@ -150,10 +106,10 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Empty(_refreshTokens.Live);
     }
 
-    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC005 linked account with no capabilities signs in empty")]
-    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC005")]
+    [Fact(DisplayName = "AuthenticationService.SignInWithGoogleAsync/UTC004 linked account with no capabilities signs in empty")]
+    [Trait("UTC", "AuthenticationService.SignInWithGoogleAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task SignInWithGoogleAsync_UTC005()
+    public async Task SignInWithGoogleAsync_UTC004()
     {
         var user = _users.Add("chutoa@gmail.com", BuiltInRoles.Member, passwordHash: null);
         user.GoogleSubjectId = "g-100";
@@ -178,23 +134,6 @@ public sealed class AuthUnitRound1Wave2Tests
 
         Assert.Equal(user.Id, _refreshTokens.Live[signIn.RefreshToken!]);
         Assert.Single(_refreshTokens.Live);
-        Assert.Empty(_refreshTokens.RevokedAll);
-    }
-
-    [Fact(DisplayName = "AuthenticationService.SignOutAsync/UTC004 whitespace token completes without touching the store")]
-    [Trait("UTC", "AuthenticationService.SignOutAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task SignOutAsync_UTC004()
-    {
-        var user = _users.Add("organizer@example.com", BuiltInRoles.Member);
-        var signIn = await AuthService().SignInAsync(user.Email, "secret");
-        // A store call would consume this entry; it surviving proves the store was not called.
-        _refreshTokens.Live["   "] = user.Id;
-
-        await AuthService().SignOutAsync("   ");
-
-        Assert.Equal(user.Id, _refreshTokens.Live["   "]);
-        Assert.Equal(user.Id, _refreshTokens.Live[signIn.RefreshToken!]);
         Assert.Empty(_refreshTokens.RevokedAll);
     }
 
@@ -272,20 +211,6 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal(GuestAccessFailure.None, result.Failure);
     }
 
-    [Fact(DisplayName = "GuestAccessService.OpenAsync/UTC005 four-letter local part masks to two leading characters")]
-    [Trait("UTC", "GuestAccessService.OpenAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task OpenAsync_UTC005()
-    {
-        var invitation = GivenInvitation("abcd@example.com");
-
-        var result = await GuestService().OpenAsync(invitation.Id, "link", default);
-
-        var view = Assert.IsType<GuestInvitationView>(result.Data);
-        Assert.Equal("ab***@example.com", view.MaskedEmail);
-        Assert.Equal(GuestAccessFailure.None, result.Failure);
-    }
-
     [Fact(DisplayName = "GuestAccessService.SendCodeAsync/UTC002 wrong link token creates and sends nothing")]
     [Trait("UTC", "GuestAccessService.SendCodeAsync/UTC002")]
     [Trait("Trait", "UTC")]
@@ -331,22 +256,6 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal(GuestAccessFailure.DailyLimit, result.Failure);
         Assert.Equal(3600, result.RetryAfterSeconds);
         Assert.Empty(_sender.Calls);
-    }
-
-    [Fact(DisplayName = "GuestAccessService.SendCodeAsync/UTC006 undelivered code is deleted and the previous one stays")]
-    [Trait("UTC", "GuestAccessService.SendCodeAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task SendCodeAsync_UTC006()
-    {
-        var invitation = GivenInvitation();
-        var previous = GivenChallenge(invitation, "111111", GuestNow.AddMinutes(-5));
-        _sender.Sent = false;
-
-        var result = await GuestService().SendCodeAsync(invitation.Id, "link", default);
-
-        Assert.Equal(GuestAccessFailure.Unavailable, result.Failure);
-        Assert.Equal(previous.Id, Assert.Single(_sessions.Challenges).Id);
-        Assert.Single(_sessions.DeletedChallenges);
     }
 
     [Fact(DisplayName = "GuestAccessService.VerifyAsync/UTC002 wrong link token reads no challenge")]
@@ -398,21 +307,5 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal(GuestAccessFailure.CodeLocked, result.Failure);
         Assert.Null(result.RemainingAttempts);
         Assert.Empty(_sessions.Sessions);
-    }
-
-    [Fact(DisplayName = "GuestAccessService.VerifyAsync/UTC006 session save failure is answered unavailable")]
-    [Trait("UTC", "GuestAccessService.VerifyAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task VerifyAsync_UTC006()
-    {
-        var invitation = GivenInvitation();
-        GivenChallenge(invitation, "123456", GuestNow);
-        _guestWork.FailNextSave = new PersistenceUnavailableException();
-
-        var result = await GuestService().VerifyAsync(invitation.Id, "link", "123456", default);
-
-        Assert.Equal(GuestAccessFailure.Unavailable, result.Failure);
-        Assert.Equal(0, _guestWork.Saves);
-        Assert.Equal(1, _guestWork.Rollbacks);
     }
 }

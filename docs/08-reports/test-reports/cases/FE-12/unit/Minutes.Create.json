@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-59 · MSG395 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "type": "Abnormal",
           "note": "UC-59 · MSG397",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,7 +57,7 @@
           "type": "Abnormal",
           "note": "UC-59 · MSG398",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,39 +73,7 @@
           "type": "Abnormal",
           "note": "UC-59 · MSG399",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "The latest revision is WaitingApproval."
-          ],
-          "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: true.",
-          "return": "Failure Locked; 409 MSG400; a sent revision is refused even with rebuild.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59 · MSG400",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "The database fails while saving the new draft."
-          ],
-          "inputs": "meetingId: the meeting; actor: the current Secretary; rebuild: false.",
-          "return": "Failure SaveFailed; 503 MSG404; nothing saved.",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-59 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

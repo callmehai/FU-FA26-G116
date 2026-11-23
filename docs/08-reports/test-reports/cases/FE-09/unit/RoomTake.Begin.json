@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-345 · BR-347",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -42,26 +42,11 @@
           "type": "Abnormal",
           "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "The actor is the Chair, not the Secretary."
-          ],
-          "inputs": "start: consentConfirmed true.",
-          "return": "Forbidden (403, MSG295).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG295",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Online meeting in status InProgress; the actor is the Secretary."
           ],
@@ -72,11 +57,11 @@
           "type": "Abnormal",
           "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-340 · MSG358",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "InPerson meeting in status Published; the actor is the Secretary."
           ],
@@ -87,24 +72,7 @@
           "type": "Abnormal",
           "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-342 · MSG359",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
-            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
-            "Two devices open a take at the same moment; the database refuses the second one."
-          ],
-          "inputs": "start: consentConfirmed true.",
-          "return": "TakeOpen (409, MSG360).",
-          "exception": "UniqueConflictException caught.",
-          "log": "The created file is deleted.",
-          "type": "Abnormal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG360",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

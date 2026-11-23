@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-84c · BR-414 · BR-431 · MSG436",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Boundary",
           "note": "UC-84c · BR-431 · MSG436",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,27 +56,11 @@
           "type": "Abnormal",
           "note": "UC-84c · BR-431 · MSG443",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
-          ],
-          "inputs": "actor: Binh (the sender); values empty.",
-          "return": "Failure NotFound (404); only the asked side may answer.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84c",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Share Declined (closed)."
@@ -88,11 +72,11 @@
           "type": "Abnormal",
           "note": "UC-84c · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20.",
@@ -105,11 +89,11 @@
           "type": "Abnormal",
           "note": "UC-84c · MSG468",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC006",
           "preconditions": [
             "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
             "Effective share Level1, 2026-11-18 to 2026-12-18; Binh asked for Level2 until 2026-12-30 (pending change)."
@@ -121,24 +105,7 @@
           "type": "Normal",
           "note": "UC-84c · BR-431 · MSG442",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20.",
-            "The database fails while saving."
-          ],
-          "inputs": "actor: An; values empty.",
-          "return": "Failure SaveFailed (MSG447); share remains Pending.",
-          "exception": "N/A",
-          "log": "Unit of work changes discarded; error logged.",
-          "type": "Abnormal",
-          "note": "UC-84c · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

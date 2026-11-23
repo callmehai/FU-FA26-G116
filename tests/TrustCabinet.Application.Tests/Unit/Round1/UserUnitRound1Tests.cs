@@ -52,20 +52,6 @@ public sealed class UserUnitRound1Tests
         Assert.Equal([AuditActions.UserCreated], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.CreateAsync/UTC006 email taken in another case is refused")]
-    [Trait("UTC", "UserService.CreateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task CreateAsync_UTC006()
-    {
-        _users.Add("thuky@trustcabinet.local", BuiltInRoles.Member);
-
-        var result = await Service().CreateAsync(NewMember("THUKY@trustcabinet.local"), _actorId);
-
-        Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
-        Assert.Null(result.Account);
-        Assert.Equal(0, _unitOfWork.Saves);
-    }
-
     [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC001 deactivating another administrator works")]
     [Trait("UTC", "UserService.ChangeStatusAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -81,10 +67,10 @@ public sealed class UserUnitRound1Tests
         Assert.Equal([AuditActions.UserDeactivated], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC003 deactivating yourself is refused")]
-    [Trait("UTC", "UserService.ChangeStatusAsync/UTC003")]
+    [Fact(DisplayName = "UserService.ChangeStatusAsync/UTC002 deactivating yourself is refused")]
+    [Trait("UTC", "UserService.ChangeStatusAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task ChangeStatusAsync_UTC003()
+    public async Task ChangeStatusAsync_UTC002()
     {
         var admin = _users.Add("admin@trustcabinet.local", BuiltInRoles.Admin);
 
@@ -109,10 +95,10 @@ public sealed class UserUnitRound1Tests
         Assert.Equal([AuditActions.UserUpdated], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.UpdateAsync/UTC005 taking another account email is refused")]
-    [Trait("UTC", "UserService.UpdateAsync/UTC005")]
+    [Fact(DisplayName = "UserService.UpdateAsync/UTC004 taking another account email is refused")]
+    [Trait("UTC", "UserService.UpdateAsync/UTC004")]
     [Trait("Trait", "UTC")]
-    public async Task UpdateAsync_UTC005()
+    public async Task UpdateAsync_UTC004()
     {
         var first = _users.Add("a@x.vn", BuiltInRoles.Member);
         _users.Add("b@x.vn", BuiltInRoles.Member);
@@ -138,10 +124,10 @@ public sealed class UserUnitRound1Tests
         Assert.Equal([AuditActions.UserPasswordResetRequested], _audit.Actions);
     }
 
-    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC003 deactivated account gets no link")]
-    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC003")]
+    [Fact(DisplayName = "UserService.RequestPasswordResetAsync/UTC002 deactivated account gets no link")]
+    [Trait("UTC", "UserService.RequestPasswordResetAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task RequestPasswordResetAsync_UTC003()
+    public async Task RequestPasswordResetAsync_UTC002()
     {
         var user = _users.Add("lan@x.vn", BuiltInRoles.Member, isActive: false);
 

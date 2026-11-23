@@ -5,7 +5,7 @@
     {
       "cases": [
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "email: \"organizer@example.com\"; password: \"<correct password>\".",
@@ -21,7 +21,7 @@
           "type": "Normal"
         },
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "email: \"nobody@example.com\"; password: \"<any password>\".",
@@ -36,7 +36,7 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "email: \"former@example.com\"; password: \"<correct password>\".",
@@ -51,7 +51,7 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "email: \"\"; password: \"<any password>\".",
@@ -66,39 +66,9 @@
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC005",
-          "inputs": "email: \"organizer@example.com\"; password: \"   \" (whitespace only).",
-          "log": "N/A",
-          "note": "UC-01 · MSG01",
-          "preconditions": [
-            "No repository access is needed for a blank password."
-          ],
-          "return": "SignInResult Failure(InvalidCredentials) (MSG01); the account store is not read and nothing is recorded.",
-          "round1": "Passed",
-          "tester1": "Phạm Gia Khánh",
-          "type": "Boundary"
-        },
-        {
-          "date1": "2026-11-22",
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "email: \"  organizer@example.com  \" (surrounding spaces); password: \"<correct password>\".",
-          "log": "Sign-in succeeded for account {UserId}.; audit row SignedIn (method \"password\").",
-          "note": "UC-01",
-          "preconditions": [
-            "Active account organizer@example.com exists."
-          ],
-          "return": "SignInResult Success: the email is trimmed before the lookup, so the account is found.",
-          "round1": "Passed",
-          "tester1": "Phạm Gia Khánh",
-          "type": "Boundary"
-        },
-        {
-          "date1": "2026-11-22",
-          "exception": "N/A",
-          "id": "UTC007",
           "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\".",
           "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
           "note": "UC-01 · BR-02 · BR-444 · MSG01",
@@ -111,9 +81,9 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC006",
           "inputs": "email: \"former@example.com\"; password: \"<wrong password>\".",
           "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
           "note": "UC-01 · BR-03 · BR-444 · MSG01",

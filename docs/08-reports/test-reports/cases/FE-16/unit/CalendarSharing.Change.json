@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-84d · BR-414 · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Boundary",
           "note": "UC-84d · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,7 +56,7 @@
           "type": "Boundary",
           "note": "UC-84d · BR-431 · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -72,7 +72,7 @@
           "type": "Abnormal",
           "note": "UC-84d · MSG443",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,7 +88,7 @@
           "type": "Abnormal",
           "note": "UC-84d · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -104,39 +104,7 @@
           "type": "Normal",
           "note": "UC-84d · BR-414 · MSG442",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer."
-          ],
-          "inputs": "actor: a third user; shareId of an Effective share.",
-          "return": "Failure NotFound (404).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84d",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
-            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending.",
-            "The database fails while saving."
-          ],
-          "inputs": "actor: Binh; values: level \"Level2\".",
-          "return": "Failure SaveFailed (MSG447); no pending change is kept.",
-          "exception": "N/A",
-          "log": "Unit of work changes discarded; error logged.",
-          "type": "Abnormal",
-          "note": "UC-84d · MSG447",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

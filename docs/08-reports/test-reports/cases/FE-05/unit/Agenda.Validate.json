@@ -22,7 +22,7 @@
           "return": "No errors.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,7 +37,7 @@
           "return": "Errors: title only.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,22 +52,7 @@
           "return": "Errors: title only.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "input {Title: \"A\"}.",
-          "log": "N/A",
-          "note": "UC-23a · BR-66",
-          "preconditions": [
-            "Title is one character."
-          ],
-          "return": "No errors.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

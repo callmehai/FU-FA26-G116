@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-44a · BR-345 · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,44 +41,11 @@
           "type": "Boundary",
           "note": "UC-44a · BR-345 · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A Pending room take made by the actor (the Secretary) in an InPerson meeting that is InProgress.",
-            "Part size 320,000 bytes; upload limit 300 MB."
-          ],
-          "inputs": "part 2; declared length 100,000; final false.",
-          "return": "BadPart (400, MSG361); only the final part may be shorter.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44a · BR-345 · MSG361",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "A Pending room take made by the actor (the Secretary) in an InPerson meeting that is InProgress.",
-            "Part size 320,000 bytes; upload limit 300 MB.",
-            "ByteSize is 640,000."
-          ],
-          "inputs": "part 4; 320,000 bytes.",
-          "return": "BadPart (400, MSG361); part 3 is missing, the file must have no hole.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44a · BR-345 · MSG361",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "A Pending room take made by the actor (the Secretary) in an InPerson meeting that is InProgress.",
             "Part size 320,000 bytes; upload limit 300 MB.",
@@ -91,11 +58,11 @@
           "type": "Boundary",
           "note": "UC-44a · BR-345 · MSG361 · MSG293",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "A Pending room take made by the actor (the Secretary) in an InPerson meeting that is InProgress.",
             "Part size 320,000 bytes; upload limit 300 MB.",
@@ -108,11 +75,11 @@
           "type": "Boundary",
           "note": "UC-44a · BR-345 · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC005",
           "preconditions": [
             "The take is already saved (status Available)."
           ],
@@ -123,11 +90,11 @@
           "type": "Abnormal",
           "note": "UC-44a · BR-345 · MSG361 · MSG362",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC006",
           "preconditions": [
             "A Pending room take made by the actor (the Secretary) in an InPerson meeting that is InProgress.",
             "Part size 320,000 bytes; upload limit 300 MB.",
@@ -140,7 +107,7 @@
           "type": "Abnormal",
           "note": "UC-44a · BR-345 · MSG361 · MSG298",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

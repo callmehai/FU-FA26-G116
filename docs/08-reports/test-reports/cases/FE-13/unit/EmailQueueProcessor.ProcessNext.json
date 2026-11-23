@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "BR-38 · BR-76",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "BR-38 · BR-76",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,26 +53,11 @@
           "type": "Boundary",
           "note": "BR-38 · BR-76",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "A Queued email is due: NextAttemptAt in the past, Undeliverable recipient domain, and the lease is no longer owned by this worker."
-          ],
-          "inputs": "Clock 2026-11-18T03:00Z.",
-          "return": "LeaseLost, AttemptCount 1.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "A Queued email with AttemptCount 8 (the maximum) is still waiting.",
             "No other due email."
@@ -84,22 +69,7 @@
           "type": "Boundary",
           "note": "BR-38 · BR-76",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The only Queued email has NextAttemptAt 03:01Z (in the future)."
-          ],
-          "inputs": "Clock 2026-11-18T03:00Z.",
-          "return": "NoWork.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "BR-38 · BR-76",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

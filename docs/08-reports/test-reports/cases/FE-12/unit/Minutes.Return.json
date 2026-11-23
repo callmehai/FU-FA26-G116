@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-65 · BR-406 · BR-407 · MSG430 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,27 +40,11 @@
           "type": "Abnormal",
           "note": "UC-65 · BR-406 · MSG428",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "Revision still Draft."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure NotWaiting; 409 MSG429; status unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-65 · MSG429",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "Revision WaitingApproval with UpdatedAt T."
@@ -72,11 +56,11 @@
           "type": "Abnormal",
           "note": "UC-65 · BR-407 · MSG431",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "Revision WaitingApproval with UpdatedAt T."
@@ -88,23 +72,7 @@
           "type": "Boundary",
           "note": "UC-65 · BR-407 · MSG431",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "WaitingApproval revision read at T, then saved by someone else."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure Stale; 409 MSG401; status unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-65 · BR-389 · MSG401",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

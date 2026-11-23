@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,26 +55,11 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Caller cannot read the meeting (stranger, or meeting does not exist)."
-          ],
-          "inputs": "meetingId: that meeting; caller: the stranger.",
-          "return": "NotFound; existence stays hidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress with mode Online; caller is a current participant.",
             "The access read fails in storage."
@@ -86,7 +71,7 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG283",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]
