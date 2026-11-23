@@ -1,5 +1,7 @@
 # Kế hoạch chạy Round 1 — Report 5.2 (test tích hợp qua giao diện)
 
+> Ghi chú ngày 23/11/2026: bộ case đã thu gọn còn **UI 556 case** (commit `03594e25`). Con số 875 case và các bảng phân nhóm A/AX/H trong tài liệu này là số trước thu gọn, chỉ giữ lại để tham khảo cách chia nhóm. Nguồn chính xác là `cases/FE-xx/ui.json` và `sheets.json` (`integration_cases.py check` 0 lỗi).
+
 Phân việc cho 875 case trong `cases/FE-xx/ui.json`. Chia ba nhóm theo cách chạy. Máy phân nhóm bằng từ khoá trong bước và kết quả mong đợi, nên **người chạy xác nhận lại khi gặp case lạ**. Tester Round 1: **Phạm Gia Khánh** (chịu trách nhiệm kết quả, kể cả case do agent chạy).
 
 | Nhóm | Ai chạy | Cách chạy | Số case |

@@ -1,5 +1,7 @@
 # Kế hoạch chạy Round 1 — Report 5.2.2 (test API)
 
+> Ghi chú ngày 23/11/2026: bộ case đã thu gọn còn **API 819 case, 15 Feature** (commit `03594e25`). Con số 1537 case và bảng ở mục 1 trong tài liệu này là số trước thu gọn, chỉ giữ lại để tham khảo cách chia nhóm B1/B2. Nguồn chính xác là `cases/FE-xx/api.json` và `sheets.json` (`integration_cases.py check` 0 lỗi).
+
 Tài liệu giao việc cho agent. Nguồn là `cases/FE-xx/api.json` (1537 case, 15 Feature). Tester Round 1: **Phạm Gia Khánh**. Làm theo ba giai đoạn: **0 soát case**, **1 chạy test tự động và đối chiếu**, **2 viết test tự động cho các case chưa có test**. Quy tắc chung: không sửa code production để case xanh; lỗi thì ghi `Failed` và mở ticket; không đánh `Passed` khi chưa chạy thật.
 
 ## 1. Tổng quan
