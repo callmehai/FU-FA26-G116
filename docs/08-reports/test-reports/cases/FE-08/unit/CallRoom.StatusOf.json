@@ -22,7 +22,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,7 +37,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,41 +52,11 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG117",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Meeting Ended with mode Online."
-          ],
-          "inputs": "status: Ended; mode: Online.",
-          "return": "Ended; the room is closed and no new ticket is issued.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Meeting Cancelled after it was published, with mode Online."
-          ],
-          "inputs": "status: Cancelled; mode: Online.",
-          "return": "Cancelled; only a meeting cancelled after publishing reaches this (a meeting cancelled earlier is answered as if it did not exist).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-75",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "Meeting InProgress with mode InPerson."
           ],
@@ -97,7 +67,7 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG280",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

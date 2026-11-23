@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-72a · BR-220 · MSG187",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Abnormal",
           "note": "UC-72a · BR-242 · MSG179",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,26 +53,11 @@
           "type": "Abnormal",
           "note": "UC-72a · BR-220 · MSG188",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Same."
-          ],
-          "inputs": "name: 401 characters.",
-          "return": "Failure NameTooLong (HTTP 400, MSG348).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-72a · MSG348",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Parent chain: F1 > F2 > F3 > F4 (parent F4 is at level 4)."
           ],
@@ -83,11 +68,11 @@
           "type": "Boundary",
           "note": "UC-72a · BR-191 · MSG187",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
             "Parent chain of five levels F1 > ... > F5."
           ],
@@ -98,7 +83,7 @@
           "type": "Boundary",
           "note": "UC-72a · BR-191 · MSG189",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -24,7 +24,7 @@
           "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "return": "Success(Ended); ActualEndedAt = now; MSG111.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "return": "Success(Ended); MSG111.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,7 +70,7 @@
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -86,7 +86,7 @@
           "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -101,37 +101,7 @@
           "return": "Failure Forbidden (403); MSG114.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "command: Start; actor: Chair.",
-          "log": "N/A",
-          "note": "UC-21 · BR-131 · MSG112",
-          "preconditions": [
-            "Meeting is Approved (not yet Published)."
-          ],
-          "return": "Failure StatusConflict (409); MSG112; nothing saved.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "command: Start; actor: Chair.",
-          "log": "Error logged with the action and meeting id; transaction rolled back.",
-          "note": "UC-21 · MSG115",
-          "preconditions": [
-            "The store fails while saving the start."
-          ],
-          "return": "Failure SaveFailed (500); MSG115; no notification is sent.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

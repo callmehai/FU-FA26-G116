@@ -24,26 +24,11 @@
           "type": "Normal",
           "note": "UC-46b · BR-368 · MSG316",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "No voice with the label exists on the recording; actor is the current secretary."
-          ],
-          "inputs": "recordingId: a transcribed recording; label: \"SPEAKER_09\"; userId: a meeting member; guestId: null; actorId: the current secretary.",
-          "return": "Failure NotFound; answered as if the voice does not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46b",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Voice SPEAKER_00 exists; actor is the current secretary.",
             "The user id belongs to nobody on the meeting roster."
@@ -55,11 +40,11 @@
           "type": "Abnormal",
           "note": "UC-46b · BR-368 · MSG317",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Voice SPEAKER_00 exists; actor takes part in the meeting but is not the secretary."
           ],
@@ -70,7 +55,7 @@
           "type": "Abnormal",
           "note": "UC-46b · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

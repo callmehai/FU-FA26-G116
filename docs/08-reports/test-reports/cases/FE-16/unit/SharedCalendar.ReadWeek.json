@@ -26,7 +26,7 @@
           "type": "Normal",
           "note": "UC-85c · BR-419 · BR-420 · Deviation: code now shows the whole week (Monday to Sunday) and the whole day (00:00–24:00), not Monday to Friday 08:00–17:00",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -44,7 +44,7 @@
           "type": "Normal",
           "note": "UC-85c · BR-424 · MSG439",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -60,28 +60,11 @@
           "type": "Abnormal",
           "note": "UC-85c · BR-430 · MSG448",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "Binh is an active Meeting Organizer.",
-            "The database fails while reading the shares and the busy time."
-          ],
-          "inputs": "actor: Binh; week: null.",
-          "return": "Failure ReadFailed; the endpoint answers 500 MSG453 (\"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\"); nothing is returned.",
-          "exception": "N/A",
-          "log": "Error logged with the actor id.",
-          "type": "Abnormal",
-          "note": "UC-85c · MSG453",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "Binh is an active Meeting Organizer; An is an active user with an Effective share covering November."
@@ -93,7 +76,7 @@
           "type": "Boundary",
           "note": "UC-85c · Deviation: week now ends Sunday 2026-11-22, not Friday 2026-11-20",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

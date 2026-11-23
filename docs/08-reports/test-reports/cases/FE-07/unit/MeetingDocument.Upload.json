@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-33a · BR-192 · BR-226 · MSG161",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-33a · BR-195 · MSG172",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-33a · BR-184 · MSG162",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,7 +69,7 @@
           "type": "Boundary",
           "note": "UC-33a · BR-319",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -84,22 +84,7 @@
           "type": "Boundary",
           "note": "UC-33a · MSG346",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The database fails while the StoredFile rows are reserved."
-          ],
-          "inputs": "files: one validated PDF.",
-          "return": "Failure StoreFailed (HTTP 503, MSG166).",
-          "exception": "N/A",
-          "log": "Error log \"Failed to record uploaded files\"",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG166",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

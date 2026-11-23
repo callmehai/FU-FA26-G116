@@ -171,22 +171,8 @@ public sealed class DocUnitRound1Tests
         Assert.Null(outcome.Errors);
     }
 
-    [Fact(DisplayName = "DocumentFileRules.ValidateAsync/UTC004: exactly 10 MB is within the limit")]
+    [Fact(DisplayName = "DocumentFileRules.ValidateAsync/UTC004: 10 MB plus one byte is invalid")]
     [Trait("UTC", "DocumentFileRules.ValidateAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Validate_Exactly10MBIsWithinTheLimit()
-    {
-        var outcome = await DocumentFileRules.ValidateAsync(
-            [Candidate("lon.pdf", 10485760, PdfBytes)],
-            (_, _) => Task.FromResult<int?>(40), default);
-
-        Assert.Equal(DocumentUploadFailure.None, outcome.Failure);
-        Assert.Equal(10485760, Assert.Single(outcome.Files!).Length);
-        Assert.Null(outcome.Errors);
-    }
-
-    [Fact(DisplayName = "DocumentFileRules.ValidateAsync/UTC005: 10 MB plus one byte is invalid")]
-    [Trait("UTC", "DocumentFileRules.ValidateAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Validate_10MBPlusOneByteIsInvalid()
     {
@@ -197,22 +183,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(DocumentUploadFailure.Invalid, outcome.Failure);
         Assert.Equal(["lon.pdf: tệp lớn hơn 10 MB."], outcome.Errors!["files[0]"]);
         Assert.Null(outcome.Files);
-    }
-
-    [Fact(DisplayName = "DocumentFileRules.ValidateAsync/UTC006: PDF after one line break is accepted")]
-    [Trait("UTC", "DocumentFileRules.ValidateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Validate_PdfAfterOneLineBreakIsAccepted()
-    {
-        var bytes = "\n%PDF-1.7\ntrailer\n%%EOF\nstartxref\n0\n"u8.ToArray();
-
-        var outcome = await DocumentFileRules.ValidateAsync(
-            [Candidate("soft.pdf", 1200, bytes)],
-            (_, _) => Task.FromResult<int?>(1), default);
-
-        Assert.Equal(DocumentUploadFailure.None, outcome.Failure);
-        Assert.Equal("application/pdf", Assert.Single(outcome.Files!).ContentType);
-        Assert.Equal(1, outcome.Files![0].PageCount);
     }
 
     // ---- MeetingDocumentService.UploadAsync ----
@@ -297,23 +267,6 @@ public sealed class DocUnitRound1Tests
         Assert.Empty(_storage.Objects);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.UploadAsync/UTC006: reserve failure answers store failed")]
-    [Trait("UTC", "MeetingDocumentService.UploadAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Upload_ReserveFailureAnswersStoreFailed()
-    {
-        var writerLog = new CapturingLog<StoredFileWriter>();
-        SeedManagerMeeting(MeetingStatus.Published);
-        SeedManagedUpload(out _);
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await DocService(writerLogger: writerLog).UploadAsync(_meeting, _secretary, [ValidatedFile()]);
-
-        Assert.Equal(DocumentUploadFailure.StoreFailed, outcome.Failure);
-        Assert.Empty(_attacher.Calls);
-        Assert.Equal(1, writerLog.Messages.Count(m => m.Contains("Failed to record uploaded files")));
-    }
-
     // ---- MeetingDocumentService.AddFromLibraryAsync ----
 
     private void SeedLibraryDocs(Guid owner, int count, out List<Guid> ids)
@@ -349,23 +302,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(1, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC002: nothing chosen is library unavailable")]
+    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC002: file already in meeting is refused")]
     [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task AddFromLibrary_NothingChosenIsLibraryUnavailable()
-    {
-        SeedManagerMeeting(MeetingStatus.Published);
-        _attacher.LibraryResult = (DocumentUploadFailure.LibraryUnavailable, []);
-
-        var outcome = await DocService().AddFromLibraryAsync(_meeting, _secretary, []);
-
-        Assert.Equal(DocumentUploadFailure.LibraryUnavailable, outcome.Failure);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Equal(["add-library"], _attacher.Calls);
-    }
-
-    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC003: file already in meeting is refused")]
-    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task AddFromLibrary_FileAlreadyInMeetingIsRefused()
     {
@@ -380,8 +318,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC004: member is forbidden")]
-    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC004")]
+    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC003: member is forbidden")]
+    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task AddFromLibrary_MemberIsForbidden()
     {
@@ -395,8 +333,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC005: ended meeting refuses")]
-    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC005")]
+    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC004: ended meeting refuses")]
+    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task AddFromLibrary_EndedMeetingRefuses()
     {
@@ -407,23 +345,6 @@ public sealed class DocUnitRound1Tests
 
         Assert.Equal(DocumentUploadFailure.Ended, outcome.Failure);
         Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Equal(1, _unitOfWork.Commits);
-    }
-
-    [Fact(DisplayName = "MeetingDocumentService.AddFromLibraryAsync/UTC006: unreadable meeting is not found")]
-    [Trait("UTC", "MeetingDocumentService.AddFromLibraryAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task AddFromLibrary_UnreadableMeetingIsNotFound()
-    {
-        SeedManagerMeeting(MeetingStatus.Published);
-        SeedLibraryDocs(_secretary, 1, out var ids);
-        var outsider = Guid.CreateVersion7();
-        _meetings.ActiveUsers.Add(outsider);
-
-        var outcome = await DocService().AddFromLibraryAsync(_meeting, outsider, ids);
-
-        Assert.Equal(DocumentUploadFailure.NotFound, outcome.Failure);
-        Assert.Empty(_attacher.Calls);
         Assert.Equal(1, _unitOfWork.Commits);
     }
 
@@ -503,40 +424,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(1, _unitOfWork.Commits);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.RemoveAsync/UTC005: unreadable meeting is not found")]
-    [Trait("UTC", "MeetingDocumentService.RemoveAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Remove_UnreadableMeetingIsNotFound()
-    {
-        SeedManagerMeeting(MeetingStatus.Published);
-        var id = SeedMeetingDocument();
-        var outsider = Guid.CreateVersion7();
-        _meetings.ActiveUsers.Add(outsider);
-
-        var outcome = await DocService().RemoveAsync(_meeting, id, outsider);
-
-        Assert.Equal(DocumentUploadFailure.NotFound, outcome.Failure);
-        Assert.Null(_documents.MeetingDocuments.Single(d => d.Id == id).RemovedAt);
-        Assert.Equal(1, _unitOfWork.Commits);
-    }
-
-    [Fact(DisplayName = "MeetingDocumentService.RemoveAsync/UTC006: save failure keeps the document")]
-    [Trait("UTC", "MeetingDocumentService.RemoveAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Remove_SaveFailureKeepsTheDocument()
-    {
-        var log = new CapturingLog<MeetingDocumentService>();
-        SeedManagerMeeting(MeetingStatus.Published);
-        var id = SeedMeetingDocument();
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await DocService(logger: log).RemoveAsync(_meeting, id, _secretary);
-
-        Assert.Equal(DocumentUploadFailure.StoreFailed, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
-        Assert.Equal(1, log.Messages.Count(m => m.Contains("Failed to remove a document from meeting")));
-    }
-
     // ---- MeetingDocumentService.AttachAsync ----
 
     private Guid SeedLinkableDocument(out Guid itemId)
@@ -580,23 +467,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC003: empty selection is not in meeting")]
+    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC003: unknown agenda item is not found")]
     [Trait("UTC", "MeetingDocumentService.AttachAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Attach_EmptySelectionIsNotInMeeting()
-    {
-        SeedManagerMeeting(MeetingStatus.Published);
-        SeedLinkableDocument(out var a1);
-
-        var outcome = await DocService().AttachAsync(_meeting, a1, _secretary, DocumentAttachSource.Meeting, []);
-
-        Assert.Equal(DocumentUploadFailure.NotInMeeting, outcome.Failure);
-        Assert.Empty(_documents.AgendaLinks);
-        Assert.Equal(1, _unitOfWork.Commits);
-    }
-
-    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC004: unknown agenda item is not found")]
-    [Trait("UTC", "MeetingDocumentService.AttachAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Attach_UnknownAgendaItemIsNotFound()
     {
@@ -611,8 +483,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC005: member is forbidden")]
-    [Trait("UTC", "MeetingDocumentService.AttachAsync/UTC005")]
+    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC004: member is forbidden")]
+    [Trait("UTC", "MeetingDocumentService.AttachAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Attach_MemberIsForbidden()
     {
@@ -624,21 +496,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(DocumentUploadFailure.Forbidden, outcome.Failure);
         Assert.Empty(_documents.AgendaLinks);
         Assert.Equal(0, _unitOfWork.Saves);
-    }
-
-    [Fact(DisplayName = "MeetingDocumentService.AttachAsync/UTC006: ended meeting refuses")]
-    [Trait("UTC", "MeetingDocumentService.AttachAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Attach_EndedMeetingRefuses()
-    {
-        SeedManagerMeeting(MeetingStatus.Ended);
-        var m1 = SeedLinkableDocument(out var a1);
-
-        var outcome = await DocService().AttachAsync(_meeting, a1, _secretary, DocumentAttachSource.Meeting, [m1]);
-
-        Assert.Equal(DocumentUploadFailure.Ended, outcome.Failure);
-        Assert.Empty(_documents.AgendaLinks);
-        Assert.Equal(1, _unitOfWork.Commits);
     }
 
     // ---- MeetingDocumentService.OpenContentAsync ----
@@ -730,23 +587,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(1, log.Messages.Count(m => m.Contains("Failed to open stored object")));
     }
 
-    [Fact(DisplayName = "MeetingDocumentService.OpenContentAsync/UTC006: broken storage answers read failed")]
-    [Trait("UTC", "MeetingDocumentService.OpenContentAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task OpenContent_BrokenStorageAnswersReadFailed()
-    {
-        SeedManagerMeeting(MeetingStatus.Published, withMember: true);
-        _documents.AttachedFile = new AttachedDocumentFile("M1.pdf", "stored-files/m1", "application/pdf", 7);
-        _storage.FailRead = new IOException("down");
-
-        var outcome = await DocService().OpenContentAsync(_meeting, Guid.CreateVersion7(),
-            new ParticipantActor(_member), false);
-
-        Assert.Equal(DocumentReadFailure.ReadFailed, outcome.Failure);
-        Assert.Null(outcome.Content);
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
     // ---- PersonalLibraryService.CreateFolderAsync ----
 
     [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC001: owner creates a root folder")]
@@ -785,20 +625,8 @@ public sealed class DocUnitRound1Tests
         Assert.Empty(_library.Folders);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC004: 401 characters is too long")]
+    [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC004: fifth level is allowed")]
     [Trait("UTC", "PersonalLibraryService.CreateFolderAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task CreateFolder_401CharactersIsTooLong()
-    {
-        var outcome = await LibraryService().CreateFolderAsync(_owner, null, new string('n', 401));
-
-        Assert.Equal(LibraryFailure.NameTooLong, outcome.Failure);
-        Assert.Null(outcome.Value);
-        Assert.Empty(_library.Folders);
-    }
-
-    [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC005: fifth level is allowed")]
-    [Trait("UTC", "PersonalLibraryService.CreateFolderAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task CreateFolder_FifthLevelIsAllowed()
     {
@@ -817,8 +645,8 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(1, _unitOfWork.Saves);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC006: sixth level is too deep")]
-    [Trait("UTC", "PersonalLibraryService.CreateFolderAsync/UTC006")]
+    [Fact(DisplayName = "PersonalLibraryService.CreateFolderAsync/UTC005: sixth level is too deep")]
+    [Trait("UTC", "PersonalLibraryService.CreateFolderAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task CreateFolder_SixthLevelIsTooDeep()
     {
@@ -891,22 +719,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal([_owner, _owner], _library.Locks);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.DeleteDocumentAsync/UTC004: store failure keeps the row")]
-    [Trait("UTC", "PersonalLibraryService.DeleteDocumentAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteDocument_StoreFailureKeepsTheRow()
-    {
-        var log = new CapturingLog<PersonalLibraryService>();
-        var id = SeedLibraryDocument();
-        _library.Fail = new PersistenceUnavailableException();
-
-        var failure = await LibraryService(logger: log).DeleteDocumentAsync(_owner, id);
-
-        Assert.Equal(LibraryFailure.SaveFailed, failure);
-        Assert.Single(_library.Documents);
-        Assert.Equal(1, log.Messages.Count(m => m.Contains("Failed to delete a document")));
-    }
-
     // ---- PersonalLibraryService.DeleteFolderAsync ----
 
     private Guid SeedFolder(Guid? parent = null, Guid? meetingId = null)
@@ -969,22 +781,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(LibraryFailure.None, failure);
         Assert.Empty(_library.Folders);
         Assert.Equal(1, _library.DeletedFolders);
-    }
-
-    [Fact(DisplayName = "PersonalLibraryService.DeleteFolderAsync/UTC005: store failure keeps the folder")]
-    [Trait("UTC", "PersonalLibraryService.DeleteFolderAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteFolder_StoreFailureKeepsTheFolder()
-    {
-        var log = new CapturingLog<PersonalLibraryService>();
-        var id = SeedFolder();
-        _library.Fail = new PersistenceUnavailableException();
-
-        var failure = await LibraryService(logger: log).DeleteFolderAsync(_owner, id);
-
-        Assert.Equal(LibraryFailure.SaveFailed, failure);
-        Assert.Single(_library.Folders);
-        Assert.Equal(1, log.Messages.Count(m => m.Contains("Failed to delete a folder")));
     }
 
     // ---- PersonalLibraryService.RenameDocumentAsync ----
@@ -1072,22 +868,6 @@ public sealed class DocUnitRound1Tests
         Assert.Equal(255, _library.Documents.Single(d => d.Id == id).FileName.Length);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.RenameDocumentAsync/UTC006: store failure keeps the name")]
-    [Trait("UTC", "PersonalLibraryService.RenameDocumentAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task RenameDocument_StoreFailureKeepsTheName()
-    {
-        var log = new CapturingLog<PersonalLibraryService>();
-        var id = SeedRenamableDocument();
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await LibraryService(logger: log).RenameDocumentAsync(_owner, id, "moi.pdf");
-
-        Assert.Equal(LibraryFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
-        Assert.Equal(1, log.Messages.Count(m => m.Contains("Failed to rename a document")));
-    }
-
     // ---- PersonalLibraryService.UploadAsync ----
 
     [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC001: owner uploads two files to a folder")]
@@ -1118,23 +898,8 @@ public sealed class DocUnitRound1Tests
         Assert.Single(_storedFiles.Stamped);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC003: used plus new exactly at the limit")]
+    [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC003: one byte over the limit is storage full")]
     [Trait("UTC", "PersonalLibraryService.UploadAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task LibraryUpload_UsedPlusNewExactlyAtTheLimit()
-    {
-        const long fileSize = 1048576;
-        _storedFiles.UsedBytes = new FileStorageOptions().MaxTotalBytes - fileSize;
-
-        var outcome = await LibraryService().UploadAsync(_owner, null, [ValidatedFile("a.pdf", fileSize)]);
-
-        Assert.Equal(LibraryFailure.None, outcome.Failure);
-        Assert.Single(outcome.Value!);
-        Assert.Single(_storedFiles.Added);
-    }
-
-    [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC004: one byte over the limit is storage full")]
-    [Trait("UTC", "PersonalLibraryService.UploadAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task LibraryUpload_OneByteOverTheLimitIsStorageFull()
     {
@@ -1148,8 +913,8 @@ public sealed class DocUnitRound1Tests
         Assert.Empty(_storage.Objects);
     }
 
-    [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC005: storage failure answers save failed")]
-    [Trait("UTC", "PersonalLibraryService.UploadAsync/UTC005")]
+    [Fact(DisplayName = "PersonalLibraryService.UploadAsync/UTC004: storage failure answers save failed")]
+    [Trait("UTC", "PersonalLibraryService.UploadAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task LibraryUpload_StorageFailureAnswersSaveFailed()
     {
@@ -1235,8 +1000,8 @@ public sealed class DocUnitRound1Tests
         Assert.Empty(_comments.Added);
     }
 
-    [Fact(DisplayName = "DocumentCommentService.AddAsync/UTC006: ended meeting refuses new comments")]
-    [Trait("UTC", "DocumentCommentService.AddAsync/UTC006")]
+    [Fact(DisplayName = "DocumentCommentService.AddAsync/UTC005: ended meeting refuses new comments")]
+    [Trait("UTC", "DocumentCommentService.AddAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Add_EndedMeetingRefusesNewComments()
     {

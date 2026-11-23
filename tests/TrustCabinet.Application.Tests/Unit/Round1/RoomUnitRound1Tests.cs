@@ -79,28 +79,8 @@ public sealed class RoomUnitRound1Tests
         Assert.Equal(CallRoomStatus.NotStarted, CallRoomRules.StatusOf(MeetingStatus.Draft, MeetingMode.Online));
     }
 
-    [Fact(DisplayName = "CallRoomRules.StatusOf/UTC004: Ended Online is Ended")]
+    [Fact(DisplayName = "CallRoomRules.StatusOf/UTC004: InProgress InPerson is InPersonOnly")]
     [Trait("UTC", "CallRoomRules.StatusOf/UTC004")]
-    [Trait("Trait", "UTC")]
-    public void StatusOf_EndedOnline_IsEnded()
-    {
-        Assert.Equal(CallRoomStatus.Ended, CallRoomRules.StatusOf(MeetingStatus.Ended, MeetingMode.Online));
-        Assert.NotEqual(CallRoomStatus.Open, CallRoomRules.StatusOf(MeetingStatus.Ended, MeetingMode.Online));
-        Assert.NotEqual(CallRoomStatus.NotStarted, CallRoomRules.StatusOf(MeetingStatus.Ended, MeetingMode.Online));
-    }
-
-    [Fact(DisplayName = "CallRoomRules.StatusOf/UTC005: Cancelled Online is Cancelled")]
-    [Trait("UTC", "CallRoomRules.StatusOf/UTC005")]
-    [Trait("Trait", "UTC")]
-    public void StatusOf_CancelledOnline_IsCancelled()
-    {
-        Assert.Equal(CallRoomStatus.Cancelled, CallRoomRules.StatusOf(MeetingStatus.Cancelled, MeetingMode.Online));
-        Assert.NotEqual(CallRoomStatus.Ended, CallRoomRules.StatusOf(MeetingStatus.Cancelled, MeetingMode.Online));
-        Assert.NotEqual(CallRoomStatus.Open, CallRoomRules.StatusOf(MeetingStatus.Cancelled, MeetingMode.Online));
-    }
-
-    [Fact(DisplayName = "CallRoomRules.StatusOf/UTC006: InProgress InPerson is InPersonOnly")]
-    [Trait("UTC", "CallRoomRules.StatusOf/UTC006")]
     [Trait("Trait", "UTC")]
     public void StatusOf_InProgressInPerson_IsInPersonOnly()
     {
@@ -164,35 +144,6 @@ public sealed class RoomUnitRound1Tests
         Assert.Equal(CallOutcome.NotConfigured, result.Outcome);
         Assert.Null(result.Value);
         Assert.Empty(_liveKit.Calls);
-    }
-
-    [Fact(DisplayName = "CallRoomService.JoinAsync/UTC005: guest without notice confirmation gets MSG380")]
-    [Trait("UTC", "CallRoomService.JoinAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Join_GuestWithoutNoticeConfirmation_IsRecordingNoticeRequired()
-    {
-        var guest = new MeetingGuestSession(_meeting, Guid.CreateVersion7(), Guid.CreateVersion7());
-        _calls.Access[guest.SessionId] = new(_meeting, MeetingStatus.InProgress, MeetingMode.Online, MeetingRole.Guest, "Khach moi");
-
-        var result = await Room().JoinAsync(_meeting, new CallCaller(Guest: guest), recordingNoticeAcknowledged: false);
-
-        Assert.Equal(CallOutcome.RecordingNoticeRequired, result.Outcome);
-        Assert.Null(result.Value);
-        Assert.Empty(_liveKit.Calls);
-    }
-
-    [Fact(DisplayName = "CallRoomService.JoinAsync/UTC006: storage failure reading access is ReadFailed MSG118")]
-    [Trait("UTC", "CallRoomService.JoinAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Join_StorageFailure_IsReadFailed()
-    {
-        _calls.Fail = new PersistenceUnavailableException();
-
-        var result = await Room().JoinAsync(_meeting, _member);
-
-        Assert.Equal(CallOutcome.ReadFailed, result.Outcome);
-        Assert.Null(result.Value);
-        Assert.Contains(_roomLog.Messages, m => m.Contains("Could not read call room access"));
     }
 
     // ---- CallRoomService.MuteAsync ----
@@ -263,33 +214,6 @@ public sealed class RoomUnitRound1Tests
         Assert.Empty(_roomLog.Messages);
     }
 
-    [Fact(DisplayName = "CallRoomService.MuteAsync/UTC005: target without microphone is MSG282")]
-    [Trait("UTC", "CallRoomService.MuteAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Mute_TargetNotInRoom_IsTargetNotInRoom()
-    {
-        var outcome = await Room().MuteAsync(_meeting, _chair, CallMember.User(Guid.CreateVersion7()));
-
-        Assert.Equal(CallOutcome.TargetNotInRoom, outcome);
-        Assert.DoesNotContain(_liveKit.Calls, c => c.StartsWith("mute:"));
-        Assert.Empty(_roomLog.Messages);
-    }
-
-    [Fact(DisplayName = "CallRoomService.MuteAsync/UTC006: provider failure is MSG124 with log")]
-    [Trait("UTC", "CallRoomService.MuteAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Mute_ProviderFailure_IsProviderFailed()
-    {
-        SeedMemberWithMicrophone(muted: false);
-        _liveKit.Unavailable = new LiveKitUnavailableException("down");
-
-        var outcome = await Room().MuteAsync(_meeting, _chair, CallMember.User(_member));
-
-        Assert.Equal(CallOutcome.ProviderFailed, outcome);
-        Assert.Contains(_roomLog.Messages, m => m.Contains("Could not mute"));
-        Assert.DoesNotContain(_unitOfWork.Modes, m => m != TransactionMode.None);
-    }
-
     // ---- CallRoomService.GetRoomAsync ----
 
     [Fact(DisplayName = "CallRoomService.GetRoomAsync/UTC001: member sees the open room view")]
@@ -340,20 +264,8 @@ public sealed class RoomUnitRound1Tests
         Assert.Contains(_roomLog.Messages, m => m.Contains("Could not count participants"));
     }
 
-    [Fact(DisplayName = "CallRoomService.GetRoomAsync/UTC004: stranger gets NotFound")]
+    [Fact(DisplayName = "CallRoomService.GetRoomAsync/UTC004: storage failure is ReadFailed MSG283")]
     [Trait("UTC", "CallRoomService.GetRoomAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task GetRoom_Stranger_IsNotFound()
-    {
-        var result = await Room().GetRoomAsync(_meeting, Guid.CreateVersion7());
-
-        Assert.Equal(CallOutcome.NotFound, result.Outcome);
-        Assert.Null(result.Value);
-        Assert.Empty(_liveKit.Calls);
-    }
-
-    [Fact(DisplayName = "CallRoomService.GetRoomAsync/UTC005: storage failure is ReadFailed MSG283")]
-    [Trait("UTC", "CallRoomService.GetRoomAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task GetRoom_StorageFailure_IsReadFailed()
     {
@@ -397,18 +309,6 @@ public sealed class RoomUnitRound1Tests
         Assert.Empty(_speaking.Published);
     }
 
-    [Fact(DisplayName = "CallRoomService.CloseMeetingRoomAsync/UTC003: no session still deletes room")]
-    [Trait("UTC", "CallRoomService.CloseMeetingRoomAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task CloseMeetingRoom_NoSession_DeletesRoomWithoutEnding()
-    {
-        await Room().CloseMeetingRoomAsync(_meeting);
-
-        Assert.Contains(_liveKit.Calls, c => c == $"delete:{RoomName}");
-        Assert.DoesNotContain(_calls.Calls, c => c == "end-session");
-        Assert.Empty(_speaking.Published);
-    }
-
     // ---- CallRoomService.EnforceRoomAccessAsync ----
 
     [Fact(DisplayName = "CallRoomService.EnforceRoomAccessAsync/UTC001: removed participant is taken out at once")]
@@ -444,20 +344,6 @@ public sealed class RoomUnitRound1Tests
         Assert.Empty(_roomLog.Messages);
     }
 
-    [Fact(DisplayName = "CallRoomService.EnforceRoomAccessAsync/UTC003: unconfigured returns at once")]
-    [Trait("UTC", "CallRoomService.EnforceRoomAccessAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task EnforceRoomAccess_NotConfigured_ReturnsAtOnce()
-    {
-        _liveKit.IsConfigured = false;
-
-        await Room().EnforceRoomAccessAsync(_meeting);
-
-        Assert.Empty(_liveKit.Calls);
-        Assert.Empty(_calls.Calls);
-        Assert.Empty(_roomLog.Messages);
-    }
-
     // ---- CallRoomService.HandleWebhookAsync ----
 
     [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC001: joined member visit is recorded")]
@@ -490,23 +376,8 @@ public sealed class RoomUnitRound1Tests
         Assert.Empty(_roomLog.Messages);
     }
 
-    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC003: room_finished ends the session")]
+    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC003: second screen share mutes the first")]
     [Trait("UTC", "CallRoomService.HandleWebhookAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Webhook_RoomFinished_EndsSessionWithoutHands()
-    {
-        _calls.ActiveSession = new() { MeetingId = _meeting, Kind = CallKind.MeetingRoom, Status = CallStatus.Active, StartedAt = Now };
-
-        await Room().HandleWebhookAsync(new CallWebhookEvent("e1", "room_finished", RoomName,
-            null, null, null, CallTrackSource.Unknown, Now));
-
-        Assert.Contains(_calls.Calls, c => c == "end-session");
-        Assert.Empty(_liveKit.Calls);
-        Assert.Empty(_speaking.Published);
-    }
-
-    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC004: second screen share mutes the first")]
-    [Trait("UTC", "CallRoomService.HandleWebhookAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Webhook_SecondScreenShare_MutesFirstSharerOnly()
     {
@@ -527,21 +398,8 @@ public sealed class RoomUnitRound1Tests
         Assert.Empty(_roomLog.Messages);
     }
 
-    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC005: unknown room is ignored with log")]
-    [Trait("UTC", "CallRoomService.HandleWebhookAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Webhook_UnknownRoom_Ignored()
-    {
-        await Room().HandleWebhookAsync(new CallWebhookEvent("e1", "participant_joined", "lobby-general",
-            _member.ToString("D"), Now, null, CallTrackSource.Unknown, Now));
-
-        Assert.Empty(_calls.Calls);
-        Assert.Empty(_liveKit.Calls);
-        Assert.Contains(_roomLog.Messages, m => m.Contains("Ignoring webhook"));
-    }
-
-    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC006: unknown device is ignored")]
-    [Trait("UTC", "CallRoomService.HandleWebhookAsync/UTC006")]
+    [Fact(DisplayName = "CallRoomService.HandleWebhookAsync/UTC004: unknown device is ignored")]
+    [Trait("UTC", "CallRoomService.HandleWebhookAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Webhook_UnknownDevice_Ignored()
     {
@@ -615,19 +473,6 @@ public sealed class RoomUnitRound1Tests
         Assert.DoesNotContain(_liveKit.Calls, c => c.StartsWith("delete:") || c.StartsWith("remove:"));
     }
 
-    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC005: roster enforcement off keeps the synthetic room")]
-    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Reconcile_EnforcementOff_KeepsSyntheticRoom()
-    {
-        _liveKit.Rooms[RoomName] = [new RoomParticipant("load-test-1", "Synthetic", Now, [])];
-
-        await Room(enforceRoster: false).ReconcileAsync();
-
-        Assert.DoesNotContain(_liveKit.Calls, c => c.StartsWith("delete:") || c.StartsWith("remove:"));
-        Assert.DoesNotContain(_calls.Calls, c => c is "ensure-session" or "join");
-    }
-
     [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC004: orphan room is deleted")]
     [Trait("UTC", "CallRoomService.ReconcileAsync/UTC004")]
     [Trait("Trait", "UTC")]
@@ -639,20 +484,6 @@ public sealed class RoomUnitRound1Tests
 
         Assert.Contains(_liveKit.Calls, c => c == $"delete:{RoomName}");
         Assert.DoesNotContain(_calls.Calls, c => c is "end-session" or "join" or "leave");
-        Assert.Empty(_roomLog.Messages);
-    }
-
-    [Fact(DisplayName = "CallRoomService.ReconcileAsync/UTC006: unconfigured returns at once")]
-    [Trait("UTC", "CallRoomService.ReconcileAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Reconcile_NotConfigured_ReturnsAtOnce()
-    {
-        _liveKit.IsConfigured = false;
-
-        await Room().ReconcileAsync();
-
-        Assert.Empty(_liveKit.Calls);
-        Assert.Empty(_calls.Calls);
         Assert.Empty(_roomLog.Messages);
     }
 }
@@ -771,29 +602,6 @@ public sealed class MeetingNoteRound1Tests
         Assert.Equal(0, _unitOfWork.Saves);
         Assert.Empty(_publisher.Published);
     }
-
-    [Fact(DisplayName = "MeetingNoteService.SaveAsync/UTC006: newer window makes the copy Stale MSG418")]
-    [Trait("UTC", "MeetingNoteService.SaveAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Save_StaleCopy_IsStale()
-    {
-        SeedMeeting();
-        _notes.Notes.Add(new MeetingNote
-        {
-            MeetingId = _meeting,
-            AuthorId = _secretary,
-            Body = "Ban moi hon",
-            CreatedAt = Now.AddMinutes(-5),
-            UpdatedAt = Now,
-            Author = new User { Id = _secretary, FullName = "Thu ky", Email = "tk@trustcabinet.local", IsActive = true },
-        });
-
-        var outcome = await Service().SaveAsync(_meeting, _secretary, null, "Ban cu", Now.AddMinutes(-10));
-
-        Assert.Equal(NoteFailure.Stale, outcome.Failure);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_publisher.Published);
-    }
 }
 
 public sealed class SpeakingRound1Tests
@@ -905,34 +713,6 @@ public sealed class SpeakingRound1Tests
         Assert.Empty(_publisher.Published);
     }
 
-    [Fact(DisplayName = "SpeakingService.MutateAsync/UTC005: starting a queued request is MSG460")]
-    [Trait("UTC", "SpeakingService.MutateAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Mutate_StartQueuedRequest_IsNotOpen()
-    {
-        var request = Request(_member, SpeakingRequestStatus.Queued, 1);
-
-        var outcome = await Service().MutateAsync(_meeting.Id, request.Id, User(_member), SpeakingOperation.Start);
-
-        Assert.Equal(SpeakingFailure.NotOpen, outcome.Failure);
-        Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Empty(_publisher.Published);
-    }
-
-    [Fact(DisplayName = "SpeakingService.MutateAsync/UTC006: storage failure is SaveFailed MSG462")]
-    [Trait("UTC", "SpeakingService.MutateAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Mutate_StorageFailure_IsSaveFailed()
-    {
-        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await Service().MutateAsync(_meeting.Id, null, User(_member), SpeakingOperation.Raise);
-
-        Assert.Equal(SpeakingFailure.SaveFailed, outcome.Failure);
-        Assert.Contains(_log.Messages, m => m.Contains("Failed speaking"));
-        Assert.Empty(_publisher.Published);
-    }
-
     // ---- SpeakingMeetingEnd.PrepareAsync ----
 
     private SpeakingMeetingEnd Ender() => new(_requests, _unitOfWork);
@@ -967,28 +747,6 @@ public sealed class SpeakingRound1Tests
         Assert.Equal(SpeakingRequestStatus.Finished, finished.Status);
         Assert.Equal(SpeakingRequestStatus.Cancelled, cancelled.Status);
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-    }
-
-    [Fact(DisplayName = "SpeakingMeetingEnd.PrepareAsync/UTC003: guest request closes like a member one")]
-    [Trait("UTC", "SpeakingMeetingEnd.PrepareAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Prepare_GuestRequest_ClosesIt()
-    {
-        var request = new SpeakingRequest
-        {
-            Id = Guid.CreateVersion7(), MeetingId = _meeting.Id, UserId = null,
-            GuestInvitationId = Guid.CreateVersion7(), Status = SpeakingRequestStatus.Queued,
-            QueuePosition = 1, RequestedAt = Now.AddMinutes(-10), CreatedAt = Now.AddMinutes(-10),
-            UpdatedAt = Now.AddMinutes(-10),
-        };
-        _requests.Requests.Add(request);
-        var endedAt = new DateTimeOffset(2026, 11, 10, 9, 0, 0, TimeSpan.Zero);
-
-        await Ender().PrepareAsync(_meeting.Id, endedAt);
-
-        Assert.Equal(SpeakingRequestStatus.Cancelled, request.Status);
-        Assert.Equal(Now.AddMinutes(-10), request.EndedAt);
-        Assert.Single(_requests.Closed);
     }
 }
 

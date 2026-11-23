@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG65.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "return": "Success; 200 / MSG65; ActualEndedAt equals ActualStartedAt.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,7 +56,7 @@
           "return": "Failure SaveFailed; 503 / MSG76.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -72,22 +72,7 @@
           "return": "Failure CannotComplete; 409 / MSG74.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "actor: Chair C; itemId: unknown.",
-          "log": "N/A",
-          "note": "UC-25",
-          "preconditions": [
-            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

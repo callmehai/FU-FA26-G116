@@ -14,21 +14,6 @@
         {
           "id": "UTC001",
           "preconditions": [
-            "Meeting InProgress; viewer is the Chair."
-          ],
-          "inputs": "meeting: InProgress; viewer: Chair.",
-          "return": "CanManageDraft true, CanOpen true, CanClose true, CanRecordConclusion true.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-52a · UC-54 · UC-56 · UC-57",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC002",
-          "preconditions": [
             "Meeting Ended; viewer is the Chair."
           ],
           "inputs": "meeting: Ended; viewer: Chair.",
@@ -38,11 +23,11 @@
           "type": "Boundary",
           "note": "UC-56 · UC-57 · BR-270",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC003",
+          "id": "UTC002",
           "preconditions": [
             "Meeting InProgress; viewer is the Secretary."
           ],
@@ -53,11 +38,11 @@
           "type": "Normal",
           "note": "UC-53 · BR-252",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Meeting Published; viewer is the Chair."
           ],
@@ -68,11 +53,11 @@
           "type": "Normal",
           "note": "UC-53 · BR-252",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; viewer is a Member."
           ],
@@ -83,7 +68,7 @@
           "type": "Abnormal",
           "note": "UC-52a",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

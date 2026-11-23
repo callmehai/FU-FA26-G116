@@ -17,7 +17,7 @@
           "return": "RolePermissionResult Success (MSG16) with the matrix showing \"Thư ký\" = [MeetingCreator, MinutesEditor]; the 2 active holders are told their capabilities changed, their sessions stay.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[roleId] = \"Vai trò không hợp lệ.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,7 +48,7 @@
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[capabilities] = \"Danh sách quyền chứa giá trị không hợp lệ.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -64,44 +64,12 @@
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[adminUsers] = \"Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào giữ quyền quản trị người dùng, nên không ai vào được màn hình phân quyền nữa.\"; the matrix is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC005",
-          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, MinutesEditor].",
-          "log": "Error log \"Saving the permission configuration for role {RoleId} failed.\"",
-          "note": "UC-11 · MSG18",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "The database refuses the save (connection lost, timeout or constraint)."
-          ],
-          "return": "RolePermissionResult Failure(SaveFailed) (MSG18); the stored permissions stay as before and no audit row is written.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, MeetingCreator] (repeated).",
-          "log": "N/A",
-          "note": "UC-11 · MSG16",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "Role \"Thư ký\" already holds exactly [MeetingCreator]."
-          ],
-          "return": "RolePermissionResult Success (MSG16) with the unchanged matrix; nothing written, no audit row, nobody notified.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
           "inputs": "roleId: \"Quản trị viên\"; capabilities: [] (removes AdminUsers).",
           "log": "Audit row RolePermissionsUpdated; holders of \"Quản trị viên\" notified.",
           "note": "UC-11 · BR-23 · MSG16",
@@ -112,12 +80,12 @@
           "return": "RolePermissionResult Success (MSG16): \"Thư ký\" keeps an active account with AdminUsers, so someone can still administer.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC006",
           "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, MinutesEditor].",
           "log": "Error log \"Permissions for role {RoleId} changed, but telling its accounts failed.\"",
           "note": "UC-11 · BR-313 · MSG16",
@@ -128,7 +96,7 @@
           "return": "RolePermissionResult Success (MSG16): the failure is logged, not raised; accounts pick the change up at their next token refresh.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

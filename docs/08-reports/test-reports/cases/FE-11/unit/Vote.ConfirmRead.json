@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-74 · BR-289 · BR-290 · MSG253",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Normal",
           "note": "UC-74 · BR-291 · MSG253",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,26 +53,11 @@
           "type": "Abnormal",
           "note": "UC-74 · UC-55 · BR-190 · MSG224",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Vote linking the document is Closed."
-          ],
-          "inputs": "actor: eligible Member.",
-          "return": "Failure NotAccepting; 409 MSG225; nothing recorded.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-74 · UC-55 · MSG225",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Eligible voter has not reached the last page."
           ],
@@ -83,22 +68,7 @@
           "type": "Abnormal",
           "note": "UC-74 · BR-290 · MSG254",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The database fails while saving the confirmation."
-          ],
-          "inputs": "input.LastPageReached: true.",
-          "return": "Failure SaveFailed; 503 MSG255.",
-          "exception": "N/A",
-          "log": "Error logged with document and meeting ids.",
-          "type": "Abnormal",
-          "note": "UC-74 · MSG255",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

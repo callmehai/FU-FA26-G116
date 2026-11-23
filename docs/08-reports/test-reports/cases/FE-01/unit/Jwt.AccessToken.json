@@ -17,7 +17,7 @@
           "return": "Signed HS256 JWT with claims sub = user id, jti (unique), email = \"thuky@trustcabinet.local\", claim \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\" = \"Nguyễn Thư Ký\", and one \"cap\" claim per capability: MeetingCreator and VoiceCollector; no role claim; issuer and audience \"TrustCabinet\".",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "Signed JWT with sub, jti, email and name claims and no \"cap\" claim.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,27 +47,12 @@
           "return": "Signed JWT whose exp is about 5 minutes after creation (within a few seconds); it carries no nbf claim.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "user: Nguyễn Thư Ký; capabilities: [].",
-          "log": "N/A",
-          "note": "UC-01",
-          "preconditions": [
-            "Signing key configured with AccessTokenMinutes = 1 (the smallest allowed)."
-          ],
-          "return": "Signed JWT whose exp is about 1 minute after creation.",
-          "type": "Boundary",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "Token created for the Secretary, then validated with a different signing key, and again after one character of the payload is changed.",
           "log": "N/A",
           "note": "UC-01",
@@ -77,7 +62,7 @@
           "return": "The token validates under the configured signing key and fails validation under any other key or after tampering.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

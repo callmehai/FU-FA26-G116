@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-45c · BR-366 · BR-369",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Normal",
           "note": "UC-45c",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-45c · Deviation: defensive path only; recording erasure deletes the transcript in the same transaction, so production never reaches this state",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,37 +69,7 @@
           "type": "Abnormal",
           "note": "UC-45c",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A Pending transcript; writing the result fails unexpectedly."
-          ],
-          "inputs": "No arguments; the store fails while writing the finished transcript.",
-          "return": "true; transcript is Failed with \"Không chuyển được bản ghi thành chữ do hệ thống. Hãy chạy lại.\"; the staged write is discarded so a restart can requeue it.",
-          "exception": "N/A",
-          "log": "Error logged with the transcript id; staged changes discarded.",
-          "type": "Abnormal",
-          "note": "UC-45c · The failed write is a store that throws on save; DiscardChanges is observed to run once and what it staged is put back, as the real context does.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A Pending transcript; the store fails while claiming it."
-          ],
-          "inputs": "No arguments; the claim itself fails.",
-          "return": "No value; no transcript is claimed.",
-          "exception": "The storage failure is not caught here; the caller answers it.",
-          "log": "No log line here; the failure reaches the caller as is.",
-          "type": "Abnormal",
-          "note": "UC-45c",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

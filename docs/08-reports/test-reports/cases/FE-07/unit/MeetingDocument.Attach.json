@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-33b · BR-277 · MSG238",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-33b · BR-277 · MSG243",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Same meeting."
-          ],
-          "inputs": "agendaItemId: A1; documentIds: [].",
-          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33b · MSG170",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Ten files whose lengths add to more than 100 MB."
           ],
@@ -68,11 +53,11 @@
           "type": "Abnormal",
           "note": "UC-33b · BR-278 · MSG242",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "One candidate of 10 MB plus 1 byte."
           ],
@@ -83,22 +68,7 @@
           "type": "Abnormal",
           "note": "UC-33b · BR-184 · MSG240",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting Ended."
-          ],
-          "inputs": "agendaItemId: A1; documentIds: [M1].",
-          "return": "Failure Ended (HTTP 409, MSG247).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33b · BR-195 · MSG247",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

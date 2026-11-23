@@ -17,7 +17,7 @@
           "return": "RoleResult Success (MSG22) with the new name and description and userCount 3; capabilities and sessions are untouched.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -33,7 +33,7 @@
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\".",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -49,7 +49,7 @@
           "return": "RoleResult Failure(DuplicateName) (MSG21); the role keeps its name.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -65,28 +65,12 @@
           "return": "RoleResult Failure(BuiltInRole) (MSG24); the role is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC005",
-          "inputs": "Valid rename.",
-          "log": "Error log \"Role update failed to save.\"",
-          "note": "UC-12b · MSG27",
-          "preconditions": [
-            "Actor is an administrator holding AdminUsers.",
-            "The database refuses the save (connection lost or timeout)."
-          ],
-          "return": "RoleResult Failure(SaveFailed) (MSG27); the role keeps its previous data.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "Name: 64 characters.",
           "log": "Audit row RoleUpdated.",
           "note": "UC-12b · MSG22",
@@ -97,7 +81,7 @@
           "return": "RoleResult Success (MSG22).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

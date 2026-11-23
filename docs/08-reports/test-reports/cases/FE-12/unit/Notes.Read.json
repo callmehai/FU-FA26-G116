@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Normal",
           "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Normal",
           "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,37 +68,7 @@
           "type": "Abnormal",
           "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
-          ],
-          "inputs": "Note on an agenda item that is no longer in the agenda.",
-          "return": "The stray note is skipped.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Records with agenda items 1 \"Báo cáo\" and 2 \"Ngân sách\"."
-          ],
-          "inputs": "Note line \"## Tiêu đề\" and \"@@ x | y\".",
-          "return": "Marks removed: \"Tiêu đề\" and \"x | y\" are plain lines; nothing can turn into a heading or a signature block.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

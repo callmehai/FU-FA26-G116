@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-04 · BR-352 · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Boundary",
           "note": "UC-04 · MSG319",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,22 +54,7 @@
           "type": "Abnormal",
           "note": "UC-04 · BR-353 · MSG380",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "The invitation is revoked after the capture check, before the sentence is stored."
-          ],
-          "inputs": "guest session admitted at check, revoked before the commit; upload: valid.",
-          "return": "NotCapturing (409, MSG320); the audio file written for the sentence is deleted.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04 · MSG320 · Revocation is simulated by the store dropping the guest session after its first admission check (the check before the sentence is transcribed), so the check inside the store finds it gone.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

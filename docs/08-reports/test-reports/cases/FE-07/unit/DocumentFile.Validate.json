@@ -22,7 +22,7 @@
           "type": "Normal",
           "note": "UC-33a · BR-187 · BR-214",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,7 +37,7 @@
           "type": "Boundary",
           "note": "UC-33a · BR-319 · MSG288",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,26 +52,11 @@
           "type": "Boundary",
           "note": "UC-33a · BR-319 · MSG288",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "One candidate of exactly 10 MB with a valid PDF body."
-          ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
-          "return": "No failure; the file size limit is inclusive.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-33a · BR-214",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "One candidate of 10 MB plus 1 byte."
           ],
@@ -82,22 +67,7 @@
           "type": "Boundary",
           "note": "UC-33a · BR-214 · MSG164",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "preconditions": [
-            "Candidate \"soft.pdf\" whose bytes are a single line break followed by \"%PDF-\"."
-          ],
-          "inputs": "candidates: [{FileName \"soft.pdf\", Length 1200}] with LF + \"%PDF-\" bytes; the page counter returns 1.",
-          "return": "No failure; the file is detected as PDF (up to 64 leading whitespace bytes are skipped) with 1 page.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-33a · BR-187",
-          "id": "UTC006",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

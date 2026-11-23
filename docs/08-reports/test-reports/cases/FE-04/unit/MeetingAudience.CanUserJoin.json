@@ -24,7 +24,7 @@
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "return": "false; the readability lookup is not reached.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,28 +56,12 @@
           "return": "false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "meetingId: unknown id; userId: active user.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "User account is active.",
-            "No meeting exists with the given id."
-          ],
-          "return": "false.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "meetingId: meeting Cancelled from Published; userId: active Member.",
           "log": "N/A",
           "note": "UC-37 · BR-29 · BR-300",
@@ -88,7 +72,7 @@
           "return": "true; the invitees may still open a called-off meeting.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

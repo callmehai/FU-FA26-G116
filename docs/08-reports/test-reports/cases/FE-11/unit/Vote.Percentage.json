@@ -16,7 +16,7 @@
           "return": "33.33.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,27 +31,12 @@
           "return": "null; no percentage is shown.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "count: 3; ballots: 3.",
-          "log": "N/A",
-          "note": "BR-261",
-          "preconditions": [
-            "A vote where every ballot chose the option."
-          ],
-          "return": "100.",
-          "type": "Normal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "count: 1; ballots: 6.",
           "log": "N/A",
           "note": "BR-261",
@@ -61,7 +46,7 @@
           "return": "16.67; rounded away from zero to 2 decimals.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

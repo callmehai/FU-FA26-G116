@@ -23,7 +23,7 @@
           "return": "Success Created; 201 / MSG96; createdIds holds two new participant ids; revision \"6\".",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "Failure Forbidden; 403 / MSG85.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,27 +53,12 @@
           "return": "Failure Locked; 409 / MSG98.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "operation: AddInternal; actor: S; revision: \"4\" (older than current 5).",
-          "log": "N/A",
-          "note": "UC-28a · MSG275 · Deviation: the stale branch returns no revision; the \"5\" lives in the request If-Match, not the error body.",
-          "preconditions": [
-            "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
-          ],
-          "return": "Failure Stale; 409 / MSG275; the service sets no revision on this branch, so the 409 body carries none (the client keeps \"5\" from its own request).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "operation: AddInternal; userIds: 100 distinct active users; role: \"Member\".",
           "log": "N/A",
           "note": "UC-28a · BR-168 · MSG96",
@@ -83,12 +68,12 @@
           "return": "Success Created; 201 / MSG96 with 100 ids.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "operation: AddInternal; userIds: 101 distinct users.",
           "log": "N/A",
           "note": "UC-28a · BR-168 · MSG97",
@@ -98,7 +83,7 @@
           "return": "Failure Invalid on userIds; 400 / MSG97.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

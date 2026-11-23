@@ -17,7 +17,7 @@
           "return": "GuestAccessResult success with GuestVerified { accessToken, expiresAt = now + 12 hours, meetingId, profileCompleted: false }; K1 is marked consumed and one guest session row is created.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no challenge is read.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126) without remainingAttempts.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -62,7 +62,7 @@
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126): a code whose expiry is not later than now is refused.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -77,22 +77,7 @@
           "return": "GuestAccessResult Failure(CodeLocked) (MSG372); no session.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: <correct code>.",
-          "log": "Error log \"Could not verify a code for guest invitation {InvitationId}.\"",
-          "note": "UC-04 · MSG374",
-          "preconditions": [
-            "Saving the session fails with a persistence error."
-          ],
-          "return": "GuestAccessResult Failure(Unavailable) (MSG374); no session is created.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

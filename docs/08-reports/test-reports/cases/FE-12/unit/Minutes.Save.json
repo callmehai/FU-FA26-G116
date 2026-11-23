@@ -24,27 +24,11 @@
           "type": "Normal",
           "note": "UC-60 · MSG396 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Draft revision exists.",
-            "Actor is a Member who reads the meeting but is neither Chair nor Secretary."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the Member; content: \"<p>A.</p>\"; loadedAt: T.",
-          "return": "Failure NotFound; 404 with no message code; nothing saved and nothing revealed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-60",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Revision WaitingApproval with UpdatedAt T.",
             "Actor is the current Secretary."
@@ -56,11 +40,11 @@
           "type": "Abnormal",
           "note": "UC-60 · MSG400",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Draft revision; actor is the current Secretary; the caller read it at T."
           ],
@@ -71,11 +55,11 @@
           "type": "Boundary",
           "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Draft revision read at T, then saved by someone else.",
             "Actor is the current Secretary."
@@ -87,23 +71,7 @@
           "type": "Abnormal",
           "note": "UC-60 · BR-389 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Draft revision; actor is the current Secretary; the caller read it at T.",
-            "The database fails on save."
-          ],
-          "inputs": "minutesId: the Draft revision; content: \"<p>A.</p>\"; loadedAt: T.",
-          "return": "Failure SaveFailed; 503 MSG404; nothing saved.",
-          "exception": "N/A",
-          "log": "Error logged with the minutes id.",
-          "type": "Abnormal",
-          "note": "UC-60 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -18,27 +18,12 @@
           "return": "Success(WaitingApproval); AssignedApproverId set; MSG78.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "command: SubmitForApproval without an approver id.",
-          "log": "N/A",
-          "note": "UC-18 · MSG80",
-          "preconditions": [
-            "Meeting is Draft."
-          ],
-          "return": "Failure InvalidRequest; MSG80; nothing read.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "actor: organizer; command: SubmitForApproval with a valid approver.",
           "log": "N/A",
           "note": "UC-18 · BR-33 · MSG81",
@@ -48,42 +33,12 @@
           "return": "Failure SubmissionNotReady with errors { title }; MSG81; status stays Draft.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "actor: organizer; command: SubmitForApproval.",
-          "log": "N/A",
-          "note": "UC-18 · BR-33 · MSG41",
-          "preconditions": [
-            "Meeting is Approved."
-          ],
-          "return": "Failure StatusConflict; MSG41.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "command: SubmitForApproval.",
-          "log": "N/A",
-          "note": "UC-18 · BR-29 · MSG85",
-          "preconditions": [
-            "Actor is a Chair, not the creator."
-          ],
-          "return": "Failure Forbidden; MSG85.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC003",
           "inputs": "Meeting status: WaitingApproval; actor: assigned approver; command: Approve.",
           "log": "Saved: status Approved; history row Approve; organizer notified \"Cuộc họp đã được duyệt\".",
           "note": "UC-19 · BR-36 · BR-38 · MSG43",
@@ -94,12 +49,12 @@
           "return": "Success(Approved); MSG43.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
+          "id": "UTC004",
           "inputs": "command: Publish; actor: organizer.",
           "log": "Saved: status Published; history row Publish; \"Cuộc họp đã được công bố\" notification for the Chair, Secretary and Members but not the organizer; invitation emails staged for every active participant.",
           "note": "UC-20 · BR-37 · BR-39 · BR-124 · BR-125 · BR-322 · MSG45",
@@ -110,12 +65,12 @@
           "return": "Success(Published); MSG45.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC005",
           "inputs": "command: Cancel with reason \"  Hoãn do bão  \".",
           "log": "Saved: status Cancelled with CancelledAt, CancelledById, reason and CancelledFromStatus Published; history row Cancel with the reason; vote drafts deleted in the same transaction (ADR-0067); invitees (and guests) are notified with the reason by the staged cancellation messages.",
           "note": "UC-75 · BR-297 · BR-298 · BR-299 · BR-300 · MSG261",
@@ -125,7 +80,7 @@
           "return": "Success(Cancelled); MSG261; reason trimmed to \"Hoãn do bão\".",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

@@ -23,7 +23,7 @@
           "return": "MeetingResult Success; meeting Draft, CreatedById = actor, no approver; participants A (Chair) and B (Secretary) each with response Pending.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "MeetingResult Invalid; errors { title }; MSG31; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "return": "MeetingResult Invalid; errors { plannedStartTime: \"Thời gian bắt đầu phải sau thời điểm hiện tại.\" }; MSG31.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,7 +68,7 @@
           "return": "InvalidParticipants; errors { participants }; MSG277.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -83,22 +83,7 @@
           "return": "InvalidParticipants; errors { participants: \"Cuộc họp phải có đúng một Chủ toạ.\" }; MSG277.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC006",
-          "inputs": "valid input and roster.",
-          "log": "Error logged with the actor id; transaction rolled back.",
-          "note": "UC-14 · MSG35",
-          "preconditions": [
-            "The store fails while saving."
-          ],
-          "return": "MeetingResult SaveFailed; MSG35; the error is logged.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

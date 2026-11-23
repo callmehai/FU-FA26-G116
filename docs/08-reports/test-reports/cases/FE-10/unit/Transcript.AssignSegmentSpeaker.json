@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-46b · BR-368 · MSG407",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-46b · MSG317",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "No line or voice on the recording uses the label; actor is the current secretary."
-          ],
-          "inputs": "segmentId: an existing line; userId: null; guestId: null; label: \"SPEAKER_09\"; actorId: the current secretary.",
-          "return": "Failure NotFound; another recording label is not one of this recording voices.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46b",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "All 100 voice labels are taken by lines or voices; the member has no voice; actor is the current secretary."
           ],
@@ -68,11 +53,11 @@
           "type": "Boundary",
           "note": "UC-46b · MSG317",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "A line exists; actor takes part in the meeting but is not the secretary."
           ],
@@ -83,7 +68,7 @@
           "type": "Abnormal",
           "note": "UC-46b · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

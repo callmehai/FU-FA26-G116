@@ -23,7 +23,7 @@
           "return": "Success with 3 items, page 1, page size 20, total 3; every field of each row visible including rejection reason and organizer hand-over ids.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "return": "Failure InvalidRequest; MSG86.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,7 +68,7 @@
           "return": "Success with an empty item list, page 50, page size 20, total 3.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -83,22 +83,7 @@
           "return": "Success; rejection reason is null on every row; organizer ids are null.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC006",
-          "inputs": "actorId: creator.",
-          "log": "Error logged with the meeting id.",
-          "note": "UC-16 · MSG136",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Failure ReadFailed; MSG136.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

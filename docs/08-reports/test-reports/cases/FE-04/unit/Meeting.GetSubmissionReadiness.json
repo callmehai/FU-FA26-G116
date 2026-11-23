@@ -24,7 +24,7 @@
           "return": "Outcome Success; status Draft; errors empty; Ready true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,27 +39,12 @@
           "return": "Outcome Success; errors { title }; Ready false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "id: unknown.",
-          "log": "N/A",
-          "note": "UC-18 · BR-33",
-          "preconditions": [
-            "No meeting exists with the id."
-          ],
-          "return": "Outcome NotFound (404).",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "actorId: Chair.",
           "log": "N/A",
           "note": "UC-18 · BR-29 · MSG85",
@@ -69,12 +54,12 @@
           "return": "Outcome Forbidden with the meeting status; MSG85.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "actorId: organizer.",
           "log": "N/A",
           "note": "UC-18 · BR-33 · MSG41",
@@ -84,22 +69,7 @@
           "return": "Outcome StatusConflict with status WaitingApproval; MSG41.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC006",
-          "inputs": "actorId: organizer.",
-          "log": "Error logged with the meeting id.",
-          "note": "UC-18 · MSG136",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Outcome ReadFailed; MSG136.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

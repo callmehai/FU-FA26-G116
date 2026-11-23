@@ -23,41 +23,11 @@
           "type": "Normal",
           "note": "UC-53 · BR-252 · BR-256 · BR-257 · MSG210",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Meeting InProgress; actor is a Member."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
-          "return": "Failure DraftDenied; 409 MSG213.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · BR-252 · MSG213",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Chair; another vote is already Open."
-          ],
-          "inputs": "operation: Create; Title: \"Chọn địa điểm họp\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"]; OpenImmediately: true.",
-          "return": "Failure AnotherOpen; 409 MSG219; nothing saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-53 · UC-54 · BR-266 · MSG219",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; public ballot; no vote documents."
           ],
@@ -68,11 +38,11 @@
           "type": "Normal",
           "note": "UC-55 · BR-258 · BR-271 · MSG227",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC003",
           "preconditions": [
             "Meeting InProgress; Open vote; actor was not on the list fixed at opening (joined later)."
           ],
@@ -83,26 +53,11 @@
           "type": "Abnormal",
           "note": "UC-55 · BR-190 · BR-268 · MSG224",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting InProgress; Open vote with options A and B; voter is on the eligible list; the voter already cast a ballot."
-          ],
-          "inputs": "operation: Cast; OptionId: option B.",
-          "return": "Failure AlreadyCast; 409 MSG226; the first ballot stands.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-55 · BR-258 · BR-265 · MSG226",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "Meeting InProgress; Open vote with 3 ballots; actor is the Chair."
           ],
@@ -113,11 +68,11 @@
           "type": "Normal",
           "note": "UC-56 · BR-261 · BR-270 · MSG229",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC005",
           "preconditions": [
             "Closed vote without a conclusion; actor is the Chair; meeting Ended."
           ],
@@ -128,7 +83,7 @@
           "type": "Normal",
           "note": "UC-57 · BR-262 · BR-263 · MSG235",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

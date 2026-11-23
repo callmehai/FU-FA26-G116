@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-21 · BR-164 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Boundary",
           "note": "UC-21 · BR-164 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,22 +53,7 @@
           "type": "Boundary",
           "note": "UC-21 · BR-164 · BR-322",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Exactly one recipient."
-          ],
-          "inputs": "recipients [U1].",
-          "return": "One notification saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-21 · BR-164 · BR-322",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

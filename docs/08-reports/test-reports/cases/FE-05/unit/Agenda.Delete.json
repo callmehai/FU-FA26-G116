@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG62.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,27 +40,12 @@
           "return": "Failure DeleteLocked; 409 / MSG142.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "actor: S; itemId: unknown.",
-          "log": "N/A",
-          "note": "UC-23c",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure NotFound; 404.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
           "log": "N/A",
           "note": "UC-23c · BR-74 · MSG67",
@@ -70,12 +55,12 @@
           "return": "Failure TooMany (HTTP 400, MSG288).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "actor: S; the database fails while saving.",
           "log": "N/A",
           "note": "UC-23c · MSG70",
@@ -86,7 +71,7 @@
           "return": "Failure SaveFailed; 503 / MSG70.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

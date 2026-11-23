@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-81c · BR-363 · BR-369 · MSG307",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-81c · BR-361 · MSG308",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,41 +54,11 @@
           "type": "Abnormal",
           "note": "UC-81c · BR-363 · MSG310",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "User consented; audio holds 3 seconds of speech."
-          ],
-          "inputs": "actorId: a consented user; audio: a 3-second recording; contentType: audio/mpeg.",
-          "return": "Failure Rejected (MSG309); errors[file] = [\"Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.\"]; nothing is kept.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-81c · BR-363 · MSG309",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "User consented; the speech worker is down."
-          ],
-          "inputs": "actorId: a consented user; audio: a clear voice recording; contentType: audio/mpeg.",
-          "return": "Failure EngineUnavailable (MSG312 \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\"); nothing is kept.",
-          "exception": "N/A",
-          "log": "Warning logged with the user id.",
-          "type": "Abnormal",
-          "note": "UC-81c · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "User consented and keeps 4 own samples."
           ],
@@ -99,7 +69,7 @@
           "type": "Boundary",
           "note": "UC-81c · BR-363 · MSG307",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

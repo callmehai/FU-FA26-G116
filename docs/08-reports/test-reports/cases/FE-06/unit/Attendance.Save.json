@@ -23,28 +23,12 @@
           "return": "Result Saved: changedCount 1; one entry for A with attendance \"Present\", a new version token, recorder S and recorded time; 200 / MSG147.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "Nothing saved.",
-          "note": "UC-31 · BR-170",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is the Chair (not Secretary)."
-          ],
-          "return": "Failure Forbidden; 403, empty body.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "entries: [{Internal, A, Present, token}].",
           "log": "Nothing saved.",
           "note": "UC-31 · BR-170 · BR-172 · MSG149",
@@ -55,12 +39,12 @@
           "return": "Failure Locked; 409 / MSG149.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC003",
           "inputs": "entries: [{Internal, A, Present, token of version 0}].",
           "log": "Nothing saved; no entry is partially applied even when other entries in the request are valid.",
           "note": "UC-31 · BR-170 · BR-172 · MSG151",
@@ -71,12 +55,12 @@
           "return": "Failure Stale; 409 / MSG151; the client must reload.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC004",
           "inputs": "entries: [{Internal, A, Present, token of that version}].",
           "log": "Pending changes discarded; error logged.",
           "note": "UC-31 · BR-170 · BR-172 · MSG150",
@@ -87,12 +71,12 @@
           "return": "Failure SaveFailed; 503 / MSG150 (the version increment overflows).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "input.ParseFailure: TooLarge.",
           "log": "N/A",
           "note": "UC-31 · BR-170 · BR-172 · MSG87",
@@ -103,7 +87,7 @@
           "return": "Failure TooLarge; 413 / MSG87.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

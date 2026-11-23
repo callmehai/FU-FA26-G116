@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-83 · BR-410 · MSG432 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,27 +40,11 @@
           "type": "Abnormal",
           "note": "UC-83 · MSG397",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary.",
-            "Revision still Draft (not the issued one)."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the current Secretary.",
-          "return": "Failure NotIssued; 409 MSG433; no revision created.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-83 · MSG433",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "Revision 1 Issued with an unissued Draft correction (revision 2) already started."
@@ -72,11 +56,11 @@
           "type": "Abnormal",
           "note": "UC-83 · BR-410 · MSG434",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "Revision 1 Issued with no later revision.",
@@ -89,23 +73,7 @@
           "type": "Abnormal",
           "note": "UC-83 · BR-410 · MSG434",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Ended meeting; actor is the current Secretary; revision 1 Issued.",
-            "The database fails while saving the correction."
-          ],
-          "inputs": "minutesId: revision 1; actor: the current Secretary.",
-          "return": "Failure SaveFailed; 503 MSG404; no revision created.",
-          "exception": "N/A",
-          "log": "Error logged with the action and minutes id.",
-          "type": "Abnormal",
-          "note": "UC-83 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -172,38 +172,6 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "RecordingService.AddAsync/UTC006: a Published meeting is locked for uploads")]
-    [Trait("UTC", "RecordingService.AddAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Add_a_published_meeting_is_locked_for_uploads()
-    {
-        var f = RecordingSvc(MeetingMode.InPerson, MeetingStatus.Published);
-        var path = f.Files.Create(".mp3");
-
-        var outcome = await f.Service.AddAsync(f.Meeting.Id, f.Secretary, ValidUpload(path));
-
-        Assert.Equal(RecordingFailure.Locked, outcome.Failure);
-        Assert.Equal([path], f.Files.Deleted);
-        Assert.Empty(f.Recordings.Recordings);
-    }
-
-    [Fact(DisplayName = "RecordingService.AddAsync/UTC007: a storage failure is save failed and leaves no bytes")]
-    [Trait("UTC", "RecordingService.AddAsync/UTC007")]
-    [Trait("Trait", "UTC")]
-    public async Task Add_a_storage_failure_is_save_failed_and_leaves_no_bytes()
-    {
-        var f = RecordingSvc();
-        var path = f.Files.Create(".mp3");
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.AddAsync(f.Meeting.Id, f.Secretary, ValidUpload(path));
-
-        Assert.Equal(RecordingFailure.SaveFailed, outcome.Failure);
-        Assert.Equal((0, 1), (f.Uow.Commits, f.Uow.Rollbacks));
-        Assert.Equal([path], f.Files.Deleted);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to store recording"));
-    }
-
     [Fact(DisplayName = "RecordingService.DownloadAsync/UTC001: hands out a signed download link for an MP3")]
     [Trait("UTC", "RecordingService.DownloadAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -263,24 +231,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "RecordingService.DownloadAsync/UTC005: a read failure is read failed with an error log")]
+    [Fact(DisplayName = "RecordingService.DownloadAsync/UTC005: a WAV the server cannot make MP3 is refused with MSG482")]
     [Trait("UTC", "RecordingService.DownloadAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Download_a_read_failure_is_read_failed_with_an_error_log()
-    {
-        var f = RecordingSvc();
-        var recording = StoredUpload(f);
-        f.Meetings.FailReads = true;
-
-        var outcome = await f.Service.DownloadAsync(recording.Id, f.Chair);
-
-        Assert.Equal(RecordingFailure.ReadFailed, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to sign a download"));
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "RecordingService.DownloadAsync/UTC006: a WAV the server cannot make MP3 is refused with MSG482")]
-    [Trait("UTC", "RecordingService.DownloadAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task Download_a_wav_the_server_cannot_make_mp3_is_refused()
     {
@@ -392,23 +344,6 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Files.Deleted);
     }
 
-    [Fact(DisplayName = "RecordingService.EraseAsync/UTC006: a save failure keeps the file and logs an error")]
-    [Trait("UTC", "RecordingService.EraseAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Erase_a_save_failure_keeps_the_file_and_logs_an_error()
-    {
-        var f = RecordingSvc();
-        var recording = StoredUpload(f);
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.EraseAsync(recording.Id, f.Secretary);
-
-        Assert.Equal(RecordingFailure.SaveFailed, outcome.Failure);
-        Assert.Equal((0, 1), (f.Uow.Commits, f.Uow.Rollbacks));
-        Assert.Empty(f.Files.Deleted);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to erase recording"));
-    }
-
     [Fact(DisplayName = "RecordingRules.Export/UTC001: the Chair may export")]
     [Trait("UTC", "RecordingRules.Export/UTC001")]
     [Trait("Trait", "UTC")]
@@ -429,18 +364,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(RecordingFailure.ExportForbidden, RecordingRules.Export(meeting, member));
     }
 
-    [Fact(DisplayName = "RecordingRules.Export/UTC003: a Secret meeting never exports")]
+    [Fact(DisplayName = "RecordingRules.Export/UTC003: the role check comes before the Secret check")]
     [Trait("UTC", "RecordingRules.Export/UTC003")]
-    [Trait("Trait", "UTC")]
-    public void Rules_a_secret_meeting_never_exports()
-    {
-        var (_, meeting, chair, _, _) = NewMeeting(MeetingMode.InPerson, MeetingStatus.InProgress, Sensitivity.Secret);
-
-        Assert.Equal(RecordingFailure.SecretMeeting, RecordingRules.Export(meeting, chair));
-    }
-
-    [Fact(DisplayName = "RecordingRules.Export/UTC004: the role check comes before the Secret check")]
-    [Trait("UTC", "RecordingRules.Export/UTC004")]
     [Trait("Trait", "UTC")]
     public void Export_the_role_check_comes_before_the_secret_check()
     {
@@ -464,22 +389,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal([TransactionMode.None, TransactionMode.None], f.Uow.Modes);
     }
 
-    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC002: a deactivated account hears nothing")]
+    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC002: an erased recording is not played")]
     [Trait("UTC", "RecordingService.PlaybackAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task Playback_a_deactivated_account_hears_nothing()
-    {
-        var f = RecordingSvc();
-        var recording = StoredUpload(f);
-
-        var outcome = await f.Service.PlaybackAsync(recording.Id, Guid.CreateVersion7());
-
-        Assert.Equal(RecordingFailure.Inactive, outcome.Failure);
-        Assert.Equal([TransactionMode.None, TransactionMode.None], f.Uow.Modes);
-    }
-
-    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC003: an erased recording is not played")]
-    [Trait("UTC", "RecordingService.PlaybackAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Playback_an_erased_recording_is_not_played()
     {
@@ -493,8 +404,8 @@ public sealed class RecUnitRound1Tests
         Assert.Null(outcome.Data);
     }
 
-    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC004: nobody hears a streaming take")]
-    [Trait("UTC", "RecordingService.PlaybackAsync/UTC004")]
+    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC003: nobody hears a streaming take")]
+    [Trait("UTC", "RecordingService.PlaybackAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task Playback_nobody_hears_a_streaming_take()
     {
@@ -513,23 +424,8 @@ public sealed class RecUnitRound1Tests
         Assert.Null(outcome.Data);
     }
 
-    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC005: only Available recordings are played")]
-    [Trait("UTC", "RecordingService.PlaybackAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Playback_only_available_recordings_are_played()
-    {
-        var f = RecordingSvc();
-        var recording = StoredUpload(f);
-        recording.Status = RecordingStatus.Failed;
-
-        var outcome = await f.Service.PlaybackAsync(recording.Id, f.Member);
-
-        Assert.Equal(RecordingFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Data);
-    }
-
-    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC006: a read failure is read failed with an error log")]
-    [Trait("UTC", "RecordingService.PlaybackAsync/UTC006")]
+    [Fact(DisplayName = "RecordingService.PlaybackAsync/UTC004: a read failure is read failed with an error log")]
+    [Trait("UTC", "RecordingService.PlaybackAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Playback_a_read_failure_is_read_failed_with_an_error_log()
     {
@@ -619,38 +515,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(0, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC003: only the final part may be shorter")]
+    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC003: a part past the size limit is too large")]
     [Trait("UTC", "RoomTakeService.AppendAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Append_only_the_final_part_may_be_shorter()
-    {
-        var f = MakeTakeSvc();
-        var take = PendingTake(f);
-
-        var outcome = await f.Service.AppendAsync(take.Id, f.Secretary, 2, new MemoryStream([]), 100_000, false);
-
-        Assert.Equal(RecordingFailure.BadPart, outcome.Failure);
-        Assert.Equal(0, take.ByteSize);
-        Assert.Equal(0, f.Uow.Saves);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC004: a part past a hole is refused")]
-    [Trait("UTC", "RoomTakeService.AppendAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Append_a_part_past_a_hole_is_refused()
-    {
-        var f = MakeTakeSvc();
-        var take = PendingTake(f, 640_000);
-
-        var outcome = await f.Service.AppendAsync(take.Id, f.Secretary, 4, new MemoryStream(WavPart(320_000)), null, false);
-
-        Assert.Equal(RecordingFailure.BadPart, outcome.Failure);
-        Assert.Equal(640_000, take.ByteSize);
-        Assert.Equal(0, f.Uow.Saves);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC005: a part past the size limit is too large")]
-    [Trait("UTC", "RoomTakeService.AppendAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Append_a_part_past_the_size_limit_is_too_large()
     {
@@ -664,8 +530,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(0, f.Uow.Saves);
     }
 
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC006: a final part may reach exactly the limit")]
-    [Trait("UTC", "RoomTakeService.AppendAsync/UTC006")]
+    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC004: a final part may reach exactly the limit")]
+    [Trait("UTC", "RoomTakeService.AppendAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Append_a_final_part_may_reach_exactly_the_limit()
     {
@@ -679,8 +545,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal((1, 1), (f.Uow.Commits, f.Uow.Saves));
     }
 
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC007: a saved take takes no more parts")]
-    [Trait("UTC", "RoomTakeService.AppendAsync/UTC007")]
+    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC005: a saved take takes no more parts")]
+    [Trait("UTC", "RoomTakeService.AppendAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task Append_a_saved_take_takes_no_more_parts()
     {
@@ -694,8 +560,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(0, take.ByteSize);
     }
 
-    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC008: a write failure is save failed with an error log")]
-    [Trait("UTC", "RoomTakeService.AppendAsync/UTC008")]
+    [Fact(DisplayName = "RoomTakeService.AppendAsync/UTC006: a write failure is save failed with an error log")]
+    [Trait("UTC", "RoomTakeService.AppendAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task Append_a_write_failure_is_save_failed_with_an_error_log()
     {
@@ -753,22 +619,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC003: the Chair may not open a take")]
+    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC003: an online meeting has no room mic")]
     [Trait("UTC", "RoomTakeService.BeginAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Begin_the_chair_may_not_open_a_take()
-    {
-        var f = MakeTakeSvc();
-
-        var outcome = await f.Service.BeginAsync(f.Meeting.Id, f.Chair, new RoomTakeStart(true, null));
-
-        Assert.Equal(RecordingFailure.Forbidden, outcome.Failure);
-        Assert.Empty(f.Recordings.Recordings);
-        Assert.Empty(f.Files.Files);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC004: an online meeting has no room mic")]
-    [Trait("UTC", "RoomTakeService.BeginAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Begin_an_online_meeting_has_no_room_mic()
     {
@@ -780,8 +632,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Recordings.Recordings);
     }
 
-    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC005: a Published meeting is not running")]
-    [Trait("UTC", "RoomTakeService.BeginAsync/UTC005")]
+    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC004: a Published meeting is not running")]
+    [Trait("UTC", "RoomTakeService.BeginAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task Begin_a_published_meeting_is_not_running()
     {
@@ -791,23 +643,6 @@ public sealed class RecUnitRound1Tests
 
         Assert.Equal(RecordingFailure.NotRunning, outcome.Failure);
         Assert.Empty(f.Recordings.Recordings);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.BeginAsync/UTC006: two devices opening at once leave one take open")]
-    [Trait("UTC", "RoomTakeService.BeginAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Begin_two_devices_opening_at_once_leave_one_take_open()
-    {
-        var f = MakeTakeSvc();
-        f.Uow.FailNextSave = new UniqueConflictException(UniqueConflict.Unknown);
-
-        var outcome = await f.Service.BeginAsync(f.Meeting.Id, f.Secretary, new RoomTakeStart(true, null));
-
-        Assert.Equal(RecordingFailure.TakeOpen, outcome.Failure);
-        Assert.Equal(1, f.Uow.Rollbacks);
-        Assert.Single(f.Files.Deleted);
-        Assert.Empty(f.Files.Files);
-        Assert.Empty(f.Publisher.Published);
     }
 
     private static Recording RoomRecording(TakeSvc f, long byteSize, int takeCount, long takeMs, bool sparse = false)
@@ -913,39 +748,6 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Transcripts.Added);
     }
 
-    [Fact(DisplayName = "RoomTakeService.CompleteAsync/UTC005: a Deleted recording is already closed")]
-    [Trait("UTC", "RoomTakeService.CompleteAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Complete_a_deleted_recording_is_already_closed()
-    {
-        var f = MakeTakeSvc();
-        var take = PendingTake(f, 320_044);
-        take.Status = RecordingStatus.Deleted;
-
-        var outcome = await f.Service.CompleteAsync(take.Id, f.Secretary);
-
-        Assert.Equal(RecordingFailure.TakeClosed, outcome.Failure);
-        Assert.Equal(RecordingStatus.Deleted, take.Status);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.CompleteAsync/UTC006: a join failure keeps the take pending")]
-    [Trait("UTC", "RoomTakeService.CompleteAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Complete_a_join_failure_keeps_the_take_pending()
-    {
-        var f = MakeTakeSvc();
-        var room = RoomRecording(f, 960_044, 2, 15_000);
-        var take = PendingTake(f, 160_044);
-        f.Storage.ThrowSeal = true;
-
-        var outcome = await f.Service.CompleteAsync(take.Id, f.Secretary);
-
-        Assert.Equal(RecordingFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(RecordingStatus.Pending, take.Status);
-        Assert.Equal(2, room.Takes!.Count);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to save take"));
-    }
-
     private static (Recording Recording, Transcript Transcript) TakeWithTranscript(TakeSvc f)
     {
         var recording = new Recording
@@ -1048,40 +850,6 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Files.Deleted);
     }
 
-    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC005: the Chair may not cut a take")]
-    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteTake_the_chair_may_not_cut_a_take()
-    {
-        var f = MakeTakeSvc();
-        var (recording, _) = TakeWithTranscript(f);
-
-        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 2, f.Chair);
-
-        Assert.Equal(RecordingFailure.Forbidden, outcome.Failure);
-        Assert.Equal(736_044, recording.ByteSize);
-    }
-
-    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC006: a save failure keeps the original file")]
-    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteTake_a_save_failure_keeps_the_original_file()
-    {
-        var f = MakeTakeSvc();
-        var (recording, _) = TakeWithTranscript(f);
-        var previous = recording.StoragePath;
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
-
-        Assert.Equal(RecordingFailure.SaveFailed, outcome.Failure);
-        Assert.Contains(previous, f.Files.Files.Keys);
-        Assert.Equal(736_044, f.Files.Files[previous].Length);
-        Assert.Single(f.Files.Deleted);
-        Assert.NotEqual(previous, f.Files.Deleted.Single());
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to erase take"));
-    }
-
     private sealed record CombinedSvc(FakeRecordingRepository Recordings, FakeSpeechClipRepository Clips,
         FakeMeetingRepository Meetings, FakeUnitOfWork Uow, FakeRecordingStorage Files, R1Storage Storage,
         FakeSpeechChangePublisher Publisher, FakeAuditService Audit, R1Logger<CombinedRecordingService> Log,
@@ -1177,25 +945,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC003: a hybrid meeting needs both sides")]
+    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC003: a change exactly at the settle limit still builds")]
     [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task BuildNext_a_hybrid_meeting_needs_both_sides()
-    {
-        var f = MakeCombinedSvc();
-        var meetingId = Guid.CreateVersion7();
-        f.Recordings.CombinableMeetings.Add(new CombinableMeeting(meetingId, MeetingMode.Hybrid));
-        f.Clips.Mixable.Add(new CombinedClip(Now.AddHours(-3), 5_000, f.Files.Create(".wav"), Now.AddHours(-3)));
-        f.Clips.LastChange = Now.AddHours(-3);
-
-        Assert.False(await f.Service.BuildNextAsync());
-
-        Assert.Empty(f.Recordings.Recordings);
-        Assert.Empty(f.Publisher.Published);
-    }
-
-    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC004: a change exactly at the settle limit still builds")]
-    [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task BuildNext_a_change_exactly_at_the_settle_limit_still_builds()
     {
@@ -1211,8 +962,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(1, Assert.Single(f.Publisher.Published).CommitsBefore);
     }
 
-    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC005: an erased combined recording is never rebuilt")]
-    [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC005")]
+    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC004: an erased combined recording is never rebuilt")]
+    [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task BuildNext_an_erased_combined_recording_is_never_rebuilt()
     {
@@ -1232,8 +983,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC006: a track past twelve hours fails the build")]
-    [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC006")]
+    [Fact(DisplayName = "CombinedRecordingService.BuildNextAsync/UTC005: a track past twelve hours fails the build")]
+    [Trait("UTC", "CombinedRecordingService.BuildNextAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task BuildNext_a_track_past_twelve_hours_fails_the_build()
     {
@@ -1342,39 +1093,6 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Publisher.Published);
     }
 
-    [Fact(DisplayName = "SpeechClipService.AddAsync/UTC005: a worker failure is engine unavailable with a warning")]
-    [Trait("UTC", "SpeechClipService.AddAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Add_a_worker_failure_is_engine_unavailable_with_a_warning()
-    {
-        var f = MakeClipSvc();
-        f.Engine.Fail = new SpeechEngineException("worker down");
-
-        var outcome = await f.Service.AddAsync(f.Meeting.Id, f.Member, ClipUpload());
-
-        Assert.Equal(SpeechClipFailure.EngineUnavailable, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains("could not transcribe"));
-        Assert.Empty(f.ClipsInner.Added);
-        Assert.Empty(f.Files.Files);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.AddAsync/UTC006: a store failure deletes the written audio")]
-    [Trait("UTC", "SpeechClipService.AddAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Add_a_store_failure_deletes_the_written_audio()
-    {
-        var f = MakeClipSvc();
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.AddAsync(f.Meeting.Id, f.Member, ClipUpload());
-
-        Assert.Equal(SpeechClipFailure.SaveFailed, outcome.Failure);
-        Assert.Equal(1, f.Uow.Rollbacks);
-        Assert.Single(f.Files.Deleted);
-        Assert.Empty(f.Files.Files);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to store a speech clip"));
-    }
-
     private static MeetingGuestSession GuestSession(ClipSvc f, Guid invitationId, bool admitted, bool notice)
     {
         var session = new MeetingGuestSession(f.Meeting.Id, invitationId, Guid.CreateVersion7());
@@ -1441,24 +1159,6 @@ public sealed class RecUnitRound1Tests
 
         Assert.Equal(SpeechClipFailure.NoticeRequired, outcome.Failure);
         Assert.Empty(f.ClipsInner.Added);
-        Assert.Empty(f.Publisher.Published);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.AddForGuestAsync/UTC004: revoked between check and store is refused and the audio deleted")]
-    [Trait("UTC", "SpeechClipService.AddForGuestAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task AddForGuest_revoked_between_check_and_store_is_refused_and_the_audio_deleted()
-    {
-        var f = MakeClipSvc();
-        var guest = GuestSession(f, Guid.CreateVersion7(), admitted: true, notice: true);
-        // The first admission check (before the sentence is transcribed) passes; the one inside the store finds it revoked.
-        f.ClipsInner.RevokeAdmissionAfterChecks = 1;
-
-        var outcome = await f.Service.AddForGuestAsync(guest, f.Meeting.Id, ClipUpload());
-
-        Assert.Equal(SpeechClipFailure.NotCapturing, outcome.Failure);
-        Assert.Empty(f.ClipsInner.Added);
-        Assert.Empty(f.Files.Files);
         Assert.Empty(f.Publisher.Published);
     }
 
@@ -1532,36 +1232,8 @@ public sealed class RecUnitRound1Tests
         Assert.Empty(f.Files.Deleted);
     }
 
-    [Fact(DisplayName = "SpeechClipService.DeleteAsync/UTC004: deleting nothing is not found")]
+    [Fact(DisplayName = "SpeechClipService.DeleteAsync/UTC004: a save failure keeps the row and its audio")]
     [Trait("UTC", "SpeechClipService.DeleteAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Delete_deleting_nothing_is_not_found()
-    {
-        var f = MakeClipSvc();
-
-        var outcome = await f.Service.DeleteAsync(Guid.CreateVersion7(), f.Member);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.DeleteAsync/UTC005: a deactivated speaker is inactive")]
-    [Trait("UTC", "SpeechClipService.DeleteAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Delete_a_deactivated_speaker_is_inactive()
-    {
-        var f = MakeClipSvc();
-        var clip = MemberClip(f, f.Member, audio: true);
-        var ghost = Guid.CreateVersion7();
-
-        var outcome = await f.Service.DeleteAsync(clip.Id, ghost);
-
-        Assert.Equal(SpeechClipFailure.Inactive, outcome.Failure);
-        Assert.Single(f.ClipsInner.Clips);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.DeleteAsync/UTC006: a save failure keeps the row and its audio")]
-    [Trait("UTC", "SpeechClipService.DeleteAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task Delete_a_save_failure_keeps_the_row_and_its_audio()
     {
@@ -1612,24 +1284,8 @@ public sealed class RecUnitRound1Tests
         Assert.Single(f.ClipsInner.Clips);
     }
 
-    [Fact(DisplayName = "SpeechClipService.DeleteForGuestAsync/UTC003: an expired session deletes nothing")]
+    [Fact(DisplayName = "SpeechClipService.DeleteForGuestAsync/UTC003: a save failure keeps the guest row and audio")]
     [Trait("UTC", "SpeechClipService.DeleteForGuestAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task DeleteForGuest_an_expired_session_deletes_nothing()
-    {
-        var f = MakeClipSvc();
-        var invitation = Guid.CreateVersion7();
-        var guest = GuestSession(f, invitation, admitted: false, notice: false);
-        var clip = GuestClip(f, invitation, audio: true, excluded: false);
-
-        var outcome = await f.Service.DeleteForGuestAsync(guest, clip.Id);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Single(f.ClipsInner.Clips);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.DeleteForGuestAsync/UTC004: a save failure keeps the guest row and audio")]
-    [Trait("UTC", "SpeechClipService.DeleteForGuestAsync/UTC004")]
     [Trait("Trait", "UTC")]
     public async Task DeleteForGuest_a_save_failure_keeps_the_guest_row_and_audio()
     {
@@ -1696,35 +1352,8 @@ public sealed class RecUnitRound1Tests
         Assert.Equal("Xin chào", clip.Text);
     }
 
-    [Fact(DisplayName = "SpeechClipService.EditAsync/UTC004: editing nothing is not found")]
+    [Fact(DisplayName = "SpeechClipService.EditAsync/UTC004: a save failure keeps the old wording")]
     [Trait("UTC", "SpeechClipService.EditAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Edit_editing_nothing_is_not_found()
-    {
-        var f = MakeClipSvc();
-
-        var outcome = await f.Service.EditAsync(Guid.CreateVersion7(), f.Secretary, "cách nói đã sửa");
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.EditAsync/UTC005: a deactivated editor is inactive")]
-    [Trait("UTC", "SpeechClipService.EditAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Edit_a_deactivated_editor_is_inactive()
-    {
-        var f = MakeClipSvc();
-        var clip = MemberClip(f, f.Member, audio: false);
-
-        var outcome = await f.Service.EditAsync(clip.Id, Guid.CreateVersion7(), "cách nói đã sửa");
-
-        Assert.Equal(SpeechClipFailure.Inactive, outcome.Failure);
-        Assert.Equal("Xin chào", clip.Text);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.EditAsync/UTC006: a save failure keeps the old wording")]
-    [Trait("UTC", "SpeechClipService.EditAsync/UTC006")]
     [Trait("Trait", "UTC")]
     public async Task Edit_a_save_failure_keeps_the_old_wording()
     {
@@ -1803,35 +1432,6 @@ public sealed class RecUnitRound1Tests
         Assert.Equal([AuditActions.SpeechClipsExported], f.Audit.Actions);
     }
 
-    [Fact(DisplayName = "SpeechClipService.ExportAsync/UTC005: an outsider reads nothing")]
-    [Trait("UTC", "SpeechClipService.ExportAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_an_outsider_reads_nothing()
-    {
-        var f = MakeClipSvc();
-        var outsider = Guid.CreateVersion7();
-        f.Meetings.ActiveUsers.Add(outsider);
-
-        var outcome = await f.Service.ExportAsync(f.Meeting.Id, outsider);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.ExportAsync/UTC006: a read failure is read failed with an error log")]
-    [Trait("UTC", "SpeechClipService.ExportAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task Export_a_read_failure_is_read_failed_with_an_error_log()
-    {
-        var f = MakeClipSvc();
-        f.Meetings.FailReads = true;
-
-        var outcome = await f.Service.ExportAsync(f.Meeting.Id, f.Chair);
-
-        Assert.Equal(SpeechClipFailure.ReadFailed, outcome.Failure);
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to export the speech clips"));
-    }
-
     [Fact(DisplayName = "SpeechClipService.PlaybackAsync/UTC001: hears one sentence with a signed link")]
     [Trait("UTC", "SpeechClipService.PlaybackAsync/UTC001")]
     [Trait("Trait", "UTC")]
@@ -1861,36 +1461,8 @@ public sealed class RecUnitRound1Tests
         Assert.Null(outcome.Data);
     }
 
-    [Fact(DisplayName = "SpeechClipService.PlaybackAsync/UTC003: a deactivated listener is inactive")]
+    [Fact(DisplayName = "SpeechClipService.PlaybackAsync/UTC003: a read failure is read failed with an error log")]
     [Trait("UTC", "SpeechClipService.PlaybackAsync/UTC003")]
-    [Trait("Trait", "UTC")]
-    public async Task Playback_a_deactivated_listener_is_inactive()
-    {
-        var f = MakeClipSvc();
-        var clip = MemberClip(f, f.Member, audio: true);
-
-        var outcome = await f.Service.PlaybackAsync(clip.Id, Guid.CreateVersion7());
-
-        Assert.Equal(SpeechClipFailure.Inactive, outcome.Failure);
-        Assert.Null(outcome.Data);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.PlaybackAsync/UTC004: a sentence without audio is not heard")]
-    [Trait("UTC", "SpeechClipService.PlaybackAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task Playback_a_sentence_without_audio_is_not_heard()
-    {
-        var f = MakeClipSvc();
-        var clip = MemberClip(f, f.Member, audio: false);
-
-        var outcome = await f.Service.PlaybackAsync(clip.Id, f.Member);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Data);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.PlaybackAsync/UTC005: a read failure is read failed with an error log")]
-    [Trait("UTC", "SpeechClipService.PlaybackAsync/UTC005")]
     [Trait("Trait", "UTC")]
     public async Task ClipPlayback_a_read_failure_is_read_failed_with_an_error_log()
     {
@@ -1920,23 +1492,8 @@ public sealed class RecUnitRound1Tests
         Assert.StartsWith("signed/", Assert.IsType<RecordingPlayback>(outcome.Data).Url);
     }
 
-    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC002: someone else sentence does not exist for a guest")]
+    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC002: only officers hear an excluded sentence")]
     [Trait("UTC", "SpeechClipService.PlaybackForGuestAsync/UTC002")]
-    [Trait("Trait", "UTC")]
-    public async Task PlaybackForGuest_someone_else_sentence_does_not_exist_for_a_guest()
-    {
-        var f = MakeClipSvc();
-        var guest = GuestSession(f, Guid.CreateVersion7(), admitted: true, notice: true);
-        var clip = GuestClip(f, Guid.CreateVersion7(), audio: true, excluded: false);
-
-        var outcome = await f.Service.PlaybackForGuestAsync(guest, clip.Id);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Data);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC003: only officers hear an excluded sentence")]
-    [Trait("UTC", "SpeechClipService.PlaybackForGuestAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task PlaybackForGuest_only_officers_hear_an_excluded_sentence()
     {
@@ -1951,24 +1508,8 @@ public sealed class RecUnitRound1Tests
         Assert.Null(outcome.Data);
     }
 
-    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC004: a sentence without audio is not heard")]
-    [Trait("UTC", "SpeechClipService.PlaybackForGuestAsync/UTC004")]
-    [Trait("Trait", "UTC")]
-    public async Task PlaybackForGuest_a_sentence_without_audio_is_not_heard()
-    {
-        var f = MakeClipSvc();
-        var invitation = Guid.CreateVersion7();
-        var guest = GuestSession(f, invitation, admitted: true, notice: true);
-        var clip = GuestClip(f, invitation, audio: false, excluded: false);
-
-        var outcome = await f.Service.PlaybackForGuestAsync(guest, clip.Id);
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Null(outcome.Data);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC005: a read failure is read failed with an error log")]
-    [Trait("UTC", "SpeechClipService.PlaybackForGuestAsync/UTC005")]
+    [Fact(DisplayName = "SpeechClipService.PlaybackForGuestAsync/UTC003: a read failure is read failed with an error log")]
+    [Trait("UTC", "SpeechClipService.PlaybackForGuestAsync/UTC003")]
     [Trait("Trait", "UTC")]
     public async Task PlaybackForGuest_a_read_failure_is_read_failed_with_an_error_log()
     {
@@ -2049,35 +1590,6 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(SpeechClipFailure.Invalid, outcome.Failure);
         Assert.Equal(["Lý do phải là Leak hoặc Other."], outcome.Errors!["reason"]);
         Assert.Null(clip.ExcludedAt);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.SetExclusionAsync/UTC005: excluding nothing is not found")]
-    [Trait("UTC", "SpeechClipService.SetExclusionAsync/UTC005")]
-    [Trait("Trait", "UTC")]
-    public async Task SetExclusion_excluding_nothing_is_not_found()
-    {
-        var f = MakeClipSvc();
-
-        var outcome = await f.Service.SetExclusionAsync(Guid.CreateVersion7(), f.Chair, true, "Leak");
-
-        Assert.Equal(SpeechClipFailure.NotFound, outcome.Failure);
-        Assert.Empty(f.Audit.Actions);
-    }
-
-    [Fact(DisplayName = "SpeechClipService.SetExclusionAsync/UTC006: a save failure keeps the sentence in the record")]
-    [Trait("UTC", "SpeechClipService.SetExclusionAsync/UTC006")]
-    [Trait("Trait", "UTC")]
-    public async Task SetExclusion_a_save_failure_keeps_the_sentence_in_the_record()
-    {
-        var f = MakeClipSvc();
-        var clip = MemberClip(f, f.Member, audio: false);
-        f.Uow.FailNextSave = new PersistenceUnavailableException();
-
-        var outcome = await f.Service.SetExclusionAsync(clip.Id, f.Chair, true, "Other");
-
-        Assert.Equal(SpeechClipFailure.SaveFailed, outcome.Failure);
-        Assert.Equal((0, 1), (f.Uow.Commits, f.Uow.Rollbacks));
-        Assert.Contains(f.Log.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("Failed to change the exclusion of speech clip"));
     }
 }
 

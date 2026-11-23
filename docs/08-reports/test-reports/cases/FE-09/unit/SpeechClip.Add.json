@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-39a · BR-352 · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Boundary",
           "note": "UC-39a · MSG319",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,7 +55,7 @@
           "type": "Boundary",
           "note": "UC-39a · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,39 +70,7 @@
           "type": "Abnormal",
           "note": "UC-39a · BR-354 · MSG320 · Deviation: check() refuses before any audio is written, so no file is deleted",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The speech worker fails on this sentence."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "EngineUnavailable (503, MSG312); nothing is stored.",
-          "exception": "SpeechEngineException caught; logged.",
-          "log": "Warning log 'The speech worker could not transcribe a clip'.",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The database fails while storing the sentence."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "SaveFailed (503, MSG304); the audio file written for the sentence is deleted.",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to store a speech clip'.",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG304",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

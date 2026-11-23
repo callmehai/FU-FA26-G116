@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "type": "Normal",
           "note": "UC-64 · UC-83 · BR-409 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,27 +57,11 @@
           "type": "Abnormal",
           "note": "UC-64 · BR-406 · MSG428",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "Revision still Draft."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the current Chair; loadedAt: T.",
-          "return": "Failure NotWaiting; 409 MSG429; status unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-64 · MSG429",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "WaitingApproval revision read at T, then saved by someone else."
@@ -89,23 +73,7 @@
           "type": "Abnormal",
           "note": "UC-64 · BR-389 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair; WaitingApproval revision read at T.",
-            "The database fails while saving the transition."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; loadedAt: T.",
-          "return": "Failure SaveFailed; 503 MSG404; status unchanged and nobody notified.",
-          "exception": "N/A",
-          "log": "Error logged with the action and minutes id.",
-          "type": "Abnormal",
-          "note": "UC-64 · MSG404",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

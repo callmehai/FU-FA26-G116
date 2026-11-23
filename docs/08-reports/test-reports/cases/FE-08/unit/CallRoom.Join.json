@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG280",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG117",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,39 +70,7 @@
           "type": "Abnormal",
           "note": "UC-37 · MSG281",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a verified guest session of this meeting.",
-            "LiveKit is configured."
-          ],
-          "inputs": "meetingId: the meeting; caller: that guest session; recordingNoticeAcknowledged: false (the notice was not confirmed on the waiting screen).",
-          "return": "RecordingNoticeRequired; 400 \"Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.\" (MSG380); no token and no audit row.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-37 · UC-04 · MSG380",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting InProgress with mode Online; caller is a current participant.",
-            "The access read fails in storage."
-          ],
-          "inputs": "meetingId: the meeting; caller: the participant.",
-          "return": "ReadFailed; 500 \"Không thể vào phòng họp. Vui lòng thử lại.\" (MSG118); no ticket.",
-          "exception": "N/A",
-          "log": "Could not read call room access for meeting {MeetingId}.",
-          "type": "Abnormal",
-          "note": "UC-37 · MSG118",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

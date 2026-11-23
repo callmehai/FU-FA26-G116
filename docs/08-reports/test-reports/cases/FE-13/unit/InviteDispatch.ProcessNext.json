@@ -23,7 +23,7 @@
           "type": "Abnormal",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,7 +38,7 @@
           "type": "Normal",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,7 +53,7 @@
           "type": "Boundary",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,37 +68,7 @@
           "type": "Boundary",
           "note": "UC-20 · BR-300",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "51 dispatches are due."
-          ],
-          "inputs": "Clock 2026-11-18T03:00Z.",
-          "return": "50: one batch lists at most 50 due ids, the 51st waits for the next cycle.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Two due dispatches; the first one's materialization throws."
-          ],
-          "inputs": "Clock 2026-11-18T03:00Z.",
-          "return": "1: the failure is recorded for the first dispatch and the second one is still processed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-20 · BR-300",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

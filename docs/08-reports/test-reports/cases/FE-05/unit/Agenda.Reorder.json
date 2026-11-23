@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG63.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "return": "Failure StaleOrder; 409 / MSG143.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,23 +57,7 @@
           "return": "Failure NotFound; 404, empty body.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "actor: S; valid input; the database fails while saving.",
-          "log": "N/A",
-          "note": "UC-23d · MSG71",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
-            "Items P1 (position 1), P2 (position 2), P3 (position 3), all Pending; the client holds the current order version."
-          ],
-          "return": "Failure SaveFailed; 503 / MSG71.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

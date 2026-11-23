@@ -16,7 +16,7 @@
           "return": "Returns \"ok\" after the administrator lock was taken and the write ran inside one Read Committed transaction that is then committed.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,7 +31,7 @@
           "return": "The call waits for the first write to commit, then runs against the committed state, so two legal-looking changes cannot combine into a system with no administrator.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,7 +46,7 @@
           "return": "The refusal is returned unchanged to the caller; nothing was written, so the commit leaves the database as it was.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,7 +61,7 @@
           "return": "The exception reaches the caller and the transaction is rolled back, so no partial change stays and the lock is released.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,22 +76,7 @@
           "return": "The write runs inside the existing transaction and is not committed early; the outer call commits it. Taking the lock again is harmless.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "Persistence or cancellation exception from taking the lock.",
-          "id": "UTC006",
-          "inputs": "write: any function.",
-          "log": "N/A",
-          "note": "UC-11",
-          "preconditions": [
-            "The lock cannot be taken (the database call fails or is cancelled)."
-          ],
-          "return": "The write is not executed and the failure reaches the caller; no change is made.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ],

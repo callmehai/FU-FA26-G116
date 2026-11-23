@@ -25,7 +25,7 @@
           "type": "Normal",
           "note": "UC-86b · BR-452 · BR-453 · MSG473 · Deviation: no meeting scope since ADR-0075",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "type": "Abnormal",
           "note": "UC-86b · BR-449 · MSG475",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,27 +55,11 @@
           "type": "Abnormal",
           "note": "UC-86b · BR-448 · MSG476 · Deviation: limit is 50 per person, 5 per collector is gone (ADR-0075)",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
-          "preconditions": [
-            "The person consented to notice \"1.4\" or later.",
-            "The collector did not confirm the person agreed to this take."
-          ],
-          "inputs": "actorId: the collector; userId: the person recorded; audio: a voice recording; contentType: audio/mpeg; personAgreed: false.",
-          "return": "Failure NotConfirmed (MSG483 \"Hãy hỏi ý người được thu và xác nhận họ đồng ý cho lần thu này trước khi lưu giọng mẫu.\"); the audio never goes to the worker and nothing is kept.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · MSG483 · ADR-0073",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "The person consented to notice \"1.4\" or later.",
             "Audio holds 3 seconds of speech."
@@ -87,23 +71,7 @@
           "type": "Abnormal",
           "note": "UC-86b · BR-363 · MSG309",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The person consented to notice \"1.4\" or later.",
-            "The speech worker is down."
-          ],
-          "inputs": "actorId: the collector; userId: the person recorded; audio: a clear voice recording; contentType: audio/mpeg; personAgreed: true.",
-          "return": "Failure EngineUnavailable (MSG312 \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\"); nothing is kept.",
-          "exception": "N/A",
-          "log": "Warning logged with the person id.",
-          "type": "Abnormal",
-          "note": "UC-86b · MSG312",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

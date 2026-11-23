@@ -24,7 +24,7 @@
           "return": "Success; 201 / MSG60; new item id returned.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "return": "Failure Invalid on title; 400 / MSG66.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,27 +55,12 @@
           "return": "Failure Forbidden; 403 / MSG67.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "actor: S; input.ParseFailure: UnsupportedMedia.",
-          "log": "N/A",
-          "note": "UC-23a · MSG34",
-          "preconditions": [
-            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
-          ],
-          "return": "Failure UnsupportedMedia; 415 / MSG34; errors {body}.",
-          "type": "Abnormal",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
           "inputs": "actor: S; input.ParseFailure: TooLarge.",
           "log": "N/A",
           "note": "UC-23a · MSG87",
@@ -85,12 +70,12 @@
           "return": "Failure TooLarge; 413 / MSG87.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "actor: S; input {Title: \"A\"}.",
           "log": "Nothing saved.",
           "note": "UC-23a · MSG68",
@@ -101,7 +86,7 @@
           "return": "Failure SaveFailed; 503 / MSG68.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

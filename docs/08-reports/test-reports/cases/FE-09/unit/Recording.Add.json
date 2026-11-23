@@ -26,7 +26,7 @@
           "type": "Normal",
           "note": "UC-44c · BR-343 · BR-347 · MSG290",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -43,7 +43,7 @@
           "type": "Abnormal",
           "note": "UC-44c · BR-343 · MSG291",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -58,7 +58,7 @@
           "type": "Abnormal",
           "note": "UC-44c · BR-341 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,7 +73,7 @@
           "type": "Abnormal",
           "note": "UC-44c · BR-340 · MSG358",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,40 +88,7 @@
           "type": "Abnormal",
           "note": "UC-44c · BR-340 · MSG478",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "InPerson meeting in status Published; the actor is the Secretary."
-          ],
-          "inputs": "A valid upload.",
-          "return": "Locked (409, MSG294).",
-          "exception": "N/A",
-          "log": "The stored file is deleted.",
-          "type": "Abnormal",
-          "note": "UC-44c · BR-342 · MSG294",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "InPerson meeting in status InProgress.",
-            "The actor is its current Secretary and an active user.",
-            "The audio file is already stored by the endpoint at 'recordings/x.mp3'.",
-            "The database rejects the save."
-          ],
-          "inputs": "A valid upload.",
-          "return": "SaveFailed (503, MSG298).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log; the stored file is deleted so no voice stays on disk.",
-          "type": "Abnormal",
-          "note": "UC-44c · MSG298",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

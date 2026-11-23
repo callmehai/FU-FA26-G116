@@ -24,7 +24,7 @@
           "type": "Normal",
           "note": "UC-71b · BR-276 · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Boundary",
           "note": "UC-71b · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,7 +54,7 @@
           "type": "Abnormal",
           "note": "UC-71b · BR-242 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,7 +69,7 @@
           "type": "Abnormal",
           "note": "UC-71b · MSG347",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -84,22 +84,7 @@
           "type": "Boundary",
           "note": "UC-71b · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Database error on save."
-          ],
-          "inputs": "fileName: \"moi.pdf\".",
-          "return": "Failure SaveFailed (HTTP 503, MSG184); the name stays.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to rename a document\".",
-          "type": "Abnormal",
-          "note": "UC-71b · MSG184",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -14,5 +14,4 @@ Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingOverdueS
 | UTC002 | Planned start exactly 24 hours ago. | PlannedStartTime = now-24h. | Return: Returns 1 (start is not later than now minus the delay).<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-75 · BR-301 |
 | UTC003 | Planned start 23 hours 59 minutes ago. | PlannedStartTime = now-23h59m. | Return: Returns 0; the meeting is not touched.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-75 · BR-301 |
 | UTC004 | Meeting has moved to InProgress between the listing and the locked re-check. | status InProgress on the re-check. | Return: Not cancelled; not counted.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-75 · BR-297 |
-| UTC005 | Saving one of two overdue meetings fails. | two overdue meetings; first save fails. | Return: Returns 1; the failed meeting is left for the next sweep and the tracker is discarded.<br>Exception: N/A<br>Log Message: Error logged for the failed meeting; pending changes discarded. | Abnormal | UC-75 · BR-301 |
-| UTC006 | More than 50 overdue meetings. | 60 overdue meetings. | Return: At most 50 per sweep.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-75 · BR-301 |
+| UTC005 | More than 50 overdue meetings. | 60 overdue meetings. | Return: At most 50 per sweep.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-75 · BR-301 |

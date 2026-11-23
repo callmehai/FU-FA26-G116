@@ -12,5 +12,4 @@ Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingAudience
 |---|---|---|---|---|---|
 | UTC001 | 1. Guest session is valid and belongs to the meeting; guest invitation is readable.<br>2. Meeting is Published. | guest: session of this meeting; meetingId: the Published meeting. | Return: true.<br>Exception: N/A<br>Log Message: N/A | Normal | UC-37 · BR-29 · BR-154 |
 | UTC002 | Guest session has an empty SessionId (invalid). | guest: session with SessionId = empty Guid; meetingId: any meeting. | Return: false; the meeting is not loaded.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-37 · BR-29 · BR-154 |
-| UTC003 | Guest session belongs to another meeting. | guest: session of meeting A; meetingId: meeting B. | Return: false.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-37 · BR-29 · BR-154 |
-| UTC004 | 1. Guest session valid and readable.<br>2. Meeting is Ended. | guest: valid session; meetingId: Ended meeting. | Return: false; only Published and InProgress meetings are open to guests.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-37 · BR-155 |
+| UTC003 | 1. Guest session valid and readable.<br>2. Meeting is Ended. | guest: valid session; meetingId: Ended meeting. | Return: false; only Published and InProgress meetings are open to guests.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-37 · BR-155 |

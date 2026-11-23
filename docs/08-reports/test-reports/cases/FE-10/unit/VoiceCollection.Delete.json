@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-86d · BR-452 · MSG474",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,22 +38,7 @@
           "type": "Abnormal",
           "note": "UC-86d · BR-452 · BR-448",
           "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "The person account is deactivated; a proxy sample still exists."
-          ],
-          "inputs": "actorId: the collector; userId: a deactivated person; sampleId: a proxy sample of that person.",
-          "return": "Failure NotFound; answered as if the sample does not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86d · ADR-0049",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]

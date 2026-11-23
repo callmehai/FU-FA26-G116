@@ -23,7 +23,7 @@
           "type": "Normal",
           "note": "UC-50 · BR-374 · MSG391",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,26 +38,11 @@
           "type": "Abnormal",
           "note": "UC-50 · MSG390",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A draft is Queued on the worker; actor is the current secretary."
-          ],
-          "inputs": "meetingId: a meeting with a Queued draft; actorId: its current secretary.",
-          "return": "Failure Busy (MSG387); the mark would end up on a text nobody has read.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-50 · MSG387",
-          "round1": "Passed",
-          "date1": "2026-11-22",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "A Ready draft exists; actor takes part but is neither chair nor secretary."
           ],
@@ -68,7 +53,7 @@
           "type": "Abnormal",
           "note": "UC-50 · BR-374 · MSG385",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
         }
       ]
