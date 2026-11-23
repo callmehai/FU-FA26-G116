@@ -110,4 +110,17 @@ public sealed class SpeakerMatcherTests
         Assert.Equal("SPEAKER_00", SpeakerMatcher.SameAs([("SPEAKER_00", Lan, 0.70, Lan), ("SPEAKER_01", Lan, 0.82, null)])["SPEAKER_01"]);
         Assert.Empty(SpeakerMatcher.SameAs([("SPEAKER_00", Lan, 0.70, Minh), ("SPEAKER_01", Lan, 0.82, null)]));
     }
+
+    [Fact]
+    public void Scores_rank_each_person_by_their_best_sample_also_for_a_voice_left_unnamed()
+    {
+        // Every person and score is listed, named or not: what the transcription logs for each voice.
+        var scores = SpeakerMatcher.Scores([new("SPEAKER_00", 1000, [1f, 1f])],
+            [C(Lan, [1f, -0.6f]), C(Lan, [1f, 0.9f]), C(Minh, [1f, 0.5f])]);
+        var ranked = scores["SPEAKER_00"];
+        Assert.Equal(2, ranked.Length);
+        Assert.Equal(Lan, ranked[0].UserId);
+        Assert.Equal(SpeakerMatcher.Cosine([1f, 1f], [1f, 0.9f]), ranked[0].Score, 6);
+        Assert.True(ranked[0].Score >= ranked[1].Score);
+    }
 }
