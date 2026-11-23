@@ -64,6 +64,7 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_NUMBERS` | `1` | `0` giữ số bằng chữ ("hai mươi ba" thay vì "23"), xem bước 8 ở [Cách chạy bên trong](#cách-chạy-bên-trong). Đo WER với đáp án viết bằng chữ thì đặt `0` |
+| `SPEECH_CLIP_PROCESS` | `1` | `0` cho câu mic cá nhân và mẫu giọng chạy chung process con với bản ghi dài như trước (máy ít RAM), xem [Cách chạy bên trong](#cách-chạy-bên-trong) |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -140,7 +141,7 @@ Lượt chạy có mã `run` đã đi đến đâu. Cùng xác thực như các 
 
 | `state` | Nghĩa |
 |---|---|
-| `queued` | Đã nhận, đang chờ sau một việc khác (process con mỗi lần chạy một việc) |
+| `queued` | Đã nhận, đang chờ sau một việc khác (mỗi process con mỗi lần chạy một việc) |
 | `running` | Đang chạy; `percent` 0–100, chỉ tăng |
 | `unknown` | Worker không có lượt nào mang mã này: đã trả kết quả, chưa gửi tới, hoặc worker đã khởi động lại |
 
@@ -240,24 +241,46 @@ Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + em
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
 0.06 khi chạy trực tiếp.
 
-- Model nằm trong **một process con**, mỗi lần chạy một việc. Tách người nói giữ GIL của Python
+- Model nằm trong **process con**, mỗi process con mỗi lần chạy một việc. Tách người nói giữ GIL của Python
   trong lúc chạy, nên nếu để chung process thì cả `/health` cũng bị treo. Process HTTP chỉ chuyển
   đường dẫn file tạm và kết quả JSON qua lại. Process con chết (ví dụ hết RAM) thì request đó
   nhận `500`, request sau chạy trên process con mới.
-- Request thứ hai đến khi đang bận sẽ **xếp hàng**, không bị từ chối.
+- **Hai process con, hai làn.** Làn nặng nhận bản ghi nguyên buổi (mic phòng, tệp tải lên), chạy nhiều phút. Làn nhẹ
+  nhận việc có người đang chờ: câu mic cá nhân (`profile=clip`) và mẫu giọng (`/v1/embed`). Trước đây chỉ có một
+  process con, nên mỗi lần bản ghi phòng được chuyển chữ lại (8–30 phút trên server test), mọi câu mic cá nhân phải
+  chờ sau nó; backend chỉ chờ 30 giây rồi bỏ, nên ngày 23/11/2026 suốt 30 phút họp không lưu được câu nào. Mỗi process
+  con giữ một bản model riêng, nên làn nhẹ tốn thêm khoảng 400 MB. Process con của làn nặng chạy ở mức ưu tiên CPU thấp
+  hơn (`nice` +10): trên máy 2 vCPU, câu mic cá nhân, backend, PostgreSQL và LiveKit được CPU trước. `SPEECH_CLIP_PROCESS=0`
+  gộp lại một process con như cũ, cho máy thiếu RAM.
+
+  Đo trong Docker (Linux arm64 trên MacBook M1, `--cpus 2`, `--memory 2500m`, `SPEECH_THREADS=2` như server test), một
+  bản ghi 20 phút, cứ 15 giây gửi một câu 5 giây và mỗi phút một mẫu giọng 25 giây:
+
+  | | Một process con | Hai process con |
+  |---|---|---|
+  | Bản ghi 20 phút | 503 s | 489 s |
+  | Câu mic cá nhân (5 s) | trung vị 289 s, lâu nhất 494 s | trung vị 0,6 s, 90% dưới 4,8 s, lâu nhất 6,8 s |
+  | Mẫu giọng (25 s) | 123–482 s | 13–15 s (lúc rảnh 5,8 s) |
+  | RAM + swap của container, đỉnh | 3,1 GB | 3,5 GB |
+
+  Câu lâu nhất là câu đến đúng lúc làn nhẹ đang làm một mẫu giọng hoặc đang nạp lại model sau mẫu giọng.
+- Request đến khi làn của nó đang bận sẽ **xếp hàng**, không bị từ chối.
 - **Bên gọi ngắt kết nối thì dừng.** Trong lúc chạy `/v1/transcribe`, process HTTP cứ nửa giây xem kết nối còn không;
   bên gọi đã đóng thì báo process con qua một danh sách số việc đã huỷ dùng chung, và process con dừng ở bước kế tiếp
   (giữa hai khung giọng, hai lô câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
   lượt mic phòng mới đến lúc bản cũ còn đang chạy. Đo trên máy dev: bên gọi ngắt ở giây thứ 6 của một bản ghi 9 phút, worker
   dừng chưa tới nửa giây sau đó, và request kế tiếp chạy ngay.
-- **Tiến độ đi theo chiều ngược lại.** Process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung mỗi khi
-  một bước báo tiến độ; process HTTP đọc cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà chưa phải việc
-  process con đang chạy là `queued`.
+- **Tiến độ đi theo chiều ngược lại.** Mỗi process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung của
+  riêng nó mỗi khi một bước báo tiến độ; process HTTP đọc các cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà
+  chưa process con nào đang chạy là `queued`.
 - **Khởi động lại process con sau mỗi bản ghi dài.** Sau một việc không phải câu mic cá nhân (bản ghi phòng, tệp tải
   lên), khi không còn việc nào đang chạy hay chờ, process HTTP tắt process con và mở process mới. Process cũ giữ phần
   bộ nhớ của lần chạy dài (vùng nhớ của onnxruntime, âm thanh đã giải mã, các khung tách người nói) suốt đời nó. Trên
   server test ngày 23/11/2026, sau bản ghi 35 phút nó vẫn giữ 2,4 GB RAM và 1,8 GB swap khi rảnh, nên lần chạy sau
-  chậm vì phải đọc swap. Process mới chỉ giữ model; nạp model mất khoảng 6 giây, request đến trong lúc đó chờ.
+  chậm vì phải đọc swap. Process mới chỉ giữ model; nạp model mất khoảng 6 giây, request đến trong lúc đó chờ. Mỗi làn
+  khởi động lại process con của riêng nó: câu mic cá nhân không bao giờ làm process nào khởi động lại; một mẫu giọng làm
+  process con của làn nhẹ to thêm khoảng 300–400 MB nên làn nhẹ khởi động lại sau đó (khoảng 3 giây, câu đến trong lúc
+  đó chờ). Khi chỉ có một process con (`SPEECH_CLIP_PROCESS=0`), chỉ bản ghi dài làm nó khởi động lại, như trước.
 
 ## Kiểm thử
 
@@ -428,8 +451,9 @@ gần như giống hệt nhau.
 RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Bước dấu câu
 thêm khoảng 2% thời gian (cuộc họp thật 300 s: 20.7 s → 21.2 s) và khoảng 270 MB RAM, WER không đổi
 (16.1%) vì model không đổi từ nào. Với RTF
-0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 260 MB RAM. Process con giữ
-lại bộ nhớ đã dùng, nên sau vài bản ghi 10 phút liên tiếp, container giữ khoảng 2.4 GB. Docker ở
+0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 700 MB RAM (hai process con, mỗi process
+khoảng 385 MB, đo 24/11/2026; trước khi có dấu câu và làn nhẹ là 260 MB). Process con giữ lại bộ nhớ đã dùng cho
+tới khi được khởi động lại (xem [Cách chạy bên trong](#cách-chạy-bên-trong)). Docker ở
 đây chạy trong máy ảo Linux của Docker Desktop (8 CPU), chậm hơn chạy trực tiếp khoảng 3 lần.
 
 Chưa đo trên máy chủ x86.
