@@ -3,19 +3,100 @@
   "groups": [
     {
       "title": "Personal Library",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF08_TC01",
+          "description": "The Secretary uploads a PDF and a DOCX to her personal library and opens the PDF.",
+          "procedure": [
+            "As Member B open \"Kho tài liệu\" (/mgmt/documents), click \"Tải lên\", choose a 3-page PDF and a DOCX and click \"Tải lên 2 tài liệu\".",
+            "Click the PDF."
+          ],
+          "expected": [
+            "The upload tray says \"Đã tải lên 2 tệp\"; both files are listed, the PDF with \"3 trang\".",
+            "The PDF opens in the viewer with its pages."
+          ],
+          "preconditions": [
+            "File storage is running."
+          ],
+          "note": "BF-02 · UC-36, UC-34 · 5.2: DOC_FT01, DOC_FT07 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Attach to Meeting",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF08_TC02",
+          "description": "The Secretary attaches both library files to a published meeting; a member opens the DOCX.",
+          "procedure": [
+            "As Member B open tab \"Tài liệu\" of the meeting, click \"Thêm tài liệu chung\", choose \"Kho\", tick both files and click \"Thêm 2 tài liệu\".",
+            "As Member C open the same tab and click the DOCX."
+          ],
+          "expected": [
+            "Toast \"Đã thêm tài liệu vào cuộc họp.\"; both files are in \"Tài liệu chung\".",
+            "Member C sees both files and the DOCX opens in the viewer with \"Tải về\"."
+          ],
+          "preconditions": [
+            "TC01 passed; a published Thường meeting with Member B as Thư ký and Member C as member."
+          ],
+          "note": "BF-02 · UC-33a · MSG161 · 5.2: DOC_FT53 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Comment on Document",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF08_TC03",
+          "description": "A member comments on page 1 of the PDF and the Chair replies in the same thread.",
+          "procedure": [
+            "As Member C open the PDF, type \"Đề nghị làm rõ số liệu chi đào tạo ở trang này.\" in \"Nội dung góp ý\" with \"Gắn trang 1\" ticked, click \"Gửi góp ý\".",
+            "As Member A open the same PDF, click \"Trả lời\" on that comment, type \"Đã ghi nhận, phòng Tài chính sẽ bổ sung.\" and click \"Gửi trả lời\"."
+          ],
+          "expected": [
+            "The comment shows Member C's name and \"Trang 1\".",
+            "The reply appears under the comment with Member A's name, and reaches Member C's open viewer."
+          ],
+          "preconditions": [
+            "TC02 passed."
+          ],
+          "note": "BF-02 · UC-35 · BR-317 · MSG199 · 5.2: DOC_FT82, DOC_FT84 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Sensitivity Limits Readers",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF08_TC04",
+          "description": "In a Mật meeting the same file is view-only for a member; a user outside the meeting cannot reach it.",
+          "procedure": [
+            "As Member B add the PDF from \"Kho\" to the Mật meeting.",
+            "As Member C open tab \"Tài liệu\" of the Mật meeting and open the PDF; try to download it.",
+            "As Member D (not a participant) open the document URL."
+          ],
+          "expected": [
+            "Member C has no \"Tải về\"; the viewer says \"Chỉ xem trực tuyến\"; a download is refused (MSG159). The same file downloads in the Thường meeting.",
+            "Member D sees \"Không tìm thấy trang\"; the file API answers 404."
+          ],
+          "preconditions": [
+            "TC02 passed; a published Mật meeting with the same roster."
+          ],
+          "note": "BF-02 · UC-32a, UC-32c · BR-275 · MSG159, MSG156 · 5.2: DOC_FT73, DOC_FT79 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     }
   ]
 }

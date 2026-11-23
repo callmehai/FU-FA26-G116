@@ -3,19 +3,98 @@
   "groups": [
     {
       "title": "Meeting List Filtering",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF10_TC01",
+          "description": "Each person's meeting list holds only the meetings they may read.",
+          "procedure": [
+            "As Member D (in no [SYS] meeting) open \"Cuộc họp\" with all statuses and search \"[SYS]\".",
+            "As Member C search \"[SYS] WF-10\": one Draft and one Published meeting exist where Member C is a plain member.",
+            "As the Organizer search the same."
+          ],
+          "expected": [
+            "Member D's list and the API return no [SYS] meeting.",
+            "Member C sees the Published meeting but not the Draft one.",
+            "The Organizer sees both."
+          ],
+          "preconditions": [
+            "WF-02 to WF-08 were run; a Draft and a Published \"[SYS] WF-10\" meeting with Member C as member."
+          ],
+          "note": "BF-01 · UC-17 · BR-29 · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Direct URL to Others' Meeting",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF10_TC02",
+          "description": "A direct URL to a meeting the person may not read answers exactly like an unknown URL, for an outsider, a member of a Draft, the Administrator and an unassigned approver.",
+          "procedure": [
+            "As Member D open the URL of the Published WF-10 meeting.",
+            "Call GET /api/meetings/{id} as Member D (and with an unknown id), as Member C on the Draft, as the Administrator and as the second Approver on the Published one.",
+            "As the Administrator open the same URL."
+          ],
+          "expected": [
+            "The page is \"Không tìm thấy trang\" for Member D and the Administrator.",
+            "Every call answers 404, and Member D's answer is identical to the one for an unknown id (existence not revealed)."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "note": "BF-01 · UC-16 · BR-29 · AGENTS.md 403/404 rule · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Documents and Minutes of Others",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF10_TC03",
+          "description": "Minutes, votes, documents, recordings and agenda of meetings the person is not part of are not reachable.",
+          "procedure": [
+            "As Member D call the minutes, votes, documents, recordings and agenda of the WF-03 meeting, and the content of the Mật meeting document of WF-08.",
+            "Open the minutes tab and the document viewer URLs in the browser.",
+            "Call the minutes without signing in."
+          ],
+          "expected": [
+            "Every call answers 404; both pages show \"Không tìm thấy trang\".",
+            "Without a session the API answers 401."
+          ],
+          "preconditions": [
+            "WF-03 and WF-08 were run."
+          ],
+          "note": "BF-01 · UC-58, UC-32c · BR-29, BR-275 · 5.2: DOC_FT79 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Guest Scope",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF10_TC04",
+          "description": "A verified guest sees the meeting they were invited to and nothing else.",
+          "procedure": [
+            "As the guest of WF-05, verified by the emailed code, open the invited meeting, then try another meeting's URL and the personal library."
+          ],
+          "expected": [
+            "The guest reads only the invited meeting and its documents; other URLs are not found; there is no personal library."
+          ],
+          "preconditions": [
+            "A guest session (code read from a real mailbox)."
+          ],
+          "note": "BF-01 · UC-04 · BR-150, BR-152, BR-180 · Round 1 not run: the guest code is mailed straight to the guest and never stored, so a guest session needs a real mailbox. Checked only that the invited meeting answers 401 without a verified guest session. · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8"
+        }
+      ]
     }
   ]
 }

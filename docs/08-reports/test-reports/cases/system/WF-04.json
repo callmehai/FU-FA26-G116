@@ -3,35 +3,180 @@
   "groups": [
     {
       "title": "Upload Audio and Transcribe",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC01",
+          "description": "The Secretary uploads the audio of the ended meeting and the system transcribes it with speakers and times.",
+          "procedure": [
+            "As Member B open tab \"Bản ghi\" of the meeting WF-03 ended, click \"Tải tệp lên\", choose the meeting audio, tick the consent confirmation and click \"Tải lên\".",
+            "Wait for the status to go from \"Đang chuyển chữ\" to done; open the transcript."
+          ],
+          "expected": [
+            "Toast \"Đã lưu bản ghi.\"; the recording is listed with its size and \"Đang chuyển chữ\".",
+            "When done, the transcript lists each sentence with its time and a speaker label."
+          ],
+          "preconditions": [
+            "SYS_WF03_TC07 passed; an audio file of the meeting; the speech worker is running."
+          ],
+          "note": "BF-04 · UC-44c, UC-45 · MSG290 · 5.2: REC_FT32, TRANS_FT01 · Round 1 not run: the speech worker does not run on the test machine. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+        }
+      ]
     },
     {
       "title": "Edit Transcript",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC02",
+          "description": "The Secretary corrects a sentence and names a speaker in the transcript.",
+          "procedure": [
+            "As Member B open the transcript of TC01, edit the text of one sentence and save.",
+            "On a speaker card assign Member A to that voice."
+          ],
+          "expected": [
+            "\"Đã lưu đoạn gỡ băng.\"; the sentence shows the edit mark with Member B's name.",
+            "\"Đã gán người nói.\"; every sentence of that voice shows Member A."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "note": "BF-04 · UC-46a, UC-46b · MSG302, MSG316 · Round 1 not run: needs a transcript, which needs the speech worker. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+        }
+      ]
     },
     {
       "title": "AI Summary",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC03",
+          "description": "The Secretary asks for the AI summary of the transcript and reviews it.",
+          "procedure": [
+            "As Member B in tab \"Biên bản\" click \"Tạo dự thảo\" on the card \"Dự thảo nội dung\" and wait."
+          ],
+          "expected": [
+            "The card shows the request queued, then the summary of sections I–III to review and approve."
+          ],
+          "preconditions": [
+            "TC02 passed; the local language model is running."
+          ],
+          "note": "BF-04 · UC-47, UC-48 · Round 1 not run: no transcript and no local language model on the test machine. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+        }
+      ]
     },
     {
       "title": "AI Draft Minutes",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC04",
+          "description": "The Secretary approves the AI draft and builds the minutes from it.",
+          "procedure": [
+            "As Member B edit and approve the AI draft, then click \"Tạo bản nháp\" on the card \"Biên bản\"."
+          ],
+          "expected": [
+            "The minutes take sections I–III from the approved draft."
+          ],
+          "preconditions": [
+            "TC03 passed."
+          ],
+          "note": "BF-04 · UC-49, UC-50, UC-59 · Round 1 not run: depends on TC03. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+        }
+      ]
     },
     {
       "title": "Submit Minutes",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC05",
+          "description": "The Secretary makes the minutes from the fixed template and submits them to the Chair; a plain member cannot see them yet.",
+          "procedure": [
+            "As Member B open tab \"Biên bản\" (no AI draft: \"Chưa có dự thảo AI nên mục I–III để trống.\") and click \"Tạo bản nháp\".",
+            "Click \"Gửi duyệt\" and confirm in \"Gửi biên bản cho Chủ toạ duyệt?\".",
+            "As Member C open the same tab."
+          ],
+          "expected": [
+            "Toast \"Đã tạo bản nháp biên bản.\"; chip \"Bản nháp\"; the paper has the meeting title, Chủ toạ, Thư ký and the item conclusion of WF-03.",
+            "Toast \"Đã gửi biên bản cho Chủ toạ duyệt.\"; chip \"Chờ duyệt\"; \"Sửa\", \"Tạo lại\", \"Gửi duyệt\" are gone; the line \"Vũ Thị Lan gửi duyệt lúc …\".",
+            "The Chair has a notification; Member C sees no minutes."
+          ],
+          "preconditions": [
+            "SYS_WF03_TC07 passed (meeting Đã kết thúc)."
+          ],
+          "note": "BF-04 · UC-59, UC-61 · MSG395, MSG424 · 5.2: MIN_FT01, MIN_FT08 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Return and Correct",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC06",
+          "description": "The Chair returns the minutes with a reason; the Secretary reads it, corrects the minutes and submits again.",
+          "procedure": [
+            "As Member A click \"Trả lại\", click \"Trả lại\" with the reason empty, then type \"Bổ sung danh sách vắng mặt và ý kiến của phòng Tài chính.\" and click \"Trả lại\".",
+            "As Member B open the tab, read the reason, click \"Sửa\", add a line after the closing paragraph, click \"Lưu\", then \"Gửi duyệt\"."
+          ],
+          "expected": [
+            "An empty reason shows \"Nhập lý do trả lại, tối đa 2.000 ký tự.\"; with a reason: toast \"Đã trả lại biên bản cho Thư ký.\", chip \"Bị trả lại\"; the Secretary is notified.",
+            "The Secretary sees \"Hoàng Minh Đức trả lại: …\" above the paper; \"Đã lưu biên bản.\"; after sending: \"Chờ duyệt\" and the reason box is gone."
+          ],
+          "preconditions": [
+            "TC05 passed."
+          ],
+          "note": "BF-04 · UC-65, UC-61 · MSG430, MSG396, MSG424 · 5.2: MIN_FT35, MIN_FT29 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Approve and Issue",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC07",
+          "description": "The Chair approves and issues the corrected minutes; they lock and the participants are told.",
+          "procedure": [
+            "As Member A open tab \"Biên bản\", click \"Duyệt và ban hành\" and confirm in \"Duyệt và ban hành biên bản?\"."
+          ],
+          "expected": [
+            "Toast \"Đã duyệt và ban hành biên bản.\"; chip \"Đã ban hành\"; only \"Tải xuống\" and \"Tạo bản đính chính\" remain; \"Hoàng Minh Đức duyệt, ban hành lúc …\".",
+            "Member B and Member C are notified; the system log has \"minutes.issued\"; editing the issued minutes is refused."
+          ],
+          "preconditions": [
+            "TC06 passed."
+          ],
+          "note": "BF-04 · UC-64 · BR-408, BR-446 · MSG427 · 5.2: MIN_FT31, MIN_FT32 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Read Issued Minutes",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF04_TC08",
+          "description": "A member reads and downloads the issued minutes; a user outside the meeting cannot reach them.",
+          "procedure": [
+            "As Member C open tab \"Biên bản\", click \"Tải xuống\" › \"PDF\".",
+            "As Member D (not a participant) open the same URL."
+          ],
+          "expected": [
+            "Member C sees \"Đã ban hành\", the item conclusion and the correction, and only \"Tải xuống\"; the file is \"Biên bản - [SYS] Họp giao ban tuần 49.pdf\".",
+            "Member D sees \"Không tìm thấy trang\"; the minutes API answers 404."
+          ],
+          "preconditions": [
+            "TC07 passed."
+          ],
+          "note": "BF-04 · UC-58 · 5.2: MIN_FT08, MIN_FT21 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     }
   ]
 }

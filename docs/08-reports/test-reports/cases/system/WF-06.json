@@ -3,19 +3,91 @@
   "groups": [
     {
       "title": "Consent to Voice ID",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF06_TC01",
+          "description": "A member reads the Voice ID notice and consents.",
+          "procedure": [
+            "Sign in as Member C and open \"Giọng nói của tôi\" (/mgmt/my-voice).",
+            "Read the notice, tick \"Tôi đã đọc và đồng ý cho hệ thống lưu đặc trưng giọng nói của tôi cho mục đích trên.\" and click \"Đồng ý và bật\"."
+          ],
+          "expected": [
+            "The notice states Mục đích, Ai thu, Lưu gì, Dùng ở đâu, Quyền của tôi, Bên kiểm soát dữ liệu and that a voice is sensitive personal data; the box is not ticked and the button is disabled until it is.",
+            "Toast \"Đã bật nhận diện giọng nói cho tài khoản của bạn.\"; chip \"Đang bật\"; the consent is on the current notice version."
+          ],
+          "preconditions": [
+            "Member C has no Voice ID consent."
+          ],
+          "note": "BF-04 · UC-81b · ADR-0027 · MSG305 · 5.2: TRANS_FT60, TRANS_FT61 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Collect Sample on Behalf",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF06_TC02",
+          "description": "The Administrator (Thu giọng mẫu hộ) opens Member C's proxy collection, asks first, and records a sample.",
+          "procedure": [
+            "As the Administrator open /mgmt/admin/users, click \"Quản lý giọng nói thu hộ của Đặng Quốc Bảo\".",
+            "Click \"Thu\", confirm the person agreed this time, record Member C reading the passage and send."
+          ],
+          "expected": [
+            "The dialog \"Giọng nói thu hộ: Đặng Quốc Bảo\" shows the sample count and \"Thu\" (the person has consented).",
+            "Sending without the person's agreement is refused (MSG483); with it the sample is saved (\"Đã lưu giọng mẫu thu hộ.\") and Member C is notified."
+          ],
+          "preconditions": [
+            "TC01 passed; a person reading aloud; the speech worker computes the voice embedding."
+          ],
+          "note": "BF-04 · UC-81c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Round 1 run up to the recording dialog: without personAgreed the server answered 400 MSG483; with it 503 MSG312, because the speech worker is not running and the sample was a test tone, not a voice. · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8"
+        }
+      ]
     },
     {
       "title": "Speaker Attribution in Transcript",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF06_TC03",
+          "description": "Transcribing a meeting where Member C spoke suggests and fills Member C's name on their sentences.",
+          "procedure": [
+            "As the Secretary upload audio of Member A and Member C speaking to a meeting both attend and open the transcript."
+          ],
+          "expected": [
+            "Member C's sentences carry their name (filled automatically when the match is clear, ADR-0074); the other voice stays unnamed or suggested."
+          ],
+          "preconditions": [
+            "TC02 passed; the speech worker is running."
+          ],
+          "note": "BF-04 · UC-45, UC-46b · ADR-0074 · Round 1 not run: needs the speech worker. · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8"
+        }
+      ]
     },
     {
       "title": "Withdraw Consent and Delete",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF06_TC04",
+          "description": "Member C withdraws consent; every sample is deleted and the collector can no longer record them.",
+          "procedure": [
+            "As Member C on \"Giọng nói của tôi\" click \"Tắt và xoá giọng mẫu\" and confirm \"Tắt và xoá\".",
+            "As the Administrator open Member C's proxy collection again."
+          ],
+          "expected": [
+            "The dialog \"Tắt nhận diện giọng nói?\" warns first; toast \"Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu.\"; the consent box is unticked again.",
+            "No sample of Member C is left; the collector's dialog has no \"Thu\" (consented false)."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "note": "BF-04 · UC-81f · Law 91/2025/QH15 · MSG306 · 5.2: TRANS_FT67 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     }
   ]
 }

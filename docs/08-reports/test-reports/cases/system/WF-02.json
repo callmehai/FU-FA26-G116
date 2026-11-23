@@ -21,7 +21,10 @@
           "preconditions": [
             "Organizer, Member A, Member B, Member C and an Approver are active accounts (workflow precondition)."
           ],
-          "note": "BF-02 · UC-14 · BR-24, BR-25 · MSG29 · 5.2: MEET_FT01"
+          "note": "BF-02 · UC-14 · BR-24, BR-25 · MSG29 · 5.2: MEET_FT01 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -45,7 +48,10 @@
             "TC01 passed: Draft meeting exists with Member B as Thư ký.",
             "A guest mailbox the tester can read."
           ],
-          "note": "BF-02 · UC-28a · BR-88 · MSG96 · 5.2: PART_FT15, PART_FT25"
+          "note": "BF-02 · UC-28a · BR-88 · MSG96 · 5.2: PART_FT15, PART_FT25 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -67,7 +73,10 @@
           "preconditions": [
             "TC02 passed: Member C is on the roster."
           ],
-          "note": "BF-02 · UC-23a, UC-23d · 5.2: AGENDA_FT09, AGENDA_FT21"
+          "note": "BF-02 · UC-23a, UC-23d · 5.2: AGENDA_FT09, AGENDA_FT21 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -76,19 +85,22 @@
       "cases": [
         {
           "id": "SYS_WF02_TC04",
-          "description": "Secretary uploads a PDF to the meeting; another participant can open it.",
+          "description": "Secretary uploads a PDF to the meeting; the Chair can open it before publication.",
           "procedure": [
-            "As Member B open tab \"Tài liệu\" of the TC01 meeting and upload \"bao-cao-quy-iv.pdf\" (under the size limit).",
-            "Sign in as Member C in a second browser and open the same tab."
+            "As Member B open tab \"Tài liệu\" of the TC01 meeting, click \"Thêm tài liệu chung\" and upload \"bao-cao-quy-iv.pdf\" (under the size limit).",
+            "Sign in as Member A (Chủ toạ) in a second browser, open the same tab and click the file."
           ],
           "expected": [
-            "Member B sees the file with the PDF icon, its size and uploader.",
-            "Member C sees and can open the file."
+            "Member B sees the file with the PDF icon and \"3 trang\"; the upload tray says \"Đã tải lên 1 tệp\".",
+            "Member A sees the file and it opens in the viewer."
           ],
           "preconditions": [
             "TC02 passed; file storage is configured on the test build."
           ],
-          "note": "BF-02 · FE-07 · 5.2: FE-07 upload cases"
+          "note": "BF-02 · FE-07 · 5.2: FE-07 upload cases · Case changed to match the app (2026-11-23): before publication only the Organizer, the Chủ toạ and the Thư ký can open the meeting (MeetingReadPolicy), so Member C cannot see the Draft meeting; the second reader is Member A. · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -112,7 +124,10 @@
           "preconditions": [
             "TC01 to TC04 passed."
           ],
-          "note": "BF-02 · UC-18 · BR-33 · MSG78 · 5.2: MEET_FT41"
+          "note": "BF-02 · UC-18 · BR-33 · MSG78 · 5.2: MEET_FT41 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -137,7 +152,10 @@
           "preconditions": [
             "TC05 passed: meeting is Chờ duyệt, assigned to the Approver."
           ],
-          "note": "BF-02 · UC-19, UC-15, UC-18 · MSG44, MSG78 · 5.2: MEET_FT50"
+          "note": "BF-02 · UC-19, UC-15, UC-18 · MSG44, MSG78 · 5.2: MEET_FT50 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -161,7 +179,10 @@
           "preconditions": [
             "TC06 passed: meeting is Chờ duyệt after resubmission."
           ],
-          "note": "BF-02 · UC-19, UC-20 · BR-54 · MSG43, MSG45 · 5.2: MEET_FT49, MEET_FT55"
+          "note": "BF-02 · UC-19, UC-20 · BR-54 · MSG43, MSG45 · 5.2: MEET_FT49, MEET_FT55 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -173,18 +194,23 @@
           "description": "Invited members answer the invitation and the organizer sees the response status.",
           "procedure": [
             "As Member C open the published meeting and click \"Tham dự\" in the bar \"Bạn có tham dự cuộc họp này?\"; reload.",
-            "As Member A open the same meeting on a phone (390px) and answer \"Tham dự\".",
+            "As Member A (Chủ toạ) open the meeting.",
+            "As Member B (Thư ký) open the same meeting on a phone (390px) and answer \"Tham dự\".",
             "As the Organizer open tab \"Thành phần tham dự\"."
           ],
           "expected": [
             "Toast \"Đã ghi nhận phản hồi lời mời.\"; the bar disappears and stays gone after reload.",
+            "Member A is not asked: the Chủ toạ does not answer the invitation.",
             "On the phone the bar and its buttons fit without horizontal scrolling.",
-            "The Organizer sees chip \"Đã xác nhận tham dự\" beside Member A and Member C; Member B has no answer chip yet."
+            "The Organizer sees chip \"Đã xác nhận tham dự\" beside Member B and Member C; Member A has no answer chip."
           ],
           "preconditions": [
             "TC07 passed: meeting is Đã công bố."
           ],
-          "note": "BF-02 · UC-29, UC-30 · BR-105 · MSG105 · 5.2: PART_FT55"
+          "note": "BF-02 · UC-29, UC-30 · BR-105 · MSG105 · 5.2: PART_FT55 · Case changed to match the app (2026-11-23): the Chủ toạ is never asked to answer (ParticipantRules.CanRespond excludes the Chair), so the phone answer is given by Member B. · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     }

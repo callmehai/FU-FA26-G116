@@ -3,31 +3,182 @@
   "groups": [
     {
       "title": "Start Meeting",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC01",
+          "description": "The Chair starts the meeting WF-02 published; a member who has the meeting open sees it start without reloading.",
+          "procedure": [
+            "Member C opens the WF-02 meeting (status \"Đã công bố\") in a second browser.",
+            "Sign in as Member A (Chủ toạ), open the meeting and click \"Bắt đầu họp\".",
+            "The meeting is earlier than planned: in \"Bắt đầu sớm hơn lịch?\" click \"Vẫn bắt đầu\"."
+          ],
+          "expected": [
+            "Toast \"Bắt đầu cuộc họp thành công.\"; status \"Đang diễn ra\"; the button becomes \"Kết thúc họp\".",
+            "Member C's open page changes to \"Đang diễn ra\" within a few seconds, without a reload.",
+            "The meeting has an actual start time."
+          ],
+          "preconditions": [
+            "SYS_WF02_TC08 passed: \"[SYS] Họp giao ban tuần 49\" is Đã công bố with Chủ toạ Member A, Thư ký Member B, Member C and a guest."
+          ],
+          "note": "BF-03 · UC-21 · BR-62 · MSG110 · 5.2: MEET_FT60 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Record Attendance",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC02",
+          "description": "The Secretary records attendance; a member sees their own status.",
+          "procedure": [
+            "As Member B open tab \"Thành phần tham dự\"; the column \"Điểm danh\" is shown while the meeting runs.",
+            "Choose \"Có mặt\" for Member A, Member B and Member C, and \"Vắng\" for the guest \"Trần Khách\".",
+            "As Member C open the same tab."
+          ],
+          "expected": [
+            "Each choice shows \"Lưu điểm danh thành công.\" and the cell keeps the new value.",
+            "Member C sees \"Có mặt\" on their row and has no attendance picker."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "note": "BF-03 · UC-31 · MSG147 · 5.2: PART_FT71, PART_FT73 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Run Agenda Items",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC03",
+          "description": "The Chair starts the first agenda item; participants see it under discussion.",
+          "procedure": [
+            "Member C opens tab \"Nội dung cuộc họp\" in a second browser.",
+            "As Member A open the same tab and click \"Bắt đầu\" on \"Dự toán ngân sách năm 2027\"."
+          ],
+          "expected": [
+            "Toast \"Bắt đầu mục nghị sự thành công.\"; the item shows \"Đang bàn\" and no other item offers \"Bắt đầu\".",
+            "Member C's tab shows \"Đang bàn\" on the same item without a reload."
+          ],
+          "preconditions": [
+            "TC01 passed; the agenda of WF-02 has two items."
+          ],
+          "note": "BF-03 · UC-24 · BR-69, BR-73 · MSG64 · 5.2: AGENDA_FT28 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Open Vote and Confirm Documents Read",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC04",
+          "description": "The Chair opens the vote the Secretary prepared; a member must read the attached document before the ballot can be sent.",
+          "procedure": [
+            "Precondition: Member B prepared a vote draft \"Thông qua dự toán ngân sách năm 2027\" (Công khai, all four roles) with bao-cao-quy-iv.pdf attached.",
+            "As Member A open tab \"Biểu quyết\", click \"Mở\" on the draft and confirm \"Mở biểu quyết\".",
+            "As Member C on the same tab pick \"Đồng ý\"; then open the PDF, scroll to the last page and click \"Xác nhận đã đọc\"; close the viewer."
+          ],
+          "expected": [
+            "The confirmation says the voters are fixed at opening; toast \"Mở biểu quyết thành công.\"; the card shows \"Đang mở\" and 0/4 (the guest is an eligible voter).",
+            "Member C sees the vote open without a reload; the document is \"Chưa đọc\", \"Gửi phiếu\" stays disabled and the hint \"Mở từng tài liệu, đọc tới trang cuối rồi xác nhận.\" is shown.",
+            "\"Xác nhận đã đọc\" is enabled only at the last page; toast \"Đã xác nhận đọc tài liệu.\"; the document shows \"Đã đọc\"."
+          ],
+          "preconditions": [
+            "TC03 passed; the PDF uploaded in SYS_WF02_TC04 is in the meeting."
+          ],
+          "note": "BF-03 · UC-54, UC-74 · BR-160, BR-290 · MSG217, MSG253 · 5.2: VOTE_FT12, DOC_FT93 · Turnout is 0/4, not 0/3: the guest invited in WF-02 counts as an eligible voter. · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Cast and Close Vote",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC05",
+          "description": "Two members cast ballots; the Chair sees the turnout, closes the vote and sees the result; members see it close.",
+          "procedure": [
+            "As Member C choose \"Đồng ý\" and click \"Gửi phiếu\".",
+            "As Member B read the PDF to the end, confirm, choose \"Không ý kiến\" and click \"Gửi phiếu\".",
+            "As Member A click \"Đóng phiếu\" and confirm; open \"Phiếu từng người\"."
+          ],
+          "expected": [
+            "Each voter sees \"Đã ghi nhận phiếu của bạn.\" and \"Bạn đã gửi phiếu.\"; the Chair's card shows 2/4 and no result while open.",
+            "The close dialog says \"Đã bỏ 2/4; đóng rồi không ai bỏ thêm được.\"; toast \"Đã đóng biểu quyết. Kết quả đã sẵn sàng.\".",
+            "Result: Đồng ý 1 · 50%, Không đồng ý 0 · 0%, Không ý kiến 1 · 50%; per-person list shows each choice; Member C's screen shows \"Đã đóng\" without a reload."
+          ],
+          "preconditions": [
+            "TC04 passed."
+          ],
+          "note": "BF-03 · UC-55, UC-56 · MSG227, MSG229 · 5.2: VOTE_FT14, VOTE_FT18 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "Record Conclusion",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC06",
+          "description": "The Chair records the vote conclusion, the Secretary records the item conclusion, and both agenda items are completed.",
+          "procedure": [
+            "As Member A on the closed vote choose \"Thông qua\", type a note and click \"Ghi kết luận\".",
+            "As Member B open tab \"Nội dung cuộc họp\", click \"Ghi kết luận\" on the item under discussion, type \"Thống nhất dự toán ngân sách năm 2027 như tờ trình.\" and click \"Lưu kết luận\".",
+            "As Member A click \"Xong\" on that item, then \"Bắt đầu\" and \"Xong\" on \"Báo cáo tiến độ quý IV\"."
+          ],
+          "expected": [
+            "Toast \"Ghi kết luận biểu quyết thành công.\"; chip \"Thông qua\" with the note; the conclusion form is gone.",
+            "Toast \"Lưu kết luận mục nghị sự thành công.\"; the item shows the conclusion with Member B's name and time.",
+            "Each item ends with \"Đã xong\"; both items are Done."
+          ],
+          "preconditions": [
+            "TC05 passed."
+          ],
+          "note": "BF-03 · UC-57, UC-77, UC-25 · BR-165 · MSG235, MSG271, MSG65 · 5.2: VOTE_FT21, AGENDA_FT39, AGENDA_FT34 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     },
     {
       "title": "End Meeting",
-      "cases": []
+      "cases": [
+        {
+          "id": "SYS_WF03_TC07",
+          "description": "The Chair ends the meeting; everyone sees it ended and the vote stays read-only.",
+          "procedure": [
+            "Member C has the meeting open in a second browser.",
+            "As Member A click \"Kết thúc họp\" and confirm in \"Kết thúc cuộc họp?\".",
+            "As Member C open tab \"Biểu quyết\"."
+          ],
+          "expected": [
+            "Toast \"Kết thúc cuộc họp thành công.\"; status \"Đã kết thúc\"; no start or end button is left.",
+            "Member C's page shows \"Đã kết thúc\" without a reload; the vote shows \"Đã đóng\" and \"Thông qua\" with no ballot choices.",
+            "The meeting has an actual end time; history ends with \"Kết thúc họp\"."
+          ],
+          "preconditions": [
+            "TC06 passed."
+          ],
+          "note": "BF-03 · UC-22 · BR-75 · MSG111 · 5.2: MEET_FT64 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
     }
   ]
 }
