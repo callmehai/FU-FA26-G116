@@ -1,4 +1,4 @@
-title UC-44d - Delete Recording Take
+﻿title UC-44d - Delete Recording Take
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab
@@ -31,11 +31,10 @@ RoomTakeService->RecordingRepository: Lock the room recording with its takes
 activate RecordingRepository
 RecordingRepository->Database: Retrieve recording for update
 activate Database
-Database-->RecordingRepository: Recording with takes / Not found
+Database-->RecordingRepository: Recording with takes
 deactivate Database
-RecordingRepository-->RoomTakeService: Recording with takes / Not found
+RecordingRepository-->RoomTakeService: Recording with takes
 deactivate RecordingRepository
-RoomTakeService->RoomTakeService: Check the recording is Available and has this take,\nthe actor is the current Secretary (BR-341) and more than one take remains (BR-349)
 
 alt Recording or take no longer exists
     RoomTakeService-->RecordingController: Take not found
@@ -52,7 +51,7 @@ else Recording has only one take - EX-1
 else Take can be deleted
     RoomTakeService->RecordingStorage: Make a new audio file without the take's audio
     activate RecordingStorage
-    RecordingStorage-->RoomTakeService: Shorter audio / Storage failed
+    RecordingStorage-->RoomTakeService: Shorter audio
     deactivate RecordingStorage
     RoomTakeService->TranscriptRepository: Get the transcript of the recording
     activate TranscriptRepository
@@ -62,7 +61,6 @@ else Take can be deleted
     deactivate Database
     TranscriptRepository-->RoomTakeService: Transcript
     deactivate TranscriptRepository
-    RoomTakeService->RoomTakeService: Remove the take's sentences and move later ones up by its length,\nkeeping edited text and assigned names on the shortened audio; a transcript still\nbeing made is cut and shifted the same way, then queued again (BR-349, BR-467)
     RoomTakeService->AuditService: Record the deleted take with its time and length
     activate AuditService
     AuditService-->RoomTakeService: Entry saved
@@ -71,32 +69,21 @@ else Take can be deleted
     activate RecordingRepository
     RecordingRepository->Database: Update recording, transcript segments and speakers
     activate Database
-    Database-->RecordingRepository: Changes saved / Save failed
+    Database-->RecordingRepository: Changes saved
     deactivate Database
-    RecordingRepository-->RoomTakeService: Changes saved / Save failed
+    RecordingRepository-->RoomTakeService: Changes saved
     deactivate RecordingRepository
-
-    alt Take cannot be deleted
-        RoomTakeService->RecordingStorage: Delete the new audio file, keep the original
-        activate RecordingStorage
-        RecordingStorage-->RoomTakeService: File deleted
-        deactivate RecordingStorage
-        RoomTakeService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
-        RecordingController-->RecordingsTab: MSG298 - Unable to save recording changes. Please try again.
-        RecordingsTab-->Actor: MSG298 - Unable to save recording changes. Please try again.
-    else Take deleted
-        RoomTakeService->RecordingStorage: Delete the previous audio file
-        activate RecordingStorage
-        RecordingStorage-->RoomTakeService: File deleted
-        deactivate RecordingStorage
-        RoomTakeService->Publisher: Tell everyone in the Meeting that the recordings changed
-        activate Publisher
-        Publisher-->RoomTakeService: Change published
-        deactivate Publisher
-        RoomTakeService-->RecordingController: MSG366 - Recording take deleted.
-        RecordingController-->RecordingsTab: MSG366 - Recording take deleted.
-        RecordingsTab-->Actor: MSG366 - Recording take deleted.
-    end
+    RoomTakeService->RecordingStorage: Delete the previous audio file
+    activate RecordingStorage
+    RecordingStorage-->RoomTakeService: File deleted
+    deactivate RecordingStorage
+    RoomTakeService->Publisher: Tell everyone in the Meeting that the recordings changed
+    activate Publisher
+    Publisher-->RoomTakeService: Change published
+    deactivate Publisher
+    RoomTakeService-->RecordingController: MSG366 - Recording take deleted.
+    RecordingController-->RecordingsTab: MSG366 - Recording take deleted.
+    RecordingsTab-->Actor: MSG366 - Recording take deleted.
 end
 
 deactivate RoomTakeService
