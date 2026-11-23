@@ -37,7 +37,7 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   trong dải BR-01 → BR-394 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
   rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa
   BR-30/105/106/115/126/172/176/215/295; **BR-373 → BR-394 thêm 05/11/2026 cho dự thảo AI và bản nháp biên bản, PR #260**); danh sách BR ngừng dùng ở cuối file.
-- [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Bản nháp kế hoạch gộp BR từ 406 về 121 theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới (chờ nhóm duyệt, chưa áp vào DOCX).
+- [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Bản nháp kế hoạch gộp BR từ 406 về 108 (đánh số lại BR-001…BR-108) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review (chờ nhóm duyệt, chưa áp vào DOCX).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
