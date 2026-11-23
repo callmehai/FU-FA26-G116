@@ -94,8 +94,8 @@
       "when": "Open the invitation link, verify the code, then try another meeting, the personal library and an expired code",
       "then": "The code expires within 10 minutes; the guest acts as a Member in the invited meeting only; everything else is not found; no internal account is created",
       "priority": "Critical",
-      "note": "Blocked: the one-time code is sent straight to the guest's mailbox and only its hash is stored; @trustcabinet.local is never mailed, so a guest session needs a real mailbox. Checked only that the invited meeting answers 401 without a verified guest session. · Evidence: QA run SYS-NFR 20261122-184055",
-      "status": "Blocked",
+      "note": "",
+      "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
     },

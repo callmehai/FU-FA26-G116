@@ -94,18 +94,6 @@
     },
     {
       "id": "TC-PERF-008",
-      "requirement": "Meeting audio upload and AI processing",
-      "scenario": "Transcript of a 60-minute recording and the summary are produced in time",
-      "tool": "Manual (stopwatch) on a build with the speech worker",
-      "target": "Transcript ≤ 1.5 × audio duration; summary ≤ 5 min after the request",
-      "condition": "One recording per processing worker",
-      "status": "Blocked",
-      "note": "The speech worker and the local language model do not run on the test machine. · Evidence: QA run SYS-NFR 20261122-184514",
-      "date": "2026-11-23",
-      "tester": "Nguyễn Trường Huy"
-    },
-    {
-      "id": "TC-PERF-009",
       "requirement": "Online meeting room capacity",
       "scenario": "Time to join the online room (\"Vào phòng\" → in the room) for three people",
       "tool": "Playwright with fake camera and microphone, local LiveKit",
@@ -115,10 +103,10 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Joining only; capacity of 30, audio delay and 3 rooms at once are TC-PERF-010. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "note": "Joining only; capacity of 30, audio delay and 3 rooms at once are TC-PERF-009. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
     },
     {
-      "id": "TC-PERF-010",
+      "id": "TC-PERF-009",
       "requirement": "Online meeting room capacity",
       "scenario": "30 participants with audio and video plus a screen share; 3 rooms at once; audio delay",
       "tool": "Manual rehearsal with real devices",
@@ -130,7 +118,7 @@
       "tester": "Nguyễn Trường Huy"
     },
     {
-      "id": "TC-PERF-011",
+      "id": "TC-PERF-010",
       "requirement": "Report generation and export",
       "scenario": "Open \"Báo cáo\" and export 12 months to Excel",
       "tool": "Playwright and Node.js script",

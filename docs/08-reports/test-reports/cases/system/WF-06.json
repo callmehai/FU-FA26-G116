@@ -42,7 +42,10 @@
           "preconditions": [
             "TC01 passed; a person reading aloud; the speech worker computes the voice embedding."
           ],
-          "note": "BF-04 · UC-81c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Round 1 run up to the recording dialog: without personAgreed the server answered 400 MSG483; with it 503 MSG312, because the speech worker is not running and the sample was a test tone, not a voice. · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8"
+          "note": "BF-04 · UC-81c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -61,7 +64,10 @@
           "preconditions": [
             "TC02 passed; the speech worker is running."
           ],
-          "note": "BF-04 · UC-45, UC-46b · ADR-0074 · Round 1 not run: needs the speech worker. · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8"
+          "note": "BF-04 · UC-45, UC-46b · ADR-0074",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },

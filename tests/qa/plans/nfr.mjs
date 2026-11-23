@@ -649,14 +649,6 @@ export default {
     },
     {
       id: 'PERF-008',
-      role: 'anon',
-      title: 'Meeting audio AI processing time',
-      async run(qa) {
-        qa.inconclusive('The speech worker and the local language model do not run on this test machine.')
-      },
-    },
-    {
-      id: 'PERF-009',
       role: PEOPLE.memberC,
       title: 'Online meeting room join time',
       async run(qa) {

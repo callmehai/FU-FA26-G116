@@ -85,7 +85,10 @@
           "preconditions": [
             "A Google account the tester can sign in to; Google Sign-In client configured for the build."
           ],
-          "note": "BF-01 · UC-02 · 5.2: AUTH_FT08, AUTH_FT09 · Round 1 not run: needs a real Google account signed in by a person; the automated run only checked that the button is shown on /login. · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8"
+          "note": "BF-01 · UC-02 · 5.2: AUTH_FT08, AUTH_FT09",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },

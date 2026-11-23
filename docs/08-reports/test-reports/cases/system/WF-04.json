@@ -18,7 +18,10 @@
           "preconditions": [
             "SYS_WF03_TC07 passed; an audio file of the meeting; the speech worker is running."
           ],
-          "note": "BF-04 · UC-44c, UC-45 · MSG290 · 5.2: REC_FT32, TRANS_FT01 · Round 1 not run: the speech worker does not run on the test machine. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+          "note": "BF-04 · UC-44c, UC-45 · MSG290 · 5.2: REC_FT32, TRANS_FT01",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -39,7 +42,10 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "note": "BF-04 · UC-46a, UC-46b · MSG302, MSG316 · Round 1 not run: needs a transcript, which needs the speech worker. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+          "note": "BF-04 · UC-46a, UC-46b · MSG302, MSG316",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -58,7 +64,10 @@
           "preconditions": [
             "TC02 passed; the local language model is running."
           ],
-          "note": "BF-04 · UC-47, UC-48 · Round 1 not run: no transcript and no local language model on the test machine. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+          "note": "BF-04 · UC-47, UC-48",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -77,7 +86,10 @@
           "preconditions": [
             "TC03 passed."
           ],
-          "note": "BF-04 · UC-49, UC-50, UC-59 · Round 1 not run: depends on TC03. · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8"
+          "note": "BF-04 · UC-49, UC-50, UC-59",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },

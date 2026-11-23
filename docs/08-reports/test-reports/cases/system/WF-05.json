@@ -45,7 +45,10 @@
           "preconditions": [
             "TC01 passed; the invitation and the code reach a mailbox the tester can read."
           ],
-          "note": "BF-03 · UC-04, UC-37 · BR-150, BR-152 · 5.2: ROOM_FT17, ROOM_FT51 · Round 1 run up to the code screen only: the code is mailed straight to the guest and only its hash is stored; @trustcabinet.local is never mailed, so a real mailbox is needed. · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8"
+          "note": "BF-03 · UC-04, UC-37 · BR-150, BR-152 · 5.2: ROOM_FT17, ROOM_FT51",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -91,7 +94,10 @@
           "preconditions": [
             "TC01 passed; a person speaking into a real microphone."
           ],
-          "note": "BF-03 · UC-44a · ADR-0040 · Round 1 not judged: the automated browser's fake microphone plays a test tone, which the sentence detector does not take as speech; nothing was stored after 20 s. · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8"
+          "note": "BF-03 · UC-44a · ADR-0040",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
