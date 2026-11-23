@@ -19,6 +19,8 @@ Mỗi cuộc họp có danh sách **ý cần có** và **lỗi cấm** trong [`c
 `words`: từng cặp (máy chép, thật ra nói); báo cáo ghi mỗi từ là sửa đúng, còn chép sai, hay không còn trong dự thảo. Báo cáo đếm số ý đúng, số lỗi và
 thời gian, kèm toàn bộ dự thảo để đọc lại.
 
+Đo trên **cuộc họp thật** (chấm mù hai người, ý chuẩn của BA, kappa): xem [`real/`](real/README.md).
+
 ## Chạy
 
 Cần stack local đang chạy (`docker compose up -d`, backend ở `:5225`) và một server AI. Ví dụ với Ollama:
