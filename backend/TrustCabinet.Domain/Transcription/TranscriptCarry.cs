@@ -4,8 +4,8 @@ namespace TrustCabinet.Domain.Transcription;
 
 /// <summary>
 /// ADR-0077 — what the Secretary corrected by hand in a transcript survives the next run of the same recording. A room
-/// recording is transcribed again as a whole after every take (ADR-0041), every five minutes since the room mic saves a
-/// take that often, and the diarizer numbers its voices afresh each time: "SPEAKER_00" of one run may be "SPEAKER_02" of
+/// recording is transcribed again as a whole after every take (ADR-0041), about every thirty minutes since the room mic
+/// saves a take that often (ADR-0080), and the diarizer numbers its voices afresh each time: "SPEAKER_00" of one run may be "SPEAKER_02" of
 /// the next. Lines and voices are therefore matched by time, on the part of the audio both runs heard; never by voice,
 /// so nothing biometric is read here.
 /// </summary>
