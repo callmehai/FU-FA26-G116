@@ -44,6 +44,10 @@
   - [UC-12b — Update Role](#uc-12b--update-role)
   - [UC-12c — Delete Role](#uc-12c--delete-role)
 - [UC-13 — View Audit Log](#uc-13--view-audit-log)
+- [UC-87 — Configure AI Service](#uc-87--configure-ai-service)
+  - [UC-87a — View AI Settings](#uc-87a--view-ai-settings)
+  - [UC-87b — Update AI Settings](#uc-87b--update-ai-settings)
+  - [UC-87c — Test AI Connection](#uc-87c--test-ai-connection)
 
 ### FE-04 — Meeting Management
 
@@ -476,6 +480,49 @@ Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/
 | **Alternative Flows** | AF-1 – Filter the audit log<br>1. At Step 4 of the Main Flow, the System Admin chooses a period, an actor (a user account, Guests or the system), an event type, or enters a keyword; the keyword matches the object id, the object name — except the name of anything of a Secret meeting — and the recorded details, ignoring case and Vietnamese marks.<br>2. The system retrieves the entries that match all the chosen criteria.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – View the details of an entry<br>1. At Step 4 of the Main Flow, the System Admin selects an entry.<br>2. The system displays the details recorded with that entry, read-only; the fields differ between event types.<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-3 – No entry matches<br>1. At Step 3 of the Main Flow, no audit entry matches the period and filters.<br>2. The system displays an empty list and a no-results message.<br>3. The System Admin may change the period or the filters; the flow resumes at Step 1 of AF-1. |
 | **Exception Flows** | EX-1 – The caller's role does not hold the User administration permission<br>1. At Step 2 of the Main Flow, the System Admin's role does not hold the User administration permission, or no longer holds it.<br>2. The system returns no audit entry and the Audit Log page is not shown.<br>3. The use case ends.<br>EX-2 – A parameter is unknown, repeated or out of range<br>1. At Step 3 of the Main Flow, the start of the period is after its end, or a filter value is not valid.<br>2. No entry is retrieved. The system displays MSG469 – “The audit log filter is invalid. Check the period and the selected values.”<br>3. The flow resumes at Step 1 of AF-1. |
 
+### UC-87 – Configure AI Service
+
+_UC gom — đặc tả nằm ở các UC con UC-87a, UC-87b… bên dưới._
+
+#### UC-87a – View AI Settings
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to see which AI service writes the AI drafts of Normal meetings — the team's own model or an outside API — with the API's address and model, whether an access key is stored, and who changed the settings last and when. (BR-129) |
+| **Preconditions** | ● PRE-1: The System Admin is signed in.<br>● PRE-2: The System Admin's role holds the User administration permission. |
+| **Postconditions** | ● POST-1: The current AI settings are displayed; of a stored access key only its last four characters are shown, never the key itself. (BR-129)<br>● POST-2: Nothing is changed. |
+| **Normal Flow** | View AI Settings<br>1. The System Admin opens Cấu hình AI [AI Settings] from the Administration menu.<br>2. The system checks that the System Admin's role holds the User administration permission.<br>3. The system displays the chosen service — Máy local [In-house model] or API (chuẩn OpenAI) [OpenAI-compatible API] — the name of the in-house model and whether the server has it configured, the API address and model, whether an access key is stored with its last four characters, and who last changed the settings and when. (BR-129)<br>4. The System Admin reviews the settings and may change them (UC-87b) or test the service (UC-87c). |
+| **Alternative Flows** | AF-1 – Nothing saved yet<br>1. At Step 3, no administrator has saved AI settings yet.<br>2. The system shows the in-house model as the chosen service, with empty API fields and no stored key.<br>3. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Settings cannot be loaded<br>1. At Step 3, the system cannot read the settings.<br>2. The system displays MSG410 – “Unable to load the AI settings.” and shows no settings.<br>3. The System Admin may reload the page; the use case ends. |
+
+#### UC-87b – Update AI Settings
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to choose which AI service writes the AI drafts of Normal meetings and, for an outside API, to enter its address, model and access key. A meeting that is not Normal is always written by the in-house model, whatever is chosen. (BR-129) |
+| **Preconditions** | ● PRE-1: The System Admin is signed in and the role holds the User administration permission.<br>● PRE-2: The System Admin has opened the AI settings (UC-87a). |
+| **Postconditions** | ● POST-1: The chosen service and the API address and model are saved; a new access key is stored encrypted and is never shown again, only its last four characters. (BR-129)<br>● POST-2: Drafts asked for from then on use the chosen service for Normal meetings and the in-house model for every other meeting. (BR-129)<br>● POST-3: The change is recorded in the audit log, without the key. |
+| **Normal Flow** | Update AI Settings<br>1. The System Admin chooses Máy local [In-house model] or API (chuẩn OpenAI) [OpenAI-compatible API].<br>2. For the API, the System Admin enters the API address and the model name and, when no key is stored yet or to replace it, pastes the access key.<br>3. The System Admin selects Save.<br>4. The system checks the values: the API address starts with https:// and has at most 500 characters, the model name is one word of at most 100 characters, and a new key has 8 to 500 characters without spaces; when the API is chosen, the address and model are required and a key must be stored already or entered. API values kept while the in-house model is chosen are checked the same way and kept for later.<br>5. The system saves the settings, stores a new key encrypted and records the change in the audit log without the key. (BR-129)<br>6. The system displays MSG408 – “AI settings saved.” and shows the saved settings, with only the last four characters of the key. |
+| **Alternative Flows** | AF-1 – Keep the stored key<br>1. At Step 2, the System Admin leaves the access key empty while a key is stored.<br>2. The system keeps the stored key; the flow resumes at Step 4 of the Main Flow.<br>AF-2 – Remove the stored key<br>1. At Step 2, with the in-house model chosen, the System Admin removes the stored key.<br>2. At Step 5, the system deletes the key; the flow resumes at Step 6 of the Main Flow. |
+| **Exception Flows** | EX-1 – Settings are invalid<br>1. At Step 4, a value breaks the rules of Step 4, the API is chosen without a stored or entered key, or the key would be removed while the API is chosen.<br>2. The system displays MSG409 – “Invalid AI settings.” and highlights the affected fields. Nothing is saved.<br>3. The System Admin may correct the values; the flow resumes at Step 2 of the Main Flow.<br>EX-2 – Settings cannot be saved<br>1. At Step 5, the system cannot save the settings.<br>2. The system displays MSG411 – “Unable to save the AI settings. Please try again.” Nothing is changed.<br>3. The System Admin may try again from Step 3 of the Main Flow. |
+
+#### UC-87c – Test AI Connection
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | AI drafting service |
+| **Description** | Allows the System Admin to check, before a meeting, that an AI service answers, by making one short call with the values on the form. Nothing is saved. |
+| **Preconditions** | ● PRE-1: The System Admin is signed in and the role holds the User administration permission.<br>● PRE-2: The System Admin has opened the AI settings (UC-87a). |
+| **Postconditions** | ● POST-1: The result is shown: the model that answered and how long the call took, or why it failed.<br>● POST-2: No setting is saved or changed. |
+| **Normal Flow** | Test AI Connection<br>1. The System Admin selects Thử kết nối [Test connection] for the chosen service.<br>2. For the API, the system checks the address, model and key on the form as in Step 4 of UC-87b, using the stored key when the form gives none; for the in-house model it ignores the API fields.<br>3. The system makes one short call to that service: the API on the form, or the in-house model the server is configured with, and its backup machine when there is one.<br>4. The system displays MSG412 – “Connected to {model}.” with the time the call took. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Values are invalid<br>1. At Step 2, the address, model or key breaks the rules of UC-87b Step 4.<br>2. The system displays MSG409 – “Invalid AI settings.” and highlights the affected fields. No call is made.<br>3. The System Admin may correct the values; the flow resumes at Step 1 of the Main Flow.<br>EX-2 – The service does not answer<br>1. At Step 3, the service refuses the key, cannot be reached, is not configured on the server, or returns an error.<br>2. The system displays MSG413 with the reason. Nothing is saved.<br>3. The use case ends; the System Admin may correct the settings (UC-87b) and test again. |
+
 ---
 
 ## FE-04 — Meeting Management
@@ -522,7 +569,7 @@ Sequence Diagram: [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-ma
 | **Preconditions** | ● PRE-1: The user is authenticated.<br>● PRE-2: A meeting has been selected or identified. |
 | **Postconditions** | ● POST-1: The Meeting Name, planned time range, actual times where available, mode, location, confidentiality, description and lifecycle status are displayed read-only. For a Cancelled Meeting, the cancellation reason, who cancelled it and when are also displayed.<br>● POST-2: The Meeting is not modified. |
 | **Normal Flow** | View Meeting Details<br>1. The user requests the selected Meeting.<br>2. The system verifies that the Meeting exists and the user has access. (BR-016, BR-017)<br>3. The system retrieves the Meeting information and planned/actual time fields.<br>4. The system displays Meeting Name, planned start/end time, actual start/end time when available, Meeting Mode, Location, Confidentiality Level, Description, and Status. For a Cancelled Meeting, it also displays the cancellation reason, who cancelled it and when.<br>5. The user reviews the Meeting details. |
-| **Alternative Flows** | AF-1 – A tab is not open yet<br>1. At any step, the actor selects the Bản ghi tab while the Meeting has not started, or the Biên bản tab while it has not Ended — or either tab while the Meeting is Cancelled.<br>2. Both tabs stay visible with a lock and their reason (“Mở khi cuộc họp bắt đầu”, “Mở khi cuộc họp kết thúc”, or “Cuộc họp đã huỷ” for a Cancelled Meeting); the Secretary collecting voice samples keeps Bản ghi open before the start. A link straight to a locked tab opens Thông tin chung instead.<br>3. The use case resumes at Step 5 of the Main Flow. |
+| **Alternative Flows** | AF-1 – A tab is not open yet<br>1. At any step, the actor selects the Bản ghi tab while the Meeting has not started, or the Biên bản tab while it has not Ended — or either tab while the Meeting is Cancelled.<br>2. Both tabs stay visible with a lock and their reason (“Mở khi cuộc họp bắt đầu”, “Mở khi cuộc họp kết thúc”, or “Cuộc họp đã huỷ” for a Cancelled Meeting); the Secretary collecting voice samples keeps Bản ghi open before the start. A link straight to a locked tab opens Thông tin chung instead.<br>3. The use case resumes at Step 5 of the Main Flow.<br>AF-2 – View the status history<br>1. At Step 5 of the Main Flow, the user looks at Lịch sử trạng thái [Status history] beside the Meeting details.<br>2. The system lists the Meeting's status changes a page at a time, each with its action, the resulting status, who acted and when; a rejection reason is shown only to the Organizer, the assigned Approver and the current Chair and Secretary. (BR-022, BR-023)<br>3. The use case resumes at Step 5 of the Main Flow. |
 | **Exception Flows** | EX-1 – Meeting does not exist or is not accessible<br>1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.<br>2. The system displays MSG37 – "Unable to load meeting details. Please try again."<br>3. The use case ends. |
 
 ### UC-17 – View Meeting List

@@ -78,6 +78,7 @@ Table of Contents
 | 22/11/2026 | D | BA | [note 58] Post-trial 21/11 changes (PR #466-#471, #473, #474, #476): three system roles only with Chair/Secretary as meeting roles (ADR-0075); proxy voice collection by permission holders with per-take agreement and MSG483 (ADR-0073); 0.6/0.05/0.7/0.7/0.8 thresholds with 0.6 auto-assign (ADR-0074); digits in transcripts (ADR-0076); one-switch hybrid room mic with 5-minute takes (ADR-0072). |
 | 23/11/2026 | M | BA | [note 59] Report query (PR #488, SCRUM-38): UC-70a/70b query flow with EX-3 MSG484, BR-437/BR-438 update, new BR-468; keep hand corrections on re-transcription (ADR-0077, SCRUM-31/35): UC-44d/45c/46a/46b, BR-345/349/360 update, new BR-467, two transcript sentence columns. |
 | 24/11/2026 | M | HuyNQ | [plan 08, ADR-0079] Business Rules cut from 406 to 153 and renumbered BR-001–153; UI, validation and technical limits moved into the use cases and section IV. Actors Meeting Organizer and Meeting Approver renamed Member and Approver. Earlier rows keep the old BR IDs (see 09-bang-anh-xa-br-dot-1). |
+| 24/11/2026 | A, M | HuyNQ | [UC-vs-code review, PR #509] UC-87 Configure AI Service added (UC-87a–87c, MSG408–413, ADR-0054/0056); UC-16 status history, UC-79 messages MSG457–462, background jobs JOB-03–08 and API-06 brought in line with the code. |
 
 *A - Added M - Modified D - Deleted
 
@@ -755,6 +756,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | UC-11 | Configure Role Permissions | Role-Based Access Control | Configure permissions assigned to a system role. |
 | UC-12 | Manage Roles | Role-Based Access Control | Create, update, or delete custom roles; see the detailed UC-12a–UC-12c specifications. |
 | UC-13 | View Audit Log | Role-Based Access Control | Review recorded system events for security, accountability and operational investigation. |
+| UC-87 | Configure AI Service | Role-Based Access Control | Choose the AI service that writes meeting drafts, enter its access details and test it; see the detailed UC-87a–UC-87c specifications. |
 | UC-14 | Create Meeting | Meeting Management | Create one independent Meeting with its planned start and end times, mode, location, confidentiality, other required details and its initial participants. |
 | UC-15 | Update Meeting | Meeting Management | Update Meeting information while Draft/Rejected, or reschedule a Published Meeting before it begins when authorized. |
 | UC-16 | View Meeting Details | Meeting Management | View authorized Meeting details, including planned schedule, actual start/end times, Meeting lifecycle status and, for a Cancelled Meeting, its cancellation reason. |
@@ -851,7 +853,7 @@ Feature priority. The features are prioritised with the Product Owner: FE-01 to 
 
 ##### 4.3.1 UCs for System Admin
 
-The System Admin manages user accounts (create, update, deactivate/reactivate, reset password, assign system roles), configures roles and permissions, and reviews the audit log. The Admin can also view meetings and their records, reports and statistics, notifications and the personal document library.
+The System Admin manages user accounts (create, update, deactivate/reactivate, reset password, assign system roles), configures roles and permissions, and reviews the audit log. The Admin can also view meetings and their records, reports and statistics, notifications and the personal document library. The Admin also chooses and tests the AI service that writes the AI drafts of meetings (UC-87).
 
 ##### 4.3.2 UCs for Member
 
@@ -894,6 +896,8 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Role & permission | Create role | Full | No | No | No | No | No | No |
 | Role & permission | Update role | Restricted ¹ | No | No | No | No | No | No |
 | Role & permission | Delete role | Restricted ¹ | No | No | No | No | No | No |
+| AI settings | View | Full | No | No | No | No | No | No |
+| AI settings | Update / test connection | Full | No | No | No | No | No | No |
 | Audit log | View | Full | No | No | No | No | No | No |
 | Authentication | Sign in (email / Google) / Sign out | Full | Full | Full | Full | Full | Full | No |
 | Authentication | Access meeting via Guest invitation | No | No | No | No | No | No | Full |
@@ -1002,6 +1006,7 @@ Notes:
 | 3.1 | Role List | FE-03 Role-Based Access Control | Allows the System Admin to view roles with their account counts and to create, edit and delete custom roles (name, description, initial permissions), with Default roles protected from change. |
 | 3.2 | Permission Matrix | FE-03 Role-Based Access Control | Allows the System Admin to view and grant or revoke permissions for each role in a role-by-permission matrix and to save or undo the changes row by row. |
 | 3.3 | System Audit Log | FE-03 Role-Based Access Control | Allows the System Admin to view, filter, search and export to CSV the read-only log of business and security events, and open the before/after details of each change. |
+| 3.4 | AI Settings | FE-03 Role-Based Access Control | Allows the System Admin to choose the in-house model or an OpenAI-compatible API for the AI drafts of Normal meetings, enter the API's address, model and access key (never shown again), and test the connection (UC-87a–UC-87c). |
 | 4.1 | Meeting Calendar – Calendar View | FE-04 Meeting Management | Allows any internal user related to a meeting to browse accessible Meetings on a weekly day/hour grid, placed by their planned start and end time and coloured by status, and open one. |
 | 4.2 | Meeting Calendar – List View | FE-04 Meeting Management | Allows any internal user related to a meeting to view the accessible Meetings of a week as cards grouped by day, with planned time, mode, location, status and confidentiality level, open one, and answer the attendance question of a Published or In Progress Meeting directly on its card. Meetings the user has declined are not listed. |
 | 4.3 | Meeting List | FE-04 Meeting Management | Allows any internal user related to a meeting to view, search, filter by status, confidentiality level and time (Today, This week, Not yet held, Already held), and page through the Meetings s/he organizes, is invited to or must approve, and open a Meeting. The list opens filtered to In Progress Meetings. |
@@ -1063,6 +1068,12 @@ Notes:
 | --- | --- | --- | --- |
 | 1 | Process notifications | Scheduled worker | Every 5 seconds, creates due meeting reminders and pushes new in-app notifications to connected users. |
 | 2 | Deliver meeting invitation emails | Queue worker | When SMTP is enabled, processes the meeting invitation email queue and retries failed emails under the retry policy. |
+| 3 | Transcribe recordings | Queue worker | Transcribes waiting recordings one at a time on the in-house speech worker, with speaker attribution (UC-45c). |
+| 4 | Write AI drafts | Queue worker | Writes requested AI drafts one at a time with the AI service chosen in UC-87. |
+| 5 | Build combined recordings | Scheduled worker | Every 30 seconds, builds the combined recording of an ended Hybrid or Online meeting, and builds it again when a source changes. |
+| 6 | Erase expired recordings | Scheduled worker | Erases recordings and per-microphone sentences whose retention period has run out. |
+| 7 | Purge expired data | Scheduled worker | Removes orphaned files, draft votes left in cancelled meetings, old notifications, expired Guest codes and old email bodies. |
+| 8 | Close overdue meetings | Scheduled worker | Every 15 minutes, cancels meetings not started a day after their planned start and ends meetings not ended a day after their planned end. |
 
 ## II. Use Case Specifications
 
@@ -1254,6 +1265,41 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Alternative Flows | AF-1 – Filter the audit log<br>1. At Step 4 of the Main Flow, the System Admin chooses a period, an actor (a user account, Guests or the system), an event type, or enters a keyword; the keyword matches the object id, the object name — except the name of anything of a Secret meeting — and the recorded details, ignoring case and Vietnamese marks.<br>2. The system retrieves the entries that match all the chosen criteria.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – View the details of an entry<br>1. At Step 4 of the Main Flow, the System Admin selects an entry.<br>2. The system displays the details recorded with that entry, read-only; the fields differ between event types.<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-3 – No entry matches<br>1. At Step 3 of the Main Flow, no audit entry matches the period and filters.<br>2. The system displays an empty list and a no-results message.<br>3. The System Admin may change the period or the filters; the flow resumes at Step 1 of AF-1. |  |  |
 | Exception Flows | EX-1 – The caller's role does not hold the User administration permission<br>1. At Step 2 of the Main Flow, the System Admin's role does not hold the User administration permission, or no longer holds it.<br>2. The system returns no audit entry and the Audit Log page is not shown.<br>3. The use case ends.<br>EX-2 – A parameter is unknown, repeated or out of range<br>1. At Step 3 of the Main Flow, the start of the period is after its end, or a filter value is not valid.<br>2. No entry is retrieved. The system displays MSG469 – “The audit log filter is invalid. Check the period and the selected values.”<br>3. The flow resumes at Step 1 of AF-1. |  |  |
 
+#### 3.5 UC-87 – Configure AI Service
+
+##### 3.5.1 UC-87a – View AI Settings
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to see which AI service writes the AI drafts of Normal meetings — the team's own model or an outside API — with the API's address and model, whether an access key is stored, and who changed the settings last and when. (BR-129) |  |  |
+| Preconditions | ● PRE-1: The System Admin is signed in.<br>● PRE-2: The System Admin's role holds the User administration permission. |  |  |
+| Postconditions | ● POST-1: The current AI settings are displayed; of a stored access key only its last four characters are shown, never the key itself. (BR-129)<br>● POST-2: Nothing is changed. |  |  |
+| Normal Flow | View AI Settings<br>1. The System Admin opens Cấu hình AI [AI Settings] from the Administration menu.<br>2. The system checks that the System Admin's role holds the User administration permission.<br>3. The system displays the chosen service — Máy local [In-house model] or API (chuẩn OpenAI) [OpenAI-compatible API] — the name of the in-house model and whether the server has it configured, the API address and model, whether an access key is stored with its last four characters, and who last changed the settings and when. (BR-129)<br>4. The System Admin reviews the settings and may change them (UC-87b) or test the service (UC-87c). |  |  |
+| Alternative Flows | AF-1 – Nothing saved yet<br>1. At Step 3, no administrator has saved AI settings yet.<br>2. The system shows the in-house model as the chosen service, with empty API fields and no stored key.<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Settings cannot be loaded<br>1. At Step 3, the system cannot read the settings.<br>2. The system displays MSG410 – “Unable to load the AI settings.” and shows no settings.<br>3. The System Admin may reload the page; the use case ends. |  |  |
+
+##### 3.5.2 UC-87b – Update AI Settings
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to choose which AI service writes the AI drafts of Normal meetings and, for an outside API, to enter its address, model and access key. A meeting that is not Normal is always written by the in-house model, whatever is chosen. (BR-129) |  |  |
+| Preconditions | ● PRE-1: The System Admin is signed in and the role holds the User administration permission.<br>● PRE-2: The System Admin has opened the AI settings (UC-87a). |  |  |
+| Postconditions | ● POST-1: The chosen service and the API address and model are saved; a new access key is stored encrypted and is never shown again, only its last four characters. (BR-129)<br>● POST-2: Drafts asked for from then on use the chosen service for Normal meetings and the in-house model for every other meeting. (BR-129)<br>● POST-3: The change is recorded in the audit log, without the key. |  |  |
+| Normal Flow | Update AI Settings<br>1. The System Admin chooses Máy local [In-house model] or API (chuẩn OpenAI) [OpenAI-compatible API].<br>2. For the API, the System Admin enters the API address and the model name and, when no key is stored yet or to replace it, pastes the access key.<br>3. The System Admin selects Save.<br>4. The system checks the values: the API address starts with https:// and has at most 500 characters, the model name is one word of at most 100 characters, and a new key has 8 to 500 characters without spaces; when the API is chosen, the address and model are required and a key must be stored already or entered. API values kept while the in-house model is chosen are checked the same way and kept for later.<br>5. The system saves the settings, stores a new key encrypted and records the change in the audit log without the key. (BR-129)<br>6. The system displays MSG408 – “AI settings saved.” and shows the saved settings, with only the last four characters of the key. |  |  |
+| Alternative Flows | AF-1 – Keep the stored key<br>1. At Step 2, the System Admin leaves the access key empty while a key is stored.<br>2. The system keeps the stored key; the flow resumes at Step 4 of the Main Flow.<br>AF-2 – Remove the stored key<br>1. At Step 2, with the in-house model chosen, the System Admin removes the stored key.<br>2. At Step 5, the system deletes the key; the flow resumes at Step 6 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Settings are invalid<br>1. At Step 4, a value breaks the rules of Step 4, the API is chosen without a stored or entered key, or the key would be removed while the API is chosen.<br>2. The system displays MSG409 – “Invalid AI settings.” and highlights the affected fields. Nothing is saved.<br>3. The System Admin may correct the values; the flow resumes at Step 2 of the Main Flow.<br>EX-2 – Settings cannot be saved<br>1. At Step 5, the system cannot save the settings.<br>2. The system displays MSG411 – “Unable to save the AI settings. Please try again.” Nothing is changed.<br>3. The System Admin may try again from Step 3 of the Main Flow. |  |  |
+
+##### 3.5.3 UC-87c – Test AI Connection
+
+| Primary Actors | System Admin | Secondary Actors | AI drafting service |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to check, before a meeting, that an AI service answers, by making one short call with the values on the form. Nothing is saved. |  |  |
+| Preconditions | ● PRE-1: The System Admin is signed in and the role holds the User administration permission.<br>● PRE-2: The System Admin has opened the AI settings (UC-87a). |  |  |
+| Postconditions | ● POST-1: The result is shown: the model that answered and how long the call took, or why it failed.<br>● POST-2: No setting is saved or changed. |  |  |
+| Normal Flow | Test AI Connection<br>1. The System Admin selects Thử kết nối [Test connection] for the chosen service.<br>2. For the API, the system checks the address, model and key on the form as in Step 4 of UC-87b, using the stored key when the form gives none; for the in-house model it ignores the API fields.<br>3. The system makes one short call to that service: the API on the form, or the in-house model the server is configured with, and its backup machine when there is one.<br>4. The system displays MSG412 – “Connected to {model}.” with the time the call took. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Values are invalid<br>1. At Step 2, the address, model or key breaks the rules of UC-87b Step 4.<br>2. The system displays MSG409 – “Invalid AI settings.” and highlights the affected fields. No call is made.<br>3. The System Admin may correct the values; the flow resumes at Step 1 of the Main Flow.<br>EX-2 – The service does not answer<br>1. At Step 3, the service refuses the key, cannot be reached, is not configured on the server, or returns an error.<br>2. The system displays MSG413 with the reason. Nothing is saved.<br>3. The use case ends; the System Admin may correct the settings (UC-87b) and test again. |  |  |
+
 ### 4. FE-04 – Meeting Management
 
 #### 4.1 UC-14 – Create Meeting
@@ -1286,7 +1332,7 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Preconditions | ● PRE-1: The user is authenticated.<br>● PRE-2: A meeting has been selected or identified. |  |  |
 | Postconditions | ● POST-1: The Meeting Name, planned time range, actual times where available, mode, location, confidentiality, description and lifecycle status are displayed read-only. For a Cancelled Meeting, the cancellation reason, who cancelled it and when are also displayed.<br>● POST-2: The Meeting is not modified. |  |  |
 | Normal Flow | View Meeting Details<br>1. The user requests the selected Meeting.<br>2. The system verifies that the Meeting exists and the user has access. (BR-016, BR-017)<br>3. The system retrieves the Meeting information and planned/actual time fields.<br>4. The system displays Meeting Name, planned start/end time, actual start/end time when available, Meeting Mode, Location, Confidentiality Level, Description, and Status. For a Cancelled Meeting, it also displays the cancellation reason, who cancelled it and when.<br>5. The user reviews the Meeting details. |  |  |
-| Alternative Flows | AF-1 – A tab is not open yet<br>1. At any step, the actor selects the Bản ghi tab while the Meeting has not started, or the Biên bản tab while it has not Ended — or either tab while the Meeting is Cancelled.<br>2. Both tabs stay visible with a lock and their reason (“Mở khi cuộc họp bắt đầu”, “Mở khi cuộc họp kết thúc”, or “Cuộc họp đã huỷ” for a Cancelled Meeting); the Secretary collecting voice samples keeps Bản ghi open before the start. A link straight to a locked tab opens Thông tin chung instead.<br>3. The use case resumes at Step 5 of the Main Flow. |  |  |
+| Alternative Flows | AF-1 – A tab is not open yet<br>1. At any step, the actor selects the Bản ghi tab while the Meeting has not started, or the Biên bản tab while it has not Ended — or either tab while the Meeting is Cancelled.<br>2. Both tabs stay visible with a lock and their reason (“Mở khi cuộc họp bắt đầu”, “Mở khi cuộc họp kết thúc”, or “Cuộc họp đã huỷ” for a Cancelled Meeting); the Secretary collecting voice samples keeps Bản ghi open before the start. A link straight to a locked tab opens Thông tin chung instead.<br>3. The use case resumes at Step 5 of the Main Flow.<br>AF-2 – View the status history<br>1. At Step 5 of the Main Flow, the user looks at Lịch sử trạng thái [Status history] beside the Meeting details.<br>2. The system lists the Meeting's status changes a page at a time, each with its action, the resulting status, who acted and when; a rejection reason is shown only to the Organizer, the assigned Approver and the current Chair and Secretary. (BR-022, BR-023)<br>3. The use case resumes at Step 5 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – Meeting does not exist or is not accessible<br>1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.<br>2. The system displays MSG37 – "Unable to load meeting details. Please try again."<br>3. The use case ends. |  |  |
 
 #### 4.4 UC-17 – View Meeting List
@@ -4238,6 +4284,30 @@ Runs inside the backend every 5 seconds. Each cycle creates the “meeting start
 
 Runs inside the backend only when SMTP is enabled. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email queue, and waits before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
 
+#### 16.3 Transcribe Recordings (JOB-03)
+
+Runs inside the backend and takes the waiting transcripts one at a time, because the in-house speech worker is CPU bound. It sends each recording's audio to the speech worker inside the system, never to an outside service, stores the passages with their speakers and suggested names, and records the progress so the Recordings tab can show it (UC-45c, BR-121).
+
+#### 16.4 Write AI Drafts (JOB-04)
+
+Runs inside the backend and writes the queued AI drafts one at a time (UC-47): the in-house model for every meeting that is not Normal, the service chosen in UC-87 for a Normal meeting. A failed draft keeps its reason and can be asked for again (BR-129).
+
+#### 16.5 Build Combined Recordings (JOB-05)
+
+Runs inside the backend every 30 seconds, one meeting at a time, until no meeting is waiting. It builds the combined recording of a Hybrid or Online meeting once its sources have settled after the end, and again when a source changes, unless the Secretary erased it (UC-43a, BR-122).
+
+#### 16.6 Erase Expired Recordings (JOB-06)
+
+Runs inside the backend and erases the recordings, transcripts and per-microphone sentences 180 days after the first take, so the date shown to participants is kept; the erasure is recorded in the audit log (UC-44e, BR-110).
+
+#### 16.7 Purge Expired Data (JOB-07)
+
+Runs inside the backend at start-up and then at a configured interval. It removes audio files no recording uses, draft votes left in cancelled meetings, old notifications, expired Guest verification codes and the bodies of old emails (BR-077).
+
+#### 16.8 Close Overdue Meetings (JOB-08)
+
+Runs inside the backend every 15 minutes. It cancels a meeting nobody started 24 hours after its planned start and ends a meeting nobody ended 24 hours after its planned end, recording each change in the meeting's history (BR-027, BR-029).
+
 ### 17. External API Inventory
 
 #### 17.1 Google Identity Services – Sign in with Google (API-01)
@@ -4295,16 +4365,16 @@ Runs inside the backend only when SMTP is enabled. It queues the invitation emai
 | Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by a periodic reconciliation. |
 | Status | Built. |
 
-#### 17.6 Google AI Provider – draft meeting summary (API-06) – planned
+#### 17.6 AI drafting service – meeting drafts (API-06)
 
-| URL | An external generative-AI service called over HTTPS (Google's AI API); not connected yet. |
+| URL | The team's own language model, reached over the team's private network (ADR-0054), or an OpenAI-compatible API over HTTPS that the System Admin chooses for Normal meetings (UC-87b, ADR-0056). |
 | --- | --- |
-| Purpose | Turns the transcript reviewed by the Secretary into a draft meeting summary (UC-47). Transcription and speaker identification are not part of this interface: they run inside the system. |
-| Caller | TrustCabinet backend background processing (planned) → Google AI Provider. |
-| Auth | API key kept in user-secrets/environment variables, never in the code base. |
-| Request / Response | Input: the transcript text of a Recording after the Secretary has reviewed it. Output: a MeetingSummary draft; the provider name and model are stored per result. |
-| Failure handling | Transcript has status Pending/Processing/Completed/Failed, ProgressPercent and ErrorMessage so a failure is shown and can be re-run; the AI never writes formal minutes and summaries stay marked unreviewed until the Secretary reviews them. |
-| Status | Planned (FE-10, UC-47). Only transcript text that the Secretary has reviewed is sent, never audio or voice data; the AI never writes formal minutes and the summary stays a draft until the Secretary approves it. |
+| Purpose | Writes the three sections of a meeting's AI draft from the transcript, the agenda and the vote results (UC-47). Transcription and speaker identification are not part of this interface: they run inside the system. |
+| Caller | TrustCabinet backend background processing (JOB-04) → the in-house model, or the chosen API for a Normal meeting. |
+| Auth | The in-house model needs no key. The API key is entered by the System Admin, stored encrypted and never shown again (UC-87b, BR-129). |
+| Request / Response | Input: the transcript text, the agenda and the vote results of one meeting, never audio or voice data. Output: the three sections of the draft; the model and the time it read the transcript are stored with the draft. |
+| Failure handling | A failed draft keeps its reason and can be asked for again; the System Admin can test the service at any time (UC-87c). The AI never writes formal minutes, and the draft stays unreviewed until the Chair or the Secretary reviews it. |
+| Status | In use (FE-10, UC-47, UC-87). A meeting that is not Normal is always written by the in-house model. |
 
 #### 17.7 Cloudflare R2 – file storage (API-07)
 
@@ -5053,6 +5123,18 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 490 | MSG481 | Form error | UC-47 / EX-9 | The meeting has no spoken sentences for the AI to summarise. |
 | 491 | MSG482 | Form error | UC-43c / EX-3 | The recording could not be converted to MP3. Please try again later. |
 | 492 | MSG484 | Form error | UC-70a / EX-3, UC-70b / EX-3 | The report parameters are invalid. Choose the data, grouping or filter again. |
+| 493 | MSG408 | Toast | UC-87b – Update AI Settings / Main Flow | AI settings saved. |
+| 494 | MSG409 | Field error / Form error | UC-87b / EX-1, UC-87c / EX-1 | Invalid AI settings. |
+| 495 | MSG410 | Form error | UC-87a / EX-1 | Unable to load the AI settings. |
+| 496 | MSG411 | Form error | UC-87b / EX-2 | Unable to save the AI settings. Please try again. |
+| 497 | MSG412 | Inline result | UC-87c – Test AI Connection / Main Flow | Connected to {model}. |
+| 498 | MSG413 | Inline result | UC-87c / EX-2 | The reason the AI service gave or why it could not be reached. |
+| 499 | MSG457 | Form error | UC-79 / EX-3 | Only the current Chair may manage speaking turns. |
+| 500 | MSG458 | Form error | UC-79 – Register to Speak / Step 2 | You need to be in the meeting room to ask to speak. |
+| 501 | MSG459 | Form error | UC-79 – Register to Speak / invite | Someone is already invited or speaking. End that turn first. |
+| 502 | MSG460 | Form error | UC-79 – Register to Speak | This speaking request has changed. Reload the list. |
+| 503 | MSG461 | Form error | UC-79 – Register to Speak | Unable to load the speaking list. Please try again. |
+| 504 | MSG462 | Form error | UC-79 – Register to Speak | Unable to save the speaking turn. Please try again. |
 
 ### 3. Other Requirements
 

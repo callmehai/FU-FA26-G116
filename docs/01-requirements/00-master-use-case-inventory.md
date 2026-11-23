@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-83 → UC-86** (FE-16 thêm ngày 07/11/2026; UC-82 thuộc SCRUM-30; UC-83 là Tạo bản đính chính biên bản, đã đặc tả ở SCRUM-33; UC-86 là Thư ký thu Voice ID hộ, SCRUM-152). Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-83 → UC-87** (UC-87 Cấu hình AI thêm ngày 24/11/2026; FE-16 thêm ngày 07/11/2026; UC-82 thuộc SCRUM-30; UC-83 là Tạo bản đính chính biên bản, đã đặc tả ở SCRUM-33; UC-86 là Thư ký thu Voice ID hộ, SCRUM-152). Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -35,6 +35,8 @@ Bổ sung ngày 30/10/2026 (BA Final Review FE-09/FE-10): tổ chức lại theo
 Bổ sung ngày 13/11/2026 (BA Final Review SCRUM-152, ADR-0060): **UC-86** Collect Voice Samples for Attendees (UC-86a–UC-86d) — Thư ký thu giọng mẫu hộ bằng micro phòng họp cho người dự đã đồng ý Voice ID theo thông báo 1.3; mẫu thu hộ thuộc về người được thu, mỗi bộ (tự thu / thu hộ) tối đa 5 mẫu dưới một lần đồng ý.
 
 Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072–ADR-0076, chờ PO duyệt ADR-0074/0076): **UC-86** chuyển thành người có quyền "Thu giọng mẫu hộ" (mặc định Quản trị viên) thu ở màn Quản trị → Người dùng, cần đồng ý thường trực 1.4+ và xác nhận của người được thu cho từng lần thu (thiếu xác nhận → `400 MSG483`); bỏ đường Thư ký thu trong cuộc họp, bỏ giới hạn 5 mẫu mỗi người thu (giữ 50 mẫu mỗi người, `MSG476`; `MSG477` ngừng dùng). Thông báo Voice ID hiện tại 1.5. Ngưỡng tách người nói/gợi ý: 0,72/0,8 và 0,6/0,05/0,7/0,7/0,8, tự gán 0,6. Chỉ còn 3 vai trò hệ thống (Thành viên, Phê duyệt viên, Quản trị viên); Chủ toạ/Thư ký chỉ là vai trò trong cuộc họp; bỏ quyền "Soạn biên bản".
+
+Bổ sung ngày 24/11/2026 (rà UC so với code sau PR #509; ADR-0054, ADR-0056): **UC-87** Configure AI Service (UC-87a Xem, UC-87b Cập nhật, UC-87c Thử kết nối) — màn Quản trị → Cấu hình AI đã có trong code nhưng chưa có UC. Số UC-87 từng là số cũ trước đợt gom 10/10/2026 (bảng §5), dùng lại như UC-78 → UC-86.
 
 ## Các quyết định đã áp dụng
 
@@ -129,6 +131,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-11 | Cấu hình quyền của vai trò *(Configure Role Permissions)* | System Admin | Đã đặc tả | `<<extend>>` UC-10 |
 | UC-12 | Quản lý vai trò *(Manage Roles)* — gồm UC-12a Tạo, UC-12b Cập nhật, UC-12c Xoá | System Admin | Đã đặc tả | `<<extend>>` UC-10 |
 | UC-13 | Xem nhật ký kiểm toán *(View Audit Log)* | System Admin | Đã đặc tả | Độc lập |
+| UC-87 | Cấu hình AI *(Configure AI Service)* — gồm UC-87a Xem cấu hình, UC-87b Cập nhật cấu hình, UC-87c Thử kết nối | System Admin | Đã đặc tả | Độc lập |
 
 ## FE-04 — Quản lý cuộc họp *(Meeting Management)*
 
@@ -363,7 +366,7 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
 |---|---|---:|---:|
 | FE-01 | Authentication & Account Security | 4 | — |
 | FE-02 | User & Profile Management | 4 | 3 |
-| FE-03 | Role-Based Access Control | 4 | 3 |
+| FE-03 | Role-Based Access Control | 5 | 6 |
 | FE-04 | Meeting Management | 10 | — |
 | FE-05 | Agenda Management | 5 | 4 |
 | FE-06 | Meeting Participant Management | 6 | 3 |
@@ -375,7 +378,7 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
 | FE-12 | Meeting Minutes & Approval | 7 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **79** | **63** |
+| **Tổng** | | **80** | **66** |
 
 # 8. Ngoài phạm vi UC
 
