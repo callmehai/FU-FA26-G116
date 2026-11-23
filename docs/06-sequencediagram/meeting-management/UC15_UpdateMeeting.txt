@@ -72,5 +72,3 @@ else Values changed
 end
 
 deactivate MeetingPage
-EOF
-echo done

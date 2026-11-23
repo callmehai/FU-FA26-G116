@@ -20,5 +20,3 @@ Không có UC nào bỏ qua; các UC hơn 3 EX nghiệp vụ đã cắt theo g�
 
 - Đã sửa thanh activation cho mọi file, kể cả UC không đổi EX.
 - UC-39c, UC-40, UC-42, UC-78 không còn EX (toàn bộ EX là hạ tầng/thiết bị).
-EOF
-echo done

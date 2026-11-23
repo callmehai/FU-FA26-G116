@@ -58,5 +58,3 @@ end
 deactivate NotesService
 deactivate NotesController
 deactivate NotesPanel
-EOF
-echo done

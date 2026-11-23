@@ -10,4 +10,3 @@ Các UC có hơn 3 EX nghiệp vụ; tôi đã cắt theo gợi ý report (giữ
 - UC-86b: giữ EX-1/EX-2/EX-3, bỏ EX-4 (MSG483 per-take agreement missing), EX-6 (MSG309 sample fails quality rules), EX-7 (MSG312 speech recognition unavailable).
 - UC-44a: giữ EX-1/EX-2/EX-3, bỏ EX-5 (MSG359 not in progress), EX-6 (MSG360 take open on another device), EX-7 (MSG361 invalid audio part).
 - UC-44c: giữ EX-1/EX-2/EX-3, bỏ EX-5 (MSG295 not secretary), EX-7 (MSG358 online), EX-8 (MSG478 hybrid), EX-4 (MSG294 invalid state).
-EOF

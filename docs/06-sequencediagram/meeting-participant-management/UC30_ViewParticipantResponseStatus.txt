@@ -39,5 +39,3 @@ end
 deactivate ParticipantService
 deactivate ParticipantController
 deactivate ParticipantsPage
-EOF
-echo done

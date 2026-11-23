@@ -23,5 +23,3 @@ activate RoomProvider
 RoomProvider-->Page: Everyone returns to the Video Grid
 deactivate RoomProvider
 deactivate Page
-EOF
-echo done

@@ -75,5 +75,3 @@ end
 
 deactivate OverdueService
 deactivate Worker
-EOF
-echo done

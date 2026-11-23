@@ -42,10 +42,14 @@ else Sample may be added
     SpeechEngine-->VoiceService: Voiceprint / Sample rejected
     deactivate SpeechEngine
 
-    alt Audio is unsupported or fails the quality rules - EX-2
+    alt Recording fails the quality rules - EX-2
         VoiceService-->VoiceController: MSG309 - Voice sample did not meet quality requirements.
         VoiceController-->VoicePage: MSG309 - Voice sample did not meet quality requirements.
         VoicePage-->Actor: MSG309 - Voice sample did not meet quality requirements.
+    else Audio type is not supported - EX-2
+        VoiceService-->VoiceController: MSG292 - Unsupported audio format.
+        VoiceController-->VoicePage: MSG292 - Unsupported audio format.
+        VoicePage-->Actor: MSG292 - Unsupported audio format.
     else Voiceprint made
         VoiceService->Protector: Protect the voiceprint
         activate Protector

@@ -7,5 +7,3 @@ Actor->Page: Open floating window
 activate Page
 Page-->Actor: Call shown in floating window; main window shows "The meeting is in a floating window"
 deactivate Page
-EOF
-echo done

@@ -20,5 +20,3 @@ else Camera can be switched
     Page-->Actor: Button shows the new state
 end
 deactivate Page
-EOF
-echo done

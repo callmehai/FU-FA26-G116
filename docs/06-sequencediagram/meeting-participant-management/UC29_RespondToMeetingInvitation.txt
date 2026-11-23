@@ -58,5 +58,3 @@ end
 deactivate InvitationService
 deactivate InvitationController
 deactivate DetailPage
-EOF
-echo done

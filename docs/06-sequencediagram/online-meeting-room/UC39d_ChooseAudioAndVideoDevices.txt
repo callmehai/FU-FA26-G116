@@ -23,5 +23,3 @@ else Device can be switched
     Page-->Actor: Picker shows the new device
 end
 deactivate Page
-EOF
-echo done

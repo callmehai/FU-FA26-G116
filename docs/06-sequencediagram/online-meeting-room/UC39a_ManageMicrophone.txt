@@ -25,5 +25,3 @@ else Microphone can be switched
 end
 
 deactivate Page
-EOF
-echo done

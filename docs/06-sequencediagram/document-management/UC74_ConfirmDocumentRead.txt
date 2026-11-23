@@ -53,10 +53,14 @@ else Last page reached
         ReadConfirmationRepository-->ReadService: Eligible / Not eligible
         deactivate ReadConfirmationRepository
 
-        alt Not an eligible voter, or no Open Vote remains - EX-3
+        alt Actor is not an eligible voter - EX-3
             ReadService-->DocumentController: MSG224 - You are not eligible to cast a ballot in this vote.
             DocumentController-->DocumentViewer: MSG224 - You are not eligible to cast a ballot in this vote.
             DocumentViewer-->User: MSG224 - You are not eligible to cast a ballot in this vote.
+        else No Open Vote remains - EX-3
+            ReadService-->DocumentController: MSG225 - This vote is no longer accepting ballots.
+            DocumentController-->DocumentViewer: MSG225 - This vote is no longer accepting ballots.
+            DocumentViewer-->User: MSG225 - This vote is no longer accepting ballots.
         else Eligible voter of an Open Vote
             ReadService->ReadConfirmationRepository: Save the confirmation (kept if already confirmed - AF-1)
             activate ReadConfirmationRepository

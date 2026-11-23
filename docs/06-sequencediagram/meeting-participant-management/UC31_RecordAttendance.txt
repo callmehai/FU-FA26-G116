@@ -58,5 +58,3 @@ end
 deactivate AttendanceService
 deactivate AttendanceController
 deactivate AttendancePage
-EOF
-echo done

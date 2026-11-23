@@ -42,10 +42,14 @@ else Samples may be added
     SpeechEngine-->CollectionService: Voiceprint / Sample rejected
     deactivate SpeechEngine
 
-    alt Audio is unsupported or fails the quality rules - EX-3
+    alt Audio type is not supported - EX-3
         CollectionService-->CollectionController: MSG292 - Unsupported audio format.
         CollectionController-->UsersPage: MSG292 - Unsupported audio format.
         UsersPage-->Collector: MSG292 - Unsupported audio format.
+    else Recording fails the quality rules - EX-3
+        CollectionService-->CollectionController: MSG309 - Voice sample did not meet quality requirements.
+        CollectionController-->UsersPage: MSG309 - Voice sample did not meet quality requirements.
+        UsersPage-->Collector: MSG309 - Voice sample did not meet quality requirements.
     else Voiceprint made
         CollectionService->Protector: Protect the voiceprint and the recording
         activate Protector

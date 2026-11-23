@@ -12,5 +12,3 @@ RoomProvider-->Page: People connected now
 deactivate RoomProvider
 Page-->Actor: Participants panel with the number of people connected
 deactivate Page
-EOF
-echo done

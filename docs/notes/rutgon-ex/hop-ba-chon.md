@@ -13,5 +13,4 @@ Các UC có hơn 3 EX nghiệp vụ; tôi đã cắt theo gợi ý report (giữ
 - UC-37: giữ EX-1/EX-2/EX-3, bỏ các EX trạng thái khác (cancelled, not started, guest session ended, recording notice).
 - UC-79: giữ EX-1/EX-2/EX-3, bỏ EX-4 (chair controls).
 - UC-39a: giữ EX-1/EX-2/EX-3, bỏ EX-6/EX-7 (MSG319/MSG321 invalid sentence).
-EOF
 echo written

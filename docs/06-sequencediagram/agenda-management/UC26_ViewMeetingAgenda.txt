@@ -39,5 +39,3 @@ end
 deactivate AgendaService
 deactivate AgendaController
 deactivate AgendaPage
-EOF
-echo done

@@ -54,5 +54,4 @@ n> **Lưu ý:** nếu mục này lệch với `hop-spec-patch.md` thì theo file
 - UC-42 Use In-room Chat: không giữ EX (EX-1 MSG343 unable to send, hạ tầng; EX-2 MSG333 connection lost, hạ tầng).
 - UC-78 Floating Window: không giữ EX (EX-1 refused, hạ tầng).
 - UC-79 Register to Speak: giữ EX-1 (MSG117 no longer in progress), EX-2 (already open request), EX-3 (no longer chair). Bỏ EX-4 (chair controls, gộp vào EX-3), EX-5 (MSG124 no response, hạ tầng).
-EOF
 echo written

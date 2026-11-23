@@ -39,10 +39,14 @@ alt Actor is not the current Chair or Secretary - EX-1
     SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may edit the draft.
     SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may edit the draft.
     DraftCard-->Actor: MSG385 - Only the Chair or Secretary may edit the draft.
-else No finished draft, or the AI is writing it again - EX-2
+else No finished draft - EX-2
     SummaryService-->SummaryController: MSG390 - There is no draft to correct or review.
     SummaryController-->DraftCard: MSG390 - There is no draft to correct or review.
     DraftCard-->Actor: MSG390 - There is no draft to correct or review.
+else The AI is writing the draft - EX-2
+    SummaryService-->SummaryController: MSG387 - The AI is writing the draft, please wait.
+    SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
+    DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
 else A section is empty or too long - EX-3
     SummaryService-->SummaryController: MSG389 - The draft content is invalid.
     SummaryController-->DraftCard: MSG389 - The draft content is invalid.

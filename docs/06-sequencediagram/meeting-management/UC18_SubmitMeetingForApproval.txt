@@ -64,5 +64,3 @@ end
 deactivate MeetingService
 deactivate MeetingController
 deactivate MeetingPage
-EOF
-echo done

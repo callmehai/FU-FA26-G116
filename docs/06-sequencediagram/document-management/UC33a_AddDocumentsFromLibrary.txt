@@ -54,10 +54,14 @@ else Actor may add documents
     MeetingDocumentRepository-->DocumentService: Meeting documents
     deactivate MeetingDocumentRepository
 
-    alt Selection is empty, unavailable or already attached - EX-2
+    alt Selection is empty or unavailable - EX-2
         DocumentService-->DocumentController: MSG249 - Select available documents from your personal library.
         DocumentController-->DocumentsTab: MSG249 - Select available documents from your personal library.
         DocumentsTab-->Actor: MSG249 - Select available documents from your personal library.
+    else A selected document is already in the Meeting - EX-2
+        DocumentService-->DocumentController: MSG165 - One or more selected documents are already attached to the Meeting.
+        DocumentController-->DocumentsTab: MSG165 - One or more selected documents are already attached to the Meeting.
+        DocumentsTab-->Actor: MSG165 - One or more selected documents are already attached to the Meeting.
     else Selection is valid
         DocumentService->MeetingDocumentRepository: Add the documents to the Meeting
         activate MeetingDocumentRepository

@@ -12,5 +12,3 @@ RoomProvider-->Page: Message delivered
 deactivate RoomProvider
 Page-->Actor: Message shown with sender and time
 deactivate Page
-EOF
-echo done

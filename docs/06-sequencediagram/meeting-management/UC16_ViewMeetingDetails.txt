@@ -39,5 +39,3 @@ end
 deactivate MeetingService
 deactivate MeetingController
 deactivate DetailsPage
-EOF
-echo done

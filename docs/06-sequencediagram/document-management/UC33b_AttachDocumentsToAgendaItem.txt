@@ -56,10 +56,18 @@ else Actor may link documents
         MeetingDocumentRepository-->DocumentService: Meeting documents
         deactivate MeetingDocumentRepository
 
-        alt Agenda Item or a document is no longer in the Meeting, or already linked - EX-2
-            DocumentService-->DocumentController: MSG170 - This document or Agenda Item is no longer available.
-            DocumentController-->DocumentsTab: MSG170 - This document or Agenda Item is no longer available.
-            DocumentsTab-->Actor: MSG170 - This document or Agenda Item is no longer available.
+        alt A selected document is no longer in the Meeting - EX-2
+            DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting.
+            DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting.
+            DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting.
+        else Agenda Item is no longer in the Meeting - EX-2
+            DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+            DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+            DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+        else A document is already linked to the Agenda Item - EX-2
+            DocumentService-->DocumentController: MSG243 - One or more selected documents are already attached to the Agenda Item.
+            DocumentController-->DocumentsTab: MSG243 - One or more selected documents are already attached to the Agenda Item.
+            DocumentsTab-->Actor: MSG243 - One or more selected documents are already attached to the Agenda Item.
         else Selection is valid
             DocumentService->MeetingDocumentRepository: Attach the documents to the Agenda Item
             activate MeetingDocumentRepository

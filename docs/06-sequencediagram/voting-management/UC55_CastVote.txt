@@ -25,18 +25,30 @@ deactivate Database
 VoteRepository-->VoteService: Vote, eligibility and ballot
 deactivate VoteRepository
 
-alt No option selected, or the option is not valid - EX-1
+alt No option selected - EX-1
     VoteService-->VoteController: MSG222 - Select one valid option before submitting your ballot.
     VoteController-->MeetingPage: MSG222 - Select one valid option before submitting your ballot.
     MeetingPage-->Actor: MSG222 - Select one valid option before submitting your ballot.
-else Actor is not eligible, or has not confirmed reading the documents - EX-2
+else Option does not belong to this vote - EX-1
+    VoteService-->VoteController: MSG223 - The selected option is not available for this vote.
+    VoteController-->MeetingPage: MSG223 - The selected option is not available for this vote.
+    MeetingPage-->Actor: MSG223 - The selected option is not available for this vote.
+else Actor is not eligible - EX-2
     VoteService-->VoteController: MSG224 - You are not eligible to cast a ballot in this vote.
     VoteController-->MeetingPage: MSG224 - You are not eligible to cast a ballot in this vote.
     MeetingPage-->Actor: MSG224 - You are not eligible to cast a ballot in this vote.
-else Balloting has ended, or the actor already voted - EX-3
+else Documents are not all confirmed as read - EX-2
+    VoteService-->VoteController: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    VoteController-->MeetingPage: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    MeetingPage-->Actor: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+else Balloting has ended - EX-3
     VoteService-->VoteController: MSG225 - This vote is no longer accepting ballots.
     VoteController-->MeetingPage: MSG225 - This vote is no longer accepting ballots.
     MeetingPage-->Actor: MSG225 - This vote is no longer accepting ballots.
+else Actor has already voted - EX-3
+    VoteService-->VoteController: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    VoteController-->MeetingPage: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    MeetingPage-->Actor: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
 else Ballot is valid
     VoteService->VoteRepository: Record ballot
     activate VoteRepository

@@ -31,15 +31,20 @@ alt Meeting has ended - EX-1
     RoomController-->Page: MSG331 - The meeting has ended, the meeting room is closed.
     Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
 
+else Meeting was cancelled - EX-1
+    RoomService-->RoomController: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    RoomController-->Page: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    Page-->Actor: MSG350 - The meeting was cancelled, so the meeting room does not open.
+
 else Meeting is held in person - EX-2
     RoomService-->RoomController: MSG280 - This meeting is held in person, so it has no online meeting room.
     RoomController-->Page: MSG280 - This meeting is held in person, so it has no online meeting room.
     Page-->Actor: MSG280 - This meeting is held in person, so it has no online meeting room.
 
-else Room service is not configured - EX-3
-    RoomService-->RoomController: MSG281 - The online meeting room is not ready. Please contact the administrator.
-    RoomController-->Page: MSG281 - The online meeting room is not ready. Please contact the administrator.
-    Page-->Actor: MSG281 - The online meeting room is not ready. Please contact the administrator.
+else Guest session has ended - EX-3
+    RoomService-->RoomController: MSG378 - The guest session has ended.
+    RoomController-->Page: MSG378 - The guest session has ended.
+    Page-->Actor: MSG378 - The guest session has ended.
 
 else Meeting is in progress and actor is eligible
     RoomService->RoomProvider: Request room connection for the actor (BR-323, BR-329)
@@ -59,5 +64,3 @@ end
 deactivate RoomService
 deactivate RoomController
 deactivate Page
-EOF
-echo done

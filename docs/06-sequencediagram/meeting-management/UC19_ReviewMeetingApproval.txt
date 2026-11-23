@@ -58,5 +58,3 @@ end
 deactivate MeetingService
 deactivate MeetingController
 deactivate ApprovalPage
-EOF
-echo done

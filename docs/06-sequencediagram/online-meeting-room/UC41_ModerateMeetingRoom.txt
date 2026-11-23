@@ -55,5 +55,3 @@ end
 deactivate RoomService
 deactivate RoomController
 deactivate Page
-EOF
-echo done
