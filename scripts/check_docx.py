@@ -22,8 +22,9 @@ The rest keeps the reports readable and consistent after an edit made by hand or
 - a table keeps the same number of columns on every row (merged cells counted), and its header row
   is filled in;
 - Report 3 keeps its use-case shape: unique `UC-xx` headings, parent use cases with sub-cases, the
-  standard row labels, `PRE-n`/`POST-n`/`AF-n`/`EX-n` and Normal Flow steps numbered 1..n, a business
-  rule per `BR-n` row in ascending order, and every `BR-n`/`MSG-n`/`UC-n` a use case cites resolves;
+  standard row labels, `PRE-n`/`POST-n`/`AF-n`/`EX-n` and Normal Flow steps numbered 1..n, one
+  `ID | Rule` row per `BR-nnn` in ascending order (ADR-0079), and every `BR-n`/`MSG-n`/`UC-n` a use
+  case cites resolves;
 - the small things: no `TODO`/`TBD` left behind, no stray spaces around a paragraph, and every picture
   has alternative text (warning only, the reports predate that habit).
 
@@ -78,7 +79,7 @@ UC_LABELS = (
     "Alternative Flows",
     "Exception Flows",
 )
-BR_ID_RE = re.compile(r"^BR-\d{2,3}$")
+BR_ID_RE = re.compile(r"^BR-\d{3}$")
 MSG_ID_RE = re.compile(r"^MSG\d{2,4}$")
 PLACEHOLDER_RE = re.compile(r"placeholder only", re.I)
 SUSPICIOUS = ("TODO", "TBD", "FIXME", "XXX", "??", "Lorem ipsum")
@@ -357,20 +358,20 @@ def check_report3(paras: list[dict[str, object]], doc: str) -> tuple[list[str], 
             if error:
                 errors.append(error)
 
-    # Business rules: one row per code, in ascending order, each with a rule and the use case it serves.
+    # Business rules: one `ID | Rule` row per code (BR-001…, ADR-0079), in ascending order, each with its rule.
     br_codes: list[int] = []
     br_seen: set[int] = set()
     rule_count = 0
     for tbl in TBL_RE.finditer(doc):
         rows = table_rows(tbl.group(0))
-        if not rows or not any(cell in ("BR-ID", "Rule Statement") for cell in rows[0]):
+        if not rows or rows[0][:2] != ["ID", "Rule"]:
             continue
         rule_count += 1
         for row_number, row in enumerate(rows[1:], start=2):
             if not row or not BR_ID_RE.match(row[0]):
                 continue
-            if len(row) != 5:
-                errors.append(f"BR row {row[0]} has {len(row)} cells, expected 5")
+            if len(row) != 2:
+                errors.append(f"BR row {row[0]} has {len(row)} cells, expected 2")
             number = int(row[0].split("-")[1])
             if number in br_seen:
                 errors.append(f"business rule {row[0]} appears twice")
@@ -378,15 +379,13 @@ def check_report3(paras: list[dict[str, object]], doc: str) -> tuple[list[str], 
             br_codes.append(number)
             if len(row) > 1 and not row[1]:
                 errors.append(f"business rule {row[0]} has no text")
-            if len(row) > 2 and not row[2]:
-                errors.append(f"business rule {row[0]} names no use case")
     if rule_count == 0:
         errors.append("no Business Rules table found")
     elif br_codes != sorted(br_codes):
         for position in range(1, len(br_codes)):
             if br_codes[position] < br_codes[position - 1]:
-                errors.append(f"business rules are not in ascending order: BR-{br_codes[position - 1]:02d} "
-                              f"then BR-{br_codes[position]:02d}")
+                errors.append(f"business rules are not in ascending order: BR-{br_codes[position - 1]:03d} "
+                              f"then BR-{br_codes[position]:03d}")
                 break
 
     # System messages: one row per code and context, and one text per code.
@@ -420,7 +419,7 @@ def check_report3(paras: list[dict[str, object]], doc: str) -> tuple[list[str], 
     # codes as retired are history, not references, so they are left out.
     body = "\n".join(str(p["text"]) for block in blocks for p in block["block"]
                      if "retired" not in str(p["text"]).lower())
-    unknown_br = sorted(set(re.findall(r"BR-\d+", body)) - {f"BR-{n:02d}" for n in br_seen} - {f"BR-{n:03d}" for n in br_seen})
+    unknown_br = sorted(set(re.findall(r"BR-\d+", body)) - {f"BR-{n:03d}" for n in br_seen})
     if unknown_br:
         warnings.append(f"cited business rules with no row: {', '.join(unknown_br[:8])}")
     unknown_msg = sorted(set(re.findall(r"MSG\d+", body)) - set(msg_contents))

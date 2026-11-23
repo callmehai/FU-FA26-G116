@@ -15,9 +15,9 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   `05-…` / `06-…` / `Report-3_….md` rồi sửa chữ trong đó.
 - Hai bản trích của Report 3 — [05-use-case-specifications.md](05-use-case-specifications.md) (§II) và
   [06-business-rules.md](06-business-rules.md) (§V.1) — **cấm sửa tay**: sinh lại bằng sync ở trên
-  (hoặc `python scripts/sync_requirement_extracts.py`; thêm `--check` để chỉ xem lệch). Script giữ
-  nguyên những phần Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng
-  `Placeholder only` và mục BR đã ngừng dùng.
+  (hoặc `python scripts/sync_requirement_extracts.py`; thêm `--check` để chỉ xem lệch). Ở `05-…`, script giữ
+  nguyên những phần Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:` và dòng
+  `Placeholder only`. `06-…` được sinh trọn file; mã BR cũ và BR đã ngừng nằm ở bảng ánh xạ `09-…`.
 
 ---
 
@@ -33,12 +33,10 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026;
   **UC-47–UC-50 (dự thảo AI) và UC-58–UC-60 (bản nháp biên bản) đặc tả ngày 05/11/2026 theo PR #260**; UC-51 và
   UC-61, UC-64, UC-65 (gửi duyệt, duyệt, trả lại biên bản) đã đặc tả theo SCRUM-33; UC-62/63 (ký biên bản) đã bỏ theo PO 14/11/2026.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **347 BR đang dùng**
-  trong dải BR-01 → BR-394 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
-  rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa
-  BR-30/105/106/115/126/172/176/215/295; **BR-373 → BR-394 thêm 05/11/2026 cho dự thảo AI và bản nháp biên bản, PR #260**); danh sách BR ngừng dùng ở cuối file.
-- [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Bản nháp kế hoạch gộp BR từ 406 về 153 (đánh số lại BR-001…BR-153 theo ADR-0079, mỗi BR một ý) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review (chờ nhóm duyệt, chưa áp vào DOCX).
-- [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md) — Dự thảo bảng cố định mã BR cũ → mã mới của đợt đánh số lại đầu tiên (ADR-0079); chỉ thêm dòng, không sửa dòng đã có.
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **153 BR**,
+  `BR-001` → `BR-153`, bảng 2 cột `ID | Rule` (từ 24/11/2026, ADR-0079).
+- [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Kế hoạch gộp BR từ 406 về 153 (đánh số lại BR-001…BR-153 theo ADR-0079, mỗi BR một ý) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review. Đã áp vào DOCX Report 3 ngày 24/11/2026; câu Rule trong DOCX là bản tiếng Anh của cột "Nội dung".
+- [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md) — Bảng cố định mã BR cũ → mã mới của đợt đánh số lại đầu tiên (ADR-0079); chỉ thêm dòng, không sửa dòng đã có. Code, test, kế hoạch QA và sequence diagram còn mã cũ cho tới khi đổi theo bảng này.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
@@ -143,7 +141,7 @@ Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực 
 ```markdown
 ### UC-[XX]: [Tên Use Case Tiếng Anh] ([Tên Use Case Tiếng Việt])
 
-- **Actor chính (Primary Actor)**: [Tên Actor thực hiện theo Report 3, ví dụ: Meeting Organizer / Secretary / Chair]
+- **Actor chính (Primary Actor)**: [Tên Actor thực hiện theo Report 3, ví dụ: Member / Approver / Secretary / Chair]
 - **Mô tả (Description)**: [Tóm tắt ngắn gọn mục tiêu nghiệp vụ của Use Case]
 - **Điều kiện tiên quyết (Preconditions)**:
   - [Điều kiện 1: Đã đăng nhập và có quyền tương ứng...]

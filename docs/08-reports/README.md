@@ -125,7 +125,8 @@ dòng bắt đầu bằng `!` là **cảnh báo** (chỉ in ra, không làm lệ
    (UC-06) phải có UC con nếu có `UC-06a`…; UC không phải placeholder phải đủ 8 dòng chuẩn (Primary
    Actors, Secondary Actors, Description, Preconditions, Postconditions, Normal Flow, Alternative Flows,
    Exception Flows); `PRE-n`, `POST-n`, `AF-n`, `EX-n` và các bước Normal Flow đánh số `1..n` liên tục;
-   bảng Business Rules đúng một dòng cho mỗi `BR-n`, tăng dần, đủ 5 cột, có luật và có UC áp dụng; bảng
+   bảng Business Rules đúng một dòng cho mỗi `BR-nnn` (`BR-001`…, ADR-0079), tăng dần, đúng 2 cột `ID | Rule`
+   và có luật; bảng
    System Messages mỗi cặp (mã, ngữ cảnh) một dòng và **một mã chỉ một nội dung** (MSG01 là ngoại lệ có
    chủ đích: dùng chung cho `/login` và `/refresh` theo danh mục mã); mọi `BR-n`/`MSG-n`/`UC-n` mà một UC
    nhắc tới phải có dòng/heading tương ứng — câu ghi "Retired …" thì bỏ qua.
