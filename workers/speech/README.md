@@ -209,7 +209,10 @@ Các bước xử lý một bản ghi:
    cuộc họp dùng để hiệu chỉnh chỉ thấp hơn chủ toạ 15–20 dB nên không bị bỏ, còn bản ghi nhỏ đều
    từ đầu tới cuối thì giữ nguyên. Người nói chỉ gồm các đoạn bị bỏ cũng bị bỏ theo.
 6. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
-   bằng nhau.
+   bằng nhau. Mỗi lần đưa model một phần (trước đây 8 phần một lô). Một lô bị độn cho bằng phần dài nhất, và
+   onnxruntime giữ lại bộ nhớ của lô lớn nhất nó từng gặp: trên bản ghi 83 phút, process con tăng từ 1,05 GB lên
+   4,7 GB ở bước này (Docker, 2 CPU, 24/11/2026). Từng phần một thì bộ nhớ không tăng, bước này nhanh hơn 1,6–1,8 lần
+   với 2 luồng, và WER trên cuộc họp thật 300 giây gần như không đổi (13,90% → 14,06%, chênh 2 từ trên 1216).
 7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
    thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Model luôn đọc chữ thường: chữ hoa nó gắn được giữ riêng và
    chỉ đặt vào ở cuối, cộng thêm chữ hoa cho từ đầu mỗi câu (sau `.` `?` `!`). Đọc lại chính chữ hoa của mình, model
@@ -267,7 +270,7 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
 - Request đến khi làn của nó đang bận sẽ **xếp hàng**, không bị từ chối.
 - **Bên gọi ngắt kết nối thì dừng.** Trong lúc chạy `/v1/transcribe`, process HTTP cứ nửa giây xem kết nối còn không;
   bên gọi đã đóng thì báo process con qua một danh sách số việc đã huỷ dùng chung, và process con dừng ở bước kế tiếp
-  (giữa hai khung giọng, hai lô câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
+  (giữa hai khung giọng, hai câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
   lượt mic phòng mới đến lúc bản cũ còn đang chạy. Đo trên máy dev: bên gọi ngắt ở giây thứ 6 của một bản ghi 9 phút, worker
   dừng chưa tới nửa giây sau đó, và request kế tiếp chạy ngay.
 - **Tiến độ đi theo chiều ngược lại.** Mỗi process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung của
