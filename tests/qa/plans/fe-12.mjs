@@ -175,7 +175,12 @@ async function reused(qa, key) {
 async function ensureSaid(qa, meeting) {
   const sec = await client(qa, 'secretary')
   const S = `/api/meetings/${meeting.id}/summary`
-  if ((await sec.get(S)).body?.readiness?.sentences > 0) return
+  // Something said and nothing still transcribing: a recording being transcribed blocks "Tạo dự thảo" (Hải 23/11).
+  const said = async () => {
+    const r = (await sec.get(S)).body?.readiness
+    return r?.sentences > 0 && !r?.transcribing
+  }
+  if (await said()) return
   const dir = process.env.QA_AUDIO_DIR ?? join(tmpdir(), 'trustcabinet-qa-fe12')
   const wav = join(dir, 'said.wav')
   try {
@@ -210,7 +215,7 @@ async function ensureSaid(qa, meeting) {
   }
   const until = Date.now() + 150_000
   while (Date.now() < until) {
-    if ((await sec.get(S)).body?.readiness?.sentences > 0) return
+    if (await said()) return
     await new Promise((r) => setTimeout(r, 3000))
   }
   qa.inconclusive('Bản ghi đã tải lên chưa chuyển chữ xong sau 150 giây: máy chuyển chữ (speech worker) có đang chạy không?')
@@ -402,7 +407,7 @@ export default {
         'Bấm "Tạo bản nháp"',
       ],
       expected:
-        'Trước: "Bản nháp điền sẵn thông tin cuộc họp…", báo "Chưa có dự thảo AI nên mục I–III để trống."; sau: toast "Đã tạo bản nháp biên bản." (MSG395), chip "Bản nháp", tờ biên bản có tên cuộc họp, Chủ toạ, Thư ký, mục nghị sự và kết luận Chủ toạ đã ghi, chỗ "……"; nút Sửa, Gửi duyệt, Tạo lại, Tải xuống; API Draft, bản số 1; không cuộn ngang',
+        'Trước: "Bản nháp điền sẵn thông tin cuộc họp…", báo "Chưa có dự thảo AI nên mục I–III để trống."; sau: toast "Đã tạo bản nháp biên bản." (MSG395), chip "Bản nháp", tờ biên bản có tên cuộc họp, Chủ toạ, Thư ký, mục nghị sự và kết luận Chủ toạ đã ghi, chỗ "……"; nút Sửa, Gửi duyệt, Tải xuống, không có Tạo lại (chưa có dự thảo AI thì tạo lại cũng chỉ ra bản như cũ); API Draft, bản số 1; không cuộn ngang',
       async run(qa) {
         const u = await users(qa)
         let m = await flow(qa)
@@ -423,7 +428,8 @@ export default {
         for (const text of [m.title, u.chair.name, u.secretary.name, ITEM_DONE, ITEM_CONCLUSION])
           await qa.expect(p, `the paper misses "${text}"`).toContainText(text)
         await qa.expect(p).toContainText('……')
-        for (const name of ['Sửa', 'Gửi duyệt', 'Tạo lại', 'Tải xuống']) await qa.expect(btn(qa, name)).toBeVisible()
+        for (const name of ['Sửa', 'Gửi duyệt', 'Tải xuống']) await qa.expect(btn(qa, name)).toBeVisible()
+        await qa.expect(btn(qa, 'Tạo lại')).toHaveCount(0)
         await qa.expect(meta(qa)).toContainText('Lưu lần cuối')
         await snap(qa, 'da-tao-ban-nhap')
         await noSidewaysScroll(qa)
