@@ -9,11 +9,15 @@ Business Rules table already has the two columns `ID | Rule`.
 
 What it does, outside the Change Log table:
 * rewrites every (BR-...) citation with docs/01-requirements/09-bang-anh-xa-br-dot-1.md: an old id becomes
-  its new id(s); an id moved to a use case, to NFR or to the shared UI conventions, or retired, is dropped
-  (its text is already in the step that cited it); the audit group (BR-009/010/011) is narrowed by use case;
+  its new id(s); an id moved to a use case, to NFR or to the shared UI conventions, or retired, is dropped;
+  the audit group (BR-009/010/011) is narrowed by use case. A later row of table 09 for the same old id is a
+  correction and wins over the earlier one (BR-158, BR-264, BR-312);
 * rebuilds section V.1 as `ID | Rule`, BR-001...BR-153, in English from the plan's "Noi dung" column;
-* writes the moved rules no use case described yet into an existing step of their use case, and the NFR
-  ones into existing rows of section IV.2 (plus one Performance row for speaker recognition);
+* writes a moved rule into an existing step of its use case (MOVED, BARE, FIX) wherever the citing step only
+  pointed at the rule instead of stating it, or no use case described it — every one of the moved rules was
+  checked against the step that cited it (review of PR #509) — and the NFR ones into existing rows of
+  section IV.2 (plus one Performance row for speaker recognition). The UI-convention rules stay dropped, as
+  the plan says. Wording follows the code where an old rule had drifted from it (BR-163);
 * renames the actors Meeting Organizer -> Member and Meeting Approver -> Approver; adds one Change Log row.
 """
 
@@ -49,7 +53,7 @@ MP = load_map()
 
 
 def kind(n):
-    t = MP[n]
+    t = MP[n].split(" — ", 1)[0]  # a correction row explains itself after " — "
     if t.startswith("BR-"):
         return "br", re.findall(r"BR-\d{3}", t)
     if t.startswith("Trùng"):
@@ -496,7 +500,7 @@ def blocks():
 
 BARE = {
     "under BR-160 and BR-165": "under BR-090 and BR-092",
-    "under UC-15 and BR-158": "under UC-15 and BR-014",
+    "under UC-15 and BR-158": "under UC-15 and BR-015",
     "read access under BR-176": "read access under BR-017",
     " according to BR-12": "",
     "before publication under BR-118": "before publication under BR-030",
@@ -504,8 +508,14 @@ BARE = {
     "required by BR-121": "required by BR-017",
     "that BR-334 allows": "that BR-085 allows",
     "hidden by BR-334": "hidden by BR-085",
-    "; defaults follow BR-421/BR-422": "",
-    "the parameters break BR-421/BR-422 (": "the parameters break the search limits (",
+    # BR-421/422 (MeetingSlotRules): the step only pointed at them.
+    "; defaults follow BR-421/BR-422": (
+        ". The duration is 15 minutes to 8 hours (2 hours by default); the date range starts today, no more than "
+        "365 days ahead, and covers at most 31 days; working hours are 08:00–17:00 with a 12:00–13:00 lunch break by "
+        "default; each slot keeps a buffer of 0–4 hours (30 minutes by default) before and after every busy period, and "
+        "start times are rounded up to a step of 5 minutes to 2 hours (30 minutes by default); a slot never starts in "
+        "the past"),
+    "the parameters break BR-421/BR-422 (": "the parameters are outside the limits of Step 1 (",
     "under BR-65, BR-68 and BR-74": "under BR-059",
     "(BR-90, BR-91: invitations are still sent when the Meeting is published)": "(invitations are still sent when the Meeting is published, BR-90)",
     "UC-31 / EX-4, BR-172 / ": "UC-31 / EX-4 / ",
@@ -532,10 +542,46 @@ MOVED = {
                 "A failed invitation delivery does not undo the saved roster.")],
     "UC-28c": [("4. The system arranges the applicable notification",
                 "The notification carries no link that opens the Meeting.")],
+    # BR-163 said the link cannot be entered; the code (MeetingRules.MaxOnlineLinkLength) and screen 4.4 take one.
     "UC-14": [("3. The Organizer enters Meeting Name",
-               "The Online Link is managed by the system for the online meeting room and cannot be entered or changed here.")],
+               "For an Online or Hybrid Meeting an external Online Link of at most 1,000 characters may be entered; left blank, the TrustCabinet online meeting room is used."),
+              ("5. The system checks the required values",
+               "The list holds 1 to 100 participants; Guests cannot be added at creation, and the creator need not be a participant.")],
     "UC-82": [("3. The actor types.",
                "When the minutes draft is later built without an AI draft (UC-59), each item's note goes under that item in section II, lines marked Kết luận go to section III and lines marked Nhiệm vụ go to “Nhiệm vụ, sản phẩm và thời hạn”.")],
+    # Review of PR #509: steps that only pointed at the moved rule.
+    "UC-23a": [("3. The system verifies the active Secretary assignment",
+                "The Title is required; Description and Presenter are optional.")],
+    "UC-47": [("5. The system cuts the transcript along the agenda",
+               "Speech outside every timed item goes into one extra part titled “Nội dung khác”; a leftover of 300 characters or fewer is ignored as greetings between items.")],
+    "UC-49": [("● PRE-2: A finished draft exists.", "The AI is not writing the draft again.")],
+    "UC-50": [("● PRE-2: A finished draft exists.", "The AI is not writing the draft again.")],
+    "UC-43a": [("1. At Step 4, the Meeting is Hybrid or Online, has Ended",
+                "The system builds it after the Meeting ends, from the room recording and every online sentence for a Hybrid Meeting or from every online sentence for an Online Meeting, on the real clock: excluded sentences are left out, silences over 2 seconds are shortened to 2 seconds, a track over 12 hours is not built, and a Secret Meeting has none. "
+                "When a source changes later the system builds it again, unless the Secretary has erased it.")],
+    "UC-84a": [("2. The system checks that the actor is still",
+                "A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends.")],
+    "UC-84b": [("2. The system checks the recipient",
+                "A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends.")],
+    "UC-84d": [("1. The viewer opens their share",
+                "A longer range may keep the share's original start date and still covers at most 365 days counting both ends.")],
+}
+# ctx -> [(text after the citation rewrite, replacement)]: wording that a citation or one word gets wrong.
+FIX = {
+    # Review of PR #509: the reschedule step's delivery sentence is BR-032, not the reschedule rule.
+    # The reschedule lines also cited old BR-27 (-> BR-014, "edit only in Draft or Rejected"), which contradicts them.
+    "UC-15": [("Delivery failure does not roll back the saved change. (BR-022, BR-023, BR-015)",
+               "Delivery failure does not roll back the saved change. (BR-022, BR-023, BR-032)"),
+              ("The Meeting must not have started. (BR-014, BR-015)", "The Meeting must not have started. (BR-015)"),
+              ("All other fields are read-only. (BR-014, BR-015)", "All other fields are read-only. (BR-015)"),
+              ("outside the allowed Reschedule set was modified. (BR-014, BR-015)",
+               "outside the allowed Reschedule set was modified. (BR-015)")],
+    "4.8 Publish Meeting": [("địa điểm và link.] (BR-014, BR-015)", "địa điểm và link.] (BR-015)")],
+    "4.9 Reschedule Meeting": [("and has not started (BR-014, BR-015)", "and has not started (BR-015)")],
+    # BR-312: the minutes list each item with its Presenter (MinutesTemplate).
+    "UC-59": [("the agenda and each item's recorded conclusion", "the agenda with each item's Presenter and recorded conclusion")],
+    # BR-431: a range the owner shortens must lie within the requested one.
+    "UC-84c": [("or a shorter range (BR-140, BR-141)", "or a shorter range within the requested one (BR-140, BR-141)")],
 }
 APPROVER_TOO = "An Approver can also do this, because the Approver role also holds the create-meeting permission."
 NFR_ADD = {
@@ -627,6 +673,7 @@ def row_label(tr):
 
 # ---------- main pass ----------
 moved_done = collections.Counter()
+fix_done = collections.Counter()
 for part, ctx, heading, el in list(blocks()):
     if el.tag == q("tbl"):
         if heading.startswith("Change Log"):
@@ -660,10 +707,14 @@ for part, ctx, heading, el in list(blocks()):
             stale = re.search(r"\bBR-(?:\d{1,2}|\d{4,}|15[4-9]|1[6-9]\d|[2-9]\d\d)\b", got)
             if stale or any(x[0].startswith("FLAG") for x in log):
                 report["old_id_left"].append((ctx, got[:300], [x for x in log if x[0].startswith("FLAG")]))
+        for old_text, new_text in FIX.get(ctx, []):
+            if old_text in ptext(p):
+                map_ts(p, lambda s: s.replace(old_text, new_text))
+                fix_done[(ctx, old_text)] += 1
         # 3: moved content (match before the actor rename)
         for prefix, sentence in MOVED.get(ctx, []):
             if append_to_line(p, prefix, sentence):
-                moved_done[ctx] += 1
+                moved_done[(ctx, prefix)] += 1
         # 4: actor rename
         def actor(s):
             for rx, rep in ACTOR:
@@ -711,6 +762,10 @@ for part, ctx, heading, el in list(blocks()):
         report["speaker_row"].append("added")
 
 report["moved"] = sorted(moved_done.items())
+missing = [f"MOVED {c}: {pfx[:40]}" for c, items in MOVED.items() for pfx, _ in items if not moved_done[(c, pfx)]]
+missing += [f"FIX {c}: {old[:40]}" for c, items in FIX.items() for old, _ in items if not fix_done[(c, old)]]
+if missing:
+    sys.exit("Not applied, the DOCX text has changed:\n  " + "\n  ".join(missing))
 d.save(OUT)
 for k, v in report.items():
     print(f"== {k}: {len(v)}")
