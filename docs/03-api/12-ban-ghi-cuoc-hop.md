@@ -64,6 +64,7 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
   "meetingId": "…",
   "canUpload": true,
   "canRecord": true,
+  "maxUploadBytes": 314572800,
   "items": [
     {
       "id": "…", "fileName": "ghi-am-phong-29-10-2026-0900.wav", "contentType": "audio/wav",
@@ -84,6 +85,9 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
 được, không xoá được (`409 MSG364`). `source`: `Upload` | `BrowserCapture` (mic phòng). Mới nhất lên đầu.
 `takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. `canRecord`: người gọi bật được mic phòng ngay lúc
 này (Thư ký, cuộc họp `InProgress`, có phòng). `canClose`: Thư ký lưu hộ được lượt đang mở.
+`maxUploadBytes`: tệp lớn nhất `POST …/recordings` nhận (`Recordings:MaxUploadMegabytes` tính ra byte). Trình duyệt kiểm
+trước khi gửi và báo `MSG293` ngay: quá giới hạn thì server trả `413` khi tệp còn đang lên rồi cắt kết nối, nên trình
+duyệt thường chỉ thấy lỗi mạng (QA round 1, REC_FT27). Kết nối đứt khi đang gửi tệp quá giới hạn cũng được báo là `MSG293`.
 `durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật. Bản ghi mic phòng tính độ
 dài từ số byte. Không trả đường dẫn lưu trữ.
 

@@ -19,6 +19,10 @@ public sealed class RecordingOptions
     /// <summary>Three hours of mp3 or one of uncompressed 16 kHz WAV fit with room to spare.</summary>
     public int MaxUploadMegabytes { get; set; } = 300;
 
+    /// <summary><see cref="MaxUploadMegabytes"/> in bytes: what the server refuses past, and what the list tells the
+    /// browser so it refuses a bigger file before sending it.</summary>
+    public long MaxUploadBytes => MaxUploadMegabytes * 1024L * 1024;
+
     /// <summary>How long a signed playback URL works. Covers listening through a long meeting without re-signing.</summary>
     public int PlaybackUrlMinutes { get; set; } = 120;
 

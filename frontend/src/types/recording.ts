@@ -49,6 +49,8 @@ export interface RecordingList {
   canUpload: boolean
   /** The caller may switch the room mic on now: the meeting's Secretary, while it runs in a room. */
   canRecord: boolean
+  /** The largest file the upload takes (`Recordings:MaxUploadMegabytes`); checked before sending (MSG293). */
+  maxUploadBytes: number
   items: Recording[]
 }
 
