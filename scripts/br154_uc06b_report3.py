@@ -8,7 +8,8 @@ One-off script, kept so the change can be reviewed and rerun; it refuses a DOCX 
   leaves only a trace in the audit log. BR-001…BR-153 keep their numbers (ADR-0079).
 * BR-153 (old BR-468) keeps the visibility rule; "combined recordings add no hours" moves to BR-151, the formulas.
 * UC-54c (old UC-45c) states the four matching thresholds of old BR-467 (`TranscriptCarry`).
-* UC-06b is written as the code saves it: Full Name, Email and System Role in one save (`UserService.UpdateAsync`).
+* UC-06b is written as the code saves it: Full Name, Email and System Role in one save (`UserService.UpdateAsync`),
+  with EX-3 (MSG12) when the save would leave no active administrator.
 Every replacement must apply exactly once, or the script stops without writing.
 """
 
@@ -93,8 +94,9 @@ REPLACE = [
     # UC-54c Normal Flow step 5: the matching thresholds of old BR-467 (TranscriptCarry).
     ("accepted notice version 1.2 or later. (BR-120, BR-123, BR-121)",
      "accepted notice version 1.2 or later. (BR-120, BR-123, BR-121) When the transcript is made again, a hand-assigned name "
-     "goes with a new voice that shares, within what the old voice spoke, at least 60% of the new voice's words and at least "
-     "2 seconds, leaving out sentences moved by hand, and wins over a name the system filled in; a corrected text or a moved "
+     "goes with a new voice when the old voice covers at least 60% of the new voice's speaking time within the audio the "
+     "earlier run heard, and at least 2 seconds of it, leaving out sentences moved by hand; it wins over a name the system "
+     "filled in. A corrected text or a moved "
      "sentence goes with the new sentence of the same take when both ends differ by no more than 500 ms or the overlap reaches "
      "at least 80% of the longer sentence; a sentence once corrected or moved is always carried, however short. (BR-125)"),
     # UC-54c POST-2: the log-only part is now BR-154.
@@ -112,7 +114,9 @@ REPLACE = [
      "when the System Role changes, the rules of UC-08, so that at least one active account keeps the User administration "
      "permission. (BR-005)"),
     ("6. The system updates the user account information.",
-     "6. The system saves the Full Name, Email and System Role together; a new role takes effect from the user's next action. (BR-008)"),
+     "6. The system saves the Full Name, Email and System Role together. A new role takes effect from the user's next action "
+     "without ending the session, and the user is notified (BR-008); a changed Email ends every active session of the account "
+     "instead, and no notification is sent."),
 ]
 counts = [0] * len(REPLACE)
 for t in body.iter(q("t")):
@@ -129,6 +133,41 @@ for t in body.iter(q("t")):
 bad = [REPLACE[i][0][:60] for i, c in enumerate(counts) if c != 1]
 if bad:
     sys.exit("Not applied exactly once (the text has changed or sits across runs):\n  " + "\n  ".join(bad))
+
+# UC-06b EX-3: the save would leave no active administrator (StatusChangeNotAllowed -> MSG12, as UC-08 EX-2).
+EX3 = [
+    "EX-3: Change would remove the last active administrator",
+    "1. At Step 5 of the Main Flow, the system determines that, after the role change, no active account would hold the "
+    "User administration permission.",
+    "2. Nothing is saved; the user keeps the previous role.",
+    "3. The system displays MSG12 – “Unable to change the status of this user account.”",
+    "4. The use case ends unsuccessfully.",
+]
+uc06b = next(el for el in body.iterchildren() if el.tag == q("p") and re.search(r"UC-06b – Update User Account", text(el)))
+tbl = uc06b.getnext()
+while tbl.tag != q("tbl"):
+    tbl = tbl.getnext()
+ex_cell = next(tr for tr, cells in cell_rows(tbl) if cells[0] == "Exception Flows").findall(q("tc"))[1]
+assert "EX-3" not in text(ex_cell)
+# The cell is one paragraph whose lines are split by <w:br/>: append each line as a break plus a run, copying the
+# formatting of the EX-2 title run for the title and of an ordinary line for the steps.
+runs = list(ex_cell.iter(q("r")))
+title_run = next(r for r in runs if text(r).startswith("EX-2"))
+step_run = next(r for r in runs if text(r).startswith("1. "))
+para = title_run.getparent()
+while para.tag != q("p"):
+    para = para.getparent()
+for line in EX3:
+    for source, content in ((step_run, None), (title_run if line.startswith("EX-3") else step_run, line)):
+        r = etree.SubElement(para, q("r"))
+        if source.find(q("rPr")) is not None:
+            r.append(copy.deepcopy(source.find(q("rPr"))))
+        if content is None:
+            etree.SubElement(r, q("br"))
+        else:
+            t = etree.SubElement(r, q("t"))
+            t.text = content
+            t.set(XMLSPACE, "preserve")
 
 # Change Log
 changelog = None
@@ -147,7 +186,7 @@ for x in row.iter():
         x.set(PARAID, f"{random.randint(0x10000000, 0x7FFFFFFE):08X}")
 for tc, value in zip(row.findall(q("tc")), (
         "24/11/2026", "M, A", "HuyNQ",
-        "[decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built.")):
+        "[decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12).")):
     set_cell(tc, value)
 last.addnext(row)
 
