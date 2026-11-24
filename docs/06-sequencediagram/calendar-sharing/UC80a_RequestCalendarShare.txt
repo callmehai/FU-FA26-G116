@@ -1,6 +1,6 @@
 title UC-80a - Request Calendar Share
 
-actor "Meeting Organizer" as Requester
+actor "Member" as Requester
 actor "User" as Owner
 boundary "Calendar Sharing Page" as SharingPage
 control ":Calendar Sharing Controller" as SharingController
@@ -29,9 +29,9 @@ UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
 alt Requester has no right to create meetings - EX-1
-    SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
-    SharingController-->SharingPage: MSG448 - Only a Meeting Organizer can do this.
-    SharingPage-->Requester: MSG448 - Only a Meeting Organizer can do this.
+    SharingService-->SharingController: MSG448 - Only a Member can do this.
+    SharingController-->SharingPage: MSG448 - Only a Member can do this.
+    SharingPage-->Requester: MSG448 - Only a Member can do this.
 else Requester is verified
     SharingService->ShareRepository: Check no Pending or Effective share
     activate ShareRepository

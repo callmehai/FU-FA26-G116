@@ -1,6 +1,6 @@
 title UC-18 - Review Meeting Approval
 
-actor "Meeting Approver" as Approver
+actor "Approver" as Approver
 boundary "Meeting Approval Page" as ApprovalPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService

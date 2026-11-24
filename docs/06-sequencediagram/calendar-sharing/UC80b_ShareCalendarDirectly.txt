@@ -1,7 +1,7 @@
 title UC-80b - Share Calendar Directly
 
 actor "User" as Owner
-actor "Meeting Organizer" as Recipient
+actor "Member" as Recipient
 boundary "Calendar Sharing Page" as SharingPage
 control ":Calendar Sharing Controller" as SharingController
 control ":Calendar Sharing Service" as SharingService

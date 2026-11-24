@@ -1,6 +1,6 @@
 title UC-80d - Change Calendar Share
 
-actor "Meeting Organizer" as Viewer
+actor "Member" as Viewer
 actor "User" as Owner
 boundary "Calendar Sharing Page" as SharingPage
 control ":Calendar Sharing Controller" as SharingController

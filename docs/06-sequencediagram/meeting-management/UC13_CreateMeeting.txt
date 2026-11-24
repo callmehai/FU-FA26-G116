@@ -1,6 +1,6 @@
 title UC-13 - Create Meeting
 
-actor "Meeting Organizer" as Organizer
+actor "Member" as Organizer
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService

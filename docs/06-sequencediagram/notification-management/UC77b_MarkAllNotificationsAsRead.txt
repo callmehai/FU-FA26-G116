@@ -1,6 +1,6 @@
 title UC-77b - Mark All Notifications as Read
 
-actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+actor "Member / Approver / System Admin / Chair / Secretary / Participant" as User
 boundary "Notification Panel" as NotificationPanel
 control ":Notification Controller" as NotificationController
 control ":Notification Service" as NotificationService

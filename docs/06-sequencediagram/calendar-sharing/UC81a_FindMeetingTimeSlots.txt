@@ -1,6 +1,6 @@
 title UC-81a - Find Meeting Time Slots
 
-actor "Meeting Organizer" as Actor
+actor "Member" as Actor
 boundary "Find Meeting Time Page" as FindPage
 control ":Meeting Time Controller" as TimeController
 control ":Meeting Time Service" as TimeService
@@ -23,10 +23,10 @@ alt Search parameters are invalid - EX-1
     FindPage-->Actor: MSG444 - The meeting-time search is invalid. Check the highlighted fields.
 else Parameters are valid
     alt Actor has no right to create meetings - EX-2
-        TimeService-->TimeController: MSG448 - Only a Meeting Organizer can do this.
-        TimeController-->FindPage: MSG448 - Only a Meeting Organizer can do this.
-        FindPage-->Actor: MSG448 - Only a Meeting Organizer can do this.
-    else Actor is a Meeting Organizer
+        TimeService-->TimeController: MSG448 - Only a Member can do this.
+        TimeController-->FindPage: MSG448 - Only a Member can do this.
+        FindPage-->Actor: MSG448 - Only a Member can do this.
+    else Actor is a Member
         TimeService->ShareRepository: Load Effective shares of invitees
         activate ShareRepository
         ShareRepository->Database: Retrieve shares

@@ -1,6 +1,6 @@
 title UC-80e - Withdraw or End Calendar Share
 
-actor "Meeting Organizer" as Actor
+actor "Member" as Actor
 actor "User" as Other
 boundary "Calendar Sharing Page" as SharingPage
 control ":Calendar Sharing Controller" as SharingController
