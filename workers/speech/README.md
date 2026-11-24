@@ -540,6 +540,9 @@ khung hai người nói chồng nhau, giọng nửa người này nửa người
 - Riêng model (cùng đoạn cắt): VIVOS test 4,9% → 4,7%, VietMed (nói tự nhiên, 573 câu) 24,0% → 23,6%, VietMed phát qua
   phòng xa 23,0% → 22,1%, far-test 11,6% → 10,9%. Hai model tiếng Việt khác của sherpa-onnx (zipformer-vi 2025-04-20 huấn
   luyện trên 70 nghìn giờ, Zipformer 30M) ngang hoặc tệ hơn Gipformer int8.
+- Tốc độ cả lượt (dấu câu, viết số, từ khoá; M1, 4 luồng, process chạy nền): 50 phút RTF 0,133 → 0,137, 8 phút 0,139 →
+  0,153; bộ nhớ đỉnh 1,49 → 1,63 GB. Bước chuyển chữ chậm hơn khoảng 45%, nhưng ít giọng hơn thì các bước theo giọng nhanh
+  hơn.
 
 ## Hiệu năng
 

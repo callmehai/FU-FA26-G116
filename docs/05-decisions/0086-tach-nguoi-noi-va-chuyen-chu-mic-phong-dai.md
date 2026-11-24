@@ -103,7 +103,11 @@ Tốc độ và bộ nhớ: xem *Hệ quả*.
 - Tệp model nặng hơn khoảng 190 MB (Gipformer 73 MB → 270 MB), image Docker của worker khoảng 1,15 GB. Máy Mac chạy worker
   chính phải chạy lại `fetch_models.py` sau khi kéo code (ADR-0081: worker tự kiểm mã băm và từ chối chạy nếu thiếu tệp);
   server build lại image như mọi lần đổi `workers/speech/`.
-- Tốc độ và bộ nhớ: TODO
+- Tốc độ và bộ nhớ, cả quy trình như worker chạy (dấu câu, viết số, từ khoá ưu tiên), MacBook M1, 4 luồng, process chạy
+  nền: cuộc họp 50 phút 399 s → 412 s (RTF 0,133 → 0,137), cuộc họp 8 phút 69 s → 76 s (0,139 → 0,153); bộ nhớ đỉnh của
+  process 1,49 GB → 1,63 GB. Bước chuyển chữ chậm hơn khoảng 45%, nhưng ít giọng hơn thì bước vector giọng và gộp lần hai
+  nhanh hơn, nên cả lượt chỉ chậm 3–10%. Server 8 GB (ADR-0082) và Mac 16 GB đủ chỗ cho hai process con thêm mỗi process
+  khoảng 150–200 MB.
 - Chưa đo trên bản ghi thật vì không có đáp án; cần chạy `meeting_bench.py` (chế độ không đáp án: chỉ đếm giọng) trên bản ghi
   mic phòng 21/11, 23/11, 24/11 trước và sau khi gộp, và xem lại sau buổi họp thật kế tiếp.
 

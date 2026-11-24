@@ -36,8 +36,8 @@ SAMPLE_RATE = 16000
 # The recogniser's files (models.manifest): Gipformer as published, in fp32, not its int8 copy (ADR-0085). The int8
 # copy loses words where the speech is far and noisy: on synthetic far-field meetings WER 11.8% → 11.1% and 8.2% → 7.6%,
 # on spontaneous speech played through a far room (VietMed) 23.0% → 22.1%, on read speech 4.9% → 4.7%. It costs about
-# 45% more time in the recogniser (some 15% of a whole run), a 190 MB larger file and about 200 MB more memory per
-# process.
+# 45% more time in the recogniser (a whole run on a Mac M1: RTF 0.133 → 0.137 on 50 minutes, 0.139 → 0.153 on 8), a
+# 190 MB larger file and about 150 MB more memory per process (peak 1.49 → 1.63 GB).
 ASR_FILES = {part: f"gipformer/{part}.onnx" for part in ("encoder", "decoder", "joiner")}
 # Longest piece handed to the recogniser at once; the VAD cuts speech at this length, and a
 # longer turn is split again. The transducer degrades and memory grows on very long inputs.
