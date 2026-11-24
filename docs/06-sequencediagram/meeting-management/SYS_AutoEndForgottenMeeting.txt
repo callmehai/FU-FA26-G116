@@ -11,7 +11,7 @@ database ":Database" as Database
 
 System->Worker: Sweep every 15 minutes for overdue meetings
 activate Worker
-Worker->OverdueService: End meetings left running past the 24-hour grace (BR-460)
+Worker->OverdueService: End meetings left running past the 24-hour grace (BR-027)
 activate OverdueService
 
 OverdueService->MeetingRepository: List InProgress meetings past the grace
@@ -30,7 +30,7 @@ else At least one meeting left running
     loop Each overrun meeting, in its own transaction
         OverdueService->LifecycleService: End one overrun meeting
         activate LifecycleService
-        LifecycleService->MeetingRepository: Re-check the meeting under its row lock (BR-460)
+        LifecycleService->MeetingRepository: Re-check the meeting under its row lock (BR-027)
         activate MeetingRepository
         MeetingRepository->Database: Retrieve meeting with lock
         activate Database
@@ -43,7 +43,7 @@ else At least one meeting left running
             LifecycleService-->OverdueService: Not ended
 
         else Meeting still overruns
-            LifecycleService->AgendaItemRepository: Complete the InProgress Agenda Item, if any (BR-159)
+            LifecycleService->AgendaItemRepository: Complete the InProgress Agenda Item, if any (BR-026)
             activate AgendaItemRepository
             AgendaItemRepository->Database: Save Agenda Item Done with actual end time
             activate Database
@@ -52,7 +52,7 @@ else At least one meeting left running
             AgendaItemRepository-->LifecycleService: Agenda Item completed
             deactivate AgendaItemRepository
 
-            LifecycleService->MeetingRepository: In one transaction: delete Draft Votes not yet opened\n(with one audit log entry for each deleted Draft Vote); set Meeting Ended,\nrecord Actual End Time and lifecycle history with action AutoEnd and actor System (BR-189, BR-460)
+            LifecycleService->MeetingRepository: In one transaction: delete Draft Votes not yet opened\n(with one audit log entry for each deleted Draft Vote); set Meeting Ended,\nrecord Actual End Time and lifecycle history with action AutoEnd and actor System (BR-086, BR-087, BR-027)
             activate MeetingRepository
             MeetingRepository->Database: Save Meeting and history atomically
             activate Database

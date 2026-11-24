@@ -1,0 +1,60 @@
+title UC-74 - Return Meeting Minutes for Revision
+
+actor "Chair" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Minutes Controller" as MinutesController
+control ":Minutes Service" as MinutesService
+participant ":Minutes Repository" as MinutesRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Select Return
+activate MeetingPage
+
+MeetingPage->MinutesController: Return meeting minutes for revision
+activate MinutesController
+MinutesController->MinutesService: returnMinutes(meetingId, actorId, reason)
+activate MinutesService
+
+MinutesService->MinutesRepository: Load the revision
+activate MinutesRepository
+MinutesRepository->Database: Retrieve revision
+activate Database
+Database-->MinutesRepository: Revision
+deactivate Database
+MinutesRepository-->MinutesService: Revision
+deactivate MinutesRepository
+
+alt Actor is the current Secretary, not the Chair - EX-1
+    MinutesService-->MinutesController: MSG428 - Only the Chair may approve or return the minutes.
+    MinutesController-->MeetingPage: MSG428 - Only the Chair may approve or return the minutes.
+    MeetingPage-->Actor: MSG428 - Only the Chair may approve or return the minutes.
+else Actor is the Chair
+    alt Minutes are not waiting for approval - EX-2
+        MinutesService-->MinutesController: MSG429 - These minutes are not waiting for approval.
+        MinutesController-->MeetingPage: MSG429 - These minutes are not waiting for approval.
+        MeetingPage-->Actor: MSG429 - These minutes are not waiting for approval.
+    else Minutes are waiting for approval
+        alt Reason is missing or too long - EX-3
+            MinutesService-->MinutesController: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
+            MinutesController-->MeetingPage: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
+            MeetingPage-->Actor: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
+        else Reason is valid
+            MinutesService->MinutesRepository: Mark revision returned
+            activate MinutesRepository
+            MinutesRepository->Database: Update revision and notification
+            activate Database
+            Database-->MinutesRepository: Updated
+            deactivate Database
+            MinutesRepository-->MinutesService: Updated
+            deactivate MinutesRepository
+
+            MinutesService-->MinutesController: MSG430 - Minutes returned to the Secretary.
+            MinutesController-->MeetingPage: MSG430 - Minutes returned to the Secretary.
+            MeetingPage-->Actor: MSG430 - Minutes returned to the Secretary.
+        end
+    end
+end
+
+deactivate MinutesService
+deactivate MinutesController
+deactivate MeetingPage

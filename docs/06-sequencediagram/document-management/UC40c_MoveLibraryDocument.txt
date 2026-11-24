@@ -1,0 +1,67 @@
+title UC-40c - Move Document to Folder
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":Folder Repository" as FolderRepository
+participant ":Document Repository" as DocumentRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Confirm the destination, an owned folder or the library root (AF-1)
+activate LibraryScreen
+
+LibraryScreen->DocumentController: Move the personal-library document to the destination folder or the library root
+activate DocumentController
+
+DocumentController->DocumentService: moveLibraryDocument(userId, documentId, destinationFolderId)
+activate DocumentService
+
+DocumentService->DocumentRepository: Get the selected document owned by the actor
+activate DocumentRepository
+DocumentRepository->Database: Retrieve the document by id and owner
+activate Database
+Database-->DocumentRepository: Document / Not found
+deactivate Database
+DocumentRepository-->DocumentService: Document / Not found
+deactivate DocumentRepository
+
+opt A destination folder is selected
+    DocumentService->FolderRepository: Get the destination folder owned by the actor
+    activate FolderRepository
+    FolderRepository->Database: Retrieve the folder by id and owner
+    activate Database
+    Database-->FolderRepository: Folder / Not found
+    deactivate Database
+    FolderRepository-->DocumentService: Folder / Not found
+    deactivate FolderRepository
+end
+
+alt Document is missing or no longer belongs to the actor - EX-1
+    DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+    DocumentController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Destination is missing or does not belong to the actor - EX-2
+    DocumentService-->DocumentController: MSG179 - The selected destination folder is not available in your personal library.
+    DocumentController-->LibraryScreen: MSG179 - The selected destination folder is not available in your personal library.
+    LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
+
+else Document and destination are available
+    DocumentService->DocumentRepository: Move only the library document to the destination folder or the library root
+    activate DocumentRepository
+    DocumentRepository->Database: Update the folder of the library document
+    activate Database
+    Database-->DocumentRepository: Updated
+    deactivate Database
+    DocumentRepository-->DocumentService: Moved document
+    deactivate DocumentRepository
+
+    DocumentService-->DocumentController: Moved document
+    DocumentController-->LibraryScreen: Moved document
+    LibraryScreen-->Actor: MSG185 - Document moved successfully.
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate LibraryScreen

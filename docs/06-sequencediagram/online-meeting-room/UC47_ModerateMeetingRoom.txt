@@ -1,0 +1,57 @@
+title UC-47 - Moderate Meeting Room
+
+actor "Chair" as Actor
+boundary "Online Meeting Room Page" as Page
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Room Service" as RoomProvider
+database ":Database" as Database
+
+Actor->Page: Choose Mute on a person whose microphone is on
+activate Page
+
+Page->RoomController: Mute the selected person's microphone
+activate RoomController
+
+RoomController->RoomService: muteParticipant(meetingId, chairId, targetUserId)
+activate RoomService
+
+RoomService->MeetingRepository: Read meeting status and current chair
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and chair
+activate Database
+Database-->MeetingRepository: Meeting and chair
+deactivate Database
+MeetingRepository-->RoomService: Meeting and chair
+deactivate MeetingRepository
+
+alt Actor is no longer the chair - EX-1
+    RoomService-->RoomController: MSG123 - Only the Chair can mute another person's microphone.
+    RoomController-->Page: MSG123 - Only the Chair can mute another person's microphone.
+    Page-->Actor: MSG123 - Only the Chair can mute another person's microphone.
+
+else Meeting is no longer in progress - EX-2
+    RoomService-->RoomController: MSG117 - The meeting room opens only while the meeting is in progress.
+    RoomController-->Page: MSG117 - The meeting room opens only while the meeting is in progress.
+    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.
+
+else Target is no longer in the room or has no microphone on - EX-3
+    RoomService-->RoomController: MSG282 - This person is no longer in the room or has no microphone on.
+    RoomController-->Page: MSG282 - This person is no longer in the room or has no microphone on.
+    Page-->Actor: MSG282 - This person is no longer in the room or has no microphone on.
+
+else Eligible
+    RoomService->RoomProvider: Mute the target's microphone for everyone (BR-102)
+    activate RoomProvider
+    RoomProvider-->RoomService: Muted
+    deactivate RoomProvider
+
+    RoomService-->RoomController: Microphone muted
+    RoomController-->Page: Microphone muted
+    Page-->Actor: MSG342 - Muted the microphone of {name}.
+end
+
+deactivate RoomService
+deactivate RoomController
+deactivate Page

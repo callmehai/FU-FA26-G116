@@ -35,7 +35,7 @@ Service-->Controller: MSG379 - Too many codes requested. Try again later or cont
 Controller-->Page: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
 Page-->Guest: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
 else Code request is allowed
-Service->Repository: Prepare one-time code for the invited email only (BR-153)
+Service->Repository: Prepare one-time code for the invited email only (BR-053, BR-054)
 Repository->Database: Save verification challenge
 Database-->Repository: Saved
 Repository-->Service: Challenge saved
@@ -52,7 +52,7 @@ Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the 
 Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 else Code and invitation are valid
-Service->Repository: Consume code, open a Meeting-scoped Guest session valid for 12 hours (BR-155)
+Service->Repository: Consume code, open a Meeting-scoped Guest session valid for 12 hours (BR-053, BR-054)
 Repository->Database: Save consumed code, Guest session and audit entry
 Database-->Repository: Verification saved
 Repository-->Service: Verification result
@@ -71,7 +71,7 @@ Service->Repository: Save display name and job title on the invitation
 Repository->Database: Save self-declared display information
 Database-->Repository: Saved
 Repository-->Service: Saved
-Service-->Controller: Invited Meeting and Member participation actions only (BR-181)
+Service-->Controller: Invited Meeting and Member participation actions only (BR-055)
 Controller-->Page: Display invited Meeting
 Page-->Guest: MSG376 - Display information saved; invited Meeting available
 opt Guest chooses Thoát [Sign out] - AF-3

@@ -294,7 +294,7 @@ nên tên/tham số là **PROPOSED**. Return, SQL I/O, activation và `alt` khô
 Dựng 2 class diagram của FE-09 và FE-10, đối chiếu với code `main` (9442794) ngày 30/10/2026, và 24 sequence của
 [meeting-recording](../06-sequencediagram/meeting-recording/README.md),
 [transcription-voice-id](../06-sequencediagram/transcription-voice-id/README.md) và
-[`UC39a_RecordSpeechWhileMicrophoneOn`](../06-sequencediagram/online-meeting-room/UC39a_RecordSpeechWhileMicrophoneOn.txt):
+[`UC45a_RecordSpeechWhileMicrophoneOn`](../06-sequencediagram/online-meeting-room/UC45a_RecordSpeechWhileMicrophoneOn.txt):
 `feature-09-meeting-recording-class-diagram.drawio` (+ `.drawio.png`) và
 `feature-10-transcription-voice-id-class-diagram.drawio` (+ `.drawio.png`). Kế hoạch:
 [plan 19 §8](../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md).
@@ -527,21 +527,21 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-06c / FE-02 | [UC06c_DeactivateReactivateUserAccount.txt](../06-sequencediagram/user-management/UC06c_DeactivateReactivateUserAccount.txt) | `UserService → changeStatus; SessionService → endActiveSessions` | ≈ đổi trạng thái; DCD-02/05 |
 | UC-07 / FE-02 | [UC07_ResetUserPassword.txt](../06-sequencediagram/user-management/UC07_ResetUserPassword.txt) | `UserService → requestPasswordReset` | Trùng tên; token store/email/audit có collaborator |
 | UC-08 / FE-02 | [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.txt) | `UserService → assignSystemRole` | Trùng tên; DCD-05 |
-| UC-10 / FE-03 | [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.txt) | `RolePermissionService → getRolePermissionMatrix` | ≈ đọc; DCD-10 |
-| UC-11 / FE-03 | [UC11_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt) | `RolePermissionService → updateRolePermissions` | ≈ sửa; DCD-08/10 |
-| UC-12a / FE-03 | [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt) | `RoleService → createRole` | ≈ tạo; DCD-10 |
-| UC-12b / FE-03 | [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/UC12b_UpdateRole.txt) | `RoleService → updateRole` | ≈ sửa; DCD-10 |
-| UC-12c / FE-03 | [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/UC12c_DeleteRole.txt) | `RoleService → deleteRole` | ≈ xóa; DCD-10 |
-| UC-13 / FE-03 | [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt) | `AuditLogEndpoints (AuditLogQueryParser) → parseQuery / getAuditLog; AuditLogQueryService → GetPageAsync` | Sửa 11/11/2026: bỏ `AuditLogRepository`, đọc `Database` trực tiếp (BA Final Review SCRUM-16, note 42) |
-| UC-14 / FE-04 | [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC14_CreateMeeting.txt) | `MeetingService → createMeeting` | ≈ tạo |
-| UC-15 / FE-04 | [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC15_UpdateMeeting.txt) | `MeetingService → updateMeeting / rescheduleMeeting` | ≈ cập nhật lịch |
-| UC-16 / FE-04 | [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingDetails.txt) | `MeetingService → getMeetingDetails` | Trùng tên |
-| UC-17 / FE-04 | [UC17_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC17_ViewMeetingList.txt) | `MeetingService → getMeetingList` | Trùng tên |
-| UC-18 / FE-04 | [UC18_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC18_SubmitMeetingForApproval.txt) | `MeetingService → prepareMeetingSubmission / submitMeetingForApproval` | Trùng tên |
-| UC-19 / FE-04 | [UC19_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC19_ReviewMeetingApproval.txt) | `MeetingService → reviewMeetingApproval` | Trùng tên |
-| UC-20 / FE-04 | [UC20_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC20_PublishMeeting.txt) | `MeetingService → publishMeeting` | Trùng tên; notification/invitation có collaborator |
-| UC-21 / FE-04 | [UC21_StartMeeting.txt](../06-sequencediagram/meeting-management/UC21_StartMeeting.txt) | `MeetingService → startMeeting` | Trùng tên |
-| UC-22 / FE-04 | [UC22_EndMeeting.txt](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt) | `MeetingService → endMeeting` | Trùng tên; room/repository có collaborator |
+| UC-10 / FE-03 | [UC09_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC09_ViewRolePermissionMatrix.txt) | `RolePermissionService → getRolePermissionMatrix` | ≈ đọc; DCD-10 |
+| UC-11 / FE-03 | [UC10_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC10_ConfigureRolePermissions.txt) | `RolePermissionService → updateRolePermissions` | ≈ sửa; DCD-08/10 |
+| UC-12a / FE-03 | [UC11a_CreateRole.txt](../06-sequencediagram/role-management/UC11a_CreateRole.txt) | `RoleService → createRole` | ≈ tạo; DCD-10 |
+| UC-12b / FE-03 | [UC11b_UpdateRole.txt](../06-sequencediagram/role-management/UC11b_UpdateRole.txt) | `RoleService → updateRole` | ≈ sửa; DCD-10 |
+| UC-12c / FE-03 | [UC11c_DeleteRole.txt](../06-sequencediagram/role-management/UC11c_DeleteRole.txt) | `RoleService → deleteRole` | ≈ xóa; DCD-10 |
+| UC-13 / FE-03 | [UC12_ViewAuditLog.txt](../06-sequencediagram/role-management/UC12_ViewAuditLog.txt) | `AuditLogEndpoints (AuditLogQueryParser) → parseQuery / getAuditLog; AuditLogQueryService → GetPageAsync` | Sửa 11/11/2026: bỏ `AuditLogRepository`, đọc `Database` trực tiếp (BA Final Review SCRUM-16, note 42) |
+| UC-14 / FE-04 | [UC13_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC13_CreateMeeting.txt) | `MeetingService → createMeeting` | ≈ tạo |
+| UC-15 / FE-04 | [UC14_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC14_UpdateMeeting.txt) | `MeetingService → updateMeeting / rescheduleMeeting` | ≈ cập nhật lịch |
+| UC-16 / FE-04 | [UC15_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC15_ViewMeetingDetails.txt) | `MeetingService → getMeetingDetails` | Trùng tên |
+| UC-17 / FE-04 | [UC16_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingList.txt) | `MeetingService → getMeetingList` | Trùng tên |
+| UC-18 / FE-04 | [UC17_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC17_SubmitMeetingForApproval.txt) | `MeetingService → prepareMeetingSubmission / submitMeetingForApproval` | Trùng tên |
+| UC-19 / FE-04 | [UC18_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC18_ReviewMeetingApproval.txt) | `MeetingService → reviewMeetingApproval` | Trùng tên |
+| UC-20 / FE-04 | [UC19_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC19_PublishMeeting.txt) | `MeetingService → publishMeeting` | Trùng tên; notification/invitation có collaborator |
+| UC-21 / FE-04 | [UC20_StartMeeting.txt](../06-sequencediagram/meeting-management/UC20_StartMeeting.txt) | `MeetingService → startMeeting` | Trùng tên |
+| UC-22 / FE-04 | [UC21_EndMeeting.txt](../06-sequencediagram/meeting-management/UC21_EndMeeting.txt) | `MeetingService → endMeeting` | Trùng tên; room/repository có collaborator |
 | UC-23a / FE-05 | [UC23a_CreateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23a_CreateAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu createAgendaItem; DCD-06 |
 | UC-23b / FE-05 | [UC23b_UpdateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23b_UpdateAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu updateAgendaItem; DCD-06 |
 | UC-23c / FE-05 | [UC23c_DeleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC23c_DeleteAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu deleteAgendaItem; DCD-06 |
@@ -549,17 +549,17 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-24 / FE-05 | [UC24_SetCurrentAgendaItem.txt](../06-sequencediagram/agenda-management/UC24_SetCurrentAgendaItem.txt) | `AgendaService → setCurrentAgendaItem` | Trùng tên; chữ ký thiếu type |
 | UC-25 / FE-05 | [UC25_CompleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC25_CompleteAgendaItem.txt) | `AgendaService → completeAgendaItem` | Trùng tên; chữ ký thiếu type |
 | UC-26 / FE-05 | [UC26_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-management/UC26_ViewMeetingAgenda.txt) | `AgendaService → getMeetingAgenda; MeetingAccessPolicy → canViewMeeting` | Trùng tên service; ≈ policy; DCD-06 |
-| UC-27 / FE-06 | [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC27_ViewMeetingParticipants.txt) | `MeetingParticipantService → listParticipants` | ≈ viewMeetingParticipants; DCD-07 |
-| UC-28a / FE-06 | [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu addMeetingParticipants riêng; DCD-07 |
-| UC-28b / FE-06 | [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC28b_AssignChangeMeetingRole.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | ≈ manageMeetingRoleAndPermissions; DCD-07 |
-| UC-28c / FE-06 | [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28c_RemoveMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu removeMeetingParticipant riêng; DCD-07 |
-| UC-29 / FE-06 | [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC29_RespondToMeetingInvitation.txt) | `MeetingParticipantService → respondToInvitation` | ≈ respondToMeetingInvitation; DCD-07 |
-| UC-30 / FE-06 | [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC30_ViewParticipantResponseStatus.txt) | `MeetingParticipantService → getResponseStatus` | ≈ viewInvitationResponses; DCD-07 |
-| UC-31 / FE-06 | [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC31_RecordAttendance.txt) | `MeetingParticipantService → recordMeetingAttendance` | Trùng tên; DCD-12 |
-| UC-66 / FE-13 | [UC66_ViewNotifications.txt](../06-sequencediagram/notification-management/UC66_ViewNotifications.txt) | `NotificationService → getNotifications / getUnreadCount` | ≈ đọc; DCD-10/13 |
-| UC-67a / FE-13 | [UC67a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC67a_MarkNotificationAsRead.txt) | `NotificationService → markAsRead` | ≈ đánh dấu đã đọc; DCD-10 |
-| UC-67b / FE-13 | [UC67b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC67b_MarkAllNotificationsAsRead.txt) | `NotificationService → markAllAsRead` | ≈ đánh dấu tất cả; DCD-10 |
-| UC-68 / FE-13 | [UC68_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC68_OpenNotificationTarget.txt) | `NotificationService → openTarget` | ≈ điều hướng; DCD-10/13 |
+| UC-27 / FE-06 | [UC29_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC29_ViewMeetingParticipants.txt) | `MeetingParticipantService → listParticipants` | ≈ viewMeetingParticipants; DCD-07 |
+| UC-28a / FE-06 | [UC30a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC30a_AddMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu addMeetingParticipants riêng; DCD-07 |
+| UC-28b / FE-06 | [UC30b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC30b_AssignChangeMeetingRole.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | ≈ manageMeetingRoleAndPermissions; DCD-07 |
+| UC-28c / FE-06 | [UC30c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC30c_RemoveMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu removeMeetingParticipant riêng; DCD-07 |
+| UC-29 / FE-06 | [UC31_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC31_RespondToMeetingInvitation.txt) | `MeetingParticipantService → respondToInvitation` | ≈ respondToMeetingInvitation; DCD-07 |
+| UC-30 / FE-06 | [UC32_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC32_ViewParticipantResponseStatus.txt) | `MeetingParticipantService → getResponseStatus` | ≈ viewInvitationResponses; DCD-07 |
+| UC-31 / FE-06 | [UC33_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC33_RecordAttendance.txt) | `MeetingParticipantService → recordMeetingAttendance` | Trùng tên; DCD-12 |
+| UC-66 / FE-13 | [UC76_ViewNotifications.txt](../06-sequencediagram/notification-management/UC76_ViewNotifications.txt) | `NotificationService → getNotifications / getUnreadCount` | ≈ đọc; DCD-10/13 |
+| UC-67a / FE-13 | [UC77a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC77a_MarkNotificationAsRead.txt) | `NotificationService → markAsRead` | ≈ đánh dấu đã đọc; DCD-10 |
+| UC-67b / FE-13 | [UC77b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC77b_MarkAllNotificationsAsRead.txt) | `NotificationService → markAllAsRead` | ≈ đánh dấu tất cả; DCD-10 |
+| UC-68 / FE-13 | [UC78_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC78_OpenNotificationTarget.txt) | `NotificationService → openTarget` | ≈ điều hướng; DCD-10/13 |
 
 <a id="phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server"></a>
 

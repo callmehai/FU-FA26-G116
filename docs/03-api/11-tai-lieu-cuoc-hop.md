@@ -4,7 +4,7 @@ UC-36a AF-1 *Upload files from the computer* (SCRUM-107); UC-35a *View Meeting D
 Meeting Document* ở [mục SCRUM-21](#scrum-21--xem-và-tải-tài-liệu). Byte lưu trên kho tệp S3 tự host (SeaweedFS), mọi lượt tải lên đi qua
 backend ([deploy/README.md §9](../../deploy/README.md)); mô hình dữ liệu theo
 [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) và
-[ERD §2](../02-design/02-erd.md). Sequence: [UC33a_UploadDocumentsToMeeting](../06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting.txt).
+[ERD §2](../02-design/02-erd.md). Sequence: [UC36a_UploadDocumentsToMeeting](../06-sequencediagram/document-management/UC36a_UploadDocumentsToMeeting.txt).
 
 Chọn từ kho, gắn / gỡ mục nghị sự, gỡ khỏi cuộc họp: [mục SCRUM-58](#scrum-58--gắn-và-gỡ-tài-liệu-của-cuộc-họp). Góp ý: [mục SCRUM-23](#scrum-23--góp-ý-trên-tài-liệu). Kho cá nhân (thư mục, tải vào kho): [14-kho-tai-lieu-ca-nhan.md](14-kho-tai-lieu-ca-nhan.md).
 
@@ -116,8 +116,8 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 
 ## SCRUM-21 · Xem và tải tài liệu
 
-UC-35a, UC-35b. Sequence: [UC32a_ViewMeetingDocuments](../06-sequencediagram/document-management/UC32a_ViewMeetingDocuments.txt),
-[UC32c_PreviewMeetingDocument](../06-sequencediagram/document-management/UC32c_PreviewMeetingDocument.txt).
+UC-35a, UC-35b. Sequence: [UC35a_ViewMeetingDocuments](../06-sequencediagram/document-management/UC35a_ViewMeetingDocuments.txt),
+[UC35b_PreviewMeetingDocument](../06-sequencediagram/document-management/UC35b_PreviewMeetingDocument.txt).
 
 **Quyền đọc** = quyền xem cuộc họp (`MeetingReadPolicy`, cùng luật với `GET /api/meetings/{id}`): Người tổ chức,
 Người duyệt (từ khi gửi duyệt), Chủ toạ/Thư ký hiện tại, thành viên hiện tại khi cuộc họp đã `Published`,
@@ -337,7 +337,7 @@ khi cuộc họp đã kết thúc dù biểu quyết vẫn `Open`.
 ## SCRUM-58 · Gắn và gỡ tài liệu của cuộc họp
 
 SCRUM-112 (58c): UC-36a luồng chính (chọn từ kho), UC-36b (gắn vào mục nghị sự, ba nguồn), UC-36c (gỡ khỏi cuộc họp),
-UC-36d (gỡ khỏi một mục). Sequence: `UC33a_AddDocumentsFromLibrary`, `UC33b_…`, `UC33c_…`, `UC33d_…` (nhánh
+UC-36d (gỡ khỏi một mục). Sequence: `UC36a_AddDocumentsFromLibrary`, `UC33b_…`, `UC33c_…`, `UC33d_…` (nhánh
 `docs/scrum-91-92-fe07-kho-tai-lieu`). Theo phương án (b) BA chốt 27/10/2026: chức năng riêng, không đi qua form sửa
 mục nghị sự.
 
@@ -426,7 +426,7 @@ Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) →
 
 ## SCRUM-23 · Góp ý trên tài liệu
 
-UC-38 (AF-1 gắn trang PDF, AF-2 trả lời). Sequence: `UC35_CommentOnMeetingDocument`. Góp ý gắn vào **tài liệu trong
+UC-38 (AF-1 gắn trang PDF, AF-2 trả lời). Sequence: `UC38_CommentOnMeetingDocument`. Góp ý gắn vào **tài liệu trong
 một cuộc họp** (`MeetingDocument`): cùng tệp ở hai cuộc họp có hai luồng góp ý riêng.
 
 **Quyền**: ai xem được cuộc họp thì đọc và viết được góp ý (`MeetingReadPolicy`, BR-082, BR-079, BR-080) — kể cả Người duyệt và

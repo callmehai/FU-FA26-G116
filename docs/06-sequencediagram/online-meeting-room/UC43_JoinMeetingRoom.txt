@@ -1,0 +1,66 @@
+title UC-43 - Join Meeting Room
+
+actor "Participant" as Actor
+boundary "Meeting Lobby Page" as Page
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Room Service" as RoomProvider
+database ":Database" as Database
+
+Actor->Page: Choose Join room
+activate Page
+
+Page->RoomController: Join the meeting room
+activate RoomController
+
+RoomController->RoomService: joinMeetingRoom(meetingId, actorId)
+activate RoomService
+
+RoomService->MeetingRepository: Read meeting status, mode and actor assignment
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RoomService: Meeting and roster
+deactivate MeetingRepository
+
+alt Meeting has ended - EX-1
+    RoomService-->RoomController: MSG331 - The meeting has ended, the meeting room is closed.
+    RoomController-->Page: MSG331 - The meeting has ended, the meeting room is closed.
+    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+
+else Meeting was cancelled - EX-1
+    RoomService-->RoomController: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    RoomController-->Page: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    Page-->Actor: MSG350 - The meeting was cancelled, so the meeting room does not open.
+
+else Meeting is held in person - EX-2
+    RoomService-->RoomController: MSG280 - This meeting is held in person, so it has no online meeting room.
+    RoomController-->Page: MSG280 - This meeting is held in person, so it has no online meeting room.
+    Page-->Actor: MSG280 - This meeting is held in person, so it has no online meeting room.
+
+else Guest session has ended - EX-3
+    RoomService-->RoomController: MSG378 - The guest session has ended.
+    RoomController-->Page: MSG378 - The guest session has ended.
+    Page-->Actor: MSG378 - The guest session has ended.
+
+else Meeting is in progress and actor is eligible
+    RoomService->RoomProvider: Request room connection for the actor (BR-100, UC-46)
+    activate RoomProvider
+    RoomProvider-->RoomService: Room connection
+    deactivate RoomProvider
+
+    RoomService-->RoomController: Room connection
+    RoomController-->Page: Room connection
+    Page->RoomProvider: Connect to the meeting room
+    activate RoomProvider
+    RoomProvider-->Page: People already in the room
+    deactivate RoomProvider
+    Page-->Actor: Online Meeting Room - Video Grid
+end
+
+deactivate RoomService
+deactivate RoomController
+deactivate Page

@@ -36,7 +36,7 @@ else Another agenda item is in progress - EX-2
     AgendaPage-->Chair: MSG72 - Another agenda item is already in progress. Complete it before starting another agenda item.
 
 else Eligible
-    AgendaService->AgendaRepository: Set item InProgress and record start time (BR-70, BR-71)
+    AgendaService->AgendaRepository: Set item InProgress and record start time (BR-060–BR-062)
     activate AgendaRepository
     AgendaRepository->Database: Update agenda item
     activate Database
