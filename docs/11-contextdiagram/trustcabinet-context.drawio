@@ -40,9 +40,7 @@
         <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Resend Email" vertex="1">
           <mxGeometry height="140" width="400" x="4330" y="2000" as="geometry" />
         </mxCell>
-        <mxCell id="E11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="File Storage" vertex="1">
-          <mxGeometry height="140" width="400" x="4080" y="2290" as="geometry" />
-        </mxCell>
+
         <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.7500000000;exitY=1.0000000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7941176471;entryY=0.0956470588;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
@@ -243,26 +241,10 @@
         <mxCell id="E10-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Email delivery data" vertex="1">
           <mxGeometry height="55" width="360" x="3400" y="1961" as="geometry" />
         </mxCell>
-        <mxCell id="E11-in" data-flow-ids="F02" edge="1" parent="1" source="E11" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.0000000000;exitY=0.6428571429;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7588235294;entryY=0.9277647059;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2620" y="2390" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="E11-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Stored files" vertex="1">
-          <mxGeometry height="55" width="223" x="3400" y="2404" as="geometry" />
-        </mxCell>
-        <mxCell id="E11-out" data-flow-ids="F01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.8058823529;exitY=0.8955294118;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000000000;entryY=0.2142857143;entryDx=0;entryDy=0;entryPerimeter=0;" target="E11" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2660" y="2330" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="E11-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Files to store" vertex="1">
-          <mxGeometry height="55" width="251" x="3400" y="2261" as="geometry" />
-        </mxCell>
+
+
+
+
       </root>
     </mxGraphModel>
   </diagram>

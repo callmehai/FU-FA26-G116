@@ -27,13 +27,15 @@ id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số 
 ## Theo UML chặt (24/11/2026)
 
 Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
-([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 8 quan hệ: *Keep Meeting in a
+([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 7 quan hệ: *Keep Meeting in a
 Floating Window*, *Register to Speak*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
 *Manage My Recorded Speech* `<<extend>>` *View & Play Meeting Recordings*; *Comment on Meeting Document* `<<extend>>` *View
 Meeting Documents*; *View Participant Response Status*
-`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Confirm Document
-Read* `<<extend>>` *Cast Vote*.
+`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*.
 
+- *Confirm Document Read* (UC-42) nối thẳng actor (25/11/2026, trước là `extend` *Cast Vote*): người bỏ phiếu xác nhận
+  đọc từ danh sách tài liệu, trước khi bỏ phiếu; UC-65 giữ điều kiện ở PRE-5. Trên trang Chair, Secretary, Participant,
+  Guest ô này chuyển vào cột phải, ngay dưới *Cast Vote*.
 - *Edit Transcript & Speaker Attribution* (UC-55) và *Manage Vote Documents* (UC-68) nối thẳng actor, cùng dạng với *Edit
   Meeting Summary* và *Edit Meeting Minutes* (sửa theo review PR #531); trên trang Chair và Secretary hai ô được chuyển vào
   cột phải, ngay dưới *View Meeting Transcript* và *Create / Configure Vote*.
@@ -42,13 +44,14 @@ Read* `<<extend>>` *Cast Vote*.
 - *Record Room Audio* nối thẳng Thư ký (trước là `extend` *View & Play Meeting Recordings*): họp trực tiếp ghi âm mà không
   vào phòng trực tuyến (UC-52a PRE-2, UC-52c), nên cũng không `extend` *Join Meeting Room* (sửa theo review PR #531). *Take
   Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
-  *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu (chờ PO/BA xác nhận, xem inventory §1). Hai mục "để BA chốt" về UC-42 → UC-65
+  *Confirm Document Read* `<<extend>>` *Cast Vote* (ngày 25/11/2026 đổi tiếp thành nối thẳng actor, xem trên). Hai mục "để BA chốt" về UC-42 → UC-65
   và UC-54 → UC-51a ở dưới vì vậy đã xong.
 - Bố cục mới, mọi trang giống nhau, để ảnh gần vuông và đọc được khi đưa vào Report: actor của trang vẽ **hai lần**, bên
   trái và bên phải khung hệ thống (UML cho phép một actor xuất hiện nhiều lần; bản bên phải có id `<id>-2`). UC nối thẳng
   chia hai cột theo số UC — cột trái đọc từ trên xuống, cột phải đọc từ dưới lên, nên nhóm phòng họp và bản ghi nằm cạnh
-  *Join Meeting Room* — mỗi cột nối với actor cùng bên. UC mở rộng ở cột giữa, gần UC nền. Actor ngoài (OAuth Provider,
-  Resend Email, File Storage) đặt ngoài khung, gần UC của nó. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor
+  *Join Meeting Room* — mỗi cột nối với actor cùng bên. UC mở rộng ở cột giữa, gần UC nền. Ba actor ngoài (OAuth Provider,
+  AI Drafting Service, Resend Email) đặt ngoài khung, gần UC của nó; AI Drafting Service nằm bên phải actor của trang,
+  ngang *Generate / Regenerate Meeting Summary* (UC-58), trên trang Chair và Secretary. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor
   thêm mới có id `assoc-<id actor>-<id UC>`, ví dụ `assoc-actor-uc-62`.
 - HuyNQ chỉnh tay bố cục trong draw.io (24/11/2026): chữ to hơn (14–16), dời ô cho thoáng, nối thẳng actor ngoài. Sửa tiếp
   bằng tay trong draw.io rồi xuất lại PNG theo lệnh ở cuối file và thay ảnh trong Report 3 §I.4.3.
@@ -82,15 +85,18 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 - **Actor còn thiếu trên trang:** UC-29, UC-32 (Chair, Participant, Guest), UC-65 (Chair, Secretary), UC-54
   (Chair, Participant).
 - **Hai actor ngoài mới:** *Resend Email* (UC-04, UC-07, UC-19, UC-72, UC-22) và *File Storage* (UC-39, và UC-36 trên
-  trang Chair, Secretary; trước 24/11/2026 tên *Cloudflare R2*, ADR-0084). Hai actor này luôn nằm ngoài khung hệ thống.
+  trang Chair, Secretary; trước 24/11/2026 tên *Cloudflare R2*). Hai actor này luôn nằm ngoài khung hệ thống. Ngày
+  25/11/2026 bỏ hẳn *File Storage* khỏi mọi trang: kho tệp SeaweedFS chạy trên chính server `app` (ADR-0084), là thành phần
+  của hệ thống chứ không phải hệ thống ngoài (inventory §2). Cùng ngày vẽ thêm *AI Drafting Service* nối UC-58 (trang Chair,
+  Secretary), nên hình có đủ ba actor ngoài như inventory §2: OAuth Provider, AI Drafting Service, Resend Email. Trang Chair
+  thêm bốn UC tóm tắt UC-58 → UC-61 (inventory ghi actor Chair, Secretary), xếp trên *View Meeting Transcript*.
 - **Quan hệ mới:** UC-34 `<<extend>>` UC-29; UC-22 `<<extend>>` UC-15; UC-68 `<<extend>>` UC-63; UC-27 `<<extend>>`
   UC-26; UC-49, UC-50 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-43, UC-51a; UC-56, UC-37a độc lập.
 
 Chỗ hình khác chữ trong inventory, để BA chốt:
 
-- **UC-42 → UC-65:** inventory chỉ ghi "được gọi trước UC-65". Hình vẽ `Cast Vote` `<<include>>` `Confirm Document
-  Read` vì BR-094, BR-095 và UC-65 bắt buộc xác nhận đọc trước khi gửi phiếu (khi phiếu có tài liệu). Inventory §1 lại dặn không
-  dùng `include` cho UC "tạo dữ liệu cho UC sau"; nếu BA muốn chặt hơn thì đổi quan hệ này.
+- **UC-42 → UC-65 (đã xong 25/11/2026):** trước vẽ `Cast Vote` `<<include>>` `Confirm Document Read`, sau đổi thành
+  `extend`; nay UC-42 nối thẳng actor và UC-65 giữ điều kiện ở PRE-5 (xem mục *Theo UML chặt* ở trên).
 - **UC-54 → UC-51a:** inventory ghi UC-54 `<<extend>>` UC-51a. Cạnh có sẵn trên trang Secretary từng nối UC-54 với
   UC-15; đã nối lại sang *View & Play Meeting Recordings*, các trang Chair và Participant vẽ theo cách đó.
 - **Thư ký ↔ *Create / Configure Vote* (UC-63):** hình nối Secretary với UC-63 vì code cho Chair **và** Secretary
