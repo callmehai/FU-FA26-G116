@@ -1,0 +1,135 @@
+title UC-10 - Configure Role Permissions
+
+actor "System Admin" as Admin
+boundary "Role & Permission Management Page" as RolePage
+control ":Role Permission Controller" as RoleController
+control ":Role Permission Service" as RoleService
+participant ":Role Permission Repository" as RoleRepository
+participant ":Calendar Share Repository" as ShareRepository
+control ":Notification Service" as NotificationService
+control ":Audit Service" as AuditService
+participant ":Audit Log Repository" as AuditLogRepository
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+Admin->RolePage: Configure permissions for role
+activate RolePage
+
+RolePage->RoleController: Submit updated role permissions
+activate RoleController
+
+RoleController->RoleService: Update role permissions
+activate RoleService
+
+
+alt Invalid permission configuration - EX-1
+    RoleService-->RoleController: Invalid permission configuration
+    RoleController-->RolePage: MSG17 - Invalid permission configuration
+    RolePage-->Admin: Show validation error
+
+else Valid permission configuration
+    RoleService->RoleRepository: Save updated role permissions
+    activate RoleRepository
+
+    RoleRepository->Database: Update role permission configuration
+    activate Database
+
+    Database-->RoleRepository: Update successful
+    deactivate Database
+
+    RoleRepository-->RoleService: Role permissions updated
+    deactivate RoleRepository
+
+    RoleService->AuditService: Record role permission change
+    activate AuditService
+
+    AuditService->AuditLogRepository: add(audit entry)
+    activate AuditLogRepository
+
+    AuditLogRepository->Database: Save audit log
+    activate Database
+
+    Database-->AuditLogRepository: Audit log saved
+    deactivate Database
+
+    AuditLogRepository-->AuditService: Audit log saved
+    deactivate AuditLogRepository
+
+    AuditService-->RoleService: Audit recorded
+    deactivate AuditService
+
+
+    opt The change removes the meeting-creation right from the role
+        RoleService->RoleRepository: Find accounts currently holding the role
+        activate RoleRepository
+
+        RoleRepository->Database: Retrieve role holders
+        activate Database
+
+        Database-->RoleRepository: Role holders
+        deactivate Database
+
+        RoleRepository-->RoleService: Role holders
+        deactivate RoleRepository
+
+        RoleService->ShareRepository: Stop every Effective share those accounts are viewing (BR-142, BR-143)
+        activate ShareRepository
+
+        ShareRepository->Database: Set those shares to Stopped
+        activate Database
+
+        Database-->ShareRepository: Stopped shares
+        deactivate Database
+
+        ShareRepository-->RoleService: Stopped shares
+        deactivate ShareRepository
+
+        opt At least one share was stopped
+            RoleService->AuditService: Record each stopped share (BR-009)
+            activate AuditService
+
+            AuditService->AuditLogRepository: add(audit entries)
+            activate AuditLogRepository
+
+            AuditLogRepository->Database: Store audit records
+            activate Database
+
+            Database-->AuditLogRepository: Audit records created
+            deactivate Database
+
+            AuditLogRepository-->AuditService: Audit records created
+            deactivate AuditLogRepository
+
+            AuditService-->RoleService: Stops recorded
+            deactivate AuditService
+
+            RoleService->NotificationService: Notify both sides of each stopped share (BR-009)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: add(notifications)
+            activate NotificationRepository
+
+            NotificationRepository->Database: Record notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications recorded
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications recorded
+            deactivate NotificationRepository
+
+            NotificationService-->RoleService: Notifications sent
+            deactivate NotificationService
+        end
+    end
+
+    note right of RoleService: Regaining the meeting-creation right does not restart stopped shares (BR-142, BR-143). Losing the right keeps the "I share to" list but empties "Shared with me" (UC-80f, BR-140, BR-141, PO 10/11/2026).
+
+    RoleService-->RoleController: Role permissions updated successfully
+    RoleController-->RolePage: MSG16 - Role permissions updated successfully
+    RolePage-->Admin: Show success message
+end
+
+deactivate RoleService
+deactivate RoleController
+deactivate RolePage

@@ -1,0 +1,55 @@
+title UC-62a - View Meeting Votes
+
+actor "User" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Open the Voting area of a Meeting
+activate MeetingPage
+
+MeetingPage->VoteController: View Meeting Votes
+activate VoteController
+VoteController->VoteService: listMeetingVotes(meetingId, actorId)
+activate VoteService
+
+VoteService->MeetingAccessPolicy: Check actor can view the Meeting's Votes
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check Meeting relationship or Guest invitation
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->VoteService: Access / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting votes are not accessible - EX-1
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Meeting Votes are accessible
+    VoteService->VoteRepository: Get visible Votes of the Meeting
+    activate VoteRepository
+    VoteRepository->Database: Retrieve visible Votes
+    activate Database
+    Database-->VoteRepository: Visible Votes
+    deactivate Database
+    VoteRepository-->VoteService: Visible Votes
+    deactivate VoteRepository
+
+    alt No Vote is visible - AF-1
+        VoteService-->VoteController: MSG207 - No votes to display.
+        VoteController-->MeetingPage: MSG207 - No votes to display.
+        MeetingPage-->Actor: MSG207 - No votes to display.
+    else At least one Vote is visible
+        VoteService-->VoteController: Visible Votes
+        VoteController-->MeetingPage: Visible Votes
+        MeetingPage-->Actor: Show visible Votes with content, ballot type and status
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

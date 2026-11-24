@@ -1,0 +1,58 @@
+﻿title UC-57c - Play Collected Voice Sample
+
+actor "VoiceCollector" as Collector
+boundary "Users Page" as UsersPage
+control ":Voice Collection Controller" as CollectionController
+control ":Voice Collection Service" as CollectionService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Voiceprint Protector" as Protector
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Collector->UsersPage: Play a sample collected for the person
+activate UsersPage
+
+UsersPage->CollectionController: Get the collected sample recording
+activate CollectionController
+
+CollectionController->CollectionService: audio(userId, actorId, sampleId)
+activate CollectionService
+
+alt No access: no Voice sample collection permission - EX-1
+    CollectionService-->CollectionController: Not found
+    CollectionController-->UsersPage: Return failure
+    UsersPage-->Collector: Show the sample as not found
+else Access granted
+    CollectionService->VoiceRepository: Get the sample collected for the person (BR-118, BR-119)
+    activate VoiceRepository
+    VoiceRepository->Database: Retrieve collected sample of the person
+    activate Database
+    Database-->VoiceRepository: Sample / None
+    deactivate Database
+    VoiceRepository-->CollectionService: Sample / None
+    deactivate VoiceRepository
+
+    alt Sample does not exist, or was recorded by the person - EX-1
+        CollectionService-->CollectionController: Not found
+        CollectionController-->UsersPage: Return failure
+        UsersPage-->Collector: Show the sample as not found
+    else Collected sample exists
+        CollectionService->Protector: Unprotect the sample recording (BR-118, BR-119)
+        activate Protector
+        Protector-->CollectionService: Sample recording
+        deactivate Protector
+
+        CollectionService->AuditService: Record the playback of someone else's sample (BR-011)
+        activate AuditService
+        AuditService-->CollectionService: Entry saved
+        deactivate AuditService
+
+        CollectionService-->CollectionController: Sample recording, not cached
+        CollectionController-->UsersPage: Sample recording, not cached
+        UsersPage-->Collector: Play the sample
+    end
+end
+
+deactivate CollectionService
+deactivate CollectionController
+deactivate UsersPage

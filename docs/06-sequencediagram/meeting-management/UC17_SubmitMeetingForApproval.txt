@@ -1,0 +1,66 @@
+title UC-17 - Submit Meeting for Approval
+
+actor "Member" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+control ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit meeting for approval
+activate MeetingPage
+
+MeetingPage->MeetingController: Submit for approval (meetingId, approverId)
+activate MeetingController
+
+MeetingController->MeetingService: submitForApproval(meetingId, approverId)
+activate MeetingService
+
+MeetingService->MeetingRepository: Find meeting and eligible approvers
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting, status, approvers
+activate Database
+Database-->MeetingRepository: Meeting and approvers
+deactivate Database
+MeetingRepository-->MeetingService: Meeting and approvers
+deactivate MeetingRepository
+
+alt Incomplete meeting information - EX-1
+    MeetingService-->MeetingController: Missing/invalid meeting information
+    MeetingController-->MeetingPage: Return validation errors
+    MeetingPage-->Organizer: Meeting remains Draft/Rejected
+
+else No eligible approver available - EX-3
+    MeetingService-->MeetingController: MSG140 - No eligible meeting approver is available. Please contact the administrator.
+    MeetingController-->MeetingPage: Return no approver
+    MeetingPage-->Organizer: MSG140 - No eligible meeting approver is available. Please contact the administrator.
+
+else Meeting status not eligible - EX-2
+    MeetingService-->MeetingController: MSG41 - This meeting can no longer be submitted for approval.
+    MeetingController-->MeetingPage: Return status error
+    MeetingPage-->Organizer: MSG41 - This meeting can no longer be submitted for approval.
+
+else Submission valid
+    MeetingService->MeetingRepository: Assign approver, change status to WaitingApproval, record history (BR-022, BR-023)
+    activate MeetingRepository
+    MeetingRepository->Database: Save assignment, status, history, audit
+    activate Database
+    Database-->MeetingRepository: Saved
+    deactivate Database
+    MeetingRepository-->MeetingService: Submitted
+    deactivate MeetingRepository
+
+    MeetingService->NotificationService: Notify assigned approver
+    activate NotificationService
+    NotificationService-->MeetingService: Notified
+    deactivate NotificationService
+
+    MeetingService-->MeetingController: Submission successful
+    MeetingController-->MeetingPage: Meeting submitted successfully
+    MeetingPage-->Organizer: Meeting submitted successfully
+end
+
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

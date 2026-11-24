@@ -1,0 +1,103 @@
+title UC-62b - View Vote Status
+
+actor "User" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Select a Vote from the Meeting Voting area
+activate MeetingPage
+
+MeetingPage->VoteController: View Vote status
+activate VoteController
+VoteController->VoteService: getVoteStatus(meetingId, voteId, actorId)
+activate VoteService
+
+VoteService->MeetingAccessPolicy: Check actor can view the Meeting's Votes
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check Meeting relationship or Guest invitation
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->VoteService: Access / No access
+deactivate MeetingAccessPolicy
+
+VoteService->VoteRepository: Get Vote and its Meeting
+activate VoteRepository
+VoteRepository->Database: Retrieve Vote and Meeting
+activate Database
+Database-->VoteRepository: Vote and Meeting
+deactivate Database
+VoteRepository-->VoteService: Vote and Meeting
+deactivate VoteRepository
+
+alt Meeting or Vote unavailable or Draft not visible - EX-1
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Vote is accessible and visible
+    alt Vote is Draft - AF-1
+        VoteService->VoteRepository: Get Draft configuration
+        activate VoteRepository
+        VoteRepository->Database: Retrieve Draft configuration
+        activate Database
+        Database-->VoteRepository: Draft configuration
+        deactivate Database
+        VoteRepository-->VoteService: Draft configuration
+        deactivate VoteRepository
+        VoteService-->VoteController: Draft configuration
+        VoteController-->MeetingPage: Draft configuration
+        MeetingPage-->Actor: Show Draft configuration
+    else Vote is Open - Main Flow
+        VoteService->VoteRepository: Get Open Vote configuration
+        activate VoteRepository
+        VoteRepository->Database: Retrieve Open Vote configuration
+        activate Database
+        Database-->VoteRepository: Open Vote configuration
+        deactivate Database
+        VoteRepository-->VoteService: Open Vote configuration
+        deactivate VoteRepository
+
+        VoteService->VoteRepository: Count recorded ballots
+        activate VoteRepository
+        VoteRepository->Database: Count ballots
+        activate Database
+        Database-->VoteRepository: Turnout
+        deactivate Database
+        VoteRepository-->VoteService: Turnout
+        deactivate VoteRepository
+
+        VoteService-->VoteController: Open Vote status
+        VoteController-->MeetingPage: Open Vote status
+        MeetingPage-->Actor: Show Open Vote status and turnout
+    else Vote is Closed - AF-2
+        VoteService->VoteRepository: Get Closed Vote and conclusion
+        activate VoteRepository
+        VoteRepository->Database: Retrieve Closed Vote and conclusion
+        activate Database
+        Database-->VoteRepository: Closed Vote and conclusion
+        deactivate Database
+        VoteRepository-->VoteService: Closed Vote and conclusion
+        deactivate VoteRepository
+
+        VoteService->VoteRepository: Get tally per option
+        activate VoteRepository
+        VoteRepository->Database: Retrieve tally
+        activate Database
+        Database-->VoteRepository: Tally
+        deactivate Database
+        VoteRepository-->VoteService: Tally
+        deactivate VoteRepository
+
+        VoteService-->VoteController: Closed Vote result
+        VoteController-->MeetingPage: Closed Vote result
+        MeetingPage-->Actor: Show tally and conclusion
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

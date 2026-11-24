@@ -510,8 +510,8 @@
             "Open the meeting in browser B as the same or another Secretary."
           ],
           "expected": [
-            "Browser B shows \"Đang ghi ở nơi khác · <name>\" and the button \"Lưu lượt đó\", not the mic switch.",
-            "Clicking \"Lưu lượt đó\" saves the take; browser A can no longer add sound."
+            "Browser B shows \"Đang ghi ở nơi khác · <name>\" and the button \"Dừng ghi ở máy kia\", not the mic switch.",
+            "Clicking \"Dừng ghi ở máy kia\" saves the take; browser A can no longer add sound."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",

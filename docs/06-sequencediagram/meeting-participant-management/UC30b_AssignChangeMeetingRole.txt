@@ -1,0 +1,60 @@
+title UC-30b - Manage Meeting Role
+
+actor "Secretary / Chair" as Actor
+boundary "Participant Management Page" as ParticipantPage
+control ":Participant Controller" as ParticipantController
+control ":Participant Service" as ParticipantService
+participant ":Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+Actor->ParticipantPage: Change meeting role
+activate ParticipantPage
+
+ParticipantPage->ParticipantController: Change role (meetingId, participantId, newRole)
+activate ParticipantController
+
+ParticipantController->ParticipantService: changeRole(meetingId, participantId, newRole, actor)
+activate ParticipantService
+
+ParticipantService->ParticipantRepository: Find participant and verify actor
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve participant and meeting
+activate Database
+Database-->ParticipantRepository: Participant and meeting
+deactivate Database
+ParticipantRepository-->ParticipantService: Participant and meeting
+deactivate ParticipantRepository
+
+alt Meeting role is invalid - EX-1
+    ParticipantService-->ParticipantController: MSG101 - A valid meeting role is required.
+    ParticipantController-->ParticipantPage: Return validation error
+    ParticipantPage-->Actor: MSG101 - A valid meeting role is required.
+
+else Required meeting role would be lost - EX-2
+    ParticipantService-->ParticipantController: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
+    ParticipantController-->ParticipantPage: Return role error
+    ParticipantPage-->Actor: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
+
+else Actor, target or meeting is no longer eligible - EX-3
+    ParticipantService-->ParticipantController: MSG98 - The meeting participant list cannot be modified in its current status.
+    ParticipantController-->ParticipantPage: Return status error
+    ParticipantPage-->Actor: MSG98 - The meeting participant list cannot be modified in its current status.
+
+else Valid change
+    ParticipantService->ParticipantRepository: Save role changes (BR-043, BR-041, BR-042)
+    activate ParticipantRepository
+    ParticipantRepository->Database: Update participant role
+    activate Database
+    Database-->ParticipantRepository: Updated
+    deactivate Database
+    ParticipantRepository-->ParticipantService: Updated
+    deactivate ParticipantRepository
+
+    ParticipantService-->ParticipantController: Role updated
+    ParticipantController-->ParticipantPage: MSG100 - Meeting role updated successfully.
+    ParticipantPage-->Actor: MSG100 - Meeting role updated successfully.
+end
+
+deactivate ParticipantService
+deactivate ParticipantController
+deactivate ParticipantPage

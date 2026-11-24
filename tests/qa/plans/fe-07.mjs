@@ -9,7 +9,7 @@
 // docs/03-api/11-tai-lieu-cuoc-hop.md, 14-kho-tai-lieu-ca-nhan.md, the message catalogue, and the comments of
 // SCRUM-21/23/58/107/110/111/112/113/123/124. Deviations taken from there: uploads go through a browser queue, one
 // request per file (ADR-0033), so "all or nothing" is per file and the tray says "Đã tải lên n tệp" instead of a
-// MSG177/MSG161 toast; the storage limit is 10 GB for the whole system (ADR-0034); a library document already in the
+// MSG177/MSG161 toast; the storage limit is 250 GB for the whole system (ADR-0034, ADR-0084); a library document already in the
 // meeting is locked with "Đã có trong cuộc họp" in the general-group dialog only (SCRUM-124); the Secretary's list of
 // comments (SCRUM-106) was dropped by the PO; UC-42 (read confirmation) belongs to voting (FE-11) and is not tested.
 // A Guest reader (UC-04, an OTP by email) is not tested here.

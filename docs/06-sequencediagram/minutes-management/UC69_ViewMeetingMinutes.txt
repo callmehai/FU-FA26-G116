@@ -1,0 +1,61 @@
+title UC-69 - View Meeting Minutes
+
+actor "User" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Minutes Controller" as MinutesController
+control ":Minutes Service" as MinutesService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Minutes Repository" as MinutesRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Open the Biên bản tab
+activate MeetingPage
+
+MeetingPage->MinutesController: View meeting minutes
+activate MinutesController
+MinutesController->MinutesService: viewMinutes(meetingId, actorId)
+activate MinutesService
+
+MinutesService->MeetingAccessPolicy: Check actor can read the Meeting
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check Meeting relationship
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->MinutesService: Access / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting is not accessible - EX-2
+    MinutesService-->MinutesController: (no message code)
+    MinutesController-->MeetingPage: (no message code)
+    MeetingPage-->Actor: (nothing disclosed)
+else Meeting is accessible
+    MinutesService->MinutesRepository: Load the readable revision
+    activate MinutesRepository
+    MinutesRepository->Database: Retrieve revision
+    activate Database
+    Database-->MinutesRepository: Revision
+    deactivate Database
+    MinutesRepository-->MinutesService: Revision
+    deactivate MinutesRepository
+
+    alt Revision is not readable by the actor - EX-1
+        MinutesService-->MinutesController: (no message code)
+        MinutesController-->MeetingPage: (no message code)
+        MeetingPage-->Actor: (nothing disclosed)
+    else Revision is readable
+        alt Minutes are Secret and download requested - EX-3
+            MinutesService-->MinutesController: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+            MinutesController-->MeetingPage: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+            MeetingPage-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+        else Minutes can be read
+            MinutesService-->MinutesController: Minutes content and status
+            MinutesController-->MeetingPage: Minutes content and status
+            MeetingPage-->Actor: Show minutes as paper
+        end
+    end
+end
+
+deactivate MinutesService
+deactivate MinutesController
+deactivate MeetingPage

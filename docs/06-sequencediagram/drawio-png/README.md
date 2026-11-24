@@ -21,7 +21,7 @@ giới hạn 9 triệu pixel — khi đó mở ảnh kiểm tra. Script không c
 không bị đóng. Thêm `--no-splice` nếu chỉ muốn PNG, không ghi vào file draw.io gộp. `--scale 0.5` để ép scale.
 
 Xuất lại ảnh của một tab có sẵn trong file gộp (không cần `.txt`, không sửa file gộp):
-`python scripts/txt_to_sequence_drawio_png.py --tab uc14_createmeeting --tab uc55_castvote`.
+`python scripts/txt_to_sequence_drawio_png.py --tab uc13_createmeeting --tab uc65_castvote`.
 
 **07/11/2026:** rà cả 116 ảnh, xuất lại 25 ảnh hỏng bằng `--tab`. Có 9 ảnh vẽ thu nhỏ hoặc cắt dưới (uc09, uc18, uc19,
 uc20, uc24, uc28a, uc28c, uc33b, uc74), và 16 ảnh nhúng sơ đồ (`--embed-diagram`) có chunk `zTXt` sai CRC, nên một số
@@ -48,10 +48,10 @@ xuất lại ngày 27/10/2026 ở scale nhỏ hơn 2 để vẫn trọn vẹn, m
 
 | Ảnh | Scale |
 |---|---|
-| `uc33a_uploaddocumentstomeeting` | 0.6 |
-| `uc33b_attachdocumentstoagendaitem` | 0.5 (bản scale 2 cũ trắng hoàn toàn) |
-| `uc34b_viewlockedaccountlibrary` | 0.9 |
-| `uc36_uploadtopersonallibrary` | 0.7 |
+| `uc36a_uploaddocumentstomeeting` | 0.6 |
+| `uc36b_attachdocumentstoagendaitem` | 0.5 (bản scale 2 cũ trắng hoàn toàn) |
+| `uc37a_viewlockedaccountlibrary` | 0.9 |
+| `uc39_uploadtopersonallibrary` | 0.7 |
 
 Muốn nét to hơn thì phóng to trực tiếp trong file Draw.io; ảnh chỉ để xem nhanh.
 
@@ -66,23 +66,23 @@ nhưng **chưa** xuất lại ảnh trong thư mục này. Draw.io CLI 31.7.0 tr
 29 triệu pixel ở scale 2 trở lên, phần dưới bị trắng) và mất khoảng 3 phút cho mỗi trang. Các ảnh sau còn là bản cũ
 hoặc chưa có, cần chạy lại `python scripts/sync_sequence_drawio_png.py` và kiểm tra ảnh không bị cắt:
 
-- Ảnh cũ, tab đã đổi: UC-16, UC-17, UC-22, UC-23a, UC-23b, UC-23c, UC-23d, UC-24, UC-25, UC-26, UC-28b, UC-28c.
-- Chưa có ảnh, tab mới: UC-73, UC-74, UC-75, UC-76a, UC-76b, UC-77.
+- Ảnh cũ, tab đã đổi: UC-15, UC-16, UC-21, UC-23a, UC-23b, UC-23c, UC-23d, UC-24, UC-25, UC-26, UC-30b, UC-30c.
+- Chưa có ảnh, tab mới: UC-34, UC-42, UC-22, UC-68a, UC-68b, UC-27.
 
 Trong lúc chờ, nguồn đúng là file `.txt` và ảnh `.png` cùng tên trong thư mục của từng feature.
 
-**23/10/2026:** đã xuất ảnh cho tab mới UC-32a, UC-32c, UC-35. Riêng UC-32c (khoảng 36 triệu pixel ở scale 2) bị
+**23/10/2026:** đã xuất ảnh cho tab mới UC-35a, UC-35b, UC-38. Riêng UC-35b (khoảng 36 triệu pixel ở scale 2) bị
 cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn bộ sẽ đưa nó về scale 2 — kiểm tra ảnh không bị cắt.
 
-**23/10/2026 (SCRUM-107):** thêm tab UC-33a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
-vì scale 2 bị cắt nửa dưới, như UC-32c.
+**23/10/2026 (SCRUM-107):** thêm tab UC-36a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
+vì scale 2 bị cắt nửa dưới, như UC-35b.
 
-**27/10/2026 (FE-07):** dựng lại tab UC-32a, UC-32c, UC-33a (tải lên) và thêm 13 tab UC-33a (thư viện), UC-33b, UC-33c, UC-33d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).
+**27/10/2026 (FE-07):** dựng lại tab UC-35a, UC-35b, UC-36a (tải lên) và thêm 13 tab UC-36a (thư viện), UC-36b, UC-36c, UC-36d, UC-37, UC-39, UC-40a/b/c, UC-41a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).
 
-**28/10/2026 (BA Final Review FE-07):** dựng lại 9 tab as-built đã đổi MSG/Controller (UC-33a×2, UC-33b–d, UC-35, UC-71b, UC-72a/b) bằng `scripts/txt_to_sequence_drawio_png.py` (style agenda: actor/boundary/control/database, title UC, message 13px). Scale tự chọn — UC-33b ~0.4 vì ~177 message / 35 nhánh `else`.
+**28/10/2026 (BA Final Review FE-07):** dựng lại 9 tab as-built đã đổi MSG/Controller (UC-36a×2, UC-36b–d, UC-38, UC-40b, UC-41a/b) bằng `scripts/txt_to_sequence_drawio_png.py` (style agenda: actor/boundary/control/database, title UC, message 13px). Scale tự chọn — UC-36b ~0.4 vì ~177 message / 35 nhánh `else`.
 
-**30/10/2026 (BA Final Review FE-09/FE-10):** thêm 24 tab (UC-43a → UC-46d, UC-80, UC-81a → UC-81f, UC-39a ghi lời theo micro) và
-dựng lại tab UC-39a Manage Microphone. Sửa `txt_to_sequence_drawio_png.py` cho tab dựng từ `.txt` giống tab biểu quyết / agenda:
+**30/10/2026 (BA Final Review FE-09/FE-10):** thêm 24 tab (UC-51a → UC-55d trừ UC-53, rồi UC-53, UC-56a → UC-56f, UC-45a ghi lời theo micro; mã theo đợt 24/11/2026) và
+dựng lại tab UC-45a Manage Microphone. Sửa `txt_to_sequence_drawio_png.py` cho tab dựng từ `.txt` giống tab biểu quyết / agenda:
 nhãn Mermaid không bọc dấu nháy (trước đó dấu nháy hiện thành chữ), khi chèn tiêu đề chỉ dời cell cấp trên cùng và điểm của edge
 (trước đó activation và guard bị dời lệch 50 px, mũi tên gọi / trả về chồng nhau, guard trôi giữa khung), khung `alt`/`opt` viền
 mảnh, guard 13px căn trái, nhãn self-message 13px, và scale chọn theo diện tích ảnh (ảnh 3600–7000 px thay vì ≤ 2900 px). Các tab

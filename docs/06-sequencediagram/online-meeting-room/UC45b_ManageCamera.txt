@@ -1,0 +1,22 @@
+title UC-45b - Manage Camera
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Turn camera on or off (button or Ctrl+E)
+activate Page
+alt The browser blocks the camera - EX-1
+    Page-->Actor: MSG334 - The browser is blocking the camera.
+
+else No camera is available - EX-2
+    Page-->Actor: MSG335 - No camera was found on this computer.
+
+else Camera can be switched
+    Page->RoomProvider: Publish or stop the actor's own camera
+    activate RoomProvider
+    RoomProvider-->Page: Everyone in the room sees the video or the initials
+    deactivate RoomProvider
+    Page-->Actor: Button shows the new state
+end
+deactivate Page

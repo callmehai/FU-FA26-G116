@@ -13,7 +13,7 @@ the UC84b_*.txt file name.
 
 Examples:
   python scripts/export_sequence.py UC84b UC84f
-  python scripts/export_sequence.py docs/06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt
+  python scripts/export_sequence.py docs/06-sequencediagram/role-management/UC10_ConfigureRolePermissions.txt
   python scripts/export_sequence.py UC84b --only drawio     # first set only
   python scripts/export_sequence.py UC84b --only seqorg     # second set only
 """
