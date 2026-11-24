@@ -27,8 +27,8 @@ id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số 
 ## Theo UML chặt (24/11/2026)
 
 Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
-([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 11 quan hệ: *Keep Meeting in a
-Floating Window*, *Register to Speak*, *Record Room Audio*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
+([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 10 quan hệ: *Keep Meeting in a
+Floating Window*, *Register to Speak*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
 *Manage My Recorded Speech* `<<extend>>` *View & Play Meeting Recordings*; *Comment on Meeting Document* `<<extend>>` *View
 Meeting Documents*; *Manage Vote Documents* `<<extend>>` *Create / Configure Vote*; *View Participant Response Status*
 `<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Edit Transcript &
@@ -36,9 +36,10 @@ Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document R
 
 - Bỏ mọi `extend` kiểu "mở thao tác từ màn hình" (sửa, gửi duyệt, công bố, quản lý…) và kiểu chuyển màn hình / tab
   (danh sách → chi tiết, chi tiết → các tab, thông báo → đối tượng). Các UC đó nối thẳng với actor của trang.
-- *Record Room Audio* chuyển từ `extend` *View & Play Meeting Recordings* sang `extend` *Join Meeting Room*: Thư ký bật
-  ghi âm trong lúc họp. *Take Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
-  *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu. Hai mục "để BA chốt" về UC-42 → UC-65
+- *Record Room Audio* nối thẳng Thư ký (trước là `extend` *View & Play Meeting Recordings*): họp trực tiếp ghi âm mà không
+  vào phòng trực tuyến (UC-52a PRE-2, UC-52c), nên cũng không `extend` *Join Meeting Room* (sửa theo review PR #531). *Take
+  Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
+  *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu (chờ PO/BA xác nhận, xem inventory §1). Hai mục "để BA chốt" về UC-42 → UC-65
   và UC-54 → UC-51a ở dưới vì vậy đã xong.
 - Bố cục mới, mọi trang giống nhau, để ảnh gần vuông và đọc được khi đưa vào Report: actor của trang vẽ **hai lần**, bên
   trái và bên phải khung hệ thống (UML cho phép một actor xuất hiện nhiều lần; bản bên phải có id `<id>-2`). UC nối thẳng
