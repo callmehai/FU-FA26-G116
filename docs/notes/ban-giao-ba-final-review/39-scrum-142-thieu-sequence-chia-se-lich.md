@@ -75,7 +75,7 @@ File: [UC08_AssignSystemRoleToUser.txt](../../06-sequencediagram/user-management
 
 ## 4. Việc S3 — UC-11: thêm bước dừng chia sẻ, sửa tiêu đề
 
-File: [UC11_ConfigureRolePermissions.txt](../../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt)
+File: [UC11_ConfigureRolePermissions.txt](../../06-sequencediagram/role-management/UC10_ConfigureRolePermissions.txt)
 
 - Dòng 1: `title UC-10 - ...` → `title UC-11 - Configure Role Permissions`.
 - Thêm lifeline `:Calendar Share Repository`, `:Notification Service`.
@@ -164,8 +164,8 @@ Hiện trạng:
 
 Sửa sequence:
 
-- [UC84a_RequestCalendarShare.txt](../../06-sequencediagram/calendar-sharing/UC84a_RequestCalendarShare.txt),
-  [UC84b_ShareCalendarDirectly.txt](../../06-sequencediagram/calendar-sharing/UC84b_ShareCalendarDirectly.txt):
+- [UC84a_RequestCalendarShare.txt](../../06-sequencediagram/calendar-sharing/UC80a_RequestCalendarShare.txt),
+  [UC84b_ShareCalendarDirectly.txt](../../06-sequencediagram/calendar-sharing/UC80b_ShareCalendarDirectly.txt):
   thêm đoạn **tải danh sách người** lúc đầu (Page → Controller → Service → User Repository, lọc ở server như bảng trên),
   trước bước actor gửi. Đây là ngoại lệ "nhiều mũi tên actor → boundary" như UC-04, ghi vào README.
 - UC-84a EX-4: thêm bước tải lại danh sách (đúng như spec ghi "refreshes the list").

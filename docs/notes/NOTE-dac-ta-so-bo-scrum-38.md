@@ -54,7 +54,7 @@ _UC gom — đặc tả nằm ở các UC con UC-70a, UC-70b bên dưới._
 #### UC-70a – View Reports & Statistics (Xem báo cáo, thống kê)
 
 Sequence Diagram:
-[UC70a_ViewReportsAndStatistics.txt](../06-sequencediagram/reporting/UC70a_ViewReportsAndStatistics.txt)
+[UC70a_ViewReportsAndStatistics.txt](../06-sequencediagram/reporting/UC79a_ViewReportsAndStatistics.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -69,7 +69,7 @@ Sequence Diagram:
 
 #### UC-70b – Export Report (Xuất báo cáo)
 
-`<<extend>>` UC-70a. Sequence Diagram: [UC70b_ExportReport.txt](../06-sequencediagram/reporting/UC70b_ExportReport.txt)
+`<<extend>>` UC-70a. Sequence Diagram: [UC70b_ExportReport.txt](../06-sequencediagram/reporting/UC79b_ExportReport.txt)
 
 | Mục | Nội dung |
 |---|---|
