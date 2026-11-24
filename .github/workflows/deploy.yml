@@ -1,30 +1,29 @@
-# Tự deploy sau mỗi lần CI xanh trên main hoặc app — merge PR xong là server của nhánh đó tự cập nhật.
+# Tự deploy sau mỗi lần CI xanh trên app — merge PR xong là server app tự cập nhật.
 #
-# Hai nhánh, hai server (ADR-0065): main → server test (bản demo), app → server app (backend bốn project). Mỗi
-# server có environment riêng trên GitHub (server-test, server-app) giữ ba secret DEPLOY_* của nó: job chọn
-# environment theo nhánh, nên cùng một tên secret trỏ tới đúng máy.
+# Chỉ còn một server (ADR-0082): server demo của main đã xoá ngày 24/11, main giữ trên GitHub nhưng không deploy.
+# Environment server-app trên GitHub giữ ba secret DEPLOY_* của server app.
 #
 # CI gọi workflow này như một job của chính nó (job "deploy" trong ci.yml), không dùng workflow_run:
 # nhờ vậy trạng thái deploy hiện trên đúng commit vừa merge, cạnh hai check build & test, và dấu
 # tích của commit chỉ xanh khi server đã chạy bản mới. workflow_run thì gắn check vào commit đang
-# ở đầu main lúc nó bắt đầu — hai PR merge sát nhau là deploy của PR trước hiện trên commit của PR
-# sau — và luôn chạy file deploy.yml của main chứ không phải của commit đang deploy.
+# ở đầu nhánh lúc nó bắt đầu — hai PR merge sát nhau là deploy của PR trước hiện trên commit của PR
+# sau — và luôn chạy file deploy.yml của nhánh mặc định chứ không phải của commit đang deploy.
 #
-# Image được build ngay trên runner của GitHub rồi chép sang server qua SSH: server test chỉ có 1 GB
-# RAM, tự build mất 15–20 phút và đốt hết CPU burst. Không dùng registry (GHCR) để khỏi phải cấp
+# Image được build ngay trên runner của GitHub rồi chép sang server qua SSH: tự build trên server mất
+# 15–20 phút và đốt hết CPU của máy đang phục vụ. Không dùng registry (GHCR) để khỏi phải cấp
 # thêm token đọc package cho server.
 #
-# Deploy an toàn (ADR-0047): chỉ main và app (ADR-0065); không đưa server về commit cũ hơn bản đang chạy; image app đổi
+# Deploy an toàn (ADR-0047): chỉ app (ADR-0082); không đưa server về commit cũ hơn bản đang chạy; image app đổi
 # thì backup database rồi migrate có chủ đích trước khi đổi container; health check đỏ thì quay về image
 # và commit trước. Migration đã chạy không tự hoàn tác — khôi phục từ backup: deploy/README.md.
 #
-# Thiết lập một lần (3 secret của repo): deploy/README.md, mục "Tự động deploy".
+# Thiết lập một lần (3 secret của environment server-app): deploy/README.md, mục "Tự động deploy".
 name: Deploy server test
 
 on:
-  # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên main hoặc app.
+  # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên app.
   workflow_call:
-  # Nút "Run workflow" trong tab Actions — deploy lại main hoặc app mà không cần push. Chọn nhánh khác
+  # Nút "Run workflow" trong tab Actions — deploy lại app mà không cần push. Chọn nhánh khác
   # thì bước đầu tiên từ chối.
   workflow_dispatch:
 
@@ -34,17 +33,16 @@ jobs:
     runs-on: ubuntu-latest
     # Hai lần merge sát nhau thì chạy lần lượt, không chạy chồng lên server. Đặt ở job để áp dụng
     # cho cả lần CI gọi lẫn lần bấm Run workflow.
-    # Mỗi nhánh một hàng đợi: deploy app không phải chờ deploy main, vì là hai máy khác nhau.
     concurrency:
       group: deploy-${{ github.ref_name }}
       cancel-in-progress: false
     # Trang chủ repo có mục Deployments: lần deploy gần nhất, commit nào, kèm link mở server.
-    # Environment cũng là chỗ giữ DEPLOY_SSH_KEY, DEPLOY_HOST, DEPLOY_HOST_KEY của từng server.
+    # Environment cũng là chỗ giữ DEPLOY_SSH_KEY, DEPLOY_HOST, DEPLOY_HOST_KEY của server.
     environment:
-      name: ${{ github.ref_name == 'app' && 'server-app' || 'server-test' }}
+      name: server-app
       url: ${{ steps.check.outputs.url }}
     env:
-      # Gọi từ CI thì github.sha là commit vừa push lên main hoặc app.
+      # Gọi từ CI thì github.sha là commit vừa push lên app.
       SHA: ${{ github.sha }}
       # Nhánh của checkout trên server, trùng nhánh đang deploy.
       BRANCH: ${{ github.ref_name }}
@@ -53,14 +51,13 @@ jobs:
       # là vài ngày merge; mỗi bản cỡ vài MB đến vài chục MB trên đĩa 80 GB.
       BACKUPS_KEPT: 14
     steps:
-      - name: Chỉ main và app
-        # Mỗi server có một database của riêng nhánh nó: deploy một nhánh có migration chưa merge là để
-        # lại schema mà nhánh đó không biết. ci.yml chỉ gọi khi push lên main hoặc app; chặn ở đây là cho
-        # nút Run workflow.
+      - name: Chỉ app
+        # Server có một database của nhánh app: deploy một nhánh có migration chưa merge là để lại schema mà
+        # app không biết. ci.yml chỉ gọi khi push lên app; chặn ở đây là cho nút Run workflow.
         run: |
           case "$GITHUB_REF" in
-            refs/heads/main|refs/heads/app) ;;
-            *) echo "::error::Chỉ deploy main hoặc app, không deploy $GITHUB_REF"; exit 1 ;;
+            refs/heads/app) ;;
+            *) echo "::error::Chỉ deploy app, không deploy $GITHUB_REF"; exit 1 ;;
           esac
 
       - uses: actions/checkout@v4
@@ -87,7 +84,7 @@ jobs:
 
       - name: Bản đang chạy
         id: server
-        # Hai lần CI trên main có thể xong lệch thứ tự: CI của commit cũ xong sau commit mới thì deploy
+        # Hai lần CI trên app có thể xong lệch thứ tự: CI của commit cũ xong sau commit mới thì deploy
         # của nó sẽ đưa server về code cũ. concurrency chỉ xếp hàng, không biết thứ tự, nên so ở đây.
         # Deploy lại đúng commit server đang chạy thì vẫn làm (nút Run workflow).
         # image là image của container app đang chạy: bước Khởi động lại so với nó để biết có phải
