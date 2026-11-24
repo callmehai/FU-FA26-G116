@@ -515,7 +515,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · MSG360 · Manual only"
+          "note": "UC-44b · MSG360 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT25",
@@ -532,7 +535,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT26",
@@ -549,7 +555,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT27",
@@ -565,7 +574,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · MSG359 · Manual only"
+          "note": "UC-44a · MSG359 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },

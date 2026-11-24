@@ -28,7 +28,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 825 case, 825 Passed (TRX 24/11 trên build local). UI: 563 case, 559 Passed, 4 chưa chạy (REC_FT24–27 mới khôi phục từ `app` sau thu gọn: nhãn "Dừng ghi ở máy kia", lượt ghi dở, mạng chậm, mic sau khi họp kết thúc — Manual only, chờ runner). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 825 case, 825 Passed (TRX 24/11 trên build local). UI: 563 case, 563 Passed, 0 Pending (REC_FT24–27 test tay 25/11, không ảnh evidence). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|

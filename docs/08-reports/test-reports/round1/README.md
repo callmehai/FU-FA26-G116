@@ -14,7 +14,7 @@ Mọi thứ phục vụ chạy Round 1 của 5.1 (unit), 5.2 (UI) và 5.2.2 (API
 | [ui-map/](ui-map/README.md) | Bảng ánh xạ AC của `tests/qa/plans/` sang case UI, mỗi Feature một file |
 | [reports/](reports/README.md) | Báo cáo của agent (API theo nhóm Feature, `R1.md` cho UI) |
 
-## Tiến độ UI (5.2), cập nhật 2026-11-24 (đếm từ `../cases/FE-xx/ui.json`: 563 case, 559 Passed, 0 Failed, 4 Pending)
+## Tiến độ UI (5.2), cập nhật 2026-11-25 (đếm từ `../cases/FE-xx/ui.json`: 563 case, 563 Passed, 0 Failed, 0 Pending)
 
 | Feature | Trạng thái | Passed / Failed / trống |
 |---|---|---|
@@ -26,7 +26,7 @@ Mọi thứ phục vụ chạy Round 1 của 5.1 (unit), 5.2 (UI) và 5.2.2 (API
 | FE-06 Participants | Đã chạy | 50 / 0 / 0 |
 | FE-07 Documents | Đã chạy | 51 / 0 / 0 |
 | FE-08 Online Room | Đã chạy | 54 / 0 / 0 |
-| FE-09 Recording | Đã chạy, 4 case mới chờ runner | 44 / 0 / 4 |
+| FE-09 Recording | Đã chạy xong 25/11 (4 case mic mới test tay, không ảnh) | 48 / 0 / 0 |
 | FE-10 Transcription & Summary | Đã chạy | 64 / 0 / 0 |
 | FE-11 Voting | Đã chạy | 21 / 0 / 0 |
 | FE-12 Minutes | Đã chạy | 32 / 0 / 0 |

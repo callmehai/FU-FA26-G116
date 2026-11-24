@@ -9,7 +9,7 @@ chạy xong thì điền `round1` / `date1` / `tester1`, rồi sinh lại workbo
 ## Tình trạng
 
 - **API**: 825 Passed (thêm 6 case truy vấn/xuất báo cáo RPT_API_IT19-24, TRX 24/11).
-- **UI**: 559 Passed, 4 chưa chạy (REC_FT24–27 mới khôi phục từ `app` sau thu gọn: nhãn "Dừng ghi ở máy kia", lượt ghi dở, mạng chậm, mic sau khi họp kết thúc — Manual only, chờ runner), 0 Failed.
+- **UI**: 563 Passed, 0 Failed, 0 Pending (REC_FT24–27 test tay 25/11 bởi Phạm Gia Khánh, không có ảnh evidence — xem note từng case trong `cases/FE-09/ui.json`).
 - JSON `cases/` là nguồn đúng nhất cho trạng thái từng case; các list ở mục 2 bên dưới đã cũ ở những chỗ case ghi Passed.
 
 ## 1. Ba case từng Failed: nay đều Passed, ghi lại để khỏi chạy lại
@@ -30,7 +30,6 @@ SUS-03 (gợi ý vẫn hiện khi LiveKit chạy tốt, nhẹ), SUS-01 (con tr�
 Vào phòng hoặc tải lên file ghi âm người nói tiếng Việt, đợi bản ghi lời. Máy dev chỉ tạo được tiếng bíp nên worker nhận dạng trả 0 đoạn; worker và backend vẫn chạy đúng.
 
 - `REC_FT20`: Switching the mic off saves the take and has the recording transcribed.
-- `REC_FT24`: The Secretary uploads a recorded file after confirming consent.
 - `REC_FT38`: Speaking with the call's mic on records sentences that join the transcript under the speaker's name.
 - `REC_FT39`: The Chair takes a sentence out of the record and puts it back.
 - `REC_FT40`: A Member has no exclude button.
