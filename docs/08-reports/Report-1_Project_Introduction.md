@@ -26,7 +26,7 @@ Table of Contents
 | 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews (ADR-0018). FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes (ADR-0016/17). |
 | 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
-| 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided (ADR-0056); in-meeting recording, Voice ID, notifications and reports as built; add FE-16 (ADR-0058). |
+| 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided (ADR-0056); in-meeting recording, Voice ID, notifications and reports as built; add FE-16 (ADR-0058); Architecture moves to Nguyen Quang Huy. |
 
 *A - Added M - Modified D - Deleted
 
@@ -65,8 +65,8 @@ The purpose of this project is to develop TrustCabinet, a centralized Internal M
 | Dinh Van Toi | Product Owner (TrustSoft) |
 | Tran Viet Hai | Team Leader, Frontend Lead |
 | Pham Gia Khanh | Business Analyst, UI/UX |
-| Nguyen Quang Huy | Member (Backend, Frontend) |
-| Hoang Duc Loc | Backend Lead, Architecture |
+| Nguyen Quang Huy | Architecture, Member (Backend, Frontend) |
+| Hoang Duc Loc | Backend Lead |
 | Nguyen Truong Huy | Test Lead, Quality Assurance |
 
 ## II. Product Background
