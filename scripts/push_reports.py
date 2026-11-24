@@ -109,8 +109,8 @@ TARGETS: dict[str, tuple[str, Path, Path | None]] = {
         TEST_DIR / "Report5.2_Integration_Test.xlsx",
         None,
     ),
-    # Local "System Test" is the Drive "System Test_FRs"; local "Acceptance Test" is the
-    # Drive "5.5 Acceptance Test Scripts". Local "System Test_NFRs" is Drive 5.4.
+    # Local 5.3 System Test_FRs, 5.4 System Test_NFRs and 5.5 Acceptance Test keep the Drive numbers
+    # (Drive 5.5 is named "Acceptance Test Scripts").
     "5.3": (
         "1a8pRvfEquTioVXf6XRXf0iiBukVWEXzQ",
         TEST_DIR / "Report5.3_System_Test_FRs.xlsx",
@@ -123,7 +123,7 @@ TARGETS: dict[str, tuple[str, Path, Path | None]] = {
     ),
     "5.5": (
         "1cbHwanGSqSqumHlFE-UR_HLSWwSKf1cq",
-        TEST_DIR / "Report5.4_Acceptance_Test.xlsx",
+        TEST_DIR / "Report5.5_Acceptance_Test.xlsx",
         None,
     ),
 }
@@ -140,7 +140,7 @@ NEW_FILES: dict[str, tuple[str, Path, str]] = {
 }
 
 # The complete Report 5 set, in report order.
-TEST_SET = ("5.0", "5.1", "5.2", "5.2.2", "5.3", "5.5")
+TEST_SET = ("5.0", "5.1", "5.2", "5.2.2", "5.3", "5.4", "5.5")
 
 # A minutes file renamed locally keeps its Drive file: the old Drive name is renamed and
 # its content replaced, instead of leaving a second copy beside a new one.
@@ -494,7 +494,7 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "target", help="report key (1-4, 5.0-5.3, 5.2.2, 5.5), 'tests', 'minutes' or 'all'"
+        "target", help="report key (1-4, 5.0-5.5, 5.2.2), 'tests', 'minutes' or 'all'"
     )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--check", action="store_true", help="compare Drive with the local file")

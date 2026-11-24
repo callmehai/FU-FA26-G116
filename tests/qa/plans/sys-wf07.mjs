@@ -136,7 +136,7 @@ export default {
         await row(qa.page, c.name).getByRole('button', { name: `Đổi vai trò của ${c.name}` }).click()
         const d = dialog(qa.page, 'Đổi vai trò')
         await d.getByRole('radio', { name: 'Chủ toạ' }).check()
-        await qa.expect(d.getByText('Bạn sẽ thành Thành viên.')).toBeVisible()
+        await qa.expect(d.getByText('Bạn sẽ thành Thành viên và không còn điều hành cuộc họp.')).toBeVisible()
         await qa.shot('chon-chu-toa-moi')
         await d.getByRole('button', { name: 'Giao Chủ toạ' }).click()
         const confirm = dialog(qa.page, `Giao Chủ toạ cho ${c.name}?`)

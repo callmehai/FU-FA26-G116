@@ -6,6 +6,10 @@ The content lives in docs/08-reports/test-reports/cases/system/:
   WF-xx.json     the cases of one workflow, written by whoever owns it
   preview/       generated Markdown, for reading in a pull request
 
+The visible Note column is left empty. Everything a note would say goes in `aiNote` (BF · UC · BR · MSG · 5.2 trace,
+who ran it, run id, environment, why a case changed); it goes to a hidden "AI context" column right of Note, for
+agents and reviewers who read the file, not for the printed report.
+
 Usage (from the repository root):
   python scripts/test_reports/system_cases.py scaffold           # create missing WF-xx.json, groups only
   python scripts/test_reports/system_cases.py check              # validate; exit 1 on an error
@@ -19,18 +23,21 @@ import argparse
 import re
 import shutil
 import sys
+from copy import copy
 from datetime import date, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from integration_cases import (  # noqa: E402  shared Excel helpers, same template layout
     ROOT, REPORTS, TEMPLATE, apply, bulleted, clear_from, height_for, load, numbered, save_json, styles_of)
+from openpyxl.utils import get_column_letter  # noqa: E402
 
 SYSTEM = REPORTS / 'cases/system'
 PLAN = SYSTEM / 'plan.json'
 PREVIEW = SYSTEM / 'preview'
 STATUSES = ('Passed', 'Failed', 'Pending', 'N/A')
-REQUIRED = ('id', 'description', 'procedure', 'expected', 'preconditions', 'note')
+REQUIRED = ('id', 'description', 'procedure', 'expected', 'preconditions', 'aiNote')
+AI_COL = 16  # column P, right of Note (O), hidden
 # A system case describes what a person does on the running product, never how the code is tested.
 FORBIDDEN = re.compile(r'Automated:|tests/|\.cs\b|\bAssert\.|dotnet test|\bfixture\b|frontend/src|backend/', re.I)
 DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
@@ -98,8 +105,10 @@ def run_checks():
                 for key in ('procedure', 'expected', 'preconditions'):
                     if key in c and not isinstance(c[key], list):
                         errors.append(f'{at}: {key} must be a list of strings')
-                if not str(c.get('note', '')).startswith(wf['bf']):
-                    errors.append(f"{at}: note must start with {wf['bf']} (trace: BF · UC · BR · MSG · 5.2 ids)")
+                if not str(c.get('aiNote', '')).startswith(wf['bf']):
+                    errors.append(f"{at}: aiNote must start with {wf['bf']} (trace: BF · UC · BR · MSG · 5.2 ids)")
+                if c.get('note'):
+                    errors.append(f'{at}: the Note column stays empty; put it in aiNote')
                 text = ' '.join(str(v) for v in c.values())
                 if FORBIDDEN.search(text):
                     errors.append(f'{at}: mentions test code or a source path ({FORBIDDEN.search(text).group(0)!r})')
@@ -115,8 +124,8 @@ def run_checks():
                             errors.append(f'{at}: round{n} {status} needs date{n} as YYYY-MM-DD')
                         if not c.get(f'tester{n}'):
                             errors.append(f'{at}: round{n} {status} needs tester{n}')
-                    if status == 'Failed' and 'Bug:' not in str(c.get('note', '')):
-                        errors.append(f'{at}: a Failed round needs "Bug: <Jira key or short reason>" in note')
+                    if status == 'Failed' and 'Bug:' not in str(c.get('aiNote', '')):
+                        errors.append(f'{at}: a Failed round needs "Bug: <Jira key or short reason>" in aiNote')
     return errors, todo
 
 
@@ -152,12 +161,12 @@ def cmd_md(_):
             if not g['cases']:
                 lines += ['_No case yet._', '']
                 continue
-            lines += ['| ID | Description | Procedure | Expected | Pre-conditions | R1 | Note |',
+            lines += ['| ID | Description | Procedure | Expected | Pre-conditions | R1 | AI context (hidden column) |',
                       '|---|---|---|---|---|---|---|']
             for c in g['cases']:
                 lines.append('| ' + ' | '.join(md_cell(x) for x in (
                     c['id'], c['description'], c['procedure'], c['expected'], c['preconditions'],
-                    c.get('round1', 'Pending'), c['note'])) + ' |')
+                    c.get('round1', 'Pending'), c['aiNote'])) + ' |')
             lines.append('')
         (PREVIEW / f"{wf['id']}.md").write_text('\n'.join(lines), encoding='utf-8', newline='\n')
     print(f'previews in {PREVIEW.relative_to(ROOT)}')
@@ -198,6 +207,10 @@ def build_workbook(p, target):
         for k, w in widths.items():
             ws.column_dimensions[k].width = w
         ws['O10'] = 'Note'  # the course template's heading; the integration template says "Actual result ..."
+        ai_head = ws.cell(10, AI_COL, 'AI context')
+        ai_head._style = copy(ws['O10']._style)
+        ws.column_dimensions[get_column_letter(AI_COL)].width = 60
+        ws.column_dimensions[get_column_letter(AI_COL)].hidden = True
         ws['B2'] = wf['name']
         ws['B3'] = f"System-level test flow ({wf['bf']}): {wf['description']}"
         r, case_rows = 11, []
@@ -211,11 +224,13 @@ def build_workbook(p, target):
                 values = [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
                           bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
                           c.get('round2'), c.get('date2'), c.get('tester2'),
-                          c.get('round3'), c.get('date3'), c.get('tester3'), c['note']]
+                          c.get('round3'), c.get('date3'), c.get('tester3'), None]
                 for col, v in enumerate(values, 1):
                     if v and col in (7, 10, 13):
                         v = date.fromisoformat(v)
                     ws.cell(r, col, v)
+                ai = ws.cell(r, AI_COL, c['aiNote'])
+                ai._style = copy(ws.cell(r, 15)._style)
                 ws.row_dimensions[r].height = height_for(
                     [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
                 case_rows.append(r)
@@ -240,7 +255,7 @@ def build_workbook(p, target):
     tc['D3'] = p['project']
     tc['D4'] = p['projectCode']
     tc['D5'] = p['environment']
-    tc['B6'] = p['note']
+    tc['B6'] = p.get('note') or None
     row_style = styles_of(tc, 9, 6)
     clear_from(tc, 9)
     for i, (wf, n) in enumerate(built, 1):
@@ -260,7 +275,7 @@ def build_workbook(p, target):
     ts['C4'] = p['projectCode']
     ts['C5'] = f"{p['projectCode']}_System_Test_v{p['cover']['version']}"
     ts['G5'] = p['cover']['issueDate']
-    ts['C6'] = p['note']
+    ts['C6'] = p.get('note') or None
     clear_from(ts, 11)
     for i, (wf, _) in enumerate(built, 1):
         r = 10 + i

@@ -20,7 +20,7 @@
           "preconditions": [
             "Published meeting A with Chủ toạ Member A, Thư ký Member B, Member C; their invitation emails already sent."
           ],
-          "note": "BF-02 · UC-15 AF-1 · BR-27 · MSG138 · 5.2: MEET_FT15, NOTI_FT31 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8",
+          "aiNote": "BF-02 · UC-15 AF-1 · BR-27 · MSG138 · 5.2: MEET_FT15, NOTI_FT31 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -39,13 +39,13 @@
             "As Member C open the meeting."
           ],
           "expected": [
-            "The dialog says \"Bạn sẽ thành Thành viên.\"; toast \"Giao vai trò Chủ toạ thành công.\"; Member C is Chủ toạ and Member A is Thành viên.",
+            "The dialog says \"Bạn sẽ thành Thành viên và không còn điều hành cuộc họp.\"; toast \"Giao vai trò Chủ toạ thành công.\"; Member C is Chủ toạ and Member A is Thành viên.",
             "Member C has a \"Vai trò cuộc họp đã thay đổi\" notification and now sees \"Bắt đầu họp\"."
           ],
           "preconditions": [
             "TC01 passed."
           ],
-          "note": "BF-02 · UC-73 · BR-294 · MSG257 · 5.2: PART_FT82 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8",
+          "aiNote": "BF-02 · UC-73 · BR-294 · MSG257 · 5.2: PART_FT82 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Dialog text quoted verbatim per review PR 507.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -70,7 +70,7 @@
           "preconditions": [
             "Published meeting B with the same roster; invitation emails already sent."
           ],
-          "note": "BF-02 · UC-75 · BR-300 · MSG261, MSG262 · 5.2: MEET_FT68, NOTI_FT32 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8",
+          "aiNote": "BF-02 · UC-75 · BR-300 · MSG261, MSG262 · 5.2: MEET_FT68, NOTI_FT32 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

@@ -21,7 +21,7 @@
           "preconditions": [
             "A Draft meeting three days ahead at 17:00 organised by the Organizer with Chủ toạ Member A, Thư ký Member B, Member C."
           ],
-          "note": "BF-02 · UC-66 · BR-39 · MSG78, MSG43, MSG45 · 5.2: NOTI_FT01, NOTI_FT24 · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8",
+          "aiNote": "BF-02 · UC-66 · BR-39 · MSG78, MSG43, MSG45 · 5.2: NOTI_FT01, NOTI_FT24 · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -44,7 +44,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "note": "BF-02 · UC-20 · BR-39, BR-42 · 5.2: NOTI_FT29 · Local build: rows reach the outbox with status Failed \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains)\"; real delivery needs a real mailbox. · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8",
+          "aiNote": "BF-02 · UC-20 · BR-39, BR-42 · 5.2: NOTI_FT29 · Local build: rows reach the outbox with status Failed \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains)\"; real delivery needs a real mailbox. · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -69,7 +69,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "note": "BF-02 · UC-17 · 5.2: CAL_FT01, CAL_FT02 · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8",
+          "aiNote": "BF-02 · UC-17 · 5.2: CAL_FT01, CAL_FT02 · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

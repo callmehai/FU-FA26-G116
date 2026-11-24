@@ -22,8 +22,9 @@ from template_document import make_document,refresh_cached_toc
 # Report 5.3 (System) is no longer generated here: it is built from
 # docs/08-reports/test-reports/cases/system/*.json by scripts/test_reports/system_cases.py build.
 # This script leaves the workbook untouched; Report 5.0 reads its case counts from that folder.
-FILES={'UAT':'Report5.4_Acceptance_Test.xlsx'}
-TEMPLATES={**FILES,'DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
+FILES={'UAT':'Report5.5_Acceptance_Test.xlsx'}
+# The course template keeps its own name (5.4); the generated file is Report 5.5, as on Drive.
+TEMPLATES={'UAT':'Report5.4_Acceptance_Test.xlsx','DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
 
 
 def write_json(path,data):

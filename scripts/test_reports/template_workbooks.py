@@ -377,11 +377,11 @@ def unit_book(path,cases,meta):
 
 def uat_book(path,cases,meta):
     t=Template(path);cover(t,'USER ACCEPTANCE TEST REPORT DOCUMENT',meta['date']);s=t.add('Statistics');s.clear(10);s.keep(22)
-    for a,v in {'B3':'TrustCabinet','B4':'SEP490-G116','E3':'TrustCabinet Team','E4':meta['date'],'B5':'SEP490-G116_Test_Report5.4_v1.0','B6':'No customer feedback or acceptance decision has been collected. Criteria below require representative-user execution.'}.items():s.put(a,v)
+    for a,v in {'B3':'TrustCabinet','B4':'SEP490-G116','E3':'TrustCabinet Team','E4':meta['date'],'B5':'SEP490-G116_Test_Report5.5_v1.0','B6':''}.items():s.put(a,v)
     s.height(6,55)
     for i,c in enumerate(cases,10):
         s.put('A'+str(i),c['id']);s.put('B'+str(i),c['title']);s.put('D'+str(i),c['actual'] or 'No response collected.');s.put('E'+str(i),c['status']);s.height(i,32)
-        s.notes['B'+str(i)]='Preconditions: '+c['precondition']+'\n\nProcedure:\n'+c['steps']+'\n\nExpected result: '+c['expected']+'\n\nSource: '+c['source']+ ('\nTester: '+c['tester']+'\nDate: '+c['executedAt']+'\nEvidence: '+c['evidence'] if c['tester'] else '')
+        # No cell Notes: the scenario details stay in the source cases, not in the workbook.
     extras=[('Business needs fit','Awaiting representative organizer, approver, participant and administrator feedback.'),('Ease of use','Awaiting customer feedback.'),('Improvements and new features','Awaiting customer feedback; no requests inferred.'),('Overall satisfaction','No ratings collected; an average score cannot be calculated.'),('Acceptance decision','Pending stakeholder review and sign-off.')]
     for i,(title,text) in enumerate(extras,18):s.put('A'+str(i),i-9);s.put('B'+str(i),title);s.put('D'+str(i),text);s.put('E'+str(i),'Pending');s.height(i,40)
     f=t.add('Customer Feedback Statistics');f.keep(28);f.clear(1)

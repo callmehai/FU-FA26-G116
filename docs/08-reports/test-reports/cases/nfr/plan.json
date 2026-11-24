@@ -1,7 +1,7 @@
 {
   "file": "Report5.4_System_Test_NFRs.xlsx",
   "source": "Report 3 §IV.2 Quality Attributes",
-  "environment": "Test server app.trustcabinet.workspace-hub.space (Staging) or a local build of the same app commit",
+  "environment": "Test server app.trustcabinet.workspace-hub.space (Staging) or a local build of the same app commit. Round 1 (23/11/2026): app commit 6baba24f; changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504), app server on 4 vCPU (ADR-0082)",
   "sheets": [
     {
       "sheet": "Security",

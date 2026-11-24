@@ -286,17 +286,22 @@ export default {
       title: 'Protection of stored data and backups',
       async run(qa) {
         const key = sql(`select storage_key from stored_files order by uploaded_at desc limit 1`)[0][0]
-        const direct = sh(`curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:8333/trustcabinet-dev/${key}`)
+        // The app server keeps files in a self-hosted SeaweedFS inside the Docker network (deploy/docker-compose.yml,
+        // service files); it must publish no port. The dev SeaweedFS on 127.0.0.1:8333 is unauthenticated on purpose
+        // and is not what this case judges.
+        const filesService = sh(`cd ../.. && sed -n '/^  files:/,/^  [a-z][a-z-]*:$/p' deploy/docker-compose.yml`)
+        const published = /^\s+(ports|network_mode):/m.test(filesService)
         const anon = await qa.api('anon')
         const m = await shared(qa)
         const docs = (await (await client(qa, 'memberC')).get(`/api/meetings/${m.id}/documents`)).body
         const leak = JSON.stringify(docs).includes(key)
         const secrets = sh(`cd ../.. && git grep -n -I -E 'Password=|ApiSecret\"[[:space:]]*:[[:space:]]*\"[^\"]+|SecretAccessKey\"[[:space:]]*:[[:space:]]*\"[^\"]+' -- 'backend/TrustCabinet.Web/appsettings*.json'`)
         const backup = sh(`cd ../.. && grep -n -e 'Mỗi lần deploy có image app đổi' -e 'Bản backup nằm cùng máy' deploy/README.md`)
-        actual(qa, `anonymous GET on the local storage bucket object: ${direct}; storage key in API responses: ${leak}; secrets in committed appsettings: ${secrets ? 'found' : 'none'}; backups (deploy/README.md): ${backup.replace(/\s+/g, ' ').slice(0, 260)}`)
+        actual(qa, `app server storage service publishes a port: ${published}; storage key in API responses: ${leak}; secrets in committed appsettings: ${secrets ? 'found' : 'none'}; backups (deploy/README.md): ${backup.replace(/\s+/g, ' ').slice(0, 260)}; only the database is dumped, the files and recordings volumes are not backed up`)
+        qa.expect(filesService, 'deploy/docker-compose.yml has the files service').toContain('seaweedfs')
+        qa.expect(published, 'the storage service is reachable only inside the Docker network').toBe(false)
         qa.expect(leak).toBe(false)
         qa.expect(secrets).toBe('')
-        qa.expect(direct, 'the local storage bucket answers an anonymous read').not.toBe('200')
         qa.expect(backup, 'backups are taken per deploy on the same host, not daily and off-host').toBe('')
         qa.expect((await anon.get(`/api/meetings/${m.id}/documents`)).status).toBe(401)
       },
@@ -649,6 +654,14 @@ export default {
     },
     {
       id: 'PERF-008',
+      role: 'anon',
+      title: 'Meeting audio AI processing time',
+      async run(qa) {
+        qa.inconclusive('The speech worker and the local language model do not run on this test machine; measure on the app server.')
+      },
+    },
+    {
+      id: 'PERF-009',
       role: PEOPLE.memberC,
       title: 'Online meeting room join time',
       async run(qa) {
@@ -681,7 +694,7 @@ export default {
       },
     },
     {
-      id: 'PERF-010',
+      id: 'PERF-011',
       role: PEOPLE.memberA,
       title: 'Report generation and export',
       async run(qa) {

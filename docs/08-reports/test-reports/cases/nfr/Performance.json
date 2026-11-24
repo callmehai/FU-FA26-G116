@@ -8,7 +8,7 @@
       "tool": "Playwright (Chromium, cache disabled), built bundle served by the backend",
       "target": "≤ 3 s to the meeting list being usable",
       "condition": "Internal network ≥ 10 Mbps; measure 5 times, record the slowest",
-      "note": "Local workstation (app, database and browser on one machine), built bundle served by a second instance of the same build. Load with many users is TC-PERF-004. · Evidence: QA run SYS-NFR 20261122-190841 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8",
+      "aiNote": "Local workstation (app, database and browser on one machine), built bundle served by a second instance of the same build. Load with many users is TC-PERF-004. · Evidence: QA run SYS-NFR 20261122-190841 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
       "actual": "0.74 s slowest of 5 (740, 488, 462, 526, 530 ms; built bundle, cache disabled)",
       "status": "Pass",
       "date": "2026-11-23",
@@ -25,7 +25,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-003",
@@ -38,7 +38,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070906-0c98bde8"
+      "aiNote": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070906-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-004",
@@ -51,7 +51,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Condition not met: one Windows workstation ran the app, PostgreSQL, Redis and the load generator, not the single-server Docker deployment; reads only (meeting list, notifications, meeting details, /auth/me), each user every 0.5 s. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Partial pass: one workstation, not the Docker server; reads only. Condition not met: one Windows workstation ran the app, PostgreSQL, Redis and the load generator, not the single-server Docker deployment; reads only (meeting list, notifications, meeting details, /auth/me), each user every 0.5 s. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-005",
@@ -64,7 +64,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-006",
@@ -77,7 +77,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Condition not met: the local database held 218 meetings, 21 documents and about 2,650 audit entries, far below the stated volume. Re-measure on seeded data before acceptance. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Partial pass: 218 of 10,000 meetings in the database. Condition not met: the local database held 218 meetings, 21 documents and about 2,650 audit entries, far below the stated volume. Re-measure on seeded data before acceptance. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-007",
@@ -90,10 +90,22 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Transfer is local, so the time is mostly the server acknowledging and queuing. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Transfer is local, so the time is mostly the server acknowledging and queuing. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
       "id": "TC-PERF-008",
+      "requirement": "Meeting audio upload and AI processing",
+      "scenario": "Transcript of a 60-minute recording and the summary are produced in time",
+      "tool": "Manual (stopwatch) on a build with the speech worker",
+      "target": "Transcript ≤ 1.5 × audio duration; summary ≤ 5 min after the request",
+      "condition": "One recording per processing worker",
+      "status": "Blocked",
+      "aiNote": "Not measured: needs speech worker and local AI (server app). The speech worker and the local language model do not run on the test machine. · Evidence: QA run SYS-NFR 20261122-184514 · Restored per review PR 507 (the target stays in Report 3 §IV.2.2 and targets are never adjusted to fit the app). Partial evidence: the load test of 03/11/2026 on the test server (2 vCPU) transcribed 5-minute room-mic audio with a real-time factor of 0.19–0.25, well under 1.5 × duration; the summary time was not measured, and the server has since moved to 4 vCPU (ADR-0082). To measure: transcribe a 60-minute recording on the app server and read the time from the transcription progress bar (#504) or the speech worker log, then time the AI draft. · Run by the QA runner on a local build of app 6baba24f.",
+      "date": "2026-11-23",
+      "tester": "Nguyễn Trường Huy"
+    },
+    {
+      "id": "TC-PERF-009",
       "requirement": "Online meeting room capacity",
       "scenario": "Time to join the online room (\"Vào phòng\" → in the room) for three people",
       "tool": "Playwright with fake camera and microphone, local LiveKit",
@@ -103,22 +115,22 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Joining only; capacity of 30, audio delay and 3 rooms at once are TC-PERF-009. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Joining only; capacity of 30, audio delay and 3 rooms at once are TC-PERF-010. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     },
     {
-      "id": "TC-PERF-009",
+      "id": "TC-PERF-010",
       "requirement": "Online meeting room capacity",
       "scenario": "30 participants with audio and video plus a screen share; 3 rooms at once; audio delay",
       "tool": "Manual rehearsal with real devices",
       "target": "30 participants, ≤ 400 ms mouth-to-ear, 3 rooms",
       "condition": "≥ 2 Mbps per participant",
       "status": "Skip",
-      "note": "Needs a rehearsal with 30 real devices and a way to measure mouth-to-ear delay; not done in Round 1.",
+      "aiNote": "Skip: needs 30 real devices; load test 03/11 gives partial numbers. Needs a rehearsal with 30 real devices and a way to measure mouth-to-ear delay; not done in Round 1. · Partial evidence: load test of 03/11/2026 on the test server (2 vCPU): 30 people joining in 10 s, join API p95 169 ms, hub ready p95 355 ms, 0 errors; LiveKit carried 25–30 people with under 8 cameras; over the real network join 1–2.4 s, RTT 59–66 ms, 0% loss, jitter ≤ 4 ms. Mouth-to-ear delay and 3 rooms at once not measured.",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
     },
     {
-      "id": "TC-PERF-010",
+      "id": "TC-PERF-011",
       "requirement": "Report generation and export",
       "scenario": "Open \"Báo cáo\" and export 12 months to Excel",
       "tool": "Playwright and Node.js script",
@@ -128,7 +140,7 @@
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
-      "note": "Evidence: QA run SYS-NFR 20261122-185048 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8"
+      "aiNote": "Evidence: QA run SYS-NFR 20261122-185048 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
     }
   ]
 }

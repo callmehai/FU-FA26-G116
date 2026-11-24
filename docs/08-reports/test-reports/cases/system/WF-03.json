@@ -20,7 +20,7 @@
           "preconditions": [
             "SYS_WF02_TC08 passed: \"[SYS] Họp giao ban tuần 49\" is Đã công bố with Chủ toạ Member A, Thư ký Member B, Member C and a guest."
           ],
-          "note": "BF-03 · UC-21 · BR-62 · MSG110 · 5.2: MEET_FT60 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-21 · BR-62 · MSG110 · 5.2: MEET_FT60 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -45,7 +45,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "note": "BF-03 · UC-31 · MSG147 · 5.2: PART_FT71, PART_FT73 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-31 · MSG147 · 5.2: PART_FT71, PART_FT73 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -69,7 +69,7 @@
           "preconditions": [
             "TC01 passed; the agenda of WF-02 has two items."
           ],
-          "note": "BF-03 · UC-24 · BR-69, BR-73 · MSG64 · 5.2: AGENDA_FT28 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-24 · BR-69, BR-73 · MSG64 · 5.2: AGENDA_FT28 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -95,7 +95,7 @@
           "preconditions": [
             "TC03 passed; the PDF uploaded in SYS_WF02_TC04 is in the meeting."
           ],
-          "note": "BF-03 · UC-54, UC-74 · BR-160, BR-290 · MSG217, MSG253 · 5.2: VOTE_FT12, DOC_FT93 · Turnout is 0/4, not 0/3: the guest invited in WF-02 counts as an eligible voter. · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-54, UC-74 · BR-160, BR-290 · MSG217, MSG253 · 5.2: VOTE_FT12, DOC_FT93 · Turnout is 0/4, not 0/3: the guest invited in WF-02 counts as an eligible voter. · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -121,7 +121,7 @@
           "preconditions": [
             "TC04 passed."
           ],
-          "note": "BF-03 · UC-55, UC-56 · MSG227, MSG229 · 5.2: VOTE_FT14, VOTE_FT18 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-55, UC-56 · MSG227, MSG229 · 5.2: VOTE_FT14, VOTE_FT18 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -147,7 +147,7 @@
           "preconditions": [
             "TC05 passed."
           ],
-          "note": "BF-03 · UC-57, UC-77, UC-25 · BR-165 · MSG235, MSG271, MSG65 · 5.2: VOTE_FT21, AGENDA_FT39, AGENDA_FT34 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-57, UC-77, UC-25 · BR-165 · MSG235, MSG271, MSG65 · 5.2: VOTE_FT21, AGENDA_FT39, AGENDA_FT34 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -173,7 +173,7 @@
           "preconditions": [
             "TC06 passed."
           ],
-          "note": "BF-03 · UC-22 · BR-75 · MSG111 · 5.2: MEET_FT64 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8",
+          "aiNote": "BF-03 · UC-22 · BR-75 · MSG111 · 5.2: MEET_FT64 · Evidence: QA run SYS-WF03 20261123-065117-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

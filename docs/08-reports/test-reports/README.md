@@ -13,7 +13,7 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
 | `Report5.3_System_Test_FRs.xlsx` | Mười workflow end-to-end (WorkFlow1 → WorkFlow10) theo BF-01 → BF-04; sinh từ `cases/system/` bằng `scripts/test_reports/system_cases.py` — xem [cases/system/README.md](cases/system/README.md) |
 | `Report5.4_System_Test_NFRs.xlsx` | Yêu cầu phi chức năng (Report 3 §IV.2): năm sheet Security, Performance, Usability, Reliability, Availability; sinh từ `cases/nfr/` bằng `scripts/test_reports/nfr_cases.py` — xem [cases/nfr/README.md](cases/nfr/README.md) |
-| `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
+| `Report5.5_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
 **5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-16), test case nghiệp vụ.** Nguồn là JSON trong
 [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
@@ -52,7 +52,7 @@ Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feat
 | FE-16 | Calendar | 68 | 98 |
 | | **Tổng** | **875** | **1537** |
 
-`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.4_Acceptance_Test.xlsx` (trên Drive là 5.5). Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
+`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.5_Acceptance_Test.xlsx`. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
 Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
@@ -79,8 +79,8 @@ UTC được viết từ chính production function — chữ ký hàm, code t�
 Cột `Note` chỉ ghi truy xuất `UC-xx · BR-xx · MSGnn` (kèm `Deviation:` khi code lệch UC);
 tuyệt đối không ghi `Automated:`, đường dẫn file test hay tên test method vào bất kỳ trường nào.
 
-Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Di chuột hoặc mở
-Notes tại ô tiêu chí để xem precondition, procedure, expected result và source của từng kịch bản.
+Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Workbook không có Notes (ghi chú ô) và ô
+Notes để trống; precondition, procedure, expected result và source của từng kịch bản nằm trong `scripts/test_reports/manual_cases.py`.
 
 ## Sinh lại
 

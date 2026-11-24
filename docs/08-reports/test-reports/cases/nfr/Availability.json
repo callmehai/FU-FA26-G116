@@ -10,7 +10,7 @@
       "when": "Collect four working weeks (Mon–Fri 08:00–18:00 UTC+7)",
       "then": "Uptime ≥ 99% excluding announced maintenance",
       "priority": "Medium",
-      "note": "Skip in Round 1: needs weeks of monitoring of the deployed server.",
+      "aiNote": "Skip: needs weeks of monitoring of the server. Skip in Round 1: needs weeks of monitoring of the deployed server.",
       "status": "Skip",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
@@ -24,10 +24,11 @@
       "when": "Restore onto a clean host following deploy/README.md",
       "then": "Service back within 4 hours, losing at most 24 hours of data",
       "priority": "High",
-      "note": "Blocked: no restore drill has been done; backups are taken per deploy and kept on the same server (see TC-SEC-009), so a lost server loses its backups and the RPO cannot be guaranteed.",
+      "aiNote": "Blocked: no restore drill yet (SCRUM-215). Blocked: no restore drill has been done; backups are taken per deploy and kept on the same server, and the files and recordings volumes are not backed up (TC-SEC-009, SCRUM-215), so a lost server loses its backups and the RPO cannot be guaranteed. Stays Blocked until one restore drill is run.",
       "status": "Blocked",
       "date": "2026-11-23",
-      "tester": "Nguyễn Trường Huy"
+      "tester": "Nguyễn Trường Huy",
+      "defect": "SCRUM-215"
     },
     {
       "id": "TC-AVA-003",
@@ -38,7 +39,7 @@
       "when": "Sign in with a password; open the meeting list, a meeting's documents and votes; try to join an online meeting's room",
       "then": "Sign-in and the meeting, document and voting screens work; the room says it cannot connect instead of failing silently",
       "priority": "High",
-      "note": "Measured: sign-in 200; list, documents and votes open; the lobby shows \"Không kết nối được tới phòng họp. Vui lòng thử lại.\". Emails queue in the outbox (SYS_WF09_TC02); a failed transcription keeps the audio (TC-REL-003). · Evidence: QA run SYS-NFR 20261122-185048 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8",
+      "aiNote": "Measured: sign-in 200; list, documents and votes open; the lobby shows \"Không kết nối được tới phòng họp. Vui lòng thử lại.\". Emails queue in the outbox (SYS_WF09_TC02); a failed transcription keeps the audio (TC-REL-003). · Evidence: QA run SYS-NFR 20261122-185048 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
@@ -52,7 +53,7 @@
       "when": "GET /api/health on both",
       "then": "200 with status ok, the service name, version and database ok",
       "priority": "Medium",
-      "note": "Measured: local and test server both {\"status\":\"ok\",\"service\":\"TrustCabinet.Web\",\"version\":\"0.1.0\",\"database\":\"ok\"}. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8",
+      "aiNote": "Measured: local and test server both {\"status\":\"ok\",\"service\":\"TrustCabinet.Web\",\"version\":\"0.1.0\",\"database\":\"ok\"}. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
       "status": "Pass",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"

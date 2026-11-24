@@ -42,7 +42,7 @@ lấy từ mẫu môn học).
   "when": "Signed in as Member D, open the copied URL; then call GET /api/meetings/{id}",
   "then": "The page shows the same not-found screen ...; the API answers 404",
   "priority": "Critical",
-  "note": "tuỳ chọn"
+  "aiNote": "Measured: meeting 404 = unknown id 404 ... · Evidence: QA run SYS-NFR 20261123-070126"
 }
 ```
 
@@ -82,8 +82,12 @@ Thêm vào JSON của case:
 
 - `status`: `Not Run` (mặc định), `Pass`, `Fail`, `Blocked`, `Skip` — giống dropdown của mẫu.
 - `Pass`/`Fail` cần `date`, `tester`; sheet `metric` cần thêm `actual` (số đo thật, kèm đơn vị).
-- `Fail` cần `defect` (`SCRUM-xxx` hoặc lý do ngắn). `Blocked`/`Skip` ghi lý do trong `note` (ví dụ chưa có k6, chưa có
-  môi trường 100 người dùng).
-- Chạy trên server test hoặc bản local cùng commit `app`; ghi khác biệt môi trường vào `note`. Ảnh để trong
-  `tests/qa/out/` (đã gitignore).
+- `Fail` cần `defect` (`SCRUM-xxx` hoặc lý do ngắn). `Blocked`/`Skip` ghi lý do trong `aiNote` (ví dụ chưa có k6, chưa
+  có môi trường 100 người dùng).
+- **Cột Notes để trống**; không có trường `note` (`check` chặn nếu có). Mọi điều cần ghi — ai chạy, số đo, mã lượt chạy,
+  môi trường, lý do — vào `aiNote`; đạt khi điều kiện test chưa đủ thì mở đầu bằng `Partial pass: …`. Cùng dòng Report 3,
+  `condition`, ngày và người test, `aiNote` nằm ở cột **AI context** bị ẩn ngay bên phải Notes: để agent và reviewer đọc,
+  không hiện khi in báo cáo.
+- Chạy trên server test hoặc bản local cùng commit `app`; ghi môi trường vào `aiNote`. Ảnh để trong `tests/qa/out/`
+  (đã gitignore).
 - `check`, `build --overwrite`, rồi commit JSON, preview và workbook trong cùng một commit.

@@ -9,7 +9,7 @@ và một sheet `WorkFlowN`. Workbook được sinh từ thư mục này: không
 | `WF-xx.json` | Case của một workflow | Người nhận workflow đó |
 | `preview/WF-xx.md` | Bản Markdown sinh ra để đọc trong PR | Không sửa tay |
 
-Mẫu đã viết đầy đủ: [WF-02.json](WF-02.json) (Chuẩn bị và duyệt họp). Các file khác mới có khung nhóm.
+Cả mười workflow đã có case và đã chạy Round 1; [WF-02.json](WF-02.json) (Chuẩn bị và duyệt họp) là mẫu để đọc trước.
 
 ## Lệnh
 
@@ -39,7 +39,7 @@ case Failed thì các case phụ thuộc phía sau ghi `N/A` kèm lý do trong `
   "procedure": ["As the Organizer open the TC01 meeting and click \"Gửi duyệt\".", "..."],
   "expected": ["Toast \"Đã gửi cuộc họp để duyệt.\"; status \"Chờ duyệt\" ...", "..."],
   "preconditions": ["TC01 to TC04 passed."],
-  "note": "BF-02 · UC-18 · BR-33 · MSG78 · 5.2: MEET_FT41"
+  "aiNote": "BF-02 · UC-18 · BR-33 · MSG78 · 5.2: MEET_FT41 · Evidence: QA run SYS-WF02 20261123-064947"
 }
 ```
 
@@ -52,7 +52,10 @@ case Failed thì các case phụ thuộc phía sau ghi `N/A` kèm lý do trong `
 - `expected`: điều nhìn thấy được, kiểm được ở mỗi bên: toast, trạng thái, chuông thông báo, email, lịch, lịch sử.
   Hiệu ứng xuyên Feature là trọng tâm của 5.3.
 - `preconditions`: case nào trước đó phải Passed, và dữ liệu hay tài khoản cần thêm.
-- `note`: bắt đầu bằng BF của workflow, rồi `UC · BR · MSG · 5.2: <ID case 5.2 liên quan>`.
+- Không có trường `note`: cột Note của workbook để trống (`check` chặn nếu có).
+- `aiNote`: bắt đầu bằng BF của workflow, rồi `UC · BR · MSG · 5.2: <ID case 5.2 liên quan>`, ai chạy (người hay
+  `QA runner`), mã lượt chạy, môi trường và lý do mọi thay đổi. Workbook đặt nó ở cột **AI context** (cột P) bị ẩn, bên phải Note: để agent và reviewer đọc, không hiện
+  khi in báo cáo.
 - Role theo [ADR-0075](../../../../05-decisions/0075-bo-vai-tro-he-thong-chu-toa-thu-ky.md): vai trò hệ thống chỉ có
   Thành viên, Phê duyệt viên, Quản trị viên; Chủ toạ và Thư ký là vai trò **trong cuộc họp**.
 - Cấm: `Automated:`, tên test method, đường dẫn `tests/`, `frontend/src`, `backend/`. 5.3 mô tả hệ thống đang chạy, không
@@ -72,7 +75,8 @@ case Failed thì các case phụ thuộc phía sau ghi `N/A` kèm lý do trong `
 
    `round2/date2/tester2`, `round3/…` cho các vòng sau. Giá trị hợp lệ: `Passed`, `Failed`, `Pending`, `N/A`.
    Chưa chạy thì để trống (workbook hiện `Pending`).
-3. `Failed` bắt buộc có `Bug: SCRUM-xxx` (hoặc lý do ngắn nếu chưa có ticket) trong `note`. `N/A` ghi lý do trong `note`.
+3. `Failed` bắt buộc có `Bug: SCRUM-xxx` (hoặc lý do ngắn nếu chưa có ticket) trong `aiNote`. `N/A` ghi lý do trong `aiNote`.
+   Ai chạy, môi trường và commit `app` đã test cũng ghi trong `aiNote`.
 4. Ảnh bằng chứng để ngoài repo hoặc trong `tests/qa/out/` (đã gitignore); không nhúng vào workbook.
 5. `check`, `build --overwrite`, rồi commit cả JSON, preview và workbook trong cùng một commit.
 
