@@ -1,125 +1,160 @@
-<mxfile host="app.diagrams.net">
+<mxfile host="Electron">
   <diagram name="BF-02" id="0">
-    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3323" dy="2329" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="org" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Meeting Organizer" vertex="1">
-          <mxGeometry height="1920" width="440" x="20" y="20" as="geometry" />
+        <mxCell id="org" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Member (Meeting Creator)" vertex="1">
+          <mxGeometry height="2260" width="440" x="20" y="20" as="geometry" />
         </mxCell>
         <mxCell id="start" parent="org" style="ellipse;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="Start" vertex="1">
           <mxGeometry height="30" width="30" x="105" y="65" as="geometry" />
         </mxCell>
-        <mxCell id="o1" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Create Meeting (title, schedule, mode, location, sensitivity, participants)" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="145" as="geometry" />
-        </mxCell>
-        <mxCell id="o2" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign First Secretary" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="235" as="geometry" />
+        <mxCell id="o1" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Create Meeting (schedule, mode, location, sensitivity, participants)" vertex="1">
+          <mxGeometry height="60" width="170" x="35" y="235" as="geometry" />
         </mxCell>
         <mxCell id="o3" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Select Meeting Approver" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="685" as="geometry" />
-        </mxCell>
-        <mxCell id="o4" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Submit for Approval" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="775" as="geometry" />
-        </mxCell>
-        <mxCell id="o5" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Edit Meeting" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="955" as="geometry" />
-        </mxCell>
-        <mxCell id="o6" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Publish Meeting" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="1135" as="geometry" />
-        </mxCell>
-        <mxCell id="o7" parent="org" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Edit Meeting Needed?" vertex="1">
-          <mxGeometry height="76" width="160" x="40" y="1572" as="geometry" />
-        </mxCell>
-        <mxCell id="o8" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Reschedule Meeting (time, location, link)" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="1675" as="geometry" />
-        </mxCell>
-        <mxCell id="end" parent="org" style="ellipse;shape=endState;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="End" vertex="1">
-          <mxGeometry height="30" width="30" x="305" y="1775" as="geometry" />
-        </mxCell>
-        <mxCell id="sec" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Secretary" vertex="1">
-          <mxGeometry height="1920" width="240" x="460" y="20" as="geometry" />
-        </mxCell>
-        <mxCell id="s1" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Manage Participants &amp; Invite Guests" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="325" as="geometry" />
-        </mxCell>
-        <mxCell id="s2" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign Meeting Roles (Chair, Participant)" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="415" as="geometry" />
-        </mxCell>
-        <mxCell id="s3" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Prepare Agenda Items" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="505" as="geometry" />
-        </mxCell>
-        <mxCell id="s4" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Add Meeting Documents" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="595" as="geometry" />
-        </mxCell>
-        <mxCell id="s5" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign Missing Meeting Role" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="1225" as="geometry" />
-        </mxCell>
-        <mxCell id="tc" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="TrustCabinet" vertex="1">
-          <mxGeometry height="1920" width="440" x="700" y="20" as="geometry" />
-        </mxCell>
-        <mxCell id="t1" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Meeting as Draft" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="145" as="geometry" />
-        </mxCell>
-        <mxCell id="t2" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to WaitingApproval &amp; Notify Approver" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="775" as="geometry" />
-        </mxCell>
-        <mxCell id="t3" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Rejected &amp; Notify Organizer" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="955" as="geometry" />
-        </mxCell>
-        <mxCell id="t4" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Approved &amp; Notify Organizer" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="1045" as="geometry" />
-        </mxCell>
-        <mxCell id="t5" parent="tc" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Chair &amp; Secretary Assigned?" vertex="1">
-          <mxGeometry height="76" width="160" x="40" y="1212" as="geometry" />
-        </mxCell>
-        <mxCell id="t6" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Published &amp; Create Invitations" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="1315" as="geometry" />
-        </mxCell>
-        <mxCell id="t7" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Invitation Response (once)" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="1495" as="geometry" />
-        </mxCell>
-        <mxCell id="t8" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save New Schedule &amp; Notify Invitees" vertex="1">
-          <mxGeometry height="50" width="170" x="235" y="1675" as="geometry" />
-        </mxCell>
-        <mxCell id="apr" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Meeting Approver" vertex="1">
-          <mxGeometry height="1920" width="240" x="1140" y="20" as="geometry" />
-        </mxCell>
-        <mxCell id="a1" parent="apr" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Review Meeting" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="865" as="geometry" />
         </mxCell>
-        <mxCell id="a2" parent="apr" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Approve Meeting?" vertex="1">
-          <mxGeometry height="76" width="160" x="40" y="942" as="geometry" />
+        <mxCell id="o4" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Submit for Approval" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="955" as="geometry" />
         </mxCell>
-        <mxCell id="par" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Participant / Guest" vertex="1">
-          <mxGeometry height="1920" width="300" x="1380" y="20" as="geometry" />
+        <mxCell id="o5" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Edit Meeting" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1135" as="geometry" />
         </mxCell>
-        <mxCell id="p1" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Open Invitation (Guest verifies email)" vertex="1">
-          <mxGeometry height="50" width="170" x="65" y="1405" as="geometry" />
-        </mxCell>
-        <mxCell id="p2" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Accept / Decline Invitation (once)" vertex="1">
-          <mxGeometry height="50" width="170" x="65" y="1495" as="geometry" />
-        </mxCell>
-        <mxCell id="eml" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Email Service" vertex="1">
-          <mxGeometry height="1920" width="240" x="1680" y="20" as="geometry" />
-        </mxCell>
-        <mxCell id="m1" parent="eml" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Send Invitation Emails" vertex="1">
+        <mxCell id="o6" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Publish Meeting" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="1315" as="geometry" />
         </mxCell>
+        <mxCell id="o7" parent="org" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Reschedule Needed?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="1752" as="geometry" />
+        </mxCell>
+        <mxCell id="o8" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Reschedule Meeting (time, location, link)" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="1855" as="geometry" />
+        </mxCell>
+        <mxCell id="end" parent="org" style="ellipse;shape=endState;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="End" vertex="1">
+          <mxGeometry height="30" width="30" x="305" y="2040" as="geometry" />
+        </mxCell>
+        <mxCell id="o0" parent="org" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Find Common Time Slot?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="oF" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Search Time Slots (invitees, duration, date range)" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="133" as="geometry" />
+        </mxCell>
+        <mxCell id="oS" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Select Slot &amp; Confirm Draft" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="o9" parent="org" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Cancel Meeting?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="1970" as="geometry" />
+        </mxCell>
+        <mxCell id="o10" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Cancel Meeting (reason required)" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="2095" as="geometry" />
+        </mxCell>
+        <mxCell id="sec" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Chair / Secretary" vertex="1">
+          <mxGeometry height="2260" width="240" x="460" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Manage Participants &amp; Invite Guests" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign Meeting Roles (Chair, Secretary, Member)" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="595" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Prepare Agenda Items" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Add Meeting Documents" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="775" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign Missing Meeting Role" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="1405" as="geometry" />
+        </mxCell>
+        <mxCell id="tc" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="TrustCabinet" vertex="1">
+          <mxGeometry height="2260" width="440" x="700" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Meeting as Draft" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to WaitingApproval &amp; Notify Approver" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="955" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Rejected &amp; Notify Creator" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="t4" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Approved &amp; Notify Creator" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1225" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" parent="tc" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Chair &amp; Secretary Assigned?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="1392" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Published &amp; Create Invitations" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1495" as="geometry" />
+        </mxCell>
+        <mxCell id="t7" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Invitation Response" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1675" as="geometry" />
+        </mxCell>
+        <mxCell id="t8" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save New Schedule &amp; Notify Invitees" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1855" as="geometry" />
+        </mxCell>
+        <mxCell id="tF" parent="tc" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Slot Fits Everyone?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="tA" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Show Common Free Slots" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="133" as="geometry" />
+        </mxCell>
+        <mxCell id="tB" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Show Slots with Most People Free" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="t9" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Cancelled &amp; Notify Invitees" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="2095" as="geometry" />
+        </mxCell>
+        <mxCell id="apr" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Approver" vertex="1">
+          <mxGeometry height="2260" width="240" x="1140" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" parent="apr" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Review Meeting" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="1045" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" parent="apr" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Approve Meeting?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="1122" as="geometry" />
+        </mxCell>
+        <mxCell id="par" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Participant / Guest" vertex="1">
+          <mxGeometry height="2260" width="300" x="1380" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Open Invitation (Guest verifies email)" vertex="1">
+          <mxGeometry height="50" width="170" x="65" y="1585" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Accept / Decline Invitation" vertex="1">
+          <mxGeometry height="50" width="170" x="65" y="1675" as="geometry" />
+        </mxCell>
+        <mxCell id="eml" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Resend Email" vertex="1">
+          <mxGeometry height="2260" width="240" x="1680" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" parent="eml" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Send Invitation Emails" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="1495" as="geometry" />
+        </mxCell>
         <mxCell id="m2" parent="eml" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Send Schedule Update Emails" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="1675" as="geometry" />
+          <mxGeometry height="50" width="170" x="35" y="1855" as="geometry" />
         </mxCell>
-        <mxCell id="e0" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o1" value="">
+        <mxCell id="m3" parent="eml" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Send Cancellation Emails" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="2095" as="geometry" />
+        </mxCell>
+        <mxCell id="endC" parent="eml" style="ellipse;shape=endState;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="End" vertex="1">
+          <mxGeometry height="30" width="30" x="105" y="2185" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o0" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e1" edge="1" parent="1" source="o1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="t1" value="">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e1" edge="1" parent="1" source="o1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="t1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="460" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="e2" edge="1" parent="1" source="t1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="o2" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e3" edge="1" parent="1" source="o2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="s1" value="">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e2" edge="1" parent="1" source="t1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="s1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="550" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e4" edge="1" parent="1" source="s1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s2" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -185,7 +220,12 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e25" edge="1" parent="1" source="t7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o7" value="">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="1758" />
+              <mxPoint x="140" y="1758" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e26" edge="1" parent="1" source="o7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o8" value="Yes">
           <mxGeometry relative="1" as="geometry" />
@@ -196,10 +236,76 @@
         <mxCell id="e28" edge="1" parent="1" source="t8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e29" edge="1" parent="1" source="m2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="p2" value="">
+        <mxCell id="e29" edge="1" parent="1" source="m2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1800" y="1955" />
+              <mxPoint x="140" y="1955" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e30" edge="1" parent="1" source="o7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="o9" value="No">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="40" y="1810" />
+              <mxPoint x="40" y="2028" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eA" edge="1" parent="1" source="o0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="oF" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e30" edge="1" parent="1" source="o7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="end" value="No">
+        <mxCell id="eB" edge="1" parent="1" source="o0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o1" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eC" edge="1" parent="1" source="oF" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="tF" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eD" edge="1" parent="1" source="tF" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="tA" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eE" edge="1" parent="1" source="tF" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="tB" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF" edge="1" parent="1" source="tB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="oS" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eG" edge="1" parent="1" source="tA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="oS" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eH" edge="1" parent="1" source="oS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="t1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="415" />
+              <mxPoint x="820" y="415" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eI" edge="1" parent="1" source="o9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="end" value="No">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="2028" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eJ" edge="1" parent="1" source="o9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="o10" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eK" edge="1" parent="1" source="o10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="t9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eL" edge="1" parent="1" source="t9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eM" edge="1" parent="1" source="m3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="endC" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
