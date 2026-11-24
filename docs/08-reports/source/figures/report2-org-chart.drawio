@@ -22,7 +22,7 @@
         <mxCell id="qa" value="&lt;b&gt;Nguyen Truong Huy&lt;/b&gt;&lt;br&gt;Test Lead" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
           <mxGeometry x="500" y="290" width="225" height="72" as="geometry" />
         </mxCell>
-        <mxCell id="dev" value="&lt;b&gt;Nguyen Quang Huy&lt;/b&gt;&lt;br&gt;Developer" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
+        <mxCell id="dev" value="&lt;b&gt;Nguyen Quang Huy&lt;/b&gt;&lt;br&gt;Architecture / Developer" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
           <mxGeometry x="745" y="290" width="225" height="72" as="geometry" />
         </mxCell>
         <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="sup" target="lead">
