@@ -7,14 +7,14 @@
         {
           "exception": "N/A",
           "id": "UTC001",
-          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, MinutesEditor].",
+          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, VoiceCollector].",
           "log": "Capabilities replaced; audit row RolePermissionsUpdated (details { name, before, after }); log \"Permissions for role {RoleId} changed by {ActorId}; 2 account(s) to notify.\"; capabilities-changed notice sent after commit",
           "note": "UC-11 · BR-16 · BR-23 · BR-313 · MSG16",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Roles: \"Quản trị viên\" [AdminUsers], \"Thư ký\" [MeetingCreator], 2 active accounts hold \"Thư ký\"."
           ],
-          "return": "RolePermissionResult Success (MSG16) with the matrix showing \"Thư ký\" = [MeetingCreator, MinutesEditor]; the 2 active holders are told their capabilities changed, their sessions stay.",
+          "return": "RolePermissionResult Success (MSG16) with the matrix showing \"Thư ký\" = [MeetingCreator, VoiceCollector]; the 2 active holders are told their capabilities changed, their sessions stay.",
           "type": "Normal",
           "round1": "Passed",
           "date1": "2026-11-23",
@@ -86,7 +86,7 @@
         {
           "exception": "N/A",
           "id": "UTC006",
-          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, MinutesEditor].",
+          "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, VoiceCollector].",
           "log": "Error log \"Permissions for role {RoleId} changed, but telling its accounts failed.\"",
           "note": "UC-11 · BR-313 · MSG16",
           "preconditions": [

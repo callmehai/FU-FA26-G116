@@ -1,5 +1,6 @@
 import { DisconnectReason, MediaDeviceFailure, type Participant, type RoomOptions, VideoPresets } from 'livekit-client'
 import type { CallParticipantMetadata, MeetingRole } from '../../../types/call'
+import type { CallEnd } from '../../recordings/hybridMic'
 import type { GuestMeeting } from '../../../types/guest'
 import type { Meeting } from '../../../types/meeting'
 
@@ -74,6 +75,23 @@ export function meetingRoleOf(participant: Participant): MeetingRole | undefined
 }
 
 /** Why the room ended for this tab, in words the user can act on. */
+/** Why the call ended for this tab, as the room mic needs it (ADR-0085). */
+export function callEnd(reason: DisconnectReason | undefined): CallEnd {
+  switch (reason) {
+    case DisconnectReason.CLIENT_INITIATED:
+      return 'left'
+    case DisconnectReason.DUPLICATE_IDENTITY:
+      return 'movedAway'
+    case DisconnectReason.PARTICIPANT_REMOVED:
+      return 'removed'
+    case DisconnectReason.ROOM_DELETED:
+    case DisconnectReason.ROOM_CLOSED:
+      return 'closed'
+    default:
+      return 'lost'
+  }
+}
+
 export function disconnectMessage(reason: DisconnectReason | undefined): { text: string; canRejoin: boolean } {
   switch (reason) {
     case DisconnectReason.CLIENT_INITIATED:
