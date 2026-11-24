@@ -28,7 +28,7 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
 
 **Kho cá nhân và gắn/gỡ (vẽ 27/10/2026, SCRUM-91; `.txt` as-built một phần 28/10).**
 
-- Hạn mức 10 GB toàn hệ thống (ADR-0034, PO 27/10/2026) và giới hạn 10 tệp / 100 MB (BR-319; họp 19/11/2026, trước là 200 MB): UC-36, UC-33b AF-1 và UC-33a AF-1
+- Hạn mức toàn hệ thống (ADR-0034, PO 27/10/2026; 250 GB từ 24/11/2026, ADR-0084) và giới hạn 10 tệp / 100 MB (BR-319; họp 19/11/2026, trước là 200 MB): UC-36, UC-33b AF-1 và UC-33a AF-1
   (tải từ máy) cùng kiểm tổng dung lượng đã lưu (BR-333) và trả `MSG346` khi đầy; UC-36 và UC-33b AF-1 thêm nhánh `MSG288`.
   Sequence vẽ một lần gửi; hàng đợi ở trình duyệt gửi từng tệp một request (ADR-0033, BR-286), không vẽ lại vòng lặp.
 - UC-34b (Quản trị viên đọc kho của tài khoản đã khoá, ADR-0035) vẽ theo code PR #169: kiểm tài khoản đã khoá, ghi nhật ký kiểm toán
@@ -64,7 +64,7 @@ kích thước khai báo trước khi đọc thân request (EX-8), đọc reques
 từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 10 MB — EX-3/EX-8; họp 19/11/2026, trước là 200 MB / 50 MB), ghi dòng tệp lưu trữ trước khi đẩy byte,
 đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Số trang PDF do server đếm (trước
 02/11/2026 là trình duyệt gửi kèm `pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
-`:File Storage` là kho đối tượng R2 ([ADR-0024](../../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md));
+`:File Storage` là kho đối tượng S3 tự host (SeaweedFS, [deploy/README.md §9](../../../deploy/README.md)); file `.txt`, tab draw.io và PNG của UC-33a, UC-33b, UC-36 còn ghi tên cũ `:Object Storage (R2)`, chờ vẽ lại;
 lỗi ở bước nào thì xoá các tệp đã đẩy để giữ "tất cả hoặc không" (BR-286). Job dọn tệp mồ côi (BR-213) là job nền nên không vẽ
 sequence, theo §10 của [README chung](../README.md).
 
