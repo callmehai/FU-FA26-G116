@@ -102,7 +102,7 @@ bên ngoài ranh giới TrustCabinet mà backend gọi ra (hoặc nó gọi vào
 actor**: gỡ băng và Voice ID (chạy trên máy của nhóm, ADR-0026/0036), LiveKit (hạ tầng
 phòng họp), PostgreSQL, Redis, SMTP dự phòng của Resend Email, và kho tệp SeaweedFS (container trên chính server `app`,
 ADR-0084). Ngày 25/11/2026 bỏ actor *File Storage* (trước là Cloudflare R2) vì kho tệp đã nằm trong hệ thống, và đưa
-*AI Drafting Service* vào danh sách khoá vì quản trị có thể chọn API bên ngoài (ADR-0056); chờ PO xác nhận. "Internal user" và "System" không có trong bảng
+*AI Drafting Service* vào danh sách khoá vì quản trị có thể chọn API bên ngoài (ADR-0056). "Internal user" và "System" không có trong bảng
 actor của Report 3 §4.1; các UC còn ghi hai tên này sẽ được thay bằng danh sách vai trò khi BA rà tiếp.
 
 Chair, Secretary, Participant là **vai trò trong cuộc họp** (`MeetingParticipant.MeetingRole`), độc lập với vai trò hệ
