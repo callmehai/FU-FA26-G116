@@ -1,0 +1,45 @@
+title UC-81b - Create Draft Meeting from Slot
+
+actor "Member" as Actor
+boundary "Find Meeting Time Page" as FindPage
+control ":Meeting Time Controller" as TimeController
+control ":Meeting Time Service" as TimeService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->FindPage: Choose a time slot
+activate FindPage
+
+FindPage->TimeController: Create draft meeting from slot
+activate TimeController
+TimeController->TimeService: createDraftFromSlot(actorId, slot)
+activate TimeService
+
+alt Slot is no longer free - EX-1
+    TimeService-->TimeController: MSG446 - This time slot is no longer free. Please choose another slot.
+    TimeController-->FindPage: MSG446 - This time slot is no longer free. Please choose another slot.
+    FindPage-->Actor: MSG446 - This time slot is no longer free. Please choose another slot.
+else Slot is still free
+    alt Actor has no right to create meetings - EX-2
+        TimeService-->TimeController: MSG448 - Only a Member can do this.
+        TimeController-->FindPage: MSG448 - Only a Member can do this.
+        FindPage-->Actor: MSG448 - Only a Member can do this.
+    else Actor is a Member
+        TimeService->MeetingRepository: Create Draft meeting
+        activate MeetingRepository
+        MeetingRepository->Database: Insert meeting
+        activate Database
+        Database-->MeetingRepository: Created
+        deactivate Database
+        MeetingRepository-->TimeService: Created meeting
+        deactivate MeetingRepository
+
+        TimeService-->TimeController: MSG29 - Meeting created successfully.
+        TimeController-->FindPage: MSG29 - Meeting created successfully.
+        FindPage-->Actor: MSG29 - Meeting created successfully.
+    end
+end
+
+deactivate TimeService
+deactivate TimeController
+deactivate FindPage

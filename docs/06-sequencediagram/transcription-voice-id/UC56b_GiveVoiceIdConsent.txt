@@ -1,0 +1,70 @@
+﻿title UC-56b - Give Voice ID Consent
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->VoicePage: Tick the separate Voice ID consent after reading notice version 1.3,\nwhich names Secretary proxy collection, or choose Accept new terms - AF-1 (BR-118, BR-119, BR-124)
+activate VoicePage
+VoicePage->VoiceController: Give consent to the notice version read
+activate VoiceController
+VoiceController->VoiceService: grant(actorId, noticeVersion)
+activate VoiceService
+
+alt Notice version read is not the current one - EX-1
+    VoiceService-->VoiceController: MSG313 - Invalid submission data.
+    VoiceController-->VoicePage: MSG313 - Invalid submission data.
+    VoicePage-->Actor: MSG313 - Invalid submission data.
+else Notice version is current
+    VoiceService->VoiceRepository: Lock the actor's standing consent
+    activate VoiceRepository
+    VoiceRepository->Database: Retrieve consent not withdrawn for update
+    activate Database
+    Database-->VoiceRepository: Consent / None
+    deactivate Database
+    VoiceRepository-->VoiceService: Consent / None
+    deactivate VoiceRepository
+
+    alt Consent given to an older notice version - AF-1
+        VoiceService->VoiceRepository: Renew the consent in place to notice version 1.3 and purpose;\nthe voice samples are kept; from then on a Secretary may also record samples for the actor (BR-116, BR-124, BR-118, BR-119)
+        activate VoiceRepository
+        VoiceRepository->Database: Update consent
+        activate Database
+        Database-->VoiceRepository: Saved
+        deactivate Database
+        VoiceRepository-->VoiceService: Saved
+        deactivate VoiceRepository
+        VoiceService->AuditService: Record the renewal with the previous and current notice versions
+        activate AuditService
+        AuditService-->VoiceService: Entry saved
+        deactivate AuditService
+    else No consent yet
+        VoiceService->VoiceRepository: Add a consent of its own, separate from recording consent, with the time,\nnotice version 1.3 and purpose including Secretary proxy collection (BR-116, BR-124, BR-118, BR-119)
+        activate VoiceRepository
+        VoiceRepository->Database: Insert consent
+        activate Database
+        Database-->VoiceRepository: Saved
+        deactivate Database
+        VoiceRepository-->VoiceService: Saved
+        deactivate VoiceRepository
+        VoiceService->AuditService: Record the consent with its notice version and purpose
+        activate AuditService
+        AuditService-->VoiceService: Entry saved
+        deactivate AuditService
+    else Consent to the current notice already given
+    end
+
+            VoiceService-->VoiceController: MSG305 - Voice identification enabled for your account.
+        VoiceController-->VoicePage: MSG305 - Voice identification enabled for your account.
+        VoicePage-->Actor: MSG305 - Voice identification enabled for your account.
+    end
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage
+

@@ -1,0 +1,65 @@
+﻿title UC-54a - View Recording Transcript
+
+actor "Participant" as Actor
+boundary "Transcript View" as TranscriptView
+control ":Transcript Controller" as TranscriptController
+control ":Transcription Service" as TranscriptionService
+participant ":Recording Repository" as RecordingRepository
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+database ":Database" as Database
+
+Actor->TranscriptView: Open the transcript of a room recording
+activate TranscriptView
+TranscriptView->TranscriptController: Get the recording transcript
+activate TranscriptController
+TranscriptController->TranscriptionService: get(recordingId, actorId)
+activate TranscriptionService
+
+TranscriptionService->RecordingRepository: Get the recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording
+activate Database
+Database-->RecordingRepository: Recording
+deactivate Database
+RecordingRepository-->TranscriptionService: Recording
+deactivate RecordingRepository
+TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->TranscriptionService: Meeting and roster
+deactivate MeetingRepository
+
+alt Actor not on the roster, or recording not Available
+    TranscriptionService-->TranscriptController: Recording not found
+    TranscriptController-->TranscriptView: Recording not found
+    TranscriptView-->Actor: Show the recording as no longer available
+else Actor may read the transcript
+    TranscriptionService->TranscriptRepository: Get the transcript with its segments and voices
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript, segments, speakers and editors
+    activate Database
+    Database-->TranscriptRepository: Transcript
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Transcript
+    deactivate TranscriptRepository
+
+    opt Actor is the current Secretary
+    end
+    TranscriptionService-->TranscriptController: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
+    TranscriptController-->TranscriptView: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
+    alt No transcript yet, Pending or Processing - AF-1
+        TranscriptView-->Actor: Show the status, and Transcribe for the Secretary when there is none (UC-54c)
+    else Failed - AF-2
+        TranscriptView-->Actor: Show Failed with its reason, and Transcribe again for the Secretary (UC-54c)
+    else Completed
+        TranscriptView-->Actor: Show the segments with start time, Speaker N or the assigned name,\ntake dividers and edited text marked apart from machine text
+    end
+end
+
+deactivate TranscriptionService
+deactivate TranscriptController
+deactivate TranscriptView

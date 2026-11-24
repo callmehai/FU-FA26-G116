@@ -36,7 +36,7 @@ else Agenda planning no longer permitted - EX-2
     AgendaPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 
 else Valid input
-    AgendaService->AgendaRepository: Create pending item after last position (BR-67)
+    AgendaService->AgendaRepository: Create pending item after last position
     activate AgendaRepository
     AgendaRepository->Database: Insert agenda item
     activate Database

@@ -96,7 +96,7 @@ else Selected role is available
 
 
         opt The new role no longer grants the meeting-creation right (MeetingCreator)
-            UserService->ShareRepository: Stop every Effective share the user is viewing (BR-424)
+            UserService->ShareRepository: Stop every Effective share the user is viewing (BR-142, BR-143)
             activate ShareRepository
 
             ShareRepository->Database: Set those shares to Stopped
@@ -109,7 +109,7 @@ else Selected role is available
             deactivate ShareRepository
 
             opt At least one share was stopped
-                UserService->AuditLogRepository: Record each stopped share (BR-426)
+                UserService->AuditLogRepository: Record each stopped share (BR-009)
                 activate AuditLogRepository
 
                 AuditLogRepository->Database: Insert audit records
@@ -121,7 +121,7 @@ else Selected role is available
                 AuditLogRepository-->UserService: Stops recorded
                 deactivate AuditLogRepository
 
-                UserService->NotificationService: Notify both sides of each stopped share (BR-426)
+                UserService->NotificationService: Notify both sides of each stopped share (BR-009)
                 activate NotificationService
 
                 NotificationService->NotificationRepository: add(notifications)
@@ -141,7 +141,7 @@ else Selected role is available
             end
         end
 
-        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424). Losing the right keeps the "I share to" list but empties "Shared with me" (UC-84f, BR-430, PO 10/11/2026).
+        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-142, BR-143). Losing the right keeps the "I share to" list but empties "Shared with me" (UC-80f, BR-140, BR-141, PO 10/11/2026).
 
         UserService-->UserController: User role updated successfully
         UserController-->UserPage: MSG10 - User account updated successfully

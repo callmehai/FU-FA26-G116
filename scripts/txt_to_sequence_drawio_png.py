@@ -15,13 +15,13 @@ Một pipeline, nhanh và ổn định:
 
 Ví dụ:
   python scripts/txt_to_sequence_drawio_png.py \\
-    docs/06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting.txt
+    docs/06-sequencediagram/document-management/UC36a_UploadDocumentsToMeeting.txt
 
   python scripts/txt_to_sequence_drawio_png.py --no-splice \\
     docs/06-sequencediagram/document-management/UC33a_*.txt
 
   # Xuất lại ảnh của tab có sẵn trong file gộp (không cần .txt, không sửa file gộp)
-  python scripts/txt_to_sequence_drawio_png.py --tab uc14_createmeeting --tab uc55_castvote
+  python scripts/txt_to_sequence_drawio_png.py --tab uc13_createmeeting --tab uc65_castvote
 """
 
 from __future__ import annotations
@@ -164,7 +164,7 @@ def run_tool(command: list[str], what: str, timeout: int = CLI_TIMEOUT) -> str:
 
 
 def stem_to_page_id(stem: str) -> str:
-    """UC33a_UploadDocumentsToMeeting → uc33a_uploaddocumentstomeeting."""
+    """UC36a_UploadDocumentsToMeeting → uc36a_uploaddocumentstomeeting."""
     return stem.lower().replace("-", "").replace(" ", "")
 
 
@@ -774,7 +774,7 @@ def main(argv: list[str] | None = None) -> int:
         action="append",
         default=[],
         metavar="PAGE_ID",
-        help="Xuất lại PNG từ tab có sẵn trong file gộp (vd. uc14_createmeeting); lặp lại cho nhiều tab",
+        help="Xuất lại PNG từ tab có sẵn trong file gộp (vd. uc13_createmeeting); lặp lại cho nhiều tab",
     )
     parser.add_argument(
         "--originals-dir",

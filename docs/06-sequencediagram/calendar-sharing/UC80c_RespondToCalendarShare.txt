@@ -1,0 +1,95 @@
+title UC-80c - Respond to Calendar Share
+
+actor "User" as Asked
+actor "Sender" as Sender
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Asked->SharingPage: Open the pending share request
+activate SharingPage
+
+SharingPage->SharingController: Respond to calendar share
+activate SharingController
+SharingController->SharingService: respondShare(shareId, actorId, decision, level, endDate)
+activate SharingService
+
+SharingService->ShareRepository: Load the share
+activate ShareRepository
+ShareRepository->Database: Retrieve share
+activate Database
+Database-->ShareRepository: Share
+deactivate Database
+ShareRepository-->SharingService: Share
+deactivate ShareRepository
+
+alt Actor is not the asked side - EX-1
+    SharingService-->SharingController: Not allowed
+    SharingController-->SharingPage: Not allowed
+    SharingPage-->Asked: (nothing disclosed)
+else Actor is the asked side
+    alt Share is no longer Pending - EX-2
+        SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
+        SharingController-->SharingPage: MSG450 - This action is not allowed in the current state of the share.
+        SharingPage-->Asked: MSG450 - This action is not allowed in the current state of the share.
+    else Share is Pending
+        alt Range is invalid - EX-3
+            SharingService-->SharingController: MSG443 - The date range is invalid.
+            SharingController-->SharingPage: MSG443 - The date range is invalid.
+            SharingPage-->Asked: MSG443 - The date range is invalid.
+        else Range is valid
+            alt Decision is accept
+                SharingService->ShareRepository: Mark share Effective
+                activate ShareRepository
+                ShareRepository->Database: Update share
+                activate Database
+                Database-->ShareRepository: Updated
+                deactivate Database
+                ShareRepository-->SharingService: Effective share
+                deactivate ShareRepository
+
+                SharingService->NotificationService: Notify the sender
+                activate NotificationService
+                NotificationService->Database: Record sender notification
+                activate Database
+                Database-->NotificationService: Notification recorded
+                deactivate Database
+                NotificationService-->SharingService: Sender notified
+                deactivate NotificationService
+
+                SharingService-->SharingController: Effective share
+                SharingController-->SharingPage: MSG436 - Calendar share accepted.
+                SharingPage-->Asked: MSG436 - Calendar share accepted.
+            else Decision is decline
+                SharingService->ShareRepository: Close the share
+                activate ShareRepository
+                ShareRepository->Database: Update share
+                activate Database
+                Database-->ShareRepository: Updated
+                deactivate Database
+                ShareRepository-->SharingService: Closed share
+                deactivate ShareRepository
+
+                SharingService->NotificationService: Notify the sender
+                activate NotificationService
+                NotificationService->Database: Record sender notification
+                activate Database
+                Database-->NotificationService: Notification recorded
+                deactivate Database
+                NotificationService-->SharingService: Sender notified
+                deactivate NotificationService
+
+                SharingService-->SharingController: Closed share
+                SharingController-->SharingPage: MSG437 - Calendar share request declined.
+                SharingPage-->Asked: MSG437 - Calendar share request declined.
+            end
+        end
+    end
+end
+
+deactivate SharingService
+deactivate SharingController
+deactivate SharingPage

@@ -1,0 +1,55 @@
+title UC-34 - Hand Over Chair to Another Participant
+
+actor "Chair" as Chair
+boundary "Participant Management Page" as ParticipantPage
+control ":Participant Controller" as ParticipantController
+control ":Participant Service" as ParticipantService
+participant ":Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+Chair->ParticipantPage: Hand over chair
+activate ParticipantPage
+
+ParticipantPage->ParticipantController: Hand over (meetingId, targetId)
+activate ParticipantController
+
+ParticipantController->ParticipantService: handOverChair(meetingId, targetId, chair)
+activate ParticipantService
+
+ParticipantService->ParticipantRepository: Find meeting and verify chair
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve meeting and chair
+activate Database
+Database-->ParticipantRepository: Meeting and chair
+deactivate Database
+ParticipantRepository-->ParticipantService: Meeting and chair
+deactivate ParticipantRepository
+
+alt Selected participant can no longer receive the chair role - EX-1
+    ParticipantService-->ParticipantController: MSG259 - The selected participant can no longer receive the Chair role. Select another participant.
+    ParticipantController-->ParticipantPage: Return eligibility error
+    ParticipantPage-->Chair: MSG259 - The selected participant can no longer receive the Chair role. Select another participant.
+
+else Hand-over is no longer permitted - EX-2
+    ParticipantService-->ParticipantController: MSG260 - You can no longer hand over the Chair role for this meeting.
+    ParticipantController-->ParticipantPage: Return status error
+    ParticipantPage-->Chair: MSG260 - You can no longer hand over the Chair role for this meeting.
+
+else Eligible
+    ParticipantService->ParticipantRepository: Change roles together (BR-041, BR-042)
+    activate ParticipantRepository
+    ParticipantRepository->Database: Update chair and member roles
+    activate Database
+    Database-->ParticipantRepository: Updated
+    deactivate Database
+    ParticipantRepository-->ParticipantService: Updated
+    deactivate ParticipantRepository
+
+    ParticipantService-->ParticipantController: Chair handed over
+    ParticipantController-->ParticipantPage: MSG257 - Chair role handed over successfully.
+    ParticipantPage-->Chair: MSG257 - Chair role handed over successfully.
+end
+
+deactivate ParticipantService
+deactivate ParticipantController
+deactivate ParticipantPage

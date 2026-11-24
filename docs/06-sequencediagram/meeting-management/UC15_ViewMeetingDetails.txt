@@ -1,0 +1,41 @@
+title UC-15 - View Meeting Details
+
+actor "User" as User
+boundary "Meeting Details Page" as DetailsPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+User->DetailsPage: Open meeting details
+activate DetailsPage
+
+DetailsPage->MeetingController: Get meeting details (meetingId)
+activate MeetingController
+
+MeetingController->MeetingService: getMeetingDetails(meetingId, actor)
+activate MeetingService
+
+MeetingService->MeetingRepository: Find meeting and check access
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and access
+activate Database
+Database-->MeetingRepository: Meeting / not found
+deactivate Database
+MeetingRepository-->MeetingService: Meeting / not found
+deactivate MeetingRepository
+
+alt Meeting does not exist or is not accessible - EX-1
+    MeetingService-->MeetingController: MSG37 - Meeting details are not accessible
+    MeetingController-->DetailsPage: Return not found
+    DetailsPage-->User: MSG37 - Meeting details are not accessible
+
+else Meeting accessible
+    MeetingService-->MeetingController: Meeting details
+    MeetingController-->DetailsPage: Meeting details
+    DetailsPage-->User: Show meeting details (UC-22)
+end
+
+deactivate MeetingService
+deactivate MeetingController
+deactivate DetailsPage
