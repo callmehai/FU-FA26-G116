@@ -10,7 +10,7 @@ Ghi chú cho FE: [23-chia-se-lich-note-cho-fe.md](23-chia-se-lich-note-cho-fe.md
 ## 1. Quy tắc chung
 
 - Mọi route cần đăng nhập (`401`) và tài khoản còn hoạt động (`403` không body). ID người gọi luôn lấy từ token.
-- Quyền tạo cuộc họp (`MeetingCreator`, actor *Meeting Organizer*) kiểm **ở server** trong từng thao tác cần nó và trả
+- Quyền tạo cuộc họp (`MeetingCreator`, actor *Member*) kiểm **ở server** trong từng thao tác cần nó và trả
   `403 MSG448` có body: xin xem lịch, danh sách chủ lịch để xin, xem tuần. Chủ lịch chỉ cần là tài khoản nội bộ đang hoạt động (BR-140, BR-141).
 - Chia sẻ mà người gọi không phải một trong hai bên → `404` **không body** (không lộ chia sẻ hay tài khoản, POST-3).
 - Mọi ngày là `YYYY-MM-DD` theo lịch Việt Nam (`Asia/Ho_Chi_Minh`). "Hôm nay" luôn là ngày ở Việt Nam, không phải giờ máy chủ.
