@@ -934,7 +934,6 @@
         <mxCell edge="1" id="assoc-actor-uc-confirm-doc-read" parent="1" source="actor-2" style="edgeStyle=none;strokeColor=#333333;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.35;exitDx=-4;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=15;" target="uc-confirm-doc-read" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-      
         <mxCell id="uc-68" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=15;strokeColor=#333333;fillColor=#ffffff;" value="Approve Meeting Summary" vertex="1">
           <mxGeometry height="40" width="192" x="1038" y="1196" as="geometry" />
         </mxCell>
@@ -959,7 +958,6 @@
         <mxCell edge="1" id="assoc-actor-uc-90" parent="1" source="actor-2" style="edgeStyle=none;strokeColor=#333333;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.35;exitDx=-4;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=15;" target="uc-90" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-      
         <mxCell id="ai-drafting-service" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="AI Drafting Service" vertex="1">
           <mxGeometry height="62" width="30" x="1570" y="1359" as="geometry" />
         </mxCell>
@@ -1310,7 +1308,6 @@
         <mxCell edge="1" id="assoc-actor-uc-confirm-doc-read" parent="1" source="actor-2" style="edgeStyle=none;strokeColor=#333333;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.35;exitDx=-4;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=15;" target="uc-confirm-doc-read" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-      
         <mxCell id="ai-drafting-service" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="AI Drafting Service" vertex="1">
           <mxGeometry height="62" width="30" x="1570" y="1185" as="geometry" />
         </mxCell>
