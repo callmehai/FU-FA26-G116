@@ -39,11 +39,11 @@ Thông thường, mỗi Sequence Diagram chỉ có **một mũi tên Actor → B
 Job `SYS_ExpireCalendarShares` đã bỏ theo PO 09/11/2026: hết hạn tính lúc đọc, không job chạy đêm, không trạng thái Expired
 (xem README của `calendar-sharing/`).
 
-Ngoại lệ có chủ đích: `calendar-sharing/UC84a_RequestCalendarShare.txt` và
-`UC84b_ShareCalendarDirectly.txt` có hai tương tác Actor → Boundary (mở trang và tải danh sách người, rồi gửi
-yêu cầu/chia sẻ), như UC-04, vì thao tác chọn người phải tải danh sách người để chọn đã lọc ở server (BR-430,
-`MSG448`, `MSG467`) trước nút gửi; đó là điều kiện nghiệp vụ của UC-84a/UC-84b, không phải bước mở trang thuần UI.
-UC-84f chỉ xem hai danh sách, không tải danh sách người, nên phần này không dồn sang đó. Chi tiết trong README của
+Ngoại lệ có chủ đích: `calendar-sharing/UC80a_RequestCalendarShare.txt` và
+`UC80b_ShareCalendarDirectly.txt` có hai tương tác Actor → Boundary (mở trang và tải danh sách người, rồi gửi
+yêu cầu/chia sẻ), như UC-04, vì thao tác chọn người phải tải danh sách người để chọn đã lọc ở server (BR-140, BR-141,
+`MSG448`, `MSG467`) trước nút gửi; đó là điều kiện nghiệp vụ của UC-80a, UC-80b, không phải bước mở trang thuần UI.
+UC-80f chỉ xem hai danh sách, không tải danh sách người, nên phần này không dồn sang đó. Chi tiết trong README của
 `calendar-sharing/`.
 
 Ví dụ:
@@ -206,7 +206,7 @@ MeetingPage-->Secretary: MSG60 - Agenda item created successfully.
 ```
 
 Message hiển thị chỉ gồm mã và nội dung trong [catalogue](../03-api/00-danh-muc-ma-thong-bao.md). **Không thêm dòng giải
-thích** sau message (`\nNo role changed`, `\nRefresh Vote documents`, `\nDraft Vote not disclosed (BR-253)`…), không
+thích** sau message (`\nNo role changed`, `\nRefresh Vote documents`, `\nDraft Vote not disclosed (BR-086, BR-087)`…), không
 dùng `note` của SequenceDiagram.org. Hệ quả không hiển thị (dữ liệu giữ nguyên, không gửi thông báo) đã nằm trong đặc tả
 UC; nếu là một bước hệ thống thật thì vẽ thành message hoặc self-call riêng.
 
@@ -258,13 +258,13 @@ deactivate Page
 Ghi BR ngay tại message nơi rule được kiểm tra hoặc áp dụng.
 
 ```text
-AgendaService->AgendaService: Validate required title\nand selected documents (BR-66)
+AgendaService->AgendaService: Validate required title\nand selected documents (UC-23a, UC-23b)
 ```
 
 hoặc:
 
 ```text
-AgendaService->AgendaItemRepository: Create Agenda Item with Pending status\nat the end of the Meeting agenda (BR-64, BR-67)
+AgendaService->AgendaItemRepository: Create Agenda Item with Pending status\nat the end of the Meeting agenda (BR-058, BR-059, UC-23a)
 ```
 
 Không tạo lifeline riêng cho Business Rule.
@@ -315,7 +315,7 @@ Nếu mục tiêu Use Case không đạt thì dùng Exception Flow.
 Service có thể self-call để biểu diễn validation/business decision ngắn gọn:
 
 ```text
-MeetingService->MeetingService: Validate meeting information\nand planned time (BR-24, BR-62)
+MeetingService->MeetingService: Validate meeting information\nand planned time (BR-013)
 ```
 
 Không lạm dụng self-call để mô tả chi tiết implementation.
@@ -455,7 +455,7 @@ deactivate Database
 MeetingRepository-->AgendaService: Meeting
 deactivate MeetingRepository
 
-AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-65)
+AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-058, BR-059)
 activate MeetingParticipantRepository
 MeetingParticipantRepository->Database: Find Secretary assignment
 activate Database
@@ -465,7 +465,7 @@ MeetingParticipantRepository-->AgendaService: Assignment result
 deactivate MeetingParticipantRepository
 
 opt Meeting documents are selected
-    AgendaService->DocumentRepository: Get selected documents available to the Meeting (BR-66)
+    AgendaService->DocumentRepository: Get selected documents available to the Meeting (UC-23a, UC-23b)
     activate DocumentRepository
     DocumentRepository->Database: Retrieve selected meeting documents
     activate Database
@@ -475,7 +475,7 @@ opt Meeting documents are selected
     deactivate DocumentRepository
 end
 
-AgendaService->AgendaService: Validate required title,\noptional presenter and description, and selected documents (BR-66)
+AgendaService->AgendaService: Validate required title,\noptional presenter and description, and selected documents (UC-23a, UC-23b)
 
 alt Invalid Agenda Item information - EX-1
     AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field message(s)
@@ -485,7 +485,7 @@ alt Invalid Agenda Item information - EX-1
     MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field message(s):\nAgenda item title is required.\nOne or more selected documents are not available to this meeting.
 
 else Agenda Item information is valid
-    AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-64, BR-65, BR-68, BR-74)
+    AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-058, BR-059, UC-23b)
 
     alt Agenda can no longer be modified - EX-2
         AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
@@ -504,7 +504,7 @@ else Agenda Item information is valid
         AgendaItemRepository-->AgendaService: Meeting Agenda Item list
         deactivate AgendaItemRepository
 
-        AgendaService->AgendaItemRepository: Create Agenda Item for selected Meeting\nwith Pending status at the end of the agenda\nand associate selected meeting documents (BR-64, BR-67)
+        AgendaService->AgendaItemRepository: Create Agenda Item for selected Meeting\nwith Pending status at the end of the agenda\nand associate selected meeting documents (BR-058, BR-059, UC-23a)
         activate AgendaItemRepository
         AgendaItemRepository->Database: Insert Agenda Item and document associations
         activate Database
@@ -555,34 +555,34 @@ deactivate MeetingPage
 ## 15. Tên file và số UC
 
 - Tên file: `UC<số UC>_<TênUseCase>.txt` + `.png` cùng tên, ví dụ `UC23a_CreateAgendaItem.txt`. Dòng `title` ghi `UC-23a - Create Agenda Item`.
-- Số UC theo [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md) (UC-01 → UC-77: baseline
-  10/10/2026 là UC-01 → UC-70, UC-71/UC-72 thêm 13/10/2026, UC-73 → UC-77 thêm 24/10/2026).
+- Số UC theo [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md) (UC-01 → UC-81, đánh số lại
+  24/11/2026 theo ADR-0079; mã cũ tra ở [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md)).
   Ngày 10/10/2026 toàn bộ file đã đổi tên theo số mới; bảng đổi số cũ → mới ở §5 của inventory.
 - Thư mục `meeting-session-management/` đã bị xoá cùng Meeting Session (ADR-0013).
 - BR trong các sơ đồ vẽ trước 10/10/2026 có chỗ dùng số BR của bản dự thảo cũ. Khi chạm vào một sơ đồ, đối chiếu lại từng
-  `BR-xx` với [06-business-rules.md](../01-requirements/06-business-rules.md). Các sơ đồ Meeting (UC-20 → UC-22), Agenda
-  (UC-23a → UC-26) và Participant (UC-28a → UC-30) đã được đối chiếu trong đợt 10/10/2026.
+  `BR-xx` với [06-business-rules.md](../01-requirements/06-business-rules.md). Các sơ đồ Meeting (UC-19 → UC-21), Agenda
+  (UC-23a → UC-26) và Participant (UC-30a → UC-32) đã được đối chiếu trong đợt 10/10/2026.
 
 | Thư mục | UC |
 |---|---|
 | [auth/](auth/README.md) | UC-01 → UC-04 |
 | [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08 |
-| [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
-| [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
-| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77, UC-82 (sơ bộ) |
-| [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
-| [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
-| [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |
-| [meeting-recording/](meeting-recording/README.md) | UC-43a → UC-43c, UC-44a → UC-44e, UC-80 |
-| [transcription-voice-id/](transcription-voice-id/README.md) | UC-45a → UC-45c (UC-45c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-46a → UC-46d, UC-47 → UC-50 (dự thảo AI), UC-81a → UC-81f |
-| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản) và UC-61, UC-64, UC-65, UC-83 (duyệt và ban hành, theo code PR #297) |
-| [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
-| [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
-| [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84f), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
-| [reporting/](reporting/README.md) | UC-70a, UC-70b (SCRUM-38) |
+| [role-management/](role-management/README.md) | UC-09, UC-10, UC-11a → UC-11c, UC-12 |
+| [meeting-management/](meeting-management/README.md) | UC-13 → UC-21, UC-22 |
+| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-27, UC-28 (sơ bộ) |
+| [meeting-participant-management/](meeting-participant-management/README.md) | UC-29, UC-30a → UC-30c, UC-31, UC-32, UC-33, UC-34 |
+| [document-management/](document-management/README.md) | UC-35a, UC-35b, UC-36a (AF-1), UC-38, UC-42 |
+| [voting-management/](voting-management/README.md) | UC-62a → UC-67, UC-68a, UC-68b |
+| [meeting-recording/](meeting-recording/README.md) | UC-51a → UC-51c, UC-52a → UC-52e, UC-53 |
+| [transcription-voice-id/](transcription-voice-id/README.md) | UC-54a → UC-54c (UC-54c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-55a → UC-55d, UC-58 → UC-61 (dự thảo AI), UC-56a → UC-56f |
+| [minutes-management/](minutes-management/README.md) | UC-69, UC-70, UC-71 (bản nháp biên bản) và UC-72, UC-73, UC-74, UC-75 (duyệt và ban hành, theo code PR #297) |
+| [notification-management/](notification-management/README.md) | UC-76, UC-77a, UC-77b, UC-78 |
+| [online-meeting-room/](online-meeting-room/README.md) | UC-43, UC-44, UC-45a → UC-45d (UC-45a AF-2 ghi lời theo micro: `UC45a_RecordSpeechWhileMicrophoneOn`), UC-46, UC-47, UC-48, UC-49, UC-50 |
+| [calendar-sharing/](calendar-sharing/README.md) | UC-80 (UC-80a → UC-80f), UC-81 (UC-81a → UC-81c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
+| [reporting/](reporting/README.md) | UC-79a, UC-79b (SCRUM-38) |
 
-Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-84b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
+Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file.txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-80b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
 
 Mọi script xuất ảnh đều sinh 2 dạng: bản gốc đầy đủ độ phân giải vào thư mục local `anh-goc/` (đã gitignore, giữ cấu trúc cây như `docs/`, để sau này dựng báo cáo chuẩn nộp) và bản nén palette 256 màu trong `docs/` để repo nhẹ. Đổi thư mục gốc bằng `--originals-dir <đường dẫn>` hoặc biến môi trường `DIAGRAM_ORIGINALS_DIR`; `--no-compress` giữ nguyên bản xuất trong repo, `--no-originals` tắt lưu bản gốc.
 
-UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; audit-read endpoint chưa có code. UC-09 (Mở khoá tài khoản) đã bị PO bỏ hẳn ngày 15/11/2026 — không khoá tài khoản khi nhập sai mật khẩu, chỉ còn giới hạn số lần đăng nhập theo phút (MSG414); source + PNG cũ của UC-09 chỉ còn giá trị lịch sử, không phải thiết kế đích. Không tự cấp message codes mới.
+UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; audit-read endpoint chưa có code. UC-09 cũ (Mở khoá tài khoản) đã bị PO bỏ hẳn ngày 15/11/2026 — không khoá tài khoản khi nhập sai mật khẩu, chỉ còn giới hạn số lần đăng nhập theo phút (MSG414); source + PNG cũ của UC-09 cũ chỉ còn giá trị lịch sử, không phải thiết kế đích. Không tự cấp message codes mới.

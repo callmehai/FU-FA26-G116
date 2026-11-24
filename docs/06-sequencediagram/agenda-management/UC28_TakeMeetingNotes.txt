@@ -1,0 +1,60 @@
+title UC-28 - Take Meeting Notes
+
+actor "Secretary" as Secretary
+boundary "Notes Panel" as NotesPanel
+control ":Notes Controller" as NotesController
+control ":Notes Service" as NotesService
+participant ":Notes Repository" as NotesRepository
+database ":Database" as Database
+
+Secretary->NotesPanel: Type meeting notes
+activate NotesPanel
+
+NotesPanel->NotesController: Save note (meetingId, itemId, text)
+activate NotesController
+
+NotesController->NotesService: saveNote(meetingId, itemId, text, secretary)
+activate NotesService
+
+NotesService->NotesRepository: Find meeting and verify secretary
+activate NotesRepository
+NotesRepository->Database: Retrieve meeting and secretary
+activate Database
+Database-->NotesRepository: Meeting and secretary
+deactivate Database
+NotesRepository-->NotesService: Meeting and secretary
+deactivate NotesRepository
+
+alt Actor is not the current secretary - EX-1
+    NotesService-->NotesController: MSG416 - Only the Secretary may write meeting notes.
+    NotesController-->NotesPanel: Return permission error
+    NotesPanel-->Secretary: MSG416 - Only the Secretary may write meeting notes.
+
+else Meeting no longer accepts notes - EX-2
+    NotesService-->NotesController: MSG417 - Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.
+    NotesController-->NotesPanel: Return status error
+    NotesPanel-->Secretary: MSG417 - Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.
+
+else Note was changed in another window - EX-3
+    NotesService-->NotesController: MSG418 - This note was changed in another window. Reload to see the latest version.
+    NotesController-->NotesPanel: Return conflict
+    NotesPanel-->Secretary: MSG418 - This note was changed in another window. Reload to see the latest version.
+
+else Valid note
+    NotesService->NotesRepository: Save note with timestamp (UC-28)
+    activate NotesRepository
+    NotesRepository->Database: Save note
+    activate Database
+    Database-->NotesRepository: Saved
+    deactivate Database
+    NotesRepository-->NotesService: Saved
+    deactivate NotesRepository
+
+    NotesService-->NotesController: Note saved
+    NotesController-->NotesPanel: MSG415 - Note saved.
+    NotesPanel-->Secretary: MSG415 - Note saved.
+end
+
+deactivate NotesService
+deactivate NotesController
+deactivate NotesPanel

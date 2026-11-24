@@ -1,0 +1,69 @@
+title UC-65 - Cast Vote
+
+actor "Voter" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Select an option and submit the ballot
+activate MeetingPage
+
+MeetingPage->VoteController: Cast vote
+activate VoteController
+
+VoteController->VoteService: castVote(meetingId, voteId, actorId, optionId)
+activate VoteService
+
+VoteService->VoteRepository: Get the Vote, the actor's eligibility and ballot
+activate VoteRepository
+VoteRepository->Database: Retrieve Vote, eligible voters and ballots
+activate Database
+Database-->VoteRepository: Vote, eligibility and ballot
+deactivate Database
+VoteRepository-->VoteService: Vote, eligibility and ballot
+deactivate VoteRepository
+
+alt No option selected - EX-1
+    VoteService-->VoteController: MSG222 - Select one valid option before submitting your ballot.
+    VoteController-->MeetingPage: MSG222 - Select one valid option before submitting your ballot.
+    MeetingPage-->Actor: MSG222 - Select one valid option before submitting your ballot.
+else Option does not belong to this vote - EX-1
+    VoteService-->VoteController: MSG223 - The selected option is not available for this vote.
+    VoteController-->MeetingPage: MSG223 - The selected option is not available for this vote.
+    MeetingPage-->Actor: MSG223 - The selected option is not available for this vote.
+else Actor is not eligible - EX-2
+    VoteService-->VoteController: MSG224 - You are not eligible to cast a ballot in this vote.
+    VoteController-->MeetingPage: MSG224 - You are not eligible to cast a ballot in this vote.
+    MeetingPage-->Actor: MSG224 - You are not eligible to cast a ballot in this vote.
+else Documents are not all confirmed as read - EX-2
+    VoteService-->VoteController: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    VoteController-->MeetingPage: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    MeetingPage-->Actor: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+else Balloting has ended - EX-3
+    VoteService-->VoteController: MSG225 - This vote is no longer accepting ballots.
+    VoteController-->MeetingPage: MSG225 - This vote is no longer accepting ballots.
+    MeetingPage-->Actor: MSG225 - This vote is no longer accepting ballots.
+else Actor has already voted - EX-3
+    VoteService-->VoteController: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    VoteController-->MeetingPage: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    MeetingPage-->Actor: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+else Ballot is valid
+    VoteService->VoteRepository: Record ballot
+    activate VoteRepository
+    VoteRepository->Database: Insert ballot
+    activate Database
+    Database-->VoteRepository: Recorded
+    deactivate Database
+    VoteRepository-->VoteService: Recorded
+    deactivate VoteRepository
+
+    VoteService-->VoteController: MSG227 - Your ballot has been recorded.
+    VoteController-->MeetingPage: MSG227 - Your ballot has been recorded.
+    MeetingPage-->Actor: MSG227 - Your ballot has been recorded.
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

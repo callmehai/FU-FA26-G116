@@ -1,0 +1,71 @@
+title UC-80d - Change Calendar Share
+
+actor "Meeting Organizer" as Viewer
+actor "User" as Owner
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Viewer->SharingPage: Open an Effective share
+activate SharingPage
+
+SharingPage->SharingController: Change calendar share
+activate SharingController
+SharingController->SharingService: changeShare(shareId, actorId, level, endDate)
+activate SharingService
+
+SharingService->ShareRepository: Load the share
+activate ShareRepository
+ShareRepository->Database: Retrieve share
+activate Database
+Database-->ShareRepository: Share
+deactivate Database
+ShareRepository-->SharingService: Share
+deactivate ShareRepository
+
+alt Actor is not one of the two people - EX-1
+    SharingService-->SharingController: Not allowed
+    SharingController-->SharingPage: Not allowed
+    SharingPage-->Viewer: (nothing disclosed)
+else Actor is one of the two people
+    alt Change is not allowed - EX-2
+        SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
+        SharingController-->SharingPage: MSG450 - This action is not allowed in the current state of the share.
+        SharingPage-->Viewer: MSG450 - This action is not allowed in the current state of the share.
+    else Change is allowed
+        alt Range is invalid - EX-3
+            SharingService-->SharingController: MSG443 - The date range is invalid.
+            SharingController-->SharingPage: MSG443 - The date range is invalid.
+            SharingPage-->Viewer: MSG443 - The date range is invalid.
+        else Range is valid
+            SharingService->ShareRepository: Save pending change or new level and audit entry
+            activate ShareRepository
+            ShareRepository->Database: Update share and audit record
+            activate Database
+            Database-->ShareRepository: Updated
+            deactivate Database
+            ShareRepository-->SharingService: Updated share
+            deactivate ShareRepository
+
+            SharingService->NotificationService: Notify the other side
+            activate NotificationService
+            NotificationService->Database: Record notification
+            activate Database
+            Database-->NotificationService: Notification recorded
+            deactivate Database
+            NotificationService-->SharingService: Other side notified
+            deactivate NotificationService
+
+            SharingService-->SharingController: Updated share
+            SharingController-->SharingPage: MSG442 - Calendar share updated.
+            SharingPage-->Viewer: MSG442 - Calendar share updated.
+        end
+    end
+end
+
+deactivate SharingService
+deactivate SharingController
+deactivate SharingPage

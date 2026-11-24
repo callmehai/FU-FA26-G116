@@ -45,7 +45,7 @@ else A Meeting needs its combined recording
     alt Take still streaming, source too new, erased, or nothing to mix (Hybrid heard on one side only, Online with no sentence kept) - nothing to build yet
         CombinedService-->Worker: Nothing to do
     else Sources settled: room takes (Hybrid only) and online sentences on the real clock
-        CombinedService->CombinedService: Lay room takes (Hybrid only) and online sentences on the real clock,\ncut silence over 2 seconds to 2 seconds (BR-456)
+        CombinedService->CombinedService: Lay room takes (Hybrid only) and online sentences on the real clock,\ncut silence over 2 seconds to 2 seconds (UC-51a)
         alt Combined track is longer than 12 hours
             CombinedService-->Worker: Not built
         else Combined track fits
@@ -53,7 +53,7 @@ else A Meeting needs its combined recording
             activate RecordingStorage
             RecordingStorage-->CombinedService: Combined file
             deactivate RecordingStorage
-            CombinedService->RecordingRepository: Add or replace the Available Combined recording\nwith the same purpose and retention as the room recording (BR-347, BR-456)
+            CombinedService->RecordingRepository: Add or replace the Available Combined recording\nwith the same purpose and retention as the room recording (BR-110, UC-51a)
             activate RecordingRepository
             RecordingRepository->Database: Insert or update Combined recording
             activate Database

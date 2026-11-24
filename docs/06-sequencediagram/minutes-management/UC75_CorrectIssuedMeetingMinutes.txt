@@ -1,0 +1,60 @@
+title UC-75 - Correct Issued Meeting Minutes
+
+actor "Chair or Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Minutes Controller" as MinutesController
+control ":Minutes Service" as MinutesService
+participant ":Minutes Repository" as MinutesRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Select Create correction on an issued revision
+activate MeetingPage
+
+MeetingPage->MinutesController: Correct issued meeting minutes
+activate MinutesController
+MinutesController->MinutesService: correctMinutes(meetingId, revisionId, actorId)
+activate MinutesService
+
+MinutesService->MinutesRepository: Load the revision
+activate MinutesRepository
+MinutesRepository->Database: Retrieve revision
+activate Database
+Database-->MinutesRepository: Revision
+deactivate Database
+MinutesRepository-->MinutesService: Revision
+deactivate MinutesRepository
+
+alt Actor is not the current Chair or Secretary - EX-1
+    MinutesService-->MinutesController: MSG397 - Only the Chair or Secretary may write the minutes.
+    MinutesController-->MeetingPage: MSG397 - Only the Chair or Secretary may write the minutes.
+    MeetingPage-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
+else Actor is Chair or Secretary
+    alt Selected revision is not issued - EX-2
+        MinutesService-->MinutesController: MSG433 - Only issued minutes can be corrected.
+        MinutesController-->MeetingPage: MSG433 - Only issued minutes can be corrected.
+        MeetingPage-->Actor: MSG433 - Only issued minutes can be corrected.
+    else Selected revision is issued
+        alt A correction is already in progress - EX-3
+            MinutesService-->MinutesController: MSG434 - A correction of these minutes is already in progress.
+            MinutesController-->MeetingPage: MSG434 - A correction of these minutes is already in progress.
+            MeetingPage-->Actor: MSG434 - A correction of these minutes is already in progress.
+        else No correction in progress
+            MinutesService->MinutesRepository: Create correction draft
+            activate MinutesRepository
+            MinutesRepository->Database: Insert correction revision
+            activate Database
+            Database-->MinutesRepository: Created
+            deactivate Database
+            MinutesRepository-->MinutesService: Created
+            deactivate MinutesRepository
+
+            MinutesService-->MinutesController: MSG432 - Correction draft created.
+            MinutesController-->MeetingPage: MSG432 - Correction draft created.
+            MeetingPage-->Actor: MSG432 - Correction draft created.
+        end
+    end
+end
+
+deactivate MinutesService
+deactivate MinutesController
+deactivate MeetingPage

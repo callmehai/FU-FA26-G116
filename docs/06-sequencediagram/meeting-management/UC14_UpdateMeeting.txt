@@ -1,0 +1,74 @@
+title UC-14 - Update Meeting
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+control ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit updated meeting information or reschedule
+activate MeetingPage
+
+opt Draft or Rejected start passed less than 24 hours ago - AF-3
+    MeetingPage-->Organizer: Warn that an unstarted Meeting is cancelled 24 hours\nafter its planned start (BR-029); submitting is still allowed
+end
+
+alt Nothing has changed - AF-2
+    MeetingPage-->Organizer: MSG154 - No changes to save.
+
+else Planned start is more than 24 hours ago - EX-3
+    MeetingPage-->Organizer: Ask for another start time (BR-029)
+
+else Values changed
+    MeetingPage->MeetingController: Update meeting or reschedule
+    activate MeetingController
+
+    MeetingController->MeetingService: updateMeeting(meetingId, changes)
+    activate MeetingService
+
+    MeetingService->MeetingRepository: Find meeting owned by organizer
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve meeting, status and actual start
+    activate Database
+    Database-->MeetingRepository: Meeting and status
+    deactivate Database
+    MeetingRepository-->MeetingService: Meeting and status
+    deactivate MeetingRepository
+
+    alt Invalid or unauthorized update - EX-1
+        MeetingService-->MeetingController: MSG31/MSG33 - Invalid or not editable
+        MeetingController-->MeetingPage: Return validation or edit restriction
+        MeetingPage-->Organizer: Display applicable error
+
+    else Reschedule not permitted - EX-2
+        MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
+        MeetingController-->MeetingPage: Return reschedule restriction
+        MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+    else Valid update
+        MeetingService->MeetingRepository: Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, UC-14, BR-015)
+        activate MeetingRepository
+        MeetingRepository->Database: Save meeting and history
+        activate Database
+        Database-->MeetingRepository: Saved
+        deactivate Database
+        MeetingRepository-->MeetingService: Updated meeting
+        deactivate MeetingRepository
+
+        MeetingService->NotificationService: Notify invitees when rescheduled (BR-035, UC-14)
+        activate NotificationService
+        NotificationService-->MeetingService: Notifications queued
+        deactivate NotificationService
+
+        MeetingService-->MeetingController: Update successful
+        MeetingController-->MeetingPage: MSG30/MSG138 - Meeting updated or rescheduled successfully
+        MeetingPage-->Organizer: MSG30/MSG138 - Meeting updated or rescheduled successfully
+    end
+
+    deactivate MeetingService
+    deactivate MeetingController
+end
+
+deactivate MeetingPage

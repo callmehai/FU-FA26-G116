@@ -1,0 +1,14 @@
+title UC-48 - Use In-room Chat
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Open chat and send a message
+activate Page
+Page->RoomProvider: Send message to everyone connected
+activate RoomProvider
+RoomProvider-->Page: Message delivered
+deactivate RoomProvider
+Page-->Actor: Message shown with sender and time
+deactivate Page

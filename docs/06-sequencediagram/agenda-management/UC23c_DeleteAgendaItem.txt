@@ -36,7 +36,7 @@ else Agenda item has already started - EX-2
     AgendaPage-->Secretary: MSG142 - Only Pending agenda items can be deleted.
 
 else Eligible
-    AgendaService->AgendaRepository: Remove pending item and its links (BR-283)
+    AgendaService->AgendaRepository: Remove pending item and its links (UC-23c, UC-36b, UC-36d)
     activate AgendaRepository
     AgendaRepository->Database: Delete agenda item
     activate Database

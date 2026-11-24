@@ -103,4 +103,4 @@ ngay, hoặc bị từ chối vì không còn ở trong phòng (`MSG458`); khôn
 
 - Lệch đặc tả, đã ghi lên SCRUM-27: Chủ toạ thao tác được từ màn chi tiết mà không cần ở trong phòng; người khác gọi thao tác
   của Chủ toạ trả `403` `MSG457`; không có hạn chờ tự động cho người được mời; không dùng `MSG124`.
-- Sequence `UC79_RegisterToSpeak` gộp `Invited → Speaking → Finished` thành một bước; theo code thì đây là ba request riêng.
+- Sequence `UC50_RegisterToSpeak` gộp `Invited → Speaking → Finished` thành một bước; theo code thì đây là ba request riêng.

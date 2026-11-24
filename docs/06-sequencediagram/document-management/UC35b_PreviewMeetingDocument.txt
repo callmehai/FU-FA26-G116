@@ -1,0 +1,86 @@
+title UC-35b - Preview Meeting Document
+
+actor "Authorized User" as User
+boundary "Document Viewer" as DocumentViewer
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":File Storage" as FileStorage
+participant ":Audit Log Repository" as AuditLogRepository
+database ":Database" as Database
+
+User->DocumentViewer: Open a Meeting document
+activate DocumentViewer
+
+DocumentViewer->DocumentController: Get Meeting document content
+activate DocumentController
+
+DocumentController->DocumentService: getDocumentContent(meetingId, meetingDocumentId, actor, download)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check the actor can currently view the Meeting
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check the actor's current Meeting relationship or Guest session
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access / No access
+deactivate MeetingAccessPolicy
+
+DocumentService->MeetingDocumentRepository: Get the document while it is still attached to this Meeting,\nwith its stored file and the Meeting sensitivity
+activate MeetingDocumentRepository
+MeetingDocumentRepository->Database: Retrieve the Meeting document not removed, with its stored file
+activate Database
+Database-->MeetingDocumentRepository: Meeting document / Not found
+deactivate Database
+MeetingDocumentRepository-->DocumentService: Meeting document / Not found
+deactivate MeetingDocumentRepository
+
+alt Document is no longer accessible - EX-1
+    DocumentService-->DocumentController: MSG156 - Meeting documents are not accessible.
+    DocumentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
+    DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+
+else Download requested for a Secret Meeting - EX-2
+    DocumentService-->DocumentController: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+    DocumentController-->DocumentViewer: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+    DocumentViewer-->User: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+
+else Document can be provided
+    DocumentService->FileStorage: Read the uploaded file unchanged
+    activate FileStorage
+    FileStorage-->DocumentService: File content / File missing
+    deactivate FileStorage
+
+    alt The stored file no longer exists - EX-3
+        DocumentService-->DocumentController: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+        DocumentController-->DocumentViewer: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+        DocumentViewer-->User: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+
+    else File read
+        opt Meeting is Secret
+            DocumentService->AuditLogRepository: Record the view with the actor and time,\nbefore any content is sent
+            activate AuditLogRepository
+            AuditLogRepository->Database: Insert audit entry
+            activate Database
+            Database-->AuditLogRepository: Entry saved
+            deactivate Database
+            AuditLogRepository-->DocumentService: Entry saved
+            deactivate AuditLogRepository
+        end
+
+        DocumentService-->DocumentController: File content and file name
+        DocumentController-->DocumentViewer: File content and file name
+
+        alt Download chosen for a Meeting that is not Secret - AF-1
+            DocumentViewer-->User: Provide the original file
+        else Viewing
+            DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentViewer

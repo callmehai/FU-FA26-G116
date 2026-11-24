@@ -383,7 +383,7 @@ Sequence Diagram: [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-m
 
 ### UC-09 – View Role & Permission Matrix
 
-Sequence Diagram: [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.txt)
+Sequence Diagram: [UC09_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC09_ViewRolePermissionMatrix.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -398,7 +398,7 @@ Sequence Diagram: [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role
 
 ### UC-10 – Configure Role Permissions
 
-Sequence Diagram: [UC11_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt)
+Sequence Diagram: [UC10_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC10_ConfigureRolePermissions.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -417,7 +417,7 @@ _UC gom — đặc tả nằm ở các UC con UC-11a, UC-11b… bên dưới._
 
 #### UC-11a – Create Role
 
-Sequence Diagram: [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt)
+Sequence Diagram: [UC11a_CreateRole.txt](../06-sequencediagram/role-management/UC11a_CreateRole.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -432,7 +432,7 @@ Sequence Diagram: [UC12a_CreateRole.txt](../06-sequencediagram/role-management/U
 
 #### UC-11b – Update Role
 
-Sequence Diagram: [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/UC12b_UpdateRole.txt)
+Sequence Diagram: [UC11b_UpdateRole.txt](../06-sequencediagram/role-management/UC11b_UpdateRole.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -447,7 +447,7 @@ Sequence Diagram: [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/U
 
 #### UC-11c – Delete Role
 
-Sequence Diagram: [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/UC12c_DeleteRole.txt)
+Sequence Diagram: [UC11c_DeleteRole.txt](../06-sequencediagram/role-management/UC11c_DeleteRole.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -462,7 +462,7 @@ Sequence Diagram: [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/U
 
 ### UC-12 – View Audit Log
 
-Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt)
+Sequence Diagram: [UC12_ViewAuditLog.txt](../06-sequencediagram/role-management/UC12_ViewAuditLog.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -481,7 +481,7 @@ Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/
 
 ### UC-13 – Create Meeting
 
-Sequence Diagram: [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC14_CreateMeeting.txt)
+Sequence Diagram: [UC13_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC13_CreateMeeting.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -496,7 +496,7 @@ Sequence Diagram: [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-managem
 
 ### UC-14 – Update Meeting
 
-Sequence Diagram: [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC15_UpdateMeeting.txt)
+Sequence Diagram: [UC14_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC14_UpdateMeeting.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -511,7 +511,7 @@ Sequence Diagram: [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-managem
 
 ### UC-15 – View Meeting Details
 
-Sequence Diagram: [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingDetails.txt)
+Sequence Diagram: [UC15_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC15_ViewMeetingDetails.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -526,7 +526,7 @@ Sequence Diagram: [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-ma
 
 ### UC-16 – View Meeting List
 
-Sequence Diagram: [UC17_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC17_ViewMeetingList.txt)
+Sequence Diagram: [UC16_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingList.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -541,7 +541,7 @@ Sequence Diagram: [UC17_ViewMeetingList.txt](../06-sequencediagram/meeting-manag
 
 ### UC-17 – Submit Meeting for Approval
 
-Sequence Diagram: [UC18_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC18_SubmitMeetingForApproval.txt)
+Sequence Diagram: [UC17_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC17_SubmitMeetingForApproval.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -556,7 +556,7 @@ Sequence Diagram: [UC18_SubmitMeetingForApproval.txt](../06-sequencediagram/meet
 
 ### UC-18 – Review Meeting Approval
 
-Sequence Diagram: [UC19_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC19_ReviewMeetingApproval.txt)
+Sequence Diagram: [UC18_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC18_ReviewMeetingApproval.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -571,7 +571,7 @@ Sequence Diagram: [UC19_ReviewMeetingApproval.txt](../06-sequencediagram/meeting
 
 ### UC-19 – Publish Meeting
 
-Sequence Diagram: [UC20_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC20_PublishMeeting.txt)
+Sequence Diagram: [UC19_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC19_PublishMeeting.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -586,7 +586,7 @@ Sequence Diagram: [UC20_PublishMeeting.txt](../06-sequencediagram/meeting-manage
 
 ### UC-20 – Start Meeting
 
-Sequence Diagram: [UC21_StartMeeting.txt](../06-sequencediagram/meeting-management/UC21_StartMeeting.txt)
+Sequence Diagram: [UC20_StartMeeting.txt](../06-sequencediagram/meeting-management/UC20_StartMeeting.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -601,7 +601,7 @@ Sequence Diagram: [UC21_StartMeeting.txt](../06-sequencediagram/meeting-manageme
 
 ### UC-21 – End Meeting
 
-Sequence Diagram: [UC22_EndMeeting.txt](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt)
+Sequence Diagram: [UC21_EndMeeting.txt](../06-sequencediagram/meeting-management/UC21_EndMeeting.txt)
 
 
 | Mục | Nội dung |
@@ -771,7 +771,7 @@ Sequence Diagram: [UC26_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-mana
 
 ### UC-29 – View Meeting Participants
 
-Sequence Diagram: [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC27_ViewMeetingParticipants.txt)
+Sequence Diagram: [UC29_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC29_ViewMeetingParticipants.txt)
 
 
 | Mục | Nội dung |
@@ -789,7 +789,7 @@ Sequence Diagram: [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeti
 
 #### UC-30a – Add Meeting Participant
 
-Sequence Diagram: [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt)
+Sequence Diagram: [UC30a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC30a_AddMeetingParticipant.txt)
 
 
 | Mục | Nội dung |
@@ -805,7 +805,7 @@ Sequence Diagram: [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meetin
 
 #### UC-30b – Manage Meeting Role
 
-Sequence Diagram: [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC28b_AssignChangeMeetingRole.txt)
+Sequence Diagram: [UC30b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC30b_AssignChangeMeetingRole.txt)
 
 
 | Mục | Nội dung |
@@ -821,7 +821,7 @@ Sequence Diagram: [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meet
 
 #### UC-30c – Remove Meeting Participant
 
-Sequence Diagram: [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28c_RemoveMeetingParticipant.txt)
+Sequence Diagram: [UC30c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC30c_RemoveMeetingParticipant.txt)
 
 
 | Mục | Nội dung |
@@ -837,7 +837,7 @@ Sequence Diagram: [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/mee
 
 ### UC-31 – Respond to Meeting Invitation
 
-Sequence Diagram: [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC29_RespondToMeetingInvitation.txt)
+Sequence Diagram: [UC31_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC31_RespondToMeetingInvitation.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -852,7 +852,7 @@ Sequence Diagram: [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/me
 
 ### UC-32 – View Participant Response Status
 
-Sequence Diagram: [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC30_ViewParticipantResponseStatus.txt)
+Sequence Diagram: [UC32_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC32_ViewParticipantResponseStatus.txt)
 
 
 | Mục | Nội dung |
@@ -870,7 +870,7 @@ Sequence Diagram: [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram
 
 Phạm vi implementation: **SCRUM-26**, tách khỏi SCRUM-20. SCRUM-20 vẫn phải giữ lịch sử response/attendance khi xoá/revoke.
 
-Sequence Diagram: [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC31_RecordAttendance.txt)
+Sequence Diagram: [UC33_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC33_RecordAttendance.txt)
 
 
 | Mục | Nội dung |
@@ -1947,7 +1947,7 @@ _UC gom — đặc tả nằm ở các UC con UC-68a, UC-68b… bên dưới._
 
 ### UC-76 – View Notifications
 
-Sequence Diagram: [UC66_ViewNotifications.txt](../06-sequencediagram/notification-management/UC66_ViewNotifications.txt)
+Sequence Diagram: [UC76_ViewNotifications.txt](../06-sequencediagram/notification-management/UC76_ViewNotifications.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -1966,7 +1966,7 @@ _UC gom — đặc tả nằm ở các UC con UC-77a, UC-77b… bên dưới._
 
 #### UC-77a – Mark Notification as Read
 
-Sequence Diagram: [UC67a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC67a_MarkNotificationAsRead.txt)
+Sequence Diagram: [UC77a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC77a_MarkNotificationAsRead.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -1981,7 +1981,7 @@ Sequence Diagram: [UC67a_MarkNotificationAsRead.txt](../06-sequencediagram/notif
 
 #### UC-77b – Mark All Notifications as Read
 
-Sequence Diagram: [UC67b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC67b_MarkAllNotificationsAsRead.txt)
+Sequence Diagram: [UC77b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC77b_MarkAllNotificationsAsRead.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -1996,7 +1996,7 @@ Sequence Diagram: [UC67b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/n
 
 ### UC-78 – Open Notification Target
 
-Sequence Diagram: [UC68_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC68_OpenNotificationTarget.txt)
+Sequence Diagram: [UC78_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC78_OpenNotificationTarget.txt)
 
 | Mục | Nội dung |
 |---|---|

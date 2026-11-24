@@ -1,0 +1,60 @@
+title UC-33 - Record Attendance
+
+actor "Secretary" as Secretary
+boundary "Attendance Page" as AttendancePage
+control ":Attendance Controller" as AttendanceController
+control ":Attendance Service" as AttendanceService
+participant ":Attendance Repository" as AttendanceRepository
+database ":Database" as Database
+
+Secretary->AttendancePage: Record attendance
+activate AttendancePage
+
+AttendancePage->AttendanceController: Save attendance (meetingId, entries)
+activate AttendanceController
+
+AttendanceController->AttendanceService: recordAttendance(meetingId, entries, secretary)
+activate AttendanceService
+
+AttendanceService->AttendanceRepository: Find meeting and verify secretary
+activate AttendanceRepository
+AttendanceRepository->Database: Retrieve meeting and roster
+activate Database
+Database-->AttendanceRepository: Meeting and roster
+deactivate Database
+AttendanceRepository-->AttendanceService: Meeting and roster
+deactivate AttendanceRepository
+
+alt Submitted attendance value is invalid - EX-1
+    AttendanceService-->AttendanceController: MSG148 - Select Present or Absent for each submitted participant or Guest.
+    AttendanceController-->AttendancePage: Return validation error
+    AttendancePage-->Secretary: MSG148 - Select Present or Absent for each submitted participant or Guest.
+
+else Meeting is no longer in progress - EX-2
+    AttendanceService-->AttendanceController: MSG149 - Attendance can only be recorded while the meeting is in progress.
+    AttendanceController-->AttendancePage: Return status error
+    AttendancePage-->Secretary: MSG149 - Attendance can only be recorded while the meeting is in progress.
+
+else Secretary is no longer authorized - EX-3
+    AttendanceService-->AttendanceController: Not authorized
+    AttendanceController-->AttendancePage: Return permission error
+    AttendancePage-->Secretary: Attendance not authorized
+
+else Valid submission
+    AttendanceService->AttendanceRepository: Save attendance together (BR-056, BR-057, UC-33)
+    activate AttendanceRepository
+    AttendanceRepository->Database: Update attendance
+    activate Database
+    Database-->AttendanceRepository: Saved
+    deactivate Database
+    AttendanceRepository-->AttendanceService: Saved
+    deactivate AttendanceRepository
+
+    AttendanceService-->AttendanceController: Attendance saved
+    AttendanceController-->AttendancePage: MSG147 - Meeting attendance saved successfully.
+    AttendancePage-->Secretary: MSG147 - Meeting attendance saved successfully.
+end
+
+deactivate AttendanceService
+deactivate AttendanceController
+deactivate AttendancePage

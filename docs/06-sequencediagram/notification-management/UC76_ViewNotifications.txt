@@ -1,0 +1,38 @@
+title UC-76 - View Notifications
+
+actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+boundary "Notification Panel" as NotificationPanel
+control ":Notification Controller" as NotificationController
+control ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+User->NotificationPanel: Select notification bell
+activate NotificationPanel
+
+NotificationPanel->NotificationController: Request notifications and unread count
+activate NotificationController
+
+NotificationController->NotificationService: Get notifications for current user
+activate NotificationService
+
+NotificationService->NotificationRepository: Get notifications and unread count without changing read status (UC-76, UC-77b, UC-78)
+activate NotificationRepository
+
+NotificationRepository->Database: Retrieve user notifications and unread count
+activate Database
+
+Database-->NotificationRepository: Notifications and unread count
+deactivate Database
+
+NotificationRepository-->NotificationService: Notification list and unread count
+deactivate NotificationRepository
+
+NotificationService-->NotificationController: Notification list and unread count
+deactivate NotificationService
+
+NotificationController-->NotificationPanel: Display notifications and unread badge
+deactivate NotificationController
+
+NotificationPanel-->User: Show notifications, unread indicators and unread count
+deactivate NotificationPanel

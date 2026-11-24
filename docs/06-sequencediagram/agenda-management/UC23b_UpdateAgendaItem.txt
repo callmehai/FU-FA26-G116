@@ -36,7 +36,7 @@ else Editing no longer permitted - EX-2
     AgendaPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 
 else Valid update
-    AgendaService->AgendaRepository: Save changes preserving status and timestamps (BR-68)
+    AgendaService->AgendaRepository: Save changes preserving status and timestamps (UC-23b)
     activate AgendaRepository
     AgendaRepository->Database: Update agenda item
     activate Database

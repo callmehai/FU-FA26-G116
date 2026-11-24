@@ -1,0 +1,81 @@
+title UC-38 - Comment on Meeting Document
+
+actor "Authorized User" as User
+boundary "Document Viewer" as DocumentViewer
+control ":Document Comment Controller" as CommentController
+control ":Document Comment Service" as CommentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":Document Comment Repository" as CommentRepository
+database ":Database" as Database
+
+User->DocumentViewer: Send comment or reply
+activate DocumentViewer
+
+DocumentViewer->CommentController: Add comment
+activate CommentController
+
+CommentController->CommentService: addComment(meetingId, meetingDocumentId, actor, body, pageNumber, parentCommentId)
+activate CommentService
+
+alt Comment is empty or too long - EX-1
+    CommentService-->CommentController: MSG200 - Enter a comment.
+    CommentController-->DocumentViewer: MSG200 - Enter a comment.
+    DocumentViewer-->User: MSG200 - Enter a comment.
+else Comment is valid
+    CommentService->MeetingAccessPolicy: Check the actor can view the Meeting
+    activate MeetingAccessPolicy
+    MeetingAccessPolicy->Database: Check the actor's relationship to the Meeting
+    activate Database
+    Database-->MeetingAccessPolicy: Access / No access
+    deactivate Database
+    MeetingAccessPolicy-->CommentService: Access / No access
+    deactivate MeetingAccessPolicy
+
+    CommentService->MeetingDocumentRepository: Get the document and the Meeting status
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve the document and its Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Document and Meeting status / Not found
+    deactivate Database
+    MeetingDocumentRepository-->CommentService: Document and Meeting status / Not found
+    deactivate MeetingDocumentRepository
+
+    alt Document is no longer available - EX-2
+        CommentService-->CommentController: MSG156 - Meeting documents are not accessible.
+        CommentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
+        DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+    else Meeting no longer accepts comments - EX-3
+        CommentService-->CommentController: MSG251 - Comments are read-only after the Meeting has ended.
+        CommentController-->DocumentViewer: MSG251 - Comments are read-only after the Meeting has ended.
+        DocumentViewer-->User: MSG251 - Comments are read-only after the Meeting has ended.
+    else Commenting is permitted
+        opt Reply to a comment - AF-2
+            CommentService->CommentRepository: Get the top-level comment of the thread
+            activate CommentRepository
+            CommentRepository->Database: Retrieve the parent comment
+            activate Database
+            Database-->CommentRepository: Top-level comment
+            deactivate Database
+            CommentRepository-->CommentService: Top-level comment
+            deactivate CommentRepository
+        end
+
+        CommentService->CommentRepository: Save the comment
+        activate CommentRepository
+        CommentRepository->Database: Insert the comment
+        activate Database
+        Database-->CommentRepository: Saved
+        deactivate Database
+        CommentRepository-->CommentService: Saved
+        deactivate CommentRepository
+
+        CommentService-->CommentController: MSG199 - Comment added.
+        CommentController-->DocumentViewer: MSG199 - Comment added.
+        DocumentViewer-->User: MSG199 - Comment added.
+    end
+end
+
+deactivate CommentService
+deactivate CommentController
+deactivate DocumentViewer

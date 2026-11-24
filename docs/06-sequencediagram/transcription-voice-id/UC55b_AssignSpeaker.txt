@@ -1,0 +1,148 @@
+﻿title UC-55b - Assign Speaker
+
+actor "Secretary" as Actor
+boundary "Transcript View" as TranscriptView
+control ":Transcript Controller" as TranscriptController
+control ":Transcription Service" as TranscriptionService
+participant ":Recording Repository" as RecordingRepository
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->TranscriptView: Assign a person on the roster to a voice, or clear the name
+activate TranscriptView
+
+loop For the chosen voice, and each voice suggested as the same person - AF-1 (NFR)
+    TranscriptView->TranscriptController: Assign the person to the voice
+    activate TranscriptController
+    TranscriptController->TranscriptionService: assignSpeaker(recordingId, label, userId, actorId)
+    activate TranscriptionService
+    TranscriptionService->RecordingRepository: Get the recording
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recording
+    activate Database
+    Database-->RecordingRepository: Recording / Not found
+    deactivate Database
+    RecordingRepository-->TranscriptionService: Recording / Not found
+    deactivate RecordingRepository
+    TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+    TranscriptionService->TranscriptRepository: Get the transcript voices
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript with speakers
+    activate Database
+    Database-->TranscriptRepository: Voices
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Voices
+    deactivate TranscriptRepository
+
+    alt Actor is not the current Secretary - EX-2
+        TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Person is not on the current roster - EX-1
+        TranscriptionService-->TranscriptController: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptController-->TranscriptView: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptView-->Actor: MSG317 - Assigned person must be on the current meeting roster.
+    else Assignment valid
+        TranscriptionService->AuditService: Record the assignment and whether it accepted the Voice ID suggestion
+        activate AuditService
+        AuditService-->TranscriptionService: Entry saved
+        deactivate AuditService
+        TranscriptionService->TranscriptRepository: Save the name on the voice, so every segment of that voice\nshows it; a name the system filled in by itself stays until the Secretary changes or clears it here (BR-120, BR-123)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update speaker
+        activate Database
+        Database-->TranscriptRepository: Speaker saved
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Speaker saved
+        deactivate TranscriptRepository
+                    TranscriptionService-->TranscriptController: MSG316 - Speaker assigned.
+            TranscriptController-->TranscriptView: MSG316 - Speaker assigned.
+            TranscriptView-->Actor: MSG316 - Speaker assigned.
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+end
+
+opt Change the speaker of one sentence - AF-2
+    Actor->TranscriptView: Select one sentence and choose its person
+    TranscriptView->TranscriptController: Change the speaker of this sentence
+    activate TranscriptController
+    TranscriptController->TranscriptionService: assignSegmentSpeaker(segmentId, userId | guestId | label, actorId)
+    activate TranscriptionService
+
+    TranscriptionService->TranscriptRepository: Get the sentence with its recording
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve sentence and recording
+    activate Database
+    Database-->TranscriptRepository: Sentence and recording / Not found
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Sentence and recording / Not found
+    deactivate TranscriptRepository
+
+    TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+
+    TranscriptionService->TranscriptRepository: Get the transcript voices
+    activate TranscriptRepository
+    TranscriptRepository-->TranscriptionService: Voices
+    deactivate TranscriptRepository
+
+
+    alt Actor is not the current Secretary - EX-2
+        TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Person is not on the current roster - EX-1
+        TranscriptionService-->TranscriptController: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptController-->TranscriptView: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptView-->Actor: MSG317 - Assigned person must be on the current meeting roster.
+    else The voice is not in this recording - EX-3
+        TranscriptionService-->TranscriptController: Not found
+        TranscriptController-->TranscriptView: No such voice in this recording
+    else Assignment valid
+        opt The chosen person has no voice yet
+            TranscriptionService->TranscriptRepository: Create the voice SPEAKER_NN with the smallest unused number,\nwith its own card, colour and duration (UC-55b)
+            activate TranscriptRepository
+            TranscriptRepository->Database: Insert speaker
+            activate Database
+            Database-->TranscriptRepository: Speaker created
+            deactivate Database
+            TranscriptRepository-->TranscriptionService: Speaker created
+            deactivate TranscriptRepository
+        end
+        TranscriptionService->TranscriptRepository: Move only this sentence to that voice,\nupdate the durations and mark who moved it and when, so a later run carries it again (UC-55b, BR-125, BR-154)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update the sentence and the durations
+        activate Database
+        Database-->TranscriptRepository: Sentence moved
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Sentence moved
+        deactivate TranscriptRepository
+        TranscriptionService->AuditService: Record the change
+        activate AuditService
+        AuditService-->TranscriptionService: Entry saved
+        deactivate AuditService
+
+                    TranscriptionService-->TranscriptController: MSG407 - The speaker of this sentence has been changed.
+            TranscriptController-->TranscriptView: MSG407 - The speaker of this sentence has been changed.
+            TranscriptView-->Actor: MSG407 - The speaker of this sentence has been changed.
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+end
+
+deactivate TranscriptView
+

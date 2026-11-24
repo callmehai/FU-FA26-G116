@@ -14,7 +14,7 @@ Rules (task for PR 2):
   target is a group, otherwise all of them; a BR moved to NFR becomes "NFR"; a UI-convention or retired BR is dropped;
 * an old UC becomes its new id; a use case dropped before the renumbering (UC-09, UC-32b, UC-34a, UC-51, UC-62, UC-63,
   UC-69) is marked as an old, dropped id, because its number now belongs to another use case;
-* only ids change: no behaviour, no file names (sequence diagram links such as UC14_CreateMeeting stay for PR 3).
+* only ids change: no behaviour, no file names (sequence diagram links such as UC13_CreateMeeting stay for PR 3).
 """
 
 import collections
@@ -25,6 +25,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SCOPE = ["AGENTS.md", "docs/01-requirements/00-master-use-case-inventory.md", "docs/02-design", "docs/03-api",
          "backend", "frontend/src", "frontend/tests", "tests"]
+# PR 3 runs it on the diagrams' text sources: python scripts/doi_ma_br_uc.py --scope docs/06-sequencediagram --write
+if "--scope" in sys.argv:
+    SCOPE = sys.argv[sys.argv.index("--scope") + 1].split(",")
 SKIP = {"bin", "obj", "node_modules", "wwwroot", "Migrations", "results"}
 EXTS = {".cs", ".ts", ".tsx", ".md", ".mjs", ".js", ".json", ".txt"}
 DROPPED = {"UC-09", "UC-32b", "UC-34a", "UC-51", "UC-62", "UC-63", "UC-69"}
