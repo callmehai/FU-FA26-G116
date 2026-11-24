@@ -1,7 +1,7 @@
 // FE-01 — Xác thực & Bảo mật tài khoản (QA subtask SCRUM-188): UC-01 sign in with email and password, UC-02 sign in
 // with Google, UC-03 sign out, UC-04 access a meeting through a guest invitation. Criteria come from the UC
-// specifications (docs/01-requirements/05-use-case-specifications.md), NFR, BR-004, BR-001–BR-003, UC-03, UC-30a, BR-049–BR-054, BR-044, UC-04,
-// BR-009–BR-011, docs/03-api/01-xac-thuc.md, 16-truy-cap-khach-uc04.md and the message-code catalogue.
+// specifications (docs/01-requirements/05-use-case-specifications.md), BR-004, BR-001–BR-003, BR-049–BR-054, BR-044,
+// BR-009, docs/03-api/01-xac-thuc.md, 16-truy-cap-khach-uc04.md and the message-code catalogue.
 //
 // Safe on the shared local dev app:
 // - Seed accounts are only signed in through the runner (never a wrong password, never a lockout, never a role or
@@ -278,7 +278,7 @@ export default {
     {
       id: 'AC5',
       role: 'admin',
-      title: 'UC-01 / BR-009–BR-011: nhật ký ghi đăng nhập thành công và thất bại vào tài khoản có thật, kèm lý do, không ghi mật khẩu; email không tồn tại không được ghi',
+      title: 'UC-01 / BR-009: nhật ký ghi đăng nhập thành công và thất bại vào tài khoản có thật, kèm lý do, không ghi mật khẩu; email không tồn tại không được ghi',
       steps: [
         'Đăng nhập đúng, sai mật khẩu bằng tài khoản [QA] đang hoạt động; đúng mật khẩu bằng tài khoản [QA] bị vô hiệu hoá; một email không tồn tại',
         'Quản trị GET /api/audit-log?actor=<tài khoản>&action=…',

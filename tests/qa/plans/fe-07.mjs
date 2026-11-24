@@ -2,8 +2,8 @@
 // filter), UC-39 upload to the library, UC-40a–c delete / rename / move a document, UC-41a–d folders, UC-35a view the
 // meeting documents, UC-35b the viewer and download, UC-36a add to the meeting (computer, My Documents), UC-36b attach
 // to an agenda item, UC-36c remove from the meeting, UC-36d detach from an item, UC-38 comments, UC-37a the
-// administrator reading a locked account's library; with the rules they cite (BR-055, UC-30a, BR-068, BR-070, BR-071, BR-074–BR-076, BR-069, BR-081, BR-086, BR-087, BR-091, UC-37, UC-36a, BR-072, BR-073, BR-009–BR-011, BR-077, UC-39, BR-083, UC-41a, BR-084, UC-40b, UC-40c,
-// BR-083, UC-40c, UC-38, BR-082, UC-37, BR-079, BR-080, UC-36a, UC-36b, BR-078, UC-36d, BR-074–BR-076, BR-086, BR-087, BR-028, BR-085, BR-009–BR-011).
+// administrator reading a locked account's library; with the rules they cite (BR-055, BR-068, BR-070, BR-071, BR-074–BR-076, BR-069, BR-081, BR-086, BR-087, BR-091, BR-072, BR-073, BR-011, BR-077, BR-083, BR-084,
+// BR-083, BR-082, BR-079, BR-080, BR-078, BR-074–BR-076, BR-086, BR-087, BR-028, BR-085, BR-011).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/11-tai-lieu-cuoc-hop.md, 14-kho-tai-lieu-ca-nhan.md, the message catalogue, and the comments of
@@ -689,7 +689,7 @@ export default {
         'Bấm "Đổi tên" ở dòng tài liệu, sửa tên, bấm "Lưu"',
       ],
       expected:
-        'Hộp thoại "Đổi tên" ghi cuộc họp vẫn giữ tên cũ, đuôi.pdf in sau ô; toast "Đã đổi tên tài liệu." (MSG183); dòng hiện tên mới, "1 cuộc họp"; API: tài liệu trong cuộc họp vẫn tên cũ (UC-36a, UC-40b)',
+        'Hộp thoại "Đổi tên" ghi cuộc họp vẫn giữ tên cũ, đuôi.pdf in sau ô; toast "Đã đổi tên tài liệu." (MSG183); dòng hiện tên mới, "1 cuộc họp"; API: tài liệu trong cuộc họp vẫn tên cũ (UC-40b)',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const old = qa.name(`FE-07 Dự thảo ${rand()}.pdf`)

@@ -27,8 +27,8 @@ Server cũng nhận tên `files[]`. Part tệp mang tên khác bị bỏ qua, pa
    xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended` và chưa `Cancelled`.
 3. `Content-Length` > 201 MB → `MSG288` ngay, không đọc body.
 4. Số tệp ≤ 10, tổng ≤ 100 MB (UC-36a, UC-36b, UC-39; họp 19/11/2026, trước là 200 MB).
-5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 10 MB (UC-36a, UC-39; họp 19/11/2026, trước là 50 MB), và **nội dung** đúng loại mà đuôi
-   khai (BR-069, UC-36a, UC-39). Đuôi phải khớp nội dung vì tệp sẽ được tải về dưới chính tên đó (SCRUM-21):
+5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 10 MB (UC-36a, UC-39, NFR; họp 19/11/2026, trước là 50 MB), và **nội dung** đúng loại mà đuôi
+   khai (BR-069, UC-36a, UC-39, NFR). Đuôi phải khớp nội dung vì tệp sẽ được tải về dưới chính tên đó (SCRUM-21):
    một trang HTML không được quay về từ origin của mình dưới tên `x.html`. PDF còn phải **đọc được cấu trúc** và có ít
    nhất một trang; số trang lưu vào `StoredFile.PageCount` là số server đếm (ADR-0044).
 6. Ghi trước các dòng `StoredFile` (chưa có gì trỏ tới), đẩy từng tệp lên R2, rồi ghi `Document` và
@@ -362,7 +362,7 @@ gỡ) → `409 MSG165` (BR-072, BR-073). Tất cả hoặc không (UC-36a, UC-36
 SCRUM-124); mã này vẫn là lớp chặn khi người khác vừa thêm.
 
 Mỗi tài liệu thành một `MeetingDocument` **chung** (chưa gắn mục), trỏ cùng `StoredFile` của dòng kho, `DocumentId` là
-dòng kho, `fileName` chép **tên hiện tại** trong kho (BR-011, UC-36a, UC-40b). Không chép byte (ADR-0018).
+dòng kho, `fileName` chép **tên hiện tại** trong kho (BR-011, UC-40b). Không chép byte (ADR-0018).
 
 `201` cùng dạng tải lên: `{ "code": "MSG161", "message", "meetingId", "addedCount", "documents": [ { "id", "fileName",
 "contentType", "byteSize", "pageCount" } ] }`. Lỗi khác: `403 MSG162`, `409 MSG172`, `503 MSG166`.
@@ -407,7 +407,7 @@ Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
 ### `DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` — gỡ khỏi một mục (UC-36d)
 
 Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung, trừ khi
-một biểu quyết còn gắn nó (UC-36d).
+một biểu quyết còn gắn nó (UC-36b, UC-36d).
 Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) → mục thuộc cuộc họp (`404 MSG242`) → liên kết tồn tại
 (`404 MSG246`). `200 { "code": "MSG239", "message", "meetingId", "agendaItemId", "meetingDocumentId" }`. Lỗi khác:
 `403 MSG241`, `409 MSG247`, `503 MSG245`.

@@ -154,7 +154,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-15 |
 | UC-27 | Ghi kết luận mục agenda *(Record Agenda Item Conclusion)* — Chair/Secretary ghi hoặc sửa kết luận của mục `InProgress`/`Done` cho tới khi sinh biên bản nháp | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-26 |
-| UC-28 | Ghi chú cuộc họp *(Take Meeting Notes)* — Thư ký ghi chú thời gian thực theo mục nghị sự hoặc cả cuộc họp; Chủ toạ đọc; BR-134, UC-28, UC-70, BR-133; MSG415–MSG423 | Secretary (ghi), Chair (đọc) | Đã đặc tả | `<<extend>>` UC-26 |
+| UC-28 | Ghi chú cuộc họp *(Take Meeting Notes)* — Thư ký ghi chú thời gian thực theo mục nghị sự hoặc cả cuộc họp; Chủ toạ đọc; BR-134, BR-133; MSG415–MSG423 | Secretary (ghi), Chair (đọc) | Đã đặc tả | `<<extend>>` UC-26 |
 
 ## FE-06 — Quản lý thành phần tham dự *(Meeting Participant Management)*
 
@@ -234,7 +234,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-69 | Xem biên bản *(View Meeting Minutes)* — bản nháp, chờ duyệt, bị trả lại chỉ Chủ tọa/Thư ký; bản đã ban hành (và bản cũ) cho mọi người đọc được cuộc họp, trừ Khách; tải Word/PDF trừ họp Mật (BR-139) | Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-15 |
 | UC-70 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-71 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (UC-71) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
+| UC-71 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (UC-71, NFR) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
 | UC-72 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-69 |
 | UC-73 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-009–BR-011) | **Chair** | Đã đặc tả | `<<extend>>` UC-69 |
 | UC-74 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | `<<extend>>` UC-69 |

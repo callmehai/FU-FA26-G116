@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react'
 import { useUploads } from '../uploads/uploadsContext'
 import type { UploadRequest } from '../uploads/uploadStore'
 
-// UC-36a, UC-39, UC-36b — the server's DocumentFileRules (meeting decision 19/11/2026: 10 MB a file, 10 files and
+// UC-36a, UC-39, NFR, UC-36b — the server's DocumentFileRules (meeting decision 19/11/2026: 10 MB a file, 10 files and
 // 100 MB an upload). Checked here first: a body past the limit is cut off while the browser is still sending,
 // and the browser then sees a network error, not a code.
 const MB = 1024 * 1024

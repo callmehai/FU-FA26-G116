@@ -1,7 +1,7 @@
 # Chia sẻ lịch — contract Backend SCRUM-142
 
 **Trạng thái:** BE đã triển khai (PR #315, 10/11/2026); FE đã triển khai (màn Chia sẻ lịch, 10/11/2026) — xem §8.
-**Use case:** UC-80a → UC-80f (chia sẻ lịch), UC-81c (xem lịch được chia sẻ). **BR:** BR-140, BR-141, BR-144–BR-147, UC-81a, BR-142, BR-143, BR-010, BR-148, UC-81b, UC-80a.
+**Use case:** UC-80a → UC-80f (chia sẻ lịch), UC-81c (xem lịch được chia sẻ). **BR:** BR-140, BR-141, BR-144–BR-147, BR-142, BR-143, BR-010, BR-148.
 **Nguồn:** [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-137-142.md), sequence trong
 [calendar-sharing/](../06-sequencediagram/calendar-sharing/), quyết định PO 09/11/2026 (Q-A → Q-E, [note 39](../notes/ban-giao-ba-final-review/39-scrum-142-thieu-sequence-chia-se-lich.md)),
 [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md). Mã thông báo: [danh mục](00-danh-muc-ma-thong-bao.md) mục *Chia sẻ lịch*.

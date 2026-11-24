@@ -103,7 +103,7 @@ chủ kho tự mở. Lỗi: `404 MSG175`; `410 MSG382` khi object đã mất h�
 Body `{ "fileName": "Tờ trình (bản cuối).pdf" }`. Tên được cắt khoảng trắng hai đầu và bỏ phần đường dẫn; phải
 **giữ đúng phần đuôi** của tệp (`.pdf` cho PDF, `.docx` cho DOCX, không phân biệt hoa thường), không trống, không chỉ có
 phần đuôi, ≤ 255 ký tự,
-không có ký tự điều khiển. Sai → `400 MSG347`. Tên đã chép vào cuộc họp **không đổi theo** (UC-36a, UC-40b).
+không có ký tự điều khiển. Sai → `400 MSG347`. Tên đã chép vào cuộc họp **không đổi theo** (UC-40b).
 
 `200 { "code": "MSG183", "message": "…", "document": { …như GET… } }`. Lỗi: `404 MSG175`, `503 MSG184`.
 
@@ -132,7 +132,7 @@ dòng kho nào và không còn cuộc họp nào đang dùng (BR-077).
 `folder` = `{ "id", "name", "parentId", "meetingId", "createdAt" }`, cùng dạng phần tử `folders` của `GET /api/documents`.
 
 - Tên được cắt khoảng trắng hai đầu; **được trùng** tên (UC-41a, UC-41b).
-- Cấp: thư mục ở gốc là cấp 1, tối đa cấp 5 (UC-37). Khi chuyển, cả cây con đi theo, nên kiểm **thư mục con sâu nhất**
+- Cấp: thư mục ở gốc là cấp 1, tối đa cấp 5 (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d). Khi chuyển, cả cây con đi theo, nên kiểm **thư mục con sâu nhất**
   sau khi chuyển, không chỉ thư mục được chuyển.
 - Thứ tự kiểm khi chuyển theo UC-41c: thư mục → thư mục đích → vào chính nó / con cháu → độ sâu.
 - Xoá chỉ khi rỗng (BR-084); khoá ngoại `Restrict` là lớp chặn thứ hai. Xoá thư mục tự tạo của cuộc họp thì lần tải từ

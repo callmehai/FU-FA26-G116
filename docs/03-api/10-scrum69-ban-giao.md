@@ -5,7 +5,7 @@ Phạm vi: Start Meeting và End Meeting. Backend trên branch `feat/SCRUM-69-BA
 ## Nguồn và quyết định
 
 - [UC-20, UC-21](../01-requirements/05-use-case-specifications.md), [sequence UC-20](../06-sequencediagram/meeting-management/UC21_StartMeeting.txt), [sequence UC-21](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt).
-- BR-022, BR-023, BR-060–BR-062, BR-024–BR-026, UC-20, ADR-0013/0017 và [workflow](../DEVELOPMENT_WORKFLOW.md).
+- BR-022, BR-023, BR-060–BR-062, BR-024–BR-026, ADR-0013/0017 và [workflow](../DEVELOPMENT_WORKFLOW.md).
 - UC-20, UC-21 có đủ spec/sequence. Chi tiết UC-43–UC-48 còn placeholder; task này chỉ nối đóng phòng theo UC-21, BR-025 và contract Calls, không đặc tả toàn bộ phòng họp.
 - Lịch sử bất biến; status/timestamp/actor do server quyết định. System role Admin/Organizer/Approver không cấp quyền Start/End; current Chair không cần capability MeetingCreator.
 - Test concurrency phát hiện User được active-user gate track trước khóa. Repository làm mới giá trị User chưa bị sửa từ snapshot đã khóa, tránh dùng IsActive cũ khi tài khoản bị vô hiệu hóa đồng thời.

@@ -5,7 +5,7 @@ hồ sơ tự khai → dùng token Khách gọi các API của đúng cuộc h�
 `meeting_participants`; Khách luôn gắn với một dòng `meeting_guest_invitations` (SCRUM-20).
 
 Đặc tả nguồn: UC-04, [sequence](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt),
-UC-30a, BR-052–BR-054, BR-044, UC-04, BR-055, [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md).
+BR-052–BR-054, BR-044, BR-055, [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md).
 Adapter tích hợp: [Agenda](08-agenda-contract-tich-hop-guest-uc04.md),
 [Thành phần tham dự](09-thanh-phan-tham-du-guest-uc04.md).
 

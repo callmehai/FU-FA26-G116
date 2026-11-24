@@ -68,7 +68,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.False(confirmed.GetProperty("alreadyConfirmed").GetBoolean());
         Assert.Equal(f.Clock.Now, confirmed.GetProperty("confirmedAt").GetDateTimeOffset());
 
-        // Confirmed once and never withdrawn: a second tick reports the first (UC-42 AF-1, UC-42).
+        // Confirmed once and never withdrawn: a second tick reports the first (UC-42 AF-1).
         f.Clock.Now = f.Clock.Now.AddMinutes(5);
         var again = await Code(await Confirm(member, s, first, false), 200, "MSG253");
         Assert.True(again.GetProperty("alreadyConfirmed").GetBoolean());

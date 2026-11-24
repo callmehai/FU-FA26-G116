@@ -1,6 +1,6 @@
 // FE-06 — Quản lý thành phần tham dự (QA subtask SCRUM-193): UC-29 view roster, UC-30a add / invite a guest, UC-30b
 // meeting roles, UC-30c remove / revoke, UC-31 answer the invitation, UC-32 response labels, UC-33 attendance, UC-34
-// hand the chair over. Business rules BR-036–BR-038, UC-30a, BR-046, UC-31, BR-016, BR-017, BR-040–BR-042, BR-056, BR-057, UC-33, BR-055, BR-047, BR-048.
+// hand the chair over. Business rules BR-036–BR-038, BR-046, BR-016, BR-017, BR-040–BR-042, BR-056, BR-057, BR-055, BR-047, BR-048.
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md (FE-06), 06-business-rules.md,
 // docs/03-api/09-thanh-phan-tham-du.md, 10-diem-danh.md, the message catalogue, and the Jira comments of SCRUM-20,

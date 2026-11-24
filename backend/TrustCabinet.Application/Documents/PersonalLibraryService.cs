@@ -143,7 +143,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
             // The destination's own chain reaching the folder means it is the folder or one of its subfolders (BR-084).
             for (var at = parentId; at is { } id; at = folders[id])
                 if (id == folderId) return new(LibraryFailure.IntoItself);
-            // The whole subtree moves along, so its deepest folder must stay within level five (UC-37).
+            // The whole subtree moves along, so its deepest folder must stay within level five (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d).
             if (Depth(folders, parentId) + Height(folders, folderId) > DocumentFileRules.MaxFolderDepth)
                 return new(LibraryFailure.TooDeep);
             var folder = await library.FindFolderAsync(folderId, token);
@@ -211,7 +211,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
             if (name is null || Path.GetFileNameWithoutExtension(name).Trim().Length == 0
                 || !DocumentFileRules.MatchesContentType(name, document.StoredFile.ContentType))
                 return Task.FromResult(LibraryFailure.NameInvalid);
-            // The meeting copies keep their own name (UC-36a, UC-40b).
+            // The meeting copies keep their own name (UC-40b).
             document.FileName = name;
             return Task.FromResult(LibraryFailure.None);
         }, ct);

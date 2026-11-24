@@ -14,11 +14,11 @@ namespace TrustCabinet.Domain.Documents;
 public static class DocumentFileRules
 {
     // Meeting decision 19/11/2026 (Khánh): 10 MB a file, 10 files and 100 MB an upload; before, 50 MB and 200 MB.
-    public const long MaxFileBytes = 10L * 1024 * 1024;   // UC-36a, UC-39
+    public const long MaxFileBytes = 10L * 1024 * 1024;   // UC-36a, UC-39, NFR
     public const int MaxFiles = 10;                       // UC-36a, UC-36b, UC-39
     public const long MaxTotalBytes = 100L * 1024 * 1024; // UC-36a, UC-36b, UC-39
     public const int MaxFileNameLength = 255;
-    public const int MaxFolderDepth = 5;                         // UC-37
+    public const int MaxFolderDepth = 5;                         // UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d
     public const int MaxFolderNameLength = 400;                  // the column
     public const int MaxCommentLength = 4000;                    // the column
 
@@ -85,7 +85,7 @@ public static class DocumentFileRules
     }
 
     /// <summary>
-    /// Checks the submission limits, then every file by its actual bytes (BR-069, UC-36a, UC-39,
+    /// Checks the submission limits, then every file by its actual bytes (BR-069, UC-36a, UC-39, NFR,
     /// UC-36a, UC-36b, UC-39), and hashes what passes. Reports every bad file, not just the first. Streams must
     /// be seekable — ASP.NET Core buffers form files to disk, so they are. <paramref name="countPdfPages"/> parses a
     /// PDF. It has no default on purpose: the web app must pass one that runs <see cref="CountPdfPagesAsync"/> in a

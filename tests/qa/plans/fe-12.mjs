@@ -1,7 +1,7 @@
 // FE-12 — Biên bản & Duyệt, ban hành (QA subtask SCRUM-199): the minutes of a meeting from the one fixed template
 // (UC-69 view, UC-70 generate, UC-71 edit and download), the AI draft that fills sections I–III (UC-58 generate, UC-59
 // view, UC-60 edit, UC-61 approve), and the approval (UC-72 submit, UC-73 approve and issue, UC-74 return, UC-75 correct
-// issued minutes), with UC-58, UC-59, UC-60, BR-126, BR-127, UC-61, BR-128, BR-129, UC-70, BR-130, UC-71, BR-131–BR-133, UC-55b, BR-135–BR-138, UC-72, UC-73, UC-74, BR-139, BR-009–BR-011.
+// issued minutes), with BR-126–BR-133, BR-135–BR-139, BR-010.
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/17-du-thao-bien-ban.md, 18-may-ai.md, the message catalogue and the comments of SCRUM-32, SCRUM-33 and
@@ -622,7 +622,7 @@ export default {
     {
       id: 'AC4',
       role: 'secretary',
-      title: 'API lưu bản nháp: trống, quá 300.000 ký tự → 400 MSG402; bản cũ → 409 MSG401; HTML bị lọc (UC-71); thành viên 404',
+      title: 'API lưu bản nháp: trống, quá 300.000 ký tự → 400 MSG402; bản cũ → 409 MSG401; HTML bị lọc (UC-71, NFR); thành viên 404',
       steps: [
         'PUT nội dung "<p> </p><br>"; nội dung 300.001 ký tự',
         'Chủ toạ lưu, rồi Thư ký lưu với updatedAt cũ',

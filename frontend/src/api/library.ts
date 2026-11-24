@@ -65,7 +65,7 @@ export const moveLibraryDocument = (documentId: string, folderId: string | null)
 /** UC-40a: the library row only; meetings using the file keep reading it (BR-074–BR-076). */
 export const deleteLibraryDocument = (documentId: string) => api.delete<Done>(`/api/documents/${documentId}`)
 
-/** UC-41a: names may repeat (UC-41a); five levels at most (409 MSG189). */
+/** UC-41a: names may repeat (UC-41a, UC-41b); five levels at most (409 MSG189). */
 export const createFolder = (name: string, parentId: string | null) =>
   api.post<Saved<'folder', LibraryFolder>>('/api/folders', { name, parentId })
 

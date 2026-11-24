@@ -1,7 +1,7 @@
 # Tìm giờ họp — contract Backend SCRUM-137
 
 **Jira:** [SCRUM-137](https://sep490g116.atlassian.net/browse/SCRUM-137) · **Ngày:** 11/11/2026 · **Trạng thái:** BE đã có code
-**Use case:** UC-81a (tìm khung giờ), UC-81b (tạo nháp từ khung giờ). **BR:** BR-140, BR-141, BR-144–BR-147, UC-81a, BR-148, UC-81b.
+**Use case:** UC-81a (tìm khung giờ), UC-81b (tạo nháp từ khung giờ). **BR:** BR-140, BR-141, BR-144–BR-148.
 **Kế hoạch BE:** [NOTE-ke-hoach-be-scrum-137.md](../notes/NOTE-ke-hoach-be-scrum-137.md) · **Note cho FE:** [24-tim-gio-hop-note-cho-fe.md](24-tim-gio-hop-note-cho-fe.md)
 **Dùng dữ liệu của:** [23-chia-se-lich.md](23-chia-se-lich.md) (chia sẻ lịch, SCRUM-142)
 

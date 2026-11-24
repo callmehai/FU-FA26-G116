@@ -1,7 +1,7 @@
 // FE-08 — Phòng họp trực tuyến (QA subtask SCRUM-195): UC-43 join (lobby, recording notice, device check), UC-44 leave,
 // UC-45a microphone, UC-45b camera, UC-45c screen sharing, UC-45d device pickers, UC-46 participants panel, UC-47 Chair
 // mutes another person, UC-48 in-room chat, UC-49 floating window, UC-50 raise hand (as far as the room shows it), and
-// the rules they cite: BR-025, BR-100–BR-102, UC-45c, BR-103, UC-43, UC-46, UC-45a, UC-45b, UC-45d, UC-49, NFR, BR-104–BR-106.
+// the rules they cite: BR-025, BR-100–BR-106.
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-43 → UC-48, UC-49, UC-50),
 // 06-business-rules.md, docs/03-api/09-phong-hop-truc-tuyen.md, docs/03-api/00-danh-muc-ma-thong-bao.md (MSG117, MSG123,
@@ -810,7 +810,7 @@ export default {
       title: 'Người bị gỡ khỏi thành phần khi đang trong phòng bị đưa ra với MSG330, không vào lại được',
       steps: ['thanhvien@ vào phòng của một cuộc họp riêng đang diễn ra', 'Thư ký gỡ thanhvien@ khỏi thành phần (API)'],
       expected:
-        'Thành viên bị đưa ra: "Bạn không còn trong danh sách tham dự phòng họp này." không có Vào lại, nút "Về danh sách cuộc họp" (không có "Về trang cuộc họp", trang đó giờ là 404 với họ) mở danh sách cuộc họp; GET …/call và POST …/call/join của thanhvien@ trả 404; mở lại link phòng là trang "Không tìm thấy trang" (UC-44 EX-3, UC-43 EX-4, UC-43)',
+        'Thành viên bị đưa ra: "Bạn không còn trong danh sách tham dự phòng họp này." không có Vào lại, nút "Về danh sách cuộc họp" (không có "Về trang cuộc họp", trang đó giờ là 404 với họ) mở danh sách cuộc họp; GET …/call và POST …/call/join của thanhvien@ trả 404; mở lại link phòng là trang "Không tìm thấy trang" (UC-44 EX-3, UC-43 EX-4)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'InProgress', 'gỡ người khi đang trong phòng')
         const u = await users()

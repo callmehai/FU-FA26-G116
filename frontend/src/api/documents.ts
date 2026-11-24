@@ -76,7 +76,7 @@ export const linkFromLibrary = (meetingId: string, itemId: string, documentIds: 
 export const uploadToAgendaItem = (meetingId: string, itemId: string, files: Upload, options: UploadOptions = {}) =>
   api.upload<MeetingDocumentsAdded>(`${itemBase(meetingId, itemId)}/upload`, filesForm(files), options)
 
-/** UC-36d: this one link; the document stays in the meeting (UC-36d). 404 MSG246 when it was not linked. */
+/** UC-36d: this one link; the document stays in the meeting (UC-36b, UC-36d). 404 MSG246 when it was not linked. */
 export const unlinkFromAgendaItem = (meetingId: string, itemId: string, meetingDocumentId: string) =>
   api.delete<{ code: string; message: string }>(`${itemBase(meetingId, itemId)}/${meetingDocumentId}`)
 

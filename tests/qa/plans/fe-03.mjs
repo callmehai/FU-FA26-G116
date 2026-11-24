@@ -2,7 +2,7 @@
 // tạo / sửa / xoá vai trò, UC-12 nhật ký hệ thống, plus the server-side rules of docs/03-api/04-phan-quyen-phia-server.md
 // (401 signed out, 403 on a fixed endpoint, 404 for an unknown id and for a restricted UI route).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-09..UC-12), BR-009–BR-011, BR-007, BR-008/440-443, the API
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-09..UC-12), BR-009, BR-007, BR-008/440-443, the API
 // docs 03-ma-tran-phan-quyen.md, 04-quan-ly-vai-tro.md, 21-nhat-ky-kiem-toan.md and the message catalogue.
 //
 // Safe on the shared local app: it never changes a built-in role, the "All-in-one" role or a seed account. Every role it

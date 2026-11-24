@@ -5,8 +5,8 @@
 // (ADR-0060, MSG473–477), and of UC-58–UC-60 only what FE-10 feeds: the draft card's count of unnamed voices (read-only —
 // this plan never asks for an AI draft; the draft itself is FE-12).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md (BR-108, BR-111–BR-113, BR-109, UC-53, UC-45a, UC-51a, BR-114, BR-115, UC-54b, UC-54c, BR-116, BR-124, BR-118, BR-119, BR-117, BR-120, BR-123, NFR,
-// BR-117, UC-55b, BR-118, BR-119, BR-124, UC-57a, UC-57b, BR-009–BR-011), docs/03-api/12-ban-ghi-cuoc-hop.md, 13-nhan-dien-giong-noi.md, 17-du-thao-bien-ban.md,
+// Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md (BR-108, BR-111–BR-113, BR-109, BR-114–BR-116, BR-124, BR-118, BR-119, BR-117, BR-120, BR-123,
+// BR-117–BR-119, BR-124, BR-011), docs/03-api/12-ban-ghi-cuoc-hop.md, 13-nhan-dien-giong-noi.md, 17-du-thao-bien-ban.md,
 // ADR-0026/0027/0060, the message catalogue, and the Jira comments of SCRUM-31, SCRUM-35 and SCRUM-152 (one Voice ID
 // consent, notice 1.3, covers both sample sets; the speaker of one sentence moves to the chosen person's voice; the
 // machine names a voice itself at ≥ 0.75; guests have no Voice ID, PO 14/11/2026).

@@ -121,21 +121,25 @@ def br_kind(n):
     ucs = expand_uc_targets(re.sub(r",?\s*NFR[^,]*", "", target))
     if not ucs:
         return "nfr", []
-    return "uc", ucs  # old ids
+    return ("uc+nfr" if "NFR" in target else "uc"), ucs  # old ids; "UC-33a, UC-36, NFR" keeps its NFR part
 
 
 def audit_pick(path):
     p = path.as_posix().lower()
-    if re.search(r"/(users?|auth|access|roles?|rolepermission|signin|01-xac-thuc|02-nguoi-dung|03-vai-tro)", p):
+    # QA plans are named by feature: FE-01–03 accounts and roles, FE-12/15/16 minutes, reports and calendars,
+    # FE-07/10 documents and voice samples.
+    if re.search(r"/(users?|auth|access|roles?|rolepermission|signin|01-xac-thuc|02-nguoi-dung|03-vai-tro)|/fe-0[123]\.", p):
         return ["BR-009"]
-    if re.search(r"minutes|bien-ban|report|bao-cao|calendar|chia-se-lich", p):
+    if re.search(r"minutes|bien-ban|report|bao-cao|calendar|chia-se-lich|/fe-1[256]\.", p):
         return ["BR-010"]
-    if re.search(r"voice|giong|document|tai-lieu|library|kho", p):
+    if re.search(r"voice|giong|document|tai-lieu|library|kho|/fe-(?:07|10)\.", p):
         return ["BR-011"]
     return list(AUDIT)
 
 
-ITEM = r"(?:BR|UC)-\d+[a-z]?(?:\s*(?:–|\.\.|→)\s*(?:(?:BR|UC)-)?\d+[a-z]?)?(?:/(?:(?:BR|UC)-)?\d+[a-z]?)*"
+# A slash list may hold a range too: BR-159/160/252–274.
+ITEM = (r"(?:BR|UC)-\d+[a-z]?(?:\s*(?:–|\.\.|→)\s*(?:(?:BR|UC)-)?\d+[a-z]?)?"
+        r"(?:/(?:(?:BR|UC)-)?\d+[a-z]?(?:–(?:(?:BR|UC)-)?\d+[a-z]?)?)*")
 GROUP = re.compile(rf"(?<![\w-])({ITEM}(?:(?:\s*,\s*|\s+and\s+|\s+và\s+|\s+or\s+|\s+hoặc\s+){ITEM})*)(?![\w-])")
 
 
@@ -153,9 +157,11 @@ def expand_item(item):
         return found or [("UC", a), ("UC", b)]  # backwards: an arrow of a flow, not a range
     parts = re.split(r"/", item)
     out = []
-    for i, part in enumerate(parts):
+    for part in parts:
         part = part if re.match(r"(BR|UC)-", part) else f"{kind}-{part}"
-        if part.startswith("BR-"):
+        if re.search(r"\d\s*[–-]\s*\d", part[3:]):  # a range inside a slash list: BR-159/160/252–274
+            out += expand_item(re.sub(r"^(BR|UC)-(\d+[a-z]?)\s*[–-]\s*", r"\1-\2–", part))
+        elif part.startswith("BR-"):
             out.append(("BR", int(part[3:])))
         else:
             out.append(("UC", norm_uc(part)))
@@ -188,7 +194,10 @@ def map_group(group, context, path, lang):
                     gaps.append((path.as_posix(), item, f"{first}{m.group(2)}{last}"))
                 continue
         olds += expand_item(item)
-    news += map_items(olds, context, path, lang)
+    # Six or more old BRs at once is a summary of "the rules this cites": it keeps the rules (new BRs) only, not the
+    # use cases and NFR the moved ones went to, which made such lists long and mixed (review of PR #522).
+    summary = sum(1 for k, _ in olds if k == "BR") >= 6
+    news += map_items(olds, context, path, lang, rules_only=summary)
     seen, out = set(), []
     for x in news:
         if x not in seen:
@@ -197,21 +206,25 @@ def map_group(group, context, path, lang):
     return ", ".join(compress(out))
 
 
-def map_items(olds, context, path, lang):
+def map_items(olds, context, path, lang, rules_only=False):
     news = []
     for kind, old in olds:
         if kind == "BR":
             k, ids = br_kind(old)
             stats[f"BR:{k}"] += 1
+            if rules_only and k != "br":
+                continue
             if k == "br":
                 news += audit_pick(path) if ids == AUDIT else ids
-            elif k == "uc":
-                # Narrow the target group to the use cases the rule applied to (old "Applies To"), then to the one the
-                # surrounding text names.
+            elif k in ("uc", "uc+nfr"):
+                # Narrow the target group to the use cases the rule applied to (old "Applies To"); a sub-case counts for
+                # its parent (BR-191: UC-72 -> UC-72a, UC-72c). Not narrowed by the surrounding text, which named the
+                # wrong use case where it mentioned one for another reason (review of PR #522).
                 applies = [u for u in APPLIES.get(old, []) if u in UC]
-                pool = [u for u in ids if u in applies] or applies or ids
-                named = [u for u in pool if re.search(rf"\b{re.escape(u)}\b", context)]
-                news += [UC[u] for u in (named or pool) if u in UC]
+                pool = [u for u in applies if any(u == t or re.fullmatch(re.escape(t) + r"[a-z]", u) for t in ids)]
+                news += [UC[u] for u in (pool or applies or ids) if u in UC]
+                if k == "uc+nfr":
+                    news.append("NFR")
             elif k == "nfr":
                 news.append("NFR")
             elif k == "unknown":
@@ -256,6 +269,7 @@ def compress(ids):
 
 
 FLOWS = ["UC-04 → UC-26"]
+OLD_LABEL = re.compile(r"\bUC-\d+[a-z]?(?:\s*/\s*UC-\d+[a-z]?)*\s+cũ\b|\bformer UC-\d+[a-z]?")
 VIETNAMESE = re.compile(r"[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]", re.I)
 
 
@@ -283,7 +297,17 @@ def rewrite_text(text, path):
             work = re.sub(pattern, replacement, work)
         for flow in FLOWS:  # an arrow between two steps, not a range: map each end
             work = work.replace(flow, flow.replace(" → ", " ⟶ "))
+        # An id already labelled old ("UC-26 cũ", "UC-26 / UC-27 cũ", "former UC-09") belongs to an earlier numbering
+        # (the Meeting Session use cases of ADR-0013): kept exactly as written.
+        kept = []
+
+        def keep(m):
+            kept.append(m.group(0))
+            return f"\x01{len(kept) - 1}\x01"
+
+        work = OLD_LABEL.sub(keep, work)
         new_line = GROUP.sub(repl, work).replace(" ⟶ ", " → ")
+        new_line = re.sub("\x01(\\d+)\x01", lambda m: kept[int(m.group(1))], new_line)
         new_line = cleanup(new_line, line)
         if new_line != line:
             review.append((path.as_posix(), i + 1, line.strip(), new_line.strip()))
@@ -300,6 +324,23 @@ LINE_REPLACE = [
 ]
 
 
+def dedupe_brackets(s):
+    """Inside one bracket, drop an id that already appeared earlier: (UC-42 AF-1, UC-42) -> (UC-42 AF-1)."""
+    def one(m):
+        seen, parts = set(), []
+        for piece in re.split(r"(\s*,\s*|\s*/\s*)", m.group(1)):
+            ids = re.findall(r"\b(?:BR|UC)-\d+[a-z]?\b", piece)
+            if re.fullmatch(r"(?:BR|UC)-\d+[a-z]?", piece.strip()) and piece.strip() in seen:
+                if parts and re.fullmatch(r"\s*[,/]\s*", parts[-1]):
+                    parts.pop()
+                continue
+            seen.update(ids)
+            parts.append(piece)
+        return "(" + "".join(parts) + ")"
+    s = re.sub(r"\(([^()]*)\)", one, s)
+    return re.sub(r"\b((?:BR|UC)-\d+[a-z]?) / \1\b", r"\1", s)  # UC-06b / UC-06b
+
+
 def cleanup(new, old):
     """Remove what a dropped citation (GONE) leaves behind."""
     s = new
@@ -311,6 +352,7 @@ def cleanup(new, old):
     s = re.sub(GONE + r":\s*", "", s)
     s = re.sub(r"\s*[,;/]\s*" + GONE + r"|" + GONE + r"\s*[,;/]\s*", "", s)
     s = s.replace(GONE, "")
+    s = dedupe_brackets(s)
     s = re.sub(r"\(\s*(?:[,;/]\s*)*\)", "", s)               # ( ) or (, )
     s = re.sub(r"\(\s*[,;/]\s*", "(", s)                     # (, BR-013 -> (BR-013
     s = re.sub(r"\s*[,;/]\s*\)", ")", s)                     # BR-013, ) -> BR-013)
@@ -339,6 +381,15 @@ POST_FIXES = {
         ("Số UC theo baseline 10/10/2026 (UC-01 → UC-79).",
          "Số UC theo đợt đánh số lại 24/11/2026 (UC-01 → UC-81, [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md))."),
     ],
+    "docs/03-api/05-quan-ly-cuoc-hop.md": [
+        ("Sequence UC-16 hiện ghi BR-016, BR-017 ở bước repository; BA cần bổ sung và nhánh query",
+         "Sequence UC-16 hiện ghi luật xem cuộc họp (BR-016, BR-017; diagram còn mã cũ tới PR 3) ở bước repository; BA cần "
+         "bổ sung cách lọc theo tham số và nhánh query"),
+    ],
+    "docs/02-design/02-erd.md": [("(SCRUM-37 retired)", "(SCRUM-37)")],
+    # The only id list wrapped across two lines: the second line holds bare old numbers (285 → BR-086/087, 288/289 →
+    # BR-094/095, 293 → BR-096/097; 287, 290–292, 304, 305 moved into use cases).
+    "docs/03-api/15-bieu-quyet.md": [("BR-096–BR-099/\n285/287–293/304/305; ADR", "BR-094–BR-099;\nADR")],
     "docs/03-api/21-nhat-ky-kiem-toan.md": [("màn hình tự hiện câu theo\n.", "màn hình tự hiện câu.")],
     # A test named after an old BR (BR-422, now a step of UC-81a).
     "tests/TrustCabinet.Web.Tests/CalendarSharing/MeetingSlotFinderTests.cs": [

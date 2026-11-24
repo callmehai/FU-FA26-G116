@@ -41,7 +41,7 @@ const TYPE_OPTIONS = [
   { value: 'docx', label: 'DOCX' },
 ] satisfies { value: TypeFilter; label: string }[]
 
-/** UC-37: a folder at the fifth level holds no further folder. */
+/** UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d: a folder at the fifth level holds no further folder. */
 const MAX_DEPTH = 5
 const COLUMN_COUNT = 5
 

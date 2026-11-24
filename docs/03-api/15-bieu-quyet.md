@@ -5,8 +5,8 @@ Ngày 28/10/2026; cập nhật 30/10/2026. **Backend SCRUM-28 đã triển khai*
 đã triển khai** gắn / gỡ tài liệu (UC-68a, UC-68b), xác nhận đã đọc (UC-42) và chặn `MSG252` — xem
 [§8](#8-đã-triển-khai--scrum-96).
 
-Nguồn đã đối chiếu: UC-62a, UC-62b, UC-63–UC-67, UC-42, UC-68a, UC-68b; BR-026, BR-090, BR-092, BR-093, BR-055, BR-086, BR-087, BR-091–274/
-285/287–293/304/305; ADR-0014/0016/0017/0019/0020; sequence
+Nguồn đã đối chiếu: UC-62a, UC-62b, UC-63–UC-67, UC-42, UC-68a, UC-68b; BR-026, BR-090, BR-092, BR-093, BR-055, BR-086, BR-087, BR-091, BR-088, BR-089, BR-094–BR-099;
+ADR-0014/0016/0017/0019/0020; sequence
 [voting-management](../06-sequencediagram/voting-management/README.md) và UC-42; class diagram
 [FE-11](../07-classdiagram/feature-11-voting-management-class-diagram.drawio); schema
 [ERD](../02-design/02-erd.md); danh mục [MSG205–236, MSG252–255, MSG265–270](00-danh-muc-ma-thong-bao.md).
@@ -114,7 +114,7 @@ suy từ tally (BR-099).
 { "documentIds": ["…"] }
 ```
 
-Upload: multipart, cùng giới hạn loại/dung lượng tài liệu cuộc họp (BR-069, UC-36a, UC-39, MSG288
+Upload: multipart, cùng giới hạn loại/dung lượng tài liệu cuộc họp (BR-069, UC-36a, UC-39, NFR, MSG288
 nếu áp dụng cùng lần). Tất cả hoặc không (UC-36b). Gỡ Vote không gỡ MeetingDocument (UC-68b).
 
 ### Xác nhận đã đọc

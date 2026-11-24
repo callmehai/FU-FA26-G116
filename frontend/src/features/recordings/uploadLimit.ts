@@ -1,5 +1,5 @@
 /**
- * The recording upload's size limit (BR-107–BR-109, UC-52a, UC-52b, BR-110, UC-52d, BR-111–BR-113, UC-53, UC-45a, UC-51a, BR-114, BR-115, `Recordings:MaxUploadMegabytes`), as the server's list gives it
+ * The recording upload's size limit (BR-107–BR-115, `Recordings:MaxUploadMegabytes`), as the server's list gives it
  * (`maxUploadBytes`). The server refuses a bigger file with 413 MSG293 while the browser is still sending it and drops
  * the connection, so the browser only sees a network error: the size is checked here before anything is sent, and a
  * dropped connection while sending a file over the limit is read as that same refusal.

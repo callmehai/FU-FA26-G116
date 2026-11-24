@@ -143,7 +143,7 @@ Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không t
   nữa; tab cũ hiện `MSG329`.
 - **Chat (UC-48, BR-103).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
   lưu; người vào sau không thấy tin trước. Gửi lỗi thì giữ nguyên nội dung và hiện `MSG343`.
-- **Thiết bị (UC-45d).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
+- **Thiết bị (UC-45d, UC-45a, UC-45b).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
   `localStorage` (`trustcabinet.call.prefs`) của trình duyệt, không gửi lên server.
 - **Chia sẻ màn hình (UC-45c).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
   track của người đang trình bày; FE nhận `LocalTrackUnpublished` và hiện `MSG340`.

@@ -1,6 +1,6 @@
 // FE-05 — Quản lý chương trình nghị sự (QA subtask SCRUM-192): UC-23a create, UC-23b update, UC-23c delete, UC-23d
-// reorder, UC-24 set current, UC-25 complete, UC-26 view, UC-27 item conclusion, and the rules they cite (BR-058, BR-059, UC-23a, UC-23b, BR-060–BR-062,
-// BR-063, UC-23d, UC-23c, BR-064, BR-065, UC-23a, UC-23b, BR-066, BR-067, UC-27, BR-026 for End Meeting).
+// reorder, UC-24 set current, UC-25 complete, UC-26 view, UC-27 item conclusion, and the rules they cite (BR-058–BR-062,
+// BR-063–BR-067, BR-026 for End Meeting).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/08-chuong-trinh-nghi-su.md, the message catalogue, and the SCRUM-25 comments: since 04/11/2026 (PO

@@ -88,11 +88,11 @@ public interface IMeetingDocumentService
     /// <summary>The access check alone, so a caller who may not upload is refused before the body is read.</summary>
     Task<DocumentUploadOutcome> CheckUploadAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
 
-    /// <summary>UC-36a AF-1: all files or none (UC-36a).</summary>
+    /// <summary>UC-36a AF-1: all files or none (UC-36a, UC-36b, UC-39).</summary>
     Task<DocumentUploadOutcome> UploadAsync(Guid meetingId, Guid actorId, IReadOnlyList<DocumentUploadFile> files,
         CancellationToken ct = default);
 
-    /// <summary>UC-36a: adds the actor's own library documents as general meeting documents, all or none (BR-072, BR-073, UC-36a).</summary>
+    /// <summary>UC-36a: adds the actor's own library documents as general meeting documents, all or none (BR-072, BR-073, UC-40b).</summary>
     Task<DocumentUploadOutcome> AddFromLibraryAsync(Guid meetingId, Guid actorId, IReadOnlyList<Guid> documentIds,
         CancellationToken ct = default);
 
@@ -114,7 +114,7 @@ public interface IMeetingDocumentService
     Task<DocumentUploadOutcome> AttachUploadAsync(Guid meetingId, Guid agendaItemId, Guid actorId,
         IReadOnlyList<DocumentUploadFile> files, CancellationToken ct = default);
 
-    /// <summary>UC-36d: drops one link; the document stays in the meeting (UC-36d).</summary>
+    /// <summary>UC-36d: drops one link; the document stays in the meeting (UC-36b, UC-36d).</summary>
     Task<DocumentUploadOutcome> DetachAsync(Guid meetingId, Guid agendaItemId, Guid meetingDocumentId, Guid actorId,
         CancellationToken ct = default);
 }
@@ -260,7 +260,7 @@ public interface IMeetingDocumentAttacher
 {
     /// <summary>
     /// UC-36a, UC-36b AF-2 and UC-68a AF-2: the actor's own library documents (BR-072, BR-073) become meeting documents
-    /// under their current name (UC-36a) — linked to <paramref name="agendaItemId"/> or attached to
+    /// under their current name (UC-40b) — linked to <paramref name="agendaItemId"/> or attached to
     /// <paramref name="voteId"/> when given. A file already in the meeting is refused for the general group
     /// (BR-072, BR-073); for an item or a vote its meeting document is linked instead, unless it already is.
     /// </summary>

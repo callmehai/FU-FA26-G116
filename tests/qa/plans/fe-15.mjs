@@ -1,6 +1,6 @@
 // FE-15 — Báo cáo & Thống kê (QA subtask SCRUM-202). docs/uc-map.html maps FE-15 to UC-79, UC-79a View Reports &
 // Statistics and UC-79b Export Report (story SCRUM-38). Criteria come from the UC specification
-// (docs/01-requirements/05-use-case-specifications.md), BR-149, BR-150, UC-79a, BR-151, BR-152, BR-009–BR-011 (06-business-rules.md), the contract
+// (docs/01-requirements/05-use-case-specifications.md), BR-149–BR-152, BR-010 (06-business-rules.md), the contract
 // docs/03-api/22-bao-cao-thong-ke.md, NOTE-dac-ta-so-bo-scrum-38.md, MSG463–MSG466 in the catalogue, and the SCRUM-38
 // comments (PO 09/11: Q1 admin sees only what it may read, Q2 duration added and no PDF, Q3 no capability).
 //
@@ -15,7 +15,7 @@
 //   report counts Cancelled meetings too (BR-149, BR-150), so each run leaves one Cancelled meeting behind.
 // - "[QA] FE-15 tài khoản tạm" (qa-fe15-inactive@trustcabinet.local, role Thành viên) is reactivated, signed in and
 //   deactivated by AC12, and left deactivated.
-// Every export (AC1, AC10, AC9) writes one audit row report.exported, as BR-009–BR-011 requires.
+// Every export (AC1, AC10, AC9) writes one audit row report.exported, as BR-010 requires.
 //
 // The screen was reworked after the supervisor's review of 22/11/2026 (PR #488, docs/03-api/22-bao-cao-thong-ke.md): a
 // band of manager figures from GET /api/reports/meetings on top, then a query over the main tables (GET /api/reports/query:
@@ -472,7 +472,7 @@ function readXlsx(buf) {
 }
 
 /**
- * The exported file holds exactly the table on screen (BR-009–BR-011): what was asked at the top, then one row per group with
+ * The exported file holds exactly the table on screen (BR-010): what was asked at the top, then one row per group with
  * its rank, then Tổng. A meeting title may appear only when the table is grouped by meeting.
  */
 function tableFileProblems(file, table, titles = []) {
@@ -522,7 +522,7 @@ async function downloadExport(qa) {
 }
 
 /**
- * The audit row of the export just made by `who`, read by the admin (BR-009–BR-011): exactly one since `since`, with `want` in its
+ * The audit row of the export just made by `who`, read by the admin (BR-010): exactly one since `since`, with `want` in its
  * details (which table, grouping and filters).
  */
 async function expectAuditRow(qa, who, from, to, since, want = {}) {
@@ -1065,7 +1065,7 @@ export default {
         'Bấm Xuất Excel',
         'Quản trị đọc nhật ký hệ thống, sự kiện report.exported',
       ],
-      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-009–BR-011)`,
+      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-010)`,
       async run(qa) {
         await prepareAll(qa)
         const FAR_MONTH = planMonth()

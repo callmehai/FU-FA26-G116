@@ -1,6 +1,6 @@
 # Backend chương trình nghị sự — SCRUM-98
 
-Contract thay thế SCRUM-25 ngày 24/10/2026, theo SCRUM-98 và comment 18/10/2026, Report 3 FE-05, UC-27, UC-30c, BR-064, BR-065, UC-23a, UC-23b, BR-066, BR-067, UC-70 và tám sequence Agenda. Xem [bàn giao](08-scrum98-ban-giao.md) và [kết quả kiểm thử](08-scrum98-ket-qua-kiem-thu.md). Các báo cáo SCRUM-25 giữ nguyên như bằng chứng lịch sử.
+Contract thay thế SCRUM-25 ngày 24/10/2026, theo SCRUM-98 và comment 18/10/2026, Report 3 FE-05, UC-27, UC-30c, BR-064–BR-067 và tám sequence Agenda. Xem [bàn giao](08-scrum98-ban-giao.md) và [kết quả kiểm thử](08-scrum98-ket-qua-kiem-thu.md). Các báo cáo SCRUM-25 giữ nguyên như bằng chứng lịch sử.
 
 ## Endpoint và quyền
 

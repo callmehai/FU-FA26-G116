@@ -1,6 +1,6 @@
 // FE-04 — Quản lý cuộc họp (QA subtask SCRUM-191): UC-13 create, UC-14 update / reschedule, UC-15 detail, UC-16 list,
 // UC-17 submit, UC-18 approve / reject, UC-19 publish, UC-20 start, UC-21 end, UC-22 cancel, and the lifecycle rules
-// (BR-013, BR-014, BR-016, BR-017, BR-015, BR-030, BR-021, BR-028, UC-22, UC-13).
+// (BR-013, BR-014, BR-016, BR-017, BR-015, BR-030, BR-021, BR-028).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/02-design/01-vong-doi-cuoc-hop.md, docs/03-api/05-quan-ly-cuoc-hop.md and the message catalogue.

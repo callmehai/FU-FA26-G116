@@ -136,7 +136,7 @@ giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài 
 `code: MSG38` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-16.
 
-Sequence UC-16 hiện ghi BR-016, BR-017 ở bước repository; BA cần bổ sung và nhánh query
+Sequence UC-16 hiện ghi luật xem cuộc họp (BR-016, BR-017; diagram còn mã cũ tới PR 3) ở bước repository; BA cần bổ sung cách lọc theo tham số và nhánh query
 sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
 thành công/thất bại trong diagram hiện tại.
 

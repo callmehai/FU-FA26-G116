@@ -279,7 +279,7 @@ public sealed class VoteService(IVoteRepository votes, IParticipantRepository pa
                 var (eligible, open) = await votes.ReadRequirementAsync(meetingDocumentId, viewer!, token);
                 if (!eligible) return new VoteOutcome(VoteFailure.NotEligible);
                 if (!open || s.Meeting.Status != MeetingStatus.InProgress) return new VoteOutcome(VoteFailure.NotAccepting);
-                // Confirmed once, for every vote that links the document, and never withdrawn (UC-42 AF-1, UC-42).
+                // Confirmed once, for every vote that links the document, and never withdrawn (UC-42 AF-1).
                 if (await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, token) is { } existing)
                     return new VoteOutcome(Data: new DocumentReadView(meetingDocumentId, existing.ConfirmedAt, true));
                 if (input.ParseFailure is VoteFailure.UnsupportedMedia or VoteFailure.TooLarge) return new VoteOutcome(input.ParseFailure);

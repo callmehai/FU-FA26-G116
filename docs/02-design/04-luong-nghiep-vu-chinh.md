@@ -82,7 +82,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    Secretary. Từ đó Thư ký quản lý danh sách (BR-036, BR-037).
 3. **Thư ký chuẩn bị:** thêm thành viên nội bộ và mời Guest theo tên + email (UC-30a, BR-038, BR-049–BR-051, BR-039),
    gán vai trò Chair / Member (UC-30b, tối đa một Chair — BR-040; Thư ký chỉ thay Chair trước khi công bố — BR-041, BR-042),
-   soạn agenda (UC-23, BR-058, BR-059, UC-23a, UC-23b, BR-064, BR-065), thêm tài liệu (UC-36), chuẩn bị nháp biểu quyết và tài liệu của nó
+   soạn agenda (UC-23, BR-058, BR-059, BR-064, BR-065), thêm tài liệu (UC-36), chuẩn bị nháp biểu quyết và tài liệu của nó
    khi cuộc họp `Approved` / `Published` (UC-63, UC-68, BR-086, BR-087).
 4. **Gửi duyệt (UC-17):** Organizer chọn người duyệt và gửi; cuộc họp chuyển `WaitingApproval`, người duyệt được báo
    (UC-17, BR-018, BR-019). Thông tin chung bị khoá; danh sách thành phần chỉ đọc; agenda vẫn sửa được (BR-018, BR-058, BR-059).
@@ -91,7 +91,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    - **Duyệt:** → `Approved`, báo Organizer.
 6. **Công bố (UC-19):** hệ thống kiểm tra đủ đúng một Chair và ít nhất một Secretary đang hoạt động (BR-021).
    Thiếu → Thư ký bổ sung vai trò còn thiếu rồi công bố lại. Đủ → `Published`, tạo lời mời cho thành viên và Guest;
-   email gửi bất đồng bộ, lỗi gửi không làm mất trạng thái `Published` (BR-021, BR-031, BR-032, UC-19).
+   email gửi bất đồng bộ, lỗi gửi không làm mất trạng thái `Published` (BR-021, BR-031, BR-032).
 7. **Phản hồi lời mời (UC-31):** thành viên nội bộ mở lời mời và chọn *Accepted* / *Declined* (BR-046, không có
    uỷ quyền). Guest mở link, xác minh email bằng mã một lần (UC-04, BR-052–BR-054) rồi phản hồi. Phản hồi đổi được tới khi
    cuộc họp kết thúc.

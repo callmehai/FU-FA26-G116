@@ -15,7 +15,7 @@ public enum LibraryFailure
     NameTooLong,
     /// <summary>A document name that is blank, unusable, or no longer ends in the file's own extension.</summary>
     NameInvalid,
-    /// <summary>The folder would be deeper than level five (UC-37).</summary>
+    /// <summary>The folder would be deeper than level five (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d).</summary>
     TooDeep,
     /// <summary>A folder moved into itself or one of its subfolders (BR-084).</summary>
     IntoItself,
@@ -79,7 +79,7 @@ public interface IPersonalLibraryService
     /// <summary>UC-39: the destination and store check alone, so a bad destination is refused before the body is read.</summary>
     Task<LibraryFailure> CheckUploadAsync(Guid ownerId, Guid? folderId, CancellationToken ct = default);
 
-    /// <summary>UC-39: all files or none (UC-39).</summary>
+    /// <summary>UC-39: all files or none (UC-36a, UC-36b, UC-39).</summary>
     Task<LibraryOutcome<IReadOnlyList<LibraryDocument>>> UploadAsync(Guid ownerId, Guid? folderId,
         IReadOnlyList<DocumentUploadFile> files, CancellationToken ct = default);
 

@@ -46,7 +46,7 @@ Down bị chặn có chủ đích vì không phục hồi được duration đã
 - UC-04/SCRUM-59 Guest login production chưa triển khai. Test dùng adapter giả, không nghiệm thu OTP/session thật.
 - UC-70 sinh nháp biên bản chưa triển khai. Writer tương lai phải lấy cùng meeting lock, đọc presenter/kết luận và tạo MeetingMinutes trong cùng transaction. Không tạo/xóa nháp tạm để mở lại kết luận.
 - Enqueue sau commit là best effort. Nếu chưa lưu notification/email thì chỉ log, không có outbox tự phục hồi. Email đã queue dùng retry worker hiện có; SMTP tắt thì còn Queued. Lỗi enqueue/SMTP/SignalR không rollback Agenda.
-- Source Report 3 và DOCX không chỉnh. Chỉ đồng bộ trích FE-05/UC-27 và POST-4 UC-30c từ Report 3; BR-064, BR-065, UC-23a, UC-23b, BR-066, BR-067, UC-27, UC-70 đã có nên không tạo định nghĩa riêng.
+- Source Report 3 và DOCX không chỉnh. Chỉ đồng bộ trích FE-05/UC-27 và POST-4 UC-30c từ Report 3; BR-064–BR-067 đã có nên không tạo định nghĩa riêng.
 - Class diagram FE-05 còn liên kết tài liệu đơn; Report 3 phần màn hình có thể còn duration/free-text presenter. BA/FE đối chiếu contract và implementation sau tích hợp theo workflow, không ép source diagram giống tên C#.
 - Không thêm gate Vote/attendance/kết luận bắt buộc. End Meeting vẫn complete current cùng transaction; các Pending giữ nguyên.
 - Backend xong là đầu vào FE → BA Final Review → Tester → Review, không tự chuyển Jira Done.

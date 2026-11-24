@@ -1,6 +1,6 @@
 // FE-16 — Lịch làm việc & tìm giờ họp (QA subtask SCRUM-203): the working calendar (UC-16 AF-4, Report 3 §4.1–4.2),
 // calendar sharing (UC-80a → UC-80f), the shared week (UC-81c) and finding a time (UC-81a, UC-81b). Criteria come from
-// docs/01-requirements/05-use-case-specifications.md, BR-140, BR-141, BR-144–BR-147, UC-81a, BR-142, BR-143, BR-009–BR-011, BR-148, UC-81b, UC-80a, docs/03-api/23-chia-se-lich.md and
+// docs/01-requirements/05-use-case-specifications.md, BR-140, BR-141, BR-144–BR-147, BR-142, BR-143, BR-010, BR-148, docs/03-api/23-chia-se-lich.md and
 // docs/03-api/24-tim-gio-hop.md; ADR-0058.
 //
 // The criteria are stateful and run in order (the share flow is one story told by two people). Each one reads the state
@@ -314,7 +314,7 @@ export default {
       title: 'Người tổ chức nhận chia sẻ: thấy "Chờ bạn trả lời", Đồng ý → Đang chia sẻ; người gửi được báo',
       steps: ['Đăng nhập chutoa@, mở Chia sẻ lịch', 'Thẻ "Lịch được chia sẻ với tôi": dòng Lê An → Đồng ý → Đồng ý'],
       expected:
-        'Dòng "Chờ bạn trả lời" có Từ chối / Đồng ý; hộp thoại "Nhận chia sẻ lịch" chỉ hiện Mức xem và Thời gian; toast MSG436 "Đã chấp nhận chia sẻ lịch."; dòng chuyển "Đang chia sẻ"; thanhvien@ có thông báo CalendarShareAccepted (BR-009–BR-011)',
+        'Dòng "Chờ bạn trả lời" có Từ chối / Đồng ý; hộp thoại "Nhận chia sẻ lịch" chỉ hiện Mức xem và Thời gian; toast MSG436 "Đã chấp nhận chia sẻ lịch."; dòng chuyển "Đang chia sẻ"; thanhvien@ có thông báo CalendarShareAccepted (BR-010)',
       async run(qa) {
         let s = await pairShare(qa, 'chair', EMAIL.member, EMAIL.chair, { open: true })
         if (!s) {

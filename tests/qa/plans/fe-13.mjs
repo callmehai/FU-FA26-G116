@@ -1,5 +1,5 @@
 // FE-13 — Email & Thông báo trong ứng dụng (QA subtask SCRUM-200): UC-76 view notifications, UC-77a mark one read,
-// UC-77b mark all read, UC-78 open the target, and the rules they cite (UC-76, BR-033, BR-034, UC-78, UC-77b); which events notify whom, as the
+// UC-77b mark all read, UC-78 open the target, and the rules they cite (BR-033, BR-034); which events notify whom, as the
 // UCs and BRs of the producing features say (UC-17, UC-18 POST-5/6, BR-031, BR-032 publish, UC-14 reschedule, BR-031, BR-032, UC-30b, UC-30c roster,
 // UC-20 start, UC-22 cancel, UC-76 reminder, UC-23a, UC-23b presenter, BR-035 not about your own action, UC-72, UC-73, UC-74 minutes,
 // BR-009–BR-011 calendar sharing); and which events send email (BR-031, BR-032, UC-22, UC-23a, UC-23b, BR-035).
@@ -397,7 +397,7 @@ export default {
         'Đọc lại số chưa đọc qua API',
       ],
       expected:
-        'Badge chuông = số chưa đọc của API (99+ khi > 99), nhãn "Thông báo, N chưa đọc"; panel "Thông báo" có chip "N mới", dòng đầu là "Cuộc họp đã dời lịch" của cuộc họp đó, tô chưa đọc; mở panel không đổi số chưa đọc và dòng đó vẫn chưa đọc (UC-76); điện thoại: panel nằm gọn màn hình, không cuộn ngang',
+        'Badge chuông = số chưa đọc của API (99+ khi > 99), nhãn "Thông báo, N chưa đọc"; panel "Thông báo" có chip "N mới", dòng đầu là "Cuộc họp đã dời lịch" của cuộc họp đó, tô chưa đọc; mở panel không đổi số chưa đọc và dòng đó vẫn chưa đọc (UC-76, UC-77b, UC-78); điện thoại: panel nằm gọn màn hình, không cuộn ngang',
       async run(qa) {
         const { m, n } = await freshForA(qa)
         const before = await unread('a')
@@ -720,7 +720,7 @@ export default {
       title: 'Công bố: mọi người dự họp nhận lời mời trong ứng dụng, trừ người bấm Công bố; lời mời mở được trang cuộc họp',
       steps: ['Cuộc họp đã duyệt "[QA] FE-13 Công bố …" (chutoa@ Chủ toạ, thuky@ Thư ký, qa-fe13-a@ Thành viên)', 'thuky@ bấm Công bố'],
       expected:
-        'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã được công bố" — "Bạn được mời tham dự cuộc họp “…”"; thuky@ không nhận (BR-031, BR-032, BR-035); GET target của qa-fe13-a@ → url /mgmt/meetings/{id} (UC-19)',
+        'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã được công bố" — "Bạn được mời tham dự cuộc họp “…”"; thuky@ không nhận (BR-031, BR-032, BR-035); GET target của qa-fe13-a@ → url /mgmt/meetings/{id} (UC-19, UC-30a)',
       async run(qa) {
         const c = checker(qa)
         const m = await createAt(qa, 'Approved', 'Công bố')
@@ -918,7 +918,7 @@ export default {
         c.fact('chutoa@: 2 MinutesWaitingApproval, không MinutesIssued', chair.join(',') === 'MinutesWaitingApproval,MinutesWaitingApproval', chair.join(','))
         c.fact('thuky@: MinutesIssued + MinutesReturned', sec.map((n) => n.type).sort().join(',') === 'MinutesIssued,MinutesReturned', sec.map((n) => n.type).join(','))
         const returned = sec.find((n) => n.type === 'MinutesReturned')
-        // UC-74 POST-4 / UC-74 ask only that the Secretary is notified; the reason lives on the minutes tab.
+        // UC-74 POST-4 / UC-72, UC-73, UC-74 ask only that the Secretary is notified; the reason lives on the minutes tab.
         if (returned && !returned.body.includes(reason)) qa.note(`MinutesReturned không kèm lý do: "${returned.body}" (UC-74 không đòi)`)
         c.fact('qa-fe13-a@: MinutesIssued', a.join(',') === 'MinutesIssued', a.join(','))
         c.done()

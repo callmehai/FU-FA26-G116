@@ -78,7 +78,7 @@ public sealed class DocumentFileRulesTests
     [Fact]
     public async Task Ten_files_of_10_MB_are_the_most_one_upload_takes()
     {
-        // UC-36a, UC-39, UC-36b (meeting decision 19/11/2026): 10 MB a file, 10 files and 100 MB an upload.
+        // UC-36a, UC-39, NFR, UC-36b (meeting decision 19/11/2026): 10 MB a file, 10 files and 100 MB an upload.
         Assert.Equal(10L * 1024 * 1024, DocumentFileRules.MaxFileBytes);
         Assert.Equal(10, DocumentFileRules.MaxFiles);
         Assert.Equal(100L * 1024 * 1024, DocumentFileRules.MaxTotalBytes);

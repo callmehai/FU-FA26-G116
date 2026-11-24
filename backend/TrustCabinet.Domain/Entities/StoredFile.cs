@@ -18,7 +18,7 @@ public class StoredFile : Entity
     public required string OriginalFileName { get; set; }
 
     /// <summary>Determined by inspecting the bytes, never from the extension or the request's
-    /// Content-Type (UC-36a, UC-39).</summary>
+    /// Content-Type (UC-36a, UC-39, NFR).</summary>
     public required string ContentType { get; set; }
 
     public long ByteSize { get; set; }

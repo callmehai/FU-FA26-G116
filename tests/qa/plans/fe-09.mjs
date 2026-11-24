@@ -1,6 +1,6 @@
 // FE-09 — Ghi âm cuộc họp (QA subtask SCRUM-196): UC-51a view, UC-51b play, UC-51c download, UC-52a start a room take,
 // UC-52b stop and save it, UC-52c upload an audio file, UC-52d delete a take, UC-52e erase a recording, UC-53 my recorded
-// speech, and the rules they cite (BR-107–BR-109, UC-52a, UC-52b, BR-110, UC-52d, BR-111–BR-113, UC-53, UC-51a, BR-114, BR-115, UC-52c, BR-122).
+// speech, and the rules they cite (BR-107–BR-115, BR-122).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/12-ban-ghi-cuoc-hop.md, the message catalogue, ADR-0040, ADR-0041, ADR-0061 and the comments of SCRUM-29,

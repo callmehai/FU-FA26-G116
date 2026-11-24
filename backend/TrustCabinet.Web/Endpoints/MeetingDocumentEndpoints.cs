@@ -49,7 +49,7 @@ public static class MeetingDocumentEndpoints
     /// <summary>MSG346, for the library upload as well (ADR-0034).</summary>
     internal const string StorageFullMessage =
         "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
-    /// <summary>MSG164 and MSG288, for the vote and library uploads as well (UC-36a, UC-39, UC-36b).</summary>
+    /// <summary>MSG164 and MSG288, for the vote and library uploads as well (UC-36a, UC-39, NFR, UC-36b).</summary>
     internal const string InvalidFilesMessage = "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.";
     internal const string SubmissionTooLargeMessage = "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.";
     private const string Msg349MeetingCancelled = "MSG349";
@@ -282,8 +282,8 @@ public static class MeetingDocumentEndpoints
     }
 
     /// <summary>
-    /// Reads and checks the files of a multipart upload: the request's form, its size (UC-39), then each file
-    /// by its bytes (BR-069, UC-39). The caller deletes <paramref name="tempFiles"/>; the library
+    /// Reads and checks the files of a multipart upload: the request's form, its size (UC-36a, UC-36b, UC-39), then each file
+    /// by its bytes (BR-069, UC-36a, UC-39, NFR). The caller deletes <paramref name="tempFiles"/>; the library
     /// upload (UC-39) uses this too.
     /// </summary>
     internal static async Task<DocumentUploadOutcome> ReadFilesAsync(HttpContext context, List<string> tempFiles,

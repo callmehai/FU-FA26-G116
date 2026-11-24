@@ -1,7 +1,7 @@
 # Nhật ký hệ thống — SCRUM-16 (UC-12)
 
 **Trạng thái:** BE và FE đã triển khai 10/11/2026 · Đặc tả: [UC-12](../01-requirements/05-use-case-specifications.md),
-BR-012, UC-12, BR-009–BR-011, BR-022, BR-023, [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md),
+BR-012, BR-009–BR-011, BR-022, BR-023, [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md),
 [sequence](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt).
 
 Quản trị xem lại các việc quan trọng đã được ghi: ai làm, việc gì, trên đối tượng nào, lúc nào, từ IP nào. Nhật ký **chỉ

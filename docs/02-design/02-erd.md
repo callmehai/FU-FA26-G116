@@ -885,7 +885,7 @@ Ràng buộc và lý do:
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |
 | Hàng đợi job | ASR chạy nền bằng cơ chế đơn giản, không dựng job spine |
-| Chữ ký biên bản (`minutes_signatures`) | PO 14/11/2026 bỏ ký số kể cả mô phỏng (SCRUM-37 retired): Chủ toạ duyệt là ban hành. Bảng từng có sẵn từ đầu nhưng chưa bao giờ được ghi; migration `DropMinutesSignature` (PO 15/11/2026) xoá bảng và entity |
+| Chữ ký biên bản (`minutes_signatures`) | PO 14/11/2026 bỏ ký số kể cả mô phỏng (SCRUM-37): Chủ toạ duyệt là ban hành. Bảng từng có sẵn từ đầu nhưng chưa bao giờ được ghi; migration `DropMinutesSignature` (PO 15/11/2026) xoá bảng và entity |
 
 Về bản ghi âm: `recordings` có `ConsentObtainedAt`, `ConsentPurpose`, `RetainUntil`, `DeletedAt` —
 bốn cột đó tồn tại để hệ thống **chứng minh được** đã xin đồng ý trước khi ghi, đã nêu mục đích, và

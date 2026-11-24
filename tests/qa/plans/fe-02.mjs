@@ -2,7 +2,7 @@
 // UC-06c vô hiệu hoá / kích hoạt lại, UC-07 đặt lại mật khẩu (gửi liên kết và trang /reset-password), UC-08 gán / đổi
 // vai trò, UC-09 cũ mở khoá tài khoản (docs/uc-map.html maps exactly these UCs to FE-02).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-05..UC-08), NFR, BR-005, UC-06a, UC-06b, BR-006, BR-009–BR-011, BR-001, UC-07, BR-008,
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-05..UC-08), BR-005, BR-006, BR-009, BR-001, BR-008,
 // the API docs 02-quan-ly-nguoi-dung.md (+ note cho FE), the message catalogue and the SCRUM-13 comments (BA Final
 // Review 03/10: a Google-only account cannot reset; an email change ends the sessions; 403 on /api/users is intended).
 //
@@ -64,7 +64,7 @@ async function ensureUser(qa, api, key, { active = true, roleId = ROLE.member.id
   return user
 }
 
-/** Audit entries about one account (BR-009–BR-011), newest first. */
+/** Audit entries about one account (BR-009), newest first. */
 async function auditFor(qa, api, userId, action) {
   const params = new URLSearchParams({ action, pageSize: '50' })
   const res = await api.get(`/api/audit-log?${params}`)
@@ -276,7 +276,7 @@ export default {
     {
       id: 'AC3',
       role: 'admin',
-      title: 'Tạo tài khoản qua form: báo "Tạo tài khoản thành công.", dòng mới ở trạng thái Hoạt động, đăng nhập được, có nhật ký (UC-06a, BR-006, BR-009–BR-011)',
+      title: 'Tạo tài khoản qua form: báo "Tạo tài khoản thành công.", dòng mới ở trạng thái Hoạt động, đăng nhập được, có nhật ký (UC-06a, BR-006, BR-009)',
       steps: [
         'Bấm "Tạo tài khoản"',
         'Nhập họ tên, email mới, bấm "Tạo mật khẩu", giữ vai trò mặc định',
@@ -331,7 +331,7 @@ export default {
       id: 'AC4',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tạo tài khoản sai: mọi ô sai báo cùng lúc; email đã có (khác hoa thường) báo "Email đã được sử dụng.", không tạo gì (UC-06a EX-1, EX-2, BR-005, UC-06a)',
+      title: 'Tạo tài khoản sai: mọi ô sai báo cùng lúc; email đã có (khác hoa thường) báo "Email đã được sử dụng.", không tạo gì (UC-06a EX-1, EX-2, BR-005, UC-06b)',
       steps: [
         'Mở "Tạo tài khoản", để trống, bấm "Tạo tài khoản"',
         'Nhập họ tên, email = QA-FE02-A@… (đã có, viết hoa), mật khẩu 12 ký tự, bấm "Tạo tài khoản"',
@@ -450,7 +450,7 @@ export default {
           // The seed account was not touched by the refused save.
           const chair = (await listUsers(qa, api)).filter((u) => u.email === 'chutoa@trustcabinet.local')
           qa.expect(chair.length).toBe(1)
-          qa.note('UC-06b / UC-06b bước 3 nói sửa được Chức danh và Thông tin liên hệ; form và API chỉ có Họ tên, Email, Vai trò.')
+          qa.note('UC-06b bước 3 nói sửa được Chức danh và Thông tin liên hệ; form và API chỉ có Họ tên, Email, Vai trò.')
         } finally {
           await ensureUser(qa, api, 'a')
         }
@@ -651,7 +651,7 @@ export default {
       id: 'AC10',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tài khoản không đủ điều kiện: nút đặt lại mật khẩu của tài khoản đã vô hiệu hoá bị khoá; API 409 MSG14, tài khoản không có 404 (UC-07 EX-1, EX-3, UC-07)',
+      title: 'Tài khoản không đủ điều kiện: nút đặt lại mật khẩu của tài khoản đã vô hiệu hoá bị khoá; API 409 MSG14, tài khoản không có 404 (UC-07 EX-1, EX-3)',
       steps: [
         'Xem dòng [QA] FE-02 Người dùng C (đã vô hiệu hoá)',
         'POST /api/users/{C}/password-reset; POST /api/users/{id lạ}/password-reset',

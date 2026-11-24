@@ -187,7 +187,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         using var client = fixture.Client(owner);
 
         Assert.Equal((409, "MSG189"), Pick(await Read(await client.PostAsJsonAsync("/api/folders", new { name = "Cấp 6", parentId = chain[4] }))));
-        // Into level 4 the folder would be level 5, but its child level 6 (UC-37).
+        // Into level 4 the folder would be level 5, but its child level 6 (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d).
         Assert.Equal((409, "MSG189"), Pick(await Read(await Put(client, $"/api/folders/{twoLevels}/parent", new { parentId = chain[3] }))));
         var (status, code, body) = await Read(await Put(client, $"/api/folders/{twoLevels}/parent", new { parentId = chain[2] }));
         Assert.Equal((200, "MSG194"), (status, code));
@@ -342,7 +342,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((400, "MSG164"), (status, code));
         Assert.True(body.GetProperty("errors").TryGetProperty("files[0]", out _));
         Assert.Equal("Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.", body.GetProperty("message").GetString());
-        // UC-36a, UC-39: 10 MB a file.
+        // UC-36a, UC-39, NFR: 10 MB a file.
         var big = new byte[DocumentFileRules.MaxFileBytes + 1];
         SampleFiles.Pdf().CopyTo(big, 0);
         Assert.Equal((400, "MSG164"), Pick(await Read(await client.PostAsync("/api/documents/upload",
@@ -576,7 +576,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "  " }))));
         Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = ".pdf" }))));
         await using var db = fixture.Db();
-        // UC-36a, UC-40b: the meeting keeps the name it was added with.
+        // UC-40b: the meeting keeps the name it was added with.
         Assert.Equal("Cũ.pdf", await db.MeetingDocuments.Where(d => d.DocumentId == document).Select(d => d.FileName).SingleAsync());
     }
 
