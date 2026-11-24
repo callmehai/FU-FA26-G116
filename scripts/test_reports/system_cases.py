@@ -20,6 +20,7 @@ Usage (from the repository root):
 The workbook is output: never edit it in Excel. Results (round1/date1/tester1 ...) go into the JSON.
 """
 import argparse
+import math
 import re
 import shutil
 import sys
@@ -29,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from integration_cases import (  # noqa: E402  shared Excel helpers, same template layout
-    ROOT, REPORTS, TEMPLATE, apply, bulleted, clear_from, height_for, load, numbered, save_json, styles_of)
+    ROOT, REPORTS, TEMPLATE, apply, bulleted, clear_from, load, numbered, save_json, styles_of)
 from openpyxl.utils import get_column_letter  # noqa: E402
 
 SYSTEM = REPORTS / 'cases/system'
@@ -41,6 +42,81 @@ AI_COL = 16  # column P, right of Note (O), hidden
 # A system case describes what a person does on the running product, never how the code is tested.
 FORBIDDEN = re.compile(r'Automated:|tests/|\.cs\b|\bAssert\.|dotnet test|\bfixture\b|frontend/src|backend/', re.I)
 DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
+def height_for(values_and_widths, line_height=15):
+    # Same conservative rule as the fixed integration script: Calibri 11 averages
+    # ~1 char per width unit, +2 lines cover rounding (Excel never breaks mid-word).
+    lines = 1
+    for value, width in values_and_widths:
+        if not value:
+            continue
+        per_line = max(int(width * 1.0), 8)
+        n = sum(max(1, math.ceil(len(part) / per_line)) for part in str(value).split('\n'))
+        lines = max(lines, n)
+    return min(409, lines * line_height + 6)
+
+
+HEADER_BLUE = ('FF000080', 'FF333399')     # house-template header fills of the first three sheets
+HEADER_GREEN = 'FF76923C'                  # header fill of the feature sheets
+TEXT_COLOURS = ('FF993300', 'FF008000', 'FF0000FF')   # brown labels, green notes, blue descriptions
+
+
+def harmonise(wb):
+    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Calibri 11, the green
+    header fill, thin borders, black text (links stay blue), instead of the house template's Tahoma,
+    navy headers, hair borders and brown/green/blue text. Same as the fixed integration script."""
+    from openpyxl.styles import Border, Font, PatternFill, Side
+    thin = Side(style='thin')
+    for name in ('Cover', 'Test Cases', 'Test Statistics'):
+        ws = wb[name]
+        for row in ws.iter_rows():
+            for cell in row:
+                font = copy(cell.font)
+                size = 20 if (font.sz or 0) >= 20 else 11
+                rgb = font.color.rgb if font.color is not None and font.color.type == 'rgb' else None
+                if cell.hyperlink:
+                    colour = font.color
+                elif rgb in TEXT_COLOURS:
+                    colour = None
+                else:
+                    colour = font.color
+                cell.font = Font(name='Calibri', sz=size, b=font.b, i=False if size == 11 else font.i,
+                                 u=font.u if cell.hyperlink else None, color=colour)
+                fill = cell.fill
+                if fill.fill_type == 'solid' and fill.fgColor.type == 'rgb' and fill.fgColor.rgb in HEADER_BLUE:
+                    cell.fill = PatternFill('solid', fgColor=HEADER_GREEN)
+                border = cell.border
+                if any(side is not None and side.style == 'hair' for side in (border.left, border.right, border.top, border.bottom)):
+                    cell.border = Border(*(thin if side is not None and side.style else side
+                                           for side in (border.left, border.right, border.top, border.bottom)))
+                # Every field wraps; headers stay centred, data stays readable without manual resize.
+                al = copy(cell.alignment)
+                al.wrap_text = True
+                cell.alignment = al
+
+    # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
+    # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
+    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
+    # cell falls back to the Normal style on reload. Build a real Font.
+    from openpyxl.styles import Font as _IFont
+    for ws in wb.worksheets:
+        if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
+            continue
+        for row in ws.iter_rows():
+            for cell in row:
+                font = cell.font
+                if font.name != 'Calibri' or font.sz != 11:
+                    cell.font = _IFont(name='Calibri', size=11, bold=font.bold,
+                                       italic=font.italic, underline=font.underline,
+                                       strike=font.strike, color=font.color,
+                                       vertAlign=font.vertAlign)
+                al = copy(cell.alignment)
+                al.wrap_text = True
+                cell.alignment = al
+    normal = wb._named_styles['Normal']
+    normal.font = Font(name='Calibri', sz=11)
+    wb._fonts[0] = Font(name='Calibri', sz=11)
 
 
 def plan():
@@ -192,9 +268,11 @@ def build_workbook(p, target):
         apply(cover, r, change_style)
         for col, key in zip('ABCDEF', ('date', 'version', 'item', 'type', 'description', 'reference')):
             cover[f'{col}{r}'] = ch[key]
+        cover.row_dimensions[r].height = height_for(
+            [(ch['item'], 14.4), (ch['description'], 75.9), (ch['reference'], 48.1)], line_height=15)
 
-    group_style = styles_of(proto, 11, 15)
-    case_style = styles_of(proto, 12, 15)
+    group_style = styles_of(proto, 11, 16)
+    case_style = styles_of(proto, 12, 16)
     widths = {k: v.width for k, v in proto.column_dimensions.items()}
     widths['O'] = 32
     built = []
@@ -213,6 +291,7 @@ def build_workbook(p, target):
         ws.column_dimensions[get_column_letter(AI_COL)].hidden = True
         ws['B2'] = wf['name']
         ws['B3'] = f"System-level test flow ({wf['bf']}): {wf['description']}"
+        ws.row_dimensions[10].height = 18
         r, case_rows = 11, []
         for g in doc['groups']:
             apply(ws, r, group_style)
@@ -233,7 +312,8 @@ def build_workbook(p, target):
                 ai = ws.cell(r, AI_COL, c['aiNote'])
                 ai._style = copy(ws.cell(r, 15)._style)
                 ws.row_dimensions[r].height = height_for(
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
+                    # Hidden P (long aiNote) must not drive the height.
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)
@@ -255,8 +335,9 @@ def build_workbook(p, target):
 
     tc['D3'] = p['project']
     tc['D4'] = p['projectCode']
-    tc['D5'] = p['environment']
-    tc['B6'] = p.get('note') or None
+    # Keep the template's Test Environment (D5) and Execution note (B6) as-is:
+    # plan.json holds the run environment for agents; the printed TEST CASE LIST
+    # stays standard like the initial template with no extra tall/empty rows.
     row_style = styles_of(tc, 9, 6)
     clear_from(tc, 9)
     for i, (wf, n) in enumerate(built, 1):
@@ -267,7 +348,13 @@ def build_workbook(p, target):
         tc[f'D{r}'] = wf['sheet']
         tc[f'E{r}'] = f"{wf['description']} ({n} cases)"
         tc[f'F{r}'] = wf['precondition']
-        tc.row_dimensions[r].height = height_for([(tc[f'E{r}'].value, 28), (wf['precondition'], 30)])
+        for col in 'BCDEF':
+            al = copy(tc[f'{col}{r}'].alignment)
+            al.vertical = 'top'
+            al.wrap_text = True
+            tc[f'{col}{r}'].alignment = al
+        tc.row_dimensions[r].height = height_for(
+            [(tc[f'C{r}'].value, 32), (tc[f'E{r}'].value, 23), (wf['precondition'], 26)], line_height=15)
 
     data_style = styles_of(ts, 11, 8)
     total_style = styles_of(ts, 12, 8)
@@ -276,7 +363,7 @@ def build_workbook(p, target):
     ts['C4'] = p['projectCode']
     ts['C5'] = f"{p['projectCode']}_System_Test_v{p['cover']['version']}"
     ts['G5'] = p['cover']['issueDate']
-    ts['C6'] = p.get('note') or None
+    # Keep the template's Notes (C6) as-is for the same reason as above.
     clear_from(ts, 11)
     for i, (wf, _) in enumerate(built, 1):
         r = 10 + i
@@ -299,6 +386,15 @@ def build_workbook(p, target):
         ts[f'C{r}'] = label
         ts[f'E{r}'] = formula
         ts[f'F{r}'] = '%'
+
+    for r in range(11, t):
+        ts.row_dimensions[r].height = 21 if len(str(ts[f'C{r}'].value)) <= 18 else 32
+    ts.row_dimensions[t].height = 21
+    notes = copy(ts['C6'].alignment)
+    notes.wrap_text = True
+    notes.vertical = 'top'
+    ts['C6'].alignment = notes
+    harmonise(wb)
 
     try:
         wb.save(target)
