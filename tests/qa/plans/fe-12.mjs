@@ -1459,5 +1459,51 @@ export default {
         c.done()
       },
     },
+    {
+      // MIN_FT10: an emptied draft cannot be saved, and cancelling restores the paper.
+      id: 'AC23',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Xoá hết nội dung bản nháp thì nút Lưu khoá (aria-disabled), bấm không gửi gì; Huỷ giữ nguyên tờ biên bản (UC-60 EX-2)',
+      steps: ['Mở tab Biên bản của bản nháp (đã kết thúc), bấm "Sửa"', 'Chọn hết (Ctrl+A), xoá', 'Bấm "Lưu" đang khoá, rồi bấm "Huỷ"'],
+      expected:
+        'Nút "Lưu" aria-disabled với lý do "Biên bản chưa có nội dung"; bấm không gửi PUT /api/minutes/{id}; bấm "Huỷ" đóng trình soạn, tờ biên bản và API giữ nguyên nội dung',
+      async run(qa) {
+        const m = await flow(qa)
+        const before = await driveTo(qa, m.id, 'Draft')
+        await openMinutes(qa, m)
+        let puts = 0
+        await qa.page.route('**/api/minutes/*', (route) => {
+          if (route.request().method() === 'PUT') puts += 1
+          route.continue()
+        })
+        try {
+          await press(qa, btn(qa, 'Sửa'))
+          const editor = card(qa).getByRole('textbox', { name: 'Nội dung biên bản' })
+          await qa.expect(editor).toBeVisible()
+          await editor.click()
+          await qa.page.keyboard.press('ControlOrMeta+a')
+          await qa.page.keyboard.press('Backspace')
+          const save = btn(qa, 'Lưu')
+          await qa.expect(save).toHaveAttribute('aria-disabled', 'true')
+          await snap(qa, 'soan-trong-khoa-luu')
+          // Blocked, not native-disabled: a real press shows the reason and sends nothing (force skips
+          // Playwright's enabled check the way a mouse does).
+          await pressBlocked(qa, save)
+          await qa.expect(editor).toBeVisible()
+          qa.expect(puts, 'a PUT was sent while the editor was empty').toBe(0)
+          await press(qa, btn(qa, 'Huỷ'))
+          await qa.expect(editor).toHaveCount(0)
+          await qa.expect(paper(qa)).toBeVisible()
+          await snap(qa, 'huy-giu-nguyen')
+          await noSidewaysScroll(qa)
+          qa.expect(puts, 'a PUT reached the API at all').toBe(0)
+          const st = await minutesState(qa, 'secretary', m.id)
+          qa.expect(st.minutes.content).toBe(before.content)
+        } finally {
+          await qa.page.unroute('**/api/minutes/*')
+        }
+      },
+    },
   ],
 }

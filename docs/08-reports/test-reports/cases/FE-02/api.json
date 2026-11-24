@@ -154,7 +154,7 @@
           "description": "Verify POST /api/users creates an active account and returns its location.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/users with Authorization: Bearer <accessToken>; Content-Type: application/json and Body: { \"fullName\": \"Trần Chủ Toạ\", \"email\": \"chutoa@trustcabinet.local\", \"password\": \"<12+ character password>\", \"roleId\": \"<Chair role id>\" }.",
+            "Send POST /api/users with Authorization: Bearer <accessToken>; Content-Type: application/json and Body: { \"fullName\": \"Trần Chủ Toạ\", \"email\": \"chutoa@trustcabinet.local\", \"password\": \"<12+ character password>\", \"roleId\": \"<Approver role id>\" }.",
             "Send GET /api/users and find the new account."
           ],
           "expected": [
@@ -313,11 +313,11 @@
           "description": "Verify PUT /api/users/{id} updates name, email and role and returns the new account.",
           "procedure": [
             "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"Phạm Văn Nam\", \"email\": \"nam@trustcabinet.local\", \"roleId\": \"<Secretary role id>\" }."
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"Phạm Văn Nam\", \"email\": \"nam@trustcabinet.local\", \"roleId\": \"<Approver role id>\" }."
           ],
           "expected": [
             "HTTP 200 OK.",
-            "Body: { \"code\": \"MSG10\", \"message\": \"Cập nhật tài khoản thành công.\", \"user\": { ..., \"fullName\": \"Phạm Văn Nam\", \"roleName\": \"<Secretary role name>\" } }.",
+            "Body: { \"code\": \"MSG10\", \"message\": \"Cập nhật tài khoản thành công.\", \"user\": { ..., \"fullName\": \"Phạm Văn Nam\", \"roleName\": \"Phê duyệt viên\" } }.",
             "One audit entry \"user.updated\" holds the values before and after."
           ],
           "preconditions": [
@@ -438,7 +438,7 @@
           "description": "Verify a role change through PUT /api/users/{id} keeps the account signed in.",
           "procedure": [
             "Sign in as the target Member (POST /api/auth/login) and keep the refresh cookie.",
-            "As the Administrator, send PUT /api/users/{id} with Authorization: Bearer <accessToken> changing only \"roleId\" to the Secretary role.",
+            "As the Administrator, send PUT /api/users/{id} with Authorization: Bearer <accessToken> changing only \"roleId\" to the Approver role (\"Phê duyệt viên\").",
             "As the target, call POST /api/auth/refresh with the cookie, then GET /api/auth/me."
           ],
           "expected": [

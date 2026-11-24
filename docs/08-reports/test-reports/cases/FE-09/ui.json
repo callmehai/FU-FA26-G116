@@ -573,20 +573,20 @@
           "procedure": [
             "Sign in as the Secretary of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Choose an audio file larger than 300 MB and confirm."
+            "Choose an audio file larger than 300 MB."
           ],
           "expected": [
-            "A direct API upload of the 301 MB file answers 413 MSG293.",
-            "Through the screen the upload tray reports \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" (the server closes the connection while the file is still uploading; not re-checked through Caddy)."
+            "After choosing the 301 MB file, a toast reports \"Bản ghi vượt quá 300 MB.\" (MSG293, shown without the code); no confirmation dialog opens and no recording is created.",
+            "A direct API upload of the 301 MB file answers 413 MSG293."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Screen path 22/11: the upload tray reported \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" instead of \"Bản ghi vượt quá 300 MB.\" (direct API still answered 413 MSG293 in AC9); the server closes the connection while the file is still uploading, not re-checked through Caddy. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
+          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Screen path 22/11: the upload tray reported \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" instead of \"Bản ghi vượt quá 300 MB.\" (direct API still answered 413 MSG293 in AC9); the server closes the connection while the file is still uploading, not re-checked through Caddy. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026). · Expected rewritten after 5e7f0414 (the screen now blocks over-limit files upfront with MSG293); the 23/11 Passed tested the old behavior on app e7dc0e7a, which predates 5e7f0414. Re-run AC32 24/11: Passed: tests/qa/out/SCRUM-196/20261124-041423-b5224b3f/01-secretary-AC32-desktop-qua-300-mb.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT28",

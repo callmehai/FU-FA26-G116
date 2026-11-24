@@ -268,9 +268,9 @@ export default {
       role: 'admin',
       devices: ['desktop', 'phone'],
       title: 'Tạo vai trò có tên, mô tả và một quyền: báo thành công, hiện trong danh sách (0 tài khoản) và ma trận, ghi nhật ký (UC-12a)',
-      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Phê duyệt cuộc họp"', 'Bấm Tạo vai trò'],
+      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Thu giọng mẫu hộ"', 'Bấm Tạo vai trò'],
       expected:
-        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Phê duyệt cuộc họp"; nhật ký có "role.created" kèm quyền',
+        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Thu giọng mẫu hộ"; nhật ký có "role.created" kèm quyền',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -282,7 +282,7 @@ export default {
           await qa.expect(dialog).toBeVisible()
           await dialog.getByLabel('Tên vai trò').fill(name)
           await dialog.getByLabel('Mô tả').fill('Vai trò thử của QA')
-          await dialog.getByRole('checkbox', { name: /Phê duyệt cuộc họp/ }).check()
+          await dialog.getByRole('checkbox', { name: /Thu giọng mẫu hộ/ }).check()
           await settled(qa)
           await qa.shot('form-tao-vai-tro')
           if (qa.device === 'phone') {
@@ -310,15 +310,15 @@ export default {
             const del = await qa.page.getByRole('button', { name: `Xoá vai trò ${name}` }).boundingBox()
             qa.expect(del.x + del.width, 'the edit/delete actions are off screen on a 390px phone').toBeLessThanOrEqual(390)
           }
-          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MeetingApprover'])
+          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['VoiceCollector'])
           await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
-          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Phê duyệt cuộc họp` })).toBeChecked()
+          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Thu giọng mẫu hộ` })).toBeChecked()
           await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Tạo cuộc họp` })).not.toBeChecked()
           await roleRow(qa, name).scrollIntoViewIfNeeded()
           await qa.shot('vai-tro-moi-trong-ma-tran')
           const entries = await audit(qa, api, name, 'role.created')
           qa.expect(entries.length, 'no role.created audit entry').toBe(1)
-          qa.expect(JSON.stringify(entries[0].details)).toContain('MeetingApprover')
+          qa.expect(JSON.stringify(entries[0].details)).toContain('VoiceCollector')
           qa.expect(entries[0].actor.email).toBe('quantri@trustcabinet.local')
         } finally {
           await cleanup(api, created)

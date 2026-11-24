@@ -247,10 +247,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "No role named \"Trợ lý thu giọng\" exists."
           ],
-          "note": "UC-12a · Manual only · Evidence(AC3): tests/qa/out/FE-03/20261121-221238-eb5a3255/07-admin-AC3-desktop-form-tao-vai-tro.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/08-admin-AC3-desktop-vai-tro-moi-trong-danh-sach.png; tests/qa/out/FE-03/20261121-221238-eb5a3255/09-admin-AC3-desktop-vai-tro-moi-trong-ma-tran.png",
+          "note": "UC-12a · Manual only · Evidence(AC3, re-run 24/11 with \"Thu giọng mẫu hộ\" per re-review): tests/qa/out/FE-03/20261124-041441-b5224b3f/01-admin-AC3-desktop-form-tao-vai-tro.png; tests/qa/out/FE-03/20261124-041441-b5224b3f/02-admin-AC3-desktop-vai-tro-moi-trong-danh-sach.png; tests/qa/out/FE-03/20261124-041441-b5224b3f/03-admin-AC3-desktop-vai-tro-moi-trong-ma-tran.png; tests/qa/out/FE-03/20261124-041441-b5224b3f/04-admin-AC3-phone-form-tao-vai-tro.png; tests/qa/out/FE-03/20261124-041441-b5224b3f/05-admin-AC3-phone-vai-tro-moi-trong-danh-sach.png; tests/qa/out/FE-03/20261124-041441-b5224b3f/06-admin-AC3-phone-vai-tro-moi-trong-ma-tran.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "RBAC_FT12",

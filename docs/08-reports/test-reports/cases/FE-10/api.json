@@ -484,7 +484,7 @@
             "A meeting that has an Available recording with a Completed transcript, with the Chair, the Secretary and a Member on its roster.",
             "Active Member account of that meeting supplied by QA lead."
           ],
-          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Only_the_secretary_gets_the_machines_guess_and_a_correction_is_audited)",
+          "note": "UC-46a | Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (Only_the_secretary_gets_the_machines_guess_and_a_correction_is_audited)",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1290,7 +1290,7 @@
           ],
           "note": "UC-81a | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1381,7 +1381,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user whose standing consent is to notice 1.2 with two samples (QA lead seeds it)."
           ],
-          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed; One_consent_covers_both_sets)"
+          "note": "UC-81b | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (A_consent_to_an_older_notice_lets_nobody_record_until_renewed; One_consent_covers_both_sets)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT59",
@@ -1399,7 +1402,7 @@
           ],
           "note": "UC-81b | ADR-0060 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (There_is_no_second_consent_to_give)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1452,7 +1455,7 @@
           ],
           "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Withdrawing_erases_both_sets_at_once)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1490,7 +1493,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A user who withdrew; an account holding \"Thu giọng mẫu hộ\"."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT64",
@@ -1550,7 +1556,7 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator with AdminUsers; a user with consent, samples and a named voice in a transcript."
           ],
-          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing; Deactivating_an_account_ends_the_consent_and_erases_both_sets)",
+          "note": "UC-81f | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing) · Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (Deactivating_an_account_ends_the_consent_and_erases_both_sets)",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1645,7 +1651,7 @@
           ],
           "note": "UC-81c | Boundary 5 samples | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_own_limit_counts_only_the_samples_the_person_recorded)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1821,7 +1827,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A person with a collector-recorded sample (\"playable\": true)."
           ],
-          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
+          "note": "UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT79",
@@ -1889,7 +1898,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A person with a collector-recorded sample."
           ],
-          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)"
+          "note": "UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdOneConsentTests.cs (The_person_sees_hears_and_deletes_a_sample_a_collector_took_and_nobody_else_does)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT82",
@@ -1928,7 +1940,7 @@
           ],
           "expected": [
             "HTTP 200 OK.",
-            "Body: { \"consented\": true, \"canCollect\": true, \"maxSamples\": 50, \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"collectedByName\", \"meetingId\" } ] }.",
+            "Body: { \"consented\": true, \"canCollect\": true, \"maxSamples\": 5, \"samples\": [ { \"id\", \"createdAt\", \"speechMs\", \"collectedByName\", \"meetingId\" } ] }.",
             "\"samples\" lists every sample taken for the person by someone else, oldest first: one taken in a meeting before the Secretary role was removed (\"meetingId\" set) and one taken with no meeting (\"meetingId\": null).",
             "The person's own samples are not listed."
           ],
@@ -1938,7 +1950,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "The person holds a sample taken in a meeting, a sample taken with no meeting, and a sample they recorded themself."
           ],
-          "note": "UC-86 | ADR-0071 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
+          "note": "UC-86 | ADR-0071 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT84",
@@ -1955,7 +1970,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An account without VoiceCollector, and one whose role lost it after the token was issued (QA lead removes it in the role matrix)."
           ],
-          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)"
+          "note": "UC-86 | ADR-0075 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Not_signed_in_gets_401_and_without_the_capability_403_on_every_route)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1985,7 +2003,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | ADR-0071 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (A_collector_records_a_consenting_person_with_no_meeting_and_the_person_is_told_and_sees_it)"
+          "note": "UC-86 | ADR-0071 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (A_collector_records_a_consenting_person_with_no_meeting_and_the_person_is_told_and_sees_it)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT86",
@@ -2006,7 +2027,10 @@
             "A person with no Voice ID consent, and one whose consent is to notice 1.3.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)"
+          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (Nothing_is_taken_without_a_consent_to_notice_1_4_and_only_for_an_active_person)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT87",
@@ -2027,7 +2051,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "The speech worker is running."
           ],
-          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0073_a_take_without_the_persons_agreement_to_it_is_refused_before_the_worker_hears_it)"
+          "note": "UC-86 | ADR-0073 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (ADR_0073_a_take_without_the_persons_agreement_to_it_is_refused_before_the_worker_hears_it)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2054,7 +2081,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "A proxy sample of the person taken by another collector."
           ],
-          "note": "UC-86 | UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
+          "note": "UC-86 | UC-81d | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "TRANS_API_IT89",
@@ -2072,7 +2102,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "A sample the person recorded themself."
           ],
-          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
+          "note": "UC-86 | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2101,7 +2134,10 @@
             "A person with an active account who agreed to Voice ID under notice 1.4 or later.",
             "A proxy sample of the person."
           ],
-          "note": "UC-86 | UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)"
+          "note": "UC-86 | UC-81e | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoicePersonCollectionEndpointTests.cs (The_view_lists_every_proxy_sample_of_the_person_which_the_collector_hears_audited_and_deletes)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },

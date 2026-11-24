@@ -86,7 +86,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting; two browsers signed in as a Member and as the Secretary."
           ],
-          "note": "UC-26 | BR-73 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaHubTests.cs (Real_transport_delivers_committed_changes_only_to_joined_authorized_readers)"
+          "note": "UC-26 | BR-73 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaHubTests.cs (Real_transport_delivers_committed_changes_only_to_joined_authorized_readers) · Evidence(AC19, re-run 24/11): tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/01-member-AC19-desktop-tu-hien-muc-moi.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/02-member-AC19-desktop-tu-doi-ten.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/03-member-AC19-desktop-tu-mat-muc.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "AGENDA_FT05",

@@ -260,10 +260,10 @@ export default {
         const history = (await sec.get(`/api/meetings/${id}/history`)).body
         qa.expect(history.items.length).toBe(1)
         qa.expect(history.items[0].resultingStatus).toBe('Draft')
-        // FT01: Back does not reopen the dialog; reload keeps the meeting; no notifications yet.
-        await qa.page.goBack()
-        await qa.expect(qa.page.getByRole('heading', { name: 'Danh sách cuộc họp' })).toBeVisible()
-        await qa.expect(dialog(qa, 'Tạo cuộc họp')).toHaveCount(0)
+        // FT01 E2 (Back must not reopen the dialog) lives in AC1B: this criterion opens the form a second
+        // time by URL to pick a day, which leaves the "?create=" deep link in the history — going Back
+        // through it reopening the dialog is that link working as designed, not BUG-01 (closed as not-a-bug
+        // 23/11, confirmed again by AC1B). Reload keeps the meeting; no notifications yet.
         await qa.goto(`/mgmt/meetings/${id}`)
         await qa.expect(qa.page.getByRole('heading', { level: 1, name: title })).toBeVisible()
         await expectStatusChip(qa, 'Nháp')

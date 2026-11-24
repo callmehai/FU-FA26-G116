@@ -223,7 +223,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Member account and a Guest invitation link."
           ],
-          "note": "UC-70a | BR-432 | Manual only"
+          "note": "UC-70a | BR-432 | Manual only · Evidence(AC5, re-run 24/11): tests/qa/out/SCRUM-202/20261124-042226-b5224b3f/report.html and summary.md (organizer +1 Draft/Secret, admin/member unchanged, cancel moves Nháp→Đã huỷ)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },

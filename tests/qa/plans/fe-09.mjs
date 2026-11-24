@@ -1874,9 +1874,9 @@ export default {
     {
       id: 'AC32',
       role: 'secretary',
-      title: 'Tải lên tệp quá 300 MB qua màn hình: báo "Bản ghi vượt quá 300 MB.", không thêm bản ghi, tệp còn giữ trong khay',
-      steps: ['thuky@ mở tab Bản ghi (Đã kết thúc), bấm "Tải tệp lên", chọn tệp 301 MB, xác nhận', 'Xem khay tải lên'],
-      expected: 'Khay hiện "Bản ghi vượt quá 300 MB." (không hiện mã) và tệp còn trong khay (nút lưu về máy); danh sách không có bản ghi mới',
+      title: 'Tải lên tệp quá 300 MB qua màn hình: báo "Bản ghi vượt quá 300 MB.", không thêm bản ghi (5e7f0414)',
+      steps: ['thuky@ mở tab Bản ghi (Đã kết thúc), bấm "Tải tệp lên", chọn tệp 301 MB'],
+      expected: 'Toast "Bản ghi vượt quá 300 MB." (không hiện mã); không có hộp thoại xác nhận, danh sách không có bản ghi mới',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipEnd')
         await clean(qa, m.id)
@@ -1887,15 +1887,12 @@ export default {
           const big = join(AUDIO_DIR, 'qa-fe09-lon.wav')
           if (!existsSync(big)) writeFileSync(big, Buffer.alloc(301 * 1024 * 1024))
           await (await chooser).setFiles(big)
-          const dlg = qa.page.getByRole('dialog', { name: 'Lưu tệp ghi âm' })
-          await dlg.getByRole('checkbox').check()
-          await dlg.getByRole('button', { name: 'Tải lên' }).click()
-          const tray = qa.page.getByRole('region', { name: 'Tải lên' })
-          await qa.expect(tray.getByText('Bản ghi vượt quá 300 MB.')).toBeVisible({ timeout: 60_000 })
+          // 5e7f0414: the screen refuses the over-limit file before anything is sent — no dialog, just the toast.
+          await qa.expect(qa.page.getByRole('dialog', { name: 'Lưu tệp ghi âm' })).toHaveCount(0)
+          await qa.expect(toast(qa, 'Bản ghi vượt quá 300 MB.')).toBeVisible({ timeout: 60_000 })
           await settled(qa)
           await qa.shot('qua-300-mb')
-          qa.note(`Khay: ${(await tray.innerText()).replace(/\s+/g, ' ')}`)
-          qa.expect(await tray.innerText()).not.toMatch(/MSG\d+/)
+          await noRawCodes(qa)
           qa.expect((await recordings(qa, 'secretary', m.id)).items.filter((r) => r.status !== 'Deleted').length).toBe(0)
         } finally {
           await clean(qa, m.id)

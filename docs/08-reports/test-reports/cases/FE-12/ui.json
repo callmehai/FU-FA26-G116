@@ -22,17 +22,17 @@
           "expected": [
             "Step 2: \"Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.\" and the notice \"Chưa có dự thảo AI nên mục I–III để trống.\" with a \"Tạo dự thảo\" button.",
             "Step 3: the backend answers 201 MSG395; toast \"Đã tạo bản nháp biên bản.\"; badge \"Bản nháp\"; the paper shows \"BIÊN BẢN\", the Chair and Secretary names, the agenda and \"……\" blanks; the foot reads \"Lưu lần cuối <time>\".",
-            "Buttons \"Tải xuống\", \"Tạo lại\", \"Sửa\" and \"Gửi duyệt\" appear.",
+            "Buttons \"Tải xuống\", \"Sửa\" and \"Gửi duyệt\" appear (no \"Tạo lại\": with no AI draft a rebuild would only bring back the same empty sections).",
             "Step 4: the same draft is shown."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with an agenda and a closed vote; no AI draft and no minutes yet."
+            "Signed in as the Secretary of an Ended meeting with an agenda and a closed vote; no AI draft and no minutes yet. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-59 | BR-384 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/06-secretary-AC1-phone-to-bien-ban.png",
+          "note": "UC-59 | BR-384 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/06-secretary-AC1-phone-to-bien-ban.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC1 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/06-secretary-AC1-phone-to-bien-ban.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "MIN_FT02",
@@ -87,12 +87,12 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member of an InProgress meeting whose Secretary has built draft minutes."
+            "Signed in as a Member of an Ended meeting whose Secretary has built draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/10-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/12-member-AC12-phone-thanh-vien-chua-thay-gi.png",
+          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/10-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/12-member-AC12-phone-thanh-vien-chua-thay-gi.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC12 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/02-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/03-member-AC12-desktop-thanh-vien-bi-tra-lai-khong-thay.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/04-member-AC12-phone-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/05-member-AC12-phone-thanh-vien-bi-tra-lai-khong-thay.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -223,17 +223,17 @@
             "Select all text (Ctrl+A) and delete it."
           ],
           "expected": [
-            "The \"Lưu\" button is disabled; no PUT /api/minutes/{minutesId} is sent (DevTools > Network).",
+            "The \"Lưu\" button is blocked (aria-disabled, \"Biên bản chưa có nội dung\"); pressing it sends no PUT /api/minutes/{minutesId}.",
             "Clicking \"Huỷ\" restores the paper unchanged."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+            "Signed in as the Secretary of an Ended meeting with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 EX-2 | BR-394 | Manual only · Evidence(AC4-API): ",
+          "note": "UC-60 EX-2 | BR-394 | Manual only · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). New AC23 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/01-secretary-AC23-desktop-soan-trong-khoa-luu.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/02-secretary-AC23-desktop-huy-giu-nguyen.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/03-secretary-AC23-phone-soan-trong-khoa-luu.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/04-secretary-AC23-phone-huy-giu-nguyen.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "MIN_FT11",
@@ -298,12 +298,12 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
+            "Signed in as the Secretary of a Normal Ended meeting \"Họp giao ban tháng 11\" with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 AF-1 | BR-391 | Manual only · Evidence(AC5-Word): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/08-secretary-AC5-desktop-menu-tai-xuong.png · E2 verified by unzipping the downloaded docx (document.xml holds BIÊN BẢN + meeting title); filename assert in AC5 run.",
+          "note": "UC-60 AF-1 | BR-391 | Manual only · Evidence(AC5-Word): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/08-secretary-AC5-desktop-menu-tai-xuong.png · E2 verified by unzipping the downloaded docx (document.xml holds BIÊN BẢN + meeting title); filename assert in AC5 run. · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC5 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/01-secretary-AC5-desktop-menu-tai-xuong.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "MIN_FT14",
@@ -338,12 +338,12 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Secret InProgress meeting with draft minutes."
+            "Signed in as the Secretary of a Secret Ended meeting with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 EX-6 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png",
+          "note": "UC-60 EX-6 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC17 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/06-chair-AC17-desktop-hop-mat-khong-tai.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/07-chair-AC17-phone-hop-mat-khong-tai.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },

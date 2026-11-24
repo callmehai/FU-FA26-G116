@@ -30,10 +30,10 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Active Chair and Secretary accounts exist."
           ],
-          "note": "UC-14 | BR-24, BR-25 | Manual only · Evidence(AC1): tests/qa/out/FE-04/20261121-163753-eb5a3255/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/04-secretary-AC1-desktop-failure.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/07-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261121-163753-eb5a3255/08-secretary-AC1-phone-failure.png · E2 observed 21–22/11 (Back after create reopened the empty create dialog, logged as BUG-01 in bugs.md); re-checked manual run 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026).",
+          "note": "UC-14 | BR-24, BR-25 | Manual only · E1/E3/E4 re-run AC1 24/11: Passed: tests/qa/out/FE-04/20261124-041652-b5224b3f/01-secretary-AC1-desktop-form-tao-cuoc-hop.png; tests/qa/out/FE-04/20261124-041652-b5224b3f/02-secretary-AC1-desktop-form-da-dien.png; tests/qa/out/FE-04/20261124-041652-b5224b3f/03-secretary-AC1-desktop-chi-tiet-cuoc-hop-moi.png; tests/qa/out/FE-04/20261124-041652-b5224b3f/04-secretary-AC1-phone-form-tao-cuoc-hop.png; tests/qa/out/FE-04/20261124-041652-b5224b3f/05-secretary-AC1-phone-form-da-dien.png; tests/qa/out/FE-04/20261124-041652-b5224b3f/06-secretary-AC1-phone-chi-tiet-cuoc-hop-moi.png · E2 (Back never reopens the dialog) re-run AC1B 24/11: Passed: tests/qa/out/FE-04/20261124-041619-b5224b3f/01-secretary-AC1B-desktop-back-ve-danh-sach-khong-mo-form.png; tests/qa/out/FE-04/20261124-041619-b5224b3f/02-secretary-AC1B-phone-back-ve-danh-sach-khong-mo-form.png · BUG-01 (Back reopening the dialog) was the AC1 flow going back through its own \"?create=\" deep-link URL; the one-press flow a person uses is clean (AC1B). Tester confirmed not-a-bug 23/11 (HuyNT), confirmed again 24/11.",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "MEET_FT02",
