@@ -28,7 +28,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 819 case (807 Passed, 12 Pending ở FE-10). UI: 556 case (494 Passed, 62 chưa chạy). Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 825 case, 825 Passed. UI: 559 case (550 Passed, 9 chưa chạy — RPT_FT01/02/03/08/12/15 viết lại theo màn Báo cáo mới và RPT_FT16-18 mới, chờ chạy lại). Mọi vòng đều `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
@@ -45,9 +45,9 @@ Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; 
 | FE-11 | Voting | 21 | 44 |
 | FE-12 | Minutes | 32 | 51 |
 | FE-13 | Notifications | 24 | 31 |
-| FE-15 | Reporting | 15 | 18 |
+| FE-15 | Reporting | 18 | 24 |
 | FE-16 | Calendar | 41 | 51 |
-| | **Tổng** | **556** | **819** |
+| | **Tổng** | **559** | **825** |
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
 

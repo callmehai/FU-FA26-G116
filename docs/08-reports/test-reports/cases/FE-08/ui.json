@@ -42,7 +42,7 @@
           ],
           "expected": [
             "POST /api/meetings/{M1}/call/join answers 200 and the browser connects to the LiveKit room; the button shows \"Đang vào phòng…\" meanwhile.",
-            "The room shows the meeting title, \"1 người trong phòng\" (or more), the Member's tile with \"(Bạn)\" and the bar with \"Tắt micro\", \"Tắt camera\", \"Người dự\", \"Chat\" and \"Rời phòng\".",
+            "The room shows the meeting title, \"1 người trong phòng\" (or more), the Member's tile with \"(Bạn)\" and the bar with \"Tắt micro\", \"Bật camera\", \"Người dự\", \"Chat\" and \"Rời phòng\".",
             "No success message is shown; the meeting status, the roster and the attendance of the Member are unchanged on /mgmt/meetings/{M1} (BR-330)."
           ],
           "preconditions": [
@@ -302,7 +302,6 @@
             "A verified Guest of M1 (UC-04) with a display name; the invitation goes to a real mailbox."
           ],
           "note": "UC-37 | MSG380 · Evidence(AC31): tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/01-anon-AC31-desktop-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/02-anon-AC31-desktop-khach-da-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/03-anon-AC31-phone-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/04-anon-AC31-phone-khach-da-vao-phong.png (OTP qua Mailpit tới example.test)",
-          "id": "ROOM_FT14",
           "round1": "Passed",
           "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
@@ -314,7 +313,7 @@
             "Open /guest/{invitationId}/room as the verified Guest."
           ],
           "expected": [
-            "The page shows \"Cuộc họp đã kết thúc, phòng họp đã đóng.\" (MSG331) and has no link to the meeting page."
+            "The room reports \"Cuộc họp đã kết thúc, phòng họp đã đóng.\" (MSG331) and has no link to the meeting page; if the guest gate re-checks first, the page instead shows \"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi\" — either way the guest cannot enter."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
@@ -322,7 +321,6 @@
             "A real mailbox for the Guest invitation."
           ],
           "note": "UC-37, UC-04 | MSG331 · Evidence(AC32): tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/01-anon-AC32-desktop-khach-phong-da-dong.png; tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/02-anon-AC32-phone-khach-phong-da-dong.png (OTP qua Mailpit tới example.test; màn này thoáng qua trong app thật — cổng Khách hỏi lại phiên mỗi ~20 giây rồi thay bằng 'Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi', AC giữ yên lệnh hỏi phiên để chụp ảnh)",
-          "id": "ROOM_FT15",
           "round1": "Passed",
           "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
@@ -562,7 +560,6 @@
             "Chair, Secretary and Member accounts of M1; three browsers."
           ],
           "note": "UC-40 | Manual only · Evidence(AC30): tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/01-member-AC30-desktop-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/02-member-AC30-desktop-cham-dang-noi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/03-member-AC30-phone-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/04-member-AC30-phone-cham-dang-noi.png (giọng Thư ký là máy đọc edge-tts vi-VN qua micro giả; người thật vẫn cần cho nhận dạng ai)",
-          "id": "ROOM_FT24",
           "round1": "Passed",
           "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
@@ -584,7 +581,6 @@
             "A verified Guest of M1 and a Member in the room."
           ],
           "note": "UC-40 · Evidence(AC33): tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/02-anon-AC33-desktop-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/04-anon-AC33-phone-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png (panel ở cửa sổ Thành viên: 'Người dự (2)', dòng Khách đúng tên đã khai, vai trò 'Khách', data-tooltip 'Tên tự khai', không email; OTP qua Mailpit tới example.test)",
-          "id": "ROOM_FT25",
           "round1": "Passed",
           "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"

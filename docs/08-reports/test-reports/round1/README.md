@@ -34,4 +34,4 @@ Mọi thứ phục vụ chạy Round 1 của 5.1 (unit), 5.2 (UI) và 5.2.2 (API
 | FE-15 Reporting | **Chưa chạy**, giao đồng đội | 0 / 0 / 17 |
 | FE-16 Calendar | Đã chạy | 63 / 0 / 5 |
 
-FE-14 không có sheet (UC-69 đã bỏ). API (5.2.2): 15 Feature, 819 case (807 Passed, 12 Pending ở FE-10). Số chính xác đọc từ `../cases/FE-xx/api.json`.
+FE-14 không có sheet (UC-69 đã bỏ). API (5.2.2): 15 Feature, 825 case, 825 Passed. Số chính xác đọc từ `../cases/FE-xx/api.json`.

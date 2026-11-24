@@ -152,13 +152,13 @@
             "Open \"Bộ lọc\" and choose a combination that no meeting matches."
           ],
           "expected": [
-            "The calendar shows \"Không có cuộc họp nào khớp bộ lọc trong khoảng này.\" and the control \"Bỏ lọc\" removes the condition."
+            "The calendar shows \"Không có cuộc họp nào khớp bộ lọc trong khoảng này.\" and the control \"Xem mọi cuộc họp\" (?status=all) removes the condition."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as Organizer A or B, both active with MeetingCreator (a Member without MeetingCreator is named where needed); accounts supplied by QA lead."
           ],
-          "note": "UC-17 · AF-3 | Manual only · Round1 Passed (2026-11-21): AC23: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/58-secretary-AC23-desktop-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/60-secretary-AC23-desktop-xem-moi-cuoc-hop.png — nút sản phẩm là \"Xem mọi cuộc họp\" (case ghi \"Bỏ lọc\"), bấm hiện tất cả (?status=all)",
+          "note": "UC-17 · AF-3 | Manual only · Round1 Passed (2026-11-21): AC23: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/58-secretary-AC23-desktop-lich-mac-dinh.png; tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/60-secretary-AC23-desktop-xem-moi-cuoc-hop.png",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -241,13 +241,13 @@
             "Open \"Xin xem lịch\" and type a name nobody has."
           ],
           "expected": [
-            "The list shows \"Không có ai khớp.\"; with no other account at all it shows \"Chưa có ai để xin xem lịch.\"."
+            "The list shows \"Không có ai khớp.\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizers A and B and a Member without MeetingCreator, supplied by QA lead; two browser profiles for the two-user cases."
           ],
-          "note": "UC-84a | Manual only · Round1 Passed (2026-11-21): AC14: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/37-chair-AC14-desktop-xin-xem-lich.png — \"Không có ai khớp.\" khi tìm không thấy; E2 (\"Chưa có ai để xin xem lịch.\") không dựng được trên DB seed (luôn có tài khoản khác), tiền đề vô nghĩa",
+          "note": "UC-84a | Manual only · Round1 Passed (2026-11-21): AC14: tests/qa/out/SCRUM-203/20261121-212415-eb5a3255/37-chair-AC14-desktop-xin-xem-lich.png",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

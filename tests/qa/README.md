@@ -12,6 +12,8 @@ chạy trong CI: cần app đang chạy.
 ## Chạy
 
 ```bash
+# Dựng stack local cho agent (dùng đúng container sẵn có, không tạo mới):
+powershell -ExecutionPolicy Bypass -File scripts/agent-up.ps1
 # app phải đang chạy (backend :5225, frontend :5173) — xem .claude/skills/verify-ui-in-browser §1
 cd tests/qa
 npm ci                                   # lần đầu

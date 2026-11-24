@@ -8,7 +8,7 @@ chạy xong thì điền `round1` / `date1` / `tester1`, rồi sinh lại workbo
 
 ## Tình trạng
 
-- **API**: 807 Passed, 12 chưa chạy (`TRANS_API_IT58, 63, 78, 81, 83–90`: thu giọng mẫu hộ và đổi ý đồng ý). Không có case Failed.
+- **API**: 825 Passed (thêm 6 case truy vấn/xuất báo cáo RPT_API_IT19-24, TRX 24/11).
 - **UI**: 443 Passed, 110 chưa chạy (phần 2), 3 Failed (phần 1).
 
 ## 1. Ba case Failed: tái hiện và xác nhận

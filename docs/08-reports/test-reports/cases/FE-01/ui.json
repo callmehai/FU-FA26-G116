@@ -1,609 +1,609 @@
-{
-  "feature": "FE-01",
-  "code": "AUTH",
-  "sheet": "Authentication",
-  "precondition": "Test build of frontend + backend; role accounts supplied by QA lead; a controlled inbox for Guest invitations; Chrome and a second browser.",
-  "groups": [
-    {
-      "title": "Password Sign-in",
-      "uc": [
-        "UC-01"
-      ],
-      "cases": [
-        {
-          "id": "AUTH_FT01",
-          "description": "Verify an active user signs in with email and password.",
-          "procedure": [
-            "Open /login.",
-            "Enter the Secretary email in \"Email\" and the password in \"Mật khẩu\".",
-            "Click \"Đăng nhập bằng mật khẩu\"."
-          ],
-          "expected": [
-            "The button shows \"Đang đăng nhập…\" and cannot be clicked twice.",
-            "The app opens /calendar inside the shell with the blue sidebar.",
-            "The account menu at the foot of the sidebar shows the Secretary's full name, email and role.",
-            "The sidebar shows only the items the role grants."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active Secretary account supplied by QA lead."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/02-anon-AC1-desktop-vao-lich-lam-viec.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/04-anon-AC1-phone-vao-lich-lam-viec.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT02",
-          "description": "Verify signing in with empty fields sends nothing.",
-          "procedure": [
-            "Open /login.",
-            "Leave \"Email\" and \"Mật khẩu\" empty.",
-            "Click \"Đăng nhập bằng mật khẩu\"."
-          ],
-          "expected": [
-            "The form shows \"Vui lòng nhập email.\" under \"Email\" and \"Vui lòng nhập mật khẩu.\" under \"Mật khẩu\", each in its own field.",
-            "DevTools > Network shows no POST /api/auth/login.",
-            "The page stays on /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser)."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC18): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/21-anon-AC18-desktop-form-trong-bao-tung-o.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/22-anon-AC18-phone-form-trong-bao-tung-o.png · Case cũ: E1 đòi một câu gộp «Vui lòng nhập email và mật khẩu.» nhưng FE báo riêng từng ô («Vui lòng nhập email.»/«Vui lòng nhập mật khẩu.») như ResetPasswordPage — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT03",
-          "description": "Verify a wrong password shows a message that does not reveal the account.",
-          "procedure": [
-            "Open /login.",
-            "Enter the Secretary email and password \"SaiMatKhau@2026\".",
-            "Click \"Đăng nhập bằng mật khẩu\".",
-            "Repeat with email \"khongtontai@trustcabinet.local\"."
-          ],
-          "expected": [
-            "Both attempts show \"Email hoặc mật khẩu không đúng.\" (MSG01), the same text.",
-            "The page stays on /login; the email stays filled in."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active Secretary account supplied by QA lead."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC2): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/05-anon-AC2-desktop-sai-mat-khau.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/06-anon-AC2-desktop-email-khong-ton-tai.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/07-anon-AC2-phone-sai-mat-khau.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT04",
-          "description": "Verify a deactivated account cannot sign in.",
-          "procedure": [
-            "Open /login.",
-            "Enter the deactivated account's email and password.",
-            "Click \"Đăng nhập bằng mật khẩu\"."
-          ],
-          "expected": [
-            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
-            "The page stays on /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC3): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/09-anon-AC3-desktop-tai-khoan-vo-hieu-hoa.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/10-anon-AC3-phone-tai-khoan-vo-hieu-hoa.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT05",
-          "description": "Verify a user whose role grants no capability signs in and sees only the shared screens.",
-          "procedure": [
-            "Sign in with the Member account.",
-            "Look at the sidebar.",
-            "Open /mgmt/admin/users directly in the address bar."
-          ],
-          "expected": [
-            "Sign-in succeeds and opens /calendar.",
-            "The sidebar has no administration or meeting-creation items.",
-            "Step 3 shows the same \"not found\" page as an unknown URL (not \"forbidden\")."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/15-member-AC17-desktop-sidebar-khong-co-quan-tri.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/16-member-AC17-desktop-url-quan-tri-404.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT06",
-          "description": "Verify too many sign-in attempts are blocked for a while.",
-          "procedure": [
-            "Open /login.",
-            "Within one minute, submit the Secretary email with a wrong password 5 times.",
-            "Submit a 6th time with the correct password.",
-            "Wait about one minute, then sign in with the correct password."
-          ],
-          "expected": [
-            "Attempts 1–5 show MSG01.",
-            "Attempt 6 shows \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" (MSG414) and does not sign in.",
-            "Step 4 signs in and opens /calendar."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active Secretary account supplied by QA lead.",
-            "Sign-in rate limits at their defaults (test server)."
-          ],
-          "note": "UC-01 | SCRUM-132 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/10-anon-AC21-desktop-bi-chan-429.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/11-anon-AC21-desktop-het-chan-lai-vao-duoc.png · Kiểm với RateLimiting__SignInPerEmail=5 (đúng cấu hình production; mặc định dev local là 1000).",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT07",
-          "description": "Verify opening a meeting link while signed out returns to that meeting after sign-in.",
-          "procedure": [
-            "Paste a meeting link (/mgmt/meetings/{id}) into the address bar.",
-            "Sign in as the Secretary."
-          ],
-          "expected": [
-            "Step 1 opens /login with the notice \"Đăng nhập để mở cuộc họp.\"",
-            "After step 2 the app opens that meeting's detail page, not /calendar."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active Secretary account supplied by QA lead.",
-            "A meeting the Secretary may view; its link copied."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/08-anon-AC6-desktop-link-cuoc-hop-moi-dang-nhap.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/09-anon-AC6-desktop-vao-dung-chi-tiet-cuoc-hop.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        }
-      ]
-    },
-    {
-      "title": "Google Sign-in",
-      "uc": [
-        "UC-02"
-      ],
-      "cases": [
-        {
-          "id": "AUTH_FT08",
-          "description": "Verify a linked user signs in with Google.",
-          "procedure": [
-            "Open /login.",
-            "Click \"Tiếp tục với Google\".",
-            "Choose the linked Gmail in the Google window."
-          ],
-          "expected": [
-            "The Google window closes and the app opens /calendar.",
-            "The account menu shows the linked account's name, email and role."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Google sign-in enabled on the build.",
-            "Active account already linked to the tester's Gmail."
-          ],
-          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT09",
-          "description": "Verify an account created with a Gmail links itself at the first Google sign-in.",
-          "procedure": [
-            "Open /login.",
-            "Click \"Tiếp tục với Google\" and choose that Gmail.",
-            "Sign out, then sign in with Google again."
-          ],
-          "expected": [
-            "Step 2 signs in and opens /calendar.",
-            "Step 3 signs in again without any extra step."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Google sign-in enabled on the build.",
-            "The Admin has created an active account with the tester's Gmail (UC-06a); it has never signed in with Google."
-          ],
-          "note": "UC-02 | ADR-0009 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT10",
-          "description": "Verify a Gmail without an account is refused with guidance.",
-          "procedure": [
-            "Open /login.",
-            "Click \"Tiếp tục với Google\" and choose the Gmail that has no account."
-          ],
-          "expected": [
-            "The form shows \"Tài khoản Google này chưa được cấp quyền truy cập hệ thống.\" (MSG05) followed by \"Hãy chọn đúng tài khoản Google có email đã đăng ký với hệ thống, hoặc liên hệ quản trị viên để được cấp tài khoản.\"",
-            "The page stays on /login; no account is created (Admin user list unchanged)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Google sign-in enabled on the build.",
-            "A Gmail that no TrustCabinet account uses."
-          ],
-          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT11",
-          "description": "Verify a deactivated account cannot sign in with Google.",
-          "procedure": [
-            "Open /login.",
-            "Click \"Tiếp tục với Google\" and choose the Gmail of the deactivated account."
-          ],
-          "expected": [
-            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
-            "The page stays on /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Google sign-in enabled on the build.",
-            "An account linked to the tester's Gmail, then deactivated by the Admin."
-          ],
-          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT12",
-          "description": "Verify the sign-in page still works when the Google service cannot load.",
-          "procedure": [
-            "In DevTools > Network, block the URL pattern \"accounts.google.com\".",
-            "Open /login.",
-            "Sign in with email and password."
-          ],
-          "expected": [
-            "The Google area shows \"Không tải được dịch vụ đăng nhập của Google. Vui lòng thử lại sau.\"",
-            "Password sign-in still works and opens /calendar."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Google sign-in enabled on the build.",
-            "Active Secretary account supplied by QA lead."
-          ],
-          "note": "UC-02 | Manual only · Evidence(AC19): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/23-anon-AC19-desktop-google-khong-tai-duoc.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/24-anon-AC19-phone-google-khong-tai-duoc.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        }
-      ]
-    },
-    {
-      "title": "Session Restore",
-      "uc": [
-        "UC-01"
-      ],
-      "cases": [
-        {
-          "id": "AUTH_FT13",
-          "description": "Verify reloading the page keeps the user signed in.",
-          "procedure": [
-            "Press F5 on /calendar.",
-            "Close the tab, open a new tab and go to the site address."
-          ],
-          "expected": [
-            "\"Đang khôi phục phiên đăng nhập…\" shows briefly, then /calendar with the same account; no sign-in form.",
-            "Step 2 also opens signed in."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/25-member-AC20-desktop-tai-lai-van-phien.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT14",
-          "description": "Verify an expired access token is renewed without interrupting the user.",
-          "procedure": [
-            "Leave the tab open without activity for more than 15 minutes.",
-            "Click another sidebar item, e.g. \"Cuộc họp\"."
-          ],
-          "expected": [
-            "The screen loads its data normally; no sign-in page and no error.",
-            "DevTools > Network shows POST /api/auth/refresh answering 200 with a new tc_refresh_token."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-188/20261124-102407-ece83cb4/01-secretary-AC26-desktop-sau-15-phut.png",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT15",
-          "description": "Verify a signed-out user cannot open an inner screen by URL.",
-          "procedure": [
-            "Paste /mgmt/admin/users into the address bar."
-          ],
-          "expected": [
-            "The app opens /login, not the user list; after signing in as Admin it returns to /mgmt/admin/users."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Not signed in (no session in this browser).",
-            "Active Admin account supplied by QA lead."
-          ],
-          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/11-anon-AC6-desktop-chua-dang-nhap-ve-login.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/06-anon-AC6-desktop-vao-dung-trang-da-mo.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        }
-      ]
-    },
-    {
-      "title": "Sign-out",
-      "uc": [
-        "UC-03"
-      ],
-      "cases": [
-        {
-          "id": "AUTH_FT16",
-          "description": "Verify the user signs out after confirming.",
-          "procedure": [
-            "Click the avatar at the foot of the sidebar.",
-            "Click \"Đăng xuất\".",
-            "In the dialog \"Đăng xuất\", click \"Đăng xuất\".",
-            "Press the browser Back button."
-          ],
-          "expected": [
-            "The dialog reads \"Bạn có chắc muốn đăng xuất? Phiên đăng nhập trên thiết bị này sẽ kết thúc.\"",
-            "The confirm button shows \"Đang đăng xuất…\", then the app opens /login.",
-            "Step 4 does not show the previous screen's data; the user stays on /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/11-anon-AC11-desktop-back-khong-mo-lai-trang-cu.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT17",
-          "description": "Verify cancelling the dialog keeps the session.",
-          "procedure": [
-            "Open the account menu and click \"Đăng xuất\".",
-            "Click \"Huỷ\"."
-          ],
-          "expected": [
-            "The dialog closes; the user stays on the same screen, still signed in."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT18",
-          "description": "Verify a failed sign-out keeps the user signed in and says so.",
-          "procedure": [
-            "In DevTools > Network, set \"Offline\".",
-            "Open the account menu, click \"Đăng xuất\", then confirm.",
-            "Set the network back to \"No throttling\" and confirm again."
-          ],
-          "expected": [
-            "Step 2: the dialog stays open and shows \"Không thể đăng xuất. Vui lòng thử lại.\" (MSG06); the user is still signed in.",
-            "Step 3: the app opens /login."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on /calendar."
-          ],
-          "note": "UC-03 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/20-member-AC12-desktop-khong-dang-xuat-duoc.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/21-member-AC12-phone-khong-dang-xuat-duoc.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT19",
-          "description": "Verify signing out on one device leaves the other devices signed in.",
-          "procedure": [
-            "Sign in as the Secretary in Chrome and in a second browser (e.g. Edge).",
-            "Sign out in Chrome.",
-            "In Edge, reload the page and open another screen."
-          ],
-          "expected": [
-            "Edge stays signed in and loads data normally."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Active Secretary account supplied by QA lead."
-          ],
-          "note": "UC-03 | Manual only · Evidence(AC24): tests/qa/out/SCRUM-188/20261121-214545-eb5a3255/02-member-AC24-desktop-trinh-duyet-ve-login-thiet-bi-khac-con.png · Thiết bị B là API client độc lập (cookie refresh riêng).",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        }
-      ]
-    },
-    {
-      "title": "Guest Invitation Access",
-      "uc": [
-        "UC-04"
-      ],
-      "cases": [
-        {
-          "id": "AUTH_FT20",
-          "description": "Verify opening the invitation link sends a code to the invited email.",
-          "procedure": [
-            "Open the link in the invitation email."
-          ],
-          "expected": [
-            "The page shows \"TrustCabinet mời bạn họp\", the meeting title and \"Nhập mã 6 số đã gửi tới <masked email> để xem cuộc họp.\"",
-            "The Guest inbox receives one email with a 6-digit code.",
-            "\"Gửi lại mã\" shows a countdown from about 60 seconds."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The link is opened in a browser without a Guest session for it."
-          ],
-          "note": "UC-04 | BR-152 | BR-153 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Trang đúng, email che \"kh***@example.test\"; mailpit nhận \"Mã xác minh truy cập cuộc họp TrustCabinet\" có mã 6 số; \"Gửi lại mã (1 phút)\" rồi đếm giây. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/02-anon-AUTH_FT20-desktop-nhap-ma.png",
-          "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT21",
-          "description": "Verify the right code leads to the profile form and then into the meeting.",
-          "procedure": [
-            "Type the 6-digit code from the email into the 6 boxes.",
-            "Click \"Xác minh\".",
-            "In \"Thông tin hiển thị\", enter \"Tên hiển thị\" = \"Nguyễn Văn Khách\" and \"Chức vụ\" = \"Chuyên viên\".",
-            "Click \"Vào cuộc họp\"."
-          ],
-          "expected": [
-            "Step 2 shows \"Đang xác minh…\", then the \"Thông tin hiển thị\" form.",
-            "Step 4 opens the meeting page with the tabs \"Nội dung cuộc họp\", \"Tài liệu\", \"Biểu quyết\", \"Thành phần tham dự\" and the question \"Bạn có tham dự cuộc họp này?\".",
-            "The Secretary sees \"Nguyễn Văn Khách\" on the participant list of the meeting."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The code email of the previous case has arrived (code less than 15 minutes old)."
-          ],
-          "note": "UC-04 | BR-180 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mã đúng (xin lại mã sau 60 giây) → form hồ sơ → trang cuộc họp của Khách. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/03-anon-AUTH_FT21-desktop-form-ho-so.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/04-anon-AUTH_FT21-desktop-trang-cuoc-hop-cua-khach.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
-          "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT22",
-          "description": "Verify a wrong code is refused.",
-          "procedure": [
-            "Type 6 digits that are not the code.",
-            "Click \"Xác minh\"."
-          ],
-          "expected": [
-            "The page shows \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\" (MSG126); the user stays on the verification screen."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The verification screen is open with a code sent."
-          ],
-          "note": "UC-04 EX-2 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\", không vào được. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/10-anon-AUTH_FT22-desktop-ma-sai.png",
-          "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT23",
-          "description": "Verify 5 wrong codes lock the code until a new one is sent.",
-          "procedure": [
-            "Submit 5 wrong codes.",
-            "Type the right code.",
-            "Wait for the countdown, click \"Gửi lại mã\", then enter the new code from the email."
-          ],
-          "expected": [
-            "After the 5th attempt the page shows \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" (MSG372); \"Xác minh\" stays pressable (aria-disabled look only, the server still answers the lock message) — typing the right code and clicking it does NOT pass, the user stays on /guest/ with the lock note.",
-            "After the countdown, clicking \"Gửi lại mã\" then entering the new code from the email opens the \"Thông tin hiển thị\" form (or the meeting, if a name was already declared)."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The verification screen is open with a code sent."
-          ],
-          "note": "UC-04 EX-4 | Manual only · App giữ nút \"Xác minh\" bấm được sau khi khoá (server trả câu khoá, không disable nút); case đã sửa expected theo app thật. Evidence(AC27): tests/qa/out/SCRUM-188/20261124-050900-02ec608b/01-anon-AC27-desktop-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-050900-02ec608b/02-anon-AC27-desktop-ma-moi-vao-duoc.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/01-anon-AC27-phone-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/02-anon-AC27-phone-ma-moi-vao-duoc.png",
-          "round1": "Passed",
-          "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT24",
-          "description": "Verify an empty display name is not accepted.",
-          "procedure": [
-            "Leave \"Tên hiển thị\" empty.",
-            "Click \"Vào cuộc họp\"."
-          ],
-          "expected": [
-            "The field shows \"Nhập tên hiển thị.\"; the user stays on the form."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The Guest has verified and is on \"Thông tin hiển thị\"."
-          ],
-          "note": "UC-04 EX-7 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Nhập tên hiển thị.\", không vào cuộc họp. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/11-anon-AUTH_FT24-desktop-ten-trong.png",
-          "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT25",
-          "description": "Verify a broken or revoked link cannot be opened.",
-          "procedure": [
-            "Open the invitation link with the part after \"#token=\" changed.",
-            "Open the link of an invitation that was revoked before it was ever used."
-          ],
-          "expected": [
-            "Both show \"Không mở được lời mời\"; no code is sent."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
-          ],
-          "note": "UC-04 EX-1 | Manual only · Evidence(AC14+AC25): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/22-anon-AC14-desktop-loi-moi-that-sai-token.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/12-secretary-AC25-desktop-loi-moi-da-thu-hoi.png",
-          "round1": "Passed",
-          "date1": "2026-11-21",
-          "tester1": "Phạm Gia Khánh"
-        },
-        {
-          "id": "AUTH_FT26",
-          "description": "Verify a Guest session does not open internal screens.",
-          "procedure": [
-            "In the same browser, open /calendar."
-          ],
-          "expected": [
-            "The app opens /login: the Guest session gives no access outside its meeting."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
-            "The Guest is inside the meeting."
-          ],
-          "note": "UC-04 | BR-155 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Phiên Khách mở /mgmt/meetings và /reports đều bị đưa về /login. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
-          "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "Phạm Gia Khánh"
-        }
-      ]
-    }
-  ]
-}
+{
+  "feature": "FE-01",
+  "code": "AUTH",
+  "sheet": "Authentication",
+  "precondition": "Test build of frontend + backend; role accounts supplied by QA lead; a controlled inbox for Guest invitations; Chrome and a second browser.",
+  "groups": [
+    {
+      "title": "Password Sign-in",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT01",
+          "description": "Verify an active user signs in with email and password.",
+          "procedure": [
+            "Open /login.",
+            "Enter the Secretary email in \"Email\" and the password in \"Mật khẩu\".",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The button shows \"Đang đăng nhập…\" and cannot be clicked twice.",
+            "The app opens /calendar inside the shell with the blue sidebar.",
+            "The account menu at the foot of the sidebar shows the Secretary's full name, email and role.",
+            "The sidebar shows only the items the role grants."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/02-anon-AC1-desktop-vao-lich-lam-viec.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/04-anon-AC1-phone-vao-lich-lam-viec.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT02",
+          "description": "Verify signing in with empty fields sends nothing.",
+          "procedure": [
+            "Open /login.",
+            "Leave \"Email\" and \"Mật khẩu\" empty.",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The form shows \"Vui lòng nhập email.\" under \"Email\" and \"Vui lòng nhập mật khẩu.\" under \"Mật khẩu\", each in its own field.",
+            "DevTools > Network shows no POST /api/auth/login.",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser)."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC18): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/21-anon-AC18-desktop-form-trong-bao-tung-o.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/22-anon-AC18-phone-form-trong-bao-tung-o.png · Case cũ: E1 đòi một câu gộp «Vui lòng nhập email và mật khẩu.» nhưng FE báo riêng từng ô («Vui lòng nhập email.»/«Vui lòng nhập mật khẩu.») như ResetPasswordPage — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT03",
+          "description": "Verify a wrong password shows a message that does not reveal the account.",
+          "procedure": [
+            "Open /login.",
+            "Enter the Secretary email and password \"SaiMatKhau@2026\".",
+            "Click \"Đăng nhập bằng mật khẩu\".",
+            "Repeat with email \"khongtontai@trustcabinet.local\"."
+          ],
+          "expected": [
+            "Both attempts show \"Email hoặc mật khẩu không đúng.\" (MSG01), the same text.",
+            "The page stays on /login; the email stays filled in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC2): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/05-anon-AC2-desktop-sai-mat-khau.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/06-anon-AC2-desktop-email-khong-ton-tai.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/07-anon-AC2-phone-sai-mat-khau.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT04",
+          "description": "Verify a deactivated account cannot sign in.",
+          "procedure": [
+            "Open /login.",
+            "Enter the deactivated account's email and password.",
+            "Click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC3): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/09-anon-AC3-desktop-tai-khoan-vo-hieu-hoa.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/10-anon-AC3-phone-tai-khoan-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT05",
+          "description": "Verify a user whose role grants no capability signs in and sees only the shared screens.",
+          "procedure": [
+            "Sign in with the Member account.",
+            "Look at the sidebar.",
+            "Open /mgmt/admin/users directly in the address bar."
+          ],
+          "expected": [
+            "Sign-in succeeds and opens /calendar.",
+            "The sidebar has no administration or meeting-creation items.",
+            "Step 3 shows the same \"not found\" page as an unknown URL (not \"forbidden\")."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/15-member-AC17-desktop-sidebar-khong-co-quan-tri.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/16-member-AC17-desktop-url-quan-tri-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT06",
+          "description": "Verify too many sign-in attempts are blocked for a while.",
+          "procedure": [
+            "Open /login.",
+            "Within one minute, submit the Secretary email with a wrong password 5 times.",
+            "Submit a 6th time with the correct password.",
+            "Wait about one minute, then sign in with the correct password."
+          ],
+          "expected": [
+            "Attempts 1–5 show MSG01.",
+            "Attempt 6 shows \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" (MSG414) and does not sign in.",
+            "Step 4 signs in and opens /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead.",
+            "Sign-in rate limits at their defaults (test server)."
+          ],
+          "note": "UC-01 | SCRUM-132 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/10-anon-AC21-desktop-bi-chan-429.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/11-anon-AC21-desktop-het-chan-lai-vao-duoc.png · Kiểm với RateLimiting__SignInPerEmail=5 (đúng cấu hình production; mặc định dev local là 1000).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT07",
+          "description": "Verify opening a meeting link while signed out returns to that meeting after sign-in.",
+          "procedure": [
+            "Paste a meeting link (/mgmt/meetings/{id}) into the address bar.",
+            "Sign in as the Secretary."
+          ],
+          "expected": [
+            "Step 1 opens /login with the notice \"Đăng nhập để mở cuộc họp.\"",
+            "After step 2 the app opens that meeting's detail page, not /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Secretary account supplied by QA lead.",
+            "A meeting the Secretary may view; its link copied."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/08-anon-AC6-desktop-link-cuoc-hop-moi-dang-nhap.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/09-anon-AC6-desktop-vao-dung-chi-tiet-cuoc-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Google Sign-in",
+      "uc": [
+        "UC-02"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT08",
+          "description": "Verify a linked user signs in with Google.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\".",
+            "Choose the linked Gmail in the Google window."
+          ],
+          "expected": [
+            "The Google window closes and the app opens /calendar.",
+            "The account menu shows the linked account's name, email and role."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "Active account already linked to the tester's Gmail."
+          ],
+          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT09",
+          "description": "Verify an account created with a Gmail links itself at the first Google sign-in.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose that Gmail.",
+            "Sign out, then sign in with Google again."
+          ],
+          "expected": [
+            "Step 2 signs in and opens /calendar.",
+            "Step 3 signs in again without any extra step."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "The Admin has created an active account with the tester's Gmail (UC-06a); it has never signed in with Google."
+          ],
+          "note": "UC-02 | ADR-0009 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT10",
+          "description": "Verify a Gmail without an account is refused with guidance.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose the Gmail that has no account."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản Google này chưa được cấp quyền truy cập hệ thống.\" (MSG05) followed by \"Hãy chọn đúng tài khoản Google có email đã đăng ký với hệ thống, hoặc liên hệ quản trị viên để được cấp tài khoản.\"",
+            "The page stays on /login; no account is created (Admin user list unchanged)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "A Gmail that no TrustCabinet account uses."
+          ],
+          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT11",
+          "description": "Verify a deactivated account cannot sign in with Google.",
+          "procedure": [
+            "Open /login.",
+            "Click \"Tiếp tục với Google\" and choose the Gmail of the deactivated account."
+          ],
+          "expected": [
+            "The form shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" (MSG02).",
+            "The page stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "An account linked to the tester's Gmail, then deactivated by the Admin."
+          ],
+          "note": "UC-02 | Manual only · Manual test 2026-11-24: Passed trên build đang chạy (tester tự kiểm trên Chrome).",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT12",
+          "description": "Verify the sign-in page still works when the Google service cannot load.",
+          "procedure": [
+            "In DevTools > Network, block the URL pattern \"accounts.google.com\".",
+            "Open /login.",
+            "Sign in with email and password."
+          ],
+          "expected": [
+            "The Google area shows \"Không tải được dịch vụ đăng nhập của Google. Vui lòng thử lại sau.\"",
+            "Password sign-in still works and opens /calendar."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Google sign-in enabled on the build.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-02 | Manual only · Evidence(AC19): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/23-anon-AC19-desktop-google-khong-tai-duoc.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/24-anon-AC19-phone-google-khong-tai-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Session Restore",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT13",
+          "description": "Verify reloading the page keeps the user signed in.",
+          "procedure": [
+            "Press F5 on /calendar.",
+            "Close the tab, open a new tab and go to the site address."
+          ],
+          "expected": [
+            "\"Đang khôi phục phiên đăng nhập…\" shows briefly, then /calendar with the same account; no sign-in form.",
+            "Step 2 also opens signed in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/25-member-AC20-desktop-tai-lai-van-phien.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT14",
+          "description": "Verify an expired access token is renewed without interrupting the user.",
+          "procedure": [
+            "Leave the tab open without activity for more than 15 minutes.",
+            "Click another sidebar item, e.g. \"Cuộc họp\"."
+          ],
+          "expected": [
+            "The screen loads its data normally; no sign-in page and no error.",
+            "DevTools > Network shows POST /api/auth/refresh answering 200 with a new tc_refresh_token."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-188/20261124-102407-ece83cb4/01-secretary-AC26-desktop-sau-15-phut.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT15",
+          "description": "Verify a signed-out user cannot open an inner screen by URL.",
+          "procedure": [
+            "Paste /mgmt/admin/users into the address bar."
+          ],
+          "expected": [
+            "The app opens /login, not the user list; after signing in as Admin it returns to /mgmt/admin/users."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in (no session in this browser).",
+            "Active Admin account supplied by QA lead."
+          ],
+          "note": "UC-01 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/11-anon-AC6-desktop-chua-dang-nhap-ve-login.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/06-anon-AC6-desktop-vao-dung-trang-da-mo.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Sign-out",
+      "uc": [
+        "UC-03"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT16",
+          "description": "Verify the user signs out after confirming.",
+          "procedure": [
+            "Click the avatar at the foot of the sidebar.",
+            "Click \"Đăng xuất\".",
+            "In the dialog \"Đăng xuất\", click \"Đăng xuất\".",
+            "Press the browser Back button."
+          ],
+          "expected": [
+            "The dialog reads \"Bạn có chắc muốn đăng xuất? Phiên đăng nhập trên thiết bị này sẽ kết thúc.\"",
+            "The confirm button shows \"Đang đăng xuất…\", then the app opens /login.",
+            "Step 4 does not show the previous screen's data; the user stays on /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png; tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/11-anon-AC11-desktop-back-khong-mo-lai-trang-cu.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT17",
+          "description": "Verify cancelling the dialog keeps the session.",
+          "procedure": [
+            "Open the account menu and click \"Đăng xuất\".",
+            "Click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes; the user stays on the same screen, still signed in."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-188/20261121-214022-eb5a3255/09-anon-AC11-desktop-hoi-xac-nhan-dang-xuat.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT18",
+          "description": "Verify a failed sign-out keeps the user signed in and says so.",
+          "procedure": [
+            "In DevTools > Network, set \"Offline\".",
+            "Open the account menu, click \"Đăng xuất\", then confirm.",
+            "Set the network back to \"No throttling\" and confirm again."
+          ],
+          "expected": [
+            "Step 2: the dialog stays open and shows \"Không thể đăng xuất. Vui lòng thử lại.\" (MSG06); the user is still signed in.",
+            "Step 3: the app opens /login."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on /calendar."
+          ],
+          "note": "UC-03 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/20-member-AC12-desktop-khong-dang-xuat-duoc.png; tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/21-member-AC12-phone-khong-dang-xuat-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT19",
+          "description": "Verify signing out on one device leaves the other devices signed in.",
+          "procedure": [
+            "Sign in as the Secretary in Chrome and in a second browser (e.g. Edge).",
+            "Sign out in Chrome.",
+            "In Edge, reload the page and open another screen."
+          ],
+          "expected": [
+            "Edge stays signed in and loads data normally."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-03 | Manual only · Evidence(AC24): tests/qa/out/SCRUM-188/20261121-214545-eb5a3255/02-member-AC24-desktop-trinh-duyet-ve-login-thiet-bi-khac-con.png · Thiết bị B là API client độc lập (cookie refresh riêng).",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Guest Invitation Access",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_FT20",
+          "description": "Verify opening the invitation link sends a code to the invited email.",
+          "procedure": [
+            "Open the link in the invitation email."
+          ],
+          "expected": [
+            "The page shows \"TrustCabinet mời bạn họp\", the meeting title and \"Nhập mã 6 số đã gửi tới <masked email> để xem cuộc họp.\"",
+            "The Guest inbox receives one email with a 6-digit code.",
+            "\"Gửi lại mã\" shows a countdown from about 60 seconds."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The link is opened in a browser without a Guest session for it."
+          ],
+          "note": "UC-04 | BR-152 | BR-153 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Trang đúng, email che \"kh***@example.test\"; mailpit nhận \"Mã xác minh truy cập cuộc họp TrustCabinet\" có mã 6 số; \"Gửi lại mã (1 phút)\" rồi đếm giây. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/02-anon-AUTH_FT20-desktop-nhap-ma.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT21",
+          "description": "Verify the right code leads to the profile form and then into the meeting.",
+          "procedure": [
+            "Type the 6-digit code from the email into the 6 boxes.",
+            "Click \"Xác minh\".",
+            "In \"Thông tin hiển thị\", enter \"Tên hiển thị\" = \"Nguyễn Văn Khách\" and \"Chức vụ\" = \"Chuyên viên\".",
+            "Click \"Vào cuộc họp\"."
+          ],
+          "expected": [
+            "Step 2 shows \"Đang xác minh…\", then the \"Thông tin hiển thị\" form.",
+            "Step 4 opens the meeting page with the tabs \"Nội dung cuộc họp\", \"Tài liệu\", \"Biểu quyết\", \"Thành phần tham dự\" and the question \"Bạn có tham dự cuộc họp này?\".",
+            "The Secretary sees \"Nguyễn Văn Khách\" on the participant list of the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The code email of the previous case has arrived (code less than 15 minutes old)."
+          ],
+          "note": "UC-04 | BR-180 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mã đúng (xin lại mã sau 60 giây) → form hồ sơ → trang cuộc họp của Khách. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/03-anon-AUTH_FT21-desktop-form-ho-so.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/04-anon-AUTH_FT21-desktop-trang-cuoc-hop-cua-khach.png; tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT22",
+          "description": "Verify a wrong code is refused.",
+          "procedure": [
+            "Type 6 digits that are not the code.",
+            "Click \"Xác minh\"."
+          ],
+          "expected": [
+            "The page shows \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\" (MSG126); the user stays on the verification screen."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open with a code sent."
+          ],
+          "note": "UC-04 EX-2 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\", không vào được. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/10-anon-AUTH_FT22-desktop-ma-sai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT23",
+          "description": "Verify 5 wrong codes lock the code until a new one is sent.",
+          "procedure": [
+            "Submit 5 wrong codes.",
+            "Type the right code.",
+            "Wait for the countdown, click \"Gửi lại mã\", then enter the new code from the email."
+          ],
+          "expected": [
+            "After the 5th attempt the page shows \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" (MSG372); \"Xác minh\" stays pressable (aria-disabled look only, the server still answers the lock message) — typing the right code and clicking it does NOT pass, the user stays on /guest/ with the lock note.",
+            "After the countdown, clicking \"Gửi lại mã\" then entering the new code from the email opens the \"Thông tin hiển thị\" form (or the meeting, if a name was already declared)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The verification screen is open with a code sent."
+          ],
+          "note": "UC-04 EX-4 | Manual only · App giữ nút \"Xác minh\" bấm được sau khi khoá (server trả câu khoá, không disable nút); case đã sửa expected theo app thật. Evidence(AC27): tests/qa/out/SCRUM-188/20261124-050900-02ec608b/01-anon-AC27-desktop-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-050900-02ec608b/02-anon-AC27-desktop-ma-moi-vao-duoc.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/01-anon-AC27-phone-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/02-anon-AC27-phone-ma-moi-vao-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT24",
+          "description": "Verify an empty display name is not accepted.",
+          "procedure": [
+            "Leave \"Tên hiển thị\" empty.",
+            "Click \"Vào cuộc họp\"."
+          ],
+          "expected": [
+            "The field shows \"Nhập tên hiển thị.\"; the user stays on the form."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest has verified and is on \"Thông tin hiển thị\"."
+          ],
+          "note": "UC-04 EX-7 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. \"Nhập tên hiển thị.\", không vào cuộc họp. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/11-anon-AUTH_FT24-desktop-ten-trong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT25",
+          "description": "Verify a broken or revoked link cannot be opened.",
+          "procedure": [
+            "Open the invitation link with the part after \"#token=\" changed.",
+            "Open the link of an invitation that was revoked before it was ever used."
+          ],
+          "expected": [
+            "Both show \"Không mở được lời mời\"; no code is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 EX-1 | Manual only · Evidence(AC14+AC25): tests/qa/out/SCRUM-188/20261121-213353-eb5a3255/22-anon-AC14-desktop-loi-moi-that-sai-token.png; tests/qa/out/SCRUM-188/20261121-214335-eb5a3255/12-secretary-AC25-desktop-loi-moi-da-thu-hoi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "AUTH_FT26",
+          "description": "Verify a Guest session does not open internal screens.",
+          "procedure": [
+            "In the same browser, open /calendar."
+          ],
+          "expected": [
+            "The app opens /login: the Guest session gives no access outside its meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "The Guest is inside the meeting."
+          ],
+          "note": "UC-04 | BR-155 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Phiên Khách mở /mgmt/meetings và /reports đều bị đưa về /login. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/05-anon-AUTH_FT21-desktop-khach-mo-man-hinh-noi-bo.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    }
+  ]
+}

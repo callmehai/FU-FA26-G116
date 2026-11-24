@@ -594,8 +594,7 @@
           "id": "DOC_FT27",
           "round1": "Passed",
           "date1": "2026-11-24",
-          "tester1": "Phạm Gia Khánh",
-          "id": "DOC_FT27"
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1028,19 +1027,18 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "description": "Verify refreshing shows a comment another person just wrote.",
+          "description": "Verify a comment another person just wrote appears without a refresh.",
           "procedure": [
-            "In browser A open the comments; in browser B post a comment on the same document.",
-            "In browser A click the refresh icon \"Làm mới góp ý\"."
+            "In browser A open the comments; in browser B post a comment on the same document and watch browser A."
           ],
           "expected": [
-            "The new comment appears in browser A (posting does not push an event, so the list is read again on refresh); the count on the row of the Tài liệu tab updates after the list reloads."
+            "The new comment appears in browser A on its own (the list reads again when the hub posts commentsChanged); the count on the row of the Tài liệu tab updates too."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Two users who can view the meeting in two browsers."
           ],
-          "note": "UC-35 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png (Câu trả lời tự hiện không cần bấm (nút \"Làm mới\" đã bỏ vì thừa — CommentsPanel.tsx); case ghi bấm refresh, đề nghị BA cập nhật cơ chế.)",
+          "note": "UC-35 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
           "id": "DOC_FT49",
           "round1": "Passed",
           "date1": "2026-11-22",
