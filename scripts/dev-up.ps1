@@ -28,6 +28,8 @@ function Wait-Http([string]$url, [int]$seconds, [string]$name) {
 if ($Stop) { Stop-Port 5225; Stop-Port 5173; Write-Host 'backend and vite stopped'; return }
 
 # Containers. Postgres sits on POSTGRES_PORT from .env (55432 here: the Windows PostgreSQL service owns 5432).
+# After a Windows reboot WinNAT may hold the host port (bind "forbidden by access permissions"): run admin
+# `net stop winnat` + `net start winnat` and re-run this script instead of moving ports around.
 $services = @('postgres', 'redis', 'files')
 $profileArgs = @('--profile', 'calls')
 if ($Speech) { $profileArgs += @('--profile', 'speech'); $services += 'speech' }

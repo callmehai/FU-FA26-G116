@@ -1833,7 +1833,7 @@ export default {
           const share = await (await client(qa, who)).post('/api/calendar/shares/direct', { viewerId: u.secretary.id, startDate: vnDay(0).iso, endDate: vnDay(30).iso })
           qa.note(`${who} chia sẻ lịch: ${share.status} ${share.body?.code ?? JSON.stringify(share.body).slice(0, 160)}`)
         }
-        // A direct share waits for the viewer to accept it (UC-84c).
+        // A direct share waits for the viewer to accept it (UC-80c).
         const mine = (await (await client(qa, 'secretary')).get('/api/calendar/shares')).body.asViewer ?? []
         for (const s of mine.filter((s) => s.status === 'Pending' && (s.actions ?? []).includes('accept'))) {
           const ok = await (await client(qa, 'secretary')).post(`/api/calendar/shares/${s.id}/accept`)

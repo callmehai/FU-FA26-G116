@@ -17,7 +17,7 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 |---|---|---|---|
 | `app` | `trustcabinet-app` (compute-optimized 4 vCPU, 8 GB, từ 24/11) | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
 
-Server `app` dùng kho tệp tự host (§9, cách B), không dùng R2. Server demo của nhánh `main` (`trustcabinet-4gb`,
+Server `app` lưu tài liệu trên kho tệp tự host (§9). Server demo của nhánh `main` (`trustcabinet-4gb`,
 https://trustcabinet.workspace-hub.space) đã xoá ngày 24/11 cùng bản ghi DNS; nhánh `main` vẫn giữ trên GitHub ở
 commit đóng băng nhưng không còn được deploy ([ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)).
 
@@ -368,44 +368,15 @@ Quay lại SMTP (ví dụ máy chủ thư nội bộ): `EMAIL_PROVIDER=Smtp`, c�
 
 ### 9. Kho tệp tài liệu
 
-Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md))
-(cách A), hoặc trên kho S3 tự host chạy cạnh app (cách B, server `app`). Chưa cấu hình thì app vẫn chạy, nút tải lên
-báo `MSG166`. **Mỗi server một bucket riêng**: việc dọn tệp mồ côi của server này xoá mọi tệp mà database của nó
-không biết, tức là xoá tệp của server kia nếu dùng chung.
+Tài liệu tải lên lưu byte trên kho S3 tự host chạy cạnh app: service `files` (SeaweedFS) trong `docker-compose.yml`,
+chỉ chạy khi bật profile `files`; tệp nằm trong volume `files` trên đĩa server, không ra khỏi máy. Chưa cấu hình thì
+app vẫn chạy, nút tải lên báo `MSG166`. **Mỗi server một bucket riêng**: việc dọn tệp mồ côi của server này xoá mọi
+tệp mà database của nó không biết, tức là xoá tệp của server khác nếu dùng chung.
 
-#### Cách A: Cloudflare R2
-
-1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
-   cho server test) → **Create bucket** `trustcabinet-docs`, Location: **Provide a location hint → Asia-Pacific
-   (APAC)** (server test ở Singapore). Vị trí không đổi được sau khi tạo, và R2 **chỉ nhận hint ở lần đầu một tên
-   bucket được tạo**: xoá rồi tạo lại cùng tên thì vẫn ra vị trí cũ, nên muốn đổi vị trí phải dùng tên mới
-   (`trustcabinet-test` đã bị khoá ở ENAM). Xem **Settings → Location** để chắc chắn là APAC. **Không** bật Public
-   access hay custom domain.
-2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
-   `trustcabinet-docs`. *Client IP Address Filtering → Include*: static IP của server (`54.254.223.53`), để token lộ
-   ra cũng không dùng được từ máy khác; app gọi R2 từ trong Docker, đi ra bằng IPv4 nên không cần dải IPv6. Lưu lại Access Key ID, Secret Access Key và endpoint
-   `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
-3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
-
-   ```bash
-   R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-   R2_BUCKET=trustcabinet-docs
-   R2_ACCESS_KEY_ID=...
-   R2_SECRET_ACCESS_KEY=...
-   ```
-
-Tổng dung lượng tài liệu của cả hệ thống mặc định **10 GB**, đúng gói miễn phí của R2
-([ADR-0034](../docs/05-decisions/0034-han-muc-luu-tru-toan-he-thong.md)). Đầy thì mọi lần tải lên trả `409 MSG346`.
-Đổi bằng `STORAGE_MAX_GB` trong `deploy/.env` (khi bàn giao, bên nhận đặt theo gói R2 họ trả tiền).
-
-Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
-Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
-
-#### Cách B: kho tệp tự host trên server
-
-Service `files` (SeaweedFS) trong `docker-compose.yml`, chỉ chạy khi bật profile `files`; tệp nằm trong volume
-`files` trên đĩa server, không ra khỏi máy. Thêm vào `deploy/.env` (khoá `local` không cần bí mật: kho không mở
-cổng ra ngoài, chỉ app gọi trong mạng Docker):
+Các biến cấu hình kho tệp vẫn mang tên `R2_*` vì lịch sử (trước đây dùng Cloudflare R2, đã bỏ —
+[ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md),
+[ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)); app đọc chúng như cấu hình một kho S3 bất kỳ. Thêm vào
+`deploy/.env` (khoá `local` không cần bí mật: kho không mở cổng ra ngoài, chỉ app gọi trong mạng Docker):
 
 ```bash
 COMPOSE_PROFILES=speech,files
@@ -420,6 +391,14 @@ Rồi `docker compose -f deploy/docker-compose.yml up -d` và tạo bucket một
 ```bash
 docker run --rm --network trustcabinet-test_default curlimages/curl:8.11.1 -s -X PUT http://files:8333/trustcabinet-refactor
 ```
+
+Tổng dung lượng tài liệu của cả hệ thống mặc định **250 GB**
+([ADR-0034](../docs/05-decisions/0034-han-muc-luu-tru-toan-he-thong.md),
+[ADR-0084](../docs/05-decisions/0084-han-muc-luu-tru-250-gb.md)): tệp nằm trên SSD 309 GB của server, chung đĩa với
+database, nên hạn mức chừa khoảng 35 GB cho database và hệ thống. Đầy thì mọi lần tải lên trả `409 MSG346`.
+Đổi bằng `STORAGE_MAX_GB` trong `deploy/.env` (khi bàn giao, bên nhận đặt theo dung lượng đĩa của họ).
+
+Trình duyệt không gọi thẳng kho tệp nên CSP trong `Caddyfile` giữ nguyên.
 
 ### 10. Máy chuyển chữ (tuỳ chọn)
 

@@ -240,10 +240,10 @@ export function RecorderCard({
                 className="btn btn-outline btn-sm"
                 disabled={closing}
                 onClick={() => void closeElsewhere(elsewhere)}
-                data-tooltip="Máy kia không quay lại thì lưu lượt đó để chuyển chữ"
+                data-tooltip="Lưu phần máy kia đã ghi để chuyển chữ, rồi bật mic ở máy này"
               >
-                <Icon name="check" size={16} />
-                {closing ? 'Đang lưu…' : 'Lưu lượt đó'}
+                <Icon name="micOff" size={16} />
+                {closing ? 'Đang lưu…' : 'Dừng ghi ở máy kia'}
               </button>
             </div>
           )

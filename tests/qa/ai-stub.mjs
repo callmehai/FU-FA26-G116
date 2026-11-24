@@ -2,11 +2,15 @@
 // backend's "Thử kết nối" and the API draft path can be tested with no outside service.
 // Started and stopped by plans/fe-10.mjs (AC59/AC60); cert qa-ai-stub.pfx is per-user trusted.
 import { readFileSync, appendFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { createServer } from 'node:https'
 
 const PORT = Number(process.env.QA_STUB_PORT ?? 11439)
+const PFX = join(tmpdir(), 'opencode', 'qa-ai-stub.pfx')
+const LOG = join(tmpdir(), 'opencode', 'qa-ai-stub.log')
 const server = createServer(
-  { pfx: readFileSync('C:\\Users\\admin\\AppData\\Local\\Temp\\opencode\\qa-ai-stub.pfx'), passphrase: 'qa-stub' },
+  { pfx: readFileSync(PFX), passphrase: 'qa-stub' },
   (req, res) => {
     let body = ''
     req.on('data', (chunk) => (body += chunk))
@@ -17,7 +21,7 @@ const server = createServer(
         const user = (parsed.messages ?? []).map((m) => m.content ?? '').join('\n')
         if (user.includes('Trả lời đúng một từ')) content = 'OK'
         appendFileSync(
-          'C:\\Users\\admin\\AppData\\Local\\Temp\\opencode\\qa-ai-stub.log',
+          LOG,
           `${new Date().toISOString()} ${req.method} ${req.url} model=${parsed.model ?? ''} key=${req.headers.authorization ? 'yes' : 'no'} prompt=${user.slice(0, 80).replace(/\s+/g, ' ')}\n`,
         )
       } catch { /* keep the canned answer */ }

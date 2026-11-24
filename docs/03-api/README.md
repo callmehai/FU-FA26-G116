@@ -84,7 +84,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`09-thanh-phan-tham-du-guest-uc04.md`](09-thanh-phan-tham-du-guest-uc04.md) — port và gate tích hợp OTP/session Guest production
 - [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu
 - [`11-tai-lieu-cuoc-hop.md`](11-tai-lieu-cuoc-hop.md) — SCRUM-107: tải tệp từ máy lên cuộc họp
-  (UC-36a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
+  (UC-36a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên kho tệp S3, job dọn
   file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
   SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-35a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
   Mật, nhật ký kiểm toán khi xem tài liệu Mật (UC-35b), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
@@ -92,8 +92,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   mục (UC-36d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-38). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`).
   SCRUM-123: Khách có phiên UC-04 đọc danh sách và nội dung (xem, tải về) tài liệu cuộc họp; mọi thao tác ghi vẫn từ chối Khách
 - [`14-kho-tai-lieu-ca-nhan.md`](14-kho-tai-lieu-ca-nhan.md) — SCRUM-58 (SCRUM-110, SCRUM-111): thư mục kho cá nhân
-  (UC-41a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-37, UC-39, UC-40a–c), hạn mức 10 GB
-  của cả hệ thống (ADR-0034), Quản trị viên đọc kho của tài khoản đã khoá có kiểm toán; mã `MSG175`–`MSG198`, `MSG346`–`MSG348`
+  (UC-41a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-37, UC-39, UC-40a–c), hạn mức 250 GB
+  của cả hệ thống (ADR-0034, ADR-0084), Quản trị viên đọc kho của tài khoản đã khoá có kiểm toán; mã `MSG175`–`MSG198`, `MSG346`–`MSG348`
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 - [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
 - [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`

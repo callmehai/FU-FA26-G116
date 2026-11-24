@@ -4,8 +4,10 @@
   "books": {
     "ui": {
       "file": "Report5.2_Integration_Test.xlsx",
+      "version": "2.1",
+      "issueDate": "2026-11-24",
       "title": "INTEGRATION TEST DOCUMENT",
-      "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
+      "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. FE-14 Dashboard has no sheet: UC-69 is a placeholder and nothing of it is implemented."
     },
     "api": {
@@ -13,7 +15,7 @@
       "version": "2.3",
       "issueDate": "2026-11-24",
       "title": "API TEST",
-      "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
+      "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One group per endpoint. FE-14 Dashboard has no sheet: UC-69 is a placeholder and has no endpoint."
     }
   },

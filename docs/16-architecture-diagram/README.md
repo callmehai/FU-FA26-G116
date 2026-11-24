@@ -36,8 +36,8 @@ Nguồn của từng thành phần:
   (`IEmailQueueProcessor`, `IStoredFileRepository`, `IFileStorage`, `IUnitOfWork`). Hình gộp chín worker vào một hộp.
 - Phòng họp đi hai đường: signalling `/rtc` qua Caddy (`deploy/Caddyfile`), media WebRTC đi thẳng tới LiveKit
   qua cổng ICE 7881/TCP và 7882/UDP (`deploy/docker-compose.yml`).
-- Hình vẽ server test: Caddy chỉ có ở đó. Khi dev, Vite proxy `/api` và `/hubs` thay Caddy, file
-  tài liệu nằm trên SeaweedFS thay cho Cloudflare R2.
+- Hình vẽ server test: Caddy chỉ có ở đó. Khi dev, Vite proxy `/api` và `/hubs` thay Caddy. File tài liệu nằm trên
+  SeaweedFS ở cả máy dev lẫn server `app`; hộp kho tệp trên hình còn ghi tên cũ *Cloudflare R2*, chờ vẽ lại.
 
 ## Những gì cố ý không vẽ
 

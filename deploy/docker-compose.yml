@@ -49,14 +49,14 @@ services:
       LiveKit__ApiUrl: "http://livekit:7880"
       LiveKit__ApiKey: trustcabinet-test
       LiveKit__ApiSecret: "${LIVEKIT_API_SECRET:?Chua dat LIVEKIT_API_SECRET trong deploy/.env}"
-      # Kho tệp tài liệu trên Cloudflare R2 (ADR-0024). Để trống thì app vẫn chạy, tải tài liệu trả
-      # 503/MSG166. Xem deploy/README.md §9.
+      # Kho tệp tài liệu S3 (service files bên dưới; tên biến R2_* giữ vì lịch sử). Để trống thì app vẫn chạy,
+      # tải tài liệu trả 503/MSG166. Xem deploy/README.md §9.
       FileStorage__ServiceUrl: "${R2_ENDPOINT:-}"
       FileStorage__BucketName: "${R2_BUCKET:-}"
       FileStorage__AccessKeyId: "${R2_ACCESS_KEY_ID:-}"
       FileStorage__SecretAccessKey: "${R2_SECRET_ACCESS_KEY:-}"
-      # ADR-0034: every stored document together, in GB. R2 free tier = 10.
-      FileStorage__MaxTotalGigabytes: "${STORAGE_MAX_GB:-10}"
+      # ADR-0034, ADR-0084: every stored document together, in GB; leaves room on the disk the database shares.
+      FileStorage__MaxTotalGigabytes: "${STORAGE_MAX_GB:-250}"
       # Máy chuyển chữ (ADR-0026): chạy trên server với COMPOSE_PROFILES=speech (cần máy 4 GB), hoặc trên
       # máy của nhóm qua Tailscale (ADR-0036). Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro
       # trả 503/MSG312. Xem deploy/README.md §10.
@@ -153,9 +153,9 @@ services:
     mem_limit: 4500m
 
   files:
-    # Kho tệp S3 tự host, cho server không dùng Cloudflare R2 (ADR-0065): chỉ chạy khi deploy/.env có
+    # Kho tệp S3 tự host (ADR-0065): chỉ chạy khi deploy/.env có
     # COMPOSE_PROFILES chứa files, và R2_ENDPOINT=http://files:8333 trỏ app vào đây. Không mở cổng: chỉ app
-    # gọi vào, trong mạng Docker. Không bao giờ cho hai server dùng chung một bucket R2: việc dọn tệp mồ côi
+    # gọi vào, trong mạng Docker. Không bao giờ cho hai server dùng chung một bucket: việc dọn tệp mồ côi
     # của server này sẽ xoá tệp của server kia. Bucket tạo một lần bằng HTTP PUT: deploy/README.md §9.
     image: chrislusf/seaweedfs:3.97
     command: server -dir=/data -s3 -s3.port=8333

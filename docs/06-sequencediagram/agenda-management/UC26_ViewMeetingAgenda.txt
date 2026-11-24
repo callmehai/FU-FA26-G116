@@ -33,7 +33,7 @@ alt Meeting not accessible - EX-1
 else Accessible
     AgendaService-->AgendaController: Agenda
     AgendaController-->AgendaPage: Agenda
-    AgendaPage-->User: Show agenda (BR-311)
+    AgendaPage-->User: Show agenda (UC-27)
 end
 
 deactivate AgendaService

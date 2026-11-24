@@ -1,0 +1,114 @@
+﻿title UC-58 - Generate / Regenerate Meeting Summary
+
+actor "Chair / Secretary" as Actor
+boundary "Draft Card (Biên bản tab)" as DraftCard
+control ":Summary Controller" as SummaryController
+control ":Summary Service" as SummaryService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Reader" as TranscriptReader
+participant ":AI Client" as AiClient
+participant ":Meeting Summary Repository" as MeetingSummaryRepository
+database ":Database" as Database
+participant ":AI Server" as AiServer
+
+Actor->DraftCard: Select Generate summary, or Generate again
+activate DraftCard
+
+DraftCard->SummaryController: request(meetingId)
+activate SummaryController
+
+SummaryController->SummaryService: requestAsync(meetingId, actorId)
+activate SummaryService
+
+SummaryService->MeetingRepository: Get the Meeting and the current draft
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and draft
+activate Database
+Database-->MeetingRepository: Meeting and draft
+deactivate Database
+MeetingRepository-->SummaryService: Meeting and draft
+deactivate MeetingRepository
+
+alt Actor is not the current Chair or Secretary - EX-1
+    SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may create the draft.
+    SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may create the draft.
+    DraftCard-->Actor: MSG385 - Only the Chair or Secretary may create the draft.
+else The Meeting has not ended - EX-2
+    SummaryService-->SummaryController: MSG386 - A draft can be created only after the Meeting has ended.
+    SummaryController-->DraftCard: MSG386 - A draft can be created only after the Meeting has ended.
+    DraftCard-->Actor: MSG386 - A draft can be created only after the Meeting has ended.
+else A draft is already being written - EX-3
+    SummaryService-->SummaryController: MSG387 - The AI is writing the draft, please wait.
+    SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
+    DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
+else Request accepted
+    SummaryService->MeetingSummaryRepository: Queue the draft
+    activate MeetingSummaryRepository
+    MeetingSummaryRepository->Database: Set the draft Queued
+    activate Database
+    Database-->MeetingSummaryRepository: Saved
+    deactivate Database
+    MeetingSummaryRepository-->SummaryService: Saved
+    deactivate MeetingSummaryRepository
+
+    SummaryService-->SummaryController: State
+    SummaryController-->DraftCard: MSG384 - The request was sent.
+    DraftCard-->Actor: MSG384 - The request was sent.
+end
+
+deactivate SummaryService
+deactivate SummaryController
+
+opt Background worker - SummaryWorker
+    activate SummaryService
+    SummaryService->MeetingSummaryRepository: Claim the oldest queued draft
+    activate MeetingSummaryRepository
+    MeetingSummaryRepository->Database: Mark the draft Running
+    activate Database
+    Database-->MeetingSummaryRepository: Claimed
+    deactivate Database
+    MeetingSummaryRepository-->SummaryService: Claimed
+    deactivate MeetingSummaryRepository
+
+    SummaryService->TranscriptReader: Read the transcript without excluded sentences
+    activate TranscriptReader
+    TranscriptReader-->SummaryService: Lines with speaker and time
+    deactivate TranscriptReader
+
+    loop One call per agenda item - AF-3
+        SummaryService->AiClient: Write this part
+        activate AiClient
+        AiClient->AiServer: Chat completion
+        activate AiServer
+        AiServer-->AiClient: Part text
+        deactivate AiServer
+        AiClient-->SummaryService: Part text
+        deactivate AiClient
+    end
+
+    SummaryService->AiClient: Write sections I and III
+    activate AiClient
+    AiClient->AiServer: Chat completion
+    activate AiServer
+    AiServer-->AiClient: Sections I and III
+    deactivate AiServer
+    AiClient-->SummaryService: Sections I and III
+    deactivate AiClient
+
+    SummaryService->MeetingSummaryRepository: Store the finished draft
+    activate MeetingSummaryRepository
+    MeetingSummaryRepository->Database: Store Ready with the text
+    activate Database
+    Database-->MeetingSummaryRepository: Saved
+    deactivate Database
+    MeetingSummaryRepository-->SummaryService: Saved
+    deactivate MeetingSummaryRepository
+    deactivate SummaryService
+end
+
+DraftCard->SummaryController: get(meetingId) every 5 seconds while Queued or Running
+activate SummaryController
+SummaryController-->DraftCard: SummaryState
+deactivate SummaryController
+DraftCard-->Actor: The draft, labelled as AI-written
+deactivate DraftCard

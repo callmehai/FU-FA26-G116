@@ -712,9 +712,9 @@ export default {
     {
       id: 'AC5',
       role: 'secretary',
-      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Lưu lượt đó" để lưu hộ (UC-52b AF-3)',
-      steps: ['Một lượt mic phòng được mở từ "máy khác" (API, thuky@) và đã có tiếng', 'thuky@ mở trang cuộc họp trên trình duyệt này', 'Bấm "Lưu lượt đó"'],
-      expected: 'Thẻ hiện "Đang ghi ở nơi khác · <tên Thư ký>" và nút "Lưu lượt đó"; bấm thì toast "Đã lưu lượt ghi.", bản ghi thành Available',
+      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Dừng ghi ở máy kia" để lưu hộ (UC-52b AF-3)',
+      steps: ['Một lượt mic phòng được mở từ "máy khác" (API, thuky@) và đã có tiếng', 'thuky@ mở trang cuộc họp trên trình duyệt này', 'Bấm "Dừng ghi ở máy kia"'],
+      expected: 'Thẻ hiện "Đang ghi ở nơi khác · <tên Thư ký>" và nút "Dừng ghi ở máy kia"; bấm thì toast "Đã lưu lượt ghi.", bản ghi thành Available',
       run: wrap(async (qa) => {
         const u = await users(qa)
         const m = await meeting(qa, 'ipRun')
@@ -732,7 +732,7 @@ export default {
           await qa.expect(card.getByText(`Đang ghi ở nơi khác · ${u.secretary.name}`)).toBeVisible()
           await settled(qa)
           await qa.shot('dang-ghi-o-noi-khac')
-          await card.getByRole('button', { name: 'Lưu lượt đó' }).click()
+          await card.getByRole('button', { name: 'Dừng ghi ở máy kia' }).click()
           await qa.expect(toast(qa, 'Đã lưu lượt ghi.')).toBeVisible({ timeout: 20_000 })
           await qa.expect(card.getByText('Mic phòng đang tắt')).toBeVisible()
           await settled(qa)

@@ -1,0 +1,9 @@
+title UC-49 - Keep Meeting in a Floating Window
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+
+Actor->Page: Open floating window
+activate Page
+Page-->Actor: Call shown in floating window; main window shows "The meeting is in a floating window"
+deactivate Page

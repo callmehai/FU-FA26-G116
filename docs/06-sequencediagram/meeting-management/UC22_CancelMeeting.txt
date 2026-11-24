@@ -1,0 +1,66 @@
+title UC-22 - Cancel Meeting
+
+actor "Member" as Organizer
+boundary "Meeting Details Page" as DetailsPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+control ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Organizer->DetailsPage: Cancel meeting with reason
+activate DetailsPage
+
+DetailsPage->MeetingController: Cancel meeting (meetingId, reason)
+activate MeetingController
+
+MeetingController->MeetingService: cancelMeeting(meetingId, reason, organizer)
+activate MeetingService
+
+MeetingService->MeetingRepository: Find meeting and verify organizer
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and organizer
+activate Database
+Database-->MeetingRepository: Meeting and organizer
+deactivate Database
+MeetingRepository-->MeetingService: Meeting and organizer
+deactivate MeetingRepository
+
+alt Cancellation reason is missing - EX-1
+    MeetingService-->MeetingController: MSG262 - Enter a reason for cancelling the meeting.
+    MeetingController-->DetailsPage: Return reason error
+    DetailsPage-->Organizer: MSG262 - Enter a reason for cancelling the meeting.
+
+else Cancellation reason is too long - EX-2
+    MeetingService-->MeetingController: MSG345 - Cancellation reason must not exceed 1000 characters.
+    MeetingController-->DetailsPage: Return reason error
+    DetailsPage-->Organizer: MSG345 - Cancellation reason must not exceed 1000 characters.
+
+else Meeting can no longer be cancelled - EX-3
+    MeetingService-->MeetingController: MSG263 - This meeting can no longer be cancelled.
+    MeetingController-->DetailsPage: Return status error
+    DetailsPage-->Organizer: MSG263 - This meeting can no longer be cancelled.
+
+else Eligible
+    MeetingService->MeetingRepository: Change status to Cancelled, record history (BR-022, BR-023)
+    activate MeetingRepository
+    MeetingRepository->Database: Save status and history
+    activate Database
+    Database-->MeetingRepository: Cancelled
+    deactivate Database
+    MeetingRepository-->MeetingService: Cancelled
+    deactivate MeetingRepository
+
+    MeetingService->NotificationService: Notify participants if published/waiting approval (BR-035)
+    activate NotificationService
+    NotificationService-->MeetingService: Notified
+    deactivate NotificationService
+
+    MeetingService-->MeetingController: Cancellation successful
+    MeetingController-->DetailsPage: MSG261 - Meeting cancelled successfully.
+    DetailsPage-->Organizer: MSG261 - Meeting cancelled successfully.
+end
+
+deactivate MeetingService
+deactivate MeetingController
+deactivate DetailsPage

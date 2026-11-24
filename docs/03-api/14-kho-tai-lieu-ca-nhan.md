@@ -63,8 +63,8 @@ hay chuyển đi giữa lúc đang ghi vào.
   đều là `false` ở mọi dòng và vẫn `200`, nên tham số này không cho biết cuộc họp có tồn tại. `StoredFileId` không trả ra
   ngoài. Kho của tài khoản đã khoá (Quản trị viên) luôn `false`.
 - `storageUsedBytes` / `storageLimitBytes`: bộ nhớ tài liệu của **cả hệ thống** (ADR-0034), không phải của riêng người
-  xem. `storageUsedBytes` là mọi `StoredFile` chưa bị dọn (đúng thứ đang nằm trên R2), kể cả tệp đã xoá khỏi kho mà chưa
-  qua thời gian chờ của job dọn. `storageLimitBytes` lấy từ `FileStorage:MaxTotalGigabytes` (mặc định 10 GB).
+  xem. `storageUsedBytes` là mọi `StoredFile` chưa bị dọn (đúng thứ đang nằm trên kho tệp), kể cả tệp đã xoá khỏi kho mà chưa
+  qua thời gian chờ của job dọn. `storageLimitBytes` lấy từ `FileStorage:MaxTotalGigabytes` (mặc định 250 GB, ADR-0084).
 
 Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176` (lỗi đọc DB).
 
@@ -78,7 +78,7 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
    theo nội dung, ≤ 10 MB (`400 MSG164`, `errors["files[i]"]`).
 3. Ghi `StoredFile` dưới khoá chung của hệ thống, chỉ khi bộ nhớ còn đủ: không thì `409 MSG346`, **không tệp nào** được
    thêm (ADR-0034).
-4. Đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích, ghi `Document`. Lỗi thì xoá object và đánh dấu
+4. Đẩy byte lên kho tệp → trong một transaction có khoá chủ kho: kiểm lại thư mục đích, ghi `Document`. Lỗi thì xoá object và đánh dấu
    các dòng `StoredFile` đã dọn, trả lại chỗ ngay.
    Lỗi ở bước nào thì xoá object đã đẩy trong lần đó (ADR-0024 §4) → `503 MSG178`. Chờ quá 30 giây mà chưa tới lượt kiểm
    PDF (ADR-0044 §6) cũng là `503 MSG178`, không phải `MSG164`: tệp có thể không sai.
@@ -172,7 +172,7 @@ không đăng nhập được nên không tự đọc. Đặc tả: UC-37a (BA v
 - Hộp "Thêm tài liệu chung", tab "Từ kho của tôi" (SCRUM-124): gửi `meetingId`; dòng `inMeeting` khoá checkbox và hiện
   chip "Đã có trong cuộc họp". Mục nghị sự và biểu quyết **không** gửi: ở đó tài liệu đã có được gắn luôn (UC-36b / UC-68a
   AF-2). `MSG165` vẫn có thể về (người khác vừa thêm trong lúc hộp đang mở): giữ lựa chọn, báo lỗi, đọc lại kho để hiện chip.
-- Hiện "x / 10 GB" của cả hệ thống từ `storageUsedBytes` / `storageLimitBytes`; kiểm ở FE trước khi gửi để khỏi đẩy
+- Hiện "x / 250 GB" của cả hệ thống từ `storageUsedBytes` / `storageLimitBytes`; kiểm ở FE trước khi gửi để khỏi đẩy
   100 MB rồi mới nhận `MSG346`. Server vẫn kiểm lại.
 - Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 100 MB / 10 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
   tệp một request ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)). Mỗi tệp xong thì màn kho đọc lại vị
@@ -188,7 +188,7 @@ thư mục lồng nhau trùng tên; tên trống / quá dài; thư mục, tài l
 cấp 6 khi tạo và khi chuyển cây con; chuyển vào chính nó / cháu, về gốc; đổi tên giữ nội dung; chỉ xoá thư mục rỗng; lỗi
 DB → `MSG190`/`MSG192`/`MSG195`/`MSG198`/`MSG176`; tải lên vào thư mục (không đụng cuộc họp, object có trên kho,
 `storageUsedBytes`); thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; bộ nhớ hệ thống đầy → `MSG346`, không object hay
-dòng `StoredFile` nào còn lại, kể cả khi người khác làm đầy và khi tải vào cuộc họp hoặc vào mục; tải lỗi trả lại chỗ; R2 lỗi ở tệp thứ hai,
+dòng `StoredFile` nào còn lại, kể cả khi người khác làm đầy và khi tải vào cuộc họp hoặc vào mục; tải lỗi trả lại chỗ; kho tệp lỗi ở tệp thứ hai,
 kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọc loại, `%`/`_` là ký tự thường, chỉ trong thư mục đang
 mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; `inMeeting` chỉ đúng với tệp còn trong cuộc họp người gọi
 là Thư ký, sai khi không gửi `meetingId`, cuộc họp không xem được, không tồn tại, hoặc người gọi chỉ là Thành viên; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;

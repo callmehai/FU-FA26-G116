@@ -29,7 +29,7 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX
   05/11/2026): 141 heading UC, 90 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
   UC-73 → UC-77 (Hand Over Chair, Confirm Document Read, Cancel Meeting, Manage Vote Documents, Record Agenda Item
-  Conclusion) đã có đặc tả và sequence diagram (`UC73_HandOverChair` → `UC77_RecordAgendaItemConclusion`);
+  Conclusion) đã có đặc tả và sequence diagram (`UC34_HandOverChair` → `UC27_RecordAgendaItemConclusion`);
   UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026;
   **UC-47–UC-50 (dự thảo AI) và UC-58–UC-60 (bản nháp biên bản) đặc tả ngày 05/11/2026 theo PR #260**; UC-51 và
   UC-61, UC-64, UC-65 (gửi duyệt, duyệt, trả lại biên bản) đã đặc tả theo SCRUM-33; UC-62/63 (ký biên bản) đã bỏ theo PO 14/11/2026.

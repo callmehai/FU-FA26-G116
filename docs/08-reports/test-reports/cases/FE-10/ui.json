@@ -61,7 +61,7 @@
             "Send the recording to speech to text and watch the recording row."
           ],
           "expected": [
-            "While waiting the panel reads \"Đang chờ lượt chuyển chữ\" and while running \"Đang chuyển chữ <n>%\" with a spinner and \"Bản ghi dài <time>, thường xong trong khoảng <n> phút.\"",
+            "While waiting the panel reads \"Đang chờ lượt chuyển chữ\" with the InfoTip \"Bản ghi dài <time>, thường chuyển xong trong khoảng <n> phút.\"; while running it reads \"Đang chuyển chữ <n>%\" with a spinner.",
             "The row chip reads \"Đang chuyển chữ\" and, without a reload, changes to \"Có bản gỡ băng\" when done (the page asks again about every 4 seconds)."
           ],
           "preconditions": [
@@ -75,7 +75,7 @@
         },
         {
           "id": "TRANS_FT04",
-          "description": "Verify a recording without words and one not yet transcribed show their own messages.",
+          "description": "Verify a recording without words shows its own message.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
             "Open a recording whose transcript has no segments."
@@ -85,7 +85,7 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Bản ghi\" tab; one recording of silence and one never queued."
+            "Signed in as the Secretary on the \"Bản ghi\" tab; one recording of silence."
           ],
           "note": "UC-45a | Manual UI check | Evidence(AC27): tests/qa/out/SCRUM-197/20261124-113351-ece83cb4/01-secretary-AC27-desktop-ban-ghi-im-lang.png",
           "round1": "Passed",
@@ -121,7 +121,7 @@
             "Hover the lines and the speaker names."
           ],
           "expected": [
-            "Lines and names are shown as plain text: no pencil \"Sửa nội dung\", no speaker pickers and no \"Bấm để sửa\" tooltip.",
+            "Lines and names are shown as plain text: no pencil \"Sửa nội dung\" and no speaker pickers.",
             "A voice the Secretary has not named reads \"Người nói N\"; the machine's suggested name is not shown.",
             "No download button appears."
           ],
@@ -384,7 +384,7 @@
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
             "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Click a line, type extra words, press Esc; repeat and click \"Huỷ\"."
+            "Click the pencil \"Sửa nội dung\" on a line, type extra words, press Esc; repeat and click \"Huỷ\"."
           ],
           "expected": [
             "The editor closes, nothing is sent and the text is unchanged after a reload."
@@ -404,7 +404,7 @@
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Bản ghi\".",
             "Click \"Nghe và xem bản gỡ băng\" on the recording row.",
-            "Click a line, delete all the text."
+            "Click the pencil \"Sửa nội dung\" on a line, delete all the text."
           ],
           "expected": [
             "The \"Lưu\" button is disabled and Enter does nothing; a text of only spaces is not sent.",
@@ -639,18 +639,20 @@
         },
         {
           "id": "TRANS_FT30",
-          "description": "Verify the readiness note lists what the draft would miss.",
+          "description": "Verify the readiness note names the unnamed voice and a failed transcript.",
           "procedure": [
             "Open the meeting from \"/mgmt/meetings\" and click the tab \"Biên bản\".",
-            "Read the notes under the card heading."
+            "Read the notes under the card heading \"Dự thảo nội dung\".",
+            "Upload a broken audio file to the meeting, wait for transcription to fail, and read the notes again; then delete the broken recording."
           ],
           "expected": [
-            "For each condition that holds, a readiness note appears with a warning icon — for example \"Chưa có lời thoại nào để AI tóm tắt, nên chưa tạo được dự thảo.\" when there is no speech, or \"<n> giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo.\" with the button \"Gán tên người nói\"; notes for conditions that do not hold are absent."
+            "A readiness note with a warning icon reads \"1 giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo.\" with the button \"Gán tên người nói\".",
+            "After the failed transcript a second note reads \"1 bản ghi chuyển chữ lỗi, không được tính.\"; deleting the broken recording removes that note.",
+            "While a recording is still transcribing, only \"<n> bản ghi đang chuyển chữ, xong mới tạo được dự thảo.\" shows (other notes are hidden until it finishes)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the \"Biên bản\" tab of an Ended meeting with an agenda and recorded speech; the AI server is running.",
-            "Speech with unnamed voices, a transcript still running and an agenda item never started."
+            "Signed in as the Secretary on the \"Biên bản\" tab of an Ended meeting with an agenda and a completed transcript that has one unnamed voice; the AI server is running."
           ],
           "note": "UC-47 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Summaries/SummaryEndpointTests.cs (Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind) · Evidence(AC35): tests/qa/out/SCRUM-197/20261124-114051-ece83cb4/01-secretary-AC35-desktop-ghi-chu-san-sang.png; tests/qa/out/SCRUM-197/20261124-114051-ece83cb4/02-secretary-AC35-desktop-ghi-chu-ban-loi.png",
           "round1": "Passed",
@@ -951,7 +953,7 @@
           ],
           "expected": [
             "The dialog \"Ghi giọng mẫu\" shows the hint \"Ngồi ở nơi yên tĩnh, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:\" and a passage; the stop button reads \"Đọc tiếp… (<n> giây)\" and is disabled until 8 seconds pass; recording stops by itself at 30 seconds.",
-            "After stopping, the player \"Nghe lại giọng mẫu vừa ghi\" appears with \"Ghi lại\" and \"Lưu giọng mẫu\" (\"Đang kiểm tra…\" while saving); a valid reading saves with \"Đã lưu giọng mẫu.\" (201/MSG307) and the list shows \"Giọng mẫu 1\" with its length and date, with \"Nghe lại\" and \"Xoá giọng mẫu\" buttons. In this run the kept sample was a QA reading sent via API (same worker pipeline and 201/MSG307); the fake mic's beep is refused as in TRANS_FT45."
+            "After stopping, the player \"Nghe lại giọng mẫu vừa ghi\" appears with \"Ghi lại\" and \"Lưu giọng mẫu\" (\"Đang kiểm tra…\" while saving). The fake microphone only beeps, so no valid reading could be kept through the dialog (a beep is refused as in TRANS_FT45); the kept sample in this run was a QA reading sent via API (same worker pipeline, 201/MSG307 \"Đã lưu giọng mẫu.\"), after which the list shows \"Giọng mẫu 1\" with its length and date, with \"Nghe lại\" and \"Xoá giọng mẫu\" buttons."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -1043,12 +1045,12 @@
             "Click \"Giữ lại\", then repeat and click \"Tắt và xoá\"."
           ],
           "expected": [
-            "The dialog \"Tắt nhận diện giọng nói?\" says \"Toàn bộ <n> giọng mẫu tự thu và <m> mẫu Thư ký thu hộ, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.\"",
+            "The dialog \"Tắt nhận diện giọng nói?\" says \"Toàn bộ <n> giọng mẫu tự thu và <m> mẫu thu hộ, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.\"",
             "\"Giữ lại\" changes nothing; \"Tắt và xoá\" shows \"Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu.\" (200/MSG306) and the page returns to the consent card with no samples; turning it on again restores none."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a user with Voice ID on, own samples and a Secretary-recorded sample."
+            "Signed in as a user with Voice ID on, own samples and a proxy-collected sample (recorded by a holder of \"Thu giọng mẫu hộ\", not by a meeting Secretary)."
           ],
           "note": "UC-81f | Law 91/2025/QH15 | Manual UI check | Automated: tests/TrustCabinet.Web.Tests/Recordings/VoiceIdEndpointTests.cs (Withdrawing_erases_samples_and_suggestions_but_keeps_what_the_secretary_decided; Withdrawing_erases_both_sets_at_once) · Evidence(AC50): tests/qa/out/SCRUM-197/20261124-140822-ece83cb4/01-qa-fe10-a-trustcabinet-local-AC50-desktop-xac-nhan-tat-voice-id.png; tests/qa/out/SCRUM-197/20261124-140822-ece83cb4/02-qa-fe10-a-trustcabinet-local-AC50-desktop-bat-lai-trang.png; tests/qa/out/SCRUM-197/20261124-140822-ece83cb4/03-qa-fe10-a-trustcabinet-local-AC50-phone-xac-nhan-tat-voice-id.png; tests/qa/out/SCRUM-197/20261124-140822-ece83cb4/04-qa-fe10-a-trustcabinet-local-AC50-phone-bat-lai-trang.png",
           "round1": "Passed",
@@ -1129,7 +1131,7 @@
           ],
           "expected": [
             "The dialog is titled \"Thu giọng mẫu: <name>\" with the hint about the room microphone; \"Lưu giọng mẫu\" stays off until the box is ticked.",
-            "A valid reading saves with \"Đã lưu giọng mẫu thu hộ.\" (201/MSG473); the list shows the new sample as \"Ngoài cuộc họp\" and the count rises. In this run the kept sample was a QA reading sent via API (same worker pipeline and 201/MSG473); the fake mic's beep is refused as in TRANS_FT54.",
+            "After stopping, the listen-back player appears. The fake microphone only beeps, so no valid reading could be kept through the dialog (a beep is refused as in TRANS_FT54); the kept sample in this run was a QA reading sent via API (same worker pipeline, 201/MSG473 \"Đã lưu giọng mẫu thu hộ.\"), after which the list shows the new sample as \"Ngoài cuộc họp\" and the count rises.",
             "The person (second browser) receives a notification about it and sees the sample in the card \"Người khác thu hộ\" of \"/mgmt/my-voice\"."
           ],
           "preconditions": [

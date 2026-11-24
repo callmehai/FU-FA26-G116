@@ -653,14 +653,6 @@ async function openCollection(qa, fullName) {
   await qa.expect(dialog).toBeVisible()
   return dialog
 }
-async function collect(qa, meetingId, userId) {
-  const res = await as(qa, 'secretary').form(
-    `/api/meetings/${meetingId}/voice-collection/${userId}/samples`,
-    sampleForm(qa, 'enrol', 'thu-ho.wav'),
-  )
-  if (res.status === 503) qa.inconclusive('Máy nhận dạng giọng nói chưa sẵn sàng (503 MSG312).')
-  return res
-}
 
 // ---------------------------------------------------------------------------------------------------------------------
 /** A recording whose bytes no decoder reads: transcribing it must fail, never hang. */
@@ -725,8 +717,6 @@ async function openRecordings(qa, m) {
 const recordingsRegion = (qa) => qa.page.getByRole('region', { name: 'Bản ghi', exact: true })
 const recordingRow = (qa, fileName) => recordingsRegion(qa).locator('li.recording-row').filter({ hasText: fileName })
 const lines = (row) => row.getByRole('list', { name: 'Lời thoại theo thời điểm nói' })
-const collectionPanel = (qa) => qa.page.getByRole('region', { name: 'Giọng mẫu cho mic phòng' })
-const personRow = (qa, name) => collectionPanel(qa).locator('li.voice-person').filter({ hasText: name })
 async function pick(qa, trigger, optionName) {
   await press(qa, trigger)
   const list = qa.page.getByRole('listbox').last()
@@ -1223,9 +1213,9 @@ export default {
       title: 'Người không có trong danh sách cuộc họp (quantri@, kể cả All-in-one) không thấy tab Bản ghi và API trả 404; chưa đăng nhập 401',
       steps: [
         'Đăng nhập quantri@ (không có trong danh sách), mở cuộc họp "[QA] FE-10 Họp trực tiếp gỡ băng" với ?tab=recordings',
-        'API (quantri@): recordings, transcript, transcript.txt, speech-clips của cuộc họp trực tuyến, voice-collection; API chưa đăng nhập: transcript',
+        'API (quantri@): recordings, transcript, transcript.txt, speech-clips của cuộc họp trực tuyến; API (thuky@: không có trong danh sách và thiếu "Thu giọng mẫu hộ"): GET /api/users/{a}/voice-collection 403; API chưa đăng nhập: transcript',
       ],
-      expected: 'Không có tab "Bản ghi" (mở thẳng link thì về tab khác hoặc trang không tìm thấy); API 404 mọi đường, riêng voice-collection 403 vì quantri@ thiếu quyền "Thu giọng mẫu hộ" (đúng luật 403/404); chưa đăng nhập 401',
+      expected: 'Không có tab "Bản ghi" (mở thẳng link thì về tab khác hoặc trang không tìm thấy); API 404 mọi đường; GET sổ thu hộ của người khác bằng thuky@ 403 vì thiếu "Thu giọng mẫu hộ" (quantri@ có quyền nên đọc được 200); chưa đăng nhập 401',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const cMeeting = await meeting(qa, 'C')
@@ -1238,10 +1228,9 @@ export default {
         c.check('transcript', await api.get(`/api/recordings/${m.main.id}/transcript`), 404)
         c.check('export', await api.get(`/api/recordings/${m.main.id}/transcript.txt`), 404)
         c.check('per-mic sentences', await api.get(`/api/meetings/${cMeeting.id}/speech-clips`), 404)
-        // R1/FE-10 (22/11/2026): quantri@ chỉ có AdminUsers, không có VoiceCollector (seed chỉ gán
-        // VoiceCollector cho vai trò Thư ký) nên cổng nhóm capability trả 403 — đúng luật 403/404 (endpoint
-        // cố định thiếu capability → 403; tài nguyên không đọc được → 404 như 4 đường trên).
-        c.check('voice collection (no VoiceCollector → 403)', await api.get(`/api/meetings/${b.id}/voice-collection`), 403)
+        // VoiceCollector nằm ở vai Quản trị viên (seed), thuky@ không có capability nào:
+        // cổng nhóm capability trả 403; quantri@ đọc được 200 — đúng luật 403/404.
+        c.check('voice collection (no VoiceCollector → 403)', await as(qa, 'secretary').get(`/api/users/${(await users(qa)).a.id}/voice-collection`), 403)
         c.check('anonymous transcript', await as(qa, 'anon').get(`/api/recordings/${m.main.id}/transcript`), 401)
         await qa.goto(`/mgmt/meetings/${m.id}?tab=recordings`)
         await qa.page.waitForLoadState('networkidle').catch(() => undefined)
@@ -1571,55 +1560,54 @@ export default {
       id: 'AC14',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Xoá một giọng mẫu của mình (tự thu và Thư ký thu hộ): hệ thống hỏi xác nhận trước (UC-56e bước 2), rồi xoá (MSG311)',
+      title: 'Xoá giọng mẫu của mình (tự thu và thu hộ): hệ thống hỏi xác nhận trước (UC-56e bước 2), rồi xoá (MSG311)',
       steps: [
-        'qa-fe10-a@ có 1 mẫu tự thu và 1 mẫu Thư ký thu ở "[QA] FE-10 Họp thu giọng mẫu"',
-        'Ở tab "Thư ký thu hộ", xem tên cuộc họp và người thu, bấm xoá mẫu thu hộ',
-        'Ở tab "Tự thu", bấm "Xoá giọng mẫu 1"',
+        'qa-fe10-a@ có 1 mẫu tự thu và 1 mẫu thu hộ ("Ngoài cuộc họp")',
+        'Ở tab "Tự thu", bấm "Xoá giọng mẫu 1": "Giữ lại" không đổi, rồi bấm lại và "Xoá"',
+        'Ở tab "Người khác thu hộ", bấm "Xoá mẫu thu hộ 1" và "Xoá"',
       ],
       expected:
-        'Tab thu hộ nêu cuộc họp (liên kết) và người thu (Thư ký); mỗi lần xoá đều có hộp xác nhận trước; xong: toast "Đã xoá giọng mẫu.", mẫu biến mất, API không còn mẫu; cuối cùng rút lại',
+        'Hộp "Xoá giọng mẫu?" ("Giọng mẫu 1 bị xoá hẳn, không lấy lại được.") và hộp "Xoá mẫu thu hộ?" ("Mẫu này bị xoá hẳn, không lấy lại được.") đều có "Giữ lại" và "Xoá"; "Giữ lại" không đổi gì. "Xoá" ở cả hai tab: toast "Đã xoá giọng mẫu." (200 MSG311) vì là xoá mẫu của chính mình. Xong cả hai bộ trống trên API; cuối rút lại',
       async run(qa) {
         const u = await users(qa)
-        const b = await meeting(qa, 'B')
         const c = checker(qa)
         await enrolled(qa, 'a', 1)
-        await clearCollected(qa, b.id, u.a.id)
-        c.check('Secretary collects for A', await collect(qa, b.id, u.a.id), 201, 'MSG473')
-        const asked = []
+        await clearPersonSamples(qa, u.a.id)
+        c.check('a sample collected for A', await collectFor(qa, u.a.id), 201, 'MSG473')
         try {
           await qa.signIn(u.a.email)
-          await openMyVoice(qa, '?tab=proxy')
-          const proxyItem = qa.page.locator('li.voice-sample').filter({ hasText: b.title })
-          await qa.expect(proxyItem.getByRole('link', { name: b.title })).toBeVisible()
-          await qa.expect(proxyItem.getByText(u.secretary.name)).toBeVisible()
+          await openMyVoice(qa)
+          await press(qa, qa.page.getByRole('button', { name: 'Xoá giọng mẫu 1' }))
+          const ask = qa.page.getByRole('dialog', { name: 'Xoá giọng mẫu?' })
+          await qa.expect(ask).toBeVisible()
           await settled(qa)
-          await qa.shot('tab-thu-ho')
-          for (const label of ['proxy', 'self']) {
-            if (label === 'self') await qa.page.getByRole('tab', { name: /Tự thu/ }).click()
-            const button =
-              label === 'proxy'
-                ? proxyItem.getByRole('button', { name: 'Xoá mẫu thu hộ 1' })
-                : qa.page.getByRole('button', { name: 'Xoá giọng mẫu 1' })
-            await button.click()
-            const dialog = await qa.page
-              .getByRole('dialog')
-              .waitFor({ state: 'visible', timeout: 2000 })
-              .then(() => true)
-              .catch(() => false)
-            asked.push(`${label}: ${dialog ? 'có hỏi' : 'không hỏi'}`)
-            await settled(qa)
-            await qa.shot(`xoa-${label}-${dialog ? 'co-hoi' : 'khong-hoi'}`)
-            if (dialog) await qa.page.getByRole('dialog').getByRole('button', { name: /Xoá/ }).last().click()
-            await qa.expect(toast(qa, MSG.MSG311).first()).toBeVisible()
-          }
-          await qa.expect(qa.page.locator('li.voice-sample')).toHaveCount(0)
+          await qa.shot('xoa-giong-mau-hoi-truoc')
+          await press(qa, ask.getByRole('button', { name: 'Giữ lại' }))
+          await qa.expect(ask).toHaveCount(0)
+          c.fact('keeping changes nothing', (await voice(qa, 'a')).samples.length === 1)
+          await press(qa, qa.page.getByRole('button', { name: 'Xoá giọng mẫu 1' }))
+          const confirm = qa.page.getByRole('dialog', { name: 'Xoá giọng mẫu?' })
+          await qa.expect(confirm).toBeVisible()
+          await press(qa, confirm.getByRole('button', { name: 'Xoá', exact: true }))
+          await qa.expect(toast(qa, MSG.MSG311)).toBeVisible()
+          c.fact('the self sample is gone', (await voice(qa, 'a')).samples.length === 0)
+          await qa.page.getByRole('tab', { name: /Người khác thu hộ/ }).click()
+          const proxyItem = qa.page.locator('li.voice-sample').filter({ hasText: 'Ngoài cuộc họp' })
+          await qa.expect(proxyItem).toBeVisible()
+          await press(qa, proxyItem.getByRole('button', { name: 'Xoá mẫu thu hộ 1' }))
+          const askProxy = qa.page.getByRole('dialog', { name: 'Xoá mẫu thu hộ?' })
+          await qa.expect(askProxy).toBeVisible()
+          await settled(qa)
+          await qa.shot('xoa-mau-thu-ho-hoi-truoc')
+          await press(qa, askProxy.getByRole('button', { name: 'Xoá', exact: true }))
+          await qa.expect(toast(qa, MSG.MSG311)).toBeVisible()
           const v = await voice(qa, 'a')
-          c.fact('both samples gone', v.samples.length === 0 && v.proxy.samples.length === 0)
-          c.fact('asked before each delete (UC-56e step 2)', asked.every((x) => x.endsWith('có hỏi')), asked.join('; '))
+          c.fact('both sets gone', v.samples.length === 0 && v.proxy.samples.length === 0)
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
           c.done()
         } finally {
-          await clearCollected(qa, b.id, u.a.id)
+          await clearPersonSamples(qa, u.a.id)
           await withdrawn(qa, 'a')
         }
       },
@@ -1630,181 +1618,87 @@ export default {
       id: 'AC15',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Thư ký (có quyền "Thu giọng mẫu hộ") xem danh sách thu hộ, thu cho người đã đồng ý (MSG473), nghe lại, xoá có xác nhận (MSG474); người chưa đồng ý chỉ hiện "Chưa đồng ý", Khách không có trong danh sách',
+      title: 'Thư ký không còn thu hộ (ADR-0075): không vào được sổ thu hộ, API thu hộ 403; chỉ Quản trị viên giữ quyền "Thu giọng mẫu hộ"',
       steps: [
-        'qa-fe10-a@ đã đồng ý (1.3), qa-fe10-b@ chưa; thuky@ mở tab "Bản ghi" của "[QA] FE-10 Họp thu giọng mẫu" (Đã công bố)',
-        'Bấm "Thu" ở dòng A (xem hộp thoại), đóng; API thu một mẫu cho A; tải lại, bấm nghe mẫu',
-        'A: xem thông báo và tab "Thư ký thu hộ"; Thư ký bấm xoá mẫu, xác nhận',
+        'thuky@ mở "/mgmt/admin/users" (cần AdminUsers)',
+        'Gọi GET /api/users/{a}/voice-collection và POST một mẫu thu hộ với tư cách thuky@',
       ],
       expected:
-        'Thẻ "Giọng mẫu cho mic phòng" liệt kê người nội bộ trong danh sách, không có Khách mời; dòng A có "n/5" và nút "Thu"; dòng B "Chưa đồng ý", không nút; hộp thoại "Thu giọng mẫu: …" nhắc dùng micro phòng họp; tiếng bíp ghi bằng micro giả bị từ chối bằng lời tiếng Việt, hộp thoại ở lại, không lưu mẫu (TRANS_FT78); API 201 MSG473; dòng A hiện "Mẫu 1", nghe được (200); A nhận thông báo VoiceSampleCollected, tab thu hộ có cuộc họp và tên Thư ký; xoá: hộp "Xoá mẫu thu hộ?", toast "Đã xoá giọng mẫu thu hộ.", A không còn mẫu thu hộ',
+        'Trang quản trị người dùng không mở cho Thư ký (không có tiêu đề "Người dùng"); cả hai lệnh thu hộ trả 403 thiếu "Thu giọng mẫu hộ". Chỉ vai Quản trị viên giữ capability này trên DB seed (ADR-0075); AC51–AC55 phủ luồng thu hộ bằng admin',
       async run(qa) {
         const u = await users(qa)
-        const b = await meeting(qa, 'B')
         const c = checker(qa)
         const caps = await qa.capabilities('secretary')
-        if (!caps.capabilities.includes('VoiceCollector')) qa.inconclusive('thuky@ thiếu quyền VoiceCollector: khôi phục vai trò Thư ký.')
-        await withdrawn(qa, 'b')
-        await enrolled(qa, 'a', 0)
-        await clearCollected(qa, b.id, u.a.id)
-        try {
-          const list = (await as(qa, 'secretary').get(`/api/meetings/${b.id}/voice-collection`)).body
-          c.fact('collection open while Published', list.canCollect === true)
-          c.fact('guests are not listed', !list.people.some((p) => p.fullName === GUEST.invitedName || p.userId === b.guest?.id))
-          c.fact('internal roster listed', [u.chair, u.secretary, u.member, u.a, u.b].every((x) => list.people.some((p) => p.userId === x.id)))
-          await openRecordings(qa, b)
-          const panel = collectionPanel(qa)
-          await qa.expect(panel).toBeVisible()
-          await qa.expect(panel.getByText(GUEST.invitedName)).toHaveCount(0)
-          const rowA = personRow(qa, u.a.name)
-          const rowB = personRow(qa, u.b.name)
-          await qa.expect(rowA.getByText(/^\d\/5$/)).toBeVisible()
-          await qa.expect(rowA.getByRole('button', { name: 'Thu', exact: true })).toBeVisible()
-          await qa.expect(rowB.getByText('Chưa đồng ý')).toBeVisible()
-          await qa.expect(rowB.getByRole('button', { name: 'Thu', exact: true })).toHaveCount(0)
-          await panel.scrollIntoViewIfNeeded()
-          await settled(qa)
-          await qa.shot('danh-sach-thu-ho')
-          await press(qa, rowA.getByRole('button', { name: 'Thu', exact: true }))
-          const dialog = qa.page.getByRole('dialog', { name: `Thu giọng mẫu: ${u.a.name}` })
-          await qa.expect(dialog).toBeVisible()
-          await qa.expect(dialog.getByText(/micro phòng họp/)).toBeVisible()
-          await settled(qa)
-          await qa.shot('hop-thoai-thu-ho')
-          // R1/FE-10 (22/11/2026): TRANS_FT78 — tiếng bíp (không phải giọng người) bị từ chối
-          // bằng lời tiếng Việt, hộp thoại ở lại để ghi lại, không lưu mẫu nào.
-          await press(qa, dialog.getByRole('button', { name: 'Bắt đầu ghi' }))
-          await qa.expect(dialog.getByRole('status').filter({ hasText: 'Đang ghi' })).toBeVisible()
-          const proxyStop = dialog.getByRole('button', { name: 'Dừng' })
-          await qa.expect(proxyStop).toBeEnabled({ timeout: 15_000 })
-          await proxyStop.click()
-          await qa.expect(dialog.getByLabel('Nghe lại giọng mẫu vừa ghi')).toBeVisible()
-          const badAnswer = qa.page.waitForResponse(
-            (r) => r.url().includes(`/voice-collection/${u.a.id}/samples`) && r.request().method() === 'POST', { timeout: 60_000 })
-          await press(qa, dialog.getByRole('button', { name: 'Lưu giọng mẫu' }))
-          const badRes = await badAnswer
-          c.fact('a beep collected for someone else is refused', badRes.status() === 422, `HTTP ${badRes.status()}`)
-          await qa.expect(dialog.getByRole('alert')).toBeVisible()
-          const said = await dialog.getByRole('alert').innerText()
-          c.fact('the reason reads in Vietnamese', /giọng|mẫu|tiếng/i.test(said) && !/MSG\d/.test(said), said)
-          await settled(qa)
-          await qa.shot('mau-thu-ho-khong-dat')
-          await qa.page.keyboard.press('Escape')
-          await qa.expect(dialog).toHaveCount(0)
-
-          const res = await collect(qa, b.id, u.a.id)
-          c.check('collect for A', res, 201, 'MSG473')
-          const sampleId = res.body?.data?.id
-          await openRecordings(qa, b)
-          const item = personRow(qa, u.a.name).locator('li.voice-sample').filter({ hasText: 'Mẫu 1' })
-          await qa.expect(item).toBeVisible()
-          const heard = qa.page.waitForResponse((r) => r.url().includes(`/voice-collection/samples/${sampleId}/audio`))
-          await press(qa, item.getByRole('button', { name: `Nghe lại mẫu 1 của ${u.a.name}` }))
-          c.fact('the Secretary plays it back', (await heard).status() === 200)
-          await item.scrollIntoViewIfNeeded()
-          await settled(qa)
-          await qa.shot('da-thu-mau-1')
-          const notes = await as(qa, 'a').get('/api/notifications?page=1&pageSize=20')
-          c.fact('A is notified', (notes.body.items ?? []).some((n) => n.type === 'VoiceSampleCollected'), JSON.stringify((notes.body.items ?? []).slice(0, 2)).slice(0, 200))
-          const mine = await voice(qa, 'a')
-          const proxy = mine.proxy.samples.find((s) => s.id === sampleId)
-          c.fact('A sees where and by whom', proxy?.meetingTitle === b.title && proxy.collectedByName === u.secretary.name, JSON.stringify(proxy))
-
-          await press(qa, item.getByRole('button', { name: `Xoá mẫu 1 của ${u.a.name}` }))
-          const confirm = qa.page.getByRole('dialog', { name: 'Xoá mẫu thu hộ?' })
-          await qa.expect(confirm).toBeVisible()
-          await settled(qa)
-          await qa.shot('xac-nhan-xoa-mau-thu-ho')
-          await press(qa, confirm.getByRole('button', { name: 'Xoá', exact: true }))
-          await qa.expect(toast(qa, MSG.MSG474)).toBeVisible()
-          await qa.expect(personRow(qa, u.a.name).locator('li.voice-sample')).toHaveCount(0)
-          await settled(qa)
-          await qa.shot('da-xoa-mau-thu-ho')
-          c.fact('A has no proxy sample left', (await voice(qa, 'a')).proxy.samples.length === 0)
-          await noSidewaysScroll(qa)
-          await noRawCodes(qa)
-          c.done()
-        } finally {
-          await clearCollected(qa, b.id, u.a.id)
-          await withdrawn(qa, 'a')
-        }
+        c.fact('the Secretary holds no VoiceCollector', !caps.capabilities.includes('VoiceCollector'), caps.capabilities.join(','))
+        await qa.signIn('secretary')
+        await qa.goto('/mgmt/admin/users')
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Người dùng' })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('button', { name: /Quản lý giọng nói thu hộ/ })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thu-ky-khong-so-thu-ho')
+        const sec = as(qa, 'secretary')
+        c.check('the collection book is closed', await sec.get(`/api/users/${u.a.id}/voice-collection`), 403)
+        const form = sampleForm(qa, 'enrol', 'thu-ho.wav')
+        form.append('personAgreed', 'true')
+        c.check('collecting is closed', await sec.form(`/api/users/${u.a.id}/voice-collection/samples`, form), 403)
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+        c.done()
       },
     },
     {
       id: 'AC16',
-      role: 'secretary',
-      title: 'Thu hộ bị chặn đúng chỗ: chưa đồng ý MSG475, đủ 5 mẫu MSG476, cuộc họp đã kết thúc MSG477; Mật / trực tuyến / người ngoài danh sách 404; Chủ toạ, Thành viên không có quyền',
+      role: 'admin',
+      title: 'Thu hộ bị chặn đúng chỗ: chưa đồng ý MSG475, thiếu xác nhận hỏi ý MSG483, đủ 5 mẫu MSG476; thiếu quyền 403, ẩn danh 401; mẫu tự thu qua đường thu hộ 404',
       steps: [
-        'API thu cho qa-fe10-b@ (chưa đồng ý); thu 5 mẫu cho qa-fe10-a@ rồi mẫu thứ 6',
-        'Thư ký mở tab "Bản ghi" của "[QA] FE-10 Họp trực tiếp gỡ băng" (đã kết thúc); API thu cho A ở đó',
-        'API: danh sách thu hộ của cuộc họp Mật, cuộc họp trực tuyến; thu cho quantri@ (ngoài danh sách); Chủ toạ, Thành viên, quantri@, chưa đăng nhập gọi danh sách; Thư ký nghe / xoá mẫu tự thu của A qua đường thu hộ',
+        'API thu cho qa-fe10-b@ (chưa đồng ý); thu cho qa-fe10-a@ mà không đánh dấu hỏi ý',
+        'Thu 5 mẫu cho qa-fe10-a@ rồi mẫu thứ 6; mở sổ: "5/5 mẫu thu hộ", không nút "Thu"',
+        'Chủ toạ, Thành viên, Thư ký, ẩn danh gọi sổ thu hộ và thu hộ; nghe / xoá mẫu tự thu của A qua đường thu hộ',
       ],
       expected:
-        'B: 409 MSG475; mẫu thứ 6: 409 MSG476 và dòng A "5/5" không nút "Thu"; cuộc họp kết thúc: thẻ vẫn hiện, ghi "Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.", không nút "Thu", API 409 MSG477; Mật 404, trực tuyến 404, ngoài danh sách 404; Chủ toạ 403, Thành viên 403, quantri@ 403 (đều thiếu quyền), ẩn danh 401; mẫu tự thu qua đường thu hộ 404; Chủ toạ không thấy thẻ thu hộ (tab Bản ghi của Chủ toạ khoá tới khi cuộc họp bắt đầu)',
+        'B chưa đồng ý: 409 MSG475. Thiếu personAgreed: 400 MSG483. Mẫu thứ 6: 409 MSG476 "Đã đủ 5 giọng mẫu thu hộ cho người này. Xoá bớt rồi thu lại."; sổ hiện "5/5 mẫu thu hộ", không nút "Thu". Không quyền: Chủ toạ, Thành viên, Thư ký 403 cả xem lẫn thu; ẩn danh 401. Mẫu tự thu qua đường thu hộ: nghe và xoá đều 404, mẫu tự thu còn nguyên',
       async run(qa) {
         const u = await users(qa)
-        const [a, b, cm, d] = [await meeting(qa, 'A'), await meeting(qa, 'B'), await meeting(qa, 'C'), await meeting(qa, 'D')]
         const c = checker(qa)
-        const caps = { chair: await qa.capabilities('chair'), member: await qa.capabilities('member') }
         await withdrawn(qa, 'b')
-        const mine = await enrolled(qa, 'a', 1)
-        await clearCollected(qa, b.id, u.a.id)
-        const sec = as(qa, 'secretary')
+        await enrolled(qa, 'a', 1)
+        await clearPersonSamples(qa, u.a.id)
+        const admin = as(qa, 'admin')
+        const mine = await voice(qa, 'a')
+        const own = mine.samples[0].id
         try {
-          c.check('B has not agreed', await collect(qa, b.id, u.b.id), 409, 'MSG475')
-          for (let i = 1; i <= 5; i++) c.check(`collect ${i}`, await collect(qa, b.id, u.a.id), 201, 'MSG473')
-          c.check('collect 6', await collect(qa, b.id, u.a.id), 409, 'MSG476')
-          await openRecordings(qa, b)
-          await qa.expect(personRow(qa, u.a.name).locator('.voice-person-count')).toHaveText('5/5')
-          await qa.expect(personRow(qa, u.a.name).getByRole('button', { name: 'Thu', exact: true })).toHaveCount(0)
-          await personRow(qa, u.a.name).scrollIntoViewIfNeeded()
+          const noConsent = sampleForm(qa, 'enrol', 'thu-ho.wav')
+          noConsent.append('personAgreed', 'true')
+          c.check('B has not agreed', await admin.form(`/api/users/${u.b.id}/voice-collection/samples`, noConsent), 409, 'MSG475')
+          c.check('take not confirmed', await admin.form(`/api/users/${u.a.id}/voice-collection/samples`, sampleForm(qa, 'enrol', 'thu-ho.wav')), 400, 'MSG483')
+          for (let i = 1; i <= 5; i++) c.check(`collect ${i}`, await collectFor(qa, u.a.id), 201, 'MSG473')
+          c.check('collect 6', await collectFor(qa, u.a.id), 409, 'MSG476')
+          await qa.signIn('admin')
+          const dialog = await openCollection(qa, u.a.name)
+          await qa.expect(dialog.getByText('5/5 mẫu thu hộ')).toBeVisible()
+          await qa.expect(dialog.getByRole('button', { name: 'Thu' })).toHaveCount(0)
+          await dialog.locator('li.voice-sample').first().scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('du-5-mau-thu-ho')
-          await clearCollected(qa, b.id, u.a.id)
+          await qa.page.keyboard.press('Escape')
+          await clearPersonSamples(qa, u.a.id)
 
-          c.check('Ended meeting', await collect(qa, a.id, u.a.id), 409, 'MSG477')
-          await openRecordings(qa, a)
-          const panel = collectionPanel(qa)
-          await qa.expect(panel).toBeVisible()
-          await qa.expect(panel.getByText('Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.')).toBeVisible()
-          await qa.expect(panel.getByRole('button', { name: 'Thu', exact: true })).toHaveCount(0)
-          await panel.scrollIntoViewIfNeeded()
-          await settled(qa)
-          await qa.shot('hop-da-ket-thuc-khong-thu')
-
-          c.check('Secret meeting', await sec.get(`/api/meetings/${d.id}/voice-collection`), 404)
-          c.check('Online meeting', await sec.get(`/api/meetings/${cm.id}/voice-collection`), 404)
-          c.check('person not on the roster', await collect(qa, b.id, u.admin.id), 404)
-          const chairList = await as(qa, 'chair').get(`/api/meetings/${b.id}/voice-collection`)
-          if (caps.chair.capabilities.includes('VoiceCollector')) qa.note('chutoa@ đang có VoiceCollector: bỏ qua kiểm 403 của Chủ toạ.')
-          else c.check('Chair (no VoiceCollector)', chairList, 403)
-          if (caps.member.capabilities.includes('VoiceCollector')) qa.note('thanhvien@ đang có VoiceCollector.')
-          else c.check('Member', await as(qa, 'member').get(`/api/meetings/${b.id}/voice-collection`), 403)
-          // R1/FE-10 (22/11/2026): quantri@ thiếu VoiceCollector nên cổng capability trả 403
-          // (đúng luật 403/404) — AC8 kiểm tương tự.
-          c.check('admin, not the Secretary (no VoiceCollector → 403)', await as(qa, 'admin').get(`/api/meetings/${b.id}/voice-collection`), 403)
-          c.check('anonymous', await as(qa, 'anon').get(`/api/meetings/${b.id}/voice-collection`), 401)
-          const own = mine.samples[0].id
-          c.check('self sample through the collection (play)', await sec.get(`/api/meetings/${b.id}/voice-collection/samples/${own}/audio`), 404)
-          c.check('self sample through the collection (delete)', await sec.delete(`/api/meetings/${b.id}/voice-collection/samples/${own}`), 404)
+          for (const who of ['chair', 'member', 'secretary']) {
+            const api = as(qa, who)
+            c.check(`${who} reads the book`, await api.get(`/api/users/${u.a.id}/voice-collection`), 403)
+            const f = sampleForm(qa, 'enrol', 'thu-ho.wav')
+            f.append('personAgreed', 'true')
+            c.check(`${who} collects`, await api.form(`/api/users/${u.a.id}/voice-collection/samples`, f), 403)
+          }
+          c.check('anonymous reads the book', await as(qa, 'anon').get(`/api/users/${u.a.id}/voice-collection`), 401)
+          c.check('self sample through the collection (play)', await admin.get(`/api/users/${u.a.id}/voice-collection/samples/${own}/audio`), 404)
+          c.check('self sample through the collection (delete)', await admin.delete(`/api/users/${u.a.id}/voice-collection/samples/${own}`), 404)
           c.fact('the self sample is untouched', (await voice(qa, 'a')).samples.some((s) => s.id === own))
-
-          await qa.signIn('chair')
-          // PR #427: before the start the Bản ghi tab opens only to the Secretary collecting voice samples; for the
-          // Chair it is locked ("Mở khi cuộc họp bắt đầu") and ?tab=recordings opens Thông tin chung.
-          await qa.goto(`/mgmt/meetings/${b.id}?tab=recordings`)
-          await qa.expect(qa.page.getByRole('heading', { level: 1, name: b.title })).toBeVisible({ timeout: 15_000 })
-          const tab = qa.page.getByRole('tab', { name: 'Bản ghi' })
-          await qa.expect(tab).toHaveAttribute('aria-disabled', 'true')
-          await qa.expect(tab).toHaveAccessibleDescription('Mở khi cuộc họp bắt đầu')
-          await qa.expect(qa.page.getByRole('tab', { name: 'Thông tin chung' })).toHaveAttribute('aria-selected', 'true')
-          await qa.expect(recordingsRegion(qa)).toHaveCount(0)
-          await qa.expect(collectionPanel(qa)).toHaveCount(0)
-          await settled(qa)
-          await qa.shot('chu-toa-khong-co-the-thu-ho')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
           c.done()
         } finally {
-          await clearCollected(qa, b.id, u.a.id)
+          await clearPersonSamples(qa, u.a.id)
           await withdrawn(qa, 'a')
         }
       },
@@ -1815,21 +1709,20 @@ export default {
       id: 'AC17',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Rút đồng ý Voice ID xoá ngay mọi giọng mẫu cả hai bộ (MSG306), Thư ký không còn thấy mẫu thu hộ, bản ghi mẫu không còn phát được (Luật 91/2025)',
+      title: 'Rút đồng ý Voice ID xoá ngay mọi giọng mẫu cả hai bộ (MSG306), sổ thu hộ hết mẫu, bản ghi mẫu không còn phát được (Luật 91/2025)',
       steps: [
-        'qa-fe10-a@ có 1 mẫu tự thu và 1 mẫu Thư ký thu; mở "Giọng nói của tôi", bấm "Tắt và xoá giọng mẫu"',
+        'qa-fe10-a@ có 1 mẫu tự thu và 1 mẫu thu hộ ("Ngoài cuộc họp"); mở "Giọng nói của tôi", bấm "Tắt và xoá giọng mẫu"',
         'Đọc hộp xác nhận, bấm "Tắt và xoá"',
-        'API: hồ sơ Voice ID của A; Thư ký xem danh sách thu hộ và nghe mẫu cũ; A nghe mẫu cũ',
+        'API: hồ sơ Voice ID của A, sổ thu hộ của A; A nghe mẫu cũ',
       ],
       expected:
-        'Hộp "Tắt nhận diện giọng nói?" nói rõ 1 giọng mẫu tự thu và 1 mẫu Thư ký thu hộ bị xoá, tên Thư ký đã gán giữ nguyên; toast "Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu."; trang về thẻ "Bật nhận diện giọng nói" với ô chưa đánh; API: consent null, samples [] và proxy.samples []; Thư ký: A "Chưa đồng ý", không mẫu, nghe mẫu cũ 404; A nghe mẫu cũ 404',
+        'Hộp "Tắt nhận diện giọng nói?" nói rõ 1 giọng mẫu tự thu và 1 mẫu thu hộ bị xoá, tên Thư ký đã gán giữ nguyên; toast "Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu."; trang về thẻ "Bật nhận diện giọng nói" với ô chưa đánh; API: consent null, samples [] và proxy.samples []; sổ thu hộ: consented false, không mẫu; nghe mẫu cũ 404',
       async run(qa) {
         const u = await users(qa)
-        const b = await meeting(qa, 'B')
         const c = checker(qa)
         const before = await enrolled(qa, 'a', 1)
-        await clearCollected(qa, b.id, u.a.id)
-        const collected = await collect(qa, b.id, u.a.id)
+        await clearPersonSamples(qa, u.a.id)
+        const collected = await collectFor(qa, u.a.id)
         qa.expectStatus(collected, 201)
         const selfId = before.samples[0].id
         const proxyId = collected.body.data.id
@@ -1839,7 +1732,7 @@ export default {
           await press(qa, qa.page.getByRole('button', { name: 'Tắt và xoá giọng mẫu' }))
           const dialog = qa.page.getByRole('dialog', { name: 'Tắt nhận diện giọng nói?' })
           await qa.expect(dialog).toBeVisible()
-          await qa.expect(dialog.getByText(/1 giọng mẫu tự thu và 1 mẫu Thư ký thu hộ/)).toBeVisible()
+          await qa.expect(dialog.getByText(/1 giọng mẫu tự thu và 1 mẫu thu hộ/)).toBeVisible()
           await qa.expect(dialog.getByText(/Tên Thư ký đã gán giữ nguyên/)).toBeVisible()
           await settled(qa)
           await qa.shot('xac-nhan-rut-dong-y')
@@ -1855,15 +1748,14 @@ export default {
           const v = await voice(qa, 'a')
           c.fact('consent gone', v.consent === null)
           c.fact('both sets erased', v.samples.length === 0 && v.proxy.samples.length === 0, JSON.stringify({ s: v.samples.length, p: v.proxy.samples.length }))
-          const list = (await as(qa, 'secretary').get(`/api/meetings/${b.id}/voice-collection`)).body
-          const person = list.people.find((p) => p.userId === u.a.id)
-          c.fact('the Secretary sees "not agreed" and no sample', person?.consented === false && person.samples.length === 0 && person.sampleCount === 0, JSON.stringify(person))
-          c.check('Secretary plays the old proxy sample', await as(qa, 'secretary').get(`/api/meetings/${b.id}/voice-collection/samples/${proxyId}/audio`), 404)
+          const col = await personCollection(qa, u.a.id)
+          c.fact('the book is closed with no samples', col.consented === false && (col.samples?.length ?? -1) === 0, JSON.stringify({ consented: col.consented, samples: col.samples?.length }))
+          c.check('collector plays the old proxy sample', await as(qa, 'admin').get(`/api/users/${u.a.id}/voice-collection/samples/${proxyId}/audio`), 404)
           c.check('A plays the old self sample', await as(qa, 'a').get(`/api/me/voice/samples/${selfId}/audio`), 404)
           c.check('A plays the old proxy sample', await as(qa, 'a').get(`/api/me/voice/samples/${proxyId}/audio`), 404)
           c.done()
         } finally {
-          await clearCollected(qa, b.id, u.a.id)
+          await clearPersonSamples(qa, u.a.id)
           await withdrawn(qa, 'a')
         }
       },
@@ -2881,7 +2773,7 @@ export default {
         'API GET …/summary (đối chiếu readiness); tải một bản ghi hỏng lên D, chờ lỗi, đọc lại ghi chú, rồi xoá bản hỏng',
       ],
       expected:
-        'Ghi chú có biểu tượng cảnh báo: "1 giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo." với nút "Gán tên người nói"; API readiness: sentences > 0, unnamedVoices = 1, transcribing = 0, failedTranscripts = 0; thêm bản hỏng: "1 bản ghi chuyển chữ lỗi, không được tính."; xoá bản hỏng thì dòng đó mất. Ghi nhận: các ghi chú khác chỉ hiện khi đúng điều kiện (đang chuyển chữ / có nội dung chưa bắt đầu / chưa có lời thoại), xem Deviation trong note của case',
+        'Ghi chú có biểu tượng cảnh báo: "1 giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo." với nút "Gán tên người nói"; API readiness: sentences > 0, unnamedVoices = 1, transcribing = 0, failedTranscripts = 0; thêm bản hỏng: "1 bản ghi chuyển chữ lỗi, không được tính."; xoá bản hỏng thì dòng đó mất. Đang chuyển chữ thì chỉ hiện "<n> bản ghi đang chuyển chữ, xong mới tạo được dự thảo."',
       async run(qa) {
         const d = await meeting(qa, 'D')
         const sec = as(qa, 'secretary')

@@ -31,7 +31,7 @@ alt Agenda item cannot be completed - EX-1
     AgendaPage-->Chair: MSG74 - This agenda item cannot be completed.
 
 else Eligible
-    AgendaService->AgendaRepository: Set item Done and record end time (BR-70, BR-72)
+    AgendaService->AgendaRepository: Set item Done and record end time (BR-060–BR-062)
     activate AgendaRepository
     AgendaRepository->Database: Update agenda item
     activate Database

@@ -1,0 +1,14 @@
+title UC-46 - View Meeting Room Participants
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Open the Participants panel
+activate Page
+Page->RoomProvider: Read the people connected now with their speaking and microphone state
+activate RoomProvider
+RoomProvider-->Page: People connected now
+deactivate RoomProvider
+Page-->Actor: Participants panel with the number of people connected
+deactivate Page

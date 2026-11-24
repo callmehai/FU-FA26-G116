@@ -1,6 +1,6 @@
 # Bàn giao: case UI Round 1 làm manual (đã đánh lại số ID)
 
-Ngày 23/11/2026, thay bản trước cùng ngày. Bộ case đã được thu gọn và đánh lại ID liền mạch (UI 556, API 819),
+Ngày 23/11/2026, thay bản trước cùng ngày. Bộ case đã được thu gọn và đánh lại ID liền mạch (UI 563, API 825),
 nên **mọi ID trong bản cũ (`REC_FT13`, `NOTI_FT29`…) không còn đúng**: dùng ID dưới đây. Nguồn:
 `docs/08-reports/test-reports/cases/FE-xx/{ui,api}.json`. Chưa ghi kết quả vào `ui.json`: người làm manual
 chạy xong thì điền `round1` / `date1` / `tester1`, rồi sinh lại workbook
@@ -9,15 +9,16 @@ chạy xong thì điền `round1` / `date1` / `tester1`, rồi sinh lại workbo
 ## Tình trạng
 
 - **API**: 825 Passed (thêm 6 case truy vấn/xuất báo cáo RPT_API_IT19-24, TRX 24/11).
-- **UI**: 443 Passed, 110 chưa chạy (phần 2), 3 Failed (phần 1).
+- **UI**: 559 Passed, 4 chưa chạy (REC_FT24–27 mới khôi phục từ `app` sau thu gọn: nhãn "Dừng ghi ở máy kia", lượt ghi dở, mạng chậm, mic sau khi họp kết thúc — Manual only, chờ runner), 0 Failed.
+- JSON `cases/` là nguồn đúng nhất cho trạng thái từng case; các list ở mục 2 bên dưới đã cũ ở những chỗ case ghi Passed.
 
-## 1. Ba case Failed: tái hiện và xác nhận
+## 1. Ba case từng Failed: nay đều Passed, ghi lại để khỏi chạy lại
 
-| Mã | Kết luận |
+| Mã (ID sau thu gọn) | Kết luận |
 |---|---|
-| `REC_FT27`: file quá giới hạn bị từ chối (BUG-02, trước là REC_FT36) | **Bug thật.** Backend trả 413/MSG293 sớm rồi đóng kết nối, trình duyệt nhận lỗi mạng, không thấy mã 413. Tái hiện: Secretary, tab Bản ghi, tải file lớn hơn giới hạn (đã thử 301 MB), xem toast |
-| `MEET_FT01`: Organizer tạo Draft từ danh sách và vào trang chi tiết | Chưa phân tích nguyên nhân. Chạy tay lại, ghi bước nào hỏng |
-| `MIN_FT09`: Secretary sửa biên bản, chữ đã lưu còn nguyên | Chưa phân tích nguyên nhân. Chạy tay lại, so chữ sau khi tải lại trang |
+| `REC_FT31` (trước thu gọn là `REC_FT36`): file quá giới hạn bị từ chối (nay là ID mới sau khi thêm lại 4 case mic) | **Đã xong, Passed 24/11.** Upload 301 MB: toast "Bản ghi vượt quá 300 MB." (MSG293, không hiện mã), không mở hộp thoại, không tạo bản ghi; API trực tiếp vẫn 413. Re-run AC32 24/11. |
+| `MEET_FT01`: Organizer tạo Draft từ danh sách và vào trang chi tiết | **Đã xong, Passed 24/11.** Chạy lại E1/E3/E4 (AC1): form tạo, điền, vào chi tiết cuộc họp mới. |
+| `MIN_FT09`: Secretary sửa biên bản, chữ đã lưu còn nguyên | **Đã xong, Passed 23/11** (giữ `Deviation:` trong note: UC-60 mô tả plain-text + preview riêng, code là một sheet WYSIWYG — lệch này thuộc về UC spec nên giữ theo chuẩn). |
 
 Bug đã kết luận trước đó, nhưng chưa có case riêng: SUS-02 (tooltip dòng `.recording-meta` không hiện khi chạm ở 390px, bug thật),
 SUS-03 (gợi ý vẫn hiện khi LiveKit chạy tốt, nhẹ), SUS-01 (con trỏ biên bản nhảy về ô đầu sau Enter ở 390px, nhiều khả năng là bug; cần máy thật).

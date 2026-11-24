@@ -1,0 +1,47 @@
+title UC-44 - Leave Meeting Room
+
+actor "Participant" as Actor
+boundary "Meeting Room Page" as RoomPage
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Room Service" as RoomProvider
+database ":Database" as Database
+
+Actor->RoomPage: Leave meeting room
+activate RoomPage
+
+RoomPage->RoomController: Leave room
+activate RoomController
+
+RoomController->RoomService: leaveMeetingRoom(meetingId, actorId)
+activate RoomService
+
+alt Meeting has ended while in the room - EX-1
+    RoomService-->RoomController: MSG331 - The meeting has ended, the meeting room is closed.
+    RoomController-->RoomPage: MSG331 - The meeting has ended, the meeting room is closed.
+    RoomPage-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+
+else Same account joined elsewhere - EX-2
+    RoomService-->RoomController: MSG329 - You joined this room from another tab or device, so this tab left the room.
+    RoomController-->RoomPage: MSG329 - You joined this room from another tab or device, so this tab left the room.
+    RoomPage-->Actor: MSG329 - You joined this room from another tab or device, so this tab left the room.
+
+else Actor is no longer on the participant list - EX-3
+    RoomService-->RoomController: MSG330 - You are no longer on the participant list of this meeting room.
+    RoomController-->RoomPage: MSG330 - You are no longer on the participant list of this meeting room.
+    RoomPage-->Actor: MSG330 - You are no longer on the participant list of this meeting room.
+
+else Eligible
+    RoomService->RoomProvider: Disconnect actor
+    activate RoomProvider
+    RoomProvider-->RoomService: Disconnected
+    deactivate RoomProvider
+
+    RoomService-->RoomController: Left room
+    RoomController-->RoomPage: MSG328 - You have left the meeting room.
+    RoomPage-->Actor: MSG328 - You have left the meeting room.
+end
+
+deactivate RoomService
+deactivate RoomController
+deactivate RoomPage

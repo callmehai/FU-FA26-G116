@@ -1,0 +1,65 @@
+title UC-80e - Withdraw or End Calendar Share
+
+actor "Member" as Actor
+actor "User" as Other
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Actor->SharingPage: Open a share
+activate SharingPage
+
+SharingPage->SharingController: Withdraw or end calendar share
+activate SharingController
+SharingController->SharingService: withdrawOrEnd(shareId, actorId)
+activate SharingService
+
+SharingService->ShareRepository: Load the share
+activate ShareRepository
+ShareRepository->Database: Retrieve share
+activate Database
+Database-->ShareRepository: Share
+deactivate Database
+ShareRepository-->SharingService: Share
+deactivate ShareRepository
+
+alt Actor is not one of the two people - EX-1
+    SharingService-->SharingController: Not allowed
+    SharingController-->SharingPage: Not allowed
+    SharingPage-->Actor: (nothing disclosed)
+else Actor is one of the two people
+    alt Nothing to withdraw or end - EX-2
+        SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
+        SharingController-->SharingPage: MSG450 - This action is not allowed in the current state of the share.
+        SharingPage-->Actor: MSG450 - This action is not allowed in the current state of the share.
+    else Action is allowed
+        SharingService->ShareRepository: Close or end the share and audit entry
+        activate ShareRepository
+        ShareRepository->Database: Update share and audit record
+        activate Database
+        Database-->ShareRepository: Updated
+        deactivate Database
+        ShareRepository-->SharingService: Updated share
+        deactivate ShareRepository
+
+        SharingService->NotificationService: Notify the other side
+        activate NotificationService
+        NotificationService->Database: Record notification
+        activate Database
+        Database-->NotificationService: Notification recorded
+        deactivate Database
+        NotificationService-->SharingService: Other side notified
+        deactivate NotificationService
+
+        SharingService-->SharingController: Updated share
+        SharingController-->SharingPage: MSG438 or MSG451 - Request withdrawn or sharing ended.
+        SharingPage-->Actor: MSG438 or MSG451 - Request withdrawn or sharing ended.
+    end
+end
+
+deactivate SharingService
+deactivate SharingController
+deactivate SharingPage

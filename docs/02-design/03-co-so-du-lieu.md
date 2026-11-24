@@ -106,8 +106,8 @@ trong 30 giây.
 
 ### 5. Kho tệp tài liệu
 
-Tài liệu cuộc họp lưu trên kho đối tượng có API S3: SeaweedFS tự host ở server `app` (chỉ nằm trong mạng Docker, không mở cổng ra ngoài), Cloudflare R2 ở server demo `main` đã đóng băng, SeaweedFS ở máy dev
-([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)). Không làm phần tài liệu thì bỏ qua:
+Tài liệu cuộc họp lưu trên kho đối tượng có API S3: SeaweedFS tự host ở server `app` (chỉ nằm trong mạng Docker, không mở cổng ra ngoài,
+xem [deploy/README.md §9](../../deploy/README.md)) và SeaweedFS ở máy dev. Không làm phần tài liệu thì bỏ qua:
 backend vẫn chạy, tải tài liệu trả `503/MSG166`.
 
 `docker compose up -d` đã bật SeaweedFS ở `http://localhost:8333` (không xác thực). Tạo bucket một lần, rồi
@@ -123,7 +123,6 @@ dotnet user-secrets set "FileStorage:AccessKeyId" "dev" --project backend/TrustC
 dotnet user-secrets set "FileStorage:SecretAccessKey" "dev" --project backend/TrustCabinet.Web
 ```
 
-Muốn thử thẳng với R2 thì thay bằng endpoint, bucket và access key R2 (xem [deploy/README.md §9](../../deploy/README.md)).
 Test tự động không cần kho thật: chúng dùng bản giả trong bộ nhớ.
 
 ## Dữ liệu tham chiếu — bắt buộc phải seed

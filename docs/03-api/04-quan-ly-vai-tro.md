@@ -2,8 +2,8 @@
 
 > **Trạng thái: BE đã làm; FE đã cập nhật theo mục 8 và chờ Tester xác minh tích hợp.** Người làm BE:
 > Hoàng Đức Lộc (`SCRUM-63`). Quyết định nền: [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md).
-> Sequence diagram: [UC12a_CreateRole](../06-sequencediagram/role-management/UC12a_CreateRole.png),
-> [UC12b_UpdateRole](../06-sequencediagram/role-management/UC12b_UpdateRole.png), [UC12c_DeleteRole](../06-sequencediagram/role-management/UC12c_DeleteRole.png).
+> Sequence diagram: [UC11a_CreateRole](../06-sequencediagram/role-management/UC11a_CreateRole.png),
+> [UC11b_UpdateRole](../06-sequencediagram/role-management/UC11b_UpdateRole.png), [UC11c_DeleteRole](../06-sequencediagram/role-management/UC11c_DeleteRole.png).
 
 Quản trị viên **tạo vai trò mới, đổi tên, xoá** vai trò tự tạo, không phải chờ deploy. Vai trò là
 bảng `roles` khoá `Guid`; mọi chỗ trước đây dùng enum `SystemRole` giờ dùng `roleId`; bốn vai trò cũ

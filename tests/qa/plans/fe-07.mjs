@@ -9,7 +9,7 @@
 // docs/03-api/11-tai-lieu-cuoc-hop.md, 14-kho-tai-lieu-ca-nhan.md, the message catalogue, and the comments of
 // SCRUM-21/23/58/107/110/111/112/113/123/124. Deviations taken from there: uploads go through a browser queue, one
 // request per file (ADR-0033), so "all or nothing" is per file and the tray says "Đã tải lên n tệp" instead of a
-// MSG177/MSG161 toast; the storage limit is 10 GB for the whole system (ADR-0034); a library document already in the
+// MSG177/MSG161 toast; the storage limit is 250 GB for the whole system (ADR-0034, ADR-0084); a library document already in the
 // meeting is locked with "Đã có trong cuộc họp" in the general-group dialog only (SCRUM-124); the Secretary's list of
 // comments (SCRUM-106) was dropped by the PO; UC-42 (read confirmation) belongs to voting (FE-11) and is not tested.
 // A Guest reader (UC-04, an OTP by email) is not tested here.
@@ -587,7 +587,7 @@ export default {
       title: 'Thành viên tạo thư mục ở gốc kho, mở thư mục, thấy đường dẫn và trạng thái rỗng; cột bảng, hạn mức, tải lại giữ chỗ',
       steps: ['Đăng nhập thanhvien@, mở Kho tài liệu (/mgmt/documents)', 'Bấm "Thư mục mới", nhập tên, bấm "Tạo thư mục"', 'Mở thư mục vừa tạo, tải lại trang, về gốc bằng đường dẫn'],
       expected:
-        'Bảng có cột "Tên", "Kích thước", "Đang dùng", "Ngày tạo", "Thao tác"; hạn mức "x / 10 GB" kèm chú thích "Bộ nhớ tài liệu của cả hệ thống"; toast "Đã tạo thư mục." (MSG187); hộp tạo ở gốc ghi "Tạo thư mục trong Kho tài liệu."; thư mục hiện trong bảng với nhãn "Thư mục"; mở ra: tiêu đề là tên thư mục, đường dẫn "Kho tài liệu › tên", "Thư mục này chưa có gì."; tạo thư mục con trùng tên vẫn đạt (UC-41); tải lại vẫn ở thư mục đó; bấm "Kho tài liệu" về gốc; nút "Thư mục mới" bị khoá khi tên trống; không cuộn ngang',
+        'Bảng có cột "Tên", "Kích thước", "Đang dùng", "Ngày tạo", "Thao tác"; hạn mức "x / 250 GB" kèm chú thích "Bộ nhớ tài liệu của cả hệ thống"; toast "Đã tạo thư mục." (MSG187); hộp tạo ở gốc ghi "Tạo thư mục trong Kho tài liệu."; thư mục hiện trong bảng với nhãn "Thư mục"; mở ra: tiêu đề là tên thư mục, đường dẫn "Kho tài liệu › tên", "Thư mục này chưa có gì."; tạo thư mục con trùng tên vẫn đạt (UC-41); tải lại vẫn ở thư mục đó; bấm "Kho tài liệu" về gốc; nút "Thư mục mới" bị khoá khi tên trống; không cuộn ngang',
       async run(qa) {
         const name = qa.name(`FE-07 Hồ sơ ${rand()}`)
         try {
@@ -598,7 +598,7 @@ export default {
           await qa.expect(qa.page.getByText('Kho tài liệu của bạn chưa có gì.')).toBeVisible()
           // R1/FE-07 (DOC_FT01): cột bảng + hạn mức.
           if (qa.device !== 'phone') for (const h of ['Tên', 'Kích thước', 'Đang dùng', 'Ngày tạo', 'Thao tác']) await qa.expect(qa.page.getByRole('columnheader', { name: h })).toBeVisible()
-          await qa.expect(qa.page.getByText(/\/ 10 GB/)).toBeVisible()
+          await qa.expect(qa.page.getByText(/\/ 250 GB/)).toBeVisible()
           qa.expect(await qa.page.locator('.library-quota .info-tip').getAttribute('data-tooltip')).toBe('Bộ nhớ tài liệu của cả hệ thống')
           await press(qa, qa.page.getByRole('button', { name: 'Thư mục mới' }))
           const newRoot = dialog(qa, 'Thư mục mới')

@@ -78,11 +78,11 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 | *OAuth Provider* | Actor hệ thống ngoài: xác thực tài khoản Google và trả danh tính đã xác minh (UC-02) |
 | *AI Drafting Service* | Actor hệ thống: máy AI của nhóm chạy trong hệ thống, viết dự thảo 3 mục của cuộc họp từ bản gỡ băng, chương trình và kết quả biểu quyết (UC-58, PR #260). Chỉ nhận chữ, không nhận âm thanh; lời thoại không ra khỏi hệ thống (ADR-0054, BR-129) |
 | *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, thông báo |
-| *Cloudflare R2* | Actor hệ thống ngoài: kho đối tượng giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp (ADR-0024) |
+| *File Storage* | Actor hệ thống ngoài: kho đối tượng S3 (SeaweedFS tự host) giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp |
 
 **Khoá actor (05/11/2026): 7 actor người và 3 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
 Actor người: System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest. Actor ngoài:
-OAuth Provider, Resend Email, Cloudflare R2. Quy tắc để một bên là actor ngoài: nó là hệ thống
+OAuth Provider, Resend Email, File Storage. Quy tắc để một bên là actor ngoài: nó là hệ thống
 bên ngoài ranh giới TrustCabinet mà backend gọi ra (hoặc nó gọi vào) trong luồng của một UC. Vì vậy **không phải
 actor**: gỡ băng, Voice ID và máy AI viết dự thảo (chạy trên máy của nhóm, trong mạng nội bộ, không gọi dịch vụ AI
 bên ngoài, ADR-0026/0036/0054), LiveKit (hạ tầng
@@ -176,7 +176,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-37 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
 | UC-37a | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-085, BR-009–BR-011) | System Admin | Đã đặc tả | Độc lập |
 | UC-38 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-35 |
-| UC-39 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 100 MB mỗi lần, 10 MB mỗi tệp — họp 19/11/2026; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-37 |
+| UC-39 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 100 MB mỗi lần, 10 MB mỗi tệp — họp 19/11/2026; tổng kho cả hệ thống 250 GB — ADR-0084), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-37 |
 | UC-40 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-40a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-40b Đổi tên, UC-40c Chuyển thư mục | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-37 |
 | UC-41 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-41a Tạo, UC-41b Đổi tên, UC-41c Chuyển, UC-41d Xoá thư mục rỗng; lồng tối đa 5 cấp | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-37 |
 | UC-42 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-65 |

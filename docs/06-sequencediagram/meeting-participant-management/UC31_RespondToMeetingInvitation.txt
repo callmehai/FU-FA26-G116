@@ -1,0 +1,60 @@
+title UC-31 - Respond to Meeting Invitation
+
+actor "Invitee" as Invitee
+boundary "Meeting Detail Page" as DetailPage
+control ":Invitation Controller" as InvitationController
+control ":Invitation Service" as InvitationService
+participant ":Invitation Repository" as InvitationRepository
+database ":Database" as Database
+
+Invitee->DetailPage: Respond to invitation
+activate DetailPage
+
+DetailPage->InvitationController: Respond (meetingId, response)
+activate InvitationController
+
+InvitationController->InvitationService: respond(meetingId, response, invitee)
+activate InvitationService
+
+InvitationService->InvitationRepository: Find invitation and verify invitee
+activate InvitationRepository
+InvitationRepository->Database: Retrieve invitation and meeting
+activate Database
+Database-->InvitationRepository: Invitation and meeting
+deactivate Database
+InvitationRepository-->InvitationService: Invitation and meeting
+deactivate InvitationRepository
+
+alt Invitation is no longer answerable - EX-1
+    InvitationService-->InvitationController: MSG107 - This meeting invitation can no longer be answered.
+    InvitationController-->DetailPage: Return status error
+    DetailPage-->Invitee: MSG107 - This meeting invitation can no longer be answered.
+
+else Response value is invalid - EX-2
+    InvitationService-->InvitationController: MSG106 - Invalid meeting invitation response.
+    InvitationController-->DetailPage: Return validation error
+    DetailPage-->Invitee: MSG106 - Invalid meeting invitation response.
+
+else Different response after answering - EX-3
+    InvitationService-->InvitationController: MSG285 - You have already answered this invitation. Your answer cannot be changed.
+    InvitationController-->DetailPage: Return conflict
+    DetailPage-->Invitee: MSG285 - You have already answered this invitation. Your answer cannot be changed.
+
+else Valid response
+    InvitationService->InvitationRepository: Save response and response time (BR-046)
+    activate InvitationRepository
+    InvitationRepository->Database: Update invitation response
+    activate Database
+    Database-->InvitationRepository: Saved
+    deactivate Database
+    InvitationRepository-->InvitationService: Saved
+    deactivate InvitationRepository
+
+    InvitationService-->InvitationController: Response recorded
+    InvitationController-->DetailPage: MSG105 - Meeting invitation response recorded successfully.
+    DetailPage-->Invitee: MSG105 - Meeting invitation response recorded successfully.
+end
+
+deactivate InvitationService
+deactivate InvitationController
+deactivate DetailPage
