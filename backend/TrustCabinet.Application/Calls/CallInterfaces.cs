@@ -5,8 +5,8 @@ namespace TrustCabinet.Application.Calls;
 public interface ICallRepository
 {
     /// <summary>
-    /// The caller's standing in the meeting's room: an invited participant (any response except
-    /// Delegated) with an active account, of a meeting in a participant-visible status. Null
+    /// The caller's standing in the meeting's room: an invited participant with an active account,
+    /// of a meeting in a participant-visible status. Null
     /// otherwise, which the endpoints turn into the same 404 as an unknown meeting.
     /// </summary>
     Task<CallRoomAccess?> FindRoomAccessAsync(Guid meetingId, Guid userId, CancellationToken ct = default);

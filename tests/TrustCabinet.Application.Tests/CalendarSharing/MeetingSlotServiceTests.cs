@@ -106,7 +106,7 @@ public sealed class MeetingSlotServiceTests
         _shares.Share(_invitee, _finder, CalendarShareStatus.Effective, Today, Today.AddDays(10));
         var start = new DateTimeOffset(2026, 11, 18, 9, 0, 0, Vietnam);
         _busy.Rows.Add(new BusyAssignment(_invitee, AssignmentStatus.Current, MeetingRole.Member,
-            InvitationResponse.Accepted, null, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null,
+            InvitationResponse.Accepted, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null,
             null));
 
         var outcome = await Service().CreateDraftAsync(_finder, Draft(start));

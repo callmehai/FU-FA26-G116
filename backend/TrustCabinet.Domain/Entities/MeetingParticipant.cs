@@ -25,10 +25,6 @@ public class MeetingParticipant : Entity
 
     public InvitationResponse Response { get; set; } = InvitationResponse.Pending;
 
-    /// <summary>Set only when <see cref="Response"/> is Delegated: who attends in their place.</summary>
-    public Guid? DelegatedToUserId { get; set; }
-    public User? DelegatedToUser { get; set; }
-
     public DateTimeOffset? RespondedAt { get; set; }
 
     /// <summary>

@@ -25,7 +25,7 @@ public static class ReportLabels
         ("Unknown", "Chưa điểm danh"));
 
     public static readonly IReadOnlyDictionary<string, string> Response = Ordered(
-        ("Accepted", "Tham dự"), ("Declined", "Từ chối"), ("Delegated", "Ủy quyền"), ("Pending", "Chưa trả lời"));
+        ("Accepted", "Tham dự"), ("Declined", "Từ chối"), ("Pending", "Chưa trả lời"));
 
     public static readonly IReadOnlyDictionary<string, string> Conclusion = Ordered(
         ("Passed", "Thông qua"), ("NotPassed", "Không thông qua"), ("Deferred", "Hoãn"), (None, "Chưa kết luận"));

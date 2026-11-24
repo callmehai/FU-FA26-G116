@@ -7,8 +7,7 @@ namespace TrustCabinet.Domain.Participants;
 public static class ParticipantRules
 {
     public static Expression<Func<MeetingParticipant, bool>> CurrentExpression { get; } = p =>
-        p.AssignmentStatus == AssignmentStatus.Current && p.Role != MeetingRole.Guest
-        && p.Response != InvitationResponse.Delegated && p.DelegatedToUserId == null;
+        p.AssignmentStatus == AssignmentStatus.Current && p.Role != MeetingRole.Guest;
     public static Expression<Func<MeetingParticipant, bool>> ActiveExpression { get; } = BuildActiveExpression();
     private static readonly Func<MeetingParticipant, bool> IsCurrent = CurrentExpression.Compile();
     private static readonly Func<MeetingParticipant, bool> IsActive = ActiveExpression.Compile();

@@ -3,6 +3,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -137,8 +138,8 @@ public sealed class MeetingReadPolicyTests
 
     [Theory]
     [InlineData("member")]
-    [InlineData("delegated")]
-    [InlineData("delegateReference")]
+    [InlineData("removed")]
+    [InlineData("guestRole")]
     [InlineData("otherMeeting")]
     [InlineData("otherUser")]
     public void Unassigned_or_ineligible_secretary_cannot_read_prepublication_rejection_evidence(string scenario)
@@ -155,8 +156,8 @@ public sealed class MeetingReadPolicyTests
         switch (scenario)
         {
             case "member": participant.Role = MeetingRole.Member; break;
-            case "delegated": participant.Response = InvitationResponse.Delegated; break;
-            case "delegateReference": participant.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "removed": participant.AssignmentStatus = AssignmentStatus.Removed; break;
+            case "guestRole": participant.Role = MeetingRole.Guest; break;
             case "otherMeeting": participant.MeetingId = Guid.CreateVersion7(); break;
             case "otherUser": participant.UserId = Guid.CreateVersion7(); break;
         }
@@ -167,8 +168,8 @@ public sealed class MeetingReadPolicyTests
     }
 
     [Theory]
-    [InlineData(MeetingRole.Chair, "delegated")]
-    [InlineData(MeetingRole.Secretary, "delegateReference")]
+    [InlineData(MeetingRole.Chair, "removed")]
+    [InlineData(MeetingRole.Secretary, "guestRole")]
     [InlineData(MeetingRole.Member, "otherMeeting")]
     [InlineData(MeetingRole.Member, "otherUser")]
     public void Invalid_participant_assignment_never_grants_content_access(MeetingRole role, string scenario)
@@ -184,8 +185,8 @@ public sealed class MeetingReadPolicyTests
         };
         switch (scenario)
         {
-            case "delegated": participant.Response = InvitationResponse.Delegated; break;
-            case "delegateReference": participant.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "removed": participant.AssignmentStatus = AssignmentStatus.Removed; break;
+            case "guestRole": participant.Role = MeetingRole.Guest; break;
             case "otherMeeting": participant.MeetingId = Guid.CreateVersion7(); break;
             case "otherUser": participant.UserId = Guid.CreateVersion7(); break;
         }

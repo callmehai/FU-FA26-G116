@@ -3,6 +3,7 @@ using Npgsql;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 using TrustCabinet.Web.Tests.Access;
 
 namespace TrustCabinet.Web.Tests.Meetings;
@@ -280,15 +281,16 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner()
+    public async Task Publish_notifies_active_current_participants_and_passes_meeting_id_to_the_email_owner()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         var active = Participant(meeting, active: true, InvitationResponse.Accepted);
         var inactive = Participant(meeting, active: false, InvitationResponse.Pending);
-        var delegated = Participant(meeting, active: true, InvitationResponse.Delegated);
+        var removed = Participant(meeting, active: true, InvitationResponse.Accepted);
+        removed.AssignmentStatus = AssignmentStatus.Removed;
         meeting.Participants.Add(active);
         meeting.Participants.Add(inactive);
-        meeting.Participants.Add(delegated);
+        meeting.Participants.Add(removed);
 
         var result = await NewService().TransitionAsync(
             meeting.Id,
@@ -299,7 +301,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(MeetingStatus.Published, meeting.Status);
         Assert.Equal(3, _repository.Notifications.Count);
         Assert.Contains(_repository.Notifications, n => n.UserId == active.UserId);
-        Assert.DoesNotContain(_repository.Notifications, n => n.UserId == inactive.UserId || n.UserId == delegated.UserId);
+        Assert.DoesNotContain(_repository.Notifications, n => n.UserId == inactive.UserId || n.UserId == removed.UserId);
         Assert.All(_repository.Notifications, n =>
         {
             Assert.Equal(NotificationType.MeetingInvited, n.Type);
@@ -1024,8 +1026,8 @@ public sealed class MeetingWorkflowServiceTests
     [InlineData("member")]
     [InlineData("globalSecretary")]
     [InlineData("otherMeeting")]
-    [InlineData("delegated")]
-    [InlineData("delegationTarget")]
+    [InlineData("removed")]
+    [InlineData("guestRole")]
     public async Task Invalid_secretary_relationship_does_not_grant_prepublication_history(string invalid)
     {
         var meeting = GivenMeeting(MeetingStatus.Rejected);
@@ -1039,8 +1041,8 @@ public sealed class MeetingWorkflowServiceTests
                 secretary.User.RoleId = TrustCabinet.Web.Tests.Access.TestRoles.Secretary;
                 break;
             case "otherMeeting": secretary.MeetingId = Guid.CreateVersion7(); break;
-            case "delegated": secretary.Response = InvitationResponse.Delegated; break;
-            case "delegationTarget": secretary.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "removed": secretary.AssignmentStatus = AssignmentStatus.Removed; break;
+            case "guestRole": secretary.Role = MeetingRole.Guest; break;
         }
         meeting.Participants.Add(secretary);
 

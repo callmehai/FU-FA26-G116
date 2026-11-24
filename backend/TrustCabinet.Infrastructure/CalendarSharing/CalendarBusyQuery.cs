@@ -18,14 +18,13 @@ public sealed class CalendarBusyQuery(TrustCabinetDbContext db) : ICalendarBusyQ
             .Where(p => userIds.Contains(p.UserId)
                 && p.AssignmentStatus == AssignmentStatus.Current
                 && (p.Role == MeetingRole.Chair || p.Role == MeetingRole.Secretary || p.Role == MeetingRole.Member)
-                && p.Response != InvitationResponse.Delegated && p.DelegatedToUserId == null
                 && (p.Role == MeetingRole.Chair || p.Response != InvitationResponse.Declined)
                 && statuses.Contains(p.Meeting.Status)
                 && (p.Meeting.PlannedStartTime < to || (p.Meeting.ActualStartedAt != null && p.Meeting.ActualStartedAt < to))
                 && (p.Meeting.PlannedEndTime > from || p.Meeting.Status == MeetingStatus.InProgress
                     || (p.Meeting.ActualEndedAt != null && p.Meeting.ActualEndedAt > from)))
             .Select(p => new BusyAssignment(
-                p.UserId, p.AssignmentStatus, p.Role, p.Response, p.DelegatedToUserId,
+                p.UserId, p.AssignmentStatus, p.Role, p.Response,
                 p.Meeting.Status, p.Meeting.Sensitivity, p.Meeting.PlannedStartTime, p.Meeting.PlannedEndTime,
                 p.Meeting.ActualStartedAt, p.Meeting.ActualEndedAt))
             .ToListAsync(ct);

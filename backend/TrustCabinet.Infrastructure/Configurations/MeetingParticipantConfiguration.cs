@@ -48,11 +48,6 @@ public class MeetingParticipantConfiguration : IEntityTypeConfiguration<MeetingP
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(p => p.DelegatedToUser)
-            .WithMany()
-            .HasForeignKey(p => p.DelegatedToUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(p => p.AttendanceRecordedBy)
             .WithMany()
             .HasForeignKey(p => p.AttendanceRecordedById)

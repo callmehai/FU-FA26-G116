@@ -7,9 +7,8 @@ namespace TrustCabinet.Domain.Meetings;
 public static class MeetingInvitationRecipientPolicy
 {
     /// <summary>
-    /// Selects the distinct, active, non-delegated participant rows represented by the supplied
-    /// transaction snapshot. A delegate is eligible only when they also have their own qualifying
-    /// participant row.
+    /// Selects the distinct, active participant rows represented by the supplied
+    /// transaction snapshot.
     /// </summary>
     public static IReadOnlyList<MeetingParticipant> SelectSnapshot(
         IEnumerable<MeetingParticipant> participants)

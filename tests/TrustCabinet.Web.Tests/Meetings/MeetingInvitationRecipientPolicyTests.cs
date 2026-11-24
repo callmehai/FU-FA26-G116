@@ -1,19 +1,20 @@
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
 public sealed class MeetingInvitationRecipientPolicyTests
 {
     [Fact]
-    public void Delegate_is_not_added_by_reference_but_qualifies_with_own_active_non_delegated_row()
+    public void Removed_row_is_excluded_but_active_row_for_same_user_is_invited_once()
     {
         var meetingId = Guid.CreateVersion7();
         var delegateUser = NewUser("delegate@trustcabinet.local");
         var sourceParticipant = NewParticipant(
-            meetingId, NewUser("source@trustcabinet.local"), InvitationResponse.Delegated);
-        sourceParticipant.DelegatedToUserId = delegateUser.Id;
+            meetingId, NewUser("source@trustcabinet.local"), InvitationResponse.Accepted);
+        sourceParticipant.AssignmentStatus = AssignmentStatus.Removed;
         var participants = new List<MeetingParticipant> { sourceParticipant };
 
         Assert.Empty(MeetingInvitationRecipientPolicy.SelectSnapshot(participants));

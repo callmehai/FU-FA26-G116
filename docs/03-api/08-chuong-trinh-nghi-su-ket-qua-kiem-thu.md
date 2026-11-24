@@ -77,7 +77,7 @@ Các race được kiểm tra: create/create, start cùng/khác item, complete/c
 
 HTTP kiểm status/MSG, field errors, JSON sai kiểu/cấu trúc/trường hệ thống, UUID, body quá lớn kể cả không Content-Length, JWT thiếu/hết hạn, inactive, role mới với JWT cũ, document không thuộc meeting, no-op và metadata bị hạn chế. Catalogue scanner không bị sửa hoặc bỏ qua mã Agenda.
 
-SignalR kiểm join/leave/reconnect, outsider/meeting khác/chưa join, trạng thái đã commit khi nhận event, no-op/rollback không event, subscriber inactive/removed/delegated không nhận event tiếp, leave không ngắt connection khác của cùng user, token hết hạn đóng connection và query token không dùng được trên REST.
+SignalR kiểm join/leave/reconnect, outsider/meeting khác/chưa join, trạng thái đã commit khi nhận event, no-op/rollback không event, subscriber inactive/removed không nhận event tiếp, leave không ngắt connection khác của cùng user, token hết hạn đóng connection và query token không dùng được trên REST.
 
 ## Performance local
 

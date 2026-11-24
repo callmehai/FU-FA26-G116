@@ -12,7 +12,6 @@ public sealed record BusyAssignment(
     AssignmentStatus AssignmentStatus,
     MeetingRole Role,
     InvitationResponse Response,
-    Guid? DelegatedToUserId,
     MeetingStatus Status,
     Sensitivity Sensitivity,
     DateTimeOffset PlannedStartTime,
@@ -24,7 +23,7 @@ public sealed record BusyAssignment(
 public interface ICalendarBusyQuery
 {
     /// <summary>
-    /// The current Chair, Secretary and Member places of these people, not delegated and not declined (a Chair counts
+    /// The current Chair, Secretary and Member places of these people, not declined (a Chair counts
     /// even when declined), in meetings of a busy status that loosely overlap the range: starting before it ends, and
     /// ending after it starts or still running. The exact period is for the caller to decide. Pass UTC instants.
     /// </summary>

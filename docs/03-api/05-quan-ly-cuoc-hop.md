@@ -57,7 +57,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected`/`Published` trả `4
 | Start | Active current Chair **hoặc Secretary** (PO 20/11/2026); Published; đúng một active current Chair và ít nhất một active current Secretary | Có; không cần system capability |
 | End | Active current Chair; InProgress; không gate Secretary/Vote/attendance/agenda Pending | Có; không cần system capability |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair được đọc rejection reason; organizer-transfer metadata vẫn redacted |
-| Đọc history/rejection reason của Chair/Secretary | Participant current của chính meeting có role Chair hoặc Secretary, user active, chưa ủy quyền (`Response != Delegated`, `DelegatedToUserId = null`) | Có; không xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
+| Đọc history/rejection reason của Chair/Secretary | Participant current của chính meeting có role Chair hoặc Secretary, user active | Có; không xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
 | Đọc timeline redacted | Member từ Published; mọi quan hệ đọc hợp lệ khác không có full-history permission | Không có rejection reason hoặc organizer-transfer metadata |
 
 Người từng là Assigned Approver không giữ quyền đọc history chỉ vì assignment cũ xuất hiện trong
@@ -206,7 +206,7 @@ với người duyệt được chọn cho cycle mới; không bắt buộc `Ret
 `description` khác giá trị đang lưu thì trả `400 MSG31` với `errors` đúng các field đó. Giờ bắt đầu mới
 phải ở tương lai (BR-015). Có thay đổi thì trong cùng transaction: lưu lịch mới, giữ `Published`, ghi
 một history `Reschedule` (`Published → Published`) và một notification `MeetingRescheduled` cho mỗi
-participant active, chưa Delegated, trừ chính người dời lịch (UC-14); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
+participant active, trừ chính người dời lịch (UC-14); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
 Sửa hoặc dời lịch thành công phát `meetingChanged` trên `/hubs/meetings` (xem dưới).
@@ -291,9 +291,7 @@ Publish khóa meeting, kiểm tra quyền, trạng thái Approved, đúng một 
 Secretary active trong transaction trước khi ghi bất kỳ thay đổi nào. Invitation response không
 ảnh hưởng readiness.
 
-Publish tạo notification: chỉ participant có user active và `Response != Delegated`;
-không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
-hợp lệ để nhận notification. Người thực hiện Publish không nhận notification in-app, kể cả khi họ
+Publish tạo notification cho participant active (assignment current, user còn hoạt động). Người thực hiện Publish không nhận notification in-app, kể cả khi họ
 là participant. Email dùng producer SCRUM-15: gọi
 `QueueForPublishedMeetingAsync(meetingId)` sau khi transaction công bố đã commit; producer đọc
 meeting đã Published và chọn **toàn bộ** participant có user active, không lọc `Response` và không
@@ -335,7 +333,7 @@ vì EF paging không thể biểu diễn vị trí đó an toàn.
 
 ### Dữ liệu Development để kiểm thử workflow
 
-Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba participant active/chưa Delegated,
+Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba participant active,
 để test API trước khi endpoint quản lý agenda và participant được tích hợp:
 
 - ID: `0199ac54-d000-7000-8000-000000000019`.

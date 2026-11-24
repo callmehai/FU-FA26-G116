@@ -48,9 +48,9 @@ select json_build_object(
       left join meeting_guest_invitations g on g.id = a.presenter_guest_invitation_id
     where a.meeting_id = '%(id)s'),
   'participants', (select coalesce(json_agg(json_build_object('name', u.full_name, 'role', p.role,
-      'response', p.response, 'attendance', p.attendance, 'current', p.assignment_status = 'Current' and p.removed_at is null,
-      'delegatedTo', d.full_name) order by p.role, u.full_name), '[]')
-    from meeting_participants p join users u on u.id = p.user_id left join users d on d.id = p.delegated_to_user_id
+      'response', p.response, 'attendance', p.attendance, 'current', p.assignment_status = 'Current' and p.removed_at is null)
+       order by p.role, u.full_name), '[]')
+    from meeting_participants p join users u on u.id = p.user_id
     where p.meeting_id = '%(id)s'),
   'guests', (select coalesce(json_agg(json_build_object('name', coalesce(self_declared_display_name, invited_name),
       'invitedName', invited_name, 'jobTitle', self_declared_job_title, 'response', response, 'attendance', attendance,
