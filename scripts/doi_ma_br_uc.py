@@ -353,7 +353,7 @@ def cleanup(new, old):
     s = re.sub(r"\s*[,;/]\s*" + GONE + r"|" + GONE + r"\s*[,;/]\s*", "", s)
     s = s.replace(GONE, "")
     s = dedupe_brackets(s)
-    s = re.sub(r"\(\s*(?:[,;/]\s*)*\)", "", s)               # ( ) or (, )
+    s = re.sub(r"\((?:\s*[,;/])+\s*\)|\(\s+\)", "", s)  # ( ) or (, ), never a call's ()
     s = re.sub(r"\(\s*[,;/]\s*", "(", s)                     # (, BR-013 -> (BR-013
     s = re.sub(r"\s*[,;/]\s*\)", ")", s)                     # BR-013, ) -> BR-013)
     s = re.sub(r"(?<=[\w)])\s+\.", ".", s) if s != old else s

@@ -203,7 +203,7 @@ export default {
         await signInOnScreen(qa, `qa-khong-ton-tai-${RUN}@${DOMAIN}`, 'Sai-mat-khau-QA-123')
         qa.expect((await answer2).status()).toBe(401)
         await qa.expect(alert).toHaveText(MSG01)
-        qa.expect(await alert.innerText, 'the two failures read differently (BR-004)').toBe(wrongPassword)
+        qa.expect(await alert.innerText(), 'the two failures read differently (BR-004)').toBe(wrongPassword)
         await qa.expect(qa.page).toHaveURL(/\/login/)
         await qa.shot('email-khong-ton-tai')
         await noSidewaysScroll(qa)

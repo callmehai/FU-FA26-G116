@@ -583,7 +583,7 @@ export default {
         const { m, invited, removed } = await inviteThenRemove(qa)
         qa.expect(invited.length, 'qa-fe13-a@ got one invitation when added (BR-031, BR-032)').toBe(1)
         qa.expect(removed.length, 'qa-fe13-a@ got one withdrawal when removed (BR-031, BR-032)').toBe(1)
-        qa.expect(removed[0].targetType, 'the withdrawal links to the meeting (UC-30c)').toBeNull
+        qa.expect(removed[0].targetType, 'the withdrawal links to the meeting (UC-30c)').toBeNull()
         qa.expect(removed[0].body).not.toMatch(/\/mgmt\/|https?:/)
         ok(qa, await get('a', `/api/notifications/${invited[0].id}/target`), 404, 'target of the old invitation')
         await home(qa)

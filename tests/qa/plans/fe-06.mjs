@@ -428,7 +428,7 @@ export default {
           const r = await roster(qa, 'secretary', meeting.id)
           const guests = r.items.filter((i) => i.kind === 'Guest')
           qa.expect(guests.length, 'exactly one guest invitation').toBe(1)
-          qa.expect(guests[0].role, 'a guest has no meeting role (UC-30a/POST-3)').toBeNull
+          qa.expect(guests[0].role, 'a guest has no meeting role (UC-30a/POST-3)').toBeNull()
           qa.expect(guests[0].response).toBe('Pending')
         } finally {
           await done(qa, meeting)
