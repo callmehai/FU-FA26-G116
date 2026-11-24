@@ -82,7 +82,7 @@ Table of Contents
 | 24/11/2026 | M, A | HuyNQ | [decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12). |
 | 24/11/2026 | M | LocHD | [BF review] BF-02 to BF-04 aligned with the built system: BF-02 adds finding a common time (UC-81) and cancelling (UC-22); BF-03 adds room recording (UC-52); BF-04 adds summary approval (UC-61) and minutes from the fixed template (UC-70). |
 | 24/11/2026 | M | HuyNQ | [PR #531] UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage (ADR-0084); §1, §4.1 and §4.3 updated. |
-| 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 connects to the actor, 7 <<extend>> remain. |
+| 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
 
 *A - Added M - Modified D - Deleted
 
