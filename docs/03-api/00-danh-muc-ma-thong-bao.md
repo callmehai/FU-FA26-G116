@@ -140,7 +140,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG161` | 201 | Tải lên thành công, kèm `addedCount` và `documents` | Đã thêm tài liệu vào cuộc họp. |
 | `MSG162` | 403 | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền thêm tài liệu vào cuộc họp này. |
 | `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 10 MB (UC-36a, UC-39, NFR, họp 19/11/2026; trước là 50 MB); `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB. |
-| `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
+| `MSG166` | 503 | Kho tệp/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG172` | 409 | Cuộc họp `Ended`, kể cả khi vừa kết thúc trong lúc tải | Không thể thêm tài liệu sau khi cuộc họp đã kết thúc. |
 | `MSG349` | 409 | Cuộc họp `Cancelled` (BR-028) | Cuộc họp đã huỷ nên không thay đổi được nữa. |
 | `MSG174` | 404 | Không xem được cuộc họp hoặc cuộc họp không tồn tại (cùng body) | Không truy cập được cuộc họp này. |
@@ -173,7 +173,7 @@ cấp thêm sau lượt test E2E 02/11/2026.
 | `MSG175` | 404 | Thư mục hoặc tài liệu không tồn tại, của người khác, hoặc kho của tài khoản còn hoạt động khi Quản trị viên đọc (cùng body) | Mục này không còn trong kho tài liệu của bạn. |
 | `MSG176` | 500 | GET kho lỗi đọc DB | Không tải được kho tài liệu của bạn. Vui lòng thử lại. |
 | `MSG177` | 201 | Tải lên kho thành công, kèm `addedCount` và `documents` | Đã tải tài liệu lên kho của bạn. |
-| `MSG178` | 503 | Tải lên kho: R2/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
+| `MSG178` | 503 | Tải lên kho: kho tệp/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG179` | 404 | Thư mục đích (tải lên, tạo thư mục, chuyển) không tồn tại hoặc của người khác | Thư mục đích không còn trong kho tài liệu của bạn. |
 | `MSG180` | 200 | Xoá tài liệu khỏi kho | Đã xoá tài liệu khỏi kho của bạn. |
 | `MSG181` | 503 | Xoá tài liệu lỗi DB | Không xoá được tài liệu. Kho tài liệu của bạn không thay đổi. |
@@ -193,7 +193,7 @@ cấp thêm sau lượt test E2E 02/11/2026.
 | `MSG196` | 409 | Xoá thư mục còn tài liệu hoặc thư mục con (BR-084) | Chỉ xoá được thư mục rỗng. |
 | `MSG197` | 200 | Xoá thư mục | Đã xoá thư mục. |
 | `MSG198` | 503 | Xoá thư mục lỗi DB | Không xoá được thư mục. Thư mục không thay đổi. |
-| `MSG346` | 409 | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ cho lần tải (ADR-0034, `FileStorage:MaxTotalGigabytes`, mặc định 10 GB): vào kho (UC-39), vào cuộc họp hoặc vào mục nghị sự (UC-36a, UC-36b AF-1); không tệp nào được thêm | Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên. |
+| `MSG346` | 409 | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ cho lần tải (ADR-0034, ADR-0084, `FileStorage:MaxTotalGigabytes`, mặc định 250 GB): vào kho (UC-39), vào cuộc họp hoặc vào mục nghị sự (UC-36a, UC-36b AF-1); không tệp nào được thêm | Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên. |
 | `MSG347` | 400 | Đổi tên tài liệu: tên trống hoặc chỉ có phần đuôi, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
 | `MSG348` | 400 | Tên thư mục quá 400 ký tự; góp ý quá 4.000 ký tự (SCRUM-23) | Nội dung vượt quá độ dài cho phép. |
 
@@ -1089,7 +1089,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG202` | UC-38 / EX-3 · Đã triển khai SCRUM-23 | Unable to add the comment. No comment was saved. Please try again. |
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
 | `MSG204` | UC-38 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
-| `MSG346` | UC-36a, UC-36b, UC-39, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
+| `MSG346` | UC-36a, UC-36b, UC-39, PO 27/10/2026 (hạn mức của cả hệ thống, ADR-0034; 250 GB từ 24/11/2026, ADR-0084) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
 | `MSG347` | UC-40b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The document name is not valid. It must not be blank and must keep the.pdf or.docx extension of the file. |
 | `MSG348` | UC-41a, UC-41b, UC-38 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23 | The text is longer than allowed. |
 
