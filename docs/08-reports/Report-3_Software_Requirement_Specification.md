@@ -256,9 +256,7 @@ Internal user assigned to a meeting, together with the meeting role, the invitat
 | 9 | RemovedAt | timestamptz |  | Yes | Date and time the participant was removed from the meeting. |
 | 10 | AttendanceRecordedById | uuid | FK | Yes | Secretary who saved the official attendance (references User). Empty until recorded. |
 | 11 | AttendanceRecordedAt | timestamptz |  | Yes | Time official attendance was last saved. Empty until recorded. |
-
 | No | Field | Data Type | Key | Nullable | Description |
-| --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the additional meeting permission. |
 | 2 | MeetingParticipantId | uuid | FK | No | Current internal participant assignment receiving the permission; the permission applies only to that assignment’s Meeting. |
 | 3 | PermissionCode | string |  | No | Identifier from the system-defined Meeting permission catalogue. ViewParticipants and ViewResponses are examples, not the only possible additional permissions. The catalogue and grant matrix have not been finalized. |
@@ -2870,7 +2868,7 @@ Field Description
 
 #### 3.3 System Audit Log
 
-#### Note: the current screen does not export CSV, does not show the values before and after a change and has no “5 consecutive attempts” rule (SCRUM-16 D3, D5, D6); the screen specification below is waiting to be updated.
+Note: the current screen does not export CSV, does not show the values before and after a change and has no “5 consecutive attempts” rule (SCRUM-16 D3, D5, D6); the screen specification below is waiting to be updated.
 
 The System Audit Log screen is reached from Administration › Audit Log [Quản trị › Nhật ký hệ thống] in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, open the before/after details of a change and export the result to CSV (UC-12).
 
