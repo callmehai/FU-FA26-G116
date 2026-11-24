@@ -132,7 +132,7 @@ function Enrolled({
   const toast = useToast()
   const [recording, setRecording] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
-  // UC-81e step 2: a sample is erased for good, so the person confirms first. Holds its number in the list.
+  // UC-56e step 2: a sample is erased for good, so the person confirms first. Holds its number in the list.
   const [erasing, setErasing] = useState<{ id: string; n: number } | null>(null)
   const full = profile.samples.length >= profile.maxSamples
   const player = useSamplePlayer()

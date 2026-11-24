@@ -1,13 +1,13 @@
-# Điểm danh — Backend SCRUM-26 / UC-31
+# Điểm danh — Backend SCRUM-26 / UC-33
 
-Ngày 20/10/2026. Nguồn nghiệp vụ: Jira SCRUM-26, UC-31, BR-116/170/171/172/178, ADR-0016/0017.
+Ngày 20/10/2026. Nguồn nghiệp vụ: Jira SCRUM-26, UC-33, BR-043, BR-056, BR-057, ADR-0016/0017.
 Quyết định concurrency: [ADR-0025](../05-decisions/0025-version-rieng-cho-diem-danh.md).
 [Bàn giao FE/BA](10-diem-danh-ban-giao.md), [kiểm thử](10-diem-danh-ket-qua-kiem-thu.md).
 
 ## 1. Quyền và phạm vi
 
 - Internal dùng JWT hiện có; Guest đi qua `IMeetingGuestIdentityResolver` và `IParticipantGuestAccess` của UC-04. Adapter mặc định từ chối Guest, không phát session giả.
-- GET theo quyền đọc meeting/roster UC-27 trên main: owner, approver và thành phần hiện hành theo MeetingReadPolicy; Guest phải có invitation current, meeting đã công bố và session đã xác minh, chưa hết hạn/revoke. Internal phải active.
+- GET theo quyền đọc meeting/roster UC-29 trên main: owner, approver và thành phần hiện hành theo MeetingReadPolicy; Guest phải có invitation current, meeting đã công bố và session đã xác minh, chưa hết hạn/revoke. Internal phải active.
 - Mọi người đọc roster được xem invitationResponse theo chính sách SCRUM-20 mới; không còn grants riêng, nên `permissions.canViewInvitationResponses` luôn là `true` và chỉ còn để tương thích.
 - POST chỉ Secretary hiện hành, tài khoản active, Meeting InProgress. Re-authorize ở mỗi lần lưu; token không thay thế phân quyền.
 - API che tài nguyên không được biết bằng 404; người được đọc meeting nhưng không được ghi nhận 403. User inactive nhận 403, chưa xác thực 401.
@@ -41,7 +41,7 @@ Query duy nhất: `page` mặc định 1, tối thiểu 1; `pageSize` mặc đ�
 }
 ```
 
-`kind` là Internal hoặc Guest. Guest có role/isActive null, displayName từ profile được adapter trả hoặc fallback InvitedName. Internal inactive vẫn xuất hiện nếu assignment current. Không trả email hay credential. Sắp xếp tên (ordinal ignore-case), kind, ID; tổng tính trên cả roster, không chỉ trang. `totals` chỉ là trường kỹ thuật của API cho BE/test (code `AttendanceService` vẫn trả); Report 3 UC-31/BR-172 không đặc tả tổng và FE không hiển thị tổng (SCRUM-207, đã ghi ở SCRUM-26).
+`kind` là Internal hoặc Guest. Guest có role/isActive null, displayName từ profile được adapter trả hoặc fallback InvitedName. Internal inactive vẫn xuất hiện nếu assignment current. Không trả email hay credential. Sắp xếp tên (ordinal ignore-case), kind, ID; tổng tính trên cả roster, không chỉ trang. `totals` chỉ là trường kỹ thuật của API cho BE/test (code `AttendanceService` vẫn trả); Report 3 UC-33 không đặc tả tổng và FE không hiển thị tổng (SCRUM-207, đã ghi ở SCRUM-26).
 
 | Dữ liệu lưu | attendance | legacyAttendance | Bộ đếm |
 |---|---|---|---|
@@ -133,7 +133,7 @@ Chỉ áp dụng/rollback trong DB test riêng trong lần triển khai này. Kh
 
 Màn hình theo AI-eCabinet: điểm danh là một cột trong bảng thành phần, chọn là lưu, không có nút Lưu.
 
-- **Trang chi tiết**, tab "Thành phần tham dự": cột "Điểm danh" chỉ hiện khi Meeting `InProgress` hoặc `Ended`; trước đó FE không gọi GET. Thư ký (`canRecordAttendance`) thấy ô chọn nhỏ, viền nét đứt ghi "Điểm danh" khi chưa chọn, chọn "Có mặt" hoặc "Vắng" là lưu; người khác thấy chấm màu kèm chữ "Có mặt" / "Vắng" hoặc chữ xám "Chưa điểm danh". Người ghi và thời điểm nằm trong tooltip. Không hiện tổng Có mặt/Vắng (Report 3, UC-31, BR-172); `totals` trong response chỉ để BE/test dùng, FE không hiển thị.
+- **Trang chi tiết**, tab "Thành phần tham dự": cột "Điểm danh" chỉ hiện khi Meeting `InProgress` hoặc `Ended`; trước đó FE không gọi GET. Thư ký (`canRecordAttendance`) thấy ô chọn nhỏ, viền nét đứt ghi "Điểm danh" khi chưa chọn, chọn "Có mặt" hoặc "Vắng" là lưu; người khác thấy chấm màu kèm chữ "Có mặt" / "Vắng" hoặc chữ xám "Chưa điểm danh". Người ghi và thời điểm nằm trong tooltip. Không hiện tổng Có mặt/Vắng (Report 3, UC-33); `totals` trong response chỉ để BE/test dùng, FE không hiển thị.
 - **Phòng họp**: biểu tượng "Điểm danh" riêng ở góc dưới bên phải, cạnh "Người dự" và "Chat", mở panel cùng dữ liệu, cùng ô điều khiển; Thư ký điểm danh mà không rời phòng (Report 3 mục 8.3).
 - Hai nơi dùng chung `useAttendance` và `AttendanceCell` (ADR-0011). FE đọc cả roster bằng `pageSize=100`, nối trang khi dài hơn, ghép vào bảng theo `id` (assignment hoặc invitation ID).
 - Mỗi lần bấm gửi đúng một entry với `rowVersion` đang hiển thị. Không có bản nháp nên không có gì để giữ khi `409/MSG151`: FE hiện thông báo của BE, đọc lại, người dùng bấm lại nếu vẫn muốn. `409/MSG149`, `503/MSG150` và `403` (không còn là Thư ký) cũng hiện thông báo rồi đọc lại. Không tự thử lại.

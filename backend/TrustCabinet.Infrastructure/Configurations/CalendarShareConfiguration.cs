@@ -17,7 +17,7 @@ public class CalendarShareConfiguration : IEntityTypeConfiguration<CalendarShare
         builder.Property(s => s.PendingLevel).HasConversion<string>().HasMaxLength(16);
         builder.Ignore(s => s.HasPendingChange);
 
-        // BR-423: at most one Pending or Effective share per owner → viewer pair. Directed: A viewing B's calendar does not
+        // BR-142, BR-143: at most one Pending or Effective share per owner → viewer pair. Directed: A viewing B's calendar does not
         // stop B asking for A's. Closed rows (declined, withdrawn, ended, stopped) stay as history and block nothing.
         builder.HasIndex(s => new { s.OwnerId, s.ViewerId })
             .IsUnique()

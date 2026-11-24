@@ -8,8 +8,8 @@ using TrustCabinet.Domain.Votes;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// Votes during a meeting (SCRUM-28, UC-52a–UC-57), their documents and the read confirmations ballots wait for
-/// (SCRUM-96, UC-74, UC-76a, UC-76b). Contract in docs/03-api/15-bieu-quyet.md.
+/// Votes during a meeting (SCRUM-28, UC-62a–UC-67), their documents and the read confirmations ballots wait for
+/// (SCRUM-96, UC-42, UC-68a, UC-68b). Contract in docs/03-api/15-bieu-quyet.md.
 /// </summary>
 public static class VoteEndpoints
 {
@@ -90,7 +90,7 @@ public static class VoteEndpoints
         Register(VoteOperation.Close, "POST", "/{voteId:guid}/close");
         Register(VoteOperation.RecordConclusion, "POST", "/{voteId:guid}/conclusion");
 
-        // UC-76a: from the meeting's documents, from the caller's library (AF-2), or uploaded (AF-1); UC-76b.
+        // UC-68a: from the meeting's documents, from the caller's library (AF-2), or uploaded (AF-1); UC-68b.
         Register(VoteOperation.AttachDocuments, "POST", "/{voteId:guid}/documents");
         Register(VoteOperation.AttachFromLibrary, "POST", "/{voteId:guid}/documents/from-library");
         group.MapPost("/{voteId:guid}/documents/upload", AttachUploadAsync);
@@ -103,7 +103,7 @@ public static class VoteEndpoints
             return Map(outcome, meetingId, VoteOperation.DetachDocument, meetingDocumentId: meetingDocumentId);
         });
 
-        // UC-74: on the document, because one confirmation counts for every vote that links it (BR-291).
+        // UC-42: on the document, because one confirmation counts for every vote that links it (UC-42).
         app.MapGroup("/api/meetings/{meetingId:guid}/documents/{meetingDocumentId:guid}/read-confirmation")
             .RequireAuthorization().AddEndpointFilter(NoStore)
             .MapPost("", async (Guid meetingId, Guid meetingDocumentId, HttpContext context, IVoteService service,
@@ -135,7 +135,7 @@ public static class VoteEndpoints
         return await next(context);
     }
 
-    /// <summary>UC-76a AF-1: the same checks and write order as uploading to the meeting (UC-33a AF-1).</summary>
+    /// <summary>UC-68a AF-1: the same checks and write order as uploading to the meeting (UC-36a AF-1).</summary>
     private static async Task<IResult> AttachUploadAsync(Guid meetingId, Guid voteId, HttpContext context, IVoteService service,
         IMeetingGuestIdentityResolver identities, MeetingDocumentChangePublisher documents, ILoggerFactory logs,
         CancellationToken ct)
@@ -183,7 +183,7 @@ public static class VoteEndpoints
     private static ParticipantActor Actor(HttpContext context, IMeetingGuestIdentityResolver identities)
         => new(CapabilityGate.CurrentUserId(context.User), identities.Resolve(context.User));
 
-    /// <summary>Create and update alike; <c>openImmediately</c> opens from the form (UC-53 AF-3).</summary>
+    /// <summary>Create and update alike; <c>openImmediately</c> opens from the form (UC-63 AF-3).</summary>
     private sealed record DraftBody(string? Title, string? Description, string?[]? Options, bool? IsAnonymous,
         string?[]? EligibleRoles, bool? OpenImmediately);
     private sealed record BallotBody(Guid? OptionId);
@@ -192,7 +192,7 @@ public static class VoteEndpoints
     private sealed record LibraryBody(Guid[]? DocumentIds);
     private sealed record ReadBody(bool? LastPageReached);
 
-    /// <summary><paramref name="operation"/> null is a read confirmation (UC-74).</summary>
+    /// <summary><paramref name="operation"/> null is a read confirmation (UC-42).</summary>
     private static async Task<VoteInput> ParseAsync(HttpRequest request, VoteOperation? operation, CancellationToken ct)
     {
         // A body that cannot be read is the operation's own "nothing valid was sent".
@@ -284,7 +284,7 @@ public static class VoteEndpoints
                 VoteFailure.ConclusionRecorded => (409, Msg233ConclusionRecorded, "Kết luận biểu quyết đã được ghi và không thể sửa."),
                 VoteFailure.ConclusionDenied => (409, Msg234ConclusionDenied, "Chỉ Chủ toạ hiện hành được ghi kết luận cho biểu quyết đã đóng, khi cuộc họp đang diễn ra hoặc đã kết thúc."),
                 VoteFailure.DocumentsUnread => (409, Msg252DocumentsUnread, "Hãy xác nhận đã đọc mọi tài liệu của biểu quyết trước khi bỏ phiếu."),
-                // Removed, of another meeting, or none selected: the same answer (BR-211).
+                // Removed, of another meeting, or none selected: the same answer (BR-074–BR-076).
                 VoteFailure.DocumentNotInMeeting => (404, Msg170NotInMeeting, "Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu."),
                 VoteFailure.DocumentAlreadyAttached => (409, Msg266AlreadyAttached, "Một hoặc nhiều tài liệu đã chọn đã được gắn vào biểu quyết."),
                 VoteFailure.DocumentNotAttached => (404, Msg269NotAttached, "Tài liệu này không còn gắn với biểu quyết. Hãy tải lại danh sách."),
@@ -295,7 +295,7 @@ public static class VoteEndpoints
                 _ => opening ? (503, Msg221OpenFailed, "Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại.") : operation switch
                 {
                     VoteOperation.AttachDocuments => (503, Msg267AttachFailed, "Không gắn được tài liệu. Chưa có tài liệu nào được gắn. Vui lòng thử lại."),
-                    // AF-1 and AF-2 add documents to the meeting as well, so a failed save is UC-33a's.
+                    // AF-1 and AF-2 add documents to the meeting as well, so a failed save is UC-36a's.
                     VoteOperation.AttachFromLibrary or VoteOperation.AttachUpload => (503, Msg166AddFailed, "Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại."),
                     VoteOperation.DetachDocument => (503, Msg270DetachFailed, "Không gỡ được tài liệu. Chưa có thay đổi nào. Vui lòng thử lại."),
                     VoteOperation.Create => (503, Msg214CreateFailed, "Không tạo được biểu quyết nháp. Chưa có nháp nào được tạo. Vui lòng thử lại."),
@@ -306,7 +306,7 @@ public static class VoteEndpoints
                     _ => (503, Msg236ConclusionFailed, "Không ghi được kết luận biểu quyết. Chưa có kết luận nào được ghi. Vui lòng thử lại.")
                 }
             };
-            // MSG252 lists what is still to read, so the voter can open each one (UC-55 EX-8).
+            // MSG252 lists what is still to read, so the voter can open each one (UC-65 EX-8).
             return result.Failure == VoteFailure.DocumentsUnread
                 ? Results.Json(new { code, message, documents = result.Data }, statusCode: status)
                 : Results.Json(new { code, message, errors = result.Errors }, statusCode: status);
@@ -337,7 +337,7 @@ public static class VoteEndpoints
             ? Results.Created($"/api/meetings/{meetingId}/votes/{result.VoteId}", body) : Results.Ok(body);
     }
 
-    /// <summary>UC-74. Already confirmed is a success too, with the original time (AF-1).</summary>
+    /// <summary>UC-42. Already confirmed is a success too, with the original time (AF-1).</summary>
     private static IResult MapRead(VoteOutcome result, Guid meetingId)
     {
         if (result.Failure == VoteFailure.Inactive) return Results.Forbid();
@@ -351,7 +351,7 @@ public static class VoteEndpoints
         {
             // A meeting the caller cannot see, a removed document and one no visible vote links: the same answer.
             VoteFailure.DocumentUnavailable => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
-            // Only a voter of an Open vote that links the document confirms it; UC-55's codes for the same situations.
+            // Only a voter of an Open vote that links the document confirms it; UC-65's codes for the same situations.
             VoteFailure.NotEligible => (409, Msg224NotEligible, "Bạn không có trong danh sách được bỏ phiếu của biểu quyết này."),
             VoteFailure.NotAccepting => (409, Msg225NotAccepting, "Biểu quyết này không còn nhận phiếu."),
             VoteFailure.LastPageNotReached => (400, Msg254LastPageNotReached, "Hãy cuộn tới trang cuối của tài liệu trước khi xác nhận đã đọc."),

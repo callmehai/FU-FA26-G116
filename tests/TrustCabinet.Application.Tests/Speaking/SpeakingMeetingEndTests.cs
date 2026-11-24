@@ -6,7 +6,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Application.Tests.Speaking;
 
-/// <summary>SCRUM-178 (CA-13): ending the meeting ends every open request, inside the caller's transaction (BR-337).</summary>
+/// <summary>SCRUM-178 (CA-13): ending the meeting ends every open request, inside the caller's transaction (BR-104–BR-106).</summary>
 public sealed class SpeakingMeetingEndTests
 {
     private static readonly DateTimeOffset EndedAt = new(2026, 11, 16, 9, 0, 0, TimeSpan.Zero);

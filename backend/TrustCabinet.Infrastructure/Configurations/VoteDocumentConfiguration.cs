@@ -16,7 +16,7 @@ public class VoteDocumentConfiguration : IEntityTypeConfiguration<VoteDocument>
             .HasForeignKey(l => l.VotingSessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Dropping the link never drops the document: it stays in the meeting (BR-305).
+        // Dropping the link never drops the document: it stays in the meeting (UC-68b).
         builder.HasOne(l => l.MeetingDocument)
             .WithMany(d => d.VoteLinks)
             .HasForeignKey(l => l.MeetingDocumentId)

@@ -154,7 +154,7 @@ internal sealed class GuestAccessService(IGuestSessionRepository sessions, IGues
                     ExpiresAt = now.AddHours(limits.SessionLifetimeHours),
                 };
                 sessions.AddSession(session);
-                // BR-444 — no actor (a Guest has no account); the invitation goes under the key the audit log reads Guests by.
+                // BR-009–BR-011 — no actor (a Guest has no account); the invitation goes under the key the audit log reads Guests by.
                 audit.Add(new AuditLogEntry
                 {
                     Action = AuditActions.GuestVerified, ObjectType = AuditActions.GuestSessionObjectType, ObjectId = session.Id,
@@ -218,7 +218,7 @@ internal sealed class GuestAccessService(IGuestSessionRepository sessions, IGues
                     return declared == name && current.Invitation.SelfDeclaredJobTitle == title
                         ? new(Data: View(current))
                         : new(GuestAccessFailure.ProfileLocked);
-                // BR-180: shown as self-declared; InvitedName and Email stay the invitation evidence.
+                // UC-04: shown as self-declared; InvitedName and Email stay the invitation evidence.
                 current.Invitation.SelfDeclaredDisplayName = name;
                 current.Invitation.SelfDeclaredJobTitle = title;
                 current.Invitation.UpdatedAt = clock.GetUtcNow();

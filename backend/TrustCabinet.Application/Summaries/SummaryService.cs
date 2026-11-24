@@ -312,7 +312,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
 
     private static SummaryPerson? Person(User? user) => user is null ? null : new(user.Id, user.FullName);
 
-    /// <summary>The current Chair or Secretary (BR-357's pair): they own the record of the meeting.</summary>
+    /// <summary>The current Chair or Secretary (BR-114, BR-115's pair): they own the record of the meeting.</summary>
     internal static bool Manages(Meeting meeting, Guid actor) => meeting.Participants.Any(p => p.MeetingId == meeting.Id
         && p.UserId == actor && (p.Role == MeetingRole.Chair || p.Role == MeetingRole.Secretary) && ParticipantRules.Active(p));
 

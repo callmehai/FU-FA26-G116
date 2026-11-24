@@ -8,7 +8,7 @@ Branch `refactor/Synchronize-Agenda-according-to-PO-remove-duration-remove-seque
 - Secretary sửa mọi field ở Pending/InProgress/Done khi Meeting còn cho planning. Chỉ xóa Pending. Reorder gồm cả Done, giữ gap/token/no-op. Chair bắt đầu bất kỳ Pending; database vẫn chặn nhiều current.
 - Presenter chỉ dùng current internal User ID hoặc Guest invitation ID chưa revoked. Declined vẫn current; Guest chưa cần OTP. Tên tự nhập cũ giữ lịch sử; PUT thay assignment và clear tên lịch sử. Remove/revoke clear assignment tất cả item cùng transaction roster/audit.
 - Gán/đổi ở Published/InProgress enqueue thông báo sau commit bằng scope riêng; Thư ký tự gán mình thì không gửi. Internal Notification type AgendaPresenterAssigned target Meeting; Guest EmailMessage, không OTP/session/token/attachment. Dedup theo event/recipient. Giữ presenter, bỏ presenter hoặc assignment trước publish không thông báo.
-- UC-77 lưu kết luận và author/time từ server, meeting lock, 1–2000 UTF-16 code units sau trim. Có bất kỳ MeetingMinutes thì khóa ghi, bất kể status/content.
+- UC-27 lưu kết luận và author/time từ server, meeting lock, 1–2000 UTF-16 code units sau trim. Có bất kỳ MeetingMinutes thì khóa ghi, bất kể status/content.
 - Bảng nối tài liệu hiện có hỗ trợ nhiều item; chỉ thay links của item hiện tại, bảo toàn file và các link khác. Metadata tài liệu hiển thị cho mọi reader được Meeting policy cho phép.
 - Thêm event invalidation ConclusionUpdated/PresenterCleared; không đưa kết luận/email vào payload. Guest adapter vẫn chỉ là consumer integration.
 
@@ -44,9 +44,9 @@ Down bị chặn có chủ đích vì không phục hồi được duration đã
 ## Giới hạn và BA Final Review
 
 - UC-04/SCRUM-59 Guest login production chưa triển khai. Test dùng adapter giả, không nghiệm thu OTP/session thật.
-- UC-59 sinh nháp biên bản chưa triển khai. Writer tương lai phải lấy cùng meeting lock, đọc presenter/kết luận và tạo MeetingMinutes trong cùng transaction. Không tạo/xóa nháp tạm để mở lại kết luận.
+- UC-70 sinh nháp biên bản chưa triển khai. Writer tương lai phải lấy cùng meeting lock, đọc presenter/kết luận và tạo MeetingMinutes trong cùng transaction. Không tạo/xóa nháp tạm để mở lại kết luận.
 - Enqueue sau commit là best effort. Nếu chưa lưu notification/email thì chỉ log, không có outbox tự phục hồi. Email đã queue dùng retry worker hiện có; SMTP tắt thì còn Queued. Lỗi enqueue/SMTP/SignalR không rollback Agenda.
-- Source Report 3 và DOCX không chỉnh. Chỉ đồng bộ trích FE-05/UC-77 và POST-4 UC-28c từ Report 3; BR-306–312 đã có nên không tạo định nghĩa riêng.
+- Source Report 3 và DOCX không chỉnh. Chỉ đồng bộ trích FE-05/UC-27 và POST-4 UC-30c từ Report 3; BR-064–BR-067 đã có nên không tạo định nghĩa riêng.
 - Class diagram FE-05 còn liên kết tài liệu đơn; Report 3 phần màn hình có thể còn duration/free-text presenter. BA/FE đối chiếu contract và implementation sau tích hợp theo workflow, không ép source diagram giống tên C#.
 - Không thêm gate Vote/attendance/kết luận bắt buộc. End Meeting vẫn complete current cùng transaction; các Pending giữ nguyên.
 - Backend xong là đầu vào FE → BA Final Review → Tester → Review, không tự chuyển Jira Done.

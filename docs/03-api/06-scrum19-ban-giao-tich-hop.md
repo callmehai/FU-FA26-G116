@@ -4,7 +4,7 @@
 > `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
 > không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
-> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+> mã BR và UC trong file là mã mới theo [bảng 09](../01-requirements/09-bang-anh-xa-br-dot-1.md) và [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md) (ADR-0079).
 
 ## Phạm vi backend
 
@@ -20,7 +20,7 @@ Agenda không bắt buộc lúc gửi duyệt; lịch dự kiến thì bắt bu�
 
 ## Tích hợp producer/worker SCRUM-15
 
-Publish ghi status, history và notifications theo BR-54 trong cùng transaction. Sau SaveChanges,
+Publish ghi status, history và notifications trong cùng transaction. Sau SaveChanges,
 service commit publication trước rồi gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext.
 Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu nội dung job một lần.
 
@@ -104,7 +104,7 @@ phần prerequisite này; không gọi việc tách phạm vi là đã hoàn t�
 
 ## Đồng bộ main ngày 02/10/2026
 
-Use Case Meeting Management dùng UC-14–21 theo bộ tài liệu BA đã vào main.
+Use Case Meeting Management dùng UC-13–UC-20 theo bộ tài liệu BA đã vào main.
 Các mã workflow cũ bị trùng chuyển sang MSG78–MSG89 theo
 [bảng đổi mã](00-danh-muc-ma-thong-bao.md).
 MSG48–MSG59/MSG77 từng dành cho Meeting Session (nay ngừng dùng). Phòng chưa mở dùng MSG117 theo catalogue (ADR-0010 ghi MSG65 là nhầm).
@@ -113,9 +113,9 @@ FE/Tester dùng API contract sau đồng bộ, gồm MSG89 cho TransferOrganizer
 ## Sửa alignment theo review ngày 02/10/2026
 
 Backend hỗ trợ direct resubmit Rejected, Secretary đọc rejection reason và bỏ Agenda/Meeting Session
-khỏi điều kiện gửi duyệt. Meeting Session cũng không bắt buộc khi Publish theo BR-56. `ReturnToDraft` là tùy chọn
+khỏi điều kiện gửi duyệt. Meeting Session cũng không bắt buộc khi Publish. `ReturnToDraft` là tùy chọn
 cho Rejected; recovery WaitingApproval, TransferOrganizer, cấm self-approval và giới hạn reason
-1–1.000 ký tự được ghi thành PRE/AF/EX tại UC-18–21 để BA Final Review đối chiếu.
+1–1.000 ký tự được ghi thành PRE/AF/EX tại UC-17–UC-20 để BA Final Review đối chiếu.
 
 Migration mới `MeetingSessionsForPublication` chỉ thêm bảng `meeting_sessions`: `id`, `meeting_id`,
 `title` (tối đa 300), `planned_starts_at`, `planned_ends_at`, `status` (chuỗi), `created_at`, `updated_at`;

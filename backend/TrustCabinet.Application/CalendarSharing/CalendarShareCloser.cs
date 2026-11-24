@@ -12,7 +12,7 @@ namespace TrustCabinet.Application.CalendarSharing;
 /// </summary>
 public sealed class CalendarShareCloser(INotificationRepository notifications, IAuditService audit)
 {
-    /// <summary>BR-424: an Effective share stops for good; both sides are told (BR-426).</summary>
+    /// <summary>BR-142, BR-143: an Effective share stops for good; both sides are told (BR-010).</summary>
     public async Task StopAsync(CalendarShare share, string ownerName, string viewerName, Guid? actorId,
         CalendarShareStopReason reason, DateTimeOffset now, CancellationToken ct)
     {
@@ -28,7 +28,7 @@ public sealed class CalendarShareCloser(INotificationRepository notifications, I
     }
 
     /// <summary>
-    /// BR-425: a share past its end date has already ended, but its row still holds the pair's one open place (BR-423).
+    /// BR-142, BR-143: a share past its end date has already ended, but its row still holds the pair's one open place (BR-142, BR-143).
     /// A new share of the pair closes it first — as Ended, by nobody, without a notification (PO 09/11/2026, Q-B: no
     /// state for it, nobody told). The audit row keeps it traceable.
     /// </summary>

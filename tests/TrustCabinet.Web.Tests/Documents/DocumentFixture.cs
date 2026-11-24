@@ -141,7 +141,7 @@ public sealed class DocumentFixture : IAsyncLifetime
         foreach (var (name, bytes, pages) in files)
         {
             var part = new ByteArrayContent(bytes);
-            // Deliberately wrong: the server must decide the type from the bytes (BR-215).
+            // Deliberately wrong: the server must decide the type from the bytes (UC-36a, UC-39, NFR).
             part.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             form.Add(part, "files", name);
             form.Add(new StringContent(pages ?? ""), "pageCounts");

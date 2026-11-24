@@ -90,7 +90,7 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
         var dispatch = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
         Assert.Equal(2, dispatch.Length);
         Assert.All(dispatch, d => Assert.Equal(InvitationEventKind.RoleChanged, d.EventKind));
-        // The meeting's lifecycle rows have audit rows of their own (BR-445).
+        // The meeting's lifecycle rows have audit rows of their own (BR-022, BR-023).
         var audit = await db.AuditLog.SingleAsync(a => a.ObjectId == s.MeetingId && a.Action.StartsWith("meeting.participants."));
         Assert.Equal("meeting.participants.HandOverChair", audit.Action);
         Assert.Equal(2, JsonDocument.Parse(audit.Details!).RootElement.GetProperty("changes").GetArrayLength());

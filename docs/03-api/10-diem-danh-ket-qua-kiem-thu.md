@@ -15,7 +15,7 @@ Merge main `82a8af2` vào branch đã tích hợp SCRUM-97 (`629f483`). Xử lý
 
 ## Đồng bộ SCRUM-97 — 22/10/2026
 
-Tích hợp branch SCRUM-97 tại `48268ede97ede308bf6313a95059ffa788f857b5` vào SCRUM-26 sau merge main `fa408bc`. Giữ MSG287/MSG278 của attendance, bổ sung MSG258/MSG260 của UC-73, mã tiếp theo MSG288; giữ cả hai collection trong README Postman. Không thêm hoặc sửa migration.
+Tích hợp branch SCRUM-97 tại `48268ede97ede308bf6313a95059ffa788f857b5` vào SCRUM-26 sau merge main `fa408bc`. Giữ MSG287/MSG278 của attendance, bổ sung MSG258/MSG260 của UC-34, mã tiếp theo MSG288; giữ cả hai collection trong README Postman. Không thêm hoặc sửa migration.
 
 - Release build `-warnaserror`: 0 warning/error; frontend lint/build pass (cảnh báo bundle phòng họp trên 500 kB còn nguyên); EF model check pass.
 - Regression toàn solution: 1.305 test, lượt đầu 1.287 pass và 18 fail do Redis test đang tắt. Khởi động Redis tại cổng 6389, chạy lại toàn bộ 25 test Redis: 25/25 pass; xác nhận cả 18 test lỗi ban đầu đều pass trong lượt chạy lại. Không có test skipped hoặc lỗi còn lại.

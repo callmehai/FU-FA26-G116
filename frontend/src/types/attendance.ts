@@ -2,7 +2,7 @@ import type { MeetingStatus } from './meeting'
 import type { InvitationResponse, MeetingRole } from './participant'
 
 /**
- * Attendance (SCRUM-26, UC-31). Contract in docs/03-api/10-diem-danh.md.
+ * Attendance (SCRUM-26, UC-33). Contract in docs/03-api/10-diem-danh.md.
  *
  * Only the current Secretary records it, only while the meeting is InProgress, and only as Present
  * or Absent. Someone not recorded yet is "Chưa điểm danh" — not Absent. Joining the call room or

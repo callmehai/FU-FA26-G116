@@ -1,12 +1,12 @@
 # Đăng ký phát biểu — SCRUM-27
 
-UC-79 *Register to Speak*, BR-337 → BR-339, theo [note bàn giao](../notes/NOTE-ban-giao-fe08-dang-ky-phat-bieu-cho-be.md).
+UC-50 *Register to Speak*, BR-104–BR-106, theo [note bàn giao](../notes/NOTE-ban-giao-fe08-dang-ky-phat-bieu-cho-be.md).
 Người đang ở trong phòng họp trực tuyến giơ tay. Chủ toạ xem hàng đợi, đổi thứ tự, từ chối hoặc mời từng người. Người được mời
-tự bật micro (UC-39a), bấm bắt đầu rồi kết thúc lượt. Giờ mời, bắt đầu và kết thúc được giữ cùng cuộc họp để biên bản biết ai
-nói, về mục nào, bao lâu (BR-339). Đây không phải việc cần làm: không có người nhận, hạn hay tiến độ.
+tự bật micro (UC-45a), bấm bắt đầu rồi kết thúc lượt. Giờ mời, bắt đầu và kết thúc được giữ cùng cuộc họp để biên bản biết ai
+nói, về mục nào, bao lâu (BR-104–BR-106). Đây không phải việc cần làm: không có người nhận, hạn hay tiến độ.
 
 Mã thông báo: `MSG117` (dùng lại), `MSG457`–`MSG462` ([danh mục](00-danh-muc-ma-thong-bao.md)). Không dùng `MSG124`:
-không thao tác nào gọi LiveKit, và mời phát biểu **không** bật hay tắt micro của ai (BR-338).
+không thao tác nào gọi LiveKit, và mời phát biểu **không** bật hay tắt micro của ai (BR-104–BR-106).
 
 ## Quyền
 
@@ -17,7 +17,7 @@ không thao tác nào gọi LiveKit, và mời phát biểu **không** bật hay
 | Người khác đọc được cuộc họp (người tạo, người duyệt) | Có | `409` `MSG458` (không ở trong phòng) | `403` `MSG457` |
 | Không đọc được cuộc họp | `404` | `404` | `404` |
 
-- **Chủ toạ hiện hành:** thành viên đang hoạt động có vai trò `Chair`, đọc lại ở mọi request. Sau khi bàn giao (UC-73) người
+- **Chủ toạ hiện hành:** thành viên đang hoạt động có vai trò `Chair`, đọc lại ở mọi request. Sau khi bàn giao (UC-34) người
   cũ mất quyền ngay ở request kế tiếp (EX-4).
 - **Đang ở trong phòng:** có lượt kết nối đang mở (`call_participants.left_at IS NULL`) trong phiên phòng `Active` của cuộc
   họp, theo LiveKit báo về. Lượt chỉ được ghi khi LiveKit báo `participant_joined` (hoặc lần đối soát 30 giây), **không** ghi
@@ -34,7 +34,7 @@ Không route nào có body. Thành công trả `SpeakingQueue` (không mã); gi�
 | Method | Đường dẫn | Ai | Trạng thái yêu cầu |
 |---|---|---|---|
 | `GET` | `/api/meetings/{id}/speaking-requests` | người đọc được cuộc họp | — |
-| `POST` | `/api/meetings/{id}/speaking-requests` | người trong phòng | tạo `Queued`. Đã có yêu cầu mở thì `200`, giữ nguyên (EX-2, BR-337) |
+| `POST` | `/api/meetings/{id}/speaking-requests` | người trong phòng | tạo `Queued`. Đã có yêu cầu mở thì `200`, giữ nguyên (EX-2, BR-104–BR-106) |
 | `DELETE` | `…/speaking-requests/{requestId}` | chủ yêu cầu, trong phòng | `Queued`/`Invited` → `Cancelled` (AF-1) |
 | `POST` | `…/{requestId}/move-up`, `…/{requestId}/move-down` | Chủ toạ | đổi chỗ với yêu cầu `Queued` liền trên/dưới (AF-2). Đã ở đầu/cuối thì không đổi gì, vẫn `200` |
 | `POST` | `…/{requestId}/decline` | Chủ toạ | `Queued`/`Invited` → `Cancelled` (AF-3) |
@@ -68,7 +68,7 @@ Không route nào có body. Thành công trả `SpeakingQueue` (không mã); gi�
 Lỗi: `{ "code": "MSGnnn", "message": "…" }` theo bảng mã ở danh mục — `MSG457` (403), `MSG458`, `MSG459`, `MSG460`, `MSG117`
 (409), `MSG461` (500, đọc), `MSG462` (503, lưu). Tài khoản bị khoá: `403` không body.
 
-## Tự đóng yêu cầu (BR-337)
+## Tự đóng yêu cầu (BR-104–BR-106)
 
 Server tự đóng yêu cầu đang mở, cùng giao dịch với thay đổi gây ra nó. Lượt đang `Speaking` thành `Finished` có `endedAt`,
 còn lại thành `Cancelled`. `endedAt` là lúc người đó rời phòng hoặc phòng đóng theo LiveKit, không phải lúc server xử lý

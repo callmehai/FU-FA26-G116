@@ -1,13 +1,13 @@
 # Biểu quyết — thiết kế contract cho BE (FE-11 / SCRUM-96)
 
-Ngày 28/10/2026; cập nhật 30/10/2026. **Backend SCRUM-28 đã triển khai** UC-52a, UC-52b, UC-53–UC-57
+Ngày 28/10/2026; cập nhật 30/10/2026. **Backend SCRUM-28 đã triển khai** UC-62a, UC-62b, UC-63–UC-67
 (xem, nháp, mở, bỏ phiếu, đóng, kết luận) và sự kiện realtime ở [§7](#7-đã-triển-khai--scrum-28). **Backend SCRUM-96
-đã triển khai** gắn / gỡ tài liệu (UC-76a/76b), xác nhận đã đọc (UC-74) và chặn `MSG252` — xem
+đã triển khai** gắn / gỡ tài liệu (UC-68a, UC-68b), xác nhận đã đọc (UC-42) và chặn `MSG252` — xem
 [§8](#8-đã-triển-khai--scrum-96).
 
-Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-159/160/165/181/189/190/252–274/
-285/287–293/304/305; ADR-0014/0016/0017/0019/0020; sequence
-[voting-management](../06-sequencediagram/voting-management/README.md) và UC-74; class diagram
+Nguồn đã đối chiếu: UC-62a, UC-62b, UC-63–UC-67, UC-42, UC-68a, UC-68b; BR-026, BR-090, BR-092, BR-093, BR-055, BR-086, BR-087, BR-091, BR-088, BR-089, BR-094–BR-099;
+ADR-0014/0016/0017/0019/0020; sequence
+[voting-management](../06-sequencediagram/voting-management/README.md) và UC-42; class diagram
 [FE-11](../07-classdiagram/feature-11-voting-management-class-diagram.drawio); schema
 [ERD](../02-design/02-erd.md); danh mục [MSG205–236, MSG252–255, MSG265–270](00-danh-muc-ma-thong-bao.md).
 
@@ -16,8 +16,8 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 | Trong phạm vi | Ngoài phạm vi |
 |---|---|
 | CRUD nháp, mở/đóng, bỏ phiếu, ghi kết luận | Quorum, biểu quyết trước/sau họp, Resolution |
-| Gắn/gỡ tài liệu Vote khi `Draft` (UC-76) | Nhóm “Biểu quyết” trên tab tài liệu cuộc họp (UI UC-32a AF-1) — cùng dữ liệu `VoteDocument` |
-| Xác nhận đã đọc tài liệu Vote (UC-74) | Ghi âm / transcript / biên bản |
+| Gắn/gỡ tài liệu Vote khi `Draft` (UC-68) | Nhóm “Biểu quyết” trên tab tài liệu cuộc họp (UI UC-35a AF-1) — cùng dữ liệu `VoteDocument` |
+| Xác nhận đã đọc tài liệu Vote (UC-42) | Ghi âm / transcript / biên bản |
 | Guest bỏ phiếu qua invitation (ADR-0016) | Capability hệ thống — quyền theo vai trò cuộc họp |
 
 - Prefix: `/api/meetings/{meetingId}/votes`.
@@ -31,34 +31,34 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 
 | Thao tác | Actor | Meeting | Vote |
 |---|---|---|---|
-| GET danh sách / chi tiết | Ai đọc được Meeting; Draft chỉ Chair/Secretary hiện hành (BR-253) | Approved+ cho chuẩn bị; mọi trạng thái có quyền xem Meeting cho Open/Closed | — |
+| GET danh sách / chi tiết | Ai đọc được Meeting; Draft chỉ Chair/Secretary hiện hành (BR-086, BR-087) | Approved+ cho chuẩn bị; mọi trạng thái có quyền xem Meeting cho Open/Closed | — |
 | Tạo / sửa / xoá nháp; gắn / gỡ tài liệu | Chair **hoặc** Secretary hiện hành | Approved, Published, InProgress (khi `End`, hệ thống xoá nháp còn lại — §7) | Draft |
 | Mở phiếu | Chỉ Chair hiện hành | InProgress | Draft; không có Vote Open khác |
 | Bỏ phiếu | Người trong `VoteEligibleVoter` + còn quyền Meeting | InProgress | Open |
 | Đóng phiếu | Chỉ Chair hiện hành | InProgress hoặc Ended | Open |
 | Ghi kết luận | Chỉ Chair hiện hành | InProgress hoặc Ended | Closed, chưa có conclusion |
-| Xác nhận đã đọc (UC-74) | Người trong danh sách bỏ phiếu đã chốt của biểu quyết Open gắn tài liệu + còn quyền Meeting | InProgress | Open (tài liệu chỉ gắn nháp: Thành viên/Khách `404/MSG156` do nháp bị ẩn — BR-253; Chủ toạ/Thư ký `409/MSG224` do nháp chưa có danh sách chốt) |
+| Xác nhận đã đọc (UC-42) | Người trong danh sách bỏ phiếu đã chốt của biểu quyết Open gắn tài liệu + còn quyền Meeting | InProgress | Open (tài liệu chỉ gắn nháp: Thành viên/Khách `404/MSG156` do nháp bị ẩn — BR-086, BR-087; Chủ toạ/Thư ký `409/MSG224` do nháp chưa có danh sách chốt) |
 
 ## 3. Endpoint
 
 | Method | Path | UC | Thành công |
 |---|---|---|---|
-| GET | `/api/meetings/{meetingId}/votes` | UC-52a | 200 snapshot danh sách |
-| GET | `/api/meetings/{meetingId}/votes/{voteId}` | UC-52b | 200 chi tiết theo trạng thái |
-| POST | `/api/meetings/{meetingId}/votes` | UC-53 | 201/MSG210 |
-| PUT | `/api/meetings/{meetingId}/votes/{voteId}` | UC-53 AF-1 | 200/MSG211 |
-| DELETE | `/api/meetings/{meetingId}/votes/{voteId}` | UC-53 AF-2 | 200/MSG212 |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/open` | UC-54 | 200/MSG217 |
-| POST | `/api/meetings/{meetingId}/votes` + `"openImmediately": true` | UC-53 AF-3 → UC-54 | 200/MSG217 (không tạo Draft nếu mở lỗi) |
-| PUT | `/api/meetings/{meetingId}/votes/{voteId}` + `"openImmediately": true` | UC-53 AF-3 → UC-54 AF-1 | 200/MSG217 (mở lỗi thì nháp giữ nguyên, không lưu phần sửa) |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/ballots` | UC-55 | 200/MSG227 |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/close` | UC-56 | 200/MSG229 + tally |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/conclusion` | UC-57 | 200/MSG235 |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents` | UC-76a | 200/MSG265 |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents/from-library` | UC-76a AF | 200/MSG265 |
-| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents/upload` | UC-76a AF | 200/MSG265 (multipart) |
-| DELETE | `/api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId}` | UC-76b | 200/MSG268 |
-| POST | `/api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation` | UC-74 | 200/MSG253 |
+| GET | `/api/meetings/{meetingId}/votes` | UC-62a | 200 snapshot danh sách |
+| GET | `/api/meetings/{meetingId}/votes/{voteId}` | UC-62b | 200 chi tiết theo trạng thái |
+| POST | `/api/meetings/{meetingId}/votes` | UC-63 | 201/MSG210 |
+| PUT | `/api/meetings/{meetingId}/votes/{voteId}` | UC-63 AF-1 | 200/MSG211 |
+| DELETE | `/api/meetings/{meetingId}/votes/{voteId}` | UC-63 AF-2 | 200/MSG212 |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/open` | UC-64 | 200/MSG217 |
+| POST | `/api/meetings/{meetingId}/votes` + `"openImmediately": true` | UC-63 AF-3 → UC-64 | 200/MSG217 (không tạo Draft nếu mở lỗi) |
+| PUT | `/api/meetings/{meetingId}/votes/{voteId}` + `"openImmediately": true` | UC-63 AF-3 → UC-64 AF-1 | 200/MSG217 (mở lỗi thì nháp giữ nguyên, không lưu phần sửa) |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/ballots` | UC-65 | 200/MSG227 |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/close` | UC-66 | 200/MSG229 + tally |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/conclusion` | UC-67 | 200/MSG235 |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents` | UC-68a | 200/MSG265 |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents/from-library` | UC-68a AF | 200/MSG265 |
+| POST | `/api/meetings/{meetingId}/votes/{voteId}/documents/upload` | UC-68a AF | 200/MSG265 (multipart) |
+| DELETE | `/api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId}` | UC-68b | 200/MSG268 |
+| POST | `/api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation` | UC-42 | 200/MSG253 |
 
 Ba nguồn gắn tài liệu tách endpoint giống SCRUM-112 (agenda), không gộp một body `source` đa hình
 trừ khi BE và FE thống nhất lại trong cùng PR.
@@ -83,7 +83,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 - `isAnonymous` bắt buộc bool; `eligibleRoles` ≥ 1 giá trị trong `Chair|Secretary|Member|Guest`.
 - PUT thay toàn bộ trường cấu hình; chỉ khi Vote còn `Draft`. PUT cũng nhận `openImmediately` (mở từ form sửa).
 - `openImmediately: true`: chỉ Chair + Meeting `InProgress`; thành công → status `Open`, không
-  để lại Draft lỗi; thất bại giữ form phía FE, DB không đổi nháp cũ (UC-53 AF-3).
+  để lại Draft lỗi; thất bại giữ form phía FE, DB không đổi nháp cũ (UC-63 AF-3).
 
 ### Bỏ phiếu
 
@@ -91,7 +91,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 { "optionId": "<guid>" }
 ```
 
-Một lựa chọn; không đổi/rút sau khi ghi (BR-265). Mọi phiếu ghi `VoteReceipt` có voter và tăng bộ đếm của phương án.
+Một lựa chọn; không đổi/rút sau khi ghi (BR-092, BR-093). Mọi phiếu ghi `VoteReceipt` có voter và tăng bộ đếm của phương án.
 Phiếu công khai thêm một dòng `VoteChoice` ghi người chọn; phiếu kín **không ghi `VoteChoice`** (§7).
 
 ### Kết luận
@@ -101,8 +101,8 @@ Phiếu công khai thêm một dòng `VoteChoice` ghi người chọn; phiếu k
 ```
 
 `conclusion` ∈ `Passed|NotPassed|Deferred` (đúng hoa thường); `note` tùy chọn, trim, tối đa 2000 — doc,
-validation và cột `conclusion_note` cùng một số từ SCRUM-28. Ghi một lần, không sửa (BR-262). Hệ thống không
-suy từ tally (BR-263).
+validation và cột `conclusion_note` cùng một số từ SCRUM-28. Ghi một lần, không sửa (BR-099). Hệ thống không
+suy từ tally (BR-099).
 
 ### Gắn từ tài liệu cuộc họp / kho
 
@@ -114,8 +114,8 @@ suy từ tally (BR-263).
 { "documentIds": ["…"] }
 ```
 
-Upload: multipart, cùng giới hạn loại/dung lượng tài liệu cuộc họp (BR-187, BR-214, BR-215, MSG288
-nếu áp dụng cùng lần). Tất cả hoặc không (BR-304). Gỡ Vote không gỡ MeetingDocument (BR-305).
+Upload: multipart, cùng giới hạn loại/dung lượng tài liệu cuộc họp (BR-069, UC-36a, UC-39, NFR, MSG288
+nếu áp dụng cùng lần). Tất cả hoặc không (UC-36b). Gỡ Vote không gỡ MeetingDocument (UC-68b).
 
 ### Xác nhận đã đọc
 
@@ -123,10 +123,10 @@ nếu áp dụng cùng lần). Tất cả hoặc không (BR-304). Gỡ Vote khô
 { "lastPageReached": true }
 ```
 
-Client chỉ gửi khi đã cuộn tới trang cuối trong viewer (BR-290). Server kiểm tra đã-xác-nhận
+Client chỉ gửi khi đã cuộn tới trang cuối trong viewer (UC-42). Server kiểm tra đã-xác-nhận
 trước (khớp §8 bước 4): đã xác nhận rồi → `200/MSG253`, `alreadyConfirmed: true` kể cả khi lần này gửi
 `lastPageReached: false`; chưa xác nhận mà `lastPageReached !== true` → `400/MSG254`. Xác nhận theo (actor, MeetingDocument); dùng chung mọi
-Vote cùng tài liệu (BR-291); không rút; không liên kết với `VoteChoice` (BR-293).
+Vote cùng tài liệu (UC-42); không rút; không liên kết với `VoteChoice` (BR-096, BR-097).
 
 ### Snapshot danh sách (GET)
 
@@ -168,7 +168,7 @@ Vote cùng tài liệu (BR-291); không rút; không liên kết với `VoteChoi
 ```
 
 - Lọc Draft khỏi danh sách nếu actor không phải Chair/Secretary hiện hành; đếm/`votes` chỉ phần
-  nhìn thấy (BR-253). Danh sách rỗng vẫn 200; FE có thể hiện MSG207.
+  nhìn thấy (BR-086, BR-087). Danh sách rỗng vẫn 200; FE có thể hiện MSG207.
 - Chi tiết Open: turnout `receiptCount`/`eligibleCount`, **không** lộ lựa chọn cá nhân khi còn Open.
 - Chi tiết Closed: tally theo option; phiếu công khai có thể kèm lựa chọn từng người / “chưa bỏ”;
   phiếu kín chỉ tổng.
@@ -191,7 +191,7 @@ Vote cùng tài liệu (BR-291); không rút; không liên kết với `VoteChoi
 | Kết luận sai / đã ghi / không được ghi | 400/409 | MSG232–234 |
 | Lỗi ghi kết luận | 503 | MSG236 |
 | Gắn trùng / lỗi gắn / gỡ không còn / lỗi gỡ | 409/503/404/503 | MSG266 / MSG267 / MSG269 / MSG270 |
-| Tài liệu cuộc họp không truy cập (UC-74) | 404 | MSG156 |
+| Tài liệu cuộc họp không truy cập (UC-42) | 404 | MSG156 |
 | Chưa tới trang cuối / lỗi xác nhận đọc | 400/503 | MSG254 / MSG255 |
 
 Câu tiếng Việt khi triển khai lấy từ catalogue (cột thông báo chuẩn hiện là tiếng Anh dành sẵn —
@@ -213,7 +213,7 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 
 - **Đường dẫn** theo §3 (`/api/meetings/{meetingId}/votes/{voteId}/…`), không phải `/api/votes/{id}/…` như mô tả
   ticket SCRUM-28.
-- **Thứ tự kiểm tra khi bỏ phiếu** theo sequence UC-55: không đọc được → `404/MSG205`; không trong danh sách chốt →
+- **Thứ tự kiểm tra khi bỏ phiếu** theo sequence UC-65: không đọc được → `404/MSG205`; không trong danh sách chốt →
   `409/MSG224`; không Open hoặc cuộc họp không InProgress → `409/MSG225`; đã bỏ → `409/MSG226`; rồi mới tới
   `400/MSG222` (thiếu `optionId`) và `400/MSG223`.
 - **Guest đủ điều kiện** = lời mời chưa thu hồi lúc mở phiếu. "Email đã xác minh" là việc của UC-04, chưa có ở Backend;
@@ -228,15 +228,15 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
   lời mời mới để vẫn bỏ được đúng một phiếu (đây không phải người mới); nếu đã bỏ phiếu thì lời mời mới không có chỗ
   (`409/MSG224`). Cả hai trường hợp `eligibleCount` giữ nguyên.
 - **Nháp chưa mở bị xoá khi cuộc họp kết thúc** (PO 08/11/2026, Jira SCRUM-28): mở phiếu cần cuộc họp InProgress
-  (BR-160), nên nháp còn lại lúc `End` không dùng được nữa. Cùng transaction với `POST /api/meetings/{id}/transitions`
+  (BR-090), nên nháp còn lại lúc `End` không dùng được nữa. Cùng transaction với `POST /api/meetings/{id}/transitions`
   `End`, hệ thống xoá mọi Vote `Draft` của cuộc họp (kèm phương án và liên kết tài liệu, như xoá nháp tay; tài liệu cuộc
   họp vẫn giữ) và ghi **một dòng `audit_log` cho mỗi nháp**: `action = vote.draft_deleted_on_meeting_end`,
   `objectType = VotingSession`, `objectId` = id nháp, `actorId = null` (hệ thống làm), `details` gồm `meetingId`,
   `endedById` (Chủ toạ kết thúc họp), `title`, `description`, `isAnonymous`, `eligibleRoles`, `options`,
-  `meetingDocumentIds`, `createdById`, `createdAt`. Vote Open và Closed không đổi (BR-189). Kết thúc lỗi thì nháp còn
+  `meetingDocumentIds`, `createdById`, `createdAt`. Vote Open và Closed không đổi (BR-086, BR-087). Kết thúc lỗi thì nháp còn
   nguyên và không có dòng nhật ký nào. Sau commit, mỗi nháp phát một `voteChanged` `DraftDeleted` cho Chair/Secretary.
 - **Nháp bị xoá khi cuộc họp bị huỷ** ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): cuộc họp đã huỷ không bao giờ bắt đầu nên nháp cũng
-  không mở được. Cùng transaction với `Cancel` của người tổ chức và với tự huỷ (BR-301), hệ thống xoá mọi Vote `Draft` như
+  không mở được. Cùng transaction với `Cancel` của người tổ chức và với tự huỷ (BR-029), hệ thống xoá mọi Vote `Draft` như
   khi kết thúc, mỗi nháp một dòng audit `action = vote.draft_deleted_on_meeting_cancel`, `details` như trên nhưng có
   `cancelledById` (người huỷ; `null` khi hệ thống tự huỷ) thay cho `endedById`, `reason = "meeting_cancelled"`. Không phát
   `voteChanged`: trang cuộc họp nhận `MeetingChanged` và đọc lại. Job `DataRetentionWorker` xoá thêm nháp còn sót trong cuộc
@@ -244,13 +244,13 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
   (PO 30/10/2026, cùng luật `GuestAccessRules.MeetingOpen` với mọi đường đọc của Khách). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
-  Điểm danh không liên quan (BR-190).
+  Điểm danh không liên quan (BR-091).
 - **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).
 - **Mở từ form** (`openImmediately: true`) dùng được ở cả POST (tạo) lẫn PUT (sửa nháp), trả `200/MSG217`, không phải `201`.
-  Mở lỗi thì không lưu gì: POST không để lại nháp, PUT giữ nháp như trước khi sửa (UC-54 AF-1, EX-5). Thư ký gửi kèm cờ
-  này nhận `409/MSG218`. Thành viên gọi POST nhận `409/MSG213` (nhánh EX-2 đi trước AF-3 trong sequence UC-53); gọi PUT
-  thì nhận `404/MSG205`, vì nháp bị ẩn với Thành viên như ở mọi thao tác trên nháp có sẵn (BR-253).
-- **Thứ tự kiểm tra khi mở từ form** theo sequence UC-54: `MSG218` → `MSG219` → `MSG209` → `MSG220`.
+  Mở lỗi thì không lưu gì: POST không để lại nháp, PUT giữ nháp như trước khi sửa (UC-64 AF-1, EX-5). Thư ký gửi kèm cờ
+  này nhận `409/MSG218`. Thành viên gọi POST nhận `409/MSG213` (nhánh EX-2 đi trước AF-3 trong sequence UC-63); gọi PUT
+  thì nhận `404/MSG205`, vì nháp bị ẩn với Thành viên như ở mọi thao tác trên nháp có sẵn (BR-086, BR-087).
+- **Thứ tự kiểm tra khi mở từ form** theo sequence UC-64: `MSG218` → `MSG219` → `MSG209` → `MSG220`.
 - **Đóng phiếu** trả kèm `result` (cùng dạng `result` của chi tiết).
 - **Tài khoản bị vô hiệu hoá** nhận `403` body rỗng, như điểm danh.
 
@@ -267,15 +267,15 @@ Ngoài các trường của dòng danh sách: `description`, `options[] { id, po
 }
 ```
 
-`percentage` làm tròn 2 chữ số, null khi chưa ai bỏ (BR-261). `voters` chỉ có ở phiếu công khai — `optionId: null`
-là chưa bỏ (BR-273); phiếu kín luôn `voters: null` (BR-259). Dòng danh sách có thêm `hasVoted`.
+`percentage` làm tròn 2 chữ số, null khi chưa ai bỏ (BR-098). `voters` chỉ có ở phiếu công khai — `optionId: null`
+là chưa bỏ (BR-096, BR-097); phiếu kín luôn `voters: null` (BR-096, BR-097). Dòng danh sách có thêm `hasVoted`.
 
 ### Realtime
 
 Sự kiện `voteChanged` `{ eventId, meetingId, voteId, changeType, title, occurredAt }`, `changeType` ∈
 `DraftCreated | DraftUpdated | DraftDeleted | Opened | BallotCast | Closed | ConclusionRecorded`.
 
-- Ba sự kiện `Draft*` chỉ gửi Chair/Secretary hiện hành (BR-253); còn lại gửi mọi người đang đọc được cuộc họp, kể cả
+- Ba sự kiện `Draft*` chỉ gửi Chair/Secretary hiện hành (BR-086, BR-087); còn lại gửi mọi người đang đọc được cuộc họp, kể cả
   Guest. `DraftDeleted` cũng phát khi cuộc họp kết thúc và hệ thống xoá nháp còn lại, mỗi nháp một sự kiện.
 - `title` chỉ có ở `Opened`, cho thông báo nổi "Chủ toạ mở biểu quyết: {nội dung}". `BallotCast` không có gì về người
   bỏ phiếu.
@@ -310,34 +310,34 @@ một `MSG227`, một `MSG226` — unique index của `vote_receipts` giữ phi�
 Code: cùng chỗ với §7, thêm `DocumentReadConfirmation` (entity, cấu hình, migration `DocumentReadConfirmations`);
 test `tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs` và `VoteReadConfirmationTests.cs`.
 
-### Gắn / gỡ tài liệu (UC-76a, UC-76b)
+### Gắn / gỡ tài liệu (UC-68a, UC-68b)
 
 | Endpoint | Body | Thành công | Lỗi riêng |
 |---|---|---|---|
 | `POST …/votes/{voteId}/documents` | `{ "meetingDocumentIds": [...] }` | 200/MSG265, `documents: []` | 404/MSG170, 409/MSG266, 503/MSG267 |
 | `POST …/votes/{voteId}/documents/from-library` | `{ "documentIds": [...] }` (tài liệu trong kho của người gọi) | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm; tệp đã có trong cuộc họp thì gắn tài liệu cuộc họp sẵn có, không thêm dòng mới | 400/MSG249, 409/MSG266 (đã gắn biểu quyết này), 503/MSG166 |
-| `POST …/votes/{voteId}/documents/upload` | multipart `files`, như UC-33a AF-1 | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm | 400/MSG164, 400/MSG288, 409/MSG346, 503/MSG166 |
+| `POST …/votes/{voteId}/documents/upload` | multipart `files`, như UC-36a AF-1 | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm | 400/MSG164, 400/MSG288, 409/MSG346, 503/MSG166 |
 | `DELETE …/votes/{voteId}/documents/{meetingDocumentId}` | — | 200/MSG268, kèm `meetingDocumentId` | 404/MSG269, 503/MSG270 |
 
 - Chung cho cả bốn: không thấy cuộc họp / biểu quyết, hoặc nháp mà người gọi không được thấy → `404/MSG205`; không phải
   Chủ toạ / Thư ký hiện hành, cuộc họp ngoài Approved/Published/InProgress, hoặc biểu quyết không còn Draft → `409/MSG213`
-  (BR-252, BR-288). Upload kiểm hai điều này **trước** khi đọc body, nên bị từ chối thì không byte nào lên kho.
-- Tất cả hoặc không (BR-304): một tài liệu sai thì không gắn gì; trùng ID trong cùng body được gộp.
+  (BR-086, BR-087, BR-094, BR-095). Upload kiểm hai điều này **trước** khi đọc body, nên bị từ chối thì không byte nào lên kho.
+- Tất cả hoặc không (UC-36b): một tài liệu sai thì không gắn gì; trùng ID trong cùng body được gộp.
 - Từ kho / tải lên: tài liệu được thêm vào cuộc họp rồi gắn vào biểu quyết trong cùng một lần lưu; tệp tải lên cũng vào
-  thư mục tải lên trong kho của người tải (BR-210). Lưu lỗi trả `MSG166` của UC-33a theo sequence UC-76a.
-- Gỡ chỉ xoá liên kết; tài liệu ở lại cuộc họp với liên kết mục nghị sự, góp ý và xác nhận đọc (BR-305). Tài liệu đã bị
+  thư mục tải lên trong kho của người tải (BR-072, BR-073). Lưu lỗi trả `MSG166` của UC-36a theo sequence UC-68a.
+- Gỡ chỉ xoá liên kết; tài liệu ở lại cuộc họp với liên kết mục nghị sự, góp ý và xác nhận đọc (UC-68b). Tài liệu đã bị
   gỡ khỏi cuộc họp coi như không còn gắn → `404/MSG269`.
-- Realtime: `voteChanged` với `changeType: "DocumentsChanged"`, chỉ gửi Chủ toạ / Thư ký (nháp, BR-253); gắn từ kho hoặc
+- Realtime: `voteChanged` với `changeType: "DocumentsChanged"`, chỉ gửi Chủ toạ / Thư ký (nháp, BR-086, BR-087); gắn từ kho hoặc
   tải lên còn phát `documentsChanged` của tab Tài liệu.
 
-### Xác nhận đã đọc (UC-74)
+### Xác nhận đã đọc (UC-42)
 
 `POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation`, body `{ "lastPageReached": true }`;
 Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Control: no-store`, như các endpoint biểu quyết.
 
-> **Không phải chốt bảo mật (BR-290).** Server chỉ ghi nhận **lời xác nhận của người dùng**, không kiểm việc đọc: nó
+> **Không phải chốt bảo mật (UC-42).** Server chỉ ghi nhận **lời xác nhận của người dùng**, không kiểm việc đọc: nó
 > không biết người dùng đã mở, cuộn hay đọc tài liệu, và ai gửi thẳng `lastPageReached: true` cũng được ghi nhận. Việc
-> cuộn tới trang cuối do viewer (UC-32c, FE) đảm bảo. Không có cách nào phía server chứng minh người dùng đọc thật (ghi lại
+> cuộn tới trang cuối do viewer (UC-35b, FE) đảm bảo. Không có cách nào phía server chứng minh người dùng đọc thật (ghi lại
 > lần mở tài liệu cũng chỉ chặn được người lười), nên PO chốt 30/10/2026 giữ như vậy, không thêm bảng hay migration.
 
 ```json
@@ -355,31 +355,31 @@ Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Cont
      `lastPageReached: false`);
   5. `lastPageReached` khác `true` hoặc body không đọc được → `400/MSG254`; lưu lỗi → `503/MSG255`.
 
-  Bước 2–3 dùng lại mã của UC-55 cho cùng tình huống, để chỉ người đang chờ bỏ phiếu mới tạo được bản ghi đã đọc
+  Bước 2–3 dùng lại mã của UC-65 cho cùng tình huống, để chỉ người đang chờ bỏ phiếu mới tạo được bản ghi đã đọc
   (review PR #202). Chạy trong một transaction, chia sẻ khoá dòng `meetings` như khi bỏ phiếu. Hai lần bấm cùng lúc:
   unique index giữ lần đầu, lần sau nhận `alreadyConfirmed: true`.
 - "Biểu quyết người gọi được thấy": Chủ toạ / Thư ký — mọi biểu quyết; người khác — chỉ biểu quyết Open / Closed. Tài liệu
-  chỉ gắn với nháp trả `MSG156` cho Thành viên / Khách, để không lộ có nháp (BR-253).
-- Xác nhận thuộc (người, tài liệu cuộc họp), dùng cho mọi biểu quyết gắn cùng tài liệu, không rút (BR-291). Bảng
-  `document_read_confirmations` không có cột nào trỏ tới biểu quyết, phương án hay phiếu (BR-293).
+  chỉ gắn với nháp trả `MSG156` cho Thành viên / Khách, để không lộ có nháp (BR-086, BR-087).
+- Xác nhận thuộc (người, tài liệu cuộc họp), dùng cho mọi biểu quyết gắn cùng tài liệu, không rút (UC-42). Bảng
+  `document_read_confirmations` không có cột nào trỏ tới biểu quyết, phương án hay phiếu (BR-096, BR-097).
 
-### Bỏ phiếu khi biểu quyết có tài liệu (UC-55 EX-8)
+### Bỏ phiếu khi biểu quyết có tài liệu (UC-65 EX-8)
 
-- Sau `MSG224` / `MSG225` / `MSG226`, trước `MSG222` / `MSG223` (sequence UC-55): còn tài liệu của biểu quyết (chưa bị gỡ
+- Sau `MSG224` / `MSG225` / `MSG226`, trước `MSG222` / `MSG223` (sequence UC-65): còn tài liệu của biểu quyết (chưa bị gỡ
   khỏi cuộc họp) mà người gọi chưa xác nhận → `409/MSG252`, body kèm `documents` là danh sách chưa đọc (cùng dạng
-  `documents` của chi tiết). Tài liệu bị gỡ khỏi cuộc họp khi biểu quyết đang Open thì không còn tính (BR-292).
+  `documents` của chi tiết). Tài liệu bị gỡ khỏi cuộc họp khi biểu quyết đang Open thì không còn tính (UC-65).
 - Chi tiết (`GET …/votes/{voteId}`) có thêm `documents: [{ id, fileName, contentType, byteSize, pageCount,
   readConfirmedAt }]` — `id` là MeetingDocument ID, `readConfirmedAt` theo người gọi, `null` = chưa đọc. `documentCount`
   (danh sách và chi tiết) chỉ đếm tài liệu còn trong cuộc họp.
 - `actions.canCast` chỉ tính trạng thái + vai trò, **không** tính việc đọc tài liệu. Hai lớp bảo vệ song
   song (PO chốt 16/11/2026, note 52): FE tự khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`; gọi thẳng
-  mà chưa đọc hết tài liệu vẫn bị server chặn `409/MSG252` (thứ tự kiểm tra ở §8 bước 4 và UC-55 EX-8).
+  mà chưa đọc hết tài liệu vẫn bị server chặn `409/MSG252` (thứ tự kiểm tra ở §8 bước 4 và UC-65 EX-8).
 
 ### Tài liệu của biểu quyết ở tab Tài liệu
 
 - Khách đã mở được `GET …/documents` và `…/content` từ SCRUM-123, nên đọc tới trang cuối rồi xác nhận như thành viên
   (lỗ hở ghi ở đây trước kia đã đóng).
 - Từ 02/11/2026, `GET /api/meetings/{id}/documents` trả thêm `votes`: tài liệu theo từng biểu quyết người gọi xem được, kèm
-  `readConfirmedAt` của chính người gọi — nhóm "Biểu quyết" của tab Tài liệu (UC-32a AF-1, SCRUM-21). Cùng luật thấy nháp
-  (BR-253) và cùng dữ liệu xác nhận (BR-291) với chi tiết biểu quyết; xem
+  `readConfirmedAt` của chính người gọi — nhóm "Biểu quyết" của tab Tài liệu (UC-35a AF-1, SCRUM-21). Cùng luật thấy nháp
+  (BR-086, BR-087) và cùng dữ liệu xác nhận (UC-42) với chi tiết biểu quyết; xem
   [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#get-apimeetingsmeetingiddocuments--uc-32a).

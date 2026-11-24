@@ -21,7 +21,7 @@ public sealed record MinutesNote(Guid? AgendaItemId, string Body);
 /// meeting's Dự thảo as it stands, reviewed or not, as eCab's Compose takes it. There is one template, fixed here;
 /// TrustCabinet has no template management. Without a Dự thảo (the AI machine was off, say), section II lists the agenda
 /// and section III the Chair's recorded conclusions and the votes, with "……" for the Secretary to fill — or, where the
-/// Secretary took notes during the sitting (SCRUM-30, BR-402), with those notes: each item's under it in section II, the
+/// Secretary took notes during the sitting (SCRUM-30, UC-70), with those notes: each item's under it in section II, the
 /// lines marked "Kết luận:" in section III and those marked "Nhiệm vụ:" under "Nhiệm vụ, sản phẩm và thời hạn". The line
 /// marks are those of <see cref="MinutesPerson"/>'s file, MinutesContracts.cs.
 /// </summary>
@@ -131,7 +131,7 @@ public static partial class MinutesTemplate
     }
 
     /// <summary>
-    /// The Secretary's notes sorted for the template (BR-402). Lines marked "Kết luận:" and "Nhiệm vụ:" leave section II
+    /// The Secretary's notes sorted for the template (UC-70). Lines marked "Kết luận:" and "Nhiệm vụ:" leave section II
     /// for section III, prefixed with their item's title; every other line stays with its item. Each line is flattened,
     /// so nothing typed into a note becomes a heading or a signature block.
     /// </summary>

@@ -73,14 +73,14 @@ const HOUR_PX = 56
 const WORKDAY_START = 8 * 60
 
 /**
- * UC-85c — busy hours of everyone who shared with the caller, one whole week (Monday to Sunday, 00:00–24:00; Hải 19/11:
+ * UC-81c — busy hours of everyone who shared with the caller, one whole week (Monday to Sunday, 00:00–24:00; Hải 19/11:
  * an evening or weekend meeting is busy time too), as AI-eCabinet's shared week: the hours down the side, a column a
  * day, opening scrolled to 08:00 so the working day is what shows first. Each busy stretch is a block in its person's
  * colour with
  * the name and time written in it, so free time is the empty space and people busy at once sit side by side. People
  * are chips above the grid, each one shown or hidden by a tap, and say their level and end date, or "Đã dừng" for a
- * stopped share. A day outside someone's share is "Chưa biết" under that day, never drawn as free (BR-415). No
- * meeting is named (BR-427). On a phone one day shows at a time.
+ * stopped share. A day outside someone's share is "Chưa biết" under that day, never drawn as free (BR-144, BR-145). No
+ * meeting is named (BR-140, BR-141). On a phone one day shows at a time.
  */
 export function SharedWeek({
   week,
@@ -335,7 +335,7 @@ export function SharedWeek({
                   to: Math.min(span.to, minutesOn(b.end, d)),
                 })),
               )
-              // Nobody shown shares this day: it is unknown, not free, so it is never left white (BR-415).
+              // Nobody shown shares this day: it is unknown, not free, so it is never left white (BR-144, BR-145).
               const unknown =
                 shown.length > 0 && shown.every(({ person }) => !person.days.find((x) => x.date === d)?.known)
               return (

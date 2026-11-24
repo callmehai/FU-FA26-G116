@@ -1,17 +1,17 @@
 // FE-12 — Biên bản & Duyệt, ban hành (QA subtask SCRUM-199): the minutes of a meeting from the one fixed template
-// (UC-58 view, UC-59 generate, UC-60 edit and download), the AI draft that fills sections I–III (UC-47 generate, UC-48
-// view, UC-49 edit, UC-50 approve), and the approval (UC-61 submit, UC-64 approve and issue, UC-65 return, UC-83 correct
-// issued minutes), with BR-373–BR-396, BR-404–BR-413 and BR-446.
+// (UC-69 view, UC-70 generate, UC-71 edit and download), the AI draft that fills sections I–III (UC-58 generate, UC-59
+// view, UC-60 edit, UC-61 approve), and the approval (UC-72 submit, UC-73 approve and issue, UC-74 return, UC-75 correct
+// issued minutes), with BR-126–BR-133, BR-135–BR-139, BR-010.
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/17-du-thao-bien-ban.md, 18-may-ai.md, the message catalogue and the comments of SCRUM-32, SCRUM-33 and
 // SCRUM-36 (one approver, approving issues at once, the meeting stays Ended; a reader may download issued minutes, PO
 // 08/11; a Guest never sees the minutes, PO 07/11; no recall of a submitted revision and no email on issue, PO 11/11).
-// Signing the minutes, even simulated (UC-62, UC-63, SCRUM-37), was dropped by the PO on 14/11 and is not tested.
+// Signing the minutes, even simulated (former UC-62, former UC-63, SCRUM-37), was dropped by the PO on 14/11 and is not tested.
 //
 // AI: the server is set to write Normal meetings through a paid outside API (ADR-0056). This plan therefore never asks
 // for an AI draft of a Normal meeting — not through the API and not by pressing "Tạo dự thảo" — and never changes the
-// AI settings. A draft is only asked for on Internal meetings, which always stay on the in-house machine (BR-381); when
+// AI settings. A draft is only asked for on Internal meetings, which always stay on the in-house machine (BR-129); when
 // that machine is off, the request fails with a reason the Secretary can act on, which is what is checked here.
 //
 // Safe on a shared local database: every meeting is created here through the API, titled "[QA] FE-12 …", nine weeks
@@ -169,7 +169,7 @@ async function reused(qa, key) {
 
 /**
  * Khánh 19/11/2026 (PR #421): an AI draft needs something said in the meeting (MSG481). When the reused AI meeting has
- * no sentence yet (a fresh database), the Secretary uploads a short machine-voiced recording after the end (UC-44c) —
+ * no sentence yet (a fresh database), the Secretary uploads a short machine-voiced recording after the end (UC-52c) —
  * `say -v Linh`, never a real person's voice — and the speech worker transcribes it.
  */
 async function ensureSaid(qa, meeting) {
@@ -400,7 +400,7 @@ export default {
   title: 'FE-12 Biên bản & Duyệt, ban hành: bản nháp từ mẫu, dự thảo AI, sửa, gửi duyệt, trả lại, duyệt ban hành, đính chính',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-59 Generate
+    // ------------------------------------------------------------------------------------------- UC-70 Generate
     {
       id: 'AC1',
       role: 'secretary',
@@ -458,7 +458,7 @@ export default {
         'thanhvien@ POST trước và sau khi có bản nháp',
       ],
       expected:
-        '201 MSG395; 409 MSG399 bản cũ giữ nguyên; tạo lại 201 MSG395, đoạn đã sửa mất (BR-388); đang họp 409 MSG398 "Chỉ soạn biên bản khi cuộc họp đã kết thúc."; chưa họp 409 MSG398; thành viên 403 MSG397 cả hai lần (không lộ bản nháp)',
+        '201 MSG395; 409 MSG399 bản cũ giữ nguyên; tạo lại 201 MSG395, đoạn đã sửa mất (UC-71); đang họp 409 MSG398 "Chỉ soạn biên bản khi cuộc họp đã kết thúc."; chưa họp 409 MSG398; thành viên 403 MSG397 cả hai lần (không lộ bản nháp)',
       async run(qa) {
         const c = checker(qa)
         const chair = await client(qa, 'chair')
@@ -492,7 +492,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-60 Edit
+    // ------------------------------------------------------------------------------------------- UC-71 Edit
     {
       id: 'AC3',
       role: 'secretary',
@@ -622,7 +622,7 @@ export default {
     {
       id: 'AC4',
       role: 'secretary',
-      title: 'API lưu bản nháp: trống, quá 300.000 ký tự → 400 MSG402; bản cũ → 409 MSG401; HTML bị lọc (BR-385); thành viên 404',
+      title: 'API lưu bản nháp: trống, quá 300.000 ký tự → 400 MSG402; bản cũ → 409 MSG401; HTML bị lọc (UC-71, NFR); thành viên 404',
       steps: [
         'PUT nội dung "<p> </p><br>"; nội dung 300.001 ký tự',
         'Chủ toạ lưu, rồi Thư ký lưu với updatedAt cũ',
@@ -700,7 +700,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-61 Submit
+    // ------------------------------------------------------------------------------------------- UC-72 Submit
     {
       id: 'AC6',
       role: 'secretary',
@@ -781,7 +781,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-65 Return
+    // ------------------------------------------------------------------------------------------- UC-74 Return
     {
       id: 'AC8',
       role: 'chair',
@@ -906,7 +906,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-64 Approve & issue
+    // ------------------------------------------------------------------------------------------- UC-73 Approve & issue
     {
       id: 'AC11',
       role: 'chair',
@@ -952,7 +952,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-58 What members see
+    // ------------------------------------------------------------------------------------------- UC-69 What members see
     {
       id: 'AC12',
       role: 'member',
@@ -1025,7 +1025,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-83 Correct
+    // ------------------------------------------------------------------------------------------- UC-75 Correct
     {
       id: 'AC14',
       role: 'secretary',
@@ -1033,7 +1033,7 @@ export default {
       title: 'Thư ký tạo bản đính chính từ biên bản đã ban hành; bản cũ giữ nguyên và người khác vẫn đọc bản cũ',
       steps: ['Mở tab Biên bản đã ban hành', 'Bấm "Tạo bản đính chính", xác nhận', 'Thành viên mở tab Biên bản'],
       expected:
-        'Toast "Đã tạo bản đính chính." (MSG432); chip "Bản nháp", ô "Phiên bản biên bản" có Bản gốc (Đã ban hành) và Đính chính 1 (Bản nháp); Sửa, Gửi duyệt có, không có Tạo lại (BR-413); API: bản số 2, supersedesId = bản gốc, nội dung bằng bản gốc; thành viên vẫn đọc bản gốc, history không có bản đính chính, không nhận thông báo nào mới',
+        'Toast "Đã tạo bản đính chính." (MSG432); chip "Bản nháp", ô "Phiên bản biên bản" có Bản gốc (Đã ban hành) và Đính chính 1 (Bản nháp); Sửa, Gửi duyệt có, không có Tạo lại (BR-137, BR-138); API: bản số 2, supersedesId = bản gốc, nội dung bằng bản gốc; thành viên vẫn đọc bản gốc, history không có bản đính chính, không nhận thông báo nào mới',
       async run(qa) {
         const m = await flow(qa)
         const latest = (await minutesState(qa, 'secretary', m.id)).minutes
@@ -1052,7 +1052,7 @@ export default {
         await qa.expect(btn(qa, 'Tạo lại')).toHaveCount(0)
         await qa.expect(btn(qa, 'Gửi duyệt')).toBeVisible()
         const editorOpen = await card(qa).getByRole('textbox', { name: 'Nội dung biên bản' }).count()
-        if (!editorOpen) qa.note('UC-83 bước 4 nói hệ thống "mở bản mới để sửa (UC-60)"; màn hình chỉ hiện bản nháp đính chính với nút Sửa, chưa mở trình soạn')
+        if (!editorOpen) qa.note('UC-75 bước 4 nói hệ thống "mở bản mới để sửa (UC-71)"; màn hình chỉ hiện bản nháp đính chính với nút Sửa, chưa mở trình soạn')
         await snap(qa, 'da-tao-dinh-chinh')
         await noSidewaysScroll(qa)
         await press(qa, card(qa).getByRole('button', { name: /^Phiên bản biên bản/ }))
@@ -1164,7 +1164,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- BR-390 Secret meeting
+    // ------------------------------------------------------------------------------------------- BR-132 Secret meeting
     {
       id: 'AC17',
       role: 'chair',
@@ -1229,7 +1229,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-47–UC-50 AI draft
+    // ------------------------------------------------------------------------------------------- UC-58–UC-61 AI draft
     {
       id: 'AC19',
       role: 'secretary',
@@ -1387,7 +1387,7 @@ export default {
     {
       id: 'AC22',
       role: 'secretary',
-      title: 'Sửa và duyệt dự thảo AI (UC-49, UC-50); biên bản lấy mục I–III từ dự thảo, báo khi dự thảo chưa duyệt (UC-59 AF-4)',
+      title: 'Sửa và duyệt dự thảo AI (UC-60, UC-61); biên bản lấy mục I–III từ dự thảo, báo khi dự thảo chưa duyệt (UC-70 AF-4)',
       steps: [
         'Cần dự thảo đã viết xong trên "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" (máy AI local bật)',
         'PUT mục I trống → MSG389; PUT hợp lệ → MSG388, chưa duyệt',

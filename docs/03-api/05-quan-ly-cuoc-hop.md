@@ -4,25 +4,25 @@
 > Từ migration `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`,
 > `actualStartedAt`, `actualEndedAt`, `onlineLink`); bảng `meeting_sessions` đã bị drop, vòng đời dừng ở `Ended`.
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
-> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+> mã BR và UC trong file là mã mới theo [bảng 09](../01-requirements/09-bang-anh-xa-br-dot-1.md) và [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md) (ADR-0079).
 
-**UC-14 Create Meeting / UC-15 Update Meeting — SCRUM-17; UC-16 View Meeting Details /
-UC-17 View Meeting List — SCRUM-18; UC-18 Submit / UC-19 Review / UC-20 Publish — SCRUM-19.**
+**UC-13 Create Meeting / UC-14 Update Meeting — SCRUM-17; UC-15 View Meeting Details /
+UC-16 View Meeting List — SCRUM-18; UC-17 Submit / UC-18 Review / UC-19 Publish — SCRUM-19.**
 
 ## Phạm vi
 
 Các endpoint cho người tạo khởi tạo cuộc họp nháp, sửa thông tin trước khi gửi duyệt và dời lịch
-sau khi công bố. Thông tin cuộc họp gồm tên, lịch dự kiến (BR-25), hình thức, địa điểm, link trực
+sau khi công bố. Thông tin cuộc họp gồm tên, lịch dự kiến (BR-013), hình thức, địa điểm, link trực
 tuyến, mức độ mật và mô tả. Tạo/sửa Meeting không chọn hoặc gán người duyệt; việc chọn và gán người
-duyệt diễn ra trong UC-18. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-28).
+duyệt diễn ra trong UC-17. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-014).
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
 được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
 thành công và mở trang chi tiết của cuộc họp mới. FE đã bỏ dropdown người duyệt khỏi form tạo/sửa;
 gửi duyệt, duyệt, từ chối và lịch sử trạng thái nằm trên trang chi tiết — xem
 [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
 
-Tạo cuộc họp yêu cầu tên và lịch dự kiến (BR-24, BR-25): giờ bắt đầu ở tương lai (BR-162), giờ kết
-thúc sau giờ bắt đầu (BR-62). Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+Tạo cuộc họp yêu cầu tên và lịch dự kiến (BR-013): giờ bắt đầu ở tương lai (BR-013), giờ kết
+thúc sau giờ bắt đầu (BR-013). Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
 Hình thức cũng quyết định cách ghi âm (ADR-0040): trực tuyến ghi theo micro từng người, trực tiếp do Thư ký ghi
 cả phòng, kết hợp thì cả hai — xem [12 · Bản ghi cuộc họp](12-ban-ghi-cuoc-hop.md). Không còn trường
 `captureMode`.
@@ -31,7 +31,7 @@ cả phòng, kết hợp thì cả hai — xem [12 · Bản ghi cuộc họp](12
 
 POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreator`; cổng đọc claim và
 xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
-đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
+đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-016, BR-017.
 
 Theo PO 20/10/2026, current Chair và Secretary đọc mọi trạng thái. Current Member đọc từ Published; Guest dùng invitation/session hợp lệ. Creator đọc mọi trạng thái; current approver đọc từ WaitingApproval trở đi. Quyền đọc không phụ thuộc Accepted/Declined. Không đủ quyền đọc trả 404 rỗng. PUT vẫn yêu cầu Organizer + MeetingCreator; quản lý roster chỉ theo Chair/Secretary active, không theo Organizer/admin.
 
@@ -41,7 +41,7 @@ trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt đ�
 
 Organizer được sửa thông tin khi meeting ở `Draft` hoặc `Rejected`. PUT ở `Rejected` giữ nguyên
 trạng thái, current Assigned Approver và rejection history/reason; không tạo lifecycle history,
-notification hoặc invitation. Ở `Published`, cùng PUT là **dời lịch** (UC-15 AF-1, BR-158): chỉ
+notification hoặc invitation. Ở `Published`, cùng PUT là **dời lịch** (UC-14 AF-1, BR-015): chỉ
 đổi được thời gian, địa điểm, link. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước khi
 validate nội dung. Trạng thái khác `Draft`/`Rejected`/`Published` trả `409 MSG33`.
 
@@ -74,14 +74,14 @@ Publish. Người không đủ quyền đọc meeting nhận `404` body rỗng n
 ### GET `/api/meetings`
 
 Các tham số query đều tùy chọn. Giá trị rỗng tương đương không gửi; mỗi tham số chỉ được gửi một
-lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
+lần. Tất cả bộ lọc được kết hợp bằng AND.
 
 | Tham số | Quy tắc |
 |---|---|
 | `status` | Tên enum PascalCase trong bảy `MeetingStatus` (`Draft` … `Ended`); `MinutesIssued`, `Archived` đã bỏ và trả `400 MSG32` |
 | `sensitivity` | `Normal`, `Internal` hoặc `Secret` (bỏ `Confidential` từ [ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)) |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường và không phân biệt dấu (`unaccent`, SCRUM-148: `e2e loc` khớp `E2E Lộc`, `đ` khớp `d`). `%`, `_`, `\` là ký tự thường, không phải wildcard |
-| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC. Meeting khớp khi lịch dự kiến của chính nó chồng lấp khoảng lọc (BR-30): `from` dùng `plannedEndTime >= from`, `to` dùng `plannedStartTime <= to` |
+| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC. Meeting khớp khi lịch dự kiến của chính nó chồng lấp khoảng lọc: `from` dùng `plannedEndTime >= from`, `to` dùng `plannedStartTime <= to` |
 | `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
 | `sortBy` | `title`, `plannedStartTime`, `createdAt`; mặc định `plannedStartTime` |
 | `sortDir` | `asc`, `desc`; mặc định `asc` với title, `desc` với hai cột thời gian |
@@ -91,7 +91,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=createdAt&sortDir=desc`.
-Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32). FE giữ toàn bộ tiêu chí trên URL của màn
+Đổi trang phải gửi lại bộ lọc và sort hiện tại. FE giữ toàn bộ tiêu chí trên URL của màn
 danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang, chia sẻ đường dẫn hay quay lại từ
 trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
 
@@ -127,23 +127,23 @@ tối đa bảy chữ số. Timestamp thiếu timezone hoặc `sortBy=startsAt` 
 ```
 
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
-`200` với `items: []` (BR-12). Khi không có
+`200` với `items: []`. Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
 `MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` theo catalogue. `errors` liệt kê
 theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
-`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-17.
+`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-16.
 
-Sequence UC-17 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
+Sequence UC-16 hiện ghi luật xem cuộc họp (BR-016, BR-017; diagram còn mã cũ tới PR 3) ở bước repository; BA cần bổ sung cách lọc theo tham số và nhánh query
 sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
 thành công/thất bại trong diagram hiện tại.
 
 ### GET `/api/meetings/approvers`
 
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, loại người đang gọi API,
-chỉ gồm `id`, `fullName` và `email` (email phân biệt hai người trùng tên trong ô chọn, SCRUM-150); endpoint phục vụ bước chọn người duyệt của UC-18 và kế thừa gate
+chỉ gồm `id`, `fullName` và `email` (email phân biệt hai người trùng tên trong ô chọn, SCRUM-150); endpoint phục vụ bước chọn người duyệt của UC-17 và kế thừa gate
 `MeetingCreator`. Danh sách sắp xếp theo tên. Nếu hệ thống không đọc được danh sách do lỗi database
 hoặc timeout, trả `503 Service Unavailable` với `{ "code": "MSG130", "message":
 "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
@@ -167,9 +167,9 @@ và có giây; backend chuẩn hóa về UTC:
 }
 ```
 
-`title`, `plannedStartTime`, `plannedEndTime` là bắt buộc theo BR-24/BR-25. Khi tạo, giờ bắt đầu phải
-sau thời điểm hiện tại (BR-162). `onlineLink` tùy chọn, tối đa 1.000 ký tự; rỗng hoặc chỉ khoảng trắng
-lưu `null`, nghĩa là dùng phòng họp trực tuyến TrustCabinet (BR-163). Người duyệt được chọn và gán trong UC-18 trước khi chuyển meeting sang
+`title`, `plannedStartTime`, `plannedEndTime` là bắt buộc theo BR-013. Khi tạo, giờ bắt đầu phải
+sau thời điểm hiện tại (BR-013). `onlineLink` tùy chọn, tối đa 1.000 ký tự; rỗng hoặc chỉ khoảng trắng
+lưu `null`, nghĩa là dùng phòng họp trực tuyến TrustCabinet (UC-13). Người duyệt được chọn và gán trong UC-17 trước khi chuyển meeting sang
 `WaitingApproval`. Nếu `mode` hoặc
 `sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
 
@@ -177,7 +177,7 @@ Theo PO 20/10/2026, `participants` bắt buộc 1..100 phần tử `{userId,role
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
 `meeting`. `meeting` gồm thông tin cuộc họp, lịch dự kiến, `actualStartedAt`/`actualEndedAt` (null
-tới khi Chair bắt đầu/kết thúc, UC-21/UC-22), `status`, `createdById`, `createdAt`, `updatedAt`.
+tới khi Chair bắt đầu/kết thúc, UC-20, UC-21), `status`, `createdById`, `createdAt`, `updatedAt`.
 
 ### GET `/api/meetings/{id}`
 
@@ -201,12 +201,12 @@ PUT không chuyển trạng thái; khi sửa `Rejected`, người duyệt hiện
 được giữ nguyên. Muốn gửi duyệt lại, Organizer gọi trực tiếp `SubmitForApproval` từ `Rejected`
 với người duyệt được chọn cho cycle mới; không bắt buộc `ReturnToDraft`.
 
-**Dời lịch — meeting `Published` (UC-15 AF-1).** Body giữ nguyên shape. Chỉ `plannedStartTime`,
-`plannedEndTime`, `location`, `onlineLink` được đổi (BR-158); `title`, `mode`, `sensitivity`,
+**Dời lịch — meeting `Published` (UC-14 AF-1).** Body giữ nguyên shape. Chỉ `plannedStartTime`,
+`plannedEndTime`, `location`, `onlineLink` được đổi (BR-015); `title`, `mode`, `sensitivity`,
 `description` khác giá trị đang lưu thì trả `400 MSG31` với `errors` đúng các field đó. Giờ bắt đầu mới
-phải ở tương lai (BR-75). Có thay đổi thì trong cùng transaction: lưu lịch mới, giữ `Published`, ghi
+phải ở tương lai (BR-015). Có thay đổi thì trong cùng transaction: lưu lịch mới, giữ `Published`, ghi
 một history `Reschedule` (`Published → Published`) và một notification `MeetingRescheduled` cho mỗi
-participant active, chưa Delegated, trừ chính người dời lịch (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
+participant active, chưa Delegated, trừ chính người dời lịch (UC-14); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
 Sửa hoặc dời lịch thành công phát `meetingChanged` trên `/hubs/meetings` (xem dưới).
@@ -214,7 +214,7 @@ Sửa hoặc dời lịch thành công phát `meetingChanged` trên `/hubs/meeti
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
 
 **Realtime.** Mỗi transition thành công (kể cả Start, End, TransferOrganizer), mỗi `PUT` thành công, việc hệ thống tự
-huỷ (BR-301) và tự kết thúc (ADR-0062) đều phát `meetingChanged` `{ eventId, meetingId, occurredAt }` sau commit, cho
+huỷ (BR-029) và tự kết thúc (ADR-0062) đều phát `meetingChanged` `{ eventId, meetingId, occurredAt }` sau commit, cho
 người đang đọc được cuộc họp và cả người gắn với cuộc họp vừa mất quyền đọc mà đã join từ trước. Trang chi tiết đọc
 lại cuộc họp và lịch sử; người mất quyền nhận `404`. Chi tiết: [25](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md).
 
@@ -291,7 +291,7 @@ Publish khóa meeting, kiểm tra quyền, trạng thái Approved, đúng một 
 Secretary active trong transaction trước khi ghi bất kỳ thay đổi nào. Invitation response không
 ảnh hưởng readiness.
 
-Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
+Publish tạo notification: chỉ participant có user active và `Response != Delegated`;
 không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
 hợp lệ để nhận notification. Người thực hiện Publish không nhận notification in-app, kể cả khi họ
 là participant. Email dùng producer SCRUM-15: gọi
@@ -357,8 +357,8 @@ agenda, participant, assignment hay history đã thao tác. Không tự tái t�
 ### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
 
 Đọc readiness từ cùng validator mà SubmitForApproval gọi lại trong transaction. Meeting chỉ ready
-khi thông tin bắt buộc ở cấp meeting, gồm lịch dự kiến hợp lệ, đầy đủ (UC-18/BR-33). Không thêm
-Agenda-required rule vì UC-18 chưa yêu cầu. Readiness không đòi giờ bắt đầu ở tương lai. Endpoint chỉ đọc,
+khi thông tin bắt buộc ở cấp meeting, gồm lịch dự kiến hợp lệ, đầy đủ (UC-17). Không thêm
+Agenda-required rule vì UC-17 chưa yêu cầu. Readiness không đòi giờ bắt đầu ở tương lai. Endpoint chỉ đọc,
 không đổi status/assignment hoặc tạo history/notification. `200 OK`
 trả `{ meetingId, status, ready, errors }`; dữ liệu chưa ready là `ready: false` cùng map lỗi, không
 phải HTTP error. Chỉ Organizer có `MeetingCreator` được gọi khi meeting ở `Draft` hoặc `Rejected`.
@@ -370,7 +370,7 @@ Readiness áp dụng rule hiện tại trên dữ liệu đã persist; validator
 | Entity.field | Điều kiện khi submit | Schema/rule |
 |---|---|---|
 | `Meeting.Title` | Bắt buộc sau trim, 1–300 ký tự | `required`, EF `IsRequired`, max 300 |
-| `Meeting.PlannedStartTime`, `Meeting.PlannedEndTime` | Bắt buộc; kết thúc sau bắt đầu (BR-62) | Non-null |
+| `Meeting.PlannedStartTime`, `Meeting.PlannedEndTime` | Bắt buộc; kết thúc sau bắt đầu (BR-013) | Non-null |
 | `Meeting.Mode`, `Meeting.Sensitivity` | Phải là enum đã định nghĩa | Non-null, lưu chuỗi |
 | `Meeting.Location` | Không bắt buộc; tối đa 300 ký tự | Không thêm yêu cầu theo mode |
 | `Meeting.OnlineLink` | Không bắt buộc; tối đa 1.000 ký tự | Nullable |
@@ -430,7 +430,7 @@ không rollback publication; worker đối soát và thử lại. Bốn cột em
 thư, `MeetingId` và trạng thái delivery vẫn giữ. Invitation Publish có tệp `.ics` theo lịch dự kiến;
 `Notification.OriginHistoryId` không thay đổi.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
-Recipient filter của notification đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
+Recipient filter của notification đã chốt và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant thuộc story tương ứng phải khóa meeting cha trong cùng transaction trước khi ghi thay đổi;
 protocol này bảo vệ snapshot người nhận khi Publish đồng thời.
 Update sau commit không đổi rows đã persist.
@@ -449,10 +449,10 @@ trong `meeting_status_history`; trigger append-only chỉ được tắt quanh �
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
 | `sensitivity` | Một trong `Normal`, `Internal`, `Secret`; mặc định `Normal` nếu bỏ qua |
-| `plannedStartTime` | Bắt buộc; ISO 8601 có giây và offset; tạo mới và dời lịch phải ở tương lai (BR-162, BR-75) |
-| `plannedEndTime` | Bắt buộc; cùng định dạng; sau `plannedStartTime` (BR-62) |
+| `plannedStartTime` | Bắt buộc; ISO 8601 có giây và offset; tạo mới và dời lịch phải ở tương lai (BR-013, BR-015) |
+| `plannedEndTime` | Bắt buộc; cùng định dạng; sau `plannedStartTime` (BR-013) |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
-| `onlineLink` | Tùy chọn; trim, rỗng thành `null`; tối đa 1.000 ký tự (BR-163) |
+| `onlineLink` | Tùy chọn; trim, rỗng thành `null`; tối đa 1.000 ký tự (UC-13) |
 | `description` | Tùy chọn; tối đa 4.000 ký tự; giữ xuống dòng |
 
 Sửa nháp hoặc meeting bị từ chối không đòi giờ bắt đầu ở tương lai; chỉ tạo mới và dời lịch đòi.
@@ -504,7 +504,7 @@ của transaction hoặc capability lookup.
 ## Persistence và transaction
 
 Cột `assigned_approver_id` nullable. POST lưu meeting `Draft`, chưa gán người duyệt; assignment được
-thực hiện trong UC-18. `planned_start_time`, `planned_end_time` non-null, có index `(status, planned_start_time)`.
+thực hiện trong UC-17. `planned_start_time`, `planned_end_time` non-null, có index `(status, planned_start_time)`.
 POST lưu meeting cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
@@ -559,7 +559,7 @@ stale content.
   trạng thái của lịch theo AI-eCabinet: sáu nhóm (Chờ duyệt, Đã duyệt, Đã công bố, Đang diễn ra, Đã
   kết thúc — gồm cả nháp, Bị từ chối), chọn được nhiều nhóm, **mặc định chỉ bật Đã duyệt, Đã công
   bố, Đang diễn ra** và luôn giữ ít nhất một nhóm; mức độ chọn một. FE lọc trên tập đã tải (server
-  đã lọc quyền xem theo BR-29) thay vì gửi `status`/`sensitivity`. URL của lịch:
+  đã lọc quyền xem theo BR-016, BR-017) thay vì gửi `status`/`sensitivity`. URL của lịch:
   `?span=work|full|month`, `week=YYYY-MM-DD`, `month=YYYY-MM`, `mode=list`,
   `status=waiting,approved,published,live,ended,rejected` (không có là nhóm mặc định, `all` là mọi
   nhóm), `sensitivity=Secret`.
@@ -577,7 +577,7 @@ stale content.
 - **Draft và Rejected (Organizer):** gọi readiness mỗi khi meeting đổi (`updatedAt`). Chưa ready thì
   liệt kê các câu lỗi của backend (đã gộp trùng) và khoá nút gửi; không gọi được readiness thì vẫn cho
   gửi vì Submit kiểm tra lại. Ở Rejected, thanh hiện người từ chối, thời điểm, lý do và nút "Gửi duyệt
-  lại" (UC-18 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
+  lại" (UC-17 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
 - **Gửi duyệt / Gửi duyệt lại:** dialog đọc lại `GET /approvers` mỗi lần mở và bắt buộc chọn một
   người; gửi lại được chọn cùng người hoặc người khác. Danh sách
   rỗng thì báo cần quản trị viên phân quyền và khoá nút. `MSG81` hiện danh sách thiếu sót trong
@@ -602,22 +602,22 @@ stale content.
   50 dòng.
 - **Chưa có giao diện:** `TransferOrganizer`. Admin không đọc được meeting và chưa có API liệt kê
   meeting `Approved` có Organizer bị vô hiệu hoá, nên FE chưa có chỗ hợp lý để đặt thao tác này.
-- Readiness chỉ kiểm tra thông tin cấp cuộc họp, gồm lịch dự kiến; agenda không bắt buộc (UC-18).
+- Readiness chỉ kiểm tra thông tin cấp cuộc họp, gồm lịch dự kiến; agenda không bắt buộc (UC-17).
 
 ## Checklist BA cần hoàn tất
 
-- Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
+- Đồng bộ nội dung BR-013, BR-014, BR-016, BR-017 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Người duyệt được chọn trong UC-18; Planned Start Time và Planned End Time nằm trên Meeting.
+- Người duyệt được chọn trong UC-17; Planned Start Time và Planned End Time nằm trên Meeting.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
-- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-14 → UC-20 cho Meeting Management.
+- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-13 → UC-19 cho Meeting Management.
 
 ## Bàn giao thay đổi roster PO 20/10/2026
 
-Form FE hiện có phải bổ sung participants khi tạo. Chi tiết contract, lỗi MSG277 và UC-73: [API roster](09-thanh-phan-tham-du.md), [handoff](09-thanh-phan-tham-du-ban-giao.md). Thay đổi này không sửa quyền submit/approve/publish/reschedule.
+Form FE hiện có phải bổ sung participants khi tạo. Chi tiết contract, lỗi MSG277 và UC-34: [API roster](09-thanh-phan-tham-du.md), [handoff](09-thanh-phan-tham-du-ban-giao.md). Thay đổi này không sửa quyền submit/approve/publish/reschedule.
 
-## SCRUM-69 — Start/End (UC-21/22)
+## SCRUM-69 — Start/End (UC-20, UC-21)
 
 `POST /api/meetings/{id}/transitions` nhận `{"action":"Start"}` hoặc `{"action":"End"}`.
 Chỉ nhận `action`, đúng casing; property lạ/trùng (kể cả actor, timestamp, reason) bị từ chối.
@@ -636,14 +636,14 @@ Notification Start, agendaChanged/MeetingEnded, `voteChanged`/`DraftDeleted` cho
 Lỗi side effect không đổi kết quả thành công; notification creation best effort, room được janitor đối soát.
 Không có lifecycle event Start mới. Xem [bàn giao FE/Tester](10-scrum69-ban-giao.md).
 
-## SCRUM-99 — Huỷ cuộc họp (UC-75) và tự huỷ khi quá hạn
+## SCRUM-99 — Huỷ cuộc họp (UC-22) và tự huỷ khi quá hạn
 
 Quyết định: [ADR-0032](../05-decisions/0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md).
 
 `POST /api/meetings/{id}/transitions` nhận `{"action":"Cancel","reason":"…"}`.
 
 - Người gọi phải là Organizer (`createdById`) còn capability `MeetingCreator`; cuộc họp ở `Draft`, `WaitingApproval`,
-  `Rejected`, `Approved` hoặc `Published` (BR-297).
+  `Rejected`, `Approved` hoặc `Published` (BR-028).
 - `reason` bắt buộc, cắt khoảng trắng hai đầu, tối đa 1.000 ký tự.
 - Thành công `200/MSG261`, `MeetingTransitionResponse`; `meeting.status = "Cancelled"`, `meeting.cancellation` có
   `cancelledAt`, `cancelledById`, `cancelledByName`, `reason`; `history.action = "Cancel"`, `history.cancellationReason`.
@@ -658,10 +658,10 @@ Quyết định: [ADR-0032](../05-decisions/0032-huy-cuoc-hop-va-tu-huy-khi-qua-
 - Thành viên/Chair thấy cuộc họp `Cancelled` khi nó đã được công bố trước khi huỷ (`cancelledFromStatus = Published`);
   cuộc họp huỷ trước khi công bố vẫn ẩn với họ như trước.
 
-**Tự huỷ (BR-301, PO 27/10/2026):** `MeetingOverdueWorker` chạy 15 phút một lần, huỷ cuộc họp chưa bắt đầu (5 trạng thái trên)
+**Tự huỷ (BR-029, PO 27/10/2026):** `MeetingOverdueWorker` chạy 15 phút một lần, huỷ cuộc họp chưa bắt đầu (5 trạng thái trên)
 khi `plannedStartTime` đã qua `Meetings:AutoCancelAfterHours` giờ (mặc định 24). History `AutoCancel`, `actorId = null`,
 `actorName = "Hệ thống"`, lý do “Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.”; chỉ Organizer
-nhận thông báo. Quy tắc tự `Ended` sau 4 giờ (BR-302) **bỏ** theo PO.
+nhận thông báo. Quy tắc tự `Ended` sau 4 giờ **bỏ** theo PO.
 
 **Tự kết thúc ([ADR-0062](../05-decisions/0062-tu-ket-thuc-cuoc-hop-bi-bo-quen.md), PO 13/11/2026):** cùng worker kết thúc
 cuộc họp `InProgress` khi cả `plannedEndTime` lẫn `actualStartedAt` đã qua `Meetings:AutoEndAfterHours` giờ (mặc định 24, cùng mốc với tự huỷ).

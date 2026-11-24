@@ -2,7 +2,7 @@ using TrustCabinet.Domain.CalendarSharing;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
-/// <summary>UC-85a step 2 — the defaults and limits of a meeting-time search (BR-421, BR-422, ADR-0058 §7).</summary>
+/// <summary>UC-81a step 2 — the defaults and limits of a meeting-time search (UC-81a, ADR-0058 §7).</summary>
 public sealed class MeetingSlotRulesTests
 {
     private static readonly Guid Finder = Guid.NewGuid();

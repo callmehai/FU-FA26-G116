@@ -9,8 +9,8 @@ using TrustCabinet.Domain.Participants;
 namespace TrustCabinet.Application.Notes;
 
 /// <summary>
-/// SCRUM-30, UC-82 — the Secretary types running notes during the sitting, one per agenda item and one for the meeting
-/// as a whole; the Chair reads them; nobody else learns they exist (BR-395). The minutes draft reads them (BR-402).
+/// SCRUM-30, UC-28 — the Secretary types running notes during the sitting, one per agenda item and one for the meeting
+/// as a whole; the Chair reads them; nobody else learns they exist (UC-55b). The minutes draft reads them (UC-70).
 /// </summary>
 public sealed class MeetingNoteService(IMeetingNoteRepository notes, IMeetingRepository meetings,
     INotesChangePublisher publisher, IUnitOfWork unitOfWork, TimeProvider clock,
@@ -83,7 +83,7 @@ public sealed class MeetingNoteService(IMeetingNoteRepository notes, IMeetingRep
     {
         var (meeting, failure) = await ReadableAsync(meetingId, actorId, true, ct);
         if (meeting is null) return new(failure);
-        // In the order of UC-82 step 4: the role, the meeting, the item, the length; the copy last, in the write.
+        // In the order of UC-28 step 4: the role, the meeting, the item, the length; the copy last, in the write.
         // EX-1: a reader of the meeting who is not its current Secretary — the Chair, or a Secretary replaced while
         // typing — is told so (MSG416), and the panel keeps the text to copy. Nothing about the notes is disclosed.
         if (!Secretaries(meeting).Contains(actorId)) return new(NoteFailure.Forbidden);
@@ -105,7 +105,7 @@ public sealed class MeetingNoteService(IMeetingNoteRepository notes, IMeetingRep
         }
         else
         {
-            // BR-399: a save from another window that landed after this one was read makes it stale, never overwritten.
+            // UC-28: a save from another window that landed after this one was read makes it stale, never overwritten.
             // The 1 ms window absorbs the precision PostgreSQL drops.
             if (loadedAt is null) return new(NoteFailure.Stale);
             var from = loadedAt.Value.AddMilliseconds(-1);
@@ -118,7 +118,7 @@ public sealed class MeetingNoteService(IMeetingNoteRepository notes, IMeetingRep
         return new(Note: MeetingNoteRules.View(saved));
     }
 
-    /// <summary>The meeting's current Secretaries (BR-395). The model allows one; a list keeps the check honest if not.</summary>
+    /// <summary>The meeting's current Secretaries (UC-55b). The model allows one; a list keeps the check honest if not.</summary>
     private static HashSet<Guid> Secretaries(Meeting meeting) => meeting.Participants
         .Where(p => p.MeetingId == meeting.Id && p.Role == MeetingRole.Secretary && ParticipantRules.Active(p))
         .Select(p => p.UserId).ToHashSet();

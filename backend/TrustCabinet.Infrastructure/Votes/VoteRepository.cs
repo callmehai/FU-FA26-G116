@@ -50,7 +50,7 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
             && ((viewer.UserId != null && r.VoterId == viewer.UserId)
                 || (viewer.GuestInvitationId != null && r.GuestInvitationId == viewer.GuestInvitationId)), ct);
 
-    /// <summary>The meeting's votes oldest first; drafts only for the Chair and Secretary (BR-253).</summary>
+    /// <summary>The meeting's votes oldest first; drafts only for the Chair and Secretary (BR-086, BR-087).</summary>
     public async Task<IReadOnlyList<VoteRow>> ListAsync(Guid meetingId, bool includeDrafts, VoteViewer viewer, CancellationToken ct)
         => await db.VotingSessions.AsNoTracking().Where(v => v.MeetingId == meetingId && (includeDrafts || v.Status != VotingStatus.Draft))
             .OrderBy(v => v.CreatedAt).ThenBy(v => v.Id).Select(Row(viewer)).ToListAsync(ct);
@@ -61,7 +61,7 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
 
     /// <summary>
     /// The vote's documents still in the meeting, oldest attached first, with when <paramref name="viewer"/> confirmed
-    /// reading each. One removed from the meeting no longer shows or counts (BR-292).
+    /// reading each. One removed from the meeting no longer shows or counts (UC-65).
     /// </summary>
     public async Task<IReadOnlyList<VoteDocumentView>> DocumentsAsync(Guid voteId, VoteViewer viewer, CancellationToken ct)
     {
@@ -84,7 +84,7 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
 
     /// <summary>
     /// Whether the meeting document is in the meeting and attached to a vote the reader may see: any vote for the
-    /// Chair and the Secretary, an Open or Closed one for everyone else, since a draft is theirs alone (BR-253).
+    /// Chair and the Secretary, an Open or Closed one for everyone else, since a draft is theirs alone (BR-086, BR-087).
     /// </summary>
     public Task<bool> IsVisibleVoteDocumentAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts, CancellationToken ct)
         => db.VoteDocuments.AnyAsync(l => l.MeetingDocumentId == meetingDocumentId && l.MeetingDocument.MeetingId == meetingId
@@ -121,15 +121,15 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
     /// Counts a ballot for <paramref name="optionId"/>. Every option of the vote is rewritten in the one statement,
     /// adding one to the chosen and nothing to the rest, and <c>updated_at</c> is left alone: had only the chosen
     /// row changed, its row version (<c>xmin</c>) and timestamp would match the voter's receipt from the same
-    /// transaction and give a secret choice away (BR-259). Atomic in SQL, so ballots cast side by side add up.
+    /// transaction and give a secret choice away (BR-096, BR-097). Atomic in SQL, so ballots cast side by side add up.
     /// </summary>
     public Task<int> CountBallotAsync(Guid voteId, Guid optionId, CancellationToken ct)
         => db.VotingOptions.Where(o => o.VotingSessionId == voteId).ExecuteUpdateAsync(
             set => set.SetProperty(o => o.BallotCount, o => o.BallotCount + (o.Id == optionId ? 1 : 0)), ct);
 
     /// <summary>
-    /// The tally, read from each option's counter. Only a public vote lists who chose what (BR-273); a secret one
-    /// stored nothing that could (BR-259).
+    /// The tally, read from each option's counter. Only a public vote lists who chose what (BR-096, BR-097); a secret one
+    /// stored nothing that could (BR-096, BR-097).
     /// </summary>
     public async Task<VoteResult> ResultAsync(Guid meetingId, Guid voteId, bool isAnonymous, CancellationToken ct)
     {

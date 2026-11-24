@@ -8,10 +8,10 @@ namespace TrustCabinet.Application.Votes;
 
 /// <summary>
 /// Deletes the drafts a meeting still has when it ends (PO 08/11/2026, SCRUM-28) or is cancelled (ADR-0067): opening
-/// needs the meeting InProgress (BR-160), so a draft left at the end, or in a meeting that will never start, can never
+/// needs the meeting InProgress (BR-090), so a draft left at the end, or in a meeting that will never start, can never
 /// be used. Each deletion leaves one audit row naming what the draft said, since the draft, its options and its document
 /// links are gone (the database cascades them, as when the Chair or Secretary deletes a draft). Open and Closed votes are
-/// untouched (BR-189).
+/// untouched (BR-086, BR-087).
 /// </summary>
 public sealed class VoteMeetingEnd(IVoteRepository votes, IAuditLogRepository auditLog, IUnitOfWork unitOfWork)
     : IVoteMeetingEnd

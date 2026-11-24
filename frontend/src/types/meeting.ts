@@ -4,7 +4,7 @@ import type { InvitationResponse, MeetingRole, ParticipantSeed } from './partici
  * Meeting lifecycle. The order below is the state machine: a meeting is drafted, submitted for
  * approval, approved (or rejected and resubmitted), published to attendees, run, then ended. The
  * minutes have their own status (ADR-0013). Cancelled is the other end, reached only before the start
- * (UC-75, ADR-0032).
+ * (UC-22, ADR-0032).
  *
  * Kept as a const array so the UI can both type-check a status and iterate the states, e.g. to
  * render a filter dropdown.
@@ -33,7 +33,7 @@ export const MEETING_STATUS_LABEL: Record<MeetingStatus, string> = {
   Cancelled: 'Đã huỷ',
 }
 
-/** UC-75: the organizer may cancel any meeting that has not started (BR-297). The backend checks again. */
+/** UC-22: the organizer may cancel any meeting that has not started (BR-028). The backend checks again. */
 export const CANCELLABLE_STATUSES: readonly MeetingStatus[] = [
   'Draft',
   'WaitingApproval',
@@ -42,11 +42,11 @@ export const CANCELLABLE_STATUSES: readonly MeetingStatus[] = [
   'Published',
 ]
 
-/** UC-15: the only states whose information can still be changed. The backend checks again on PUT. */
+/** UC-14: the only states whose information can still be changed. The backend checks again on PUT. */
 export const EDITABLE_STATUSES: readonly MeetingStatus[] = ['Draft', 'Rejected']
 
 /**
- * UC-15 AF-1: once Published, the organizer may only move the times, place and link (BR-158). The
+ * UC-14 AF-1: once Published, the organizer may only move the times, place and link (BR-015). The
  * same PUT carries the whole form; any other field that differs answers MSG31.
  */
 export const RESCHEDULABLE_STATUSES: readonly MeetingStatus[] = ['Published']
@@ -93,7 +93,7 @@ export interface Meeting {
   mode: MeetingMode
   /** Empty string when none was given. */
   location: string
-  /** An external link; null means the TrustCabinet online room (BR-163). */
+  /** An external link; null means the TrustCabinet online room (UC-13). */
   onlineLink: string | null
   sensitivity: Sensitivity
   status: MeetingStatus
@@ -115,13 +115,13 @@ export interface Meeting {
   myResponse: Exclude<InvitationResponse, 'Pending'> | null
   /** Whether to ask "Bạn có tham dự cuộc họp này?" now: invited, not the Chair, Published or InProgress, not answered yet. */
   canRespond: boolean
-  /** Only on a Cancelled meeting: who called it off, when and why (BR-298). */
+  /** Only on a Cancelled meeting: who called it off, when and why (UC-22). */
   cancellation: MeetingCancellation | null
 }
 
 export interface MeetingCancellation {
   cancelledAt: string
-  /** Null when the system cancelled it because nobody started it a day after its planned start (BR-301). */
+  /** Null when the system cancelled it because nobody started it a day after its planned start (BR-029). */
   cancelledById: string | null
   /** "Hệ thống" when `cancelledById` is null. */
   cancelledByName: string
@@ -169,7 +169,7 @@ export interface MeetingListQuery {
   q?: string
   status?: MeetingStatus
   sensitivity?: Sensitivity
-  /** UTC ISO; both ends inclusive. A meeting matches when its planned interval overlaps the range (BR-30). */
+  /** UTC ISO; both ends inclusive. A meeting matches when its planned interval overlaps the range. */
   from?: string
   to?: string
   page: number
@@ -234,7 +234,7 @@ export interface MeetingApprover {
 export type MeetingTransitionRequest =
   | { action: 'SubmitForApproval'; assignedApproverId: string }
   | { action: 'Reject'; reason: string }
-  /** UC-75: the organizer cancels before the start, with a reason of at most 1,000 characters. */
+  /** UC-22: the organizer cancels before the start, with a reason of at most 1,000 characters. */
   | { action: 'Cancel'; reason: string }
   | { action: 'Approve' | 'ReturnToDraft' | 'Publish' }
   /** SCRUM-69: the meeting's current Chair starts or ends it. */
@@ -266,9 +266,9 @@ export type MeetingHistoryAction =
   | 'Reschedule'
   | 'Start'
   | 'End'
-  /** UC-75: the organizer cancelled it. */
+  /** UC-22: the organizer cancelled it. */
   | 'Cancel'
-  /** BR-301: the system cancelled it a day after its planned start; `actorId` is null. */
+  /** BR-029: the system cancelled it a day after its planned start; `actorId` is null. */
   | 'AutoCancel'
   /** ADR-0062: the system ended it 24 hours after its planned end; `actorId` is null. */
   | 'AutoEnd'
@@ -295,7 +295,7 @@ export interface MeetingHistoryItem {
   assignedApproverId: string | null
   previousOrganizerId: string | null
   newOrganizerId: string | null
-  /** On a `Cancel` or `AutoCancel` row, for everyone who may read the meeting (BR-298). */
+  /** On a `Cancel` or `AutoCancel` row, for everyone who may read the meeting (UC-22). */
   cancellationReason: string | null
 }
 

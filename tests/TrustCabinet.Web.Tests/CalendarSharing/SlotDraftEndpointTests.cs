@@ -9,9 +9,9 @@ using static TrustCabinet.Web.Tests.CalendarSharing.CalendarSharingFixture;
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
 /// <summary>
-/// UC-85b — POST /api/calendar/slots/draft: the slot is rechecked against the same shared data as the search (BR-428), a
-/// Secret meeting never blocks it, and the meeting is created in Draft through UC-14 with the first invitee as Chair, the
-/// rest as Members and the finder as Secretary (BR-429).
+/// UC-81b — POST /api/calendar/slots/draft: the slot is rechecked against the same shared data as the search (BR-148), a
+/// Secret meeting never blocks it, and the meeting is created in Draft through UC-13 with the first invitee as Chair, the
+/// rest as Members and the finder as Secretary (UC-81b).
 /// </summary>
 public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFixture<CalendarSharingFixture>
 {
@@ -107,7 +107,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
         await Meeting(p.Admin, p.Owner, Monday, (9, 0), (10, 0));
         using var organizer = f.Client(p.Organizer);
 
-        // Owner is busy and Owner2's Monday is unknown — both were shown so when the slot was found (UC-85a AF-1).
+        // Owner is busy and Owner2's Monday is unknown — both were shown so when the slot was found (UC-81a AF-1).
         await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
             Draft([p.Owner, p.Owner2], accepted: [p.Owner, p.Owner2])), 201, "MSG29");
         // Without saying so, the same slot is taken.
@@ -122,7 +122,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
         await f.AddShare(p.Owner, p.Organizer, level: CalendarShareLevel.Level2);
         await Meeting(p.Admin, p.Owner, Monday, (9, 0), (10, 0), Sensitivity.Secret);
         using var organizer = f.Client(p.Organizer);
-        // BR-428: the recheck reads only shared data, so it answers exactly as if nothing were there.
+        // BR-148: the recheck reads only shared data, so it answers exactly as if nothing were there.
         await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft", Draft([p.Owner])), 201, "MSG29");
     }
 
@@ -133,7 +133,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
         await f.AddShare(p.Owner, p.Organizer, level: CalendarShareLevel.Level1);
         await Meeting(p.Admin, p.Owner, Monday, (9, 0), (10, 0), Sensitivity.Internal);
         using var organizer = f.Client(p.Organizer);
-        // BR-417: at Level 1 an Internal meeting is free for the finder, at the search and at the recheck alike.
+        // BR-144, BR-145: at Level 1 an Internal meeting is free for the finder, at the search and at the recheck alike.
         await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft", Draft([p.Owner])), 201, "MSG29");
     }
 
@@ -187,7 +187,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
             Assert.True(body.GetProperty("errors").TryGetProperty("userIds", out _));
         }
 
-        // A deactivated account is refused by UC-14's own roster check, named after the invitee the page sent.
+        // A deactivated account is refused by UC-13's own roster check, named after the invitee the page sent.
         var locked = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
             Draft([p.Owner, p.Locked])), 400, "MSG277");
         var errors = locked.GetProperty("errors");
@@ -206,7 +206,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
             Draft([p.Owner], title: "")), 400, "MSG31");
         Assert.True(noTitle.GetProperty("errors").TryGetProperty("title", out _));
 
-        // The slot's start has passed since the search (UC-14 EX-1).
+        // The slot's start has passed since the search (UC-13 EX-1).
         var past = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
             Draft([p.Owner], hour: 8, day: Today)), 400, "MSG31");
         Assert.True(past.GetProperty("errors").TryGetProperty("plannedStartTime", out _));
@@ -255,7 +255,7 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
     public async Task The_recheck_answers_the_same_whatever_lies_outside_the_share()
     {
         // A 4-hour gap around a Monday 00:00 slot reaches into Sunday, outside the share: the answer must not tell
-        // whether Owner has a meeting on Sunday evening (BR-415, BR-428, review of PR #319).
+        // whether Owner has a meeting on Sunday evening (BR-144, BR-145, BR-148, review of PR #319).
         var withMeeting = await f.Seed();
         await f.AddShare(withMeeting.Owner, withMeeting.Organizer, start: Monday, end: Monday.AddDays(4));
         await Meeting(withMeeting.Admin, withMeeting.Owner, Monday.AddDays(-1), (22, 0), (23, 0));

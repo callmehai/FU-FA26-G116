@@ -13,7 +13,7 @@ public sealed class MeetingOverdueOptions
     public const string SectionName = "Meetings";
 
     /// <summary>
-    /// Hours after the planned start before an unstarted meeting is cancelled (BR-301; PO 27/10/2026: 24, counted from
+    /// Hours after the planned start before an unstarted meeting is cancelled (BR-029; PO 27/10/2026: 24, counted from
     /// the start, not the end).
     /// </summary>
     public int AutoCancelAfterHours { get; set; } = 24;
@@ -40,7 +40,7 @@ public sealed class MeetingOverdueService(
     IMeetingChangePublisher? changes = null,
     IVoteMeetingEnd? voteEnd = null) : IMeetingOverdueService
 {
-    /// <summary>Shown on the meeting and in its history; the actor is the system (BR-301).</summary>
+    /// <summary>Shown on the meeting and in its history; the actor is the system (BR-029).</summary>
     internal static string Reason(int hours) => $"Không diễn ra theo lịch: quá {hours} giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.";
 
     /// <summary>On the AutoEnd history row; the actor is the system (ADR-0062).</summary>

@@ -4,8 +4,8 @@ using TrustCabinet.Domain.Documents;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// The personal library: folders UC-72a–d (SCRUM-110), documents UC-34, UC-36, UC-71a–c (SCRUM-111). Only the
-/// owner reaches it; another person's folder or document answers 404/MSG175 as if it did not exist (BR-242).
+/// The personal library: folders UC-41a–d (SCRUM-110), documents UC-37, UC-39, UC-40a–c (SCRUM-111). Only the
+/// owner reaches it; another person's folder or document answers 404/MSG175 as if it did not exist (BR-083).
 /// An administrator may read a deactivated person's library, audited (PO 27/10/2026).
 /// </summary>
 public static class PersonalLibraryEndpoints
@@ -49,7 +49,7 @@ public static class PersonalLibraryEndpoints
 
     public static void MapPersonalLibraryEndpoints(this IEndpointRouteBuilder app)
     {
-        // UC-34: every folder plus the documents at one location; AF-1 searches by name or filters by type.
+        // UC-37: every folder plus the documents at one location; AF-1 searches by name or filters by type.
         app.MapGroup("/api/documents").RequireActiveUser(Failed(Msg176LoadFailed))
             .MapGet("", async (HttpContext context, IPersonalLibraryService service, CancellationToken ct,
                 Guid? folderId = null, string? q = null, string? type = null, Guid? meetingId = null) =>
@@ -119,7 +119,7 @@ public static class PersonalLibraryEndpoints
             => app.MapGroup(pattern).RequireActiveUser(Failed(failedCode)).MapMethods("", [method], handler);
     }
 
-    /// <summary>UC-36: the destination is checked before the body is read, then the same file checks and write order as UC-33a AF-1.</summary>
+    /// <summary>UC-39: the destination is checked before the body is read, then the same file checks and write order as UC-36a AF-1.</summary>
     private static async Task<IResult> UploadAsync(HttpContext context, IPersonalLibraryService service, CancellationToken ct,
         Guid? folderId = null)
     {
@@ -167,7 +167,7 @@ public static class PersonalLibraryEndpoints
 
     private static IResult Error(LibraryFailure failure, string failedCode) => failure switch
     {
-        // Missing, or someone else's: the same answer (BR-242).
+        // Missing, or someone else's: the same answer (BR-083).
         LibraryFailure.NotFound => Json(404, Msg175ItemUnavailable, "Mục này không còn trong kho tài liệu của bạn."),
         LibraryFailure.DestinationNotFound => Json(404, Msg179DestinationUnavailable,
             "Thư mục đích không còn trong kho tài liệu của bạn."),

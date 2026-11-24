@@ -9,7 +9,7 @@ using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
 
 namespace TrustCabinet.Web.Tests.Votes;
 
-/// <summary>SCRUM-96: UC-76a (three sources) and UC-76b against PostgreSQL, with the object store in memory.</summary>
+/// <summary>SCRUM-96: UC-68a (three sources) and UC-68b against PostgreSQL, with the object store in memory.</summary>
 [Collection("Documents")]
 public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncLifetime
 {
@@ -79,7 +79,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         Assert.All(detail.GetProperty("documents").EnumerateArray(),
             d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
 
-        // Nothing is attached twice, and a selection with one bad document attaches none of it (BR-304).
+        // Nothing is attached twice, and a selection with one bad document attaches none of it (UC-36b).
         Assert.Equal((409, "MSG266"), Pick(await Read(await secretary.PostAsJsonAsync(Documents(s, vote),
             new { meetingDocumentIds = new[] { first } }))));
         Assert.Equal((404, "MSG170"), Pick(await Read(await secretary.PostAsJsonAsync(Documents(s, vote),
@@ -89,7 +89,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         Assert.Equal((404, "MSG170"), Pick(await Read(await secretary.PostAsync(Documents(s, vote),
             new StringContent("""{"meetingDocumentIds":["x"]}""", Encoding.UTF8, "application/json")))));
 
-        // A draft and its documents are the Chair's and the Secretary's alone (BR-253).
+        // A draft and its documents are the Chair's and the Secretary's alone (BR-086, BR-087).
         using (var member = fixture.Client(s.Member))
             Assert.Equal((404, "MSG205"), Pick(await Read(await member.DeleteAsync($"{Documents(s, vote)}/{first}"))));
 
@@ -97,7 +97,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         Assert.Equal((404, "MSG269"), Pick(await Read(await secretary.DeleteAsync($"{Documents(s, vote)}/{first}"))));
         Assert.Equal([second], Ids(await Detail(s, s.Secretary, vote)));
         await using var db = fixture.Db();
-        // Detaching keeps the document in the meeting (BR-305).
+        // Detaching keeps the document in the meeting (UC-68b).
         Assert.Null((await db.MeetingDocuments.SingleAsync(d => d.Id == first)).RemovedAt);
     }
 
@@ -146,7 +146,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         await using var db = fixture.Db();
         var rows = await db.MeetingDocuments.Where(d => d.MeetingId == s.MeetingId).ToListAsync();
         Assert.Equal([fromLibrary, uploaded], rows.Select(r => r.Id).Order());
-        // The uploaded file also lands in the uploader's library (BR-210).
+        // The uploaded file also lands in the uploader's library (BR-072, BR-073).
         var upload = rows.Single(r => r.Id == uploaded);
         Assert.Equal(s.Chair, (await db.Documents.SingleAsync(d => d.Id == upload.DocumentId)).OwnerId);
     }
@@ -164,7 +164,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         using (var chair = fixture.Client(s.Chair))
             Assert.Equal((200, "MSG217"), Pick(await Read(await chair.PostAsync($"{Votes(s)}/{vote}/open", null))));
 
-        // The list is fixed once the vote opens (BR-288).
+        // The list is fixed once the vote opens (BR-094, BR-095).
         Assert.Equal((409, "MSG213"), Pick(await Read(await secretary.PostAsJsonAsync(Documents(s, vote),
             new { meetingDocumentIds = new[] { other } }))));
         Assert.Equal((409, "MSG213"), Pick(await Read(await secretary.DeleteAsync($"{Documents(s, vote)}/{document}"))));
@@ -200,7 +200,7 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
         var objects = fixture.Storage.Objects.Count;
         Assert.Equal((503, "MSG166"), Pick(await Read(await secretary.PostAsync($"{Documents(s, vote)}/upload",
             DocumentFixture.Form(("Tải lên.pdf", SampleFiles.Pdf("upload"), "1"))))));
-        // The bytes of a failed upload are deleted again (BR-286).
+        // The bytes of a failed upload are deleted again (UC-36a, UC-36b, UC-39).
         Assert.Equal(objects, fixture.Storage.Objects.Count);
         await using (var db = fixture.Db())
         {

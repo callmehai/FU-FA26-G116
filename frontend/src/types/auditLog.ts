@@ -1,6 +1,6 @@
-/** System audit log (SCRUM-16, UC-13) — docs/03-api/21-nhat-ky-kiem-toan.md. */
+/** System audit log (SCRUM-16, UC-12) — docs/03-api/21-nhat-ky-kiem-toan.md. */
 
-/** Who did it (BR-441): an account, a Guest (named from the invitation), or the system itself. */
+/** Who did it (UC-12): an account, a Guest (named from the invitation), or the system itself. */
 export interface AuditActor {
   kind: 'user' | 'guest' | 'system'
   /** The account id, or the invitation id for a Guest; null for the system. */

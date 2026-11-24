@@ -9,8 +9,8 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 namespace TrustCabinet.Web.Tests.Summaries;
 
 /// <summary>
-/// SCRUM-33 — submit (UC-61), approve and issue (UC-64), return (UC-65) and correct (UC-83) the minutes, and what a reader
-/// of the meeting sees of them (UC-58, BR-412): POST /api/minutes/{id}/submit|approve|reject|corrections, GET /api/minutes/{id}.
+/// SCRUM-33 — submit (UC-72), approve and issue (UC-73), return (UC-74) and correct (UC-75) the minutes, and what a reader
+/// of the meeting sees of them (UC-69, BR-139): POST /api/minutes/{id}/submit|approve|reject|corrections, GET /api/minutes/{id}.
 /// </summary>
 public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixture<SummaryFixture>
 {
@@ -90,7 +90,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         Assert.Empty(History(hidden));
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{Id(draft)}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{Id(draft)}/export")).StatusCode);
-        // Locked once sent (BR-388).
+        // Locked once sent (UC-71).
         await AssertCode(await secretary.PutAsJsonAsync($"/api/minutes/{Id(draft)}", new { content = "<p>Sửa.</p>", updatedAt = Stamp(waiting) }),
             409, "MSG400");
         await AssertCode(await Act(secretary, Id(draft), "submit", Stamp(waiting)), 409, "MSG400");
@@ -102,13 +102,13 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         Assert.Equal(f.Clock.Now, issued.GetProperty("issuedAt").GetDateTimeOffset());
         await using (var db = f.Db())
         {
-            // The meeting keeps Ended: being issued is the minutes' state (BR-408).
+            // The meeting keeps Ended: being issued is the minutes' state (BR-137, BR-138).
             Assert.Equal(MeetingStatus.Ended, (await db.Meetings.SingleAsync(m => m.Id == s.MeetingId)).Status);
             var row = await db.MeetingMinutes.SingleAsync(m => m.Id == Id(draft));
             Assert.Equal(MinutesStatus.Issued, row.Status);
             Assert.Equal(s.Secretary, row.SubmittedById);
         }
-        // Everyone who may read the meeting is told, never the Chair who issued it (BR-411); the outsider is not.
+        // Everyone who may read the meeting is told, never the Chair who issued it (UC-72, UC-73, UC-74); the outsider is not.
         Assert.Equal(new[] { s.Secretary, s.Member, s.Organizer }.Order().ToArray(),
             await Notified(s.MeetingId, NotificationType.MinutesIssued));
         // The same readers by email (PO 15/11/2026), each with a button straight to the minutes tab.
@@ -172,7 +172,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
 
         await using (var db = f.Db())
             await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(u => u.SetProperty(m => m.Status, MeetingStatus.Ended));
-        // A copy older than the stored one is refused (EX-4, BR-389).
+        // A copy older than the stored one is refused (EX-4, UC-71).
         Tick();
         var saved = (await AssertCode(await secretary.PutAsJsonAsync($"/api/minutes/{Id(draft)}",
             new { content = "<p>Bản cuối.</p>", updatedAt = Stamp(draft) }), 200, "MSG396")).GetProperty("minutes");
@@ -206,7 +206,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         using var member = f.Client(s.Member);
         var draft = await Build(secretary, s);
 
-        // A draft is not waiting for approval (UC-64 EX-2, UC-65 EX-2).
+        // A draft is not waiting for approval (UC-73 EX-2, UC-74 EX-2).
         await AssertCode(await Act(chair, Id(draft), "approve", Stamp(draft)), 409, "MSG429");
         await AssertCode(await Return(chair, Id(draft), "Bổ sung kết luận.", Stamp(draft)), 409, "MSG429");
 
@@ -217,10 +217,10 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         await AssertCode(await Return(secretary, Id(draft), "Tự trả lại.", Stamp(waiting)), 403, "MSG428");
         Assert.Equal(HttpStatusCode.NotFound, (await Act(member, Id(draft), "approve", Stamp(waiting))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await Return(member, Id(draft), "Không đồng ý.", Stamp(waiting))).StatusCode);
-        // The copy the Chair read is not the stored one (UC-64 EX-3, UC-65 EX-6).
+        // The copy the Chair read is not the stored one (UC-73 EX-3, UC-74 EX-6).
         await AssertCode(await Act(chair, Id(draft), "approve", Stamp(draft)), 409, "MSG401");
         await AssertCode(await Return(chair, Id(draft), "Bổ sung kết luận.", Stamp(draft)), 409, "MSG401");
-        // The reason is required and at most 2,000 characters (UC-65 EX-3).
+        // The reason is required and at most 2,000 characters (UC-74 EX-3).
         await AssertCode(await Return(chair, Id(draft), "   ", Stamp(waiting)), 400, "MSG431");
         await AssertCode(await Return(chair, Id(draft), null, Stamp(waiting)), 400, "MSG431");
         await AssertCode(await Return(chair, Id(draft), new string('x', 2001), Stamp(waiting)), 400, "MSG431");
@@ -233,7 +233,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         Assert.Equal(s.Chair, returned.GetProperty("returnedBy").GetProperty("id").GetGuid());
         Assert.Equal([s.Secretary], await Notified(s.MeetingId, NotificationType.MinutesReturned));
         Assert.Empty(await Notified(s.MeetingId, NotificationType.MinutesIssued));
-        // Returned minutes stay the officers' alone, and are corrected and sent again (BR-407).
+        // Returned minutes stay the officers' alone, and are corrected and sent again (BR-135, BR-136).
         Assert.Equal(JsonValueKind.Null, (await State(member, s)).GetProperty("minutes").ValueKind);
         var seen = (await State(secretary, s)).GetProperty("minutes");
         Assert.Equal("Bổ sung kết luận mục 2.", seen.GetProperty("rejectionReason").GetString());
@@ -257,7 +257,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         using var member = f.Client(s.Member);
         var first = Id(issued);
 
-        // A reader may read the issued text but not write it (UC-83 EX-1).
+        // A reader may read the issued text but not write it (UC-75 EX-1).
         await AssertCode(await Correct(member, first), 403, "MSG397");
         Tick();
         var created = await AssertCode(await Correct(chair, first), 201, "MSG432");
@@ -268,13 +268,13 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         Assert.Equal(first, correction.GetProperty("supersedesId").GetGuid());
         Assert.Equal(issued.GetProperty("content").GetString(), correction.GetProperty("content").GetString());
         Assert.Equal(["2:Draft", "1:Issued"], History(created));
-        // Nobody is told until the correction is issued (UC-83 POST-3).
+        // Nobody is told until the correction is issued (UC-75 POST-3).
         Assert.Single(await Notified(s.MeetingId, NotificationType.MinutesWaitingApproval));
 
         // One correction at a time (EX-3), and only of the issued revision (EX-2).
         await AssertCode(await Correct(secretary, first), 409, "MSG434");
         await AssertCode(await Correct(secretary, second), 409, "MSG433");
-        // A correction is not rebuilt from the template (BR-413); asking without rebuild is the existing draft.
+        // A correction is not rebuilt from the template (BR-137, BR-138); asking without rebuild is the existing draft.
         await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 409, "MSG456");
         await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = false }), 409, "MSG399");
         // The issued revision is untouched and stays the one readers see; the correction is not there for them.
@@ -300,7 +300,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
             Assert.Equal(MinutesStatus.Superseded, (await db.MeetingMinutes.SingleAsync(m => m.Id == first)).Status);
             Assert.Equal(issued.GetProperty("content").GetString(), (await db.MeetingMinutes.SingleAsync(m => m.Id == first)).Content);
             Assert.Equal(MinutesStatus.Issued, (await db.MeetingMinutes.SingleAsync(m => m.Id == second)).Status);
-            // BR-446: the issue and its correction, each by the Chair who issued it.
+            // BR-010: the issue and its correction, each by the Chair who issued it.
             var issues = await db.AuditLog.Where(a => a.Action == AuditActions.MinutesIssued
                     && (a.ObjectId == first || a.ObjectId == second)).OrderBy(a => a.OccurredAt).ToListAsync();
             Assert.Equal([first, second], issues.Select(a => a.ObjectId!.Value));
@@ -320,7 +320,7 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         var after = await State(member, s);
         Assert.Equal(second, Id(after.GetProperty("minutes")));
         Assert.Equal(["2:Issued", "1:Superseded"], History(after));
-        // The superseded text stays readable, and downloadable, from the history (BR-409).
+        // The superseded text stays readable, and downloadable, from the history (BR-137, BR-138).
         var old = await AssertOk(await member.GetAsync($"/api/minutes/{first}"));
         Assert.Equal("Superseded", old.GetProperty("minutes").GetProperty("status").GetString());
         Assert.Equal(issued.GetProperty("content").GetString(), old.GetProperty("minutes").GetProperty("content").GetString());

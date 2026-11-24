@@ -10,7 +10,7 @@ namespace TrustCabinet.Infrastructure.Reports;
 /// <summary>
 /// The rows behind the report query, one read per main table. Each read keeps the meetings the caller may read under
 /// <see cref="MeetingReadPolicy.ForUser"/> whose planned start is in the period, in the query, before anything leaves the
-/// database (BR-432) — the same filter as <see cref="MeetingReportQuery"/>.
+/// database (BR-149, BR-150) — the same filter as <see cref="MeetingReportQuery"/>.
 /// </summary>
 public sealed class ReportFactQuery(TrustCabinetDbContext db) : IReportFactQuery
 {
@@ -32,7 +32,7 @@ public sealed class ReportFactQuery(TrustCabinetDbContext db) : IReportFactQuery
                     .Where(p => p.Role == MeetingRole.Chair).Select(p => (Guid?)p.UserId).FirstOrDefault(),
                 m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
                     .Where(p => p.Role == MeetingRole.Chair).Select(p => p.User.FullName).FirstOrDefault(),
-                // BR-435: current participants and guests whose invitation stands, as MeetingReportQuery counts them.
+                // BR-151: current participants and guests whose invitation stands, as MeetingReportQuery counts them.
                 m.Participants.AsQueryable().Count(ParticipantRules.CurrentExpression)
                     + db.MeetingGuestInvitations.Count(g => g.MeetingId == m.Id && g.RevokedAt == null),
                 m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
@@ -110,7 +110,7 @@ public sealed class ReportFactQuery(TrustCabinetDbContext db) : IReportFactQuery
             .ToListAsync(ct);
     }
 
-    /// <summary>The meetings the caller may read whose planned start is in [start, end) (BR-432, BR-434).</summary>
+    /// <summary>The meetings the caller may read whose planned start is in [start, end) (BR-149, BR-150).</summary>
     private IQueryable<Meeting> Readable(Guid actorId, DateTimeOffset start, DateTimeOffset end)
         => db.Meetings.AsNoTracking()
             .Where(MeetingReadPolicy.ForUser(actorId))

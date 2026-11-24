@@ -47,7 +47,7 @@ public sealed partial class MeetingLifecycleTests
 
         await using var check = fixture.Db();
         var left = await check.VotingSessions.Where(v => v.MeetingId == s.MeetingId).Select(v => v.Id).ToArrayAsync();
-        // An Open or Closed vote is evidence and stays (BR-189); only drafts go, with their options.
+        // An Open or Closed vote is evidence and stays (BR-086, BR-087); only drafts go, with their options.
         Assert.Equal(new[] { open, closed }.Order(), left.Order());
         Assert.False(await check.VotingOptions.AnyAsync(o => o.VotingSessionId == draft || o.VotingSessionId == secondDraft));
         Assert.True(await check.VotingSessions.AnyAsync(v => v.Id == otherDraft));

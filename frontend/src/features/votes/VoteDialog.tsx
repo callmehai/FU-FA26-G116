@@ -43,7 +43,7 @@ function validate(values: Values): Record<string, string> {
 }
 
 /**
- * UC-53 / UC-53 AF-1 / UC-54 AF-1: create a vote or edit a draft, then save it as a draft or — the
+ * UC-63 AF-1 / UC-64 AF-1: create a vote or edit a draft, then save it as a draft or — the
  * Chair, while the meeting runs — open it at once. Opening from here is the confirmation: no second
  * dialog. A failed open saves nothing (no new draft, the old draft unchanged) and keeps what was typed.
  */

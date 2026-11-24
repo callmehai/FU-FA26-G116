@@ -18,14 +18,14 @@ to app.trustcabinet.workspace-hub.space. `main` is the frozen three-project demo
 (email + password, Google), user and role administration, scheduling, approval and cancellation, agenda,
 participants and attendance, the personal and meeting document libraries with comments, the online room
 over LiveKit, recording, Vietnamese transcription with speaker attribution, Voice ID and notifications
-all call the real API, and voting is built end to end. The AI draft of the minutes (SCRUM-36, UC-47–UC-50)
-and the draft minutes from the one fixed template (SCRUM-32, UC-58–UC-60) run on a local language model
+all call the real API, and voting is built end to end. The AI draft of the minutes (SCRUM-36, UC-58–UC-61)
+and the draft minutes from the one fixed template (SCRUM-32, UC-69–UC-71) run on a local language model
 ([ADR-0054](docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)), and sending the minutes for approval,
-approving (which issues them), returning and correcting them (SCRUM-33, UC-61, UC-64, UC-65, UC-83) are built too.
-Signing the minutes, even a simulated signature (SCRUM-37, UC-62–UC-63), and the Secretary's list of document
+approving (which issues them), returning and correcting them (SCRUM-33, UC-72, UC-73, UC-74, UC-75) are built too.
+Signing the minutes, even a simulated signature (SCRUM-37, former UC-62, former UC-63), and the Secretary's list of document
 comments (SCRUM-106) were dropped by the PO on 2026-11-14 — do not build them, nor the personal dashboard and
-meeting workspace (UC-69) or locking an account after wrong passwords (UC-09), dropped on 2026-11-15; the per-minute
-sign-in limit (MSG414) stays. Register to Speak (SCRUM-27, UC-79) is built: raising a hand in the online room, the
+meeting workspace (former UC-69) or locking an account after wrong passwords (former UC-09), dropped on 2026-11-15; the per-minute
+sign-in limit (MSG414) stays. Register to Speak (SCRUM-27, UC-50) is built: raising a hand in the online room, the
 Phát biểu panel and the chair's Mời. Check the code before assuming a feature exists.
 
 The EF Core model covers the whole backlog: access, meetings, agenda, documents, voting, recordings,

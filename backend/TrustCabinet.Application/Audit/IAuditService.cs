@@ -1,7 +1,7 @@
 namespace TrustCabinet.Application.Audit;
 
 /// <summary>
-/// The <c>:Audit Service</c> participant of UC-06a, UC-06b and UC-06c — writes the business evidence
+/// The <c>:Audit Service</c> participant of UC-06a, UC-06b, UC-06c — writes the business evidence
 /// that something was done and by whom.
 ///
 /// Not application logging. <c>AuditLogEntry</c> says it: this is append-only evidence, kept

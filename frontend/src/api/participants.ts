@@ -54,7 +54,7 @@ export const changeAssignments = (meetingId: string, revision: string, body: Ass
   api.put<ParticipantMutationResponse>(`${base(meetingId)}/participants/assignments`, body, ifMatch(revision))
 
 /**
- * The Chair hands the role over in one request (UC-73): the server makes the caller a Member and the
+ * The Chair hands the role over in one request (UC-34): the server makes the caller a Member and the
  * chosen assignment Chair together. 200 MSG257; 400 MSG259 when that person can no longer take it;
  * 409 MSG260 when the caller can no longer hand it over.
  */

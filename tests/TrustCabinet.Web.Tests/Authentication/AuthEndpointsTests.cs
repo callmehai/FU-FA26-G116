@@ -72,7 +72,7 @@ public class AuthEndpointsTests : IDisposable
                 services.RemoveAll<IPasswordHasher>();
                 services.AddSingleton<IPasswordHasher, FakePasswordHasher>();
 
-                // Sign-in is recorded (BR-444); the real writer needs PostgreSQL.
+                // Sign-in is recorded (BR-009); the real writer needs PostgreSQL.
                 services.RemoveAll<IAuditService>();
                 services.AddSingleton<IAuditService>(Audit);
             });

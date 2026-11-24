@@ -11,7 +11,7 @@ using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
-/// <summary>SCRUM-112 (SCRUM-58): UC-33a from the library, UC-33b, UC-33c and UC-33d against PostgreSQL.</summary>
+/// <summary>SCRUM-112 (SCRUM-58): UC-36a from the library, UC-36b, UC-36c, UC-36d against PostgreSQL.</summary>
 [Collection("Documents")]
 public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture) : IAsyncLifetime
 {
@@ -57,7 +57,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         await db.Meetings.Where(m => m.Id == meetingId).ExecuteUpdateAsync(m => m.SetProperty(x => x.Status, status));
     }
 
-    // ---- UC-33a: from the library ----
+    // ---- UC-36a: from the library ----
 
     [Fact]
     public async Task Secretary_adds_own_library_documents_as_general_documents_under_their_current_name()
@@ -118,7 +118,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         Assert.Equal((409, "MSG172"), Pick(await Read(await secretary.PostAsJsonAsync(Url(s), new { documentIds = new[] { secretaryDocument } }))));
     }
 
-    // ---- UC-33c ----
+    // ---- UC-36c ----
 
     [Fact]
     public async Task Chair_removes_a_document_keeping_its_comments_and_links_out_of_every_list()
@@ -192,7 +192,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         using (var member = fixture.Client(s.Member))
             Assert.Equal((403, "MSG169"), Pick(await Read(await member.DeleteAsync($"{Url(s)}/{document}"))));
         using var secretary = fixture.Client(s.Secretary);
-        // BR-211: an ID of another meeting answers like a removed one.
+        // BR-074–BR-076: an ID of another meeting answers like a removed one.
         Assert.Equal((404, "MSG170"), Pick(await Read(await secretary.DeleteAsync($"{Url(s)}/{elsewhere}"))));
         fixture.SaveFailure.When = db => db.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Modified);
         Assert.Equal((503, "MSG171"), Pick(await Read(await secretary.DeleteAsync($"{Url(s)}/{document}"))));
@@ -203,7 +203,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         Assert.Equal((404, "MSG174"), Pick(await Read(await outsider.DeleteAsync($"{Url(s)}/{document}"))));
     }
 
-    // ---- UC-33b ----
+    // ---- UC-36b ----
 
     [Fact]
     public async Task Chair_links_meeting_documents_to_an_item_keeping_their_other_links()
@@ -341,7 +341,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
             DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))))));
     }
 
-    // ---- UC-33d ----
+    // ---- UC-36d ----
 
     [Fact]
     public async Task Unlinking_drops_one_link_and_the_document_stays_in_the_meeting()
@@ -361,7 +361,7 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
 
         Assert.Equal((200, "MSG239"), Pick(await Read(await client.DeleteAsync($"{Links(s, second)}/{document}"))));
         (_, _, list) = await Read(await client.GetAsync(Url(s)));
-        // No link left: a general document (BR-280).
+        // No link left: a general document (UC-36b, UC-36d).
         Assert.Equal(document, list.GetProperty("general")[0].GetProperty("id").GetGuid());
         Assert.Equal((404, "MSG246"), Pick(await Read(await client.DeleteAsync($"{Links(s, second)}/{document}"))));
     }

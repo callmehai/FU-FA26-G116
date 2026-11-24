@@ -72,7 +72,7 @@ public class RolePermissionEndpointsTests : IDisposable
                 services.RemoveAll<IUserAccountRepository>();
                 services.AddSingleton<IUserAccountRepository>(Accounts);
 
-                // Stopping calendar shares (BR-424) needs PostgreSQL; CalendarShareStopTests covers it there.
+                // Stopping calendar shares (BR-142, BR-143) needs PostgreSQL; CalendarShareStopTests covers it there.
                 services.RemoveAll<ICalendarShareStopper>();
                 services.AddSingleton<ICalendarShareStopper>(new FakeCalendarShareStopper());
 
@@ -166,7 +166,7 @@ public class RolePermissionEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    // ------------------------------------------------------ UC-10 · View the matrix
+    // ------------------------------------------------------ UC-09 · View the matrix
 
     [Fact]
     public async Task Get_returns_the_matrix_and_the_catalogue()
@@ -218,7 +218,7 @@ public class RolePermissionEndpointsTests : IDisposable
         });
     }
 
-    // --------------------------------------------------- UC-11 · Configure role permissions
+    // --------------------------------------------------- UC-10 · Configure role permissions
 
     [Fact]
     public async Task Put_answers_MSG16_and_returns_the_updated_matrix()

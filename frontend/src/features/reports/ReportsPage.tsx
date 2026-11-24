@@ -51,7 +51,7 @@ const QUERY_KEYS = ['entity', 'groupBy', 'sort', 'top', ...Object.keys(FILTERS)]
  * SCRUM-38, reworked after the supervisor's review of 22/11/2026: the figures a manager reads first in one band at the
  * top, then a query over the main tables — pick the table, how to group it, what to filter, how many to show — so any
  * follow-up question ("who chaired the most, and second?") has an answer on the screen. Open to every internal user
- * (BR-432): the server counts only what the viewer may see. Period and query live in the URL, so a reload or a shared
+ * (BR-149, BR-150): the server counts only what the viewer may see. Period and query live in the URL, so a reload or a shared
  * link opens the same answer.
  */
 export function ReportsPage() {

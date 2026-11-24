@@ -236,7 +236,7 @@ public sealed class CallRoomServiceTests
         Assert.NotNull(Assert.Single(_calls.Stints).LeftAt);
     }
 
-    // SCRUM-213: closing the room with a hand still up tells the Phát biểu panels (BR-337), on every path that closes it.
+    // SCRUM-213: closing the room with a hand still up tells the Phát biểu panels (BR-104–BR-106), on every path that closes it.
     [Fact]
     public async Task Reconcile_closing_the_room_of_an_ended_meeting_tells_the_speaking_queue()
     {

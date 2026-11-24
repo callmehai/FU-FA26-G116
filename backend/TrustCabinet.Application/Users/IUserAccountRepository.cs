@@ -37,7 +37,7 @@ public interface IUserAccountRepository
     Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// The role with this id, or null — UC-06a and UC-06b check the chosen role exists, now that a
+    /// The role with this id, or null — UC-06a, UC-06b check the chosen role exists, now that a
     /// role is a row an administrator can delete rather than an enum value (ADR-0008).
     /// </summary>
     Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default);

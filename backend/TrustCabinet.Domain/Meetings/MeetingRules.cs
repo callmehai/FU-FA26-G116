@@ -24,20 +24,20 @@ public static partial class MeetingRules
         => meeting.Status == MeetingStatus.InProgress && meeting.PlannedEndTime <= cutoff
             && (meeting.ActualStartedAt is null || meeting.ActualStartedAt <= cutoff);
 
-    /// <summary>UC-75: only before the meeting starts (BR-297). Started, ended or cancelled meetings are final.</summary>
+    /// <summary>UC-22: only before the meeting starts (BR-028). Started, ended or cancelled meetings are final.</summary>
     public static bool IsCancellable(MeetingStatus status)
         => status is MeetingStatus.Draft or MeetingStatus.WaitingApproval or MeetingStatus.Rejected
             or MeetingStatus.Approved or MeetingStatus.Published;
 
     public const int MaxCancellationReasonLength = 1000;
 
-    /// <summary>UC-15 AF-1: once Published, only the schedule, place and link may move (BR-27, BR-158).</summary>
+    /// <summary>UC-14 AF-1: once Published, only the schedule, place and link may move (BR-014, BR-015).</summary>
     public static bool IsReschedulable(MeetingStatus status)
         => status == MeetingStatus.Published;
 
     /// <param name="startsAfter">
-    /// When set, the planned start must be later than this instant: on create (BR-162) and on
-    /// reschedule (BR-75). Editing a Draft or Rejected meeting does not re-check it.
+    /// When set, the planned start must be later than this instant: on create (BR-013) and on
+    /// reschedule (BR-015). Editing a Draft or Rejected meeting does not re-check it.
     /// </param>
     public static bool TryValidate(
         MeetingInput input,
@@ -182,7 +182,7 @@ public static partial class MeetingRules
         }
     }
 
-    /// <summary>An ISO 8601 timestamp with an offset; shared with the draft from a slot (UC-85b) so both read times alike.</summary>
+    /// <summary>An ISO 8601 timestamp with an offset; shared with the draft from a slot (UC-81b) so both read times alike.</summary>
     internal static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
     {
         timestamp = default;

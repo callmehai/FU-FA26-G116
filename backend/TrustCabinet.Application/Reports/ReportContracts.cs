@@ -3,7 +3,7 @@ using System.Globalization;
 namespace TrustCabinet.Application.Reports;
 
 /// <summary>
-/// SCRUM-38 — a report period (BR-433): whole calendar months in Vietnam time, the start not after the end, at most
+/// SCRUM-38 — a report period (UC-79a): whole calendar months in Vietnam time, the start not after the end, at most
 /// <see cref="MaxMonths"/> months. Months are "yyyy-MM".
 /// </summary>
 public readonly record struct ReportPeriod(int FromYear, int FromMonth, int ToYear, int ToMonth)
@@ -35,7 +35,7 @@ public readonly record struct ReportPeriod(int FromYear, int FromMonth, int ToYe
 
     /// <summary>
     /// Reads <paramref name="from"/> and <paramref name="to"/>. Both missing: the 12 months ending with the current
-    /// month. Only one given, a month that does not parse, or a period that breaks BR-433: null.
+    /// month. Only one given, a month that does not parse, or a period that breaks UC-79a: null.
     /// </summary>
     public static ReportPeriod? Parse(string? from, string? to, DateTimeOffset now)
     {
@@ -68,7 +68,7 @@ public sealed record StatusCount(string Status, int Count);
 public sealed record SensitivityCount(string Sensitivity, int Count);
 
 /// <summary>
-/// BR-435. <see cref="AverageRate"/> is a fraction (0.87 is 87 %), null when no Ended meeting had attendance taken.
+/// BR-151. <see cref="AverageRate"/> is a fraction (0.87 is 87 %), null when no Ended meeting had attendance taken.
 /// <see cref="Meetings"/> is how many meetings it is based on.
 /// </summary>
 public sealed record AttendanceFigure(double? AverageRate, int Meetings, int MeetingsWithoutAttendance);
@@ -78,7 +78,7 @@ public sealed record AttendanceFigure(double? AverageRate, int Meetings, int Mee
 /// </summary>
 public sealed record DurationFigure(double? AverageMinutes, int Meetings, int MeetingsWithoutTimes);
 
-/// <summary>BR-436. Hours from the actual end to the first issue of the minutes; null when none is issued yet.</summary>
+/// <summary>BR-151. Hours from the actual end to the first issue of the minutes; null when none is issued yet.</summary>
 public sealed record TurnaroundFigure(double? AverageHours, int Meetings, int MeetingsWithoutIssuedMinutes);
 
 /// <summary>
@@ -89,7 +89,7 @@ public sealed record VoteFigure(int Closed, int Passed, int NotPassed, int Defer
 
 /// <summary>
 /// <see cref="Issued"/>: meetings whose minutes have been issued at least once. <see cref="WaitingApproval"/>: revisions
-/// sent for approval and not yet decided — only those of meetings the caller runs as Chair or Secretary (BR-412).
+/// sent for approval and not yet decided — only those of meetings the caller runs as Chair or Secretary (BR-139).
 /// </summary>
 public sealed record MinutesFigure(int Issued, int WaitingApproval);
 
@@ -100,7 +100,7 @@ public sealed record MinutesFigure(int Issued, int WaitingApproval);
 public sealed record RecordingFigure(int Count, double RecordedHours, double TranscribedHours);
 
 /// <summary>
-/// UC-70a — counts, rates and averages only (BR-437): never a meeting's id, title, participants or content.
+/// UC-79a — counts, rates and averages only (BR-152): never a meeting's id, title, participants or content.
 /// <see cref="ByMonth"/> has every month of the period and the other two every enum value, zeros included.
 /// <see cref="Votes"/>, <see cref="Minutes"/> and <see cref="Recordings"/> are the figures a manager reads first, above
 /// the report query.
@@ -115,7 +115,7 @@ public sealed record ReportFile(string FileName, byte[] Bytes, string ContentTyp
 public enum ReportFailure
 {
     None,
-    /// <summary>BR-433 — the period does not parse, runs backwards or is longer than 24 months.</summary>
+    /// <summary>UC-79a — the period does not parse, runs backwards or is longer than 24 months.</summary>
     InvalidPeriod,
     ReadFailed,
     ExportFailed,
@@ -126,13 +126,13 @@ public enum ReportFailure
 public sealed record ReportOutcome(ReportFailure Failure = ReportFailure.None, MeetingReport? Report = null,
     ReportFile? File = null, ReportTable? Table = null);
 
-/// <summary>The <c>:Report Service</c> of UC-70a and UC-70b.</summary>
+/// <summary>The <c>:Report Service</c> of UC-79a, UC-79b.</summary>
 public interface IReportService
 {
-    /// <summary>UC-70a — the figures of the meetings <paramref name="actorId"/> may read whose planned start is in the period.</summary>
+    /// <summary>UC-79a — the figures of the meetings <paramref name="actorId"/> may read whose planned start is in the period.</summary>
     Task<ReportOutcome> GetMeetingReportAsync(Guid actorId, string? from, string? to, CancellationToken ct = default);
 
-    /// <summary>UC-70b — the same figures, computed again, as an Excel file; the export is audited (BR-438).</summary>
+    /// <summary>UC-79b — the same figures, computed again, as an Excel file; the export is audited (BR-010).</summary>
     Task<ReportOutcome> ExportMeetingReportAsync(Guid actorId, string? from, string? to, CancellationToken ct = default);
 
     /// <summary>
@@ -141,6 +141,6 @@ public interface IReportService
     /// </summary>
     Task<ReportOutcome> QueryAsync(Guid actorId, ReportQueryInput input, CancellationToken ct = default);
 
-    /// <summary>The same table, computed again, as an Excel file; the export is audited like UC-70b's (BR-438).</summary>
+    /// <summary>The same table, computed again, as an Excel file; the export is audited like UC-79b's (BR-010).</summary>
     Task<ReportOutcome> ExportQueryAsync(Guid actorId, ReportQueryInput input, CancellationToken ct = default);
 }

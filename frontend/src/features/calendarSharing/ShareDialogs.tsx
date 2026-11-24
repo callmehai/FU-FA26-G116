@@ -60,7 +60,7 @@ function LevelPick({
   )
 }
 
-/** The period: one calendar for both ends, quick lengths from the start, and BR-431 checked as the user picks. */
+/** The period: one calendar for both ends, quick lengths from the start, and UC-80a checked as the user picks. */
 function RangePick({
   value,
   onChange,
@@ -256,9 +256,9 @@ function Footer({
 }
 
 /**
- * UC-84a (`request`): a Meeting Organizer asks to see someone's busy hours at a level, over a period.
- * UC-84b (`direct`): anyone shares their own calendar with a Meeting Organizer, always "Họp Thường"; the recipient
- * accepts it, and may later ask for more (UC-84d).
+ * UC-80a (`request`): a Meeting Organizer asks to see someone's busy hours at a level, over a period.
+ * UC-80b (`direct`): anyone shares their own calendar with a Meeting Organizer, always "Họp Thường"; the recipient
+ * accepts it, and may later ask for more (UC-80d).
  */
 export function NewShareDialog({
   mode,
@@ -341,10 +341,10 @@ export function NewShareDialog({
 }
 
 /**
- * UC-84c — accept what is waiting for the caller:
- * - a request (UC-84a) to the owner, who may grant a lower level or a shorter period inside the one asked;
- * - a direct share (UC-84b) to the viewer, taken as it is;
- * - the viewer's pending change (UC-84d) to the owner, granted as asked.
+ * UC-80c — accept what is waiting for the caller:
+ * - a request (UC-80a) to the owner, who may grant a lower level or a shorter period inside the one asked;
+ * - a direct share (UC-80b) to the viewer, taken as it is;
+ * - the viewer's pending change (UC-80d) to the owner, granted as asked.
  */
 export function AcceptShareDialog({
   share,
@@ -372,7 +372,7 @@ export function AcceptShareDialog({
     void run(() => acceptShare(share.id, values))
   }
 
-  // A pending change is always the viewer's (UC-84c AF-1), whichever side started the share.
+  // A pending change is always the viewer's (UC-80c AF-1), whichever side started the share.
   const sender = change || share.initiatedBy === 'Viewer' ? share.viewer : share.owner
   return (
     <Dialog
@@ -443,7 +443,7 @@ export function AcceptShareDialog({
 }
 
 /**
- * UC-84d — the viewer asks for more (a higher level, a later end; the owner answers), or the owner changes the share at
+ * UC-80d — the viewer asks for more (a higher level, a later end; the owner answers), or the owner changes the share at
  * once (a lower level, other dates from today). The start of an Effective share stays put for the viewer.
  */
 export function ChangeShareDialog({

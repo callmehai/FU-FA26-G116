@@ -21,7 +21,7 @@ public class VotingSessionConfiguration : IEntityTypeConfiguration<VotingSession
 
         builder.HasIndex(v => new { v.MeetingId, v.CreatedAt });
 
-        // At most one Open vote per meeting (BR-266) — enforced by the database, so two Chairs'
+        // At most one Open vote per meeting (BR-090) — enforced by the database, so two Chairs'
         // simultaneous Open requests cannot both succeed.
         builder.HasIndex(v => v.MeetingId).IsUnique().HasFilter("status = 'Open'");
 

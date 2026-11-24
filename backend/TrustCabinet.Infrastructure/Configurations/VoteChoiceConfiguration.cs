@@ -24,7 +24,7 @@ public class VoteChoiceConfiguration : IEntityTypeConfiguration<VoteChoice>
             .OnDelete(DeleteBehavior.Restrict);
 
         // Only public votes write here, and each row names its voter. A choice naming nobody would be a secret
-        // ballot stored where it can be paired with its receipt (BR-259), so the database refuses it.
+        // ballot stored where it can be paired with its receipt (BR-096, BR-097), so the database refuses it.
         builder.ToTable(t => t.HasCheckConstraint(
             "ck_vote_choices_one_voter", "num_nonnulls(voter_id, guest_invitation_id) = 1"));
 

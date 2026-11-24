@@ -129,7 +129,7 @@ internal static class ReportCatalog
             new("cancelled", "Đã huỷ", Count, f => f.Count(x => x.Meeting.Status == MeetingStatus.Cancelled)),
             new("hours", "Giờ họp", Hours, f => Round(f.Where(x => Held(x.Meeting))
                 .Sum(x => (x.Meeting.ActualEndedAt!.Value - x.Meeting.ActualStartedAt!.Value).TotalHours), 1)),
-            // BR-435: present over invitees, averaged over Ended meetings that had attendance taken.
+            // BR-151: present over invitees, averaged over Ended meetings that had attendance taken.
             new("attendance", "Tỷ lệ có mặt", Percent, f => Average(f
                 .Where(x => x.Meeting.Status == MeetingStatus.Ended && x.Meeting.Marked > 0 && x.Meeting.Invitees > 0)
                 .Select(x => (double)x.Meeting.Present / x.Meeting.Invitees), 4)),
@@ -194,7 +194,7 @@ internal static class ReportCatalog
             new("issued", "Đã ban hành", Count, f => f.Count(x => x.Row.IssuedAt is not null)),
             new("waiting", "Chờ duyệt", Count, f => f.Count(x => x.Row.Status == MinutesStatus.WaitingApproval)),
             new("returned", "Bị trả lại", Count, f => f.Count(x => x.Row.Status == MinutesStatus.Rejected)),
-            // BR-436: from the end of the meeting to the first issue of its minutes; a correction does not restart it.
+            // BR-151: from the end of the meeting to the first issue of its minutes; a correction does not restart it.
             new("turnaround", "Giờ tới ban hành (TB)", Hours, f => Average(f
                 .Where(x => x.Row.IssuedAt is not null && x.Meeting.ActualEndedAt is not null)
                 .GroupBy(x => x.Meeting.Id)

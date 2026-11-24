@@ -18,7 +18,7 @@ public class VotingOption : Entity
 
     /// <summary>
     /// How many ballots chose this option — the tally of every vote, secret or public. A secret ballot leaves no
-    /// other trace of its choice (BR-259), so this counter is the only place it is counted. Each ballot rewrites the
+    /// other trace of its choice (BR-096, BR-097), so this counter is the only place it is counted. Each ballot rewrites the
     /// counters of all the vote's options and never touches <c>UpdatedAt</c>, so the rows do not show which one moved.
     /// </summary>
     public int BallotCount { get; set; }

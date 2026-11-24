@@ -147,7 +147,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
             stint.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
-        // Leaving the room ends the person's raised hand or turn (UC-79 EX-3, BR-337), in the same save.
+        // Leaving the room ends the person's raised hand or turn (UC-50 EX-3, BR-104–BR-106), in the same save.
         if (open.Count > 0 && tx.MeetingId is { } meetingId)
         {
             Guid[]? invitations = null;
@@ -160,7 +160,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
                     && p.GuestSessionId != null && p.GuestSessionId != guest
                     && p.GuestSession!.InvitationId == invitation, ct))
                 invitations = [invitation];
-            // The turn ends when they left, not when the webhook or the reconciliation got here (BR-339).
+            // The turn ends when they left, not when the webhook or the reconciliation got here (BR-104–BR-106).
             if (member.UserId is not null || invitations is not null)
                 closedHands = await new SpeakingRequestRepository(db).CloseOpenAsync(meetingId, member.UserId, invitations,
                     AgendaExecution.UtcMicroseconds(leftAt), Now, ct);
@@ -172,7 +172,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
     }
 
     /// <summary>
-    /// Closing stints also closes raised hands (BR-337), so it takes the meeting row first, as raising a hand does:
+    /// Closing stints also closes raised hands (BR-104–BR-106), so it takes the meeting row first, as raising a hand does:
     /// a hand raised while its owner leaves is either seen and closed here, or refused for not being in the room.
     /// Joins the caller's transaction when there is one.
     /// </summary>
@@ -227,7 +227,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         session.Status = CallStatus.Ended;
         session.EndedAt = effectiveEnd;
         session.UpdatedAt = DateTimeOffset.UtcNow;
-        // Nobody is left in the room, so nobody is waiting to speak or speaking (BR-337).
+        // Nobody is left in the room, so nobody is waiting to speak or speaking (BR-104–BR-106).
         var closedHands = tx.MeetingId is { } meetingId
             ? await new SpeakingRequestRepository(db).CloseOpenAsync(meetingId, null, null,
                 AgendaExecution.UtcMicroseconds(effectiveEnd), Now, ct)

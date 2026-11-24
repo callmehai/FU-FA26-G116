@@ -5,7 +5,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Access;
 
 /// <summary>
-/// The <c>:Role Permission Repository</c> participant of UC-10 and UC-11 — the only way
+/// The <c>:Role Permission Repository</c> participant of UC-09, UC-10 — the only way
 /// <see cref="IRolePermissionService"/> reaches <c>role_capabilities</c>.
 ///
 /// Queries and writes only; every rule lives in the service, as in <c>IUserAccountRepository</c>.
@@ -13,7 +13,7 @@ namespace TrustCabinet.Application.Access;
 public interface IRolePermissionRepository
 {
     /// <summary>
-    /// The whole matrix — UC-10's "Retrieve role and permission matrix". Every role appears, even
+    /// The whole matrix — UC-09's "Retrieve role and permission matrix". Every role appears, even
     /// one with no capabilities: the screen draws a grid, and a role missing from the answer would
     /// be a missing row rather than an empty one.
     /// </summary>
@@ -28,7 +28,7 @@ public interface IRolePermissionRepository
 
     /// <summary>
     /// Replaces the capabilities of one role with exactly <paramref name="capabilities"/> —
-    /// UC-11's "Update role permission configuration".
+    /// UC-10's "Update role permission configuration".
     ///
     /// Replace rather than add/remove deltas: the screen submits the state of a row of
     /// checkboxes, so the request already describes the end state. Computing a delta in the

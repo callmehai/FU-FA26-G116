@@ -10,7 +10,7 @@ public class FolderConfiguration : IEntityTypeConfiguration<Folder>
     {
         builder.Property(f => f.Name).HasMaxLength(400).IsRequired();
 
-        // One upload folder per person per meeting (BR-226, BR-227).
+        // One upload folder per person per meeting (UC-36a).
         builder.HasIndex(f => new { f.OwnerId, f.MeetingId }).IsUnique().HasFilter("meeting_id IS NOT NULL");
 
         builder.HasOne(f => f.Owner)

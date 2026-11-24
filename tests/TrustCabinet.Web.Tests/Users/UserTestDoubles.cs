@@ -395,7 +395,7 @@ internal sealed class FakeVoiceIdErasure(FakeAdministratorInvariantGuard? guard 
 }
 
 /// <summary>
-/// Records which people's calendar shares were asked to stop (SCRUM-142, BR-424), and whether inside the guarded write.
+/// Records which people's calendar shares were asked to stop (SCRUM-142, BR-142, BR-143), and whether inside the guarded write.
 /// The stop itself is tested against PostgreSQL in <c>CalendarShareStopTests</c>.
 /// </summary>
 internal sealed class FakeCalendarShareStopper(FakeAdministratorInvariantGuard? guard = null) : ICalendarShareStopper

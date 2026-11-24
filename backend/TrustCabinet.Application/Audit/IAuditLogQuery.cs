@@ -6,7 +6,7 @@ namespace TrustCabinet.Application.Audit;
 public sealed record AuditLogPerson(string Name, string Email);
 
 /// <summary>
-/// The object of one audit row as the list names it (BR-442; PO 19/11/2026): the meeting's title, the document's file
+/// The object of one audit row as the list names it (UC-12; PO 19/11/2026): the meeting's title, the document's file
 /// name, the account's full name. <see cref="Secret"/> when the object is, or belongs to, a Mật meeting (Hải 20/11/2026):
 /// then <see cref="Name"/> is null.
 /// </summary>
@@ -29,7 +29,7 @@ public static class AuditLogSecrecy
         ["name", "Name", "title", "Title", "fileName", "FileName", "description", "Description", "options", "Options"];
 }
 
-/// <summary>UC-13's reads of the audit log, untracked. Every criterion of the query must hold (BR-31).</summary>
+/// <summary>UC-12's reads of the audit log, untracked. Every criterion of the query must hold.</summary>
 public interface IAuditLogQuery
 {
     /// <summary>How many rows meet the criteria.</summary>

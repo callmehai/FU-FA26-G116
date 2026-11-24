@@ -6,7 +6,7 @@ namespace TrustCabinet.Domain.Entities;
 /// <summary>
 /// One numbered item on a meeting's programme. The chair walks the meeting down this list, and
 /// much of what is produced during the sitting — notes, speeches — hangs off an item. Votes do not:
-/// they belong to the meeting itself (BR-285).
+/// they belong to the meeting itself (BR-086, BR-087).
 /// </summary>
 public class AgendaItem : Entity
 {

@@ -1,11 +1,11 @@
-// FE-14 — Dashboard cá nhân & Không gian họp (QA subtask SCRUM-201). docs/uc-map.html maps FE-14 to one use case, UC-69
+// FE-14 — Dashboard cá nhân & Không gian họp (QA subtask SCRUM-201). docs/uc-map.html maps FE-14 to one use case, UC-69 cũ
 // "View Personal Dashboard & Meeting Workspace", whose specification is still a placeholder (05-use-case-specifications.md,
-// Report 3 §4.2 row UC-69) and which cites no business rule and no message code. What the feature should show is in
+// Report 3 §4.2 row former UC-69) and which cites no business rule and no message code. What the feature should show is in
 // Report 3 §5 screen descriptions 14.1 Personal Dashboard [Tổng quan] and 14.2 Meeting Workspace, the wireframe
 // (docs/wireframe/TrustCabinet-wireframe-v12.html, FE-14) and the permission matrix row "Dashboard — own items only"
-// (Report 3, note ¹²). No Jira ticket carries UC-69.
+// (Report 3, note ¹²). No Jira ticket carries former UC-69.
 //
-// The PO dropped UC-69 on 15/11/2026 (QA round 3 found neither screen; FE-14 was Should-have and never had a ticket), so
+// The PO dropped former UC-69 on 15/11/2026 (QA round 3 found neither screen; FE-14 was Should-have and never had a ticket), so
 // the plan has no criteria for 14.1 / 14.2: AC1 and AC2, which recorded the missing screens, were removed.
 //
 // The nearest thing that runs is the four count cards over the meeting list (PO decision, PR #287: Họp hôm nay — the
@@ -288,7 +288,7 @@ async function requireHas(qa, role, capability) {
 
 export default {
   ticket: 'SCRUM-201',
-  title: 'FE-14 Dashboard cá nhân & Không gian họp (UC-69) và bốn thẻ đếm trên danh sách cuộc họp',
+  title: 'FE-14 Dashboard cá nhân & Không gian họp (UC-69 cũ) và bốn thẻ đếm trên danh sách cuộc họp',
   devices: ['desktop'],
   criteria: [
     {

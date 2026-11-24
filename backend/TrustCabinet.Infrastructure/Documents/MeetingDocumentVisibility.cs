@@ -7,8 +7,8 @@ internal static class MeetingDocumentVisibility
 {
     /// <summary>
     /// The meeting documents a reader may open. A document linked to no agenda item is general only while no vote
-    /// links it either (BR-280, option B); one reached only through draft votes is the Chair's and the Secretary's
-    /// alone (BR-253), so without <paramref name="includeDrafts"/> it reads as not in the meeting at all.
+    /// links it either (UC-36b, UC-36d, option B); one reached only through draft votes is the Chair's and the Secretary's
+    /// alone (BR-086, BR-087), so without <paramref name="includeDrafts"/> it reads as not in the meeting at all.
     /// </summary>
     public static IQueryable<MeetingDocument> VisibleTo(this IQueryable<MeetingDocument> documents, bool includeDrafts)
         => includeDrafts

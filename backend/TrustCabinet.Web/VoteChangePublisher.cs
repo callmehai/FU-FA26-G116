@@ -6,7 +6,7 @@ namespace TrustCabinet.Web;
 
 /// <summary>
 /// Tells the meeting screen and the room's voting panel that a vote changed (SCRUM-28). A draft change reaches only
-/// the current Chair and Secretary, who alone see drafts (BR-253); everything else reaches every current reader.
+/// the current Chair and Secretary, who alone see drafts (BR-086, BR-087); everything else reaches every current reader.
 /// </summary>
 public sealed class VoteChangePublisher(IHubContext<MeetingHub> hub, MeetingAudience audience) : IVoteChangePublisher
 {

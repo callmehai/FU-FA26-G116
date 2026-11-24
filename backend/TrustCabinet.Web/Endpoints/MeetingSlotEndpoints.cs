@@ -5,7 +5,7 @@ using TrustCabinet.Domain.CalendarSharing;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// SCRUM-137 — find meeting time slots (UC-85a) and create a draft meeting from one (UC-85b). Every route needs an active
+/// SCRUM-137 — find meeting time slots (UC-81a) and create a draft meeting from one (UC-81b). Every route needs an active
 /// account; the Meeting Organizer right is checked again in the service, so a caller without it gets MSG448 (as the
 /// shared week does) before any parameter is looked at.
 /// </summary>

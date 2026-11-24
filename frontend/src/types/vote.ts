@@ -1,7 +1,7 @@
 import type { MeetingStatus } from './meeting'
 
 /**
- * Votes during a meeting (SCRUM-28, UC-52a–UC-57). Contract in docs/03-api/15-bieu-quyet.md.
+ * Votes during a meeting (SCRUM-28, UC-62a–UC-67). Contract in docs/03-api/15-bieu-quyet.md.
  *
  * A vote is a Draft until the Chair opens it while the meeting is in progress; who may vote is
  * fixed when it opens. One ballot per person, never changed or withdrawn. A secret vote only ever
@@ -28,7 +28,7 @@ export const VOTE_CONCLUSION_LABEL: Record<VoteConclusionValue, string> = {
   Deferred: 'Hoãn',
 }
 
-/** The Chair's conclusion of a closed vote; recorded once, never edited (BR-262). */
+/** The Chair's conclusion of a closed vote; recorded once, never edited (BR-099). */
 export interface VoteConclusion {
   value: VoteConclusionValue
   note: string
@@ -55,7 +55,7 @@ export interface VoteActions {
   canViewResult: boolean
 }
 
-/** One row of GET /api/meetings/{id}/votes. Drafts reach only the Chair and the Secretary (BR-253). */
+/** One row of GET /api/meetings/{id}/votes. Drafts reach only the Chair and the Secretary (BR-086, BR-087). */
 export interface VoteSummary {
   id: string
   title: string
@@ -101,11 +101,11 @@ export interface VoteOptionResult {
   optionId: string
   label: string
   count: number
-  /** Of the ballots cast, two decimals; null when nobody voted (BR-261). */
+  /** Of the ballots cast, two decimals; null when nobody voted (BR-098). */
   percentage: number | null
 }
 
-/** A public vote's voter; `optionId` null = did not vote (BR-273). */
+/** A public vote's voter; `optionId` null = did not vote (BR-096, BR-097). */
 export interface VoteVoter {
   id: string
   kind: 'Internal' | 'Guest'
@@ -116,7 +116,7 @@ export interface VoteVoter {
 export interface VoteResult {
   ballotCount: number
   options: VoteOptionResult[]
-  /** Null for a secret vote (BR-259). */
+  /** Null for a secret vote (BR-096, BR-097). */
   voters: VoteVoter[] | null
 }
 
@@ -141,7 +141,7 @@ export interface VoteInput {
   options: string[]
   isAnonymous: boolean
   eligibleRoles: VoteRole[]
-  /** Chair only, meeting in progress: save and open in one step (UC-53 AF-3). */
+  /** Chair only, meeting in progress: save and open in one step (UC-63 AF-3). */
   openImmediately: boolean
 }
 
@@ -156,12 +156,12 @@ export interface VoteClosedResponse extends VoteMutationResponse {
   result: VoteResult
 }
 
-/** 200 MSG265 of UC-76a; `documents` are the meeting documents the call added (none when attaching existing ones). */
+/** 200 MSG265 of UC-68a; `documents` are the meeting documents the call added (none when attaching existing ones). */
 export interface VoteDocumentsAttached extends VoteMutationResponse {
   documents: Pick<VoteDocument, 'id' | 'fileName' | 'contentType' | 'byteSize' | 'pageCount'>[]
 }
 
-/** 200 MSG253 of UC-74; a confirmation recorded before keeps its `confirmedAt` (AF-1). */
+/** 200 MSG253 of UC-42; a confirmation recorded before keeps its `confirmedAt` (AF-1). */
 export interface DocumentReadConfirmed {
   code: string
   message: string

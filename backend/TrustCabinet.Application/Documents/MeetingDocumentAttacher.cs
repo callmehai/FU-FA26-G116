@@ -4,8 +4,8 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Documents;
 
 /// <summary>
-/// The two ways files become meeting documents, shared by meetings (UC-33a, UC-33b AF-1, UC-76a AF-1) and votes
-/// (UC-76a AF-2): the library documents (no byte is copied, ADR-0018) and the uploads. Runs inside the caller's
+/// The two ways files become meeting documents, shared by meetings (UC-36a, UC-36b AF-1, UC-68a AF-1) and votes
+/// (UC-68a AF-2): the library documents (no byte is copied, ADR-0018) and the uploads. Runs inside the caller's
 /// transaction: the caller saves and commits.
 /// </summary>
 public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents, IPersonalLibraryRepository library)
@@ -25,7 +25,7 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
         var voteLinks = new List<VoteDocument>();
         if (inMeeting.Count > 0)
         {
-            // The general group has nothing more to add for a file already in the meeting (BR-193).
+            // The general group has nothing more to add for a file already in the meeting (BR-072, BR-073).
             if (agendaItemId is null && voteId is null) return (DocumentUploadFailure.AlreadyInMeeting, []);
             // For an item or a vote, the meeting's own document is linked instead, as if chosen from the meeting.
             if (inMeeting.Any(d => d.Linked)) return (DocumentUploadFailure.AlreadyLinked, []);
@@ -44,7 +44,7 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
         var added = new List<UploadedMeetingDocument>();
         foreach (var document in rows.Where(d => inMeeting.All(m => m.StoredFileId != d.StoredFileId)))
         {
-            // A new row even for a file removed earlier: its old comments do not come back (BR-212, BR-284).
+            // A new row even for a file removed earlier: its old comments do not come back (BR-074–BR-076).
             var meetingDocument = new MeetingDocument { MeetingId = meeting.Id, StoredFileId = document.StoredFileId,
                 StoredFile = document.StoredFile, DocumentId = document.Id, FileName = document.FileName,
                 AddedById = actorId, AddedAt = now, CreatedAt = now, UpdatedAt = now };
@@ -66,7 +66,7 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
         var folder = await documents.FindUploadFolderAsync(actorId, meeting.Id, ct);
         if (folder is null)
         {
-            // BR-226 first upload, BR-228 recreated at the root once the old one is deleted.
+            // UC-36a first upload, UC-36a recreated at the root once the old one is deleted.
             folder = new Folder { OwnerId = actorId, MeetingId = meeting.Id,
                 Name = DocumentFileRules.UploadFolderName(meeting), CreatedAt = now, UpdatedAt = now };
             documents.AddFolder(folder);
@@ -75,7 +75,7 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
         var added = new List<UploadedMeetingDocument>();
         foreach (var file in stored)
         {
-            // Two uploads of the same name or bytes are still two documents (BR-229).
+            // Two uploads of the same name or bytes are still two documents (BR-068).
             var document = new Document { OwnerId = actorId, FolderId = folder.Id, StoredFileId = file.Id,
                 FileName = file.OriginalFileName, CreatedAt = now, UpdatedAt = now };
             var meetingDocument = new MeetingDocument { MeetingId = meeting.Id, StoredFileId = file.Id,

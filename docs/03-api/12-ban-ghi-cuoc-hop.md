@@ -229,7 +229,7 @@ chỉ trộn các câu theo micro (không có mic phòng; bản ghi phòng cũ n
 hạn lưu với bản ghi mic phòng (họp trực tuyến: đồng ý là thông báo ghi âm của phòng họp, tính từ giờ bắt đầu; mục đích
 `Lập biên bản cuộc họp`; người tạo là Thư ký, không có thì người tạo cuộc họp); nghe (`/playback`), tải MP3 (`/download`)
 và xoá (`DELETE`) như mọi bản ghi. `retainUntil` là ngày
-sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-347, tính từ lượt đầu), hoặc câu sớm nhất +
+sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-110, tính từ lượt đầu), hoặc câu sớm nhất +
 `Recordings:RetentionDays` — bản tổng hợp không sống lâu hơn nguồn ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)).
 
 - Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng (họp trực tuyến: ít nhất

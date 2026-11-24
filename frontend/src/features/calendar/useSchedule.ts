@@ -19,8 +19,8 @@ const PAGE_SIZE = 100
 
 /**
  * The meetings between `from` and `to`, for the calendar's grids and list. GET /api/meetings?from&to
- * returns the meetings whose own schedule overlaps the range (BR-30), after the server's visibility
- * rule (BR-29), with the times, place and the caller's roles the calendar shows and filters on,
+ * returns the meetings whose own schedule overlaps the range, after the server's visibility
+ * rule (BR-016, BR-017), with the times, place and the caller's roles the calendar shows and filters on,
  * minus the meetings the caller declined.
  * Every page is read: the calendar shows the whole range, never a first page of it.
  */

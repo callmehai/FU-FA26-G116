@@ -1,7 +1,7 @@
 import type { Meeting } from '../../../types/meeting'
 
 /**
- * Whether the caller may start or end this meeting now (SCRUM-69, UC-21/22): the Chair or the Secretary starts it
+ * Whether the caller may start or end this meeting now (SCRUM-69, UC-20, UC-21): the Chair or the Secretary starts it
  * (PO 20/11/2026), only the Chair ends it. The server decides and re-checks: MSG112/MSG114 when the caller's role or the
  * status moved on.
  */

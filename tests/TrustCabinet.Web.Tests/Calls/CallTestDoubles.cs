@@ -119,7 +119,7 @@ internal sealed class FakeCallRepository : ICallRepository
         return Task.FromResult(0);
     }
 
-    /// <summary>How many raised hands the next ended session reports closing with it (BR-337).</summary>
+    /// <summary>How many raised hands the next ended session reports closing with it (BR-104–BR-106).</summary>
     public int HandsClosedOnEnd { get; set; }
 
     public Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)

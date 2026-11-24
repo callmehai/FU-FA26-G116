@@ -56,7 +56,7 @@ public interface IAgendaRepository
     void Add(AgendaItem item);
     /// <summary>
     /// Removes a Pending item. Notes typed on it (SCRUM-30) are appended to their author's meeting-wide note first, so
-    /// the text survives and the meeting-wide note stays one per author (BR-397, BR-398).
+    /// the text survives and the meeting-wide note stays one per author (BR-134).
     /// </summary>
     Task RemoveAsync(AgendaItem item, DateTimeOffset now, CancellationToken ct);
 

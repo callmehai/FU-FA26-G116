@@ -4,7 +4,7 @@
 
 **Hiện thực Backend SCRUM-20 / SCRUM-97 theo PO 20/10/2026:** MeetingParticipant có AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey; Meeting có ParticipantsRevision. Hai bảng mới: MeetingGuestInvitation, MeetingInvitationDispatch. Không có bảng quyền bổ sung; quyền roster theo current Chair/Secretary active. Unique current assignment/Guest email/Chair; ứng dụng giữ đúng một Chair, migration backfill creator khi thiếu. Guest credential/profile/session production thuộc SCRUM-59. Chi tiết: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration-và-delivery), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Hình mục tiêu bên dưới chưa phải snapshot schema hiện thực.
 
-**Hiện thực Backend SCRUM-116 / UC-04 (30/10/2026):** hai bảng kỹ thuật `guest_verification_challenges` (mã OTP, chỉ lưu HMAC, số lần sai, thời điểm tiêu thụ) và `guest_sessions` (phiên Khách đã xác minh email, hạn 12 giờ, `revoked_at` khi đăng xuất), cùng khoá ngoại tới `meeting_guest_invitations` và xoá theo lời mời; `meeting_guest_invitations` thêm `self_declared_display_name`, `self_declared_job_title` (BR-180, tách khỏi `invited_name`/`email`). Không tạo `users` hay `meeting_participants` cho Khách. Từ 03/11/2026 `GuestSession` là **thực thể của mô hình đích** (một lời mời có nhiều phiên, mỗi thiết bị một phiên), còn `guest_verification_challenges` vẫn là bảng kỹ thuật không vẽ trong ERD. Chi tiết: [API UC-04 §6](../03-api/16-truy-cap-khach-uc04.md#6-lưu-trữ).
+**Hiện thực Backend SCRUM-116 / UC-04 (30/10/2026):** hai bảng kỹ thuật `guest_verification_challenges` (mã OTP, chỉ lưu HMAC, số lần sai, thời điểm tiêu thụ) và `guest_sessions` (phiên Khách đã xác minh email, hạn 12 giờ, `revoked_at` khi đăng xuất), cùng khoá ngoại tới `meeting_guest_invitations` và xoá theo lời mời; `meeting_guest_invitations` thêm `self_declared_display_name`, `self_declared_job_title` (UC-04, tách khỏi `invited_name`/`email`). Không tạo `users` hay `meeting_participants` cho Khách. Từ 03/11/2026 `GuestSession` là **thực thể của mô hình đích** (một lời mời có nhiều phiên, mỗi thiết bị một phiên), còn `guest_verification_challenges` vẫn là bảng kỹ thuật không vẽ trong ERD. Chi tiết: [API UC-04 §6](../03-api/16-truy-cap-khach-uc04.md#6-lưu-trữ).
 
 Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **37 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027; `AiProviderSetting` SCRUM-36 và `CalendarShare` SCRUM-142). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 37. Report 3 §I.3.2 hiện vẫn liệt kê 35 thực thể — thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142 đưa vào; hai bảng này đã triển khai nên hình ở [13-erd/](../13-erd/README.md) vẽ đủ 37. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
@@ -47,19 +47,19 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Một dòng trong kho cá nhân, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | OwnerId, FolderId, StoredFileId, FileName (ADR-0018); không còn Category (PO bỏ "Phân loại" 22/10/2026). |
 | StoredFile | File bất biến trong kho đối tượng; kho cá nhân và cuộc họp chỉ tham chiếu tới nó | IMPLEMENTED (SCRUM-107) | Thay `DocumentVersion`; có OriginalFileName, PageCount, UploadedAt, PurgedAt (ADR-0018). Byte nằm trên Cloudflare R2 (ADR-0024); job dọn file mồ côi ghi PurgedAt. |
-| Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | IMPLEMENTED (SCRUM-107, bảng) | `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp, duy nhất theo (OwnerId, MeetingId) (ADR-0018). Giới hạn 5 cấp và thao tác thư mục thuộc UC-72 (SCRUM-58). |
+| Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | IMPLEMENTED (SCRUM-107, bảng) | `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp, duy nhất theo (OwnerId, MeetingId) (ADR-0018). Giới hạn 5 cấp và thao tác thư mục thuộc UC-41 (SCRUM-58). |
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | Tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn (SetNull), gỡ bằng RemovedAt; unique (MeetingId, StoredFileId) khi RemovedAt null (ADR-0018). |
 | MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
-| DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
-| SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED (SCRUM-27, có endpoint) | Người giơ tay là thành viên (`UserId`) hoặc Khách (`GuestInvitationId`), check đúng một trong hai. Mỗi người một yêu cầu đang mở (`Queued`/`Invited`/`Speaking`) và mỗi cuộc họp tối đa một yêu cầu `Invited`/`Speaking`, cả hai do unique index có điều kiện ép (BR-337, BR-338). Giữ `InvitedAt`, `StartedAt`, `EndedAt` cho biên bản (BR-339). |
+| DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (UC-38) do SCRUM-23 kiểm. |
+| SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED (SCRUM-27, có endpoint) | Người giơ tay là thành viên (`UserId`) hoặc Khách (`GuestInvitationId`), check đúng một trong hai. Mỗi người một yêu cầu đang mở (`Queued`/`Invited`/`Speaking`) và mỗi cuộc họp tối đa một yêu cầu `Invited`/`Speaking`, cả hai do unique index có điều kiện ép (BR-104–BR-106). Giữ `InvitedAt`, `StartedAt`, `EndedAt` cho biên bản (BR-104–BR-106). |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
-| VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
+| VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-086, BR-087, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, UC-63), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-099). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-090). |
 | VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
 | VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28, migration `SecretBallotsCountedOnOptions`). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
-| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 37 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
-| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 37 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
-| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
+| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 37 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-091). |
+| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 37 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (UC-68a, BR-094, BR-095); gỡ không xoá tài liệu khỏi cuộc họp (UC-68b). |
+| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-42); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (UC-42, BR-096, BR-097). Client phải đã tới trang cuối rồi mới xác nhận (UC-42). |
 | Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` (enum lưu chuỗi) có thêm `Combined` (bản tổng hợp họp kết hợp, ADR-0061, SCRUM-153; họp trực tuyến từ ADR-0069); giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. `SpeakerAssignedById`/`SpeakerAssignedAt` (có thể null): Thư ký chuyển câu sang giọng khác, để chuyển chữ lại chuyển câu thêm lần nữa ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). `WordStartsMs` (`bigint[]`, có thể null): mốc bắt đầu của từng từ do worker đo, để bản gỡ băng tô theo từng từ khi phát; xoá khi Thư ký sửa chữ. `WordConfidence` (`integer[]`, có thể null): độ chắc của máy nhận dạng với từng từ (0–100, lấy token kém chắc nhất của từ), để FE tô vàng nhạt từ máy không chắc; cùng quy tắc null như `WordStartsMs` (họp thử 21/11/2026). |
@@ -140,7 +140,7 @@ erDiagram
         timestamptz PlannedEndTime "sau PlannedStartTime"
         timestamptz ActualStartedAt "nullable, ghi khi Start Meeting"
         timestamptz ActualEndedAt "nullable, ghi khi End Meeting"
-        timestamptz CancelledAt "nullable, ghi khi huỷ (UC-75)"
+        timestamptz CancelledAt "nullable, ghi khi huỷ (UC-22)"
         uuid CancelledById FK "nullable; null = hệ thống tự huỷ"
         string CancellationReason
         string CancelledFromStatus "nullable; Published thì người được mời vẫn đọc được"
@@ -183,7 +183,7 @@ erDiagram
         string Attendance
         uuid AttendanceRecordedById FK "nullable"
         timestamptz AttendanceRecordedAt
-        string SelfDeclaredDisplayName "nullable; khai một lần (BR-180)"
+        string SelfDeclaredDisplayName "nullable; khai một lần (UC-04)"
         string SelfDeclaredJobTitle "nullable"
         timestamptz CreatedAt
     }
@@ -191,7 +191,7 @@ erDiagram
 
 `InvitationResponse` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường; điểm danh trong biên bản và báo cáo dùng `Attendance`.
-Không có quorum (ADR-0014), và phản hồi lời mời chỉ còn Accepted/Declined — không uỷ quyền phản hồi (BR-105).
+Không có quorum (ADR-0014), và phản hồi lời mời chỉ còn Accepted/Declined — không uỷ quyền phản hồi (BR-046).
 
 Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest theo Member, không có quyền cấp bổ sung (PO 20/10/2026), và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session: xác minh thành công tạo một dòng `GuestSession`, lời mời không lưu token hay thời điểm xác minh.
 
@@ -268,7 +268,7 @@ erDiagram
         string FileName
         uuid AddedById FK
         timestamptz AddedAt
-        timestamptz RemovedAt "nullable; UC-33c"
+        timestamptz RemovedAt "nullable; UC-36c"
         uuid RemovedById FK "nullable"
     }
     MeetingDocumentAgendaItem {
@@ -406,7 +406,7 @@ erDiagram
   Một ảnh chụp DB tại một thời điểm thì không ghép được. Đừng mô tả phiếu kín là không thể truy ngược với người đang quan sát cơ sở dữ liệu.
 
 **Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
-dòng nào. Đặc tả hiện hành chốt phiếu đã ghi không sửa, không rút với mọi loại phiếu (BR-265), nên
+dòng nào. Đặc tả hiện hành chốt phiếu đã ghi không sửa, không rút với mọi loại phiếu (BR-092, BR-093), nên
 giới hạn này không còn là vấn đề; `SCRUM-28` cũ (đổi phiếu tới khi đóng phiên) không còn áp dụng.
 Nếu sau này PO muốn cho đổi phiếu kín thì cần cơ chế token cấp cho từng người bỏ phiếu, một quyết định thiết kế
 riêng chứ không phải thứ chắp thêm.
@@ -558,7 +558,7 @@ erDiagram
 Mỗi giọng trong bản gỡ băng là một `TranscriptSpeaker`: máy chỉ **gợi ý** (`SuggestedUserId`, `SuggestionScore`)
 người trên roster đã đồng ý Voice ID có giọng giống nhất; từ 03/11/2026 (ADR-0045) máy **điền tên** vào
 `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2
-(BR-362). `AssignedById` rỗng nghĩa là **máy điền**, có người là **Thư ký điền**; Thư ký luôn đổi hoặc bỏ được,
+(BR-116, BR-124). `AssignedById` rỗng nghĩa là **máy điền**, có người là **Thư ký điền**; Thư ký luôn đổi hoặc bỏ được,
 và cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Giọng thứ hai của cùng một người gộp vào người
 đó khi khớp giọng mẫu đạt ngưỡng giọng thứ hai (mặc định 0,7), hoặc khi giống giọng đầu tiên đã mang tên
 người đó từ ngưỡng thừa hưởng (mặc định 0,8) — lúc đó nhận cùng tên và cùng điểm (ADR-0050).
@@ -689,18 +689,18 @@ erDiagram
 ```
 ## 10. Chia sẻ lịch (SCRUM-142)
 
-`calendar_shares` — một chủ lịch cho một người xem thấy giờ bận/rảnh của mình (UC-84a → UC-84f, ADR-0058). Chỉ chứa ai, mốc và
+`calendar_shares` — một chủ lịch cho một người xem thấy giờ bận/rảnh của mình (UC-80a → UC-80f, ADR-0058). Chỉ chứa ai, mốc và
 khoảng ngày; giờ bận được tính lúc đọc từ `meetings` + `meeting_participants`, không lưu bản sao và không bao giờ lộ tên, địa điểm hay người
-dự cuộc họp (BR-427).
+dự cuộc họp (BR-140, BR-141).
 
 | Cột | Ý nghĩa |
 |---|---|
 | `owner_id`, `viewer_id` | chủ lịch, người xem; FK `users` `RESTRICT` (user chỉ bị vô hiệu hoá, không xoá) |
-| `initiated_by` | `Viewer` (UC-84a, người xem xin) hoặc `Owner` (UC-84b, chủ lịch tự chia sẻ): quyết định ai trả lời, ai rút |
-| `level` | `Level1` = họp Thường, `Level2` = Thường + Nội bộ; họp Mật không bao giờ chia sẻ (BR-414) |
-| `start_date`, `end_date` | `date` theo lịch Việt Nam, tính cả hai đầu, tối đa 365 ngày (BR-431) |
+| `initiated_by` | `Viewer` (UC-80a, người xem xin) hoặc `Owner` (UC-80b, chủ lịch tự chia sẻ): quyết định ai trả lời, ai rút |
+| `level` | `Level1` = họp Thường, `Level2` = Thường + Nội bộ; họp Mật không bao giờ chia sẻ (BR-140, BR-141) |
+| `start_date`, `end_date` | `date` theo lịch Việt Nam, tính cả hai đầu, tối đa 365 ngày (UC-80a) |
 | `status` | `Pending`, `Effective`, `Declined`, `Withdrawn`, `Ended`, `Stopped` — không có `Expired` (PO 09/11/2026) |
-| `pending_level`, `pending_end_date`, `pending_requested_at` | thay đổi người xem đang xin (UC-84d); ba cột cùng có hoặc cùng null (check) |
+| `pending_level`, `pending_end_date`, `pending_requested_at` | thay đổi người xem đang xin (UC-80d); ba cột cùng có hoặc cùng null (check) |
 | `decided_at`, `closed_at`, `closed_by_id` | lúc trả lời; lúc đóng và người đóng (null khi hệ thống đóng) |
 
 ```mermaid
@@ -727,13 +727,13 @@ erDiagram
 Ràng buộc và lý do:
 
 - `ux_calendar_shares_open_pair`: unique `(owner_id, viewer_id)` **có lọc** `status IN ('Pending', 'Effective')` — mỗi cặp có chiều tối đa
-  một chia sẻ mở (BR-423); A xem lịch B không chặn B xin xem lịch A; lịch sử các chia sẻ đã đóng không chặn gì.
+  một chia sẻ mở (BR-142, BR-143); A xem lịch B không chặn B xin xem lịch A; lịch sử các chia sẻ đã đóng không chặn gì.
 - `ck_calendar_shares_not_self` (`owner_id <> viewer_id`), `ck_calendar_shares_range` (`start_date <= end_date`),
   `ck_calendar_shares_pending_change`.
-- Hết ngày kết thúc không ghi gì vào bảng (BR-425): dòng vẫn `Pending`/`Effective` nhưng mọi lần đọc loại nó ra. Khi có chia sẻ mới cho
+- Hết ngày kết thúc không ghi gì vào bảng (BR-142, BR-143): dòng vẫn `Pending`/`Effective` nhưng mọi lần đọc loại nó ra. Khi có chia sẻ mới cho
   cùng cặp, dòng cũ được đóng thành `Ended` (người đóng null, audit `calendar_share.closed_after_end_date`, không thông báo) để nhường
   chỗ trong unique index.
-- `Stopped` được **lưu** ngay trong thao tác vô hiệu hoá / đổi vai trò / sửa ma trận quyền (BR-424), không suy ra lúc đọc, và không có đường nào
+- `Stopped` được **lưu** ngay trong thao tác vô hiệu hoá / đổi vai trò / sửa ma trận quyền (BR-142, BR-143), không suy ra lúc đọc, và không có đường nào
   đưa `Stopped` về `Effective`.
 - Thông báo của chia sẻ dùng `notifications` sẵn có với `target_type = 'CalendarShare'`, `meeting_id` null.
 ## Tổng hợp đầy đủ các quan hệ
@@ -775,7 +775,7 @@ Ràng buộc và lý do:
 | User | 1 → 0..* | VoteEligibleVoter | Được bỏ phiếu |
 | VotingSession | 1 → 0..* | VoteDocument | Gắn tài liệu |
 | MeetingDocument | 1 → 0..* | VoteDocument | Được gắn vào biểu quyết |
-| MeetingDocument | 1 → 0..* | DocumentReadConfirmation | Được xác nhận đã đọc (UC-74) |
+| MeetingDocument | 1 → 0..* | DocumentReadConfirmation | Được xác nhận đã đọc (UC-42) |
 | User | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc |
 | MeetingGuestInvitation | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc (Guest) |
 | VotingSession | 1 → 0..* | VoteReceipt | Ghi nhận việc bỏ phiếu |
@@ -812,27 +812,27 @@ Ràng buộc và lý do:
 
 ## Quy tắc nghiệp vụ và ràng buộc dữ liệu không thể hiện trên ERD
 
-1. Lịch dự kiến thuộc Meeting: `PlannedStartTime` và `PlannedEndTime` bắt buộc, `PlannedEndTime > PlannedStartTime`; khi tạo, giờ bắt đầu phải ở tương lai (BR-62, BR-162). Không có MeetingSession; một Meeting là một buổi họp (ADR-0013).
-2. `ActualStartedAt`/`ActualEndedAt` do hệ thống ghi khi Start Meeting (Published → InProgress) và End Meeting (InProgress → Ended). Sau `Published` chỉ Organizer được dời `PlannedStartTime`, `PlannedEndTime`, `Location`, `OnlineLink`; mỗi lần dời phải thông báo người được mời (BR-75, BR-76, BR-158).
-3. Mỗi AgendaItem thuộc đúng một Meeting; chỉ sắp xếp lại trong Meeting đó; mỗi Meeting có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done. Kết thúc Meeting tự hoàn tất mục đang chạy trong cùng transaction (BR-159).
+1. Lịch dự kiến thuộc Meeting: `PlannedStartTime` và `PlannedEndTime` bắt buộc, `PlannedEndTime > PlannedStartTime`; khi tạo, giờ bắt đầu phải ở tương lai (BR-013). Không có MeetingSession; một Meeting là một buổi họp (ADR-0013).
+2. `ActualStartedAt`/`ActualEndedAt` do hệ thống ghi khi Start Meeting (Published → InProgress) và End Meeting (InProgress → Ended). Sau `Published` chỉ Organizer được dời `PlannedStartTime`, `PlannedEndTime`, `Location`, `OnlineLink`; mỗi lần dời phải thông báo người được mời (BR-015, UC-14).
+3. Mỗi AgendaItem thuộc đúng một Meeting; chỉ sắp xếp lại trong Meeting đó; mỗi Meeting có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done. Kết thúc Meeting tự hoàn tất mục đang chạy trong cùng transaction (BR-026).
 4. Mỗi participant nội bộ có đúng một MeetingRole: Chair, Secretary hoặc Member. MeetingRole độc lập với system Role.
 5. Guest bên ngoài không có User account hay system Role; quyền Guest theo Member, không có quyền cấp bổ sung (PO 20/10/2026), và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
 6. Mỗi cặp (MeetingId, UserId) có tối đa một phân công Current. Khuyến nghị dùng unique index có điều kiện trên `(meeting_id, user_id)` khi trạng thái phân công là Current. Giữ bằng chứng Removed/lịch sử khi cần truy vết.
 7. Mỗi cặp (MeetingId, Email) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
-8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
-9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
-10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).
+8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-021, BR-024).
+9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-046). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
+10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (UC-36b, BR-078). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-070, BR-071, ADR-0020).
 11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). Phiếu kín không ghi VoteChoice, chỉ tăng VotingOption.BallotCount; VoteChoice (phiếu công khai) luôn ghi người chọn.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
-13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm; `TrustCabinetDbContext` từ chối sửa hoặc xoá dòng của cả hai (SCRUM-16, BR-440). Mỗi dòng MeetingStatusHistory mới kèm một dòng AuditLogEntry `meeting.<thao tác>` trong cùng lần lưu (BR-445).
+13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm; `TrustCabinetDbContext` từ chối sửa hoặc xoá dòng của cả hai (SCRUM-16, BR-012). Mỗi dòng MeetingStatusHistory mới kèm một dòng AuditLogEntry `meeting.<thao tác>` trong cùng lần lưu (BR-022, BR-023).
 14. Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. Vào/rời phòng và điều khiển media không làm đổi vòng đời meeting; mỗi Meeting có tối đa một CallSession MeetingRoom đang Active.
 15. Mỗi CallParticipant tham chiếu đúng một identity: User nội bộ hoặc MeetingGuestInvitation bên ngoài. Mỗi lần kết nối lại tạo một row mới cho lượt kết nối đó.
 16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
 17. Lời mời Guest giới hạn trong một Meeting, có hạn dùng, có thể thu hồi và dùng token được bảo vệ (chỉ lưu hash); kiểm tra hiệu lực ở mỗi request.
-18. VotingSession thuộc Meeting, không gắn mục nghị sự (BR-285). Chair hoặc Secretary chuẩn bị nháp khi Meeting `Approved`, `Published` hoặc `InProgress` ([ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)); chỉ Chair mở (khi `InProgress`, tối đa một Vote `Open`, BR-266) và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Người được bỏ phiếu là người đang giữ các vai trò Chair chọn cho phiên (`EligibleRoles`), chốt lúc mở phiên thành các dòng `VoteEligibleVoter` (BR-190); danh sách chốt cho mọi người, kể cả Guest: người được mời hay thêm sau lúc mở không vào danh sách (PO 08/11/2026). Tài liệu biểu quyết là các dòng `VoteDocument`, chốt khi mở (BR-288). Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
-18a. Trước khi bỏ phiếu, người đủ điều kiện phải xác nhận đã đọc mọi tài liệu còn gắn Vote (`DocumentReadConfirmation`, BR-289–293). Xác nhận thuộc (người, MeetingDocument), dùng chung mọi Vote cùng tài liệu, không rút và không nối với lựa chọn phiếu kín. Gỡ tài liệu khỏi Meeting khi Vote còn Open thì tài liệu đó không còn tính vào điều kiện đọc (BR-292).
-19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160). Vote còn `Draft` lúc kết thúc bị hệ thống xoá trong cùng transaction, mỗi nháp một dòng `AuditLogEntry` `vote.draft_deleted_on_meeting_end` (PO 08/11/2026); huỷ cuộc họp cũng vậy, với `vote.draft_deleted_on_meeting_cancel` (ADR-0067); Vote Open/Closed giữ nguyên (BR-189).
-20. BR-166 đã retired (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng): không còn vòng ký, không niêm phong, không vô hiệu hoá chữ ký. Sửa sau ban hành thì tạo bản đính chính mới (UC-83), bản cũ thành `Superseded` khi bản mới ban hành.
+18. VotingSession thuộc Meeting, không gắn mục nghị sự (BR-086, BR-087). Chair hoặc Secretary chuẩn bị nháp khi Meeting `Approved`, `Published` hoặc `InProgress` ([ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)); chỉ Chair mở (khi `InProgress`, tối đa một Vote `Open`, BR-090) và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Người được bỏ phiếu là người đang giữ các vai trò Chair chọn cho phiên (`EligibleRoles`), chốt lúc mở phiên thành các dòng `VoteEligibleVoter` (BR-091); danh sách chốt cho mọi người, kể cả Guest: người được mời hay thêm sau lúc mở không vào danh sách (PO 08/11/2026). Tài liệu biểu quyết là các dòng `VoteDocument`, chốt khi mở (BR-094, BR-095). Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+18a. Trước khi bỏ phiếu, người đủ điều kiện phải xác nhận đã đọc mọi tài liệu còn gắn Vote (`DocumentReadConfirmation`, BR-094, BR-095, UC-42, UC-65, BR-096, BR-097). Xác nhận thuộc (người, MeetingDocument), dùng chung mọi Vote cùng tài liệu, không rút và không nối với lựa chọn phiếu kín. Gỡ tài liệu khỏi Meeting khi Vote còn Open thì tài liệu đó không còn tính vào điều kiện đọc (UC-65).
+19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-026, BR-090). Vote còn `Draft` lúc kết thúc bị hệ thống xoá trong cùng transaction, mỗi nháp một dòng `AuditLogEntry` `vote.draft_deleted_on_meeting_end` (PO 08/11/2026); huỷ cuộc họp cũng vậy, với `vote.draft_deleted_on_meeting_cancel` (ADR-0067); Vote Open/Closed giữ nguyên (BR-086, BR-087).
+20. đã retired (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng): không còn vòng ký, không niêm phong, không vô hiệu hoá chữ ký. Sửa sau ban hành thì tạo bản đính chính mới (UC-75), bản cũ thành `Superseded` khi bản mới ban hành.
 21. Mỗi câu nói thu từ micro (`SpeechClip`) có **đúng một** người nói: `SpeakerId` (thành viên) hoặc `GuestInvitationId` (Khách), do `ck_speech_clips_one_speaker` ép; câu của Khách gắn với **lời mời**, không với phiên (ADR-0051). Câu là dữ liệu cá nhân: chủ câu tự xoá khi phiên còn, Chủ toạ/Thư ký loại khỏi bản ghi hoặc xoá, và hệ thống xoá cùng hạn với bản ghi (ADR-0040).
 22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027). Mẫu tự thu có `CollectedById`/`MeetingId` null; mẫu thu hộ có `CollectedById`, và `MeetingId` chỉ với mẫu Thư ký thu trong cuộc họp trước ADR-0075 (SCRUM-152, ADR-0060, ADR-0071).
 
@@ -885,7 +885,7 @@ Ràng buộc và lý do:
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |
 | Hàng đợi job | ASR chạy nền bằng cơ chế đơn giản, không dựng job spine |
-| Chữ ký biên bản (`minutes_signatures`) | PO 14/11/2026 bỏ ký số kể cả mô phỏng (SCRUM-37, BR-166 retired): Chủ toạ duyệt là ban hành. Bảng từng có sẵn từ đầu nhưng chưa bao giờ được ghi; migration `DropMinutesSignature` (PO 15/11/2026) xoá bảng và entity |
+| Chữ ký biên bản (`minutes_signatures`) | PO 14/11/2026 bỏ ký số kể cả mô phỏng (SCRUM-37): Chủ toạ duyệt là ban hành. Bảng từng có sẵn từ đầu nhưng chưa bao giờ được ghi; migration `DropMinutesSignature` (PO 15/11/2026) xoá bảng và entity |
 
 Về bản ghi âm: `recordings` có `ConsentObtainedAt`, `ConsentPurpose`, `RetainUntil`, `DeletedAt` —
 bốn cột đó tồn tại để hệ thống **chứng minh được** đã xin đồng ý trước khi ghi, đã nêu mục đích, và
@@ -929,4 +929,4 @@ Quyết định PO 20/10/2026 bỏ quyền bổ sung theo từng người. Quy�
 
 Migration `SynchronizeAgendaWithPoRequirements` chỉ đổi Agenda. `LegacyPresenterName` map nguyên cột `presenter_name`; không suy ID từ tên/email. Guest presenter và conclusion author dùng FK Restrict. Check presenter không đồng thời hai ID; content/author/time conclusion cùng null hoặc cùng có giá trị. Assignment hợp lệ phải thuộc current roster (internal active; Guest chưa revoked); removal/revoke clear presenter cùng transaction. Không thay bảng nối tài liệu.
 
-Có bất kỳ MeetingMinutes nào thì khóa sửa kết luận. Writer UC-59 phải dùng cùng meeting lock và tạo biên bản trong transaction đọc kết luận. Không có flag mới trên Meeting. Class diagram FE-05 vẫn còn biểu diễn tài liệu bằng liên kết đơn; BA Final Review đối chiếu bảng nối và contract này, không đổi nguồn diagram chỉ để đồng tên C#.
+Có bất kỳ MeetingMinutes nào thì khóa sửa kết luận. Writer UC-70 phải dùng cùng meeting lock và tạo biên bản trong transaction đọc kết luận. Không có flag mới trên Meeting. Class diagram FE-05 vẫn còn biểu diễn tài liệu bằng liên kết đơn; BA Final Review đối chiếu bảng nối và contract này, không đổi nguồn diagram chỉ để đồng tên C#.

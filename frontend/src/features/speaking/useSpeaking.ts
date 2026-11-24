@@ -16,7 +16,7 @@ export type SpeakingState =
   | { kind: 'gone' }
 
 /**
- * A meeting's queue of raised hands (SCRUM-27, UC-79), for the panel on the detail page and in the call room, and for
+ * A meeting's queue of raised hands (SCRUM-27, UC-50), for the panel on the detail page and in the call room, and for
  * the room's own "Giơ tay" button and "Đến lượt bạn" banner.
  *
  * It re-reads on `speakingChanged` and `speakingInvited`, on `participantsChanged` (the Chair handed over, or the
@@ -106,7 +106,7 @@ export function useSpeaking(meetingId: string) {
         setState({ kind: 'loaded', data })
         return true
       } catch (err) {
-        // 403 MSG457 is "no longer the Chair" (UC-79 EX-4): the caller still reads the meeting, so it is not access
+        // 403 MSG457 is "no longer the Chair" (UC-50 EX-4): the caller still reads the meeting, so it is not access
         // lost; the re-read takes the Chair's controls away.
         if (isApiError(err, 403, 'MSG457') || !handleAccessLost(err)) toast.show(errorMessage(err), 'error')
         await load()

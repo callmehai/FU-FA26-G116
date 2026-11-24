@@ -7,9 +7,9 @@ using TrustCabinet.Application.Reports;
 namespace TrustCabinet.Infrastructure.Reports;
 
 /// <summary>
-/// UC-70b — the meeting report as an Excel file, written by hand as the parts a .xlsx needs (as <c>MinutesDocx</c> does
+/// UC-79b — the meeting report as an Excel file, written by hand as the parts a.xlsx needs (as <c>MinutesDocx</c> does
 /// for Word), so no library comes in for one sheet. One sheet: the period and the time of export at the top, then the
-/// tables by month, by status and by sensitivity, then the three averages (BR-438). Text is written inline, so there is no
+/// tables by month, by status and by sensitivity, then the three averages (BR-010). Text is written inline, so there is no
 /// shared-strings part; numbers stay numbers so the file can be worked on.
 /// </summary>
 public static class MeetingReportXlsx

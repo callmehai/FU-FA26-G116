@@ -12,7 +12,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class CallEndpoints
 {
     /// <summary>
-    /// Message codes from docs/03-api/00-danh-muc-ma-thong-bao.md: the UC-37/UC-41 codes reserved for
+    /// Message codes from docs/03-api/00-danh-muc-ma-thong-bao.md: the UC-43, UC-47 codes reserved for
     /// the room where the situation matches, new codes from MSG280 where none was reserved.
     /// </summary>
     private const string Msg117RoomNotOpen = "MSG117";

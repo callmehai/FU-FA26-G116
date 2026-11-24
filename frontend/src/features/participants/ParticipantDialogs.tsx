@@ -221,7 +221,7 @@ export function AddParticipantsDialog({
 
 /**
  * Invite a guest by name and email (POST …/guest-invitations). Guests have no internal role. A restricted or secret
- * meeting says what the guest will be able to read before the invite goes out, with no extra step (BR-182).
+ * meeting says what the guest will be able to read before the invite goes out, with no extra step (UC-30a).
  */
 export function InviteGuestDialog({
   meetingId,
@@ -338,7 +338,7 @@ export function InviteGuestDialog({
  * Change one internal participant's role. Making them Chair moves the chair in one step: the current
  * Chair becomes "Thành viên", so the meeting never has zero or two Chairs. This is the only place the
  * chair moves. The Chair of a published meeting hands it over with POST …/participants/chair-handover
- * (UC-73); before publication, and a Secretary replacing a deactivated Chair, use PUT …/assignments
+ * (UC-34); before publication, and a Secretary replacing a deactivated Chair, use PUT …/assignments
  * with the confirmation the backend requires.
  */
 export function ChangeRoleDialog({

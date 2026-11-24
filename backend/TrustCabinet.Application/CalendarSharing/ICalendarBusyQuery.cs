@@ -5,7 +5,7 @@ namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
 /// One person's place in a meeting that may keep them busy, with the meeting's status, sensitivity and times — nothing
-/// else about the meeting (BR-427).
+/// else about the meeting (BR-140, BR-141).
 /// </summary>
 public sealed record BusyAssignment(
     Guid UserId,
@@ -20,7 +20,7 @@ public sealed record BusyAssignment(
     DateTimeOffset? ActualStartedAt,
     DateTimeOffset? ActualEndedAt);
 
-/// <summary>The meetings that may keep people busy over a time range (BR-414 → BR-420), untracked.</summary>
+/// <summary>The meetings that may keep people busy over a time range (BR-140, BR-141, BR-144–BR-147), untracked.</summary>
 public interface ICalendarBusyQuery
 {
     /// <summary>

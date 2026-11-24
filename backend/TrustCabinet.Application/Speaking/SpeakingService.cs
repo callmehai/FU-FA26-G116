@@ -11,8 +11,8 @@ using TrustCabinet.Domain.Participants;
 namespace TrustCabinet.Application.Speaking;
 
 /// <summary>
-/// Raising a hand in the online room and the Chair's queue of speakers (SCRUM-27, UC-79, BR-337 → BR-339).
-/// Contract in docs/03-api/20-dang-ky-phat-bieu.md. Never turns a microphone on or off (BR-338).
+/// Raising a hand in the online room and the Chair's queue of speakers (SCRUM-27, UC-50, BR-104–BR-106).
+/// Contract in docs/03-api/20-dang-ky-phat-bieu.md. Never turns a microphone on or off (BR-104–BR-106).
 /// </summary>
 public sealed class SpeakingService(ISpeakingRequestRepository requests, IParticipantRepository participants,
     IParticipantGuestAccess guests, ISpeakingChangePublisher publisher, IUnitOfWork unitOfWork, TimeProvider clock,
@@ -111,7 +111,7 @@ public sealed class SpeakingService(ISpeakingRequestRepository requests, IPartic
                         }
                         break;
                     case SpeakingOperation.Finish:
-                        // The person ends their own turn from the room; closing someone else's is the Chair's (UC-79 step 7).
+                        // The person ends their own turn from the room; closing someone else's is the Chair's (UC-50 step 7).
                         result = SpeakingRules.IsChair(meeting, viewer!)
                             ? (request!.Status is SpeakingRequestStatus.Invited or SpeakingRequestStatus.Speaking
                                 ? SpeakingFailure.None : SpeakingFailure.NotOpen)
@@ -160,7 +160,7 @@ public sealed class SpeakingService(ISpeakingRequestRepository requests, IPartic
     {
         if (!await InRoomAsync(meetingId, actor, ct)) return (SpeakingFailure.NotInRoom, false, null);
         var open = await requests.FindOpenAsync(meetingId, viewer, ct);
-        // UC-79 EX-2: the hand stays raised, nothing changes.
+        // UC-50 EX-2: the hand stays raised, nothing changes.
         if (open is not null) return (SpeakingFailure.None, false, open);
 
         var last = await requests.LastQueuePositionAsync(meetingId, ct);
@@ -186,8 +186,8 @@ public sealed class SpeakingService(ISpeakingRequestRepository requests, IPartic
     }
 
     /// <summary>
-    /// Reorder, decline and invite (UC-79 step 4, AF-2, AF-3): the current Chair only, from the room or the meeting
-    /// page alike (BR-338). <c>Changed</c> is false for a move at the end of the queue.
+    /// Reorder, decline and invite (UC-50 step 4, AF-2, AF-3): the current Chair only, from the room or the meeting
+    /// page alike (BR-104–BR-106). <c>Changed</c> is false for a move at the end of the queue.
     /// </summary>
     private async Task<(SpeakingFailure Failure, bool Changed)> ChairAsync(Meeting meeting, SpeakingViewer viewer, SpeakingRequest request,
         SpeakingOperation operation, DateTimeOffset now, CancellationToken ct)
@@ -220,7 +220,7 @@ public sealed class SpeakingService(ISpeakingRequestRepository requests, IPartic
         }
     }
 
-    /// <summary>UC-79 step 2: connected to this meeting's open room right now, as LiveKit last reported.</summary>
+    /// <summary>UC-50 step 2: connected to this meeting's open room right now, as LiveKit last reported.</summary>
     private Task<bool> InRoomAsync(Guid meetingId, ParticipantActor actor, CancellationToken ct)
         => requests.IsInRoomAsync(meetingId, actor, ct);
 
@@ -259,7 +259,7 @@ public sealed class SpeakingService(ISpeakingRequestRepository requests, IPartic
     }
 }
 
-/// <summary>Ends every open request when the meeting ends, inside the caller's transaction (BR-337).</summary>
+/// <summary>Ends every open request when the meeting ends, inside the caller's transaction (BR-104–BR-106).</summary>
 public sealed class SpeakingMeetingEnd(ISpeakingRequestRepository requests, IUnitOfWork unitOfWork) : ISpeakingMeetingEnd
 {
     public Task PrepareAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default)
