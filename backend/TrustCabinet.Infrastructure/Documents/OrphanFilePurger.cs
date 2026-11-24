@@ -10,7 +10,7 @@ using TrustCabinet.Domain.Audit;
 namespace TrustCabinet.Infrastructure.Documents;
 
 /// <summary>
-/// BR-213: deletes the object of every stored file no library row and no active meeting document
+/// BR-077: deletes the object of every stored file no library row and no active meeting document
 /// points at any more, once its grace period is over, then stamps <c>PurgedAt</c>. The row stays.
 /// Outside an upload nothing can start pointing at such a file again — attaching always goes through
 /// a library row — so checking once before the delete is enough. An upload is the exception: it

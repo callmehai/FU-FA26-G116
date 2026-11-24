@@ -28,15 +28,15 @@ Ngày 20/10/2026. [API](10-diem-danh.md), [kết quả kiểm thử](10-diem-dan
 |---|---|
 | AGENTS.md, docs/README.md, DEVELOPMENT_WORKFLOW | Ngôn ngữ, code-first, phân quyền, BE → FE → BA → Tester |
 | Jira SCRUM-26 live | Secretary only, InProgress, partial batch atomic, internal + Guest |
-| requirements README, master inventory, UC-27–31, business rules | Quyền roster/response, current history, BR-116/170–172/178 |
+| requirements README, master inventory, UC-29–UC-33, business rules | Quyền roster/response, current history, BR-043, BR-056, BR-057, UC-33 |
 | Sequence README, meeting-participant-management README, UC31_RecordAttendance.txt | Main/exception flows, revalidation, audit, atomic save |
-| Report README/source README, Report 3 DOCX UC-31 và NFR | Tài liệu nguồn, numbering EX khác bản Markdown, mục tiêu API p95 |
+| Report README/source README, Report 3 DOCX UC-33 và NFR | Tài liệu nguồn, numbering EX khác bản Markdown, mục tiêu API p95 |
 | design README, ERD, database guide | Entity có sẵn, dependency migration, hai cột version |
 | ADR-0013/0016/0017/0021 | Một meeting một buổi, Guest, End độc lập, current assignment |
 | API README, auth/access, catalogue, Agenda/Guest, Participants, Postman README | Auth, message codes, hub/group, dependency contract |
 | Class diagram/state-machine README và phần attendance liên quan | Mô hình minh họa có phần legacy chưa đồng bộ |
 
-Các tài liệu UC-31 và sequence bắt buộc đều có. Không viết lại báo cáo hay ảnh sơ đồ trong task này. ERD Markdown phân biệt mô hình mục tiêu và schema hiện thực; thêm ghi chú kỹ thuật SCRUM-26, không tái tạo .drawio.
+Các tài liệu UC-33 và sequence bắt buộc đều có. Không viết lại báo cáo hay ảnh sơ đồ trong task này. ERD Markdown phân biệt mô hình mục tiêu và schema hiện thực; thêm ghi chú kỹ thuật SCRUM-26, không tái tạo.drawio.
 
 ## Ghi chú Jira — đã đăng
 
@@ -44,6 +44,6 @@ Các tài liệu UC-31 và sequence bắt buộc đều có. Không viết lại
 
 Tóm tắt kỹ thuật bàn giao:
 
-Backend UC-31 bổ sung GET attendance, POST atomic theo entry; AttendanceVersion riêng trên internal assignment và Guest invitation để chống ghi đè. Response/role không đổi version. Ghi audit cùng transaction và attendanceChanged sau commit, chỉ gửi roster readers. Bổ sung query/read codes MSG289/278, hiện thực MSG147–151. MSG151 bao gồm stale điểm danh; MSG150 dùng câu trung tính khi commit chưa xác định. Legacy Unknown/Excused/Delegated được giữ, chỉ cho ghi Present/Absent. Guest production integration chờ UC-04; FE/room do task khác. Migration mới chỉ thêm hai cột; dependency SCRUM-20 giữ migration riêng.
+Backend UC-33 bổ sung GET attendance, POST atomic theo entry; AttendanceVersion riêng trên internal assignment và Guest invitation để chống ghi đè. Response/role không đổi version. Ghi audit cùng transaction và attendanceChanged sau commit, chỉ gửi roster readers. Bổ sung query/read codes MSG289/278, hiện thực MSG147–151. MSG151 bao gồm stale điểm danh; MSG150 dùng câu trung tính khi commit chưa xác định. Legacy Unknown/Excused/Delegated được giữ, chỉ cho ghi Present/Absent. Guest production integration chờ UC-04; FE/room do task khác. Migration mới chỉ thêm hai cột; dependency SCRUM-20 giữ migration riêng.
 
 BA cần đối chiếu: comment Jira 30/09 về self-attendance đã bị mô tả hiện tại thay thế; README sequence cũ còn nói Jira chưa cập nhật; EX numbering DOCX/Markdown khác nhau; state machine legacy còn Excused/Delegated; DCD cần thể hiện Guest recorder/version kỹ thuật nếu được đưa vào class diagram. Không coi các phần cũ đó là yêu cầu mở lại self-attendance hoặc quorum.

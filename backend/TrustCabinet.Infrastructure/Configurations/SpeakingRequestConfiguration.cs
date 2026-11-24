@@ -6,10 +6,10 @@ namespace TrustCabinet.Infrastructure.Configurations;
 
 public class SpeakingRequestConfiguration : IEntityTypeConfiguration<SpeakingRequest>
 {
-    /// <summary>BR-337: one open request per member. PostgreSQL cuts names at 63 bytes, so keep them short.</summary>
+    /// <summary>BR-104–BR-106: one open request per member. PostgreSQL cuts names at 63 bytes, so keep them short.</summary>
     public const string OpenUserIndex = "ux_speaking_requests_open_user";
     public const string OpenGuestIndex = "ux_speaking_requests_open_guest";
-    /// <summary>BR-338: one person holds the floor at a time.</summary>
+    /// <summary>BR-104–BR-106: one person holds the floor at a time.</summary>
     public const string FloorIndex = "ux_speaking_requests_floor";
 
     private const string Open = "status IN ('Queued', 'Invited', 'Speaking')";
@@ -48,7 +48,7 @@ public class SpeakingRequestConfiguration : IEntityTypeConfiguration<SpeakingReq
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // An invitation is revoked, never deleted: the record of who spoke stays with the meeting (BR-339).
+        // An invitation is revoked, never deleted: the record of who spoke stays with the meeting (BR-104–BR-106).
         builder.HasOne(r => r.GuestInvitation)
             .WithMany()
             .HasForeignKey(r => r.GuestInvitationId)

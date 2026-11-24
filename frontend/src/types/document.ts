@@ -29,25 +29,25 @@ export interface DocumentsAgendaItem {
   position: number
   title: string
   status: AgendaItemStatus
-  /** A document linked to several items appears under each (BR-277). */
+  /** A document linked to several items appears under each (UC-36b). */
   documents: MeetingDocument[]
 }
 
-/** GET /api/meetings/{id}/documents (UC-32a). Removed documents are never listed (BR-211). */
+/** GET /api/meetings/{id}/documents (UC-35a). Removed documents are never listed (BR-074–BR-076). */
 export interface MeetingDocumentList {
   meetingId: string
-  /** The item in progress, or null; the call room puts it first (BR-316). */
+  /** The item in progress, or null; the call room puts it first (UC-35a). */
   currentAgendaItemId: string | null
   /** Every agenda item by position, those without documents included. */
   agendaItems: DocumentsAgendaItem[]
-  /** Documents linked to no item and no vote (BR-280): a vote's own document is listed only under `votes`. */
+  /** Documents linked to no item and no vote (UC-36b, UC-36d): a vote's own document is listed only under `votes`. */
   general: MeetingDocument[]
-  /** UC-32a AF-1: each vote the caller may see (drafts for the Chair and Secretary only) with its documents. */
+  /** UC-35a AF-1: each vote the caller may see (drafts for the Chair and Secretary only) with its documents. */
   votes: DocumentsVote[]
 }
 
 export interface VoteMeetingDocument extends MeetingDocument {
-  /** When the caller confirmed reading it to the last page (UC-74), or null. */
+  /** When the caller confirmed reading it to the last page (UC-42), or null. */
   readConfirmedAt: string | null
 }
 
@@ -86,7 +86,7 @@ export interface LibraryFolder {
   name: string
   /** null at the library root. */
   parentId: string | null
-  /** Set on the folder an upload into a meeting created (BR-192). */
+  /** Set on the folder an upload into a meeting created (UC-36a). */
   meetingId: string | null
   createdAt: string
 }
@@ -99,7 +99,7 @@ export interface LibraryDocument {
   pageCount: number | null
   folderId: string | null
   createdAt: string
-  /** Meetings the reader can see that still use this file (BR-251). */
+  /** Meetings the reader can see that still use this file (UC-37). */
   meetingCount: number
   /** The file is already in the meeting passed as `meetingId` (SCRUM-124); false without one. */
   inMeeting: boolean
@@ -143,11 +143,11 @@ export interface DocumentCommentAuthor {
 export interface DocumentComment {
   id: string
   body: string
-  /** PDF top-level comments only (BR-248). */
+  /** PDF top-level comments only (UC-38). */
   pageNumber: number | null
   author: DocumentCommentAuthor
   createdAt: string
-  /** One level (BR-317); always empty on a reply. */
+  /** One level (UC-38); always empty on a reply. */
   replies: DocumentComment[]
 }
 

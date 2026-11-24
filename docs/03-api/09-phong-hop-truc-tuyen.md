@@ -28,7 +28,7 @@ Khách gọi `GET …/call` và `POST …/call/join` bằng **token Khách** c�
 
 - phiên Khách còn hiệu lực (chưa đăng xuất, chưa hết hạn), lời mời chưa bị thu hồi, đúng cuộc họp của token;
 - đã khai tên hiển thị (UC-04 bước 5);
-- cuộc họp `InProgress`, hình thức `Online`/`Hybrid` — như thành viên (UC-37). Khi cuộc họp `Published`,
+- cuộc họp `InProgress`, hình thức `Online`/`Hybrid` — như thành viên (UC-43). Khi cuộc họp `Published`,
   `GET …/call` trả `NotStarted`; khi `Ended`/`Cancelled` Khách mất toàn bộ quyền với cuộc họp nên nhận `404`;
 - **xác nhận đã đọc thông báo ghi âm**: body `{ "recordingNoticeAcknowledged": true }`, thiếu thì `400 MSG380`.
   Chỉ giá trị JSON `true` được tính; `"true"` dạng chuỗi, JSON hỏng hay `Content-Type` khác cũng là `400 MSG380`.
@@ -58,7 +58,7 @@ lần đối soát ghi cùng lúc thì lần sau bị bỏ qua.
 
 Tên phòng LiveKit là `meeting-{meetingId}`. Danh tính (`identity`) là `userId` với thành viên và
 `guest-{guestSessionId}` với Khách — cả hai do server đặt, nên danh tính Khách không bao giờ đọc ra một `userId`.
-Mỗi phiên Khách một kết nối (như BR-328): mở cùng phiên ở tab khác thì tab cũ bị ngắt; hai thiết bị đã xác minh
+Mỗi phiên Khách một kết nối (như UC-43): mở cùng phiên ở tab khác thì tab cũ bị ngắt; hai thiết bị đã xác minh
 riêng là hai phiên, hai kết nối. Tên hiển thị của Khách là tên **tự khai**. `metadata` của người trong phòng là
 `{"meetingRole":"Chair"|"Secretary"|"Member"|"Guest"}` — FE đọc để hiện huy hiệu chủ toạ, và nhãn Khách (tên tự khai).
 
@@ -128,7 +128,7 @@ Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không t
   **không rời phòng**, nên không hỏi. Trình duyệt chỉ tìm được tab theo tên giữa các tab mở ra từ nhau; phòng mở từ
   link trong email thì "Trang cuộc họp" mở chi tiết ở tab mới. Trình duyệt chặn mở tab thì phòng mở ngay tại tab
   này như trước, và "Trang cuộc họp" hỏi xác nhận rời phòng. Trên điện thoại cũng là tab mới.
-- **Rời phòng (UC-38).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết: tab phòng do ứng dụng
+- **Rời phòng (UC-44).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết: tab phòng do ứng dụng
   mở thì tự đóng và đưa tab chi tiết lên trước; tab mở cách khác (link email) thì chuyển sang chi tiết ngay tại
   tab. "Quay lại trang cuộc họp" ở màn chờ và "Về trang cuộc họp" sau khi bị ngắt làm như vậy. Không gọi
   API, không đổi trạng thái cuộc họp. Rời từ cửa sổ nổi thì không hỏi, vì cửa sổ chính đang bị che.
@@ -139,20 +139,20 @@ Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không t
   `MSG331` (không vào lại); còn lại → `MSG332` (vào lại được). Đang kết nối lại thì dải báo `MSG333`.
   Bấm Vào phòng mà không kết nối được (chưa từng vào) thì không phải "mất" kết nối: màn chờ ở lại, báo
   `MSG480` dưới nút Vào phòng, bấm lại để thử.
-- **Một tài khoản một kết nối (BR-328).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
+- **Một tài khoản một kết nối (UC-43).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
   nữa; tab cũ hiện `MSG329`.
-- **Chat (UC-42, BR-327).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
+- **Chat (UC-48, BR-103).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
   lưu; người vào sau không thấy tin trước. Gửi lỗi thì giữ nguyên nội dung và hiện `MSG343`.
-- **Thiết bị (UC-39d, BR-331).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
+- **Thiết bị (UC-45d, UC-45a, UC-45b).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
   `localStorage` (`trustcabinet.call.prefs`) của trình duyệt, không gửi lên server.
-- **Chia sẻ màn hình (UC-39c, BR-326).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
+- **Chia sẻ màn hình (UC-45c).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
   track của người đang trình bày; FE nhận `LocalTrackUnpublished` và hiện `MSG340`.
-- **Cửa sổ nổi (UC-78, BR-332).** Document Picture-in-Picture, dùng lại đúng `Room` đang mở — không
+- **Cửa sổ nổi (UC-49).** Document Picture-in-Picture, dùng lại đúng `Room` đang mở — không
   gọi `join` lần hai và không tạo dòng `call_participants` mới.
-- **Vai trò hiển thị (BR-329).** `metadata.meetingRole` chỉ đặt lúc cấp token; FE đọc lại danh sách
-  thành phần mỗi lần `participantsChanged` (`roomRoles.ts`) nên đổi Chủ toạ giữa họp (UC-73) có hiệu lực
+- **Vai trò hiển thị (UC-46).** `metadata.meetingRole` chỉ đặt lúc cấp token; FE đọc lại danh sách
+  thành phần mỗi lần `participantsChanged` (`roomRoles.ts`) nên đổi Chủ toạ giữa họp (UC-34) có hiệu lực
   ngay trong phòng, không cần vào lại. PO 26/10/2026: không khoá đổi vai trò khi cuộc họp đang diễn ra.
-- **Sức chứa (BR-336).** `room.max_participants: 50` trong cấu hình LiveKit (`docker/livekit.dev.yaml`,
+- **Sức chứa (NFR).** `room.max_participants: 50` trong cấu hình LiveKit (`docker/livekit.dev.yaml`,
   `deploy/livekit.yaml`); người thứ 51 bị LiveKit từ chối khi kết nối, FE chưa có mã riêng cho trường hợp này.
 - **Chưa mở khi chưa họp.** Màn chờ khi cuộc họp chưa `InProgress` hiện `MSG117` và tự mở khi nhận
   thông báo `MeetingStarted` (SCRUM-69); đã `Ended` hiện `MSG331`, đã `Cancelled` hiện `MSG350`.

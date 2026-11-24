@@ -8,8 +8,8 @@ public sealed record MeetingTransitionCommand(
     string? Reason = null,
     Guid? OrganizerId = null);
 
-/// <param name="ActorId">Null when the system acted on its own (BR-301); <paramref name="ActorName"/> then says so.</param>
-/// <param name="CancellationReason">Shown to everyone who may read the meeting, unlike a rejection reason (BR-298).</param>
+/// <param name="ActorId">Null when the system acted on its own (BR-029); <paramref name="ActorName"/> then says so.</param>
+/// <param name="CancellationReason">Shown to everyone who may read the meeting, unlike a rejection reason (UC-22).</param>
 public sealed record MeetingHistoryRecord(
     Guid Id,
     Guid MeetingId,

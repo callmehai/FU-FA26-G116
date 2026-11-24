@@ -1,11 +1,11 @@
 # 02 · Quản lý người dùng
 
-Hiện thực **UC-05, UC-06a, UC-06b và UC-06c (SCRUM-13)**: xem danh sách, tạo, sửa và vô hiệu hoá /
+Hiện thực **UC-05, UC-06a, UC-06b, UC-06c (SCRUM-13)**: xem danh sách, tạo, sửa và vô hiệu hoá /
 kích hoạt lại tài khoản người dùng; **UC-07** đặt lại mật khẩu qua email (dùng hạ tầng SMTP của
 SCRUM-15); và **UC-08** gán / đổi vai trò hệ thống — chạy trên chính endpoint sửa tài khoản của UC-06b,
 xem [mục UC-08](#uc-08--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid).
 
-Kịch bản kiểm thử API bằng Postman cho UC-07 và UC-08: [postman/](postman/README.md).
+Kịch bản kiểm thử API bằng Postman cho UC-07, UC-08: [postman/](postman/README.md).
 
 Sequence diagram chia bốn participant: `User Management Page` → `:User Controller` →
 `:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Token
@@ -55,7 +55,7 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    email phải huỷ refresh token vì access token mang claim email. Đổi vai trò thì **không** huỷ
    (SCRUM-105): server báo qua hub để trình duyệt refresh token, còn quyền bị mất đã bị từ chối ở
    request kế tiếp vì mọi endpoint gắn quyền đọc lại quyền từ database.
-5. **UC-06b và UC-06c có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
+5. **UC-06b, UC-06c có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
    [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Với **UC-06c** thì nó lấp
    vào nhánh *"Status change is not allowed"* bản vẽ đã có sẵn nhưng không nói khi nào. Với
    **UC-06b** thì đây là nhánh hoàn toàn mới: bản vẽ UC-06b không có operand "not allowed" nào.
@@ -69,9 +69,9 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    password reset function" mà không nói khi nào. Nhánh "chưa có mật khẩu" do BA chốt trong
    SCRUM-13 (BA Final Review): UC-07 đặt lại mật khẩu đã có, không phải cách thêm một phương thức
    đăng nhập mới.
-9. **BR-20 và BR-22 (UC-07 bước 4) nay đã được định nghĩa** trong [danh mục
-   BR](../01-requirements/06-business-rules.md): BR-20 yêu cầu liên kết đặt lại mật khẩu có hiệu lực
-   giới hạn và không tái dùng được sau khi đặt lại thành công; BR-22 chỉ cho đặt lại với tài khoản đủ
+9. **UC-07 (UC-07 bước 4) nay đã được định nghĩa** trong [danh mục
+   BR](../01-requirements/06-business-rules.md): UC-07 yêu cầu liên kết đặt lại mật khẩu có hiệu lực
+   giới hạn và không tái dùng được sau khi đặt lại thành công; UC-07 chỉ cho đặt lại với tài khoản đủ
    điều kiện dùng xác thực bằng mật khẩu. Code khớp: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu
    lực 60 phút, dùng một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
 10. **`:Authentication Service` và `:Email Service` của bản vẽ UC-07 không phải hai service riêng.**
@@ -107,7 +107,7 @@ Nửa sau của UC-07 nằm ngoài nhóm này vì nó **ẩn danh**: `POST /api/
 
 ### Vì sao `status` là endpoint riêng
 
-SCRUM-13 chỉ ghi `GET/POST/PUT /api/users`, nhưng UC-06b và UC-06c là **hai use case khác nhau, luật
+SCRUM-13 chỉ ghi `GET/POST/PUT /api/users`, nhưng UC-06b, UC-06c là **hai use case khác nhau, luật
 khác nhau**: UC-06c còn phải kết thúc phiên đăng nhập và ghi audit bằng action khác. Gộp vào một
 `PUT /api/users/{id}` nghĩa là sửa tên người khác cũng có thể vô hiệu hoá họ như một tác dụng phụ,
 mà đường đi đó lại không chạy phần huỷ phiên.
@@ -355,7 +355,7 @@ Vài điểm cố ý:
   đọc này thì bước thu hồi của chính nó chạy sau khi kích hoạt, nên vẫn bắt được. Quản trị viên vẫn
   nhận MSG13 — email đã thực sự đi, y như khi thay đổi kia tới ngay sau đó.
 - **Liên kết đang chờ cũng chết khi tài khoản bị vô hiệu hoá, đổi email hoặc đổi vai trò** (cùng chỗ
-  huỷ phiên ở UC-06b/UC-06c). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
+  huỷ phiên ở UC-06b, UC-06c). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
   sống lại, và liên kết đã gửi nhầm địa chỉ vẫn dùng được sau khi quản trị viên sửa email. Sửa tên
   thì liên kết vẫn còn.
 - **Gửi đồng bộ qua SMTP, không qua hàng đợi `email_messages`.** Hàng đợi lưu cả nội dung email vào

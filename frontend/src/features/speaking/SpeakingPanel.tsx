@@ -18,7 +18,7 @@ import type { Speaking } from './useSpeaking'
 type Confirm = { kind: 'decline' | 'finish'; request: SpeakingRequest }
 
 /**
- * Register to Speak (SCRUM-27, UC-79): the call room's side panel (ADR-0011). It shows only in the room — hands are
+ * Register to Speak (SCRUM-27, UC-50): the call room's side panel (ADR-0011). It shows only in the room — hands are
  * raised there, and the meeting page carries no queue. Whether the caller may run the turns comes from the server's
  * `canManage`. One line per raised hand: the person, then where they stand; the time and the agenda item wait behind
  * the line's marker. The caller raises and lowers their own hand, and starts and finishes their own turn.
@@ -61,7 +61,7 @@ export function SpeakingPanel({
 
   const live = data.meetingStatus === 'InProgress'
   const queued = data.requests.filter((r) => r.status === 'Queued')
-  // BR-338: one person holds the floor; the Chair invites the next only once that turn is closed.
+  // BR-104–BR-106: one person holds the floor; the Chair invites the next only once that turn is closed.
   const floorTaken = data.requests.some((r) => r.status !== 'Queued')
 
   return wrap(
@@ -140,7 +140,7 @@ export function SpeakingPanel({
 
 /**
  * The caller's own hand in the room: raise it, see where it stands, lower it, and — once invited — start and finish
- * the turn. The invitation never turns the microphone on (BR-338): the person does that themself (UC-39a).
+ * the turn. The invitation never turns the microphone on (BR-104–BR-106): the person does that themself (UC-45a).
  */
 function MyTurn({ meetingId, speaking }: { meetingId: string; speaking: Speaking }) {
   const { data, mine, pending, run } = speaking
@@ -210,7 +210,7 @@ function MyTurn({ meetingId, speaking }: { meetingId: string; speaking: Speaking
 
 interface Manage {
   pending: boolean
-  /** Nobody is invited or speaking (BR-338). */
+  /** Nobody is invited or speaking (BR-104–BR-106). */
   canInvite: boolean
   onInvite: () => void
   onDecline: () => void

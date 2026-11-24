@@ -107,8 +107,8 @@ export interface MinutesState {
   /** When the AI draft that fills sections I–III last changed; null without one, and for anyone but Chair and Secretary. */
   draftChangedAt: string | null
   history: MinutesRevision[]
-  /** The caller is the current Secretary, who sends the minutes for approval (BR-404). */
+  /** The caller is the current Secretary, who sends the minutes for approval (BR-135, BR-136). */
   canSubmit: boolean
-  /** The caller is the current Chair, who approves or returns them (BR-406). */
+  /** The caller is the current Chair, who approves or returns them (BR-135, BR-136). */
   canApprove: boolean
 }

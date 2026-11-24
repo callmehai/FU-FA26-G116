@@ -90,7 +90,7 @@ const MODE_HINT: Record<MeetingMode, string> = {
   Hybrid: 'Ghi âm: mic phòng và micro người trực tuyến.',
 }
 /**
- * What a level changes, read from the rules: BR-318 and MeetingDocumentService (documents),
+ * What a level changes, read from the rules: BR-009–BR-011 and MeetingDocumentService (documents),
  * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export, MinutesService
  * (exports), LanguageModelProvider (ADR-0056). Nội bộ differs from Thường only in keeping the AI draft in-house.
  */
@@ -156,7 +156,7 @@ const startOf = (values: Values) => (values.date && values.start ? fromDateTimeI
 const endOf = (values: Values) =>
   values.date && values.end ? fromDateTimeInput(`${addDays(values.date, values.endDays)}T${values.end}`) : null
 
-/** BR-301: a meeting not started 24 hours after its planned start is cancelled by the system. */
+/** BR-029: a meeting not started 24 hours after its planned start is cancelled by the system. */
 // ponytail: mirrors the server's default Meetings:AutoCancelAfterHours (24); read it from an endpoint if it is ever changed.
 const OVERDUE_MS = 24 * 3_600_000
 const OVERDUE_MESSAGE = 'Giờ bắt đầu đã qua hơn 24 giờ nên cuộc họp sẽ bị tự huỷ. Chọn giờ khác.'
@@ -165,7 +165,7 @@ const NO_CHANGES = 'Không có thay đổi cần lưu.'
 
 /**
  * A Draft or Rejected meeting may be saved with a start already past (it is not announced yet), but
- * once the start is 24 hours past the system cancels it within minutes (BR-301, SCRUM-149): warn
+ * once the start is 24 hours past the system cancels it within minutes (BR-029, SCRUM-149): warn
  * while the start is past, refuse past 24 hours. Create and reschedule refuse any past start already.
  */
 function pastStart(values: Values): 'past' | 'overdue' | null {
@@ -175,7 +175,7 @@ function pastStart(values: Values): 'past' | 'overdue' | null {
   return ago > OVERDUE_MS ? 'overdue' : ago > 0 ? 'past' : null
 }
 
-/** BR-62: checked as soon as both times are known rather than only on submit. */
+/** BR-013: checked as soon as both times are known rather than only on submit. */
 function endError(values: Values): string | undefined {
   const start = startOf(values)
   const end = endOf(values)
@@ -184,7 +184,7 @@ function endError(values: Values): string | undefined {
 }
 
 /**
- * BR-24, BR-62 and — on create (BR-162) and reschedule (BR-75) — a start in the future: the same
+ * BR-013 and — on create (BR-013) and reschedule (BR-015) — a start in the future: the same
  * rules the backend applies, so the commonest mistakes never cost a round trip.
  */
 function validate(values: Values, needsFutureStart: boolean): FieldErrors {
@@ -263,10 +263,10 @@ function sameValues(a: Values, b: Values) {
 }
 
 /**
- * UC-14 and UC-15 share this form, so creating and editing cannot drift apart. It is a dialog over
+ * UC-13, UC-14 share this form, so creating and editing cannot drift apart. It is a dialog over
  * the current screen, as AI-eCabinet's create and edit forms are, in the same sections: content,
  * time, how, and (create only) who attends. A Published meeting opens it in reschedule mode
- * (UC-15 AF-1): only the times, place and link stay editable (BR-158).
+ * (UC-14 AF-1): only the times, place and link stay editable (BR-015).
  *
  * The caller owns what differs: where the meeting comes from, what a save calls, and the errors
  * only one of them can hit (404 and 409 exist only for an edit). Everything the user types is kept

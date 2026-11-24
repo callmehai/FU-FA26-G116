@@ -4,8 +4,8 @@ using TrustCabinet.Application.Meetings;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-35 — comments on a meeting document (SCRUM-23), for anyone who can view the meeting, and for a verified guest
-/// of it on their UC-04 token (BR-181), who writes under their invitation.
+/// UC-38 — comments on a meeting document (SCRUM-23), for anyone who can view the meeting, and for a verified guest
+/// of it on their UC-04 token (BR-055), who writes under their invitation.
 /// </summary>
 public static class DocumentCommentEndpoints
 {
@@ -55,7 +55,7 @@ public static class DocumentCommentEndpoints
             CommentFailure.Blank => (400, Msg200CommentBlank, "Hãy nhập nội dung góp ý."),
             CommentFailure.TooLong => (400, Msg348TextTooLong, "Nội dung vượt quá độ dài cho phép."),
             // A meeting the caller cannot view, a removed document, a document or a parent comment of another
-            // meeting: the same answer (BR-211, BR-284).
+            // meeting: the same answer (BR-074–BR-076).
             CommentFailure.NotFound => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
             CommentFailure.Ended => (409, Msg251CommentsReadOnly, "Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc."),
             CommentFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),

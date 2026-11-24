@@ -25,22 +25,22 @@ type Group = 'agenda' | 'votes' | 'general'
 const GROUPS = [
   // Short labels for a phone, where three groups share about 270px with their counts.
   { value: 'agenda', label: 'Theo nội dung họp', short: 'Nội dung' },
-  // UC-32a AF-1: the documents of each vote, with the reader's own read confirmation (UC-74).
+  // UC-35a AF-1: the documents of each vote, with the reader's own read confirmation (UC-42).
   { value: 'votes', label: 'Biểu quyết' },
   { value: 'general', label: 'Tài liệu chung', short: 'Chung' },
 ] satisfies { value: Group; label: string; short?: string }[]
 
 /**
- * The meeting's documents (SCRUM-21, UC-32a), written once for the Tài liệu tab and the call room's
+ * The meeting's documents (SCRUM-21, UC-35a), written once for the Tài liệu tab and the call room's
  * side panel (ADR-0011). It reads its own list and re-reads on the hub.
  *
  * - `page`: the AI-eCabinet layout — by agenda item (a document linked to several items under each,
- *   BR-277), by vote with "Đã đọc"/"Chưa đọc" (UC-32a AF-1), or the general ones (BR-280). While the meeting has not ended or been cancelled, its Chair
+ *   UC-36b), by vote with "Đã đọc"/"Chưa đọc" (UC-35a AF-1), or the general ones (UC-36b, UC-36d). While the meeting has not ended or been cancelled, its Chair
  *   and Secretary add documents (SCRUM-107, SCRUM-58: from the computer or their library, to the general
- *   group or one item), detach one from an item and remove one from the meeting (BR-184, BR-279, BR-299);
+ *   group or one item), detach one from an item and remove one from the meeting (BR-070, BR-071, UC-36b, UC-36d, BR-028);
  *   the server checks again.
- * - `room`: read only (BR-316). The item in progress comes first and follows the Chair; a document
- *   opens in a new tab so the call keeps running (BR-315).
+ * - `room`: read only (UC-35a). The item in progress comes first and follows the Chair; a document
+ *   opens in a new tab so the call keeps running (UC-35a, UC-35b).
  *
  * Status, sensitivity and the caller's role come from the meeting, which the list does not repeat.
  * `onMeetingStale` re-reads it when an answer says it changed (role lost, meeting ended, now Secret).
@@ -340,8 +340,8 @@ function RoomList({ data, row }: { data: MeetingDocumentList; row: RowProps }) {
 }
 
 /**
- * One vote (UC-32a AF-1): its status and documents, each marked with whether the reader confirmed reading it
- * (UC-74). Documents are attached and removed from the vote itself, on the Biểu quyết tab, never from here.
+ * One vote (UC-35a AF-1): its status and documents, each marked with whether the reader confirmed reading it
+ * (UC-42). Documents are attached and removed from the vote itself, on the Biểu quyết tab, never from here.
  */
 function VoteGroup({ vote, row, folded }: { vote: DocumentsVote; row: RowProps; folded?: boolean }) {
   const [open, setOpen] = useState(!folded)
@@ -364,7 +364,7 @@ function VoteGroup({ vote, row, folded }: { vote: DocumentsVote; row: RowProps; 
               key={doc.id}
               doc={doc}
               row={{ ...row, onRemove: undefined }}
-              // "Chưa đọc" only to someone UC-74 would still take a confirmation from.
+              // "Chưa đọc" only to someone UC-42 would still take a confirmation from.
               read={doc.readConfirmedAt ?? (vote.canConfirmRead ? null : undefined)}
             />
           ))}
@@ -386,7 +386,7 @@ function AgendaGroup({
   number: number
   row: RowProps
   folded?: boolean
-  /** The Chair's and Secretary's "add to this item" (UC-33b). */
+  /** The Chair's and Secretary's "add to this item" (UC-36b). */
   onAdd?: () => void
 }) {
   const count = item.documents.length

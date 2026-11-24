@@ -84,15 +84,16 @@ class StageReportTests(unittest.TestCase):
         engine._track = lambda stage, fraction: self.reports.append((stage, fraction))
         return engine
 
-    def test_recognition_reports_each_batch_by_audio_done(self):
-        # 17 pieces: three batches; the first batch holds most of the audio.
+    def test_recognition_reports_each_piece_by_audio_done(self):
+        # 17 pieces, one at a time (RECOGNISE_BATCH); the first eight hold most of the audio.
+        self.assertEqual(pipeline.RECOGNISE_BATCH, 1)
         pieces = [np.zeros(16000 * 10, np.float32)] * 8 + [np.zeros(1600, np.float32)] * 9
         texts, _, _ = self.engine()._transcribe_pieces(pieces)
         self.assertEqual(len(texts), 17)
         fractions = [fraction for stage, fraction in self.reports if stage == "recognise"]
-        self.assertEqual(len(fractions), 3)
+        self.assertEqual(len(fractions), 17)
         self.assertEqual(fractions[0], 0.0)
-        self.assertGreater(fractions[1], 0.9)
+        self.assertGreater(fractions[8], 0.9)
         self.assertEqual(fractions, sorted(fractions))
 
     def test_punctuation_reports_each_passage(self):

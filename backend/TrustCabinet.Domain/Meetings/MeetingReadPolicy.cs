@@ -17,7 +17,7 @@ public static class MeetingReadPolicy
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
                     || meeting.Status == MeetingStatus.Ended
-                    // Announced and then called off: the invitees were told, so they may still open it (BR-300).
+                    // Announced and then called off: the invitees were told, so they may still open it (UC-22).
                     || (meeting.Status == MeetingStatus.Cancelled
                         && meeting.CancelledFromStatus == MeetingStatus.Published)));
 

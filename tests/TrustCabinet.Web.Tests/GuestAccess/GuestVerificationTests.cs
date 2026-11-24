@@ -207,7 +207,7 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
         Assert.Equal(f.Clock.Now.AddHours(12), session.ExpiresAt);
         Assert.Equal(users, await check.Users.CountAsync());
         Assert.False(await check.MeetingParticipants.AnyAsync(p => p.MeetingId == s.MeetingId && p.UserId != s.SecretaryId));
-        // BR-444: one verification, one row — no actor, the invitation under the key the audit log reads Guests by.
+        // BR-009–BR-011: one verification, one row — no actor, the invitation under the key the audit log reads Guests by.
         var verified = await check.AuditLog.SingleAsync(a => a.Action == AuditActions.GuestVerified && a.ObjectId == session.Id);
         Assert.Null(verified.ActorId);
         var details = JsonDocument.Parse(verified.Details).RootElement;

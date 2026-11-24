@@ -29,7 +29,7 @@ interface Values {
 /**
  * UC-23a / UC-23b: add an agenda item or edit one, in any status (SCRUM-98). The presenter is one of
  * the meeting's current people or guests. Documents are not picked here: the row's paperclip links
- * them (UC-33b), and leaving `documentIds` out keeps the item's links. The server re-checks all of it
+ * them (UC-36b), and leaving `documentIds` out keeps the item's links. The server re-checks all of it
  * and answers field errors under MSG66.
  */
 export function AgendaItemDialog({

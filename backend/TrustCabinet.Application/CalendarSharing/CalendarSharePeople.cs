@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Application.CalendarSharing;
 
-/// <summary>What a share needs to know about one of its people right now: who, active, Meeting Organizer (BR-424, BR-430).</summary>
+/// <summary>What a share needs to know about one of its people right now: who, active, Meeting Organizer (BR-142, BR-143, BR-140, BR-141).</summary>
 public sealed record PersonState(Guid Id, string FullName, string Email, bool IsActive, bool IsOrganizer)
 {
     public SharePerson View => new(Id, FullName, Email);
@@ -11,7 +11,7 @@ public sealed record PersonState(Guid Id, string FullName, string Email, bool Is
 
 internal static class CalendarSharePeople
 {
-    /// <summary>BR-424: an open share lives while both accounts are active and the viewer is still a Meeting Organizer.</summary>
+    /// <summary>BR-142, BR-143: an open share lives while both accounts are active and the viewer is still a Meeting Organizer.</summary>
     internal static bool IsLive(CalendarShare share, IReadOnlyDictionary<Guid, PersonState> people)
         => people.TryGetValue(share.OwnerId, out var owner) && owner.IsActive
             && people.TryGetValue(share.ViewerId, out var viewer) && viewer.IsActive && viewer.IsOrganizer;

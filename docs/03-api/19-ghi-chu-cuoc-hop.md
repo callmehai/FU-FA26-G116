@@ -1,6 +1,6 @@
 # Ghi chú cuộc họp của Thư ký — SCRUM-30
 
-UC-82 *Take Meeting Notes*, theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-30.md). Thư ký gõ ghi chú trong lúc
+UC-28 *Take Meeting Notes*, theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-30.md). Thư ký gõ ghi chú trong lúc
 họp. Mỗi ghi chú gắn với một mục nghị sự hoặc với cả cuộc họp. Bản nháp biên bản đọc lại các ghi chú này.
 
 Mã thông báo: `MSG415`–`MSG423` ([danh mục](00-danh-muc-ma-thong-bao.md)). `MSG423` do FE tự hiện.
@@ -17,7 +17,7 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 
 - **Thư ký hiện tại:** thành viên đang hoạt động, có vai trò `Secretary`. Nếu đổi Thư ký, người mới bắt đầu với ghi chú
   trống. Ghi chú của người cũ vẫn còn trong database nhưng không hiện và không vào biên bản.
-- **Ghi chú được ghi khi:** cuộc họp `InProgress`, hoặc `Ended` mà chưa tạo bản nháp biên bản (BR-398, cùng mốc khoá
+- **Ghi chú được ghi khi:** cuộc họp `InProgress`, hoặc `Ended` mà chưa tạo bản nháp biên bản (BR-134, cùng mốc khoá
   với kết luận mục nghị sự).
 - Server kiểm tra lại quyền ở mọi request.
 
@@ -35,9 +35,9 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
     { "agendaItemId": null, "body": "…", "updatedAt": "ISO", "author": { "id": "…", "fullName": "…" } },
     { "agendaItemId": "…", "body": "Ý kiến: …\nKết luận: …", "updatedAt": "ISO", "author": { … } }
   ],
-  "currentAgendaItemId": "…",                  // mục Chủ toạ đang để InProgress, null nếu không có (BR-399)
+  "currentAgendaItemId": "…",                  // mục Chủ toạ đang để InProgress, null nếu không có (UC-28)
   "canWrite": true,                            // người gọi là Thư ký và cuộc họp còn nhận ghi chú
-  "secret": false                              // cuộc họp Mật: FE không giữ nháp trong localStorage (BR-461)
+  "secret": false                              // cuộc họp Mật: FE không giữ nháp trong localStorage (UC-28)
 }
 
 // PUT body
@@ -45,23 +45,23 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 ```
 
 - **`agendaItemId: null`** là ghi chú chung của cả cuộc họp. Mỗi Thư ký có tối đa một ghi chú cho mỗi mục và một ghi
-  chú chung (BR-400).
+  chú chung (UC-28).
 - **`updatedAt`** là giá trị server trả về lần đọc hoặc lần lưu trước. Với ghi chú chưa từng lưu thì gửi `null`.
   Server trả `409` `MSG418` và không ghi đè khi:
   - ghi chú đã được lưu ở cửa sổ khác sau lần đọc đó;
   - gửi `null` cho ghi chú đã tồn tại;
   - gửi một thời điểm cho ghi chú chưa tồn tại.
 
-  Hai nơi cùng mở (khung trong phòng họp và tab mới) vì thế không ghi đè nhau (BR-401).
-- **`body`:** văn bản thuần, tối đa 20.000 ký tự, được để trống (BR-403). `\r\n` được lưu thành `\n`.
-- **Dấu đầu dòng (BR-459):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` là dòng có đánh dấu: không
+  Hai nơi cùng mở (khung trong phòng họp và tab mới) vì thế không ghi đè nhau (UC-28).
+- **`body`:** văn bản thuần, tối đa 20.000 ký tự, được để trống (UC-28). `\r\n` được lưu thành `\n`.
+- **Dấu đầu dòng (BR-133):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` là dòng có đánh dấu: không
   phân biệt hoa thường, cho phép khoảng trắng trước dấu hai chấm (`Kết luận :`), và so sau khi chuẩn hoá Unicode NFC (bàn
   phím gõ dấu tổ hợp vẫn khớp). Dấu chỉ là chữ: TrustCabinet không lưu người được giao, hạn hay tiến độ.
 - **Lỗi:**
   - `403` `MSG416` khi người gọi đọc được cuộc họp nhưng không phải Thư ký hiện tại: Chủ toạ, hoặc Thư ký vừa bị thay
     trong lúc gõ (EX-1). Câu này không cho biết gì về ghi chú; đọc ghi chú thì người không phải Chủ toạ/Thư ký vẫn nhận
     `404` (EX-8).
-  - Thứ tự kiểm tra theo UC-82 bước 4: vai trò, trạng thái cuộc họp, mục nghị sự, độ dài, rồi bản đang giữ.
+  - Thứ tự kiểm tra theo UC-28 bước 4: vai trò, trạng thái cuộc họp, mục nghị sự, độ dài, rồi bản đang giữ.
   - `409` `MSG417` khi cuộc họp chưa bắt đầu, đã huỷ, hoặc đã kết thúc và đã có bản nháp biên bản.
   - `409` `MSG418` khi bản đang giữ đã cũ.
   - `400` `MSG419` khi quá 20.000 ký tự.
@@ -89,7 +89,7 @@ bị cắt. Ghi chú chung đổi `updatedAt`, nên cửa sổ đang giữ bản
 Trước SCRUM-30, khoá ngoại `SET NULL` đụng ràng buộc một ghi chú chung cho mỗi người viết, nên việc xoá mục thất bại
 với `503` `MSG70`.
 
-## Ghi chú vào bản nháp biên bản (BR-402)
+## Ghi chú vào bản nháp biên bản (UC-70)
 
 `POST /api/meetings/{id}/minutes` ([contract](17-du-thao-bien-ban.md)) đọc ghi chú khác rỗng của Thư ký hiện tại. Khi
 **chưa có dự thảo AI**, dù đã duyệt hay chưa (từ #263), ghi chú được điền như sau:
@@ -121,7 +121,7 @@ Cách panel chạy:
 - **Chọn ghi chú:** ô chọn mặc định theo mục Chủ toạ đang để `InProgress` và đổi theo khi Chủ toạ chuyển mục.
   Thư ký chọn mục khác hoặc "Chung" thì ô chọn giữ lựa chọn đó.
 - **Lưu:** tự lưu 1 giây sau khi ngừng gõ, khi rời ô nhập, khi đổi ghi chú và khi rời tab.
-- **Nháp trên máy (BR-461):** chữ chưa lưu được giữ theo người dùng, cuộc họp và ghi chú, rồi xoá khi server đã có cùng
+- **Nháp trên máy (UC-28):** chữ chưa lưu được giữ theo người dùng, cuộc họp và ghi chú, rồi xoá khi server đã có cùng
   nội dung:
   - cuộc họp Thường (`secret: false`): trong `localStorage`, nên đóng tab rồi vào lại vẫn còn;
   - cuộc họp Mật (`secret: true`): chỉ trong `sessionStorage`, mất khi đóng trang; nháp cũ trong `localStorage` của
@@ -136,7 +136,7 @@ Cách panel chạy:
 - **`MSG418`:** giữ chữ đang gõ, hiện bản mới nhất bên cạnh, cho chọn "Dùng bản mới" hoặc "Giữ bản này" (lưu lại trên
   bản mới nhất).
 - **`MSG415`:** không toast (tự lưu liên tục); dòng trạng thái dưới ô nhập hiện câu của server kèm giờ lưu, ví dụ
-  "Đã lưu ghi chú. (15:17)" (UC-82 bước 5).
+  "Đã lưu ghi chú. (15:17)" (UC-28 bước 5).
 - **`404` khi lưu:** cuộc họp không còn đọc được; đọc lại, panel báo không xem được ghi chú và hiện chữ chưa lưu để
   sao chép.
 - **`MSG416`, `MSG417`, `MSG420`:** khoá ô nhập, giữ chữ để sao chép. Khi panel chuyển sang chế độ chỉ đọc, chữ chưa

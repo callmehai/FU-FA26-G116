@@ -35,8 +35,8 @@ D1–D6 và D11–D13 được ghi thành ADR-0010; D10 thành ADR-0011. D7 đã
 | D3 | **Phòng họp không dùng SignalR.** LiveKit tự lo signalling (SDP/ICE) và trạng thái phòng. SignalR `/hubs/calls` chỉ cần nếu làm gọi 1–1 (§8 PR5). | Đã chốt — ADR-0010 |
 | D4 | **Backend là ranh giới bảo mật:** chỉ backend ký token LiveKit, sau khi kiểm quyền. Tắt mic người khác, luật một người chia sẻ màn hình, đá người mất quyền đều do server làm qua RoomService API. | Đã chốt |
 | D5 | Tên phòng LiveKit = `meeting-{meetingId:D}`, một phòng cho mỗi cuộc họp. Phòng tự tạo khi người đầu tiên vào. `CallSession` (lượt mở phòng, không phải một buổi họp) được tạo từ webhook, không tạo lúc cấp token. | Đã chốt — ADR-0010 |
-| D6 | Phòng chỉ mở khi cuộc họp **`InProgress`** **và** `Mode` là `Online` hoặc `Hybrid` (UC-37). Chỉ người có phân công hiện hành trong `meeting_participants`, hoặc Guest có guest session hợp lệ (UC-04), được vào. Khi cuộc họp `Ended`, phòng ngừng nhận người và ngắt kết nối mọi người (BR-143). Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)) nên room code kiểm `Meeting.Status = InProgress` là đúng mô hình đích. | Đã chốt — ADR-0010, ADR-0013 |
-| D7 | **Chat trong phòng là tạm thời:** LiveKit text stream topic `lk.chat`, không lưu database, người vào sau không thấy tin cũ (giống Google Meet). Report 1 FE-08 có chat (UC-42). | Đã chốt và đã làm — UC-42 trong SCRUM-41, BR-327 |
+| D6 | Phòng chỉ mở khi cuộc họp **`InProgress`** **và** `Mode` là `Online` hoặc `Hybrid` (UC-43). Chỉ người có phân công hiện hành trong `meeting_participants`, hoặc Guest có guest session hợp lệ (UC-04), được vào. Khi cuộc họp `Ended`, phòng ngừng nhận người và ngắt kết nối mọi người (BR-025). Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)) nên room code kiểm `Meeting.Status = InProgress` là đúng mô hình đích. | Đã chốt — ADR-0010, ADR-0013 |
+| D7 | **Chat trong phòng là tạm thời:** LiveKit text stream topic `lk.chat`, không lưu database, người vào sau không thấy tin cũ (giống Google Meet). Report 1 FE-08 có chat (UC-48). | Đã chốt và đã làm — UC-48 trong SCRUM-41, BR-103 |
 | D8 | **Gọi 1–1 (SCRUM-40):** Report 1/2 không có; Jira/README để Must. Không làm chat 1–1. | **Đã bỏ** (PO 26/10/2026, ghi chú 11 §6.2.5): ticket đổi tên "[ĐÃ BỎ]", bỏ khỏi UC và phạm vi Report 3 |
 | D9 | **SCRUM-44 (ghi cuộc gọi)** mâu thuẫn Report 1 LI-01 ("no recording bot joins the meeting room… excluded, not merely deferred"). Không làm Egress. Hướng hợp LI-01: thư ký bấm ghi âm (SCRUM-29) trong phòng, trình duyệt thư ký trộn audio phòng và ghi trên máy mình. | **Chờ nhóm quyết** — ngoài plan này |
 | D10 | **Tính năng họp (vote, nghị sự, phát biểu, tài liệu) nằm trong phòng dưới dạng panel**, mỗi tính năng code một lần, màn chi tiết bên ngoài và phòng họp cùng dùng (§7). Agenda tách planning context (cuộc họp chưa `InProgress`) và live context (cuộc họp `InProgress`). | Đã chốt — ADR-0011 |
@@ -1134,18 +1134,18 @@ thay vì sửa comment cũ.
 
 **SCRUM-41**
 - Phòng mở khi `InProgress` **và** hình thức `Online`/`Hybrid` (thêm điều kiện hình thức).
-- "Được mời" = có phân công hiện hành trong thành phần tham dự. Không có uỷ quyền tham dự (BR-105).
+- "Được mời" = có phân công hiện hành trong thành phần tham dự. Không có uỷ quyền tham dự (BR-046).
 - Chỉ chủ toạ tắt mic người khác, chỉ tắt không bật.
 - Endpoint `POST …/call/participants/{userId}/mute`.
-- Nếu nhóm đồng ý: chat tạm thời không lưu (Report 1 FE-08, UC-42).
-- Phụ thuộc: UC-21 Start Meeting / UC-22 End Meeting. Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); điều kiện mở phòng là `Meeting.Status = InProgress`.
+- Nếu nhóm đồng ý: chat tạm thời không lưu (Report 1 FE-08, UC-48).
+- Phụ thuộc: UC-20 Start Meeting / UC-21 End Meeting. Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); điều kiện mở phòng là `Meeting.Status = InProgress`.
 
 **SCRUM-42**
 - Mặc định vào phòng mic bật, cam tắt.
 - Lưới 9 ô/trang.
 
 **SCRUM-43**
-- Luật một người chia sẻ: client tự dừng + server tắt track qua webhook (BR-326).
+- Luật một người chia sẻ: client tự dừng + server tắt track qua webhook (UC-45c).
 - Không có dialog nhắc riêng tư: trình duyệt tự hỏi chọn nội dung, phòng không ghi lại nội dung
   được chia sẻ. Người bị mất lượt trình bày nhận `MSG340`; chia sẻ lỗi nhận `MSG341`.
 
@@ -1158,13 +1158,13 @@ thay vì sửa comment cũ.
 
 1. ~~Nhóm giữ hay bỏ SCRUM-40 (gọi 1–1)?~~ Đã bỏ (PO 26/10/2026). SCRUM-44 (ghi cả cuộc gọi) cũng bỏ theo note 16 (ghi mic từng người).
 2. ~~Chat trong phòng: thêm ticket riêng hay gộp SCRUM-41? Có cần lưu lại không?~~ Đã chốt 25/10/2026:
-   chat thuộc SCRUM-41, UC-42, không lưu (BR-327).
+   chat thuộc SCRUM-41, UC-48, không lưu (BR-103).
 3. ~~Ai làm vòng đời Meeting Session?~~ Đã bỏ Meeting Session ngày 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); phòng theo vòng đời cuộc họp.
 4. Môi trường deploy thật (máy nào, domain nào)? Quyết định cấu hình TURN/TLS và `node_ip`.
-5. ~~Giới hạn số người một phòng~~: 50 (`room.max_participants`, ADR-0010), thành BR-336.
+5. ~~Giới hạn số người một phòng~~: 50 (`room.max_participants`, ADR-0010), thành NFR.
 6. ~~Thư ký có được tắt mic người khác không? AC chỉ nói chủ toạ.~~ Đã chốt 25/10/2026: chỉ chủ toạ
-   hiện hành, một chiều (UC-41, BR-325). Giơ tay là UC-79 (SCRUM-27, yêu cầu, chưa làm); tắt mic tất cả và mời ra khỏi phòng không làm.
+   hiện hành, một chiều (UC-47, BR-102). Giơ tay là UC-50 (SCRUM-27, yêu cầu, chưa làm); tắt mic tất cả và mời ra khỏi phòng không làm.
 
 ## Bổ sung Guest theo PO 13/10/2026
 
-[ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md) là policy đích: Guest xác minh email rồi tự khai tên/chức vụ, có media/chat/screen-share/connected-list như Member; không moderate. Identity room liên kết Guest invitation, không display name; rejoin tạo connection stint mới, không voter mới. UC-40 không đòi grant UC-27/30. Đây là yêu cầu bổ sung cho kế hoạch. **Kiểm 25/10/2026:** code chưa hỗ trợ — `CallEndpoints` chỉ nhận tài khoản nội bộ và xác thực Guest chưa cài, nên Guest nhận `404`; xem [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).
+[ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md) là policy đích: Guest xác minh email rồi tự khai tên/chức vụ, có media/chat/screen-share/connected-list như Member; không moderate. Identity room liên kết Guest invitation, không display name; rejoin tạo connection stint mới, không voter mới. UC-46 không đòi grant UC-29, UC-32. Đây là yêu cầu bổ sung cho kế hoạch. **Kiểm 25/10/2026:** code chưa hỗ trợ — `CallEndpoints` chỉ nhận tài khoản nội bộ và xác thực Guest chưa cài, nên Guest nhận `404`; xem [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).

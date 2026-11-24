@@ -41,12 +41,12 @@ type Open =
   | { kind: 'attach'; item: AgendaItem; number: number; source: DocumentSource }
 
 /**
- * The meeting's agenda (SCRUM-25, SCRUM-98, UC-77), written once for the detail tab and the call
+ * The meeting's agenda (SCRUM-25, SCRUM-98, UC-27), written once for the detail tab and the call
  * room's side panel (ADR-0011). It reads its own data and what the caller may do comes from the
  * server's `actions`: the Secretary plans (add, edit, delete, drag to reorder), the Chair starts and
  * closes items while the meeting runs, either writes conclusions. Laid out as AI-eCabinet does: one
  * line per item, opened in place for its notes, documents and conclusion. On the page, the Chair and
- * the Secretary link documents to an item from its paperclip (UC-33b), which needs the meeting itself.
+ * the Secretary link documents to an item from its paperclip (UC-36b), which needs the meeting itself.
  */
 export function AgendaPanel({
   meetingId,
@@ -55,7 +55,7 @@ export function AgendaPanel({
 }: {
   meetingId: string
   variant: 'page' | 'room'
-  /** The page's meeting, for adding documents; the room links none (BR-316). */
+  /** The page's meeting, for adding documents; the room links none (UC-35a). */
   meeting?: Meeting
 }) {
   const toast = useToast()
@@ -330,7 +330,7 @@ function AgendaRow({
   expanded: boolean
   onToggle: () => void
   onEdit: () => void
-  /** The Chair's or Secretary's paperclip (UC-33b); absent when they may not link documents. */
+  /** The Chair's or Secretary's paperclip (UC-36b); absent when they may not link documents. */
   onAttach?: (source: DocumentSource) => void
   onDelete: () => void
   onStart: () => void

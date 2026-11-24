@@ -4,20 +4,20 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// One owner letting one viewer see their busy hours (SCRUM-142, UC-84a → UC-84e, ADR-0058). The direction counts: A
-/// viewing B's calendar is a different row from B viewing A's (BR-423). Only busy/free ever leaves this table's
-/// owner — never a meeting's title, place or attendees (BR-427).
+/// One owner letting one viewer see their busy hours (SCRUM-142, UC-80a → UC-80e, ADR-0058). The direction counts: A
+/// viewing B's calendar is a different row from B viewing A's (BR-142, BR-143). Only busy/free ever leaves this table's
+/// owner — never a meeting's title, place or attendees (BR-140, BR-141).
 /// </summary>
 public class CalendarShare : Entity
 {
     public Guid OwnerId { get; set; }
     public User Owner { get; set; } = null!;
 
-    /// <summary>A Meeting Organizer (holds MeetingCreator) while the share is open (BR-424, BR-430).</summary>
+    /// <summary>A Meeting Organizer (holds MeetingCreator) while the share is open (BR-142, BR-143, BR-140, BR-141).</summary>
     public Guid ViewerId { get; set; }
     public User Viewer { get; set; } = null!;
 
-    /// <summary>Who sent it. The other side answers it (UC-84c) and only the sender withdraws it (UC-84e).</summary>
+    /// <summary>Who sent it. The other side answers it (UC-80c) and only the sender withdraws it (UC-80e).</summary>
     public CalendarShareInitiator InitiatedBy { get; set; }
 
     /// <summary>The level in force, or asked for while <see cref="Status"/> is Pending.</summary>
@@ -27,17 +27,17 @@ public class CalendarShare : Entity
     public DateOnly StartDate { get; set; }
 
     /// <summary>
-    /// Last day shown, inclusive. After it the share has ended (BR-425): left out of every read and refusing every action,
+    /// Last day shown, inclusive. After it the share has ended (BR-142, BR-143): left out of every read and refusing every action,
     /// with nothing written to the row (PO 09/11/2026, Q-B).
     /// </summary>
     public DateOnly EndDate { get; set; }
 
     public CalendarShareStatus Status { get; set; }
 
-    /// <summary>The level the viewer asked to raise to (UC-84d); null when no change is pending.</summary>
+    /// <summary>The level the viewer asked to raise to (UC-80d); null when no change is pending.</summary>
     public CalendarShareLevel? PendingLevel { get; set; }
 
-    /// <summary>The end date the viewer asked to extend to (UC-84d); null when no change is pending.</summary>
+    /// <summary>The end date the viewer asked to extend to (UC-80d); null when no change is pending.</summary>
     public DateOnly? PendingEndDate { get; set; }
 
     /// <summary>When the viewer asked for the change. Not null exactly when a change is pending.</summary>

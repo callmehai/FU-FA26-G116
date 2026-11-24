@@ -19,7 +19,7 @@ STAGE_WEIGHTS: dict[str, float] = {
     "decode": 0.01,      # ffmpeg to 16 kHz mono
     "detect": 0.04,      # levelling and the VAD over the whole recording
     "diarize": 0.45,     # the window embeddings, clustering, the second pass
-    "recognise": 0.39,   # the recogniser over every piece, 8 at a time
+    "recognise": 0.39,   # the recogniser over every piece, one at a time (8 at a time when measured)
     "punctuate": 0.05,   # the tagger over each passage
     "voices": 0.06,      # one embedding per speaker, from up to 30 s of their speech
 }

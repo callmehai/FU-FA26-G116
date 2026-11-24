@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react'
 import { useUploads } from '../uploads/uploadsContext'
 import type { UploadRequest } from '../uploads/uploadStore'
 
-// BR-214, BR-319 — the server's DocumentFileRules (meeting decision 19/11/2026: 10 MB a file, 10 files and
+// UC-36a, UC-39, NFR, UC-36b — the server's DocumentFileRules (meeting decision 19/11/2026: 10 MB a file, 10 files and
 // 100 MB an upload). Checked here first: a body past the limit is cut off while the browser is still sending,
 // and the browser then sees a network error, not a code.
 const MB = 1024 * 1024
@@ -33,8 +33,8 @@ interface Picked extends PickedFile {
 }
 
 /**
- * Picking files for the upload queue: the meeting upload (UC-33a AF-1), the upload into an agenda item
- * (UC-33b AF-1) and the library upload (UC-36) share it. Each file goes as its own request, so one bad
+ * Picking files for the upload queue: the meeting upload (UC-36a AF-1), the upload into an agenda item
+ * (UC-36b AF-1) and the library upload (UC-39) share it. Each file goes as its own request, so one bad
  * file does not hold back the others, and a failed one is tried again on its own (PO 27/10/2026). The
  * dialog closes as soon as the files are queued; the tray follows them.
  * `roomLeft` is what the system's document storage still holds (ADR-0034), so a pick that does not fit is refused

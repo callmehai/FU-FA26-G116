@@ -6,7 +6,7 @@
 > `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
 > không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
-> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+> mã BR và UC trong file là mã mới theo [bảng 09](../01-requirements/09-bang-anh-xa-br-dot-1.md) và [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md) (ADR-0079).
 
 SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 (và các mutation roster: dời lịch, huỷ, thu hồi, đổi vai trò) gọi
 `MeetingInvitationEvents.Stage(...)` ghi một dòng `meeting_invitation_dispatches` ở trạng thái
@@ -118,7 +118,7 @@ Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi l
 | Cuộc họp sắp bắt đầu | người được mời đang hoạt động, Khách hiện tại | Vào phòng họp (phòng TrustCabinet) / Xem cuộc họp / Xác minh email để vào cuộc họp (Khách) |
 | Biên bản đã ban hành, bản đính chính đã ban hành | đúng những người nhận chuông "Biên bản đã ban hành", trừ Chủ toạ vừa duyệt | Xem biên bản (mở tab Biên bản) |
 
-**Thêm theo PO 15/11/2026** (ngoài BR-303, BR-411 và quy tắc dời lịch hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
+**Thêm theo PO 15/11/2026** (ngoài UC-76, UC-72, UC-73, UC-74 và quy tắc dời lịch hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
 - Dời lịch: trước chỉ Khách nhận email, người nội bộ chỉ có chuông. Giờ mọi người trong roster nhận email, gạch thời gian
   cũ cạnh thời gian mới; chuông vẫn không gửi cho người tổ chức vừa dời.
 - Nhắc họp: `MeetingReminderEmails` chạy cùng nhịp `NotificationWorker` với chuông nhắc, trong 15 phút trước giờ bắt đầu

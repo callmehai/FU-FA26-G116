@@ -24,7 +24,7 @@ const PANEL_ID = 'calendar-filter'
  * that will happen (Đã duyệt, Đã công bố, Đang diễn ra), and one level. Each chip filters at once;
  * a chip with nothing in the range is dimmed, and the last status stays on. "Đặt lại" goes back to
  * the default; "Xong" only closes. It narrows what the server already allowed the caller to see —
- * the server filters by visibility (BR-29), so this is a view, never a permission boundary.
+ * the server filters by visibility (BR-016, BR-017), so this is a view, never a permission boundary.
  */
 export function CalendarFilter({
   value,

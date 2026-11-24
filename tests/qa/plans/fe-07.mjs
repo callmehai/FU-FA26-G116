@@ -1,9 +1,9 @@
-// FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp (QA subtask SCRUM-194): UC-34 view the library (search, type
-// filter), UC-36 upload to the library, UC-71a–c delete / rename / move a document, UC-72a–d folders, UC-32a view the
-// meeting documents, UC-32c the viewer and download, UC-33a add to the meeting (computer, My Documents), UC-33b attach
-// to an agenda item, UC-33c remove from the meeting, UC-33d detach from an item, UC-35 comments, UC-34b the
-// administrator reading a locked account's library; with the rules they cite (BR-181–BR-197, BR-209–BR-229,
-// BR-242–BR-251, BR-275–BR-286, BR-299, BR-304, BR-317, BR-319, BR-333–BR-335).
+// FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp (QA subtask SCRUM-194): UC-37 view the library (search, type
+// filter), UC-39 upload to the library, UC-40a–c delete / rename / move a document, UC-41a–d folders, UC-35a view the
+// meeting documents, UC-35b the viewer and download, UC-36a add to the meeting (computer, My Documents), UC-36b attach
+// to an agenda item, UC-36c remove from the meeting, UC-36d detach from an item, UC-38 comments, UC-37a the
+// administrator reading a locked account's library; with the rules they cite (BR-055, BR-068, BR-070, BR-071, BR-074–BR-076, BR-069, BR-081, BR-086, BR-087, BR-091, BR-072, BR-073, BR-011, BR-077, BR-083, BR-084,
+// BR-083, BR-082, BR-079, BR-080, BR-078, BR-074–BR-076, BR-086, BR-087, BR-028, BR-085, BR-011).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/11-tai-lieu-cuoc-hop.md, 14-kho-tai-lieu-ca-nhan.md, the message catalogue, and the comments of
@@ -11,14 +11,14 @@
 // request per file (ADR-0033), so "all or nothing" is per file and the tray says "Đã tải lên n tệp" instead of a
 // MSG177/MSG161 toast; the storage limit is 10 GB for the whole system (ADR-0034); a library document already in the
 // meeting is locked with "Đã có trong cuộc họp" in the general-group dialog only (SCRUM-124); the Secretary's list of
-// comments (SCRUM-106) was dropped by the PO; UC-74 (read confirmation) belongs to voting (FE-11) and is not tested.
+// comments (SCRUM-106) was dropped by the PO; UC-42 (read confirmation) belongs to voting (FE-11) and is not tested.
 // A Guest reader (UC-04, an OTP by email) is not tested here.
 //
 // Safe on a shared local dev database: every meeting, folder and file is named "[QA] FE-07 …"; meetings are created
 // here through the API, eight weeks ahead, organised by thuky@ (Secretary) with chutoa@ as Chair and approver and
 // thanhvien@ as Member, and reused across runs by their fixed title. Files are tiny PDFs and DOCX built in this file.
 // Every criterion sweeps the "[QA] FE-07" files and folders it left in the personal libraries (the meeting copies stay,
-// BR-186). UC-34b needs a locked account: one "[QA] FE-07 kho đã khoá" account is created (random password, the
+// BR-074–BR-076). UC-37a needs a locked account: one "[QA] FE-07 kho đã khoá" account is created (random password, the
 // undeliverable trustcabinet.local domain), given a file and a folder, deactivated, and reused by later runs.
 
 import { request as playwrightRequest } from '@playwright/test'
@@ -378,7 +378,7 @@ const everyDoc = (list) => [...list.agendaItems.flatMap((i) => i.documents), ...
  * - Ended: one PDF with a comment, one agenda item;
  * - Cancelled: one PDF, cancelled from Draft;
  * - NoRoleOrg: Draft, organised by the Secretary but without them in the roster
- *   (myMeetingRole null) — the "organiser without a Chair/Secretary role" of BR-249;
+ *   (myMeetingRole null) — the "organiser without a Chair/Secretary role";
  *   one PDF uploaded by the Chair (the organiser cannot upload, 403 MSG162).
  */
 const SPECS = {
@@ -387,7 +387,7 @@ const SPECS = {
   Secret: { status: 'Published', organizer: 'secretary', sensitivity: 'Secret' },
   Ended: { status: 'Ended', organizer: 'secretary', sensitivity: 'Normal' },
   Cancelled: { status: 'Cancelled', organizer: 'secretary', sensitivity: 'Normal' },
-  // R1/FE-07: vai "người tổ chức không giữ vai trò Chủ toạ/Thư ký" (BR-249). Bản thảo đầu
+  // R1/FE-07: vai "người tổ chức không giữ vai trò Chủ toạ/Thư ký". Bản thảo đầu
   // dựng cuộc họp này do quantri@ tổ chức, nhưng vai Quản trị viên trên seed chỉ có
   // AdminUsers nên tạo họp 403 — không dựng được. Thay bằng: Thư ký tạo họp nhưng không
   // đưa mình vào thành phần (người tạo vẫn là người tổ chức, myMeetingRole null). Giữ Nháp
@@ -579,7 +579,7 @@ export default {
   title: 'FE-07 Kho tài liệu cá nhân & Tài liệu cuộc họp: thư mục, tải lên, đổi tên, chuyển, xoá, tìm; tài liệu cuộc họp, gắn mục, gỡ, trình xem, góp ý, quyền theo vai trò',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-72a, UC-34
+    // ------------------------------------------------------------------------------------------- UC-41a, UC-37
     {
       id: 'AC1',
       role: 'member',
@@ -587,7 +587,7 @@ export default {
       title: 'Thành viên tạo thư mục ở gốc kho, mở thư mục, thấy đường dẫn và trạng thái rỗng; cột bảng, hạn mức, tải lại giữ chỗ',
       steps: ['Đăng nhập thanhvien@, mở Kho tài liệu (/mgmt/documents)', 'Bấm "Thư mục mới", nhập tên, bấm "Tạo thư mục"', 'Mở thư mục vừa tạo, tải lại trang, về gốc bằng đường dẫn'],
       expected:
-        'Bảng có cột "Tên", "Kích thước", "Đang dùng", "Ngày tạo", "Thao tác"; hạn mức "x / 10 GB" kèm chú thích "Bộ nhớ tài liệu của cả hệ thống"; toast "Đã tạo thư mục." (MSG187); hộp tạo ở gốc ghi "Tạo thư mục trong Kho tài liệu."; thư mục hiện trong bảng với nhãn "Thư mục"; mở ra: tiêu đề là tên thư mục, đường dẫn "Kho tài liệu › tên", "Thư mục này chưa có gì."; tạo thư mục con trùng tên vẫn đạt (BR-221); tải lại vẫn ở thư mục đó; bấm "Kho tài liệu" về gốc; nút "Thư mục mới" bị khoá khi tên trống; không cuộn ngang',
+        'Bảng có cột "Tên", "Kích thước", "Đang dùng", "Ngày tạo", "Thao tác"; hạn mức "x / 10 GB" kèm chú thích "Bộ nhớ tài liệu của cả hệ thống"; toast "Đã tạo thư mục." (MSG187); hộp tạo ở gốc ghi "Tạo thư mục trong Kho tài liệu."; thư mục hiện trong bảng với nhãn "Thư mục"; mở ra: tiêu đề là tên thư mục, đường dẫn "Kho tài liệu › tên", "Thư mục này chưa có gì."; tạo thư mục con trùng tên vẫn đạt (UC-41); tải lại vẫn ở thư mục đó; bấm "Kho tài liệu" về gốc; nút "Thư mục mới" bị khoá khi tên trống; không cuộn ngang',
       async run(qa) {
         const name = qa.name(`FE-07 Hồ sơ ${rand()}`)
         try {
@@ -626,7 +626,7 @@ export default {
           await settled(qa)
           await qa.shot('trong-thu-muc-rong')
           await noSidewaysScroll(qa)
-          // R1/FE-07 (DOC_FT28): tên trùng ở cha khác được chấp nhận (BR-221).
+          // R1/FE-07 (DOC_FT28): tên trùng ở cha khác được chấp nhận (UC-41).
           await press(qa, qa.page.getByRole('button', { name: 'Thư mục mới' }))
           const subForm = dialog(qa, 'Thư mục mới')
           await qa.expect(subForm.getByText(`Tạo thư mục trong ${name}.`)).toBeVisible()
@@ -653,7 +653,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-36, UC-34
+    // ------------------------------------------------------------------------------------------- UC-39, UC-37
     {
       id: 'AC2',
       role: 'member',
@@ -746,7 +746,7 @@ export default {
         'API: tải vào thư mục của người khác; không đăng nhập',
       ],
       expected:
-        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nêu tên tệp, nút Tải lên khoá; chọn 11 tệp: báo "Mỗi lần tải tối đa 10 tệp…" + "Đang chọn 11 tệp", nút Tải lên khoá; khay báo "1 tệp chưa tải lên được" với lỗi nội dung cụ thể, không có nút thử lại (UC-36 EX-1: người dùng sửa lựa chọn); API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
+        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nêu tên tệp, nút Tải lên khoá; chọn 11 tệp: báo "Mỗi lần tải tối đa 10 tệp…" + "Đang chọn 11 tệp", nút Tải lên khoá; khay báo "1 tệp chưa tải lên được" với lỗi nội dung cụ thể, không có nút thử lại (UC-39 EX-1: người dùng sửa lựa chọn); API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
       async run(qa) {
         const bad = textFile(qa.name(`FE-07 Ghi chú ${rand()}.txt`))
         const before = (await library(qa, 'member')).documents.length
@@ -771,7 +771,7 @@ export default {
         await dialog(qa, 'Bỏ tệp đã chọn').getByRole('button', { name: 'Bỏ tệp đã chọn' }).click()
         await qa.expect(form).toHaveCount(0)
         // R1/FE-07 (DOC_FT17): PDF hỏng nội dung qua khay tải — khay báo lỗi cụ thể,
-        // không có nút thử lại (UC-36 EX-1: người dùng sửa lại lựa chọn).
+        // không có nút thử lại (UC-39 EX-1: người dùng sửa lại lựa chọn).
         await press(qa, qa.page.getByRole('button', { name: /Tải (tài liệu )?lên/ }).first())
         const badForm = dialog(qa, 'Tải tài liệu lên')
         const fakeUi = { name: qa.name(`FE-07 hỏng ${rand()}.pdf`), mimeType: PDF_TYPE, buffer: Buffer.from('<html>không phải pdf</html>') }
@@ -860,7 +860,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-71b, UC-72b
+    // ------------------------------------------------------------------------------------------- UC-40b, UC-41b
     {
       id: 'AC5',
       role: 'secretary',
@@ -871,7 +871,7 @@ export default {
         'Bấm "Đổi tên" ở dòng tài liệu, sửa tên, bấm "Lưu"',
       ],
       expected:
-        'Hộp thoại "Đổi tên" ghi cuộc họp vẫn giữ tên cũ, đuôi .pdf in sau ô; toast "Đã đổi tên tài liệu." (MSG183); dòng hiện tên mới, "1 cuộc họp"; API: tài liệu trong cuộc họp vẫn tên cũ (BR-276)',
+        'Hộp thoại "Đổi tên" ghi cuộc họp vẫn giữ tên cũ, đuôi.pdf in sau ô; toast "Đã đổi tên tài liệu." (MSG183); dòng hiện tên mới, "1 cuộc họp"; API: tài liệu trong cuộc họp vẫn tên cũ (UC-40b)',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const old = qa.name(`FE-07 Dự thảo ${rand()}.pdf`)
@@ -965,7 +965,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-71c, UC-72c
+    // ------------------------------------------------------------------------------------------- UC-40c, UC-41c
     {
       id: 'AC7',
       role: 'member',
@@ -1066,7 +1066,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-71a, UC-72d
+    // ------------------------------------------------------------------------------------------- UC-40a, UC-41d
     {
       id: 'AC9',
       role: 'member',
@@ -1135,7 +1135,7 @@ export default {
         'Thành viên mở nội dung tài liệu trong cuộc họp',
       ],
       expected:
-        'Hộp "Xoá tài liệu?" ghi "Tài liệu đang dùng trong 1 cuộc họp; các cuộc họp đó vẫn đọc được."; toast MSG180; API: Thành viên GET content 200, tài liệu vẫn trong danh sách cuộc họp (BR-186); sau đó Thư ký gỡ tài liệu khỏi cuộc họp',
+        'Hộp "Xoá tài liệu?" ghi "Tài liệu đang dùng trong 1 cuộc họp; các cuộc họp đó vẫn đọc được."; toast MSG180; API: Thành viên GET content 200, tài liệu vẫn trong danh sách cuộc họp (BR-074–BR-076); sau đó Thư ký gỡ tài liệu khỏi cuộc họp',
       async run(qa) {
         const m = await reused(qa, 'Published')
         const name = qa.name(`FE-07 Dùng chung ${rand()}.pdf`)
@@ -1213,7 +1213,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-33a
+    // ------------------------------------------------------------------------------------------- UC-36a
     {
       id: 'AC12',
       role: 'secretary',
@@ -1225,7 +1225,7 @@ export default {
         'Mở lại hộp, chọn một tệp .txt',
       ],
       expected:
-        'Hộp thoại ghi tệp cũng được lưu vào kho; khay "Đã tải lên 2 tệp"; nhóm "Tài liệu chung" hiện 2 tệp, PDF "3 trang"; tệp .txt: báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nút Thêm khoá; API: 2 tài liệu chung, addedBy là Thư ký; kho Thư ký có thư mục gắn cuộc họp (meetingId) tên "<tên cuộc họp> – dd/mm/yyyy" chứa 2 tệp (BR-192, BR-194)',
+        'Hộp thoại ghi tệp cũng được lưu vào kho; khay "Đã tải lên 2 tệp"; nhóm "Tài liệu chung" hiện 2 tệp, PDF "3 trang"; tệp .txt: báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nút Thêm khoá; API: 2 tài liệu chung, addedBy là Thư ký; kho Thư ký có thư mục gắn cuộc họp (meetingId) tên "<tên cuộc họp> – dd/mm/yyyy" chứa 2 tệp (UC-36a)',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const u = await users(qa)
@@ -1327,7 +1327,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-33b, UC-33d
+    // ------------------------------------------------------------------------------------------- UC-36b, UC-36d
     {
       id: 'AC14',
       role: 'chair',
@@ -1340,7 +1340,7 @@ export default {
         'API: gắn D lần nữa; gắn từ kho (AF-2) một tài liệu mới vào mục 2',
       ],
       expected:
-        'Toast "Đã gắn tài liệu vào mục nghị sự." (MSG238); D hiện dưới mục 1, nhóm "Tài liệu chung" không còn D (BR-280); API 409 MSG243; from-library 200 MSG238, tài liệu mới vào cuộc họp và mục 2',
+        'Toast "Đã gắn tài liệu vào mục nghị sự." (MSG238); D hiện dưới mục 1, nhóm "Tài liệu chung" không còn D (UC-36b, UC-36d); API 409 MSG243; from-library 200 MSG238, tài liệu mới vào cuộc họp và mục 2',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const t = rand()
@@ -1392,7 +1392,7 @@ export default {
       title: 'Thư ký gỡ tài liệu khỏi một mục ("Gỡ khỏi mục này"); tài liệu vẫn trong cuộc họp, về nhóm chung; gỡ lần nữa báo liên kết không còn',
       steps: ['Tài liệu D gắn mục 1 của cuộc họp Nháp', 'Tab Tài liệu, ở dòng D dưới mục 1 bấm "Gỡ … khỏi mục này", bấm "Gỡ khỏi mục"', 'API: gỡ lần nữa'],
       expected:
-        'Hộp "Gỡ tài liệu khỏi mục này?" nói D vẫn còn trong cuộc họp; toast "Đã gỡ tài liệu khỏi mục nghị sự." (MSG239); D về "Tài liệu chung" (BR-280); API 404 MSG246',
+        'Hộp "Gỡ tài liệu khỏi mục này?" nói D vẫn còn trong cuộc họp; toast "Đã gỡ tài liệu khỏi mục nghị sự." (MSG239); D về "Tài liệu chung" (UC-36b, UC-36d); API 404 MSG246',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         try {
@@ -1422,7 +1422,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-33c
+    // ------------------------------------------------------------------------------------------- UC-36c
     {
       id: 'AC16',
       role: 'secretary',
@@ -1434,7 +1434,7 @@ export default {
         'API: mở D; gỡ lần nữa; thêm lại cùng tài liệu kho',
       ],
       expected:
-        'Hộp "Gỡ tài liệu khỏi cuộc họp?" nêu tên, nói bản trong kho giữ nguyên; toast "Đã gỡ tài liệu khỏi cuộc họp." (MSG167); D không còn ở mục 1 hay nhóm chung; API content 404 MSG156, gỡ lại 404 MSG170; kho vẫn có tài liệu; thêm lại 201, id mới, commentCount 0 (BR-212)',
+        'Hộp "Gỡ tài liệu khỏi cuộc họp?" nêu tên, nói bản trong kho giữ nguyên; toast "Đã gỡ tài liệu khỏi cuộc họp." (MSG167); D không còn ở mục 1 hay nhóm chung; API content 404 MSG156, gỡ lại 404 MSG170; kho vẫn có tài liệu; thêm lại 201, id mới, commentCount 0 (BR-074–BR-076)',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         try {
@@ -1477,7 +1477,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-32a, UC-32c
+    // ------------------------------------------------------------------------------------------- UC-35a, UC-35b
     {
       id: 'AC17',
       role: 'member',
@@ -1558,7 +1558,7 @@ export default {
       title: 'Cuộc họp Mật: Thành viên xem được trực tuyến nhưng không có nút Tải về; API tải về bị chặn (MSG159)',
       steps: ['Thành viên mở tab Tài liệu và trình xem của "[QA] FE-07 dùng lại Mật"', 'API: GET content và content?download=true; nhật ký document.viewed'],
       expected:
-        'Dòng tài liệu không có nút Tải về; trình xem có nhãn mức Mật và "Chỉ xem trực tuyến" thay cho "Tải về"; API xem 200, tải về 403 MSG159; nhật ký có dòng document.viewed của Thành viên (BR-318)',
+        'Dòng tài liệu không có nút Tải về; trình xem có nhãn mức Mật và "Chỉ xem trực tuyến" thay cho "Tải về"; API xem 200, tải về 403 MSG159; nhật ký có dòng document.viewed của Thành viên (BR-010)',
       async run(qa) {
         const m = await reused(qa, 'Secret')
         const list = await docsOf(qa, 'member', m.id)
@@ -1581,7 +1581,7 @@ export default {
         const api = await client(qa, 'member')
         c.check('view', await api.get(`/api/meetings/${m.id}/documents/${doc.id}/content`), 200)
         c.check('download', await api.get(`/api/meetings/${m.id}/documents/${doc.id}/content?download=true`), 403, 'MSG159')
-        // R1/FE-07 (DOC_FT73): lần xem ghi nhật ký document.viewed (BR-318).
+        // R1/FE-07 (DOC_FT73): lần xem ghi nhật ký document.viewed (BR-010).
         const admin = await client(qa, 'admin')
         const audit = await admin.get(`/api/audit-log?action=document.viewed&actor=${(await users(qa)).member.id}&pageSize=20`)
         c.check('audit log reads', audit, 200)
@@ -1705,7 +1705,7 @@ export default {
       id: 'AC21',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Người tổ chức không giữ vai trò Chủ toạ/Thư ký chỉ đọc tài liệu: không có nút thêm/gỡ, nhưng vẫn góp ý được (BR-249)',
+      title: 'Người tổ chức không giữ vai trò Chủ toạ/Thư ký chỉ đọc tài liệu: không có nút thêm/gỡ, nhưng vẫn góp ý được (BR-082)',
       steps: ['Thư ký (người tổ chức nhưng không trong thành phần) mở tab Tài liệu của "[QA] FE-07 dùng lại (tổ chức không vai trò)"', 'Mở tài liệu, viết góp ý, bấm "Gửi góp ý"'],
       expected: 'Không có "Thêm tài liệu chung", kẹp giấy, nút gỡ; góp ý mới hiện trong bảng Góp ý với tên Thư ký; API 201 MSG199',
       async run(qa) {
@@ -1743,7 +1743,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-35
+    // ------------------------------------------------------------------------------------------- UC-38
     {
       id: 'AC22',
       role: 'member',
@@ -1756,7 +1756,7 @@ export default {
         'API: góp ý trống, quá 4.000 ký tự; trả lời một câu trả lời',
       ],
       expected:
-        'Góp ý hiện với tên Thành viên, "Trang 1", giờ gửi; câu trả lời của Chủ toạ tự hiện dưới góp ý mà không cần bấm gì (nút "Làm mới" đã bỏ vì thừa — CommentsPanel.tsx); số trên nút Góp ý tăng; API 400 MSG200, 400 MSG348; trả lời một câu trả lời vào luồng của góp ý gốc (BR-317); MSG199 hiện cho người gửi (UC-35 bước 6)',
+        'Góp ý hiện với tên Thành viên, "Trang 1", giờ gửi; câu trả lời của Chủ toạ tự hiện dưới góp ý mà không cần bấm gì (nút "Làm mới" đã bỏ vì thừa — CommentsPanel.tsx); số trên nút Góp ý tăng; API 400 MSG200, 400 MSG348; trả lời một câu trả lời vào luồng của góp ý gốc (UC-38); MSG199 hiện cho người gửi (UC-38 bước 6)',
       async run(qa) {
         const m = await reused(qa, 'Published')
         const u = await users(qa)
@@ -1808,7 +1808,7 @@ export default {
         c.check('4001 chars', await member.post(`/api/meetings/${m.id}/documents/${pdf.id}/comments`, { body: 'x'.repeat(4001), pageNumber: null, parentCommentId: null }), 400, 'MSG348')
         const count = (await docsOf(qa, 'member', m.id)).agendaItems[0].documents[0].commentCount
         c.fact('comment count grew by 3', count === before + 3, `${before} → ${count}`)
-        c.fact('MSG199 "Đã gửi góp ý." is shown after sending (UC-35 step 6)', toastShown)
+        c.fact('MSG199 "Đã gửi góp ý." is shown after sending (UC-38 step 6)', toastShown)
         c.fact('after sending, the new comment is in the visible part of the list', seen)
         c.done()
       },
@@ -1849,7 +1849,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-34b
+    // ------------------------------------------------------------------------------------------- UC-37a
     {
       id: 'AC24',
       role: 'admin',
@@ -1960,7 +1960,7 @@ export default {
         // hover for the tooltip, so the users table hides disabled row actions there (global.css, .users-table).
         if (qa.device === 'phone') {
           await qa.expect(qa.page.getByRole('button', { name: `Xem kho tài liệu của ${u.member.name}` })).toBeHidden()
-          qa.note('Điện thoại: nút "Xem kho tài liệu" của tài khoản đang hoạt động bị ẩn (không phải hiện và khoá như UC-34b bước 1), vì bảng Người dùng ẩn mọi nút bị khoá trên màn cảm ứng — tooltip lý do không xem được bằng chạm.')
+          qa.note('Điện thoại: nút "Xem kho tài liệu" của tài khoản đang hoạt động bị ẩn (không phải hiện và khoá như UC-37a bước 1), vì bảng Người dùng ẩn mọi nút bị khoá trên màn cảm ứng — tooltip lý do không xem được bằng chạm.')
         } else await qa.expect(qa.page.getByRole('button', { name: `Xem kho tài liệu của ${u.member.name}` }).first()).toBeDisabled()
         // R1/FE-07 (DOC_FT36): nút kho của tài khoản đang hoạt động khoá kèm lý do (máy tính).
         if (qa.device !== 'phone') qa.expect(await qa.page.getByRole('button', { name: `Xem kho tài liệu của ${u.member.name}` }).first().getAttribute('data-tooltip')).toBe('Chỉ xem được kho của tài khoản đã vô hiệu hoá')
@@ -1973,7 +1973,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-36, UC-33a, UC-33c
+    // ------------------------------------------------------------------------------------------- UC-39, UC-36a, UC-36c
     {
       id: 'AC25',
       role: 'secretary',
@@ -2055,7 +2055,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-32a, UC-33b
+    // ------------------------------------------------------------------------------------------- UC-35a, UC-36b
     {
       id: 'AC26',
       role: 'secretary',
@@ -2116,7 +2116,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-35
+    // ------------------------------------------------------------------------------------------- UC-38
     {
       id: 'AC27',
       role: 'member',
@@ -2196,7 +2196,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-33b
+    // ------------------------------------------------------------------------------------------- UC-36b
     {
       id: 'AC29',
       role: 'chair',
@@ -2234,7 +2234,7 @@ export default {
           await form.getByRole('list', { name: 'Tài liệu của cuộc họp' }).locator('label.picker-row').filter({ hasText: d.fileName }).getByRole('checkbox').check()
           await form.getByRole('button', { name: 'Gắn 1 tài liệu' }).click()
           await qa.expect(toast(qa, MSG[238])).toBeVisible()
-          // Gắn thêm vào mục 2: tài liệu giữ liên kết mục 1 (BR-277).
+          // Gắn thêm vào mục 2: tài liệu giữ liên kết mục 1 (UC-36b).
           await press(qa, qa.page.getByRole('button', { name: `Thêm tài liệu: ${item2.title}` }))
           await qa.page.getByRole('menu', { name: 'Thêm tài liệu từ' }).getByRole('menuitem', { name: 'Chọn từ tài liệu cuộc họp' }).click()
           form = dialog(qa, 'Thêm tài liệu cho mục 2')
@@ -2273,7 +2273,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-36, UC-71b
+    // ------------------------------------------------------------------------------------------- UC-39, UC-40b
     {
       id: 'AC30',
       role: 'secretary',
@@ -2323,7 +2323,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-33a, UC-33b, UC-33d
+    // ------------------------------------------------------------------------------------------- UC-36a, UC-36b, UC-36d
     {
       id: 'AC31',
       role: 'chair',
@@ -2406,7 +2406,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-32c, UC-35
+    // ------------------------------------------------------------------------------------------- UC-35b, UC-38
     {
       id: 'AC32',
       role: 'member',
@@ -2451,7 +2451,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-35
+    // ------------------------------------------------------------------------------------------- UC-38
     {
       id: 'AC33',
       role: 'member',
@@ -2513,7 +2513,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-35
+    // ------------------------------------------------------------------------------------------- UC-38
     {
       id: 'AC34',
       role: 'secretary',
@@ -2572,7 +2572,7 @@ export default {
         'Khách bấm mở tài liệu',
       ],
       expected:
-        'Tab Tài liệu của Khách liệt kê đủ tài liệu với đúng nhóm, không có nút "Thêm tài liệu", "Gỡ khỏi cuộc họp" hay gắn vào mục; bấm mở tài liệu đi tới /guest/{id}/documents/{docId} và hiện nội dung (UC-32a)',
+        'Tab Tài liệu của Khách liệt kê đủ tài liệu với đúng nhóm, không có nút "Thêm tài liệu", "Gỡ khỏi cuộc họp" hay gắn vào mục; bấm mở tài liệu đi tới /guest/{id}/documents/{docId} và hiện nội dung (UC-35a)',
       async run(qa) {
         const t = rand()
         const sec = await client(qa, 'secretary')

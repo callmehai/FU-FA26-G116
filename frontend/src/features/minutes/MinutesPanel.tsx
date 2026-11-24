@@ -58,7 +58,7 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
   const [minutes, setMinutes] = useState<Load<MinutesState>>({ kind: 'loading' })
   const [barHost, setBarHost] = useState<HTMLDivElement | null>(null)
-  // A revision opened from the history (UC-58); null is the one the server picks: the latest for the Chair and the
+  // A revision opened from the history (UC-69); null is the one the server picks: the latest for the Chair and the
   // Secretary, the latest issued for everyone else.
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -567,12 +567,12 @@ function MinutesCard({
   // Minutes are built only once the meeting has ended (Khánh 19/11/2026; the server answers MSG398 before), which is
   // also when this tab opens.
   const ended = meeting.status === 'Ended'
-  // A draft, or one the Chair returned, is written again (BR-407); a correction is too, but never rebuilt (BR-413).
+  // A draft, or one the Chair returned, is written again (BR-135, BR-136); a correction is too, but never rebuilt (BR-137, BR-138).
   const editable = !!minutes && latest && canManage && ended && (minutes.status === 'Draft' || minutes.status === 'Rejected')
   const canBuild = canManage && ended && (!minutes || (editable && !minutes.supersedesId))
   const waiting = !!minutes && latest && minutes.status === 'WaitingApproval'
   const issued = !!minutes && latest && minutes.status === 'Issued'
-  // Issued text, and what it replaced, downloads for every reader; a draft only for the two officers (BR-412).
+  // Issued text, and what it replaced, downloads for every reader; a draft only for the two officers (BR-139).
   const canDownload = !!minutes && meeting.sensitivity !== 'Secret'
   // The draft has moved on since the minutes were built (or they were built before there was one).
   const stale =
@@ -865,7 +865,7 @@ function MinutesCard({
           onConfirm={() => act(() => submitMinutes(minutes.id, minutes.updatedAt))}
           onClose={() => setDialog(null)}
         >
-          {/* UC-61 AF-1: the screen warns about the blanks the template left, the server does not block them. */}
+          {/* UC-72 AF-1: the screen warns about the blanks the template left, the server does not block them. */}
           {minutes.content.includes('……') && <strong>Biên bản còn chỗ “……” chưa điền. </strong>}
           Sau khi gửi, biên bản khoá lại cho tới khi Chủ toạ duyệt hoặc trả lại.
         </ConfirmDialog>

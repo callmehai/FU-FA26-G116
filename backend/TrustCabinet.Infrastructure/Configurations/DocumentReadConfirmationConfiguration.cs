@@ -12,7 +12,7 @@ public class DocumentReadConfirmationConfiguration : IEntityTypeConfiguration<Do
         builder.ToTable(t => t.HasCheckConstraint(
             "ck_document_read_confirmations_one_reader", "num_nonnulls(user_id, guest_invitation_id) = 1"));
 
-        // One confirmation per person and document (BR-291): two simultaneous ticks keep the first.
+        // One confirmation per person and document (UC-42): two simultaneous ticks keep the first.
         builder.HasIndex(c => new { c.MeetingDocumentId, c.UserId }).IsUnique().HasFilter("user_id IS NOT NULL");
         builder.HasIndex(c => new { c.MeetingDocumentId, c.GuestInvitationId })
             .IsUnique().HasFilter("guest_invitation_id IS NOT NULL");

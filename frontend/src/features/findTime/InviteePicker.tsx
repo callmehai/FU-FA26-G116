@@ -22,10 +22,10 @@ const SHOWN = 8
 const SEARCH_DELAY_MS = 300
 
 /**
- * UC-85a step 1 — "Người dự chính", AI-eCabinet's attendee box: search active accounts (participant-options, the same
+ * UC-81a step 1 — "Người dự chính", AI-eCabinet's attendee box: search active accounts (participant-options, the same
  * list as creating a meeting), at most 10 besides oneself (D14). Each person's row says at once whether their calendar
- * is shared with the caller and at which level; someone not shared gets "Yêu cầu chia sẻ lịch" (UC-84a). The people
- * already sharing with the caller can be added in one click. "Tính cả lịch của tôi" is off by default (BR-416).
+ * is shared with the caller and at which level; someone not shared gets "Yêu cầu chia sẻ lịch" (UC-80a). The people
+ * already sharing with the caller can be added in one click. "Tính cả lịch của tôi" is off by default (BR-144, BR-145).
  */
 export function InviteePicker({
   value,

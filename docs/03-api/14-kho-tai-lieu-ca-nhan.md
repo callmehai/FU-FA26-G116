@@ -1,7 +1,7 @@
 # Kho tài liệu cá nhân — thư mục (SCRUM-110), tài liệu (SCRUM-111)
 
-Thuộc SCRUM-58. UC-72a–d *Manage Library Folders*; UC-34 *View Personal Document Library*, UC-36 *Upload Document to
-Personal Library*, UC-71a–c *Manage Personal Documents*. Mô hình theo [ADR-0006](../05-decisions/0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md)
+Thuộc SCRUM-58. UC-41a–d *Manage Library Folders*; UC-37 *View Personal Document Library*, UC-39 *Upload Document to
+Personal Library*, UC-40a–c *Manage Personal Documents*. Mô hình theo [ADR-0006](../05-decisions/0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md)
 và [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md): dòng kho (`Document`) chỉ tham chiếu
 `StoredFile` bất biến, không phiên bản, không chép byte. Sequence: `docs/06-sequencediagram/document-management/UC34_…`,
 `UC36_…`, `UC71a–c_…`, `UC72a–d_…` (nhánh `docs/scrum-91-92-fe07-kho-tai-lieu`). Mã thông báo:
@@ -13,8 +13,8 @@ Gắn tài liệu trong kho vào cuộc họp, gỡ, gắn mục nghị sự: [1
 
 - Mọi endpoint cần bearer token của tài khoản đang hoạt động (`401`/`403` body rỗng nếu không).
 - Kho **chỉ chủ sở hữu** đọc và sửa. Thư mục hay tài liệu của người khác trả **`404 MSG175`, cùng body với mục không tồn
-  tại** (BR-242); thư mục đích của người khác trả `404 MSG179`.
-- Khách không có kho (BR-204): mọi endpoint ở đây chỉ nhận token của tài khoản nội bộ, token Khách của UC-04 bị từ chối.
+  tại** (BR-083); thư mục đích của người khác trả `404 MSG179`.
+- Khách không có kho (BR-055): mọi endpoint ở đây chỉ nhận token của tài khoản nội bộ, token Khách của UC-04 bị từ chối.
 - **Quản trị viên đọc kho của tài khoản đã khoá** (PO 27/10/2026), xem [mục cuối](#quản-trị-viên-đọc-kho-của-tài-khoản-đã-khoá).
 
 Mọi thao tác ghi trên kho của một người chạy trong một transaction có khoá theo chủ kho (`pg_advisory_xact_lock`), nên
@@ -23,14 +23,14 @@ theo người ([ADR-0034](../05-decisions/0034-han-muc-luu-tru-toan-he-thong.md)
 `StoredFile`, nên hai lần tải cùng lúc không cùng lọt. Tải từ máy vào cuộc họp cũng lấy khoá này (sau khoá cuộc họp), nên thư mục tải lên của cuộc họp không bị xoá
 hay chuyển đi giữa lúc đang ghi vào.
 
-## Xem kho — `GET /api/documents?folderId=&q=&type=&meetingId=` (UC-34)
+## Xem kho — `GET /api/documents?folderId=&q=&type=&meetingId=` (UC-37)
 
 | Tham số | Ý nghĩa |
 |---|---|
 | `folderId` | Thư mục đang mở; bỏ trống = gốc kho |
 | `q` | Tìm theo tên tài liệu, không phân biệt hoa thường và dấu (`bao cao` khớp `Báo cáo`, 20/11/2026), **trong thư mục đang mở** (AF-1). `%` và `_` là ký tự thường. Thư mục con do FE lọc theo cùng cách (`lib/search.ts`) |
 | `type` | `pdf` hoặc `docx`; giá trị khác bị bỏ qua |
-| `meetingId` | Tuỳ chọn (SCRUM-124): đánh dấu `inMeeting` theo cuộc họp này. Hộp "Thêm tài liệu chung" (UC-33a) gửi kèm |
+| `meetingId` | Tuỳ chọn (SCRUM-124): đánh dấu `inMeeting` theo cuộc họp này. Hộp "Thêm tài liệu chung" (UC-36a) gửi kèm |
 
 `200`:
 
@@ -52,14 +52,14 @@ hay chuyển đi giữa lúc đang ghi vào.
 ```
 
 - `folders`: **mọi** thư mục của kho (để FE dựng cây và hộp chọn đích khi chuyển), xếp theo tên. `meetingId` khác `null`
-  là thư mục tự tạo khi tải từ máy vào cuộc họp (BR-192); đổi tên, chuyển, xoá như mọi thư mục.
+  là thư mục tự tạo khi tải từ máy vào cuộc họp (UC-36a); đổi tên, chuyển, xoá như mọi thư mục.
 - `documents`: tài liệu **ở đúng vị trí** `folderId`, xếp theo tên. Rỗng là kết quả bình thường (AF-2), không phải lỗi.
-- `meetingCount` ("Đang dùng trong n cuộc họp"): số cuộc họp **người xem được** còn đang dùng tài liệu này (BR-251) —
+- `meetingCount` ("Đang dùng trong n cuộc họp"): số cuộc họp **người xem được** còn đang dùng tài liệu này (UC-37) —
   đếm theo `MeetingDocument.DocumentId`, không tính bản đã gỡ.
 - `inMeeting`: tệp của tài liệu đang có trong cuộc họp `meetingId` (so `StoredFileId`, không tính bản đã gỡ) — đúng phép
-  so khiến `POST /api/meetings/{id}/documents` trả `409 MSG165` (BR-193). Chỉ `true` khi người gọi **được thêm tài liệu**
-  vào cuộc họp đó (Chủ toạ / Thư ký đang hiệu lực, BR-184) — Thành viên thì không, vì tài liệu của biểu quyết nháp bị ẩn
-  với họ (BR-253). Không gửi `meetingId`, cuộc họp không tồn tại, không xem được hay người gọi không phải Chủ toạ / Thư ký
+  so khiến `POST /api/meetings/{id}/documents` trả `409 MSG165` (BR-072, BR-073). Chỉ `true` khi người gọi **được thêm tài liệu**
+  vào cuộc họp đó (Chủ toạ / Thư ký đang hiệu lực, BR-070, BR-071) — Thành viên thì không, vì tài liệu của biểu quyết nháp bị ẩn
+  với họ (BR-086, BR-087). Không gửi `meetingId`, cuộc họp không tồn tại, không xem được hay người gọi không phải Chủ toạ / Thư ký
   đều là `false` ở mọi dòng và vẫn `200`, nên tham số này không cho biết cuộc họp có tồn tại. `StoredFileId` không trả ra
   ngoài. Kho của tài khoản đã khoá (Quản trị viên) luôn `false`.
 - `storageUsedBytes` / `storageLimitBytes`: bộ nhớ tài liệu của **cả hệ thống** (ADR-0034), không phải của riêng người
@@ -68,13 +68,13 @@ hay chuyển đi giữa lúc đang ghi vào.
 
 Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176` (lỗi đọc DB).
 
-## Tải lên kho — `POST /api/documents/upload?folderId=` (UC-36)
+## Tải lên kho — `POST /api/documents/upload?folderId=` (UC-39)
 
 Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`; `pageCounts` bị bỏ qua, xem
 [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#endpoint)). Thứ tự kiểm:
 
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.
-2. Giới hạn mỗi lần như UC-33a: ≤ 10 tệp, tổng ≤ 100 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-36); từng tệp PDF/DOCX
+2. Giới hạn mỗi lần như UC-36a: ≤ 10 tệp, tổng ≤ 100 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-39); từng tệp PDF/DOCX
    theo nội dung, ≤ 10 MB (`400 MSG164`, `errors["files[i]"]`).
 3. Ghi `StoredFile` dưới khoá chung của hệ thống, chỉ khi bộ nhớ còn đủ: không thì `409 MSG346`, **không tệp nào** được
    thêm (ADR-0034).
@@ -89,38 +89,38 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
 { "code": "MSG177", "message": "Đã tải tài liệu lên kho của bạn.", "addedCount": 2, "documents": [ { "id": "…", "fileName": "…", "…": "…" } ] }
 ```
 
-`documents[]` cùng dạng với `documents[]` của `GET /api/documents`. Tải trùng tên hoặc trùng nội dung vẫn là tài liệu mới (BR-229).
+`documents[]` cùng dạng với `documents[]` của `GET /api/documents`. Tải trùng tên hoặc trùng nội dung vẫn là tài liệu mới (BR-068).
 
 ## Mở tệp trong kho — `GET /api/documents/{documentId}/content[?download=true]`
 
-Như `GET …/meetings/{id}/documents/{meetingDocumentId}/content` (UC-32c): đúng byte gốc, luôn `attachment`,
+Như `GET …/meetings/{id}/documents/{meetingDocumentId}/content` (UC-35b): đúng byte gốc, luôn `attachment`,
 `private, no-store`, `nosniff`. Không có quy tắc Mật ở đây (kho không thuộc cuộc họp nào), không ghi kiểm toán khi
 chủ kho tự mở. Lỗi: `404 MSG175`; `410 MSG382` khi object đã mất hẳn khỏi kho (xem và tải về, thử lại không có ích);
 `503 MSG158` (xem) / `503 MSG160` (tải về) khi kho tệp lỗi hay chưa cấu hình, hoặc DB lỗi.
 
-## Đổi tên — `PUT /api/documents/{documentId}/name` (UC-71b)
+## Đổi tên — `PUT /api/documents/{documentId}/name` (UC-40b)
 
 Body `{ "fileName": "Tờ trình (bản cuối).pdf" }`. Tên được cắt khoảng trắng hai đầu và bỏ phần đường dẫn; phải
 **giữ đúng phần đuôi** của tệp (`.pdf` cho PDF, `.docx` cho DOCX, không phân biệt hoa thường), không trống, không chỉ có
 phần đuôi, ≤ 255 ký tự,
-không có ký tự điều khiển. Sai → `400 MSG347`. Tên đã chép vào cuộc họp **không đổi theo** (BR-276).
+không có ký tự điều khiển. Sai → `400 MSG347`. Tên đã chép vào cuộc họp **không đổi theo** (UC-40b).
 
 `200 { "code": "MSG183", "message": "…", "document": { …như GET… } }`. Lỗi: `404 MSG175`, `503 MSG184`.
 
-## Chuyển tài liệu — `PUT /api/documents/{documentId}/folder` (UC-71c)
+## Chuyển tài liệu — `PUT /api/documents/{documentId}/folder` (UC-40c)
 
-Body `{ "folderId": "…" }`; `null` = về gốc kho (AF-1). Chỉ dòng kho đổi chỗ, cuộc họp không ảnh hưởng (BR-245).
+Body `{ "folderId": "…" }`; `null` = về gốc kho (AF-1). Chỉ dòng kho đổi chỗ, cuộc họp không ảnh hưởng (UC-40c).
 `200 MSG185` kèm `document`. Lỗi: `404 MSG175` (tài liệu), `404 MSG179` (thư mục đích), `503 MSG186`.
 
-## Xoá khỏi kho — `DELETE /api/documents/{documentId}` (UC-71a)
+## Xoá khỏi kho — `DELETE /api/documents/{documentId}` (UC-40a)
 
 Chỉ xoá **dòng kho**. Cuộc họp đang dùng tệp vẫn đọc bình thường — `MeetingDocument.DocumentId` thành `null`, vẫn trỏ
-cùng `StoredFile` — kể cả khi chủ kho bị vô hiệu hoá sau đó (BR-186, BR-232). Byte chỉ bị job dọn xoá khi không còn
-dòng kho nào và không còn cuộc họp nào đang dùng (BR-213).
+cùng `StoredFile` — kể cả khi chủ kho bị vô hiệu hoá sau đó (BR-074–BR-077). Byte chỉ bị job dọn xoá khi không còn
+dòng kho nào và không còn cuộc họp nào đang dùng (BR-077).
 
 `200 MSG180`. Lỗi: `404 MSG175`, `503 MSG181`.
 
-## Thư mục (UC-72a–d)
+## Thư mục (UC-41a–d)
 
 | Endpoint | Body | Thành công | Lỗi |
 |---|---|---|---|
@@ -131,17 +131,17 @@ dòng kho nào và không còn cuộc họp nào đang dùng (BR-213).
 
 `folder` = `{ "id", "name", "parentId", "meetingId", "createdAt" }`, cùng dạng phần tử `folders` của `GET /api/documents`.
 
-- Tên được cắt khoảng trắng hai đầu; **được trùng** tên (BR-221).
-- Cấp: thư mục ở gốc là cấp 1, tối đa cấp 5 (BR-191). Khi chuyển, cả cây con đi theo, nên kiểm **thư mục con sâu nhất**
+- Tên được cắt khoảng trắng hai đầu; **được trùng** tên (UC-41a, UC-41b).
+- Cấp: thư mục ở gốc là cấp 1, tối đa cấp 5 (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d). Khi chuyển, cả cây con đi theo, nên kiểm **thư mục con sâu nhất**
   sau khi chuyển, không chỉ thư mục được chuyển.
-- Thứ tự kiểm khi chuyển theo UC-72c: thư mục → thư mục đích → vào chính nó / con cháu → độ sâu.
-- Xoá chỉ khi rỗng (BR-223); khoá ngoại `Restrict` là lớp chặn thứ hai. Xoá thư mục tự tạo của cuộc họp thì lần tải từ
-  máy tiếp theo vào cuộc họp đó tạo lại thư mục ở gốc (BR-228).
+- Thứ tự kiểm khi chuyển theo UC-41c: thư mục → thư mục đích → vào chính nó / con cháu → độ sâu.
+- Xoá chỉ khi rỗng (BR-084); khoá ngoại `Restrict` là lớp chặn thứ hai. Xoá thư mục tự tạo của cuộc họp thì lần tải từ
+  máy tiếp theo vào cuộc họp đó tạo lại thư mục ở gốc (UC-36a).
 
 ## Quản trị viên đọc kho của tài khoản đã khoá
 
 PO chốt 27/10/2026: để lấy lại tài liệu khi người dùng nghỉ, Quản trị viên đọc được kho của **tài khoản đã khoá**; chủ kho
-không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA viết ở PR #166). Màn FE: SCRUM-113.
+không đăng nhập được nên không tự đọc. Đặc tả: UC-37a (BA viết ở PR #166). Màn FE: SCRUM-113.
 
 | Endpoint | Ghi chú |
 |---|---|
@@ -153,8 +153,8 @@ không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA v
 - **Kho không là đường vòng qua quy tắc của cuộc họp.** Tệp từng thuộc (đang gắn hoặc đã gỡ) **bất kỳ** cuộc họp
   `Secret` nào thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175` — **kể cả khi Quản trị viên xem
   được cuộc họp đó**; thư mục tải lên của cuộc họp đó (tên chứa tiêu đề cuộc họp) và các thư mục con của nó cũng bị ẩn.
-  Ai xem được cuộc họp thì mở tệp qua cuộc họp, nơi áp đủ luật của nó: Mật không tải xuống (BR-188), bản đã gỡ không còn
-  (BR-211), kiểm toán `document.*` kèm mức mật. Nếu không, tệp tải từ máy vào một cuộc họp Mật — vốn tự vào kho của
+  Ai xem được cuộc họp thì mở tệp qua cuộc họp, nơi áp đủ luật của nó: Mật không tải xuống (BR-081), bản đã gỡ không còn
+  (BR-074–BR-076), kiểm toán `document.*` kèm mức mật. Nếu không, tệp tải từ máy vào một cuộc họp Mật — vốn tự vào kho của
   người tải — sẽ tải về được qua đây.
   `storageUsedBytes` là của cả hệ thống, nên tính cả phần bị ẩn.
 - **Mỗi lần đọc ghi một dòng kiểm toán** `library.read`, `objectType` `User`, `objectId` là chủ kho, `details` có
@@ -170,7 +170,7 @@ không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA v
 - Đổi tên tài liệu: gợi ý FE chỉ cho sửa phần tên, giữ nguyên đuôi, để không gặp `MSG347`.
 - `MSG175` / `MSG179` giữa chừng (mục vừa bị xoá ở tab khác): tải lại kho.
 - Hộp "Thêm tài liệu chung", tab "Từ kho của tôi" (SCRUM-124): gửi `meetingId`; dòng `inMeeting` khoá checkbox và hiện
-  chip "Đã có trong cuộc họp". Mục nghị sự và biểu quyết **không** gửi: ở đó tài liệu đã có được gắn luôn (UC-33b / UC-76a
+  chip "Đã có trong cuộc họp". Mục nghị sự và biểu quyết **không** gửi: ở đó tài liệu đã có được gắn luôn (UC-36b / UC-68a
   AF-2). `MSG165` vẫn có thể về (người khác vừa thêm trong lúc hộp đang mở): giữ lựa chọn, báo lỗi, đọc lại kho để hiện chip.
 - Hiện "x / 10 GB" của cả hệ thống từ `storageUsedBytes` / `storageLimitBytes`; kiểm ở FE trước khi gửi để khỏi đẩy
   100 MB rồi mới nhận `MSG346`. Server vẫn kiểm lại.

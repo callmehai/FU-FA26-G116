@@ -19,10 +19,10 @@ public enum NotificationType
     MeetingParticipantRemoved,
     AgendaPresenterAssigned,
     MeetingStarted,
-    /// <summary>The Chair sent the minutes back to the Secretary with a reason (SCRUM-33, UC-65).</summary>
+    /// <summary>The Chair sent the minutes back to the Secretary with a reason (SCRUM-33, UC-74).</summary>
     MinutesReturned,
 
-    // SCRUM-142 — calendar sharing (BR-426). Target "CalendarShare", never a meeting.
+    // SCRUM-142 — calendar sharing (BR-009–BR-011). Target "CalendarShare", never a meeting.
     CalendarShareRequested,
     CalendarShareReceived,
     CalendarShareAccepted,

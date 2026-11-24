@@ -27,7 +27,7 @@ public class MeetingDocument : Entity
 
     public DateTimeOffset AddedAt { get; set; }
 
-    /// <summary>Set when removed from the meeting (UC-33c). The row and its comments stay as evidence.</summary>
+    /// <summary>Set when removed from the meeting (UC-36c). The row and its comments stay as evidence.</summary>
     public DateTimeOffset? RemovedAt { get; set; }
     public Guid? RemovedById { get; set; }
     public User? RemovedBy { get; set; }

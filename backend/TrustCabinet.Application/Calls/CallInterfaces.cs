@@ -43,13 +43,13 @@ public interface ICallRepository
     /// <summary>Opens a stint unless one is already open for this member — webhooks repeat.</summary>
     Task RecordJoinAsync(Guid sessionId, CallMember member, DateTimeOffset joinedAt, CancellationToken ct = default);
 
-    /// <summary>Closes the member's open stint; returns how many raised hands that closed (BR-337).</summary>
+    /// <summary>Closes the member's open stint; returns how many raised hands that closed (BR-104–BR-106).</summary>
     Task<int> RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default);
 
     /// <summary>
     /// Ends the session and closes every stint still open. The effective end cannot precede
     /// the session start or any already recorded participant join/leave timestamp. Returns how many raised hands
-    /// that closed (BR-337).
+    /// that closed (BR-104–BR-106).
     /// </summary>
     Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default);
 
@@ -95,7 +95,7 @@ public interface ICallRoomService
     Task<CallResult<CallJoinTicket>> JoinAsync(
         Guid meetingId, CallCaller caller, bool recordingNoticeAcknowledged = false, CancellationToken ct = default);
 
-    /// <param name="target">A member or a guest: the chair mutes anyone in the room (UC-41, ADR-0016).</param>
+    /// <param name="target">A member or a guest: the chair mutes anyone in the room (UC-47, ADR-0016).</param>
     Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, CallMember target, CancellationToken ct = default);
 
     Task HandleWebhookAsync(CallWebhookEvent webhook, CancellationToken ct = default);

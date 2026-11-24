@@ -23,6 +23,7 @@ Table of Contents
 | 13/10/2026 | M | HaiTV | Align the plan with ADR-0018 (immutable files, folders, browser previews) and ADR-0016/17 (Chair-selected voters, Guests vote, no close-Votes requirement). |
 | 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed (ADR-0026/0015), R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
+| 24/11/2026 | M, A, D | LocHD | Supervisor review: align with Report 1 and the built system: minutes approved, not signed; AI environment decided; in-meeting recording; FE-16 in Iteration 6; app/main branches; Actual metrics to 24/11/2026. |
 
 *A - Added M - Modified D - Deleted
 
@@ -39,7 +40,7 @@ Table of Contents
 
 ### 1. Scope and Purpose
 
-This Project Management Plan defines how group SEP490-G116 organises, executes, monitors and controls the development of TrustCabinet for TrustSoft over the fifteen-week capstone period from 14 September 2026 to 27 December 2026. It establishes the work packages, committed effort and schedule, quality objectives, responsibilities, communication and configuration practices. The product scope is aligned with Report 1 and the latest Report 3 SRS baseline (Change Log of 29/10/2026). Later scope changes require the established change-control process and a Change Log entry.
+This Project Management Plan defines how group SEP490-G116 organises, executes, monitors and controls the development of TrustCabinet for TrustSoft over the fifteen-week capstone period from 14 September 2026 to 27 December 2026. It establishes the work packages, committed effort and schedule, quality objectives, responsibilities, communication and configuration practices. The product scope is aligned with Report 1 and the latest Report 3 SRS baseline (Change Log of 24/11/2026). Later scope changes require the established change-control process and a Change Log entry.
 
 The work to be implemented consists of the fifteen active major features baselined in Report 1, Section V.1, each of which is traceable to a gap identified in Report 1, Section III:
 
@@ -47,15 +48,15 @@ The work to be implemented consists of the fifteen active major features baselin
 
 ●  Meeting operations - FE-04 Meeting Management, FE-05 Agenda Management, FE-06 Meeting Participant Management, FE-07 Personal Document Library & Meeting Document Management, FE-08 Online Meeting Room Management.
 
-●  Meeting intelligence - FE-09 Meeting Audio Upload & Media Library, FE-10 Speaker-Attributed Transcription & Meeting Summary.
+●  Meeting intelligence - FE-09 Meeting Recording, FE-10 Transcription, Speaker Identification & Meeting Summary.
 
-●  Meeting governance - FE-11 Voting Management and FE-12 Meeting Minutes & Digital Signing.
+●  Meeting governance - FE-11 Voting Management and FE-12 Meeting Minutes & Approval.
 
-●  Communication and visibility - FE-13 Email & In-App Notification, FE-15 Reporting & Statistics.
+●  Communication and visibility - FE-13 Email & In-App Notification, FE-15 Reporting & Statistics, FE-16 Working Calendar & Meeting Time Search.
 
 Each feature is elaborated into detailed requirements in Report 3 - Software Requirement Specification during the iteration in which it is built, and is broken down into tasks in the Project Tracking workbook. The mapping between a feature and the iteration that delivers it is given in Section I.3 - Cost & Time Estimations and in Section II.1 - Project Process/Methodology.
 
-The exclusions LI-01 to LI-12 in Report 1 remain outside the effort and schedule: automatic/server-side recording; real-time transcription, captions or in-meeting AI; video processing; translation and additional languages; bridges to external conferencing platforms; certificate-authority signatures; HRM, ERP, calendar or chat integrations and a public API; large-scale or advanced media features; conversation analytics; a native mobile client; multi-tenancy; and task assignment, action-item tracking or deadline management. Google sign-in, SMTP, the planned self-hosted LiveKit room service and the selected speech/AI provider are supporting interfaces rather than a general integration layer. The active SRS also excludes a Meeting Session layer, time-boxed voting, voting deadlines, quorum and a separate Resolution object. Any proposed addition follows Section II.6.1 instead of being absorbed into the committed schedule.
+The exclusions LI-01 to LI-12 in Report 1 remain outside the effort and schedule: recording bots and server-side recording; real-time transcription, captions or in-meeting AI; video processing; translation and additional languages; bridges to external conferencing platforms; electronic and certificate-authority signatures; HRM, ERP, calendar or chat integrations and a public API; large-scale or advanced media features; conversation analytics; a native mobile client; multi-tenancy; and task assignment, action-item tracking or deadline management. Google sign-in, the Resend email service (or SMTP), the self-hosted LiveKit room service and the AI services (self-hosted speech and drafting, and an external language-model API for Normal meetings only) are supporting interfaces rather than a general integration layer. The active SRS also excludes a Meeting Session layer, time-boxed voting, voting deadlines, quorum and a separate Resolution object. Any proposed addition follows Section II.6.1 instead of being absorbed into the committed schedule.
 
 TrustCabinet is a standalone capstone project. It is not a sub-project of, and carries no delivery dependency on, any other project, and it reuses no existing code base: every component listed above is built by the team within the fifteen weeks planned here. Its dependencies are documentary rather than technical. This plan is derived from Report 1 - Project Introduction, which baselines the problem, the gaps and the product scope; it drives Report 3 - Software Requirement Specification and Report 4 - Software Design Specification, which elaborate each feature in the iteration that delivers it; and it defines the test scope planned in Report 5 - Test Documentation. The work packages, effort figures and deadlines of Section I.3 are mirrored and tracked at task level in the Project Tracking workbook and in Jira.
 
@@ -74,15 +75,15 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 | 2 | The project has no budget. Only free, open-source or student-licensed tools, services and infrastructure may be used. | Budget |
 | 3 | The team consists of five student members who each commit 40 hours a week to the project (8 h/day, 5 days/week, Section I.4). Each member also carries other courses; these are scheduled outside the committed hours, and any time they take back is absorbed by the 20% buffer of Section I.4. There is no dedicated designer or DevOps engineer. | Resources |
 | 4 | The Product Owner is Dinh Van Toi of TrustSoft. Product requirements, priorities and acceptance criteria are confirmed by the Product Owner, and any change to the product scope requires his approval. The supervisor provides academic guidance and reviews the team’s work, and does not take the Product Owner role or approve product requirements. | External Interfaces |
-| 5 | The core application, relational database, documents and planned LiveKit meeting-room service must support deployment inside TrustSoft. Optional Google sign-in must coexist with email/password sign-in; SMTP is configured for outgoing mail. The speech-processing and summarisation environment remains undecided and may use a self-hosted model service or an external AI/ASR API behind one replaceable internal interface. An external provider may use uploaded audio and transcripts only for the stated processing purpose and must not retain or reuse them. Core self-hosting does not imply that every supporting service runs on-premises. | Technology |
+| 5 | The core application, relational database, documents and the self-hosted LiveKit meeting-room service must support deployment inside TrustSoft. Optional Google sign-in must coexist with email/password sign-in; outgoing mail is sent through Resend, with SMTP as an alternative. Speech recognition, speaker attribution and Voice ID run on a self-hosted speech worker, and the AI draft of the minutes runs on a self-hosted language model; an administrator may send the drafting of Normal meetings, and only those, to an external language-model API, which may use transcripts only for that purpose and must not retain or reuse them. Core self-hosting does not imply that every supporting service runs on-premises. | Technology |
 | 6 | Version 1 operates in Vietnamese only, with no translation and no subtitles (Report 1, LI-04). | Scope |
-| 7 | The system performs no automatic recording. Meeting audio is uploaded afterwards by the assigned Secretary and processed only once the meeting has ended (Report 1, LI-01 and LI-02). | Scope / Security |
-| 8 | Meeting minutes are signed with internal electronic signatures only. Certificate-authority signatures issued on a USB token are out of scope (Report 1, LI-06). | Scope |
-| 9 | The technology stack is fixed in the source code repository: ASP.NET Core 10 (C#) for the backend, React 19 with TypeScript and Vite for the frontend, PostgreSQL 17 through Entity Framework Core 10 as the database and Redis for refresh tokens (Section II.6.3). The speech-processing and summarisation model runs in-house in a separate CPU-only worker (ADR-0026, decided by the Product Owner on 23/10/2026). | Technology |
+| 7 | No recording bot joins a meeting and the server never records on its own. Audio is captured in the browser under human control after attendees are informed: the Secretary records the room, personal microphones are recorded only after everyone has acknowledged the recording notice, and an audio file may be uploaded instead (Report 1, FE-09, LI-01 and LI-02). | Scope / Security |
+| 8 | Meeting minutes are approved and issued by the Chair and are not signed: neither internal electronic signatures nor certificate-authority signatures on a USB token are in scope (Report 1, FE-12 and LI-06). | Scope |
+| 9 | The technology stack is fixed in the source code repository: ASP.NET Core 10 (C#) for the backend, React 19 with TypeScript and Vite for the frontend, PostgreSQL 17 through Entity Framework Core 10 as the database and Redis for refresh tokens (Section II.6.3). Speech processing runs in-house in a separate CPU-only worker (ADR-0026, 23/10/2026), and the AI draft of the minutes runs on a self-hosted language model, with an external API allowed for Normal meetings only (ADR-0054, ADR-0056). | Technology |
 
 ### 3. Cost & Time Estimations
 
-Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 through FE-15, aligned with the Report 3 SRS baseline of 29/10/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
+Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 to FE-13, FE-15 and FE-16, aligned with the Report 3 SRS baseline of 24/11/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
 
 | # | Work Package | Effort<br>(pds) | Due Date |
 | --- | --- | --- | --- |
@@ -114,8 +115,8 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 3 | Iteration 3: Meeting Audio & AI Processing - FE-09, FE-10 (weeks 6-7)19/10/2026 - 01/11/2026 | 40 |  |
 | 3.1 | Report 3: SRS v1.1 (detailed requirements for Iteration 3) | 4 | 25/10/2026 |
 | 3.2 | Report 4: SDS v1.1 (detailed design of the audio processing pipeline) | 4 | 25/10/2026 |
-| 3.3 | FE-09 Meeting Audio Upload & Media Library - Secretary post-meeting upload | 7 | 01/11/2026 |
-| 3.4 | FE-10 Speaker-Attributed Transcription & Meeting Summary | 11 | 01/11/2026 |
+| 3.3 | FE-09 Meeting Recording - room recording, per-microphone sentences and audio upload | 7 | 01/11/2026 |
+| 3.4 | FE-10 Transcription, Speaker Identification & Meeting Summary | 11 | 01/11/2026 |
 | 3.5 | Report 5.2: Integration Test cases and Integration Test report | 4 | 01/11/2026 |
 | 3.6 | Code package & Report 5.1 Unit Test | 4 | 01/11/2026 |
 | 3.7 | Report 2: Project Management Plan v1.2 | 3 | 25/10/2026 |
@@ -132,17 +133,18 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 5.1 | Report 3: SRS v1.3 (detailed requirements for Iteration 5) | 4 | 22/11/2026 |
 | 5.2 | Report 4: SDS v1.3 | 4 | 22/11/2026 |
 | 5.3 | FE-11 Voting Management - in-meeting voting, tallies and Chair conclusions | 9 | 29/11/2026 |
-| 5.4 | FE-12 Meeting Minutes & Digital Signing - meeting-level generation, signing, revision and sealing | 10 | 29/11/2026 |
+| 5.4 | FE-12 Meeting Minutes & Approval - generation from the template, editing, approval, issue and correction | 10 | 29/11/2026 |
 | 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 5 | 29/11/2026 |
 | 5.6 | Code package & Report 5.1 Unit Test | 5 | 29/11/2026 |
 | 5.7 | Software Package v5.0 (increment 5) | 3 | 29/11/2026 |
-| 6 | Iteration 6: Reporting - FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
-| 6.1 | FE-15 Reporting & Statistics | 9 | 13/12/2026 |
-| 6.2 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
-| 6.3 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
-| 6.4 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
-| 6.5 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
-| 6.6 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
+| 6 | Iteration 6: Reporting & Calendar - FE-15, FE-16 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
+| 6.1 | FE-15 Reporting & Statistics | 5 | 13/12/2026 |
+| 6.2 | FE-16 Working Calendar & Meeting Time Search | 4 | 13/12/2026 |
+| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
+| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
+| 6.5 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
+| 6.6 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
+| 6.7 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
 | 7 | Deployment: Acceptance, Stabilisation & Project Closure (weeks 14-15)<br>14/12/2026 - 27/12/2026 | 40 |  |
 | 7.1 | Report 5.5: Acceptance Test scripts and acceptance test support | 7 | 20/12/2026 |
 | 7.2 | Defect fixing and system stabilisation | 10 | 27/12/2026 |
@@ -169,17 +171,17 @@ The buffer of 20% covers the time the team spends in meetings, reviews and retro
 
 | # | Metric | Unit | Planned | Actual | Notes / References |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Effort Usage | Person-day | 300 |  | Effective working capacity from Section I.4; distributed over the work packages of Section I.3 and tracked per member in the Project Tracking workbook, sheet Scope |
-| 2 | Review Defects | No of defects | 30 |  | Defects found in document and code reviews, before any test is executed. A higher count is a good result: it means defects are being caught at the earliest stage |
-| 3 | Unit Test Defects | No of defects | 40 |  | Written and executed by the developer who owns the module, recorded in Report 5.1 - Unit Test |
-| 4 | Integration Test Defects | No of defects | 30 |  | Found when modules and APIs are combined and exercised together, recorded in Report 5.2 - Integration Test |
-| 5 | System Test Defects | No of defects | 15 |  | Found when the whole system is exercised against the functional and non-functional requirements, recorded in Reports 5.3 and 5.4 |
-| 6 | Acceptance Test Defects | No of defects | 5 |  | Found during acceptance testing in the deployment phase, recorded in Report 5.5. No critical defect may remain open at closing |
-| 7 | Timeliness | % | 90 |  | Total on-time deliverables / Total project deliverables |
-| 8 | Requirement Completeness | % | 90 |  | Implemented and accepted requirements / Requirements baselined in Report 3. Failed if <= 75% |
-| 9 | Unit Test Code Coverage | % | 70 |  | Measured on the core business logic of the backend, excluding generated code and configuration. Checked in the testing phase of every iteration |
+| 1 | Effort Usage | Person-day | 300 | 300 | Effective working capacity from Section I.4; distributed over the work packages of Section I.3 and tracked per member in the Project Tracking workbook, sheet Scope. Actual to 24/11/2026: hours are not logged in Jira, so the figure is the team's estimate that the full committed effort of 300 person-days is being used. |
+| 2 | Review Defects | No of defects | 30 | 142 | Defects found in document and code reviews, before any test is executed. A higher count is a good result: it means defects are being caught at the earliest stage. Actual to 24/11/2026: 137 numbered must-fix findings in the 43 change-requesting GitHub pull-request reviews, plus 5 Jira defects found in code review (SCRUM-133, 134, 210-212). |
+| 3 | Unit Test Defects | No of defects | 40 | 1 | Written and executed by the developer who owns the module, recorded in Report 5.1 - Unit Test. Actual to 24/11/2026: Round 1 (21-22/11) ran 818 test cases and all passed; 1 defect was found while writing them (SCRUM-213). |
+| 4 | Integration Test Defects | No of defects | 30 | 9 | Found when modules and APIs are combined and exercised together, recorded in Report 5.2 - Integration Test. Actual to 24/11/2026: Jira defects raised from end-to-end and manual runs (SCRUM-65-67, 105, 147-151); the Report 5.2 round has not been executed yet. |
+| 5 | System Test Defects | No of defects | 15 | N/A | Found when the whole system is exercised against the functional and non-functional requirements, recorded in Reports 5.3 and 5.4. Actual to 24/11/2026: not run yet; system testing is planned for Iteration 6. |
+| 6 | Acceptance Test Defects | No of defects | 5 | N/A | Found during acceptance testing in the deployment phase, recorded in Report 5.5. No critical defect may remain open at closing. Actual to 24/11/2026: not run yet; acceptance testing is planned for the deployment phase. |
+| 7 | Timeliness | % | 90 | 70 | Total on-time deliverables / Total project deliverables. Actual to 24/11/2026: 7 of the 10 feature work packages due so far were merged by their due date, according to the merged GitHub pull requests (late: 2.5 FE-04 to FE-06, 2.6 FE-07, 3.4 FE-10). |
+| 8 | Requirement Completeness | % | 90 | 93 | Implemented and accepted requirements / Requirements baselined in Report 3. Failed if <= 75%. Actual to 24/11/2026: 41 of the 44 active Jira user stories are Done after BA Final Review; FE-11 voting (SCRUM-28, 96) and meeting notes (SCRUM-30) are still in review. |
+| 9 | Unit Test Code Coverage | % | 70 | 72 | Measured on the core business logic of the backend, excluding generated code and configuration. Checked in the testing phase of every iteration. Actual to 24/11/2026: 72.3% line coverage of the Domain and Application projects by the 1,034 tests of TrustCabinet.Application.Tests (Coverlet, app commit 5761ee98). |
 
-The Planned column is the commitment made at the start of the project. The Actual column is filled in at project closing in the deployment phase and reported in Report 7 - Final Project Document; a deviation of more than 20% on any metric is explained there.
+The Planned column is the commitment made at the start of the project. The Actual column shows the values measured up to 24/11/2026, in Iteration 5, from Jira, GitHub and the Report 5 workbooks. It is updated in every revision of this plan and completed at project closing, where a deviation of more than 20% on any metric is explained in Report 7 - Final Project Document.
 
 ### 6. Risks and Mitigations
 
@@ -189,8 +191,8 @@ Risks are reviewed in the evaluation phase of every iteration. Probability and i
 | --- | --- | --- | --- | --- |
 | R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
 | R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
-| R03 | The environment in which the speech-processing and summarisation model runs was open when this plan was first written. The Product Owner decided on 23/10/2026 (ADR-0026) that it runs in-house in a separate CPU-only worker, so the remaining risk is the capacity of the deployment server, which is a 1 GB instance today and will move to a larger one. | Low | High | Move the deployment server to a 4 GB instance, or run the speech worker on a team machine that the server reaches over a private network connection (see the deployment guide). The application keeps working while the worker is off, and the functions that need it report MSG312. Keep transcription and summarisation behind an internal interface so the worker can change host without changing the rest of the system. Update Section II.6.3 when the host is fixed. |
-| R04 | Fourteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
+| R03 | The environment in which the speech-processing and summarisation models run was open when this plan was first written. The Product Owner decided that speech processing runs in-house in a separate CPU-only worker (ADR-0026, 23/10/2026) and the AI draft on a self-hosted language model, with an external API allowed for Normal meetings only (ADR-0054, ADR-0056). The remaining risk is that these models need more memory than the deployment servers have. | Low | High | Run the speech worker on a team machine that the server reaches over Tailscale, with a backup worker on the server itself (ADR-0036, ADR-0081), and the language model on team machines over Tailscale with a backup machine (ADR-0063). The application keeps working while a worker is off, and the functions that need it report MSG312 or MSG394. Keep transcription and drafting behind internal interfaces so a worker can change host without changing the rest of the system. |
+| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-15 and FE-16, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
 | R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
 
 ## II. Management Approach
@@ -219,7 +221,7 @@ The project is organised into an initial planning phase, six iterations and a de
 
 Deployment is the final phase, in weeks 14 and 15. It takes the feature-complete increment produced by Iteration 6 through acceptance testing, defect fixing and stabilisation, and the handover of the final software package, the documentation and the presentation.
 
-The feature order across the iterations is driven by technical risk and by dependency, not by the order in which the features are listed in Report 1. The identity and access features are built first because every other feature is scoped by a role; the meeting, document and notification core follows because the meeting record is the object that audio, votes and minutes all attach to, and its approval and publication flow already needs notifications to reach the approver and the invited participants. Audio upload and AI processing (FE-09, FE-10) are then brought forward to Iteration 3, ahead of the online meeting room (FE-08), precisely because they carry the highest uncertainty: if the transcription quality turns out to be unusable, the evaluation phase of Iteration 3 reveals it at the half-way point, while there is still time to change approach or reduce the feature. The online meeting room takes Iteration 4 on its own, the governance features follow in Iteration 5, and the supporting features that depend on everything else - the personal dashboard and reporting - are built last in Iteration 6.
+The feature order across the iterations is driven by technical risk and by dependency, not by the order in which the features are listed in Report 1. The identity and access features are built first because every other feature is scoped by a role; the meeting, document and notification core follows because the meeting record is the object that audio, votes and minutes all attach to, and its approval and publication flow already needs notifications to reach the approver and the invited participants. Audio upload and AI processing (FE-09, FE-10) are then brought forward to Iteration 3, ahead of the online meeting room (FE-08), precisely because they carry the highest uncertainty: if the transcription quality turns out to be unusable, the evaluation phase of Iteration 3 reveals it at the half-way point, while there is still time to change approach or reduce the feature. The online meeting room takes Iteration 4 on its own, the governance features follow in Iteration 5, and the supporting features that depend on everything else - reporting, and the working calendar with meeting time search - are built last in Iteration 6.
 
 The phases and iterations and their dates are:
 
@@ -281,13 +283,13 @@ Phases of this iteration:
 
 ●  	Planning - Set the iteration goal, select FE-01 to FE-03 from the feature list, break them into Jira tasks with an owner and an estimate, and allocate the work against the capacity in Section I.4.
 
-●  	Requirements - Elaborate FE-01 to FE-03 into detailed requirements: sign-in with email and password and with a Google account linked to an existing internal account; the password policy, session expiry and lockout rules; the account lifecycle from creation through deactivation; user profile management; and the role-permission matrix for the system actors - System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant and Guest. Recorded as Report 3 - SRS v0.9, together with the overall requirement set.
+●  	Requirements - Elaborate FE-01 to FE-03 into detailed requirements: sign-in with email and password and with a Google account linked to an existing internal account; the password policy, session expiry and per-minute sign-in limits; the account lifecycle from creation through deactivation; user profile management; and the role-permission matrix for the system actors - System Admin, Member, Approver, Chair, Secretary, Participant and Guest. Recorded as Report 3 - SRS v0.9, together with the overall requirement set.
 
 ●  	Analysis & design - Fix the data model for user, role and permission; design the authentication flow and the audit-log record; and turn the mock-up into the screen set for this iteration.
 
 ●  	Implementation - Build FE-01 Authentication & Account Security, FE-02 User & Profile Management and FE-03 Role-Based Access Control on the architecture fixed in initial planning.
 
-●  	Testing - Unit tests for each module, covering the normal, failure and boundary cases; manual verification of email and Google sign-in, lockout and of a permission check refusing a role that is not entitled. Results recorded in Report 5.1 - Unit Test.
+●  	Testing - Unit tests for each module, covering the normal, failure and boundary cases; manual verification of email and Google sign-in, the sign-in limit and a permission check refusing a role that is not entitled. Results recorded in Report 5.1 - Unit Test.
 
 ●  	Evaluation - Demonstrate account creation, role assignment and a permission denial, and confirm the role model before any later feature is scoped against it. Record the effort consumed, the defects found and any unfinished task as input to the planning phase of Iteration 2.
 
@@ -303,7 +305,7 @@ Phases of this iteration:
 
 ●  Planning - Set the iteration goal and select FE-04 to FE-07 and FE-13; re-estimate the remaining features using the effort actually consumed in Iteration 1.
 
-●  Requirements - Elaborate one independent Meeting with planned schedule and lifecycle Draft, WaitingApproval, Rejected, Approved, Published, InProgress and Ended, with Cancelled for a Meeting that will not take place; the assigned approver reviews submission, the Organizer publishes after approval, and the Chair starts and ends execution. There is no Meeting Session layer. Define Secretary agenda preparation and participant/Guest coordination, invitation responses and official attendance. Agenda planning is allowed through InProgress and prohibited after Ended; Chair execution actions remain separate. Define the personal document library, two-source meeting attachments, preview, comments and notification events. Recorded as Report 3 SRS v1.0 with the latest approved baseline applied.
+●  Requirements - Elaborate one independent Meeting with planned schedule and lifecycle Draft, WaitingApproval, Rejected, Approved, Published, InProgress and Ended, with Cancelled for a Meeting that will not take place; the assigned approver reviews submission, the Member who created it publishes after approval, and the Chair starts and ends execution. There is no Meeting Session layer. Define Secretary agenda preparation and participant/Guest coordination, invitation responses and official attendance. Agenda planning is allowed through InProgress and prohibited after Ended; Chair execution actions remain separate. Define the personal document library, two-source meeting attachments, preview, comments and notification events. Recorded as Report 3 SRS v1.0 with the latest approved baseline applied.
 
 ●  	Analysis & design - Extend the data model with the meeting, agenda item, approval cycle, lifecycle history, invitation, attendance, personal-document library, library folder, stored file, meeting attachment, document comment and notification entities; define ownership and access rules for personal documents separately from meeting-scoped documents; ensure that the personal library and meeting attachments only reference one immutable stored file, with a periodic cleanup of files no longer referenced; and design notification dispatch as an asynchronous job with retry. Recorded as Report 4 - SDS v1.0.
 
@@ -325,17 +327,17 @@ Phases of this iteration:
 
 ●  Planning - Set the iteration goal and select FE-09 and FE-10. Because this is the riskiest iteration, the plan reserves time inside it for a second attempt with a different model if the first does not meet the threshold agreed in initial planning.
 
-●  Requirements - Elaborate post-meeting, Secretary-only audio upload, audio formats and size limits, informed participant consent, stated purpose, retention dates and recorded erasure. Define editable Vietnamese transcripts and speaker attribution, explicit summary generation/regeneration, review, approval and publication. Processing begins only after the Meeting ends. Select self-hosted or external processing behind a replaceable interface; an external provider may not retain or reuse audio or transcripts. Recorded as Report 3 SRS v1.1.
+●  Requirements - Elaborate meeting recording: the Secretary's room recording in takes, per-microphone sentences after the recording notice, audio upload for in-person meetings, audio formats and size limits, informed consent, stated purpose, the 180-day retention and recorded erasure. Define editable Vietnamese transcripts, speaker attribution with consent-based Voice ID, and explicit generation, review and approval of the AI draft. Speech runs on a self-hosted worker and the draft on a self-hosted language model; an external API may be used for Normal meetings only and may not retain or reuse transcripts. Recorded as Report 3 SRS v1.1.
 
 ●  Analysis & design - Design an asynchronous processing pipeline behind one replaceable internal provider interface, the media library, transcript editor, consent evidence, retention and erasure handling. Record the provider/model with each result and control any transfer to an external provider. Recorded as Report 4 SDS v1.1.
 
-●  Implementation - Build FE-09 Meeting Audio Upload & Media Library and FE-10 Speaker-Attributed Transcription & Meeting Summary, with the assigned Secretary uploading the meeting audio after the meeting. Attach the uploaded file to the meeting record delivered by increment 2, connect the audio-upload request/reminder to FE-13, implement transcript correction, and support explicit Generate / Regenerate, Approve and Publish actions for the summary.
+●  Implementation - Build FE-09 Meeting Recording and FE-10 Transcription, Speaker Identification & Meeting Summary on the meeting record delivered by increment 2: room recording and audio upload by the Secretary, per-microphone sentences, transcript correction, Voice ID, and explicit Generate / Regenerate and Approve actions for the AI draft.
 
-●  	Testing - Unit tests for upload handling and job processing; an integration test of the whole upload-to-summary flow, recorded in Report 5.2; and a measurement of transcription and summarisation quality on the team's own Vietnamese recordings against the agreed threshold.
+●  	Testing - Unit tests for upload handling and job processing; an integration test of the whole recording-to-draft flow, recorded in Report 5.2; and a measurement of transcription and summarisation quality on the team's own Vietnamese recordings against the agreed threshold.
 
 ●  	Evaluation - Compare the measured quality against the threshold set in initial planning and decide, before half of the project has been spent, whether the feature is delivered as specified, needs a different model, or must be reduced in scope. The decision and its reasoning are recorded in Report 3, reported to the supervisor at the weekly meeting, and become an input to the planning phase of Iteration 4.
 
-Increment delivered: Software Package v3.0 - increment 2 plus audio upload, the media library, speaker-attributed transcription and the AI meeting summary with Secretary approval. Reports delivered: Report 2 v1.2, Report 3 - SRS v1.1, Report 4 - SDS v1.1, Report 5.2 - Integration Test.
+Increment delivered: Software Package v3.0 - increment 2 plus meeting recording and audio upload, speaker-attributed transcription with Voice ID, and the AI draft approved by the Chair or the Secretary. Reports delivered: Report 2 v1.2, Report 3 - SRS v1.1, Report 4 - SDS v1.1, Report 5.2 - Integration Test.
 
 Iteration 4: Online Meeting Room Management - FE-08 (2 weeks)
 
@@ -347,7 +349,7 @@ Phases of this iteration:
 
 ●  Planning - Set the iteration goal and select FE-08 alone, so that the whole iteration is available for it and carries slack. Re-confirm the reduced fallback scope agreed under risk R01 before implementation starts.
 
-●  Requirements - Define what the room must do - audio, video, screen sharing, text chat, joining and leaving an existing meeting - the participant count it targets, and the explicit rule that the room itself records nothing. Official attendance is maintained by the Secretary, with online-room presence available only as supporting evidence/pre-fill, and the Secretary performs the separate FE-09 audio-upload flow after the meeting. Recorded as Report 3 - SRS v1.2.
+●  Requirements - Define what the room must do - audio, video, screen sharing, text chat, joining and leaving an existing meeting - the participant count it targets, raising a hand to speak and the Chair's moderation, and the rule that no recording bot joins the room: personal microphones are recorded only after everyone has acknowledged the recording notice (FE-09). Official attendance is maintained by the Secretary, with online-room presence available only as supporting evidence/pre-fill. Recorded as Report 3 - SRS v1.2.
 
 ●  	Analysis & design - Select and design around the media server; design signalling and the room lifecycle; capture room-presence evidence that can pre-fill, but does not replace, the official attendance record maintained by the Secretary; and link the room back to the meeting record built in Iteration 2. Recorded as Report 4 - SDS v1.2.
 
@@ -363,25 +365,25 @@ Iteration 5: Meeting Governance - FE-11, FE-12 (2 weeks)
 
 Time: 16/11/2026 - 29/11/2026
 
-Iteration goal: Turn in-meeting vote tallies and recorded Chair conclusions into signed, sealed meeting minutes.
+Iteration goal: Turn in-meeting vote tallies and recorded Chair conclusions into approved and issued meeting minutes.
 
 Phases of this iteration:
 
-●  Planning - Select FE-11 Voting Management and FE-12 Meeting Minutes & Digital Signing together because each Meeting has one minutes process incorporating its vote tallies and Chair conclusions. Preserve the allocated effort and dates.
+●  Planning - Select FE-11 Voting Management and FE-12 Meeting Minutes & Approval together because each Meeting has one minutes process incorporating its vote tallies and Chair conclusions. Preserve the allocated effort and dates.
 
-●  Requirements - Limit Vote creation, opening and casting to an InProgress Meeting. A Vote belongs directly to the Meeting and does not require an Agenda Item. The current Chair creates/configures and opens/closes it; eligible voters – holders of the meeting roles the Chair selects for each Vote (Chair, Secretary, Participant, verified Guest) – may cast one immutable ballot. Support public and secret ballots. After closing, the Chair records Passed, NotPassed or Deferred; ending the Meeting does not require closing Votes, and the Chair may close an Open Vote after the Meeting ends. No time-boxed voting, deadline, quorum or separate Resolution object is delivered. Define minutes from meeting information, attendance, agenda outcomes, approved summary, vote tallies and Chair conclusions; retain signing, revision, invalidation of prior signatures after content changes and explicit Secretary finalization. Recorded as Report 3 SRS v1.3.
+●  Requirements - Limit opening and casting to an InProgress Meeting; the current Chair or Secretary may prepare a Vote draft before or during the Meeting. A Vote belongs directly to the Meeting and does not require an Agenda Item. The current Chair opens and closes it, one Open Vote at a time; eligible voters – holders of the meeting roles the Chair selects for each Vote (Chair, Secretary, Participant, verified Guest) – confirm reading every Vote document and may cast one immutable ballot. Support public and secret ballots. After closing, the Chair records Passed, NotPassed or Deferred; ending the Meeting does not require closing Votes, and the Chair may close an Open Vote after the Meeting ends. No time-boxed voting, deadline, quorum or separate Resolution object is delivered. Define minutes built from one fixed template, meeting information, attendance, agenda outcomes, the approved AI draft, vote tallies and Chair conclusions; the Secretary submits them, the Chair approves and issues them or returns them with a reason, and issued minutes are corrected only through a new revision that is approved again. The minutes are not signed. Recorded as Report 3 SRS v1.3.
 
-●  Analysis & design - Model Vote under Meeting with tally and Chair conclusion; keep it independent of Agenda Item and omit a separate Resolution entity. Design versioned minutes and signature records, sealed-content immutability, and the template combining approved records with vote results and conclusions. Connect voting calls and signing requests to FE-13 notifications. Recorded as Report 4 SDS v1.3.
+●  Analysis & design - Model Vote under Meeting with tally and Chair conclusion; keep it independent of Agenda Item and omit a separate Resolution entity. Design minutes revisions with their approval state, read-only issued revisions, and the template combining approved records with vote results and conclusions. Connect voting calls and minutes approval requests to FE-13 notifications. Recorded as Report 4 SDS v1.3.
 
-●  Implementation - Build FE-11 Voting Management and FE-12 Meeting Minutes & Digital Signing.
+●  Implementation - Build FE-11 Voting Management and FE-12 Meeting Minutes & Approval.
 
-●  Testing - Verify that voting is accepted only for an InProgress Meeting, only holders of the roles the Chair selected for that Vote may vote (verified Guests included when selected), one ballot cannot be changed, a conclusion requires a Closed Vote and End Meeting does not depend on Open Votes. Test the chain from vote tallies and Chair conclusion plus approved summary to versioned, signed and finalized minutes, including revision and signature invalidation. Record integration and system results in Reports 5.2 and 5.3.
+●  Testing - Verify that voting is accepted only for an InProgress Meeting, only holders of the roles the Chair selected for that Vote may vote (verified Guests included when selected), one ballot cannot be changed, a conclusion requires a Closed Vote and End Meeting does not depend on Open Votes. Test the chain from vote tallies and Chair conclusions plus the approved AI draft to minutes that are submitted, returned, approved and issued, including the correction of issued minutes. Record integration and system results in Reports 5.2 and 5.3.
 
-●  Evaluation - Demonstrate the lifecycle in order: prepare and publish a Meeting; start it; hold voting, close each Vote and record Chair conclusions; end the Meeting; upload consented audio; review and approve the summary; generate minutes with the tallies and conclusions; sign and finalize them.
+●  Evaluation - Demonstrate the lifecycle in order: prepare and publish a Meeting; start and record it after informing the attendees; hold voting, close each Vote and record Chair conclusions; end the Meeting; correct the transcript and approve the AI draft; generate minutes with the tallies and conclusions; submit, approve and issue them.
 
-Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and electronically signed meeting minutes. Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
+Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and approved, issued meeting minutes. Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
 
-Iteration 6: Reporting - FE-15 (2 weeks)
+Iteration 6: Reporting & Calendar - FE-15, FE-16 (2 weeks)
 
 Time: 30/11/2026 - 13/12/2026
 
@@ -389,13 +391,13 @@ Iteration goal: Make everything already built visible and actionable, and reach 
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-15. It depends on the earlier increments, which is why they are planned last: there is nothing to display or count until the meeting, audio and governance features exist.
+●  Planning - Set the iteration goal and select FE-15 and FE-16. Both depend on the earlier increments, which is why they are planned last: there is nothing to display, count or schedule around until the meeting, audio and governance features exist.
 
-●  	Requirements - Define the figures the reports must produce, their breakdowns by project or other applicable reporting scope and their export format. Recorded as the final detailed version of Report 3.
+●  	Requirements - Define the figures the reports must produce, their breakdowns by period, status and sensitivity and their Excel export, and the calendar sharing (busy or free only) and meeting time search of FE-16. Recorded as the final detailed version of Report 3.
 
-●  	Analysis & design - Design the aggregation behind the reporting figures.
+●  	Analysis & design - Design the aggregation behind the reporting figures and the free-slot search over shared calendars.
 
-●  Implementation - Build FE-15 Reporting & Statistics, completing the feature set baselined in Report 1.
+●  Implementation - Build FE-15 Reporting & Statistics and FE-16 Working Calendar & Meeting Time Search, completing the feature set baselined in Report 1.
 
 ●  	Testing - Unit and integration tests for the new modules, followed by full system testing of the complete product against the functional requirements (Report 5.3) and the non-functional requirements (Report 5.4), and a regression pass over every previous increment.
 
@@ -459,7 +461,7 @@ Quality is managed on the principle that a defect is cheapest to remove in the p
 
 ●  	Review each report version before submission: the Business Analyst reviews content and consistency against Report 1 and Report 3, and the whole team reads the document once before it is sent.
 
-●  	Review all code through GitHub pull requests. No branch is merged into dev without at least one approval; front-end changes are reviewed by the Frontend Lead and back-end changes by the Backend Lead.
+●  	Review all code through GitHub pull requests. No branch is merged into app without at least one approval; front-end changes are reviewed by the Frontend Lead and back-end changes by the Backend Lead.
 
 ●  	Check every pull request against the definition of done: the feature works, unit tests exist and pass, the code follows the convention, and the corresponding Jira task is updated.
 
@@ -475,11 +477,11 @@ Quality is managed on the principle that a defect is cheapest to remove in the p
 
 ●  	Results are recorded in Report 5.1 - Unit Test, with the test case ID, preconditions, input and expected output, the verification step (return value, exception, log message), the result type (normal, abnormal, boundary), pass or fail, the execution date and the defect ID where one was raised.
 
-●  	Backend tests are written with xUnit, using Microsoft.AspNetCore.Mvc.Testing for tests that exercise the API end to end and Coverlet to collect coverage; repository tests run against real PostgreSQL and Redis instances in CI rather than fakes. The frontend is checked by the TypeScript compiler and oxlint in CI.
+●  	Backend tests are written with xUnit, using Microsoft.AspNetCore.Mvc.Testing for tests that exercise the API end to end and Coverlet to collect coverage; repository tests run against real PostgreSQL and Redis instances in CI rather than fakes, while the use case tests in TrustCabinet.Application.Tests run against hand-written fakes without a database. The frontend is checked by the TypeScript compiler and oxlint in CI.
 
 #### 2.4 Integration Testing
 
-●  Integration testing covers the API contract between the front end and the back end, and every point at which the new increment meets the increment delivered by the previous iteration - above all the upload-to-summary flow of FE-09 and FE-10, in which a file uploaded through the web application is processed by the audio component and returns a transcript and a summary.
+●  Integration testing covers the API contract between the front end and the back end, and every point at which the new increment meets the increment delivered by the previous iteration - above all the recording-to-draft flow of FE-09 and FE-10, in which audio recorded or uploaded through the web application is transcribed by the speech component and the AI draft is written from the transcript.
 
 ●  	Each endpoint is checked for the correct status code (200, 400, 401, 403, 404, 500), the structure and accuracy of the returned data, and the behaviour of the permission check under a role that is not entitled to the resource.
 
@@ -493,7 +495,7 @@ Quality is managed on the principle that a defect is cheapest to remove in the p
 
 ●  	System testing is executed on the staging environment, against the deployed software package rather than a developer machine, and is led by the Test Lead. It is performed in full in Iteration 6, once the product is feature complete, on the test cases written progressively from Iteration 5 onwards.
 
-●  Functional requirements are tested along the complete flow: an Organizer schedules a Meeting and assigns the first Secretary; the Secretary prepares the agenda, roster and authorized documents; the Meeting Approver reviews it; the Organizer publishes the approved Meeting and invitations are sent. The Chair starts it, attendees participate, eligible internal users vote, Votes are closed and the Chair records conclusions before ending it. Afterwards, the Secretary uploads consented audio, corrects the transcript, generates and approves the summary, and compiles minutes containing the vote tallies and Chair conclusions for signing and finalization.
+●  Functional requirements are tested along the complete flow: a Member schedules a Meeting with its Chair and Secretary; the Secretary prepares the agenda, roster and authorized documents; the Approver reviews it; the Member publishes the approved Meeting and invitations are sent. The Chair starts it, the Secretary records it after the attendees are informed, attendees participate, eligible participants vote, Votes are closed and the Chair records conclusions before ending it. Afterwards, the Secretary corrects the transcript, the Chair or the Secretary approves the AI draft, and the minutes containing the vote tallies and Chair conclusions are submitted, approved and issued.
 
 ●  	Non-functional requirements - response time, concurrent participants in a meeting room, audio file size and processing time, and the access-control rules - are tested separately and recorded in Report 5.4.
 
@@ -525,8 +527,7 @@ Quality is managed on the principle that a defect is cheapest to remove in the p
 | WebRTC and media-server fundamentals, in preparation for FE-08 | All members, led by LocHD | Week 1: 2 days (feasibility study); Week 7: 1 day before Iteration 4 |
 | Speech-to-text and speaker diarisation for Vietnamese audio, in preparation for FE-10 | HaiTV, LocHD, HuyNQ | Week 1: 2 days (feasibility study); Week 5: 1 day before Iteration 3 |
 | Test case design, test levels and the Report 5 templates | All members, led by HuyNT | Week 3: 2 days |
-| Digital signature concepts: hashing, signing and sealing a document, audit trail | LocHD, HuyNT | Week 9: 1 day before Iteration 5 |
-| ASP.NET Core 10 Minimal API, Entity Framework Core 10 and the Domain / Infrastructure / Web project structure, with the backend coding convention | All members | Week 1-2: 3 days |
+| ASP.NET Core 10 Minimal API, Entity Framework Core 10 and the Domain / Application / Infrastructure / Web project structure, with the backend coding convention | All members | Week 1-2: 3 days |
 | React 19, TypeScript, Vite and React Router, with the feature-based frontend structure | All members | Week 1-2: 3 days |
 | PostgreSQL 17 with EF Core code-first migrations, and Redis for refresh tokens | All members | Week 2: 2 days |
 
@@ -572,7 +573,7 @@ RACI Chart: R~Responsible, A~Accountable, C~Consulted, I~Informed
 | Report 7: Final Project Document | A/R | R | R | R | R |
 | Presentation slides and demo | A/R | R | R | R | R |
 | Analysis and Design |  |  |  |  |  |
-| System architecture design | C | C | A/R | R | I |
+| System architecture design | C | C | R | A/R | I |
 | Use case diagram and main workflow | R | A/R | R | R | C |
 | Database design | C | I | A/R | R | I |
 | Class, sequence and package diagrams | R | R | A/R | R | I |
@@ -612,7 +613,7 @@ RACI Chart: R~Responsible, A~Accountable, C~Consulted, I~Informed
 | Iteration Evaluation Meeting | All team members; Product Owner (Dinh Van Toi) for the increment demonstration | Close the iteration: demonstrate the increment to the Product Owner, assess it against the iteration goal, review the effort consumed, the defects found and the unfinished items, and agree what changes in the next iteration. | Last day of each iteration (1 - 2 hours) | Google Meet or on campus; Jira, notes in Google Docs |
 | Supervisor Meeting | Supervisor (HungNQ), all team members | Report progress against the plan, demonstrate the latest increment, raise technical problems and risks, and obtain academic guidance and feedback on the report drafts. The supervisor advises and reviews; he does not decide the product requirements. | Weekly, at the time agreed with the supervisor | On campus or Google Meet; minutes in Google Docs |
 | Technical Discussion | The members concerned, led by the relevant technical lead | Resolve a design or integration question that is too detailed for the progress meeting - an API contract, a database change, a media or audio-pipeline problem. | As needed, called by any member | Google Meet; decision recorded in the Jira task or the design document |
-| Document Review | Business Analyst (KhanhPG) and the members who wrote the section | Review a report version for content, consistency with Report 1 and Report 3, and template compliance before it is submitted. | Before every report submission | Google Docs comments; Change Log updated in the document |
+| Document Review | Business Analyst (KhanhPG) and the members who wrote the section | Review a report version for content, consistency with Report 1 and Report 3, and template compliance before it is submitted. | Before every report submission | Pull-request review on GitHub and comments on Google Drive; Change Log updated in the document |
 | Quick Communication | All team members, supervisor when needed | Ask a short question, share a link or a status update, and get fast feedback on a small issue. | Any time | Messenger, Zalo |
 
 ### 6. Configuration Management
@@ -621,7 +622,7 @@ RACI Chart: R~Responsible, A~Accountable, C~Consulted, I~Informed
 
 All project documents are kept in a single shared Google Drive folder owned by the team and organised into subfolders per report series (Report 1 to Report 7, plus Project Tracking and Meeting Minutes). Only the five members and the supervisor have access; the supervisor has comment and view rights on the current version of every report.
 
-Documents are drafted and reviewed in Google Docs and Google Sheets, which keeps a complete version history showing who changed what and when, so a change can always be traced or reverted and two members editing the same section do not overwrite each other. The final submitted artefact is exported to the .docx or .xlsx format required by the course template, because the template formatting must be preserved exactly.
+The source of every report is its .docx or .xlsx file in the course template, kept in the project repository (docs/08-reports/source), so its history is the git history: every change is reviewed in a pull request, can be traced to who made it and when, and can be reverted. A Markdown snapshot generated from each .docx lets reviewers read the change in the pull request. The repository copy is then published to the Drive folder, replacing the file in place so its link stays the same, and the supervisor comments there. Drive is never edited directly, so two members cannot overwrite each other's work.
 
 Every document carries a version number and a Change Log table as its first section. Because the product is built iteratively, the documents are written the same way: Report 3 and Report 4 grow by one version in each iteration, elaborating only the features that iteration delivers, and Report 2 is revised whenever the evaluation phase of an iteration changes the plan. A version is numbered v0.9 while it is a draft under review, v1.0 when it has been reviewed and submitted, and v1.1, v1.2 and so on for each subsequent revision. Every change to a submitted version adds one row to the Change Log recording the date, whether the change is an addition, a modification or a deletion, the member in charge and a description of the change. A submitted file is named in the form Report-N_Name_vX.Y.docx so that the version is visible without opening the file.
 
@@ -631,21 +632,21 @@ The Business Analyst (KhanhPG) is accountable for document management: for the f
 
 #### 6.2 Source Code Management
 
-All source code is kept in a private GitHub repository owned by the team. Only the five members and the supervisor have access. The repository holds the front end, the back end, the audio-processing component, the database migration scripts and the deployment configuration, so that one commit history covers the whole system.
+All source code is kept in one GitHub repository owned by the team. The repository is public so that the supervisor and the review council can read it; only the five members can push to it. The repository holds the front end, the back end, the audio-processing component, the database migration scripts, the deployment configuration and the report sources, so that one commit history covers the whole system.
 
-The team follows a three-level branching model:
+The team follows a two-branch model with short-lived task branches (ADR-0065, ADR-0068):
 
-●  	main - the stable branch. It always holds the latest released increment and is the branch a demonstration or a deployment is taken from. Nothing is committed to main directly; it only receives merges from dev at the end of an iteration, and every merge is tagged with the increment version (v1.0, v2.0 and so on).
+●  	app - the main branch. Every pull request targets it, the CI pipeline builds and tests every pull request, and every merge into app is deployed automatically to the app test server, where integration, regression, system and acceptance testing take place.
 
-●  	dev - the integration branch. Feature branches are merged here through pull requests, and the CI pipeline builds and runs the unit tests on every merge. This is the branch deployed to the staging environment for integration, regression, system and acceptance testing.
+●  	main - the demonstration branch. It holds the version shown to the review council on 18/11/2026 (tag demo-2026-11-18), runs on its own server and takes no new work.
 
-●  feature branches - one branch per task, created from dev and named after the Jira issue key and a short description (for example FE-10-speaker-diarisation). A member works only in their own feature branch and pushes to it frequently.
+●  task branches - one branch per task, created from app and named after the type of change and a short description (for example fix/speech-clip-lane or docs/report1-ai-signing-scope). A member works only in their own branch and pushes to it frequently.
 
-Code enters dev only through a pull request. A pull request must describe what it changes, link to its Jira issue, pass the CI build and unit tests, and be approved by at least one reviewer: the Frontend Lead (HaiTV) for front-end changes and the Backend Lead (LocHD) for back-end and audio-pipeline changes. The reviewer checks the code against the coding convention and the definition of done. main is protected so that it cannot be pushed to directly or force-pushed.
+Code enters app only through a pull request. A pull request must describe what it changes, link to its Jira issue, pass the CI build and unit tests, and be approved by at least one reviewer: the Frontend Lead (HaiTV) for front-end changes and the Backend Lead (LocHD) for back-end and audio-pipeline changes. The reviewer checks the code against the coding convention and the definition of done. A pull request is merged only after the review approves it; nobody pushes to app or main directly.
 
-Because every increment is built on the one before it, the tag on main at the end of each iteration is the exact code that was demonstrated and accepted in that iteration's evaluation phase. A defect found later can therefore be traced to the increment that introduced it, and a demonstration can always be given from a known good tag rather than from whatever is currently on dev.
+Because every increment is built on the one before it, the commit on app at the end of each iteration is the code that was demonstrated in that iteration's evaluation phase. A defect found later can therefore be traced to the pull request that introduced it, and the demonstration for the review council is given from main, a known good version, rather than from whatever is currently on app.
 
-Commit messages follow a fixed form - the Jira issue key, the type of change and a short description - so that the history can be read as a list of what was delivered in each iteration. Secrets, credentials and environment files are never committed; they are held as repository or environment secrets and the repository keeps only the example configuration file.
+Commit messages describe the change in Vietnamese, and each pull request names its Jira issue in its title or description, so that the history can be read as a list of what was delivered in each iteration. Secrets, credentials and environment files are never committed; they are held as repository or environment secrets and the repository keeps only the example configuration file.
 
 Merge conflicts are resolved by the member who owns the feature branch, with the technical lead of the affected area when the conflict touches shared code. The Backend Lead is accountable for the integrity of the repository and for the branch protection rules.
 
@@ -653,15 +654,15 @@ Merge conflicts are resolved by the member who owns the feature branch, with the
 
 | Category | Tools / Infrastructure |
 | --- | --- |
-| Technology | Backend: ASP.NET Core 10 (C#, Minimal API), JWT bearer authentication and Google sign-in (Google.Apis.Auth). Frontend: React 19, TypeScript, Vite and React Router. Real-time: SignalR for notifications; a planned self-hosted LiveKit SFU provides the WebRTC audio, video and screen-sharing room, with backend-authorized access and Chair controls (FE-08, FE-13). |
-| Database | PostgreSQL 17 through Entity Framework Core 10 (Npgsql), code-first migrations; Redis 8 for refresh tokens |
-| AI model / speech processing | Post-meeting Vietnamese transcription with speaker attribution and reviewed summaries. Processing environment: self-hosted in an internal CPU-only speech worker (ADR-0026, 23/10/2026), behind a replaceable interface. Record the provider/model per result; implement consent, retention and erasure safeguards and prohibit provider retention or reuse. |
+| Technology | Backend: ASP.NET Core 10 (C#, Minimal API) in four projects (Domain, Application, Infrastructure, Web; ADR-0064), JWT bearer authentication and Google sign-in (Google.Apis.Auth). Frontend: React 19, TypeScript, Vite and React Router. Real-time: SignalR for notifications; a self-hosted LiveKit SFU provides the WebRTC audio, video and screen-sharing room, with backend-authorized access and Chair controls (FE-08, FE-13). Email: Resend, with SMTP as an alternative. |
+| Database | PostgreSQL 17 through Entity Framework Core 10 (Npgsql), code-first migrations; Redis 8 for refresh tokens; SeaweedFS (self-hosted, S3-compatible) for document files |
+| AI model / speech processing | Speech: Vietnamese transcription, speaker attribution and Voice ID on a self-hosted CPU-only speech worker (Python, sherpa-onnx; ADR-0026). AI draft of the minutes: a self-hosted language model behind an OpenAI-compatible API (Ollama; ADR-0054) with a backup machine (ADR-0063); an administrator may send Normal meetings only to an external language-model API (ADR-0056). The model is recorded with each result; consent, retention and erasure safeguards apply, and an external provider may not retain or reuse data. |
 | IDEs / Editors | Visual Studio Code; Visual Studio or JetBrains Rider for the backend; a shared .editorconfig keeps formatting consistent across IDEs |
 | Diagramming | draw.io (architecture and UML diagrams), Figma (UI mock-up) |
-| Documentation | Google Docs and Google Sheets (drafting and review), Microsoft Office (final .docx and .xlsx deliverables) |
-| Version Control | GitHub (source code), Google Drive (documents) |
-| CI / Build | GitHub Actions: build and test of the backend (with PostgreSQL and Redis services), lint and build of the frontend, on every pull request and every push to main |
+| Documentation | Microsoft Word and Excel (.docx and .xlsx report sources kept in the repository), Google Drive (published copies and supervisor comments) |
+| Version Control | GitHub (source code and report sources), Google Drive (published reports) |
+| CI / Build | GitHub Actions: build and test of the backend (with PostgreSQL and Redis services), lint, unit tests and build of the frontend, on every pull request and every push to app or main; each push to app or main is then deployed to its own server |
 | Development environment | .NET 10 SDK, Node.js 22, Docker Compose (PostgreSQL 17 and Redis 8 for local development) |
-| Deployment server | AWS Lightsail instance running Docker Compose behind Caddy (ADR-0015); to be moved to a larger instance for the speech worker (ADR-0026). |
+| Deployment server | Two AWS Lightsail instances running Docker Compose behind Caddy, one for app and one for the frozen main demonstration (ADR-0015, ADR-0065). The speech worker runs on a team machine over Tailscale with a backup worker on the server (ADR-0036, ADR-0081), and the language model on team machines over Tailscale with a backup machine (ADR-0063). |
 | Project management | Jira (iteration planning, task, defect and issue management) |
 | Communication | Google Meet (team and supervisor meetings), Messenger and Zalo (quick communication) |

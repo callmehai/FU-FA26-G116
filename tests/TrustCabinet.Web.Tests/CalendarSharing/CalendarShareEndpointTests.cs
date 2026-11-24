@@ -7,7 +7,7 @@ using static TrustCabinet.Web.Tests.CalendarSharing.CalendarSharingFixture;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
-/// <summary>SCRUM-142 — UC-84a → UC-84f over HTTP against PostgreSQL: every code, every refusal, notifications and audit.</summary>
+/// <summary>SCRUM-142 — UC-80a → UC-80f over HTTP against PostgreSQL: every code, every refusal, notifications and audit.</summary>
 public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClassFixture<CalendarSharingFixture>
 {
     private static Guid Id(JsonElement body) => body.GetProperty("share").GetProperty("id").GetGuid();
@@ -21,7 +21,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
     private static Task<HttpResponseMessage> Patch(HttpClient client, Guid id, object body)
         => client.PatchAsJsonAsync($"/api/calendar/shares/{id}", body);
 
-    // ------------------------------------------------------------------ UC-84a Request Calendar Share
+    // ------------------------------------------------------------------ UC-80a Request Calendar Share
 
     [Fact]
     public async Task An_organizer_asks_to_see_a_calendar_and_the_owner_is_told()
@@ -86,7 +86,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         await AssertCode(await Request(organizer, p.Organizer2, "Level1", Today, Today.AddDays(5)), 201, "MSG435");
         await AssertCode(await Request(organizer, p.Organizer2, "Level2", Today, Today.AddDays(9)), 409, "MSG449");
 
-        // BR-423 is directed: the other organizer may still ask for the first one's calendar.
+        // BR-142, BR-143 is directed: the other organizer may still ask for the first one's calendar.
         using var other = f.Client(p.Organizer2);
         await AssertCode(await Request(other, p.Organizer, "Level1", Today, Today.AddDays(5)), 201, "MSG435");
         // And the owner may not offer the same pair a direct share while the request is open.
@@ -124,7 +124,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         await f.AddShare(p.Owner, p.Organizer, CalendarShareStatus.Pending);
         using var organizer = f.Client(p.Organizer);
 
-        // UC-84a: every active account but the caller, flagged when a share of that direction is already open.
+        // UC-80a: every active account but the caller, flagged when a share of that direction is already open.
         var request = await organizer.GetFromJsonAsync<JsonElement>("/api/calendar/share-candidates?purpose=request&pageSize=100");
         var owners = request.GetProperty("items").EnumerateArray()
             .ToDictionary(o => o.GetProperty("id").GetGuid(), o => o.GetProperty("hasOpenShare").GetBoolean());
@@ -151,7 +151,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         Assert.Equal(1, first.GetProperty("items").GetArrayLength());
         Assert.Equal(1, first.GetProperty("pageSize").GetInt32());
 
-        // UC-84b: a Member may look, and sees only Meeting Organizers.
+        // UC-80b: a Member may look, and sees only Meeting Organizers.
         using var member = f.Client(p.Owner);
         var direct = await member.GetFromJsonAsync<JsonElement>("/api/calendar/share-candidates?purpose=direct&pageSize=100");
         var viewers = direct.GetProperty("items").EnumerateArray().Select(o => o.GetProperty("id").GetGuid()).ToList();
@@ -165,7 +165,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
             Assert.Equal(HttpStatusCode.BadRequest, (await organizer.GetAsync($"/api/calendar/share-candidates{bad}")).StatusCode);
     }
 
-    // ------------------------------------------------------------------ UC-84b Share Calendar Directly
+    // ------------------------------------------------------------------ UC-80b Share Calendar Directly
     [Fact]
     public async Task An_owner_shares_directly_at_level_1_and_the_recipient_answers()
     {
@@ -179,7 +179,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         Assert.Equal(NotificationType.CalendarShareReceived, received.Type);
         Assert.Contains("(Họp Thường, ", received.Body);
 
-        // The recipient takes it as offered; asking for more is UC-84d.
+        // The recipient takes it as offered; asking for more is UC-80d.
         using var organizer = f.Client(p.Organizer);
         await AssertCode(await Post(organizer, Id(body), "accept", new { level = "Level2" }), 400, "MSG443");
         var accepted = await AssertCode(await Post(organizer, Id(body), "accept"), 200, "MSG436");
@@ -199,7 +199,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         await AssertCode(await Direct(owner, p.Organizer, Today.AddDays(-2), Today.AddDays(5)), 400, "MSG443");
     }
 
-    // ------------------------------------------------------------------ UC-84c Respond to Calendar Share
+    // ------------------------------------------------------------------ UC-80c Respond to Calendar Share
 
     [Fact]
     public async Task The_owner_accepts_at_a_lower_level_and_a_shorter_range()
@@ -266,7 +266,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         Assert.Equal("Pending", (await f.Share(id)).Status.ToString());
     }
 
-    // ------------------------------------------------------------------ UC-84d Change Calendar Share
+    // ------------------------------------------------------------------ UC-80d Change Calendar Share
 
     [Fact]
     public async Task The_viewer_asks_for_more_and_the_owner_approves()
@@ -337,7 +337,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         using var organizer = f.Client(p.Organizer);
         using var owner = f.Client(p.Owner);
         await AssertCode(await Patch(organizer, id, new { endDate = Day(Today.AddDays(40)) }), 201, "MSG454");
-        // UC-84d AF-1: the owner moves the whole share past the end the viewer asked for.
+        // UC-80d AF-1: the owner moves the whole share past the end the viewer asked for.
         var moved = await AssertCode(await Patch(owner, id,
             new { startDate = Day(Today.AddDays(50)), endDate = Day(Today.AddDays(55)) }), 200, "MSG442");
         Assert.Equal(["decline", "update", "end"], Actions(moved.GetProperty("share")));
@@ -376,7 +376,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
             await update.ExecuteNonQueryAsync();
         }
 
-        // The stop of BR-424 only looks at Effective shares, so accepting must wait for the deactivation, not run past it
+        // The stop of BR-142, BR-143 only looks at Effective shares, so accepting must wait for the deactivation, not run past it
         // and leave an Effective share nobody stops.
         var accept = Post(owner, id, "accept");
         await Task.Delay(TimeSpan.FromSeconds(1));
@@ -396,7 +396,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         await AssertCode(await Patch(organizer, id, new { level = "Level2" }), 409, "MSG450");
     }
 
-    // ------------------------------------------------------------------ UC-84e Withdraw or End
+    // ------------------------------------------------------------------ UC-80e Withdraw or End
 
     [Fact]
     public async Task The_sender_withdraws_a_request_or_a_change()
@@ -469,7 +469,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         var lists = await organizer.GetFromJsonAsync<JsonElement>("/api/calendar/shares");
         Assert.Equal(0, lists.GetProperty("asViewer").GetArrayLength());
 
-        // BR-425 (PO 09/11/2026, Q-B): acting on it is refused, and nothing is written or sent.
+        // BR-142, BR-143 (PO 09/11/2026, Q-B): acting on it is refused, and nothing is written or sent.
         await AssertCode(await Post(organizer, id, "end"), 409, "MSG450");
         using var owner = f.Client(p.Owner);
         await AssertCode(await Patch(owner, id, new { level = "Level1", endDate = Day(Today.AddDays(5)) }), 409, "MSG450");
@@ -538,7 +538,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
             }), 200, "MSG10");
         }
 
-        // The invitation stays (only Effective shares stop), but it can no longer become Effective (BR-430, P3-A).
+        // The invitation stays (only Effective shares stop), but it can no longer become Effective (BR-140, BR-141, P3-A).
         using var owner = f.Client(p.Owner);
         var listed = Assert.Single((await owner.GetFromJsonAsync<JsonElement>("/api/calendar/shares"))
             .GetProperty("asOwner").EnumerateArray());
@@ -553,7 +553,7 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
     {
         var p = await f.Seed();
         var mine = await f.AddShare(p.Owner, p.Organizer);
-        // A row where the Member is the viewer (stopped long ago): not for them to see without the right (BR-430).
+        // A row where the Member is the viewer (stopped long ago): not for them to see without the right (BR-140, BR-141).
         await f.AddShare(p.Owner2, p.Owner, CalendarShareStatus.Stopped);
         using var member = f.Client(p.Owner);
         var lists = await member.GetFromJsonAsync<JsonElement>("/api/calendar/shares");

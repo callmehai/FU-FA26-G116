@@ -1,9 +1,9 @@
 import type { Share, ShareLevel, ShareStatus } from '../../types/calendarSharing'
 
-/** BR-431: a share lasts at most 365 days, both ends counted. */
+/** UC-80a: a share lasts at most 365 days, both ends counted. */
 export const MAX_DAYS = 365
 
-/** UC-84f / UC-85c: the FE's own MSG439, shown for a Stopped share; the backend never sends it. */
+/** UC-80f / UC-81c: the FE's own MSG439, shown for a Stopped share; the backend never sends it. */
 export const MSG439_STOPPED =
   'Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị vô hiệu hoá. Hãy xin chia sẻ mới.'
 
@@ -65,14 +65,14 @@ export function periodText(from: string, to: string) {
 export interface RangeRules {
   /** The earliest start allowed (today for a new share). */
   minStart: string
-  /** When set, the start may not change (an Effective share keeps its start, UC-84d). */
+  /** When set, the start may not change (an Effective share keeps its start, UC-80d). */
   fixedStart?: string
-  /** When set, the range must sit inside it (the owner narrowing a request, UC-84c). */
+  /** When set, the range must sit inside it (the owner narrowing a request, UC-80c). */
   within?: { from: string; to: string }
   today: string
 }
 
-/** BR-431 as the server checks it, so the dialog can say what is wrong before sending. Null when valid. */
+/** UC-80a as the server checks it, so the dialog can say what is wrong before sending. Null when valid. */
 export function rangeError(from: string, to: string, rules: RangeRules): string | null {
   if (!from || !to) return 'Chọn đủ ngày bắt đầu và ngày kết thúc.'
   if (rules.fixedStart && from !== rules.fixedStart) return `Ngày bắt đầu giữ nguyên ${dayText(rules.fixedStart)}.`

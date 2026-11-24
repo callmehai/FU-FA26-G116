@@ -21,10 +21,10 @@ interface NavEntry {
  */
 const WORK: NavEntry[] = [
   { to: routes.calendar, label: 'Lịch làm việc', short: 'Lịch', icon: 'calendar' },
-  { to: routes.meetings, label: 'Cuộc họp', icon: 'meeting' },
-  // SCRUM-137: finding a time reads calendars shared with the caller, so only a Meeting Organizer sees it (BR-430).
+  { to: routes.meetings, label: 'Cuộc họp', icon: 'list' },
+  // SCRUM-137: finding a time reads calendars shared with the caller, so only a Meeting Organizer sees it (BR-140, BR-141).
   { to: routes.findTime, label: 'Tìm giờ họp', short: 'Tìm giờ', icon: 'calendarSearch', cap: 'MeetingCreator' },
-  // SCRUM-38: no capability — the figures count only the meetings the viewer may read (BR-432).
+  // SCRUM-38: no capability — the figures count only the meetings the viewer may read (BR-149, BR-150).
   { to: routes.reports, label: 'Báo cáo', icon: 'chart' },
 ]
 

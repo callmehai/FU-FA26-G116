@@ -117,7 +117,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
     [Fact]
     public async Task An_administrators_configuration_survives_a_reseed()
     {
-        // What an administrator might do through UC-11: take "Thu giọng mẫu hộ" away from Quản trị viên.
+        // What an administrator might do through UC-10: take "Thu giọng mẫu hộ" away from Quản trị viên.
         await ReferenceDataSeeder.SeedAsync(_db);
         _db.ChangeTracker.Clear();
 

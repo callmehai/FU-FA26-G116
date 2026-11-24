@@ -39,8 +39,8 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                 OnVote = d.VoteLinks.Any(),
             }).ToListAsync(ct);
 
-        // A document linked to several items shows under each (BR-277). General means linked to no item and no
-        // vote (BR-280, option B as in AI-eCabinet): a vote's own document shows only under its vote.
+        // A document linked to several items shows under each (UC-36b). General means linked to no item and no
+        // vote (UC-36b, UC-36d, option B as in AI-eCabinet): a vote's own document shows only under its vote.
         var groups = items.Select(i => new MeetingDocumentAgendaGroup(i.Id, i.Position, i.Title, i.Status.ToString(),
             rows.Where(r => r.ItemIds.Contains(i.Id)).Select(r => r.Row).ToList())).ToList();
         var general = rows.Where(r => r.ItemIds.Count == 0 && !r.OnVote).Select(r => r.Row).ToList();
@@ -66,7 +66,7 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                     l.MeetingDocument.StoredFile.PageCount, l.MeetingDocument.Comments.Count,
                     new MeetingPerson(l.MeetingDocument.AddedById, l.MeetingDocument.AddedBy.FullName),
                     l.MeetingDocument.AddedAt,
-                    // One confirmation per person and document counts for every vote that links it (BR-291).
+                    // One confirmation per person and document counts for every vote that links it (UC-42).
                     l.MeetingDocument.ReadConfirmations
                         .Where(c => (userId != null && c.UserId == userId)
                             || (guestInvitationId != null && c.GuestInvitationId == guestInvitationId))

@@ -12,8 +12,8 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
 
-/// <summary>SCRUM-30, UC-82 — the Secretary's running notes: GET/PUT /api/meetings/{id}/notes, the notesChanged event,
-/// and the notes flowing into the minutes draft (BR-402).</summary>
+/// <summary>SCRUM-30, UC-28 — the Secretary's running notes: GET/PUT /api/meetings/{id}/notes, the notesChanged event,
+/// and the notes flowing into the minutes draft (UC-70).</summary>
 public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<SummaryFixture>
 {
     private static string Notes(SummaryFixture.Scenario s) => $"/api/meetings/{s.MeetingId}/notes";
@@ -161,7 +161,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
     [InlineData(Sensitivity.Secret, true)]
     public async Task The_state_says_whether_the_meeting_is_secret(Sensitivity sensitivity, bool secret)
     {
-        // BR-403: a Secret meeting's unsent text stays only until the page is closed; the FE needs to know.
+        // UC-28: a Secret meeting's unsent text stays only until the page is closed; the FE needs to know.
         var s = await f.Seed(sensitivity: sensitivity);
         using var secretary = f.Client(s.Secretary);
         Assert.Equal(secret, (await secretary.GetFromJsonAsync<JsonElement>(Notes(s))).GetProperty("secret").GetBoolean());
@@ -332,7 +332,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
     [Fact]
     public async Task An_ai_draft_takes_the_place_of_the_notes_in_the_minutes()
     {
-        // BR-402: the notes fill the minutes only when the meeting has no AI draft, reviewed or not (#263).
+        // UC-70: the notes fill the minutes only when the meeting has no AI draft, reviewed or not (#263).
         f.Model.Reset();
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);

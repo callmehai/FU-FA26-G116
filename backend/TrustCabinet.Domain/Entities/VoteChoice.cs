@@ -3,12 +3,12 @@ using TrustCabinet.Domain.Entities.Common;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// Who chose what in a **public** vote, so the closed result can name each voter's choice (BR-273).
+/// Who chose what in a **public** vote, so the closed result can name each voter's choice (BR-096, BR-097).
 ///
-/// A secret vote writes no row here at all (BR-259). A row per secret ballot, even one naming nobody, would still
+/// A secret vote writes no row here at all (BR-096, BR-097). A row per secret ballot, even one naming nobody, would still
 /// line up with the voter's <see cref="VoteReceipt"/>: a plain SELECT returns both tables in the order they were
 /// written. A secret ballot only moves <see cref="VotingOption.BallotCount"/>. The tally of every vote is read from
-/// that counter; these rows only say who. A recorded ballot is never changed or withdrawn (BR-265).
+/// that counter; these rows only say who. A recorded ballot is never changed or withdrawn (BR-092, BR-093).
 /// </summary>
 public class VoteChoice : Entity
 {

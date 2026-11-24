@@ -12,7 +12,7 @@ using static TrustCabinet.Web.Tests.Votes.VoteEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Votes;
 
-/// <summary>SCRUM-96: UC-74 and the reading requirement of UC-55 (BR-289–BR-293).</summary>
+/// <summary>SCRUM-96: UC-42 and the reading requirement of UC-65 (BR-094, BR-095, UC-42, UC-65, BR-096, BR-097).</summary>
 public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixture<ParticipantFixture>
 {
     /// <summary>A meeting document written straight to the database; nothing here reads its bytes.</summary>
@@ -57,7 +57,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         var refused = await Code(await Ballot(member, s, vote, option), 409, "MSG252");
         Assert.Equal([first, second], refused.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
 
-        // The viewer says the last page was reached; nothing is recorded until it does (BR-290).
+        // The viewer says the last page was reached; nothing is recorded until it does (UC-42).
         await Code(await Confirm(member, s, first, false), 400, "MSG254");
         await Code(await Confirm(member, s, first, null), 400, "MSG254");
         await Code(await member.PostAsync($"{s.Url}/documents/{first}/read-confirmation",
@@ -68,7 +68,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.False(confirmed.GetProperty("alreadyConfirmed").GetBoolean());
         Assert.Equal(f.Clock.Now, confirmed.GetProperty("confirmedAt").GetDateTimeOffset());
 
-        // Confirmed once and never withdrawn: a second tick reports the first (UC-74 AF-1, BR-291).
+        // Confirmed once and never withdrawn: a second tick reports the first (UC-42 AF-1).
         f.Clock.Now = f.Clock.Now.AddMinutes(5);
         var again = await Code(await Confirm(member, s, first, false), 200, "MSG253");
         Assert.True(again.GetProperty("alreadyConfirmed").GetBoolean());
@@ -80,7 +80,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         refused = await Code(await Ballot(member, s, vote, option), 409, "MSG252");
         Assert.Equal(second, Assert.Single(refused.GetProperty("documents").EnumerateArray()).GetProperty("id").GetGuid());
 
-        // A vote document removed from the meeting while the vote is open no longer counts (BR-292).
+        // A vote document removed from the meeting while the vote is open no longer counts (UC-65).
         await using (var db = f.Db())
             await db.MeetingDocuments.Where(d => d.Id == second).ExecuteUpdateAsync(u => u.SetProperty(d => d.RemovedAt, f.Clock.Now));
         Assert.Equal(1, (await Detail(member, s, vote)).GetProperty("documentCount").GetInt32());
@@ -98,7 +98,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         await Attach(secretary, s, vote, draftOnly);
 
         await Code(await Confirm(member, s, loose), 404, "MSG156");
-        // A draft is the Chair's and the Secretary's alone, so its document is not a vote document to anyone else (BR-253).
+        // A draft is the Chair's and the Secretary's alone, so its document is not a vote document to anyone else (BR-086, BR-087).
         await Code(await Confirm(member, s, draftOnly), 404, "MSG156");
         await Code(await Confirm(outsider, s, draftOnly), 404, "MSG156");
         await Code(await Confirm(secretary, s, Guid.CreateVersion7()), 404, "MSG156");
@@ -120,19 +120,19 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         await Attach(secretary, s, draft, shared);
         await Code(await chair.PostAsync($"{s.Url}/votes/{chairOnly}/open", null), 200, "MSG217");
 
-        // The Member sees the Open vote but is not on its fixed list (UC-55's MSG224).
+        // The Member sees the Open vote but is not on its fixed list (UC-65's MSG224).
         await Code(await Confirm(member, s, shared), 409, "MSG224");
         var confirmed = await Confirm(chair, s, shared);
         await Code(confirmed, 200, "MSG253");
         // A confirmation must never be served from a cache.
         Assert.True(confirmed.Headers.CacheControl?.NoStore);
 
-        // Detaching from the draft keeps the confirmation (BR-305).
+        // Detaching from the draft keeps the confirmation (UC-68b).
         await Code(await secretary.DeleteAsync($"{s.Url}/votes/{draft}/documents/{shared}"), 200, "MSG268");
         await using (var db = f.Db())
             Assert.True(await db.DocumentReadConfirmations.AnyAsync(c => c.MeetingDocumentId == shared && c.UserId == s.Chair));
 
-        // Once the vote stops taking ballots there is nothing left to confirm for (UC-55's MSG225).
+        // Once the vote stops taking ballots there is nothing left to confirm for (UC-65's MSG225).
         var later = await Document(s, "Sau khi đóng.pdf");
         var closing = await Draft(secretary, s, Body(roles: ["Chair"]));
         await Attach(secretary, s, closing, later);
@@ -162,13 +162,13 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         var confirmation = await db.DocumentReadConfirmations.SingleAsync(c => c.MeetingDocumentId == document);
         Assert.Equal(invitation.Id, confirmation.GuestInvitationId);
         Assert.Null(confirmation.UserId);
-        // Stored apart from ballots: nothing on the row points at a vote, an option or a choice (BR-293).
+        // Stored apart from ballots: nothing on the row points at a vote, an option or a choice (BR-096, BR-097).
         var columns = db.Model.FindEntityType(typeof(DocumentReadConfirmation))!.GetProperties().Select(p => p.Name).Order();
         Assert.Equal(["ConfirmedAt", "CreatedAt", "GuestInvitationId", "Id", "MeetingDocumentId", "UpdatedAt", "UserId"], columns);
         Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == vote && c.GuestInvitationId != null));
     }
 
-    /// <summary>The Documents tab's vote group (UC-32a AF-1, SCRUM-21): <c>votes</c> of GET …/documents.</summary>
+    /// <summary>The Documents tab's vote group (UC-35a AF-1, SCRUM-21): <c>votes</c> of GET …/documents.</summary>
     private static async Task<JsonElement[]> VoteGroups(HttpClient client, ParticipantFixture.Scenario s)
         => (await List(client, s)).GetProperty("votes").EnumerateArray().ToArray();
 
@@ -192,7 +192,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         var draft = await Draft(secretary, s);
         await Attach(secretary, s, draft, draftOnly, report);
 
-        // A draft and its documents are the Chair's and the Secretary's alone (BR-253).
+        // A draft and its documents are the Chair's and the Secretary's alone (BR-086, BR-087).
         var forMember = await VoteGroups(member, s);
         var group = Assert.Single(forMember);
         Assert.Equal(opened, group.GetProperty("id").GetGuid());
@@ -200,13 +200,13 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.Equal([report, annex], group.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
         Assert.All(group.GetProperty("documents").EnumerateArray(),
             d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
-        // "Not read" means something only to a voter of an Open vote (UC-74): never on a draft.
+        // "Not read" means something only to a voter of an Open vote (UC-42): never on a draft.
         Assert.True(group.GetProperty("canConfirmRead").GetBoolean());
         var forSecretary = await VoteGroups(secretary, s);
         Assert.Equal([opened, draft], forSecretary.Select(v => v.GetProperty("id").GetGuid()));
         Assert.False(forSecretary[1].GetProperty("canConfirmRead").GetBoolean());
 
-        // Each reader sees their own confirmation, which counts for every vote that links the document (BR-291).
+        // Each reader sees their own confirmation, which counts for every vote that links the document (UC-42).
         await Code(await Confirm(member, s, report), 200, "MSG253");
         var mine = Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray().ToArray();
         Assert.Equal(JsonValueKind.String, mine[0].GetProperty("readConfirmedAt").ValueKind);
@@ -214,8 +214,8 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.All((await VoteGroups(secretary, s)).SelectMany(v => v.GetProperty("documents").EnumerateArray()),
             d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
 
-        // A vote's document no item links is listed under its vote only (BR-280, option B); a document removed from
-        // the meeting is gone (BR-211).
+        // A vote's document no item links is listed under its vote only (UC-36b, UC-36d, option B); a document removed from
+        // the meeting is gone (BR-074–BR-076).
         Assert.Empty((await List(member, s)).GetProperty("general").EnumerateArray());
         await Code(await secretary.DeleteAsync($"{s.Url}/documents/{annex}"), 200, "MSG167");
         Assert.Equal([report], Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray()
@@ -244,7 +244,7 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.True(Assert.Single(await VoteGroups(member, s)).GetProperty("canConfirmRead").GetBoolean());
         Assert.False(Assert.Single(await VoteGroups(chair, s)).GetProperty("canConfirmRead").GetBoolean());
 
-        // UC-74 takes a confirmation only while the meeting is InProgress, even with the vote still Open.
+        // UC-42 takes a confirmation only while the meeting is InProgress, even with the vote still Open.
         await using (var db = f.Db())
             await db.Meetings.Where(m => m.Id == s.MeetingId)
                 .ExecuteUpdateAsync(u => u.SetProperty(m => m.Status, MeetingStatus.Ended));

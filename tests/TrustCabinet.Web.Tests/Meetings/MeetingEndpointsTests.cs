@@ -125,7 +125,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         return meeting;
     }
 
-    /// <summary>A week ahead, so BR-162 (start in the future) holds whenever the suite runs.</summary>
+    /// <summary>A week ahead, so BR-013 (start in the future) holds whenever the suite runs.</summary>
     private static readonly DateTimeOffset FutureStart =
         new(DateTimeOffset.UtcNow.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
 
@@ -614,7 +614,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
     }
 
-    // UC-75 Cancel Meeting (SCRUM-99).
+    // UC-22 Cancel Meeting (SCRUM-99).
 
     private async Task<(HttpResponseMessage Response, JsonDocument Body)> CancelAsync(
         User actor, Meeting meeting, string json)

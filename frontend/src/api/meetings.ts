@@ -23,7 +23,7 @@ import { api } from './client'
  */
 
 /**
- * UC-17 — filtering, search, sorting and paging all happen in the database, after the row-visibility
+ * UC-16 — filtering, search, sorting and paging all happen in the database, after the row-visibility
  * rule, so a meeting the caller may not see never reaches the browser and is not counted.
  */
 export function listMeetings(query: MeetingListQuery) {
@@ -38,12 +38,12 @@ export function listMeetings(query: MeetingListQuery) {
 export const getMeeting = (id: string) => api.get<Meeting>(`/api/meetings/${id}`)
 
 /**
- * UC-14 — 201 with MSG29. The meeting starts as a draft, with its roster (SCRUM-20); an invalid
+ * UC-13 — 201 with MSG29. The meeting starts as a draft, with its roster (SCRUM-20); an invalid
  * roster answers 400 MSG277 with errors keyed `participants` or `participants[i].userId`/`.role`.
  */
 export const createMeeting = (body: MeetingCreateRequest) => api.post<MeetingMutationResponse>('/api/meetings', body)
 
-/** UC-15 — MSG30, or 409 MSG33 once the meeting has left Draft/Rejected. */
+/** UC-14 — MSG30, or 409 MSG33 once the meeting has left Draft/Rejected. */
 export const updateMeeting = (id: string, body: MeetingRequest) =>
   api.put<MeetingMutationResponse>(`/api/meetings/${id}`, body)
 

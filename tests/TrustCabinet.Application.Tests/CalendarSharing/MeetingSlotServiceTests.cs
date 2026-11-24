@@ -96,7 +96,7 @@ public sealed class MeetingSlotServiceTests
         var meeting = Assert.Single(_meetings.Added);
         Assert.Equal([(_invitee, MeetingRole.Chair), (_finder, MeetingRole.Secretary)],
             meeting.Participants.Select(p => (p.UserId, p.Role)));
-        // The recheck reads outside a transaction; UC-14 then saves in its own.
+        // The recheck reads outside a transaction; UC-13 then saves in its own.
         Assert.Equal([TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
     }
 

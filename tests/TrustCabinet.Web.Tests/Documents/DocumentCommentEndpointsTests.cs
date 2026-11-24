@@ -10,7 +10,7 @@ using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
-/// <summary>SCRUM-23 — UC-35 comments on a meeting document against PostgreSQL.</summary>
+/// <summary>SCRUM-23 — UC-38 comments on a meeting document against PostgreSQL.</summary>
 [Collection("Documents")]
 public sealed class DocumentCommentEndpointsTests(DocumentFixture fixture) : IAsyncLifetime
 {
@@ -178,7 +178,7 @@ public sealed class DocumentCommentEndpointsTests(DocumentFixture fixture) : IAs
         await using (var db = fixture.Db())
             await db.MeetingDocuments.Where(d => d.Id == document)
                 .ExecuteUpdateAsync(d => d.SetProperty(x => x.RemovedAt, DateTimeOffset.UtcNow).SetProperty(x => x.RemovedById, s.Secretary));
-        // Kept as history, no longer shown (BR-284).
+        // Kept as history, no longer shown (BR-074–BR-076).
         Assert.Equal((404, "MSG156"), Pick(await Read(await member.GetAsync(Url(s, document)))));
         Assert.Equal((404, "MSG156"), Pick(await Read(await member.PostAsJsonAsync(Url(s, document), new { body = "Sau khi gỡ" }))));
         await using var check = fixture.Db();

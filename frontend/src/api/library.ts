@@ -13,7 +13,7 @@ type Saved<K extends string, T> = { code: string; message: string } & Record<K, 
 type Done = { code: string; message: string }
 
 /**
- * UC-34: every folder, and the documents at `folderId` (root when null). `q` searches that place only.
+ * UC-37: every folder, and the documents at `folderId` (root when null). `q` searches that place only.
  * `meetingId` sets `inMeeting` on the documents whose file is already in that meeting (SCRUM-124).
  */
 export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | 'docx' = '', meetingId?: string) {
@@ -26,7 +26,7 @@ export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | '
   return api.get<LibraryView>(`/api/documents${query ? `?${query}` : ''}`)
 }
 
-/** UC-36: all files or none; 409 MSG346 when the system's storage is full (ADR-0034), 400 MSG288/MSG164 as for a meeting. */
+/** UC-39: all files or none; 409 MSG346 when the system's storage is full (ADR-0034), 400 MSG288/MSG164 as for a meeting. */
 export function uploadToLibrary(folderId: string | null, files: Upload, options: UploadOptions = {}) {
   return api.upload<LibraryUploadResponse>(
     `/api/documents/upload${folderId ? `?folderId=${encodeURIComponent(folderId)}` : ''}`,
@@ -40,7 +40,7 @@ export const getLibraryContent = (documentId: string, download = false) =>
   api.blob(`/api/documents/${documentId}/content${download ? '?download=true' : ''}`)
 
 /**
- * SCRUM-113 (UC-34b): a deactivated person's library, read by an administrator (`AdminUsers`, 403 otherwise). Every
+ * SCRUM-113 (UC-37a): a deactivated person's library, read by an administrator (`AdminUsers`, 403 otherwise). Every
  * read is audited and refused when it cannot be; an active or unknown account answers 404 MSG175, as does anything of
  * a Secret meeting, even one the administrator may view.
  */
@@ -50,32 +50,32 @@ export function getUserLibrary(userId: string, folderId: string | null) {
   )
 }
 
-/** UC-34b AF-1: 404 MSG175 as above; 503 MSG158 (view) / MSG160 (download) when the file or its audit row fails. */
+/** UC-37a AF-1: 404 MSG175 as above; 503 MSG158 (view) / MSG160 (download) when the file or its audit row fails. */
 export const getUserLibraryContent = (userId: string, documentId: string, download = false) =>
   api.blob(`/api/users/${userId}/library/documents/${documentId}/content${download ? '?download=true' : ''}`)
 
-/** UC-71b: the extension must stay (400 MSG347). The copy already in a meeting keeps its name (BR-276). */
+/** UC-40b: the extension must stay (400 MSG347). The copy already in a meeting keeps its name (UC-40b). */
 export const renameLibraryDocument = (documentId: string, fileName: string) =>
   api.put<Saved<'document', LibraryDocument>>(`/api/documents/${documentId}/name`, { fileName })
 
-/** UC-71c: `null` moves it to the root. */
+/** UC-40c: `null` moves it to the root. */
 export const moveLibraryDocument = (documentId: string, folderId: string | null) =>
   api.put<Saved<'document', LibraryDocument>>(`/api/documents/${documentId}/folder`, { folderId })
 
-/** UC-71a: the library row only; meetings using the file keep reading it (BR-186). */
+/** UC-40a: the library row only; meetings using the file keep reading it (BR-074–BR-076). */
 export const deleteLibraryDocument = (documentId: string) => api.delete<Done>(`/api/documents/${documentId}`)
 
-/** UC-72a: names may repeat (BR-221); five levels at most (409 MSG189). */
+/** UC-41a: names may repeat (UC-41a, UC-41b); five levels at most (409 MSG189). */
 export const createFolder = (name: string, parentId: string | null) =>
   api.post<Saved<'folder', LibraryFolder>>('/api/folders', { name, parentId })
 
-/** UC-72b */
+/** UC-41b */
 export const renameFolder = (folderId: string, name: string) =>
   api.put<Saved<'folder', LibraryFolder>>(`/api/folders/${folderId}/name`, { name })
 
-/** UC-72c: not into itself or below it (409 MSG193); the whole subtree must stay within five levels. */
+/** UC-41c: not into itself or below it (409 MSG193); the whole subtree must stay within five levels. */
 export const moveFolder = (folderId: string, parentId: string | null) =>
   api.put<Saved<'folder', LibraryFolder>>(`/api/folders/${folderId}/parent`, { parentId })
 
-/** UC-72d: only an empty folder (409 MSG196). */
+/** UC-41d: only an empty folder (409 MSG196). */
 export const deleteFolder = (folderId: string) => api.delete<Done>(`/api/folders/${folderId}`)

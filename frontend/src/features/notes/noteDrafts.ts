@@ -1,8 +1,8 @@
 /**
  * Note text the server has not confirmed yet, kept in this browser so a lost connection, a closed tab or a crash
- * loses nothing (SCRUM-30, BR-403). One entry per user, meeting and note; removed once the server has the same text.
+ * loses nothing (SCRUM-30, UC-28). One entry per user, meeting and note; removed once the server has the same text.
  *
- * Where it is kept depends on the meeting (BR-403): a Normal meeting's text goes to `localStorage`, so it survives a
+ * Where it is kept depends on the meeting (UC-28): a Normal meeting's text goes to `localStorage`, so it survives a
  * closed tab; a Secret meeting's only to `sessionStorage`, so it goes with the page and never stays on a shared
  * computer. Every entry goes when the user signs out (`clearNoteDrafts`) and a meeting's when the user may no longer
  * read its notes (`takeNoteDrafts`). Storage can be unavailable (private mode, quota): the panel then works as before,
@@ -85,7 +85,7 @@ export function listNoteDrafts(scope: DraftScope): (NoteDraft & { noteKey: strin
 
 /**
  * A meeting made Secret after text was kept for it: the text moves to `sessionStorage` rather than staying in
- * `localStorage` (BR-403). Nothing to do for a Normal meeting.
+ * `localStorage` (UC-28). Nothing to do for a Normal meeting.
  */
 export function settleNoteDrafts(scope: DraftScope) {
   if (!scope.secret) return
@@ -101,7 +101,7 @@ export function settleNoteDrafts(scope: DraftScope) {
 }
 
 /**
- * The user may no longer read this meeting's notes (EX-1, EX-8): nothing of them stays on the device (BR-403). What
+ * The user may no longer read this meeting's notes (EX-1, EX-8): nothing of them stays on the device (UC-28). What
  * was kept is handed back once, so the page can still show it to copy until it is closed.
  */
 export function takeNoteDrafts(userId: string, meetingId: string): (NoteDraft & { noteKey: string })[] {

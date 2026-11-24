@@ -129,7 +129,7 @@ public sealed class VoteServiceTests
     [Fact]
     public async Task Opening_from_the_form_that_fails_after_staging_rolls_back_without_saving()
     {
-        // Guests only, and the meeting has none: the draft is staged, then nobody is eligible (UC-53 AF-3).
+        // Guests only, and the meeting has none: the draft is staged, then nobody is eligible (UC-63 AF-3).
         var outcome = await Service().MutateAsync(_meeting, null, new ParticipantActor(_chair), VoteOperation.Create,
             Draft(openImmediately: true) with { EligibleRoles = ["Guest"] });
 

@@ -8,9 +8,9 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Application.Reports;
 
 /// <summary>
-/// SCRUM-38 — the meeting report (UC-70a) and its Excel export (UC-70b). Every figure is computed in the database over
+/// SCRUM-38 — the meeting report (UC-79a) and its Excel export (UC-79b). Every figure is computed in the database over
 /// the meetings the caller may read under <see cref="MeetingReadPolicy"/>, applied in the query before anything is
-/// counted (BR-432) — for a System Admin as for anyone else. The meeting report carries only counts (BR-437). The report
+/// counted (BR-149, BR-150) — for a System Admin as for anyone else. The meeting report carries only counts (BR-152). The report
 /// query (supervisor review 22/11/2026) groups one main table as the caller picks; grouped by person or by meeting it
 /// names what the caller can already open, never a meeting's content.
 /// </summary>
@@ -44,7 +44,7 @@ public sealed class ReportService(IMeetingReportQuery reports, IReportFactQuery 
             var report = await unitOfWork.ExecuteAsync(token => BuildAsync(actorId, period, now, token),
                 TransactionMode.None, ct);
             var bytes = renderer.Build(report);
-            // BR-438: no record, no file — the figures leave the system only with a trace of who took them.
+            // BR-010: no record, no file — the figures leave the system only with a trace of who took them.
             await audit.RecordAsync(AuditActions.ReportExported, AuditActions.ReportObjectType, null, actorId,
                 new { report = "meetings", from = period.From, to = period.To }, ct);
             return new(File: new ReportFile($"bao-cao-cuoc-hop_{period.From}_{period.To}.xlsx", bytes, XlsxContentType));
@@ -61,10 +61,10 @@ public sealed class ReportService(IMeetingReportQuery reports, IReportFactQuery 
         // Npgsql writes timestamptz parameters only in UTC.
         var start = period.Start.ToUniversalTime();
         var end = period.End.ToUniversalTime();
-        // BR-434: one GROUP BY over month (Vietnam time), status and sensitivity; the three tables are sums of it.
+        // BR-149, BR-150: one GROUP BY over month (Vietnam time), status and sensitivity; the three tables are sums of it.
         var groups = await reports.ListGroupsAsync(actorId, start, end, ct);
 
-        // BR-435, BR-436 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
+        // BR-151 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
         var ended = await reports.ListEndedRowsAsync(actorId, start, end, ct);
 
         var rates = ended
@@ -139,7 +139,7 @@ public sealed class ReportService(IMeetingReportQuery reports, IReportFactQuery 
             var table = await unitOfWork.ExecuteAsync(token => TableAsync(actorId, definition, query, period, now, token),
                 TransactionMode.None, ct);
             var bytes = renderer.Build(table);
-            // BR-438, as for the meeting report: no record, no file.
+            // BR-010, as for the meeting report: no record, no file.
             await audit.RecordAsync(AuditActions.ReportExported, AuditActions.ReportObjectType, null, actorId,
                 new
                 {
@@ -208,7 +208,7 @@ public sealed class ReportService(IMeetingReportQuery reports, IReportFactQuery 
     private static bool SeesVote(ReportMeetingRow meeting, ReportVoteRow vote)
         => vote.Status != VotingStatus.Draft || meeting.ViewerManages;
 
-    /// <summary>BR-412: anyone else reads only issued minutes and the revisions they replaced.</summary>
+    /// <summary>BR-139: anyone else reads only issued minutes and the revisions they replaced.</summary>
     private static bool SeesMinutes(ReportMeetingRow meeting, ReportMinutesRow minutes)
         => minutes.Status is MinutesStatus.Issued or MinutesStatus.Superseded || meeting.ViewerManages;
 

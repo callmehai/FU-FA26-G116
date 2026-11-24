@@ -18,7 +18,7 @@ export function DocumentLink({
 }: {
   meetingId: string
   documentId: string
-  /** Opened from a vote still waiting on this reader (UC-74). */
+  /** Opened from a vote still waiting on this reader (UC-42). */
   read?: boolean
   /** The meeting tab the full-screen route returns to; Tài liệu without one. */
   back?: 'agenda' | 'votes'

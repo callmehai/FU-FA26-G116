@@ -5,9 +5,9 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Notes;
 
 /// <summary>
-/// SCRUM-30, UC-82 — the Secretary's running notes. One note per author per agenda item, plus one for the meeting as a
+/// SCRUM-30, UC-28 — the Secretary's running notes. One note per author per agenda item, plus one for the meeting as a
 /// whole (<see cref="NoteView.AgendaItemId"/> null). The text is plain; a line may start with a mark
-/// (<see cref="MeetingNoteRules.Marks"/>) that the minutes draft reads (BR-401, BR-402).
+/// (<see cref="MeetingNoteRules.Marks"/>) that the minutes draft reads (UC-28, UC-70).
 /// </summary>
 public sealed record NoteAuthor(Guid Id, string FullName);
 
@@ -15,10 +15,10 @@ public sealed record NoteView(Guid? AgendaItemId, string Body, DateTimeOffset Up
 
 /// <summary>
 /// What the caller sees: the notes of the meeting's current Secretary, the agenda item the Chair has InProgress (where
-/// new text goes, BR-397), and whether the caller may write now (BR-395, BR-396). The Chair reads with
+/// new text goes, BR-134), and whether the caller may write now (UC-55b, UC-60, UC-61). The Chair reads with
 /// <see cref="CanWrite"/> false.
 /// </summary>
-/// <param name="Secret">A Secret meeting: unsent text stays on the device only until the page is closed (BR-403).</param>
+/// <param name="Secret">A Secret meeting: unsent text stays on the device only until the page is closed (UC-28).</param>
 public sealed record NotesState(IReadOnlyList<NoteView> Notes, Guid? CurrentAgendaItemId, bool CanWrite, bool Secret);
 
 public enum NoteFailure
@@ -27,11 +27,11 @@ public enum NoteFailure
     NotFound,
     Inactive,
     /// <summary>A save by a reader of the meeting who is not its current Secretary: the Chair, or a Secretary replaced
-    /// while typing (BR-395, EX-1). Reading the notes is <see cref="NotFound"/> for anyone but the Chair (EX-8).</summary>
+    /// while typing (UC-55b, EX-1). Reading the notes is <see cref="NotFound"/> for anyone but the Chair (EX-8).</summary>
     Forbidden,
-    /// <summary>The meeting is not InProgress, or it has Ended and its minutes draft exists (BR-396).</summary>
+    /// <summary>The meeting is not InProgress, or it has Ended and its minutes draft exists (UC-60, UC-61).</summary>
     Closed,
-    /// <summary>The note was saved elsewhere after the caller read it (BR-399).</summary>
+    /// <summary>The note was saved elsewhere after the caller read it (UC-28).</summary>
     Stale,
     TooLong,
     /// <summary>The agenda item is not (or no longer) part of the meeting.</summary>
@@ -57,13 +57,13 @@ public interface IMeetingNoteService
     /// <summary>
     /// Saves the caller's note on <paramref name="agendaItemId"/> (null: the meeting as a whole). <paramref name="loadedAt"/>
     /// is the <c>updatedAt</c> the caller read, null for a note it has not seen saved yet; a mismatch is
-    /// <see cref="NoteFailure.Stale"/> and nothing is overwritten (BR-399).
+    /// <see cref="NoteFailure.Stale"/> and nothing is overwritten (UC-28).
     /// </summary>
     Task<NoteOutcome> SaveAsync(Guid meetingId, Guid actorId, Guid? agendaItemId, string? body, DateTimeOffset? loadedAt,
         CancellationToken ct = default);
 }
 
-/// <summary>SCRUM-30, UC-82 — the Secretary's running notes as the use case reads and writes them.</summary>
+/// <summary>SCRUM-30, UC-28 — the Secretary's running notes as the use case reads and writes them.</summary>
 public interface IMeetingNoteRepository
 {
     /// <summary>The meeting's notes by the given authors, oldest position first, with their author.</summary>
@@ -72,7 +72,7 @@ public interface IMeetingNoteRepository
     /// <summary>The meeting's item in progress; null when none is.</summary>
     Task<Guid?> FindCurrentItemAsync(Guid meetingId, CancellationToken ct);
 
-    /// <summary>Whether the meeting's minutes draft exists (the cut-off of BR-310, BR-396).</summary>
+    /// <summary>Whether the meeting's minutes draft exists (the cut-off of BR-066, BR-067, UC-60, UC-61).</summary>
     Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct);
 
     /// <summary>Whether the agenda item is part of the meeting.</summary>
@@ -85,7 +85,7 @@ public interface IMeetingNoteRepository
     void Add(MeetingNote note);
 
     /// <summary>
-    /// Overwrites the note read at <paramref name="from"/> (BR-399: a save from another window that landed
+    /// Overwrites the note read at <paramref name="from"/> (UC-28: a save from another window that landed
     /// after it was read makes it stale, never overwritten). Returns the rows written. Runs immediately,
     /// not staged.
     /// </summary>
@@ -98,17 +98,17 @@ public interface IMeetingNoteRepository
 
 public static class MeetingNoteRules
 {
-    /// <summary>BR-400.</summary>
+    /// <summary>UC-28.</summary>
     public const int MaxLength = 20_000;
 
     public const string Opinion = "Ý kiến";
     public const string Conclusion = "Kết luận";
     public const string Task = "Nhiệm vụ";
 
-    /// <summary>BR-401: a line starting with one of these, then ":", is marked. Text only — nothing tracks a task.</summary>
+    /// <summary>UC-28: a line starting with one of these, then ":", is marked. Text only — nothing tracks a task.</summary>
     public static readonly IReadOnlyList<string> Marks = [Opinion, Conclusion, Task];
 
-    /// <summary>BR-396: while the sitting runs, and after it until the minutes draft is built (the cut-off of BR-310).</summary>
+    /// <summary>UC-60, UC-61: while the sitting runs, and after it until the minutes draft is built (the cut-off of BR-066, BR-067).</summary>
     public static bool AcceptsNotes(MeetingStatus status, bool hasMinutes)
         => status == MeetingStatus.InProgress || (status == MeetingStatus.Ended && !hasMinutes);
 
@@ -127,7 +127,7 @@ public static class MeetingNoteRules
     }
 
     /// <summary>
-    /// BR-397: what a deleted agenda item's note becomes, appended to its author's meeting-wide note so the text is not
+    /// BR-134: what a deleted agenda item's note becomes, appended to its author's meeting-wide note so the text is not
     /// lost. Cut to <see cref="MaxLength"/> when the two together would not fit, never inside a surrogate pair.
     /// </summary>
     public static string Fold(string general, string itemTitle, string itemBody)

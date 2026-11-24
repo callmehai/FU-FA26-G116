@@ -65,7 +65,7 @@ public sealed class AuthenticationService(
         if (!passwordHasher.Verify(user?.PasswordHash ?? _dummyHash.Value, password) || user is null)
         {
             logger.LogInformation("Sign-in rejected: invalid credentials.");
-            // BR-444: only an attempt on an existing account. An unknown email is not recorded (SCRUM-16 note §8):
+            // BR-009: only an attempt on an existing account. An unknown email is not recorded (SCRUM-16 note §8):
             // it may be a password typed into the email box. The extra write makes this branch a few milliseconds
             // slower than the unknown-email one — accepted on 10/11/2026.
             if (user is not null)
@@ -262,7 +262,7 @@ public sealed class AuthenticationService(
     private const string DeactivatedReason = "account_deactivated";
 
     /// <summary>
-    /// BR-444 — one row per sign-in to an existing account, success or failure. The method and the reason only: never
+    /// BR-009 — one row per sign-in to an existing account, success or failure. The method and the reason only: never
     /// the password, the Google token or the refresh token. A refresh is not a sign-in and is not recorded.
     /// </summary>
     private Task RecordSignInAsync(User user, string method, string? failureReason, CancellationToken ct)

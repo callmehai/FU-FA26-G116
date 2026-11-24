@@ -3,16 +3,16 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.CalendarSharing;
 
-/// <summary>A busy period, without anything about the meeting behind it (BR-427).</summary>
+/// <summary>A busy period, without anything about the meeting behind it (BR-140, BR-141).</summary>
 public readonly record struct BusyInterval(DateTimeOffset Start, DateTimeOffset End);
 
 /// <summary>
-/// Which meetings make a person busy and when (BR-419, BR-420), shared by the shared calendar (UC-85c, SCRUM-142) and
-/// the meeting-time search (UC-85a, SCRUM-137). Which sensitivity a viewer sees is <see cref="CalendarShareRules.Covers"/>.
+/// Which meetings make a person busy and when (BR-146, BR-147), shared by the shared calendar (UC-81c, SCRUM-142) and
+/// the meeting-time search (UC-81a, SCRUM-137). Which sensitivity a viewer sees is <see cref="CalendarShareRules.Covers"/>.
 /// </summary>
 public static class CalendarBusyRules
 {
-    /// <summary>BR-420 (PO 08/11/2026, Q9). Draft, Rejected and Cancelled meetings never count.</summary>
+    /// <summary>BR-146, BR-147 (PO 08/11/2026, Q9). Draft, Rejected and Cancelled meetings never count.</summary>
     public static readonly IReadOnlyList<MeetingStatus> BusyStatuses =
     [
         MeetingStatus.WaitingApproval, MeetingStatus.Approved, MeetingStatus.Published, MeetingStatus.InProgress,
@@ -22,7 +22,7 @@ public static class CalendarBusyRules
     public static bool CountsAsBusy(MeetingStatus status) => BusyStatuses.Contains(status);
 
     /// <summary>
-    /// BR-419: only a current Chair, Secretary or Member assignment counts; never the creator or approver alone, never a
+    /// BR-146, BR-147: only a current Chair, Secretary or Member assignment counts; never the creator or approver alone, never a
     /// Guest, never someone who declined. The Chair is never asked, so an answer left from before they took the chair
     /// does not count — as in the meeting list.
     /// </summary>
@@ -34,7 +34,7 @@ public static class CalendarBusyRules
             && (role == MeetingRole.Chair || response != InvitationResponse.Declined);
 
     /// <summary>
-    /// When a meeting keeps its people busy, or null when it does not (BR-420). An ended meeting until it actually ended;
+    /// When a meeting keeps its people busy, or null when it does not (BR-146, BR-147). An ended meeting until it actually ended;
     /// one still running for its planned length from when it really started, and at least until now; any other until
     /// its planned end. A meeting started early — next month's, opened today — is busy today, not from today until next
     /// month.

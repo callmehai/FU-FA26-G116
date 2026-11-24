@@ -24,6 +24,9 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
 | Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
 
+Gipformer còn kèm `bpe.model` (SentencePiece của chính các token đó): từ khoá ưu tiên cần nó để cắt mỗi từ khoá thành
+token của model. Không phải model riêng, chỉ là bảng token.
+
 Danh sách file, mã SHA-256 và URL nằm trong [models.manifest](models.manifest). Server kiểm tra lại
 mã băm mỗi lần khởi động; file bị thay hay thiếu thì **từ chối chạy**. Mỗi kết quả kèm mã model dạng
 `gipformer-1.5-68m-int8@b528768939c7` (12 ký tự đầu của SHA-256), để biết transcript nào làm bằng
@@ -64,6 +67,9 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_NUMBERS` | `1` | `0` giữ số bằng chữ ("hai mươi ba" thay vì "23"), xem bước 8 ở [Cách chạy bên trong](#cách-chạy-bên-trong). Đo WER với đáp án viết bằng chữ thì đặt `0` |
+| `SPEECH_CLIP_PROCESS` | `1` | `0` cho câu mic cá nhân và mẫu giọng chạy chung process con với bản ghi dài như trước (máy ít RAM), xem [Cách chạy bên trong](#cách-chạy-bên-trong) |
+| `SPEECH_HOTWORDS_FILE` | danh sách kèm theo (`speech/hotwords.txt`) | Danh sách từ khoá ưu tiên khi giải mã; `0`/`off` tắt. Xem [Từ khoá ưu tiên](#từ-khoá-ưu-tiên-hotwords) |
+| `SPEECH_HOTWORDS_SCORE` | `1.0` | Mức cộng điểm cho mỗi token khớp từ khoá; `0` cũng là tắt |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -140,7 +146,7 @@ Lượt chạy có mã `run` đã đi đến đâu. Cùng xác thực như các 
 
 | `state` | Nghĩa |
 |---|---|
-| `queued` | Đã nhận, đang chờ sau một việc khác (process con mỗi lần chạy một việc) |
+| `queued` | Đã nhận, đang chờ sau một việc khác (mỗi process con mỗi lần chạy một việc) |
 | `running` | Đang chạy; `percent` 0–100, chỉ tăng |
 | `unknown` | Worker không có lượt nào mang mã này: đã trả kết quả, chưa gửi tới, hoặc worker đã khởi động lại |
 
@@ -208,7 +214,12 @@ Các bước xử lý một bản ghi:
    cuộc họp dùng để hiệu chỉnh chỉ thấp hơn chủ toạ 15–20 dB nên không bị bỏ, còn bản ghi nhỏ đều
    từ đầu tới cuối thì giữ nguyên. Người nói chỉ gồm các đoạn bị bỏ cũng bị bỏ theo.
 6. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
-   bằng nhau.
+   bằng nhau. Mỗi lần đưa model một phần (trước đây 8 phần một lô). Một lô bị độn cho bằng phần dài nhất, và
+   onnxruntime giữ lại bộ nhớ của lô lớn nhất nó từng gặp: trên bản ghi 83 phút, process con tăng từ 1,05 GB lên
+   4,7 GB ở bước này (Docker, 2 CPU, 24/11/2026). Từng phần một thì bộ nhớ không tăng, bước này nhanh hơn 1,6–1,8 lần
+   với 2 luồng, và WER trên cuộc họp thật 300 giây gần như không đổi (13,90% → 14,06%, chênh 2 từ trên 1216).
+   Model giải mã có **từ khoá ưu tiên** (hotwords): các từ dự án nói bằng tiếng Anh như report, commit, deploy được
+   cộng điểm, xem [Từ khoá ưu tiên](#từ-khoá-ưu-tiên-hotwords).
 7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
    thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Model luôn đọc chữ thường: chữ hoa nó gắn được giữ riêng và
    chỉ đặt vào ở cuối, cộng thêm chữ hoa cho từ đầu mỗi câu (sau `.` `?` `!`). Đọc lại chính chữ hoa của mình, model
@@ -240,24 +251,52 @@ Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + em
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
 0.06 khi chạy trực tiếp.
 
-- Model nằm trong **một process con**, mỗi lần chạy một việc. Tách người nói giữ GIL của Python
+- Model nằm trong **process con**, mỗi process con mỗi lần chạy một việc. Tách người nói giữ GIL của Python
   trong lúc chạy, nên nếu để chung process thì cả `/health` cũng bị treo. Process HTTP chỉ chuyển
   đường dẫn file tạm và kết quả JSON qua lại. Process con chết (ví dụ hết RAM) thì request đó
   nhận `500`, request sau chạy trên process con mới.
-- Request thứ hai đến khi đang bận sẽ **xếp hàng**, không bị từ chối.
+- **Hai process con, hai làn.** Làn nặng nhận bản ghi nguyên buổi (mic phòng, tệp tải lên), chạy nhiều phút. Làn nhẹ
+  nhận việc có người đang chờ: câu mic cá nhân (`profile=clip`) và mẫu giọng (`/v1/embed`). Trước đây chỉ có một
+  process con, nên mỗi lần bản ghi phòng được chuyển chữ lại (8–30 phút trên server test), mọi câu mic cá nhân phải
+  chờ sau nó; backend chỉ chờ 30 giây rồi bỏ, nên ngày 23/11/2026 suốt 30 phút họp không lưu được câu nào. Mỗi process
+  con giữ một bản model riêng, nên làn nhẹ tốn thêm khoảng 400 MB. Process con của làn nặng chạy ở mức ưu tiên CPU thấp
+  hơn (`nice` +10): trên máy 2 vCPU, câu mic cá nhân, backend, PostgreSQL và LiveKit được CPU trước. `SPEECH_CLIP_PROCESS=0`
+  gộp lại một process con như cũ, cho máy thiếu RAM.
+
+  Đo trong Docker (Linux arm64 trên MacBook M1, `--cpus 2`, `--memory 2500m`, `SPEECH_THREADS=2` như server test,
+  24/11/2026), trong lúc chuyển chữ một bản ghi, cứ 15 giây gửi một câu 5 giây và đều đặn một mẫu giọng 25 giây. Cột
+  "trước" và "hai process con" cùng chuyển chữ 8 đoạn một lô, để chỉ so việc tách làn; cột cuối là bản cuối cùng, chuyển
+  chữ từng đoạn một (bước 6):
+
+  | | Trước: một process con | Hai process con | Hai process con, từng đoạn một |
+  |---|---|---|---|
+  | Bản ghi | 20 phút, 503 s | 20 phút, 489 s | 83 phút, 2117 s (RTF 0,42) |
+  | Câu mic cá nhân (5 s) | trung vị 289 s, lâu nhất 494 s | trung vị 0,6 s, 90% dưới 4,8 s, lâu nhất 6,8 s | trung vị 1,4 s, 90% dưới 5,9 s, lâu nhất 18 s |
+  | Mẫu giọng (25 s) | 123–482 s | 13–15 s | 12–26 s |
+  | Đỉnh process con nặng / nhẹ | 2,5 GB + 0,4 GB swap / — | 2,3 GB + 0,6 GB swap / 0,7 GB | 1,9 GB / 0,7 GB, không swap |
+
+  Lúc rảnh, một mẫu giọng mất 5,8 giây và một câu 0,3 giây. Câu chờ lâu nhất là câu đến đúng lúc làn nhẹ đang làm một
+  mẫu giọng (câu xếp hàng sau nó) hoặc đang nạp lại model sau mẫu giọng. Bản ghi 83 phút với 8 đoạn một lô cần 4,7 GB
+  khi không giới hạn RAM, và với hai process con trong 2500m thì process con nặng bị hết bộ nhớ giữa chừng; từng đoạn
+  một thì cả hai process con vừa trong 2500m. Một câu hay mẫu giọng chạy bên cạnh lấy bớt CPU của bản ghi: chạy một
+  mình, bản ghi 83 phút (8 đoạn một lô) mất 1674 s.
+- Request đến khi làn của nó đang bận sẽ **xếp hàng**, không bị từ chối.
 - **Bên gọi ngắt kết nối thì dừng.** Trong lúc chạy `/v1/transcribe`, process HTTP cứ nửa giây xem kết nối còn không;
   bên gọi đã đóng thì báo process con qua một danh sách số việc đã huỷ dùng chung, và process con dừng ở bước kế tiếp
-  (giữa hai khung giọng, hai lô câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
+  (giữa hai khung giọng, hai câu, hai đoạn văn), việc đang xếp hàng sau được chạy ngay. Backend đóng kết nối khi
   lượt mic phòng mới đến lúc bản cũ còn đang chạy. Đo trên máy dev: bên gọi ngắt ở giây thứ 6 của một bản ghi 9 phút, worker
   dừng chưa tới nửa giây sau đó, và request kế tiếp chạy ngay.
-- **Tiến độ đi theo chiều ngược lại.** Process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung mỗi khi
-  một bước báo tiến độ; process HTTP đọc cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà chưa phải việc
-  process con đang chạy là `queued`.
+- **Tiến độ đi theo chiều ngược lại.** Mỗi process con ghi (số việc, phần nghìn đã xong) vào một cặp số dùng chung của
+  riêng nó mỗi khi một bước báo tiến độ; process HTTP đọc các cặp đó khi backend hỏi `GET /v1/progress`. Việc đã nhận mà
+  chưa process con nào đang chạy là `queued`.
 - **Khởi động lại process con sau mỗi bản ghi dài.** Sau một việc không phải câu mic cá nhân (bản ghi phòng, tệp tải
   lên), khi không còn việc nào đang chạy hay chờ, process HTTP tắt process con và mở process mới. Process cũ giữ phần
   bộ nhớ của lần chạy dài (vùng nhớ của onnxruntime, âm thanh đã giải mã, các khung tách người nói) suốt đời nó. Trên
   server test ngày 23/11/2026, sau bản ghi 35 phút nó vẫn giữ 2,4 GB RAM và 1,8 GB swap khi rảnh, nên lần chạy sau
-  chậm vì phải đọc swap. Process mới chỉ giữ model; nạp model mất khoảng 6 giây, request đến trong lúc đó chờ.
+  chậm vì phải đọc swap. Process mới chỉ giữ model; nạp model mất khoảng 6 giây, request đến trong lúc đó chờ. Mỗi làn
+  khởi động lại process con của riêng nó: câu mic cá nhân không bao giờ làm process nào khởi động lại; một mẫu giọng làm
+  process con của làn nhẹ to thêm khoảng 300–400 MB nên làn nhẹ khởi động lại sau đó (khoảng 3 giây, câu đến trong lúc
+  đó chờ). Khi chỉ có một process con (`SPEECH_CLIP_PROCESS=0`), chỉ bản ghi dài làm nó khởi động lại, như trước.
 
 ## Kiểm thử
 
@@ -411,6 +450,59 @@ ngày 31/10). Người bị tách đôi dưới 0.8 vẫn hiện hai giọng; Th
 Ba đoạn tổng hợp còn sai đều là các cặp giọng nữ tiếng Anh của macOS (Samantha, Karen, Moira),
 gần như giống hệt nhau.
 
+### Từ khoá ưu tiên (hotwords)
+
+Khi giải mã, sherpa-onnx cộng điểm cho các nhánh đang đi theo một từ trong danh sách
+([`speech/hotwords.txt`](speech/hotwords.txt), `speech/hotwords.py`). Model không đổi, không tốn thêm RAM. Danh sách là
+các từ dự án nói bằng tiếng Anh: report, commit, deploy, test case, local, BR, UC, API… Gipformer viết từ mượn tiếng Anh bằng
+chữ cái tiếng Anh ("REPORT", "DATA" ra đúng như vậy) nhưng hay ra âm tiết Việt khi người nói đọc lướt ("COMM", "REPOT",
+"DEPROID"); cộng điểm kéo các chỗ đó về đúng từ. Áp dụng cho cả hai hồ sơ `room` và `clip` vì chúng dùng chung một
+bộ giải mã. `SPEECH_HOTWORDS_FILE=0` tắt hẳn.
+
+**Đo trên bản ghi mic phòng của buổi họp thử 23/11/2026** (3–4 người cùng phòng nói chuyện tự nhiên, nhiều từ IT): hai đoạn
+5 phút (phút 0–5 và 11:31–16:31), cắt bằng chính hồ sơ `room` của worker thành 87 đoạn, đáp án 1.654 từ, đo bằng
+[`eval/hotwords_wer.py`](eval/README.md#5-từ-khoá-ưu-tiên-hotwords-và-cách-giải-mã-trên-mic-phòng), giải mã từng đoạn một
+(`RECOGNISE_BATCH = 1`).
+
+Đáp án là **đáp án bạc, do máy làm rồi người sửa**, không phải bản gỡ băng nghe lại từ đầu. Whisper large-v3 (whisper.cpp
+trên Mac M1) không làm đáp án trực tiếp được: chạy cả đoạn thì lặp một câu hàng chục lần, chạy từng đoạn thì 21/87 đoạn ra
+câu chào cuối video YouTube ("Hãy subscribe cho kênh…") thay cho lời thật. Đáp án được dựng từng đoạn bằng cách đối chiếu
+Whisper, Gipformer và ngữ cảnh: khác bản Whisper 893 từ, khác bản Gipformer (chưa có từ khoá) 180 từ. Vì gần bản Gipformer
+hơn, WER tuyệt đối của Gipformer ở đây **thấp hơn thực tế**, và chỗ nào hai bản đều không nghe rõ thì đáp án giữ cách đọc
+của Gipformer không từ khoá, nên phép đo nghiêng về phía *không* dùng từ khoá. Sau khi xem các bản có từ khoá, ba chỗ
+được phân xử lại theo Whisper và ngữ cảnh (hai chỗ theo bản có từ khoá, một chỗ ngược lại).
+
+| Cấu hình | WER | CER | Từ trong danh sách ra đúng |
+|---|--:|--:|--:|
+| Gipformer, không từ khoá (trước) | 14,4 % | 12,2 % | 49/79 |
+| **Danh sách kèm theo, điểm 1.0 (chọn)** | **14,4 %** | **12,3 %** | **54/79** |
+| Danh sách kèm theo, điểm 1.5 | 14,8 % | 12,6 % | 55/79 |
+| Danh sách kèm theo, điểm 2.0 | 15,0 % | 12,9 % | |
+| Thêm 10 từ họp tiếng Việt (biên bản, dự thảo, biểu quyết…), điểm 1.0 / 1.5 / 2 / 3 | 14,9 / 15,1 / 15,4 / 16,4 % | 12,6 / 12,9 / 13,2 / 14,3 % | |
+| Chỉ 10 từ họp tiếng Việt, điểm 1.0 | 14,9 % | 12,5 % | |
+| `max_active_paths` 8 (mặc định 4), không từ khoá | 14,3 % | 12,3 % | |
+| `max_active_paths` 8 + danh sách, điểm 1.0 | 14,4 % | 12,4 % | |
+| `blank_penalty` 0.5 | 17,0 % | 14,7 % | |
+| Whisper large-v3, từng đoạn, không ngữ cảnh (chỉ để tham khảo, không triển khai được) | 53,9 % | 47,7 % | |
+
+Lô 8 đoạn như trước #512 cho 16,8 % trên cùng đáp án; `max_active_paths` 2 và `blank_penalty` 1.0 đo ở lô 8 đều tệ hơn
+(18,1 % và 20,2 %).
+
+- **Chọn danh sách kèm theo ở điểm 1.0**: WER giữ nguyên, số từ trong danh sách ra đúng tăng từ 49 lên 54 trên 79 (commit,
+  report, deploy, detect, mic, local), thêm 2 chỗ ra nhầm "BR". Điểm cao hơn được thêm một hai từ nhưng đổi cả những từ xung
+  quanh, WER tăng. Từ họp tiếng Việt thì model vốn đã nhận đúng; cộng điểm chỉ chèn thêm "chủ", "họp", "tài liệu" lạc chỗ,
+  nên không đưa vào.
+- **Giữ nguyên cách giải mã**: `max_active_paths` 8 chỉ hơn một từ, `blank_penalty` làm tệ hơn.
+- Hai từ dự án không sửa được bằng từ khoá: "voice" người nói đọc thành "voi" và "bug" thành "bấc/bức", model viết đúng
+  các âm tiết đó dù được cộng điểm bao nhiêu.
+- Tốc độ: từ khoá không làm chậm bước chuyển chữ (riêng bước này, 506 giây lời của hai đoạn, MacBook M1, 2 luồng, lấy lần nhanh nhất trong 3 lần chạy xen kẽ: RTF 0,020 không từ khoá, 0,019 có từ khoá).
+- **Lời đọc thường không bị ảnh hưởng**: tập test VIVOS (760 câu đọc, 45 phút, 7.623 từ) qua hồ sơ `clip` cho WER khoảng 4,9 % cả khi có lẫn khi không có từ khoá; chia bốn phần thì từng phần bằng nhau tới 0,1 %.
+
+Từ khoá riêng của từng cuộc họp (tên người tham dự, từ trong tên cuộc họp) chưa làm. sherpa-onnx đã cho truyền từ khoá
+theo từng luồng (`create_stream(hotwords=…)`, cộng thêm vào danh sách chung), nên phần worker chỉ là một tham số mới của
+`/v1/transcribe`; phần lớn việc nằm ở backend (gửi danh sách) và ở việc đo lại, vì tên riêng tiếng Việt là từ thường
+("Hải", "Lộc") và dễ kéo nhầm. Đáng thử sau buổi bảo vệ.
+
 ## Hiệu năng
 
 Đo trên MacBook M1 (16 GB), 4 luồng:
@@ -428,8 +520,9 @@ gần như giống hệt nhau.
 RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Bước dấu câu
 thêm khoảng 2% thời gian (cuộc họp thật 300 s: 20.7 s → 21.2 s) và khoảng 270 MB RAM, WER không đổi
 (16.1%) vì model không đổi từ nào. Với RTF
-0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 260 MB RAM. Process con giữ
-lại bộ nhớ đã dùng, nên sau vài bản ghi 10 phút liên tiếp, container giữ khoảng 2.4 GB. Docker ở
+0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 700 MB RAM (hai process con, mỗi process
+khoảng 385 MB, đo 24/11/2026; trước khi có dấu câu và làn nhẹ là 260 MB). Process con giữ lại bộ nhớ đã dùng cho
+tới khi được khởi động lại (xem [Cách chạy bên trong](#cách-chạy-bên-trong)). Docker ở
 đây chạy trong máy ảo Linux của Docker Desktop (8 CPU), chậm hơn chạy trực tiếp khoảng 3 lần.
 
 Chưa đo trên máy chủ x86.

@@ -1,6 +1,6 @@
-// FE-06 — Quản lý thành phần tham dự (QA subtask SCRUM-193): UC-27 view roster, UC-28a add / invite a guest, UC-28b
-// meeting roles, UC-28c remove / revoke, UC-29 answer the invitation, UC-30 response labels, UC-31 attendance, UC-73
-// hand the chair over. Business rules BR-79/80/82/88/105/106/115/121/122/126/170/172/176/181/182/294/295/321.
+// FE-06 — Quản lý thành phần tham dự (QA subtask SCRUM-193): UC-29 view roster, UC-30a add / invite a guest, UC-30b
+// meeting roles, UC-30c remove / revoke, UC-31 answer the invitation, UC-32 response labels, UC-33 attendance, UC-34
+// hand the chair over. Business rules BR-036–BR-038, BR-046, BR-016, BR-017, BR-040–BR-042, BR-056, BR-057, BR-055, BR-047, BR-048.
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md (FE-06), 06-business-rules.md,
 // docs/03-api/09-thanh-phan-tham-du.md, 10-diem-danh.md, the message catalogue, and the Jira comments of SCRUM-20,
@@ -128,7 +128,7 @@ async function users(qa) {
   return USERS
 }
 
-/** The account the plan locks to test UC-28b AF-1 after publication. Created once, active when returned. */
+/** The account the plan locks to test UC-30b AF-1 after publication. Created once, active when returned. */
 async function lockedChairUser(qa) {
   const admin = as(qa, 'admin')
   const list = await admin.get('/api/users')
@@ -378,7 +378,7 @@ export default {
   title: 'FE-06 Quản lý thành phần tham dự: xem, thêm, mời khách, đổi vai trò, giao Chủ toạ, gỡ, trả lời lời mời, điểm danh',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------------------------- UC-27 + UC-28a internal
+    // ------------------------------------------------------------------------------------- UC-29 + UC-30a internal
     {
       id: 'AC1',
       role: 'secretary',
@@ -430,14 +430,14 @@ export default {
           const r = await roster(qa, 'secretary', meeting.id)
           const added = rowFor(r, u.extra[1].id)
           qa.expect(added?.role, 'added as Member').toBe('Member')
-          qa.expect(added?.response, 'new invitation starts Pending (BR-88)').toBe('Pending')
+          qa.expect(added?.response, 'new invitation starts Pending (UC-30a)').toBe('Pending')
         } finally {
           await done(qa, meeting)
         }
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-28a AF-1 guest
+    // ------------------------------------------------------------------------------------------- UC-30a AF-1 guest
     {
       id: 'AC2',
       role: 'secretary',
@@ -450,7 +450,7 @@ export default {
         'Gõ tên rồi bấm Huỷ',
       ],
       expected:
-        'Cảnh báo "khách dự họp như Thành viên và đọc được tài liệu" không thêm bước xác nhận (BR-182); "Nhập tên khách." / "Nhập email hợp lệ."; toast "Đã mời khách. Thư mời sẽ được gửi tới email của khách." (MSG96), dòng mới chip Khách; email trùng báo lỗi ở ô Email, không thêm; Huỷ khi đang soạn hỏi "Bỏ lời mời đang soạn?"',
+        'Cảnh báo "khách dự họp như Thành viên và đọc được tài liệu" không thêm bước xác nhận (UC-30a); "Nhập tên khách." / "Nhập email hợp lệ."; toast "Đã mời khách. Thư mời sẽ được gửi tới email của khách." (MSG96), dòng mới chip Khách; email trùng báo lỗi ở ô Email, không thêm; Huỷ khi đang soạn hỏi "Bỏ lời mời đang soạn?"',
       async run(qa) {
         const meeting = await fresh(qa, 'mời khách mật', 'Draft', { sensitivity: 'Secret' })
         const email = `qa-fe06-khach-${rand()}@${DOMAIN}`
@@ -493,7 +493,7 @@ export default {
           const r = await roster(qa, 'secretary', meeting.id)
           const guests = r.items.filter((i) => i.kind === 'Guest')
           qa.expect(guests.length, 'exactly one guest invitation').toBe(1)
-          qa.expect(guests[0].role, 'a guest has no meeting role (BR-88/POST-3)').toBeNull()
+          qa.expect(guests[0].role, 'a guest has no meeting role (UC-30a/POST-3)').toBeNull()
           qa.expect(guests[0].response).toBe('Pending')
         } finally {
           await done(qa, meeting)
@@ -510,7 +510,7 @@ export default {
         'POST /guest-invitations email sai, email trùng người nội bộ, email trùng khách (khác hoa thường)',
       ],
       expected:
-        '400 MSG276; 409 MSG275; 400 MSG97; 400 MSG97/MSG101 (vai trò sai); Chủ toạ thứ hai 409 MSG109 (UC-28a EX-5); khách 400 MSG97; không lưu gì (revision không đổi)',
+        '400 MSG276; 409 MSG275; 400 MSG97; 400 MSG97/MSG101 (vai trò sai); Chủ toạ thứ hai 409 MSG109 (UC-30a EX-5); khách 400 MSG97; không lưu gì (revision không đổi)',
       async run(qa) {
         const u = await users(qa)
         const meeting = await fresh(qa, 'api thêm', 'Draft')
@@ -536,7 +536,7 @@ export default {
           const badRole = await api.post(`${base}/participants`, { userIds: [u.extra[1].id], role: 'chair' }, { ifMatch: now })
           c.fact('role in wrong case is refused 400', badRole.status === 400 && ['MSG97', 'MSG101'].includes(badRole.body?.code), JSON.stringify(badRole.body).slice(0, 200))
           c.check(
-            'second Chair (UC-28a EX-5)',
+            'second Chair (UC-30a EX-5)',
             await api.post(`${base}/participants`, { userIds: [u.extra[1].id], role: 'Chair' }, { ifMatch: now }),
             409,
             'MSG109',
@@ -589,7 +589,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------------- UC-28b roles
+    // ------------------------------------------------------------------------------------------------- UC-30b roles
     {
       id: 'AC4',
       role: 'secretary',
@@ -600,7 +600,7 @@ export default {
         'API: PUT assignments cùng vai trò; role "Boss"; trên cuộc họp đã công bố hạ Thư ký duy nhất xuống Thành viên',
       ],
       expected:
-        'Hộp thoại có Chủ toạ/Thư ký/Thành viên (trước công bố, BR-294), toast "Cập nhật vai trò cuộc họp thành công." (MSG100), chip Thư ký; 200 MSG154; 400 MSG101; 409 MSG109',
+        'Hộp thoại có Chủ toạ/Thư ký/Thành viên (trước công bố, BR-041, BR-042), toast "Cập nhật vai trò cuộc họp thành công." (MSG100), chip Thư ký; 200 MSG154; 400 MSG101; 409 MSG109',
       async run(qa) {
         const u = await users(qa)
         const meeting = await fresh(qa, 'đổi vai trò', 'Draft')
@@ -643,7 +643,7 @@ export default {
           c.fact('shared Published meeting has exactly one Secretary', sec.length === 1, `${sec.length}`)
           if (sec.length === 1)
             c.check(
-              'demote the last Secretary after publication (BR-122)',
+              'demote the last Secretary after publication (BR-040)',
               await api.put(`/api/meetings/${pub.id}/participants/assignments`, { changes: [{ participantId: sec[0].id, role: 'Member' }] }, { ifMatch: tag(pr.revision) }),
               409,
               'MSG109',
@@ -686,7 +686,7 @@ export default {
         'Bấm "Giao Chủ toạ", hộp xác nhận bấm Huỷ, rồi bấm lại và xác nhận',
       ],
       expected:
-        'Dòng Chủ toạ ghi "<Chủ toạ hiện tại> sẽ thành Thành viên"; hộp "Giao Chủ toạ cho Lê An?" nêu Chủ toạ cũ; Huỷ không đổi gì; xác nhận: toast MSG100, Lê An là Chủ toạ, Chủ toạ cũ là Thành viên (BR-294, UC-28b AF-1)',
+        'Dòng Chủ toạ ghi "<Chủ toạ hiện tại> sẽ thành Thành viên"; hộp "Giao Chủ toạ cho Lê An?" nêu Chủ toạ cũ; Huỷ không đổi gì; xác nhận: toast MSG100, Lê An là Chủ toạ, Chủ toạ cũ là Thành viên (BR-041, BR-042, UC-30b AF-1)',
       async run(qa) {
         const u = await users(qa)
         const meeting = await fresh(qa, 'thay chủ toạ nháp', 'Draft')
@@ -728,7 +728,7 @@ export default {
       role: 'secretary',
       title: 'Sau công bố, Thư ký không thay được Chủ toạ còn hoạt động: không có lựa chọn Chủ toạ, API 409 MSG256',
       steps: ['Cuộc họp Đã công bố: "Đổi vai trò" ở dòng Lê An', 'API: PUT assignments thay Chủ toạ có xác nhận'],
-      expected: 'Hộp thoại chỉ có Thư ký và Thành viên; dòng Chủ toạ không có nút; API 409 MSG256, Chủ toạ giữ nguyên (BR-126)',
+      expected: 'Hộp thoại chỉ có Thư ký và Thành viên; dòng Chủ toạ không có nút; API 409 MSG256, Chủ toạ giữ nguyên (BR-041, BR-042)',
       async run(qa) {
         const u = await users(qa)
         const pub = await shared(qa, 'đã công bố', 'Published')
@@ -760,12 +760,12 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------------------------------------- UC-73 hand over
+    // ---------------------------------------------------------------------------------------------- UC-34 hand over
     {
       id: 'AC7',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Chủ toạ giao vai trò Chủ toạ cho một Thành viên ngay trên dòng của người đó (UC-73)',
+      title: 'Chủ toạ giao vai trò Chủ toạ cho một Thành viên ngay trên dòng của người đó (UC-34)',
       steps: [
         'Đăng nhập chutoa@, cuộc họp Đã công bố, tab Thành phần',
         '"Đổi vai trò" ở dòng Thư ký: không có Chủ toạ',
@@ -781,7 +781,7 @@ export default {
           await press(qa, rowOf(qa, u.secretary.name).getByRole('button', { name: `Đổi vai trò của ${u.secretary.name}` }))
           const d = dialog(qa, 'Đổi vai trò')
           await qa.expect(d.getByRole('radio', { name: 'Thành viên' })).toBeVisible()
-          await qa.expect(d.getByRole('radio', { name: 'Chủ toạ' }), 'the Secretary cannot take the chair (BR-295)').toHaveCount(0)
+          await qa.expect(d.getByRole('radio', { name: 'Chủ toạ' }), 'the Secretary cannot take the chair (BR-041, BR-042)').toHaveCount(0)
           await press(qa, d.getByRole('button', { name: 'Huỷ' }))
           await press(qa, rowOf(qa, u.member.name).getByRole('button', { name: `Đổi vai trò của ${u.member.name}` }))
           await press(qa, d.getByRole('radio', { name: 'Chủ toạ' }))
@@ -902,7 +902,7 @@ export default {
     {
       id: 'AC9',
       role: 'secretary',
-      title: 'Sau công bố, Thư ký thay Chủ toạ có tài khoản bị khoá (UC-28b AF-1, BR-126 ngoại lệ)',
+      title: 'Sau công bố, Thư ký thay Chủ toạ có tài khoản bị khoá (UC-30b AF-1, BR-041, BR-042 ngoại lệ)',
       steps: [
         'Cuộc họp Đã công bố do một tài khoản QA làm Chủ toạ; quản trị khoá tài khoản đó',
         'Thư ký: "Đổi vai trò" ở dòng Lê An, chọn Chủ toạ, Giao Chủ toạ, xác nhận',
@@ -940,7 +940,7 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------------------------------------- UC-28c remove
+    // ---------------------------------------------------------------------------------------------- UC-30c remove
     {
       id: 'AC10',
       role: 'secretary',
@@ -998,7 +998,7 @@ export default {
         'Cuộc họp Đã công bố: DELETE Thư ký duy nhất; DELETE Lê An rồi Lê An mở cuộc họp',
         'Cuộc họp Nháp: DELETE Thư ký duy nhất',
       ],
-      expected: '409 MSG109; 404; 409 MSG275; 409 MSG109; 200 MSG103 rồi Lê An nhận 404 (chi tiết và thành phần); Nháp 200 MSG103 (BR-122)',
+      expected: '409 MSG109; 404; 409 MSG275; 409 MSG109; 200 MSG103 rồi Lê An nhận 404 (chi tiết và thành phần); Nháp 200 MSG103 (BR-040)',
       async run(qa) {
         const u = await users(qa)
         const draft = await fresh(qa, 'api gỡ nháp', 'Draft')
@@ -1047,7 +1047,7 @@ export default {
       },
     },
 
-    // -------------------------------------------------------------------------------------------- statuses (BR-80)
+    // -------------------------------------------------------------------------------------------- statuses (BR-036, BR-037)
     {
       id: 'AC12',
       role: 'secretary',
@@ -1110,7 +1110,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------- read-only roles (UC-27)
+    // ------------------------------------------------------------------------------------- read-only roles (UC-29)
     {
       id: 'AC13',
       role: 'member',
@@ -1172,7 +1172,7 @@ export default {
         'API: Thư ký POST /participants; quantri@ đọc thành phần cuộc họp của người khác',
         'thanhvien@ đọc thành phần cuộc họp Chờ duyệt; không token đọc thành phần; quantri@ mở họp người khác',
       ],
-      expected: 'Bảng hiện, không có nút quản lý; 403 MSG85 (BR-79); 404 rỗng (BR-121); 404; 401',
+      expected: 'Bảng hiện, không có nút quản lý; 403 MSG85 (BR-036, BR-037); 404 rỗng (BR-016, BR-017); 404; 401',
       async run(qa) {
         const u = await users(qa)
         // Công bố đòi Thư ký trong thành phần (409 MSG137) nên họp tổ chức-ngoài chỉ tới Đã duyệt.
@@ -1210,7 +1210,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------ UC-29 / UC-30 RSVP
+    // ------------------------------------------------------------------------------------------ UC-31 / UC-32 RSVP
     {
       id: 'AC15',
       role: 'member',
@@ -1271,7 +1271,7 @@ export default {
         'API: lịch (excludeDeclined=true) và danh sách cuộc họp; mở lại chi tiết',
       ],
       expected:
-        'Hộp "Không tham dự cuộc họp?" — "Bạn chỉ trả lời được một lần, sau đó không đổi được. Cuộc họp sẽ không còn hiện trên lịch của bạn."; Quay lại: vẫn còn câu hỏi, chưa ghi; xác nhận: toast MSG105 + "Cuộc họp không còn hiện trên lịch của bạn.", chip "Không tham dự"; lịch không có cuộc họp, danh sách vẫn có, chi tiết vẫn mở (BR-321)',
+        'Hộp "Không tham dự cuộc họp?" — "Bạn chỉ trả lời được một lần, sau đó không đổi được. Cuộc họp sẽ không còn hiện trên lịch của bạn."; Quay lại: vẫn còn câu hỏi, chưa ghi; xác nhận: toast MSG105 + "Cuộc họp không còn hiện trên lịch của bạn.", chip "Không tham dự"; lịch không có cuộc họp, danh sách vẫn có, chi tiết vẫn mở (BR-047, BR-048)',
       async run(qa) {
         const meeting = await fresh(qa, 'từ chối lời mời', 'Published')
         try {
@@ -1340,7 +1340,7 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------------------------------------- UC-31 attendance
+    // ---------------------------------------------------------------------------------------------- UC-33 attendance
     {
       id: 'AC18',
       role: 'secretary',
@@ -1474,7 +1474,7 @@ export default {
         'Thư ký mời khách vào cuộc họp Đã công bố',
         'Khách mở link trong thư, nhập OTP, mở trang cuộc họp của Khách',
       ],
-      expected: 'Danh sách có tên và vai trò, chỉ email của chính khách; tìm theo tên; "Bạn có tham dự cuộc họp này?" trả lời được một lần (BR-176, UC-29)',
+      expected: 'Danh sách có tên và vai trò, chỉ email của chính khách; tìm theo tên; "Bạn có tham dự cuộc họp này?" trả lời được một lần (BR-016, BR-017, UC-31)',
       async run(qa) {
         qa.inconclusive(
           'Cần một hộp thư thật nhận link mời và mã OTP (UC-04), không làm được trên máy local mà không gửi thư ra ngoài. Người kiểm: mời một địa chỉ khách thật trên server test, mở link, nhập OTP, kiểm tab Thành phần (chỉ thấy email của mình, ô tìm "Tìm theo tên") và trả lời Tham dự / Không tham dự.',

@@ -412,7 +412,7 @@ public class DatabaseModelTests
     {
         using var db = NewContext();
 
-        // BR-285 / ADR-0014: a link to an agenda item would invite screens and minutes to group
+        // BR-086, BR-087 / ADR-0014: a link to an agenda item would invite screens and minutes to group
         // votes under items, which the PO ruled out.
         Assert.DoesNotContain(
             db.Model.FindEntityType(typeof(VotingSession))!.GetForeignKeys(),
@@ -424,7 +424,7 @@ public class DatabaseModelTests
     {
         using var db = NewContext();
 
-        // BR-266, enforced by the database so two simultaneous Open requests cannot both succeed.
+        // BR-090, enforced by the database so two simultaneous Open requests cannot both succeed.
         Assert.Contains(
             db.Model.FindEntityType(typeof(VotingSession))!.GetIndexes(),
             i => i.IsUnique
@@ -593,7 +593,7 @@ public class DatabaseModelTests
         using var db = NewContext();
         var entity = db.Model.FindEntityType(typeof(CalendarShare))!;
 
-        // BR-423: unique on (owner, viewer) — directed — but only among Pending and Effective rows, so the history of
+        // BR-142, BR-143: unique on (owner, viewer) — directed — but only among Pending and Effective rows, so the history of
         // declined, withdrawn, ended and stopped shares never blocks a new one.
         var index = Assert.Single(entity.GetIndexes(), i => i.IsUnique);
         Assert.Equal(["OwnerId", "ViewerId"], index.Properties.Select(p => p.Name));

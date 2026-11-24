@@ -3,8 +3,8 @@ using TrustCabinet.Application.Reports;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// SCRUM-38 — the meeting report (UC-70a) and its Excel export (UC-70b). Open to every signed-in, active internal user
-/// with no capability (BR-432): the figures count only the meetings the caller may read, so the report shows nobody more
+/// SCRUM-38 — the meeting report (UC-79a) and its Excel export (UC-79b). Open to every signed-in, active internal user
+/// with no capability (BR-149, BR-150): the figures count only the meetings the caller may read, so the report shows nobody more
 /// than the meeting list already does.
 /// </summary>
 public static class ReportEndpoints

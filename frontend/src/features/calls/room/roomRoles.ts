@@ -10,8 +10,8 @@ const ROSTER_PAGE = 100
 
 /**
  * Who holds which meeting role now, by LiveKit identity (the user id). The role in a participant's
- * metadata is fixed when they join, so a Chair handed over during the call (UC-73) kept the tag and
- * the mute button until a reload (BR-328). The roster is read again on every `participantsChanged`;
+ * metadata is fixed when they join, so a Chair handed over during the call (UC-34) kept the tag and
+ * the mute button until a reload (UC-43). The roster is read again on every `participantsChanged`;
  * until it arrives, or if it cannot be read, the metadata stands in.
  */
 export function useRoomRoles(meetingId: string) {

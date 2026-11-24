@@ -42,14 +42,14 @@ public interface IVoteRepository
     Task<bool> IsEligibleAsync(Guid voteId, VoteViewer viewer, CancellationToken ct);
     Task<bool> HasVotedAsync(Guid voteId, VoteViewer viewer, CancellationToken ct);
 
-    /// <summary>The meeting's votes oldest first; drafts only for the Chair and Secretary (BR-253).</summary>
+    /// <summary>The meeting's votes oldest first; drafts only for the Chair and Secretary (BR-086, BR-087).</summary>
     Task<IReadOnlyList<VoteRow>> ListAsync(Guid meetingId, bool includeDrafts, VoteViewer viewer, CancellationToken ct);
 
     Task<VoteRow?> FindAsync(Guid meetingId, Guid voteId, VoteViewer viewer, CancellationToken ct);
 
     /// <summary>
     /// The vote's documents still in the meeting, oldest attached first, with when <paramref name="viewer"/> confirmed
-    /// reading each. One removed from the meeting no longer shows or counts (BR-292).
+    /// reading each. One removed from the meeting no longer shows or counts (UC-65).
     /// </summary>
     Task<IReadOnlyList<VoteDocumentView>> DocumentsAsync(Guid voteId, VoteViewer viewer, CancellationToken ct);
 
@@ -57,7 +57,7 @@ public interface IVoteRepository
 
     /// <summary>
     /// Whether the meeting document is in the meeting and attached to a vote the reader may see: any vote for the
-    /// Chair and the Secretary, an Open or Closed one for everyone else, since a draft is theirs alone (BR-253).
+    /// Chair and the Secretary, an Open or Closed one for everyone else, since a draft is theirs alone (BR-086, BR-087).
     /// </summary>
     Task<bool> IsVisibleVoteDocumentAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts, CancellationToken ct);
 
@@ -73,13 +73,13 @@ public interface IVoteRepository
 
     /// <summary>
     /// Counts a ballot for <paramref name="optionId"/>, every option of the vote rewritten in one statement so a
-    /// secret choice is not given away (BR-259). Runs immediately, not staged; returns the rows updated.
+    /// secret choice is not given away (BR-096, BR-097). Runs immediately, not staged; returns the rows updated.
     /// </summary>
     Task<int> CountBallotAsync(Guid voteId, Guid optionId, CancellationToken ct);
 
     /// <summary>
-    /// The tally, read from each option's counter. Only a public vote lists who chose what (BR-273); a secret one
-    /// stored nothing that could (BR-259).
+    /// The tally, read from each option's counter. Only a public vote lists who chose what (BR-096, BR-097); a secret one
+    /// stored nothing that could (BR-096, BR-097).
     /// </summary>
     Task<VoteResult> ResultAsync(Guid meetingId, Guid voteId, bool isAnonymous, CancellationToken ct);
 

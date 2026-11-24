@@ -12,7 +12,7 @@ using AuditLogCriteria = TrustCabinet.Application.Audit.AuditLogQuery;
 namespace TrustCabinet.Infrastructure.Audit;
 
 /// <summary>
-/// The audit log reads of UC-13. Raw SQL because the Guest test and the keyword read the jsonb column, and because each
+/// The audit log reads of UC-12. Raw SQL because the Guest test and the keyword read the jsonb column, and because each
 /// row's object is named by one SQL expression that both the list and the keyword search read.
 /// </summary>
 internal sealed class AuditLogQuery(TrustCabinetDbContext db) : IAuditLogQuery
@@ -36,7 +36,7 @@ internal sealed class AuditLogQuery(TrustCabinetDbContext db) : IAuditLogQuery
         new[] { 8, 4, 4, 4, 12 }.Select(n => string.Concat(Enumerable.Repeat("[0-9a-f]", n)))) + "$";
 
     /// <summary>
-    /// The object's name, per row (BR-442; PO 19/11/2026). The live row first, so a renamed meeting reads as it is now;
+    /// The object's name, per row (UC-12; PO 19/11/2026). The live row first, so a renamed meeting reads as it is now;
     /// then what the entry itself recorded, so a deleted role or vote draft keeps the name it had; then, for what lives
     /// inside a meeting and is gone (a discarded take, a deleted sentence), the meeting's title. One correlated lookup per
     /// row: a page is at most 100 rows, and the keyword search reads the same expression.
@@ -144,7 +144,7 @@ internal sealed class AuditLogQuery(TrustCabinetDbContext db) : IAuditLogQuery
 
     private sealed record ObjectNameRow(Guid Id, string? Name, bool Secret);
 
-    /// <summary>Every criterion must hold (BR-31).</summary>
+    /// <summary>Every criterion must hold.</summary>
     private IQueryable<AuditLogEntry> Filtered(AuditLogCriteria query)
     {
         var sql = new StringBuilder("SELECT a.* FROM audit_log a WHERE TRUE");
@@ -162,7 +162,7 @@ internal sealed class AuditLogQuery(TrustCabinetDbContext db) : IAuditLogQuery
         if (query.ActorUserId is { } actor) Where("a.actor_id = @actor", "actor", actor, NpgsqlDbType.Uuid);
         if (query.ActorKind == AuditActorKind.Guest) sql.Append($" AND a.actor_id IS NULL AND {GuestInvitationSql} IS NOT NULL");
         if (query.ActorKind == AuditActorKind.System) sql.Append($" AND a.actor_id IS NULL AND {GuestInvitationSql} IS NULL");
-        // The object (BR-442): its id and the name the list shows. Then the recorded values, at any depth: a key name
+        // The object (UC-12): its id and the name the list shows. Then the recorded values, at any depth: a key name
         // or a null never matches, so "reason" does not return every row that has a reason field. Nothing of a Mật
         // meeting matches by name: neither its object name nor the names its entry recorded.
         // ponytail: walks every row's details in the period; add a generated text column with a trigram index if the

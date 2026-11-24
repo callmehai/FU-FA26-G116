@@ -9,7 +9,7 @@ import type { MinutesState } from '../../types/summary'
 const REASON_MAX = 2000
 
 /**
- * UC-65: the Chair sends the minutes waiting for approval back to the Secretary, saying what to fix. What was typed stays
+ * UC-74: the Chair sends the minutes waiting for approval back to the Secretary, saying what to fix. What was typed stays
  * in the dialog when the request fails — a lost reason would have to be written again. A conflict (someone acted on the
  * minutes meanwhile) closes it and lets the card reload.
  */

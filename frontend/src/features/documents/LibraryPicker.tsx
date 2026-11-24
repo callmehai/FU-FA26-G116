@@ -9,7 +9,7 @@ import { FileTypeTag } from './DocumentTags'
 import { childrenOf, LIBRARY_ROOT, trailOf } from './libraryTree'
 
 /**
- * Choosing documents from one's own library (UC-33a, UC-33b AF-2): one folder at a time, as the library page
+ * Choosing documents from one's own library (UC-36a, UC-36b AF-2): one folder at a time, as the library page
  * reads, with a checkbox per document. The choice survives moving between folders. `reloadKey` re-reads the
  * place after the server said a chosen document is gone (MSG249) or already in the meeting (MSG165).
  * `meetingId` locks the documents already in that meeting (SCRUM-124), for the general group, where adding one

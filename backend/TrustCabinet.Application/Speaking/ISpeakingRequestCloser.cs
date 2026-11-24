@@ -1,7 +1,7 @@
 namespace TrustCabinet.Application.Speaking;
 
 /// <summary>
-/// Closes the open speaking requests of people who are no longer there (BR-337). Runs inside the caller's
+/// Closes the open speaking requests of people who are no longer there (BR-104–BR-106). Runs inside the caller's
 /// transaction; the caller saves. Implemented by the speaking request repository since CA-13 (SCRUM-178), so the
 /// Participants module needs no more of the Speaking module than this.
 /// </summary>

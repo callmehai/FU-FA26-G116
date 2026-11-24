@@ -6,25 +6,25 @@ public enum VoteFailure
     DraftDenied, OpenDenied, AnotherOpen, NoEligibleVoters,
     OptionMissing, OptionUnavailable, NotEligible, NotAccepting, AlreadyCast,
     CloseDenied, ConclusionInvalid, ConclusionRecorded, ConclusionDenied,
-    /// <summary>A vote document still in the meeting has no read confirmation from the voter (BR-289, BR-292).</summary>
+    /// <summary>A vote document still in the meeting has no read confirmation from the voter (BR-094, BR-095, UC-65).</summary>
     DocumentsUnread,
     /// <summary>A selected meeting document was removed or belongs to another meeting, or none was selected.</summary>
     DocumentNotInMeeting,
-    /// <summary>A selected meeting document is already attached to the vote (BR-287).</summary>
+    /// <summary>A selected meeting document is already attached to the vote (UC-68a).</summary>
     DocumentAlreadyAttached,
     /// <summary>The document is no longer attached to the vote, or no longer in the meeting.</summary>
     DocumentNotAttached,
-    /// <summary>An uploaded file is not a valid PDF or DOCX of at most 10 MB (BR-187, BR-214, BR-215).</summary>
+    /// <summary>An uploaded file is not a valid PDF or DOCX of at most 10 MB (BR-069, UC-36a, UC-39, NFR).</summary>
     FilesInvalid,
-    /// <summary>More files, or more bytes, than one upload takes (BR-319).</summary>
+    /// <summary>More files, or more bytes, than one upload takes (UC-36a, UC-36b, UC-39).</summary>
     FilesTooMany,
     /// <summary>The files do not fit the system's storage limit (ADR-0034).</summary>
     StorageFull,
-    /// <summary>A selected library document is missing or not the actor's (BR-209).</summary>
+    /// <summary>A selected library document is missing or not the actor's (BR-072, BR-073).</summary>
     LibraryUnavailable,
-    /// <summary>UC-74: the meeting, or the document as a vote document, is not available to the caller.</summary>
+    /// <summary>UC-42: the meeting, or the document as a vote document, is not available to the caller.</summary>
     DocumentUnavailable,
-    /// <summary>UC-74: the reader has not reached the document's last page (BR-290).</summary>
+    /// <summary>UC-42: the reader has not reached the document's last page (UC-42).</summary>
     LastPageNotReached
 }
 

@@ -3,8 +3,8 @@ using TrustCabinet.Application.Summaries;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// SCRUM-32 — the draft minutes (UC-58 to UC-60): read, build from the meeting's records, edit, export to Word or PDF.
-/// SCRUM-33 — submit (UC-61), approve and issue (UC-64), return (UC-65), correct (UC-83), and read one revision.
+/// SCRUM-32 — the draft minutes (UC-69 to UC-71): read, build from the meeting's records, edit, export to Word or PDF.
+/// SCRUM-33 — submit (UC-72), approve and issue (UC-73), return (UC-74), correct (UC-75), and read one revision.
 /// </summary>
 public static class MinutesEndpoints
 {

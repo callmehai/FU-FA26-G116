@@ -1,8 +1,8 @@
-// FE-03 — Kiểm soát truy cập theo vai trò (QA subtask SCRUM-190): UC-10 xem ma trận, UC-11 cấu hình quyền, UC-12a/b/c
-// tạo / sửa / xoá vai trò, UC-13 nhật ký hệ thống, plus the server-side rules of docs/03-api/04-phan-quyen-phia-server.md
+// FE-03 — Kiểm soát truy cập theo vai trò (QA subtask SCRUM-190): UC-09 xem ma trận, UC-10 cấu hình quyền, UC-11a/b/c
+// tạo / sửa / xoá vai trò, UC-12 nhật ký hệ thống, plus the server-side rules of docs/03-api/04-phan-quyen-phia-server.md
 // (401 signed out, 403 on a fixed endpoint, 404 for an unknown id and for a restricted UI route).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-10..UC-13), BR-16/23/313/440-443, the API
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-09..UC-12), BR-009, BR-007, BR-008/440-443, the API
 // docs 03-ma-tran-phan-quyen.md, 04-quan-ly-vai-tro.md, 21-nhat-ky-kiem-toan.md and the message catalogue.
 //
 // Safe on the shared local app: it never changes a built-in role, the "All-in-one" role or a seed account. Every role it
@@ -56,7 +56,7 @@ async function matrixRow(api, id) {
   return res.body.roles.find((r) => r.id === id)
 }
 
-/** Audit entries whose object name or details match `text` (BR-442 keyword), newest first. */
+/** Audit entries whose object name or details match `text` (UC-12 keyword), newest first. */
 async function audit(qa, api, text, action) {
   const params = new URLSearchParams({ q: text, pageSize: '50' })
   if (action) params.set('action', action)
@@ -145,12 +145,12 @@ export default {
   title: 'Kiểm soát truy cập theo vai trò: vai trò, ma trận quyền, nhật ký hệ thống, phân quyền phía server',
   devices: ['desktop'],
   criteria: [
-    // ---------------------------------------------------------------- UC-10
+    // ---------------------------------------------------------------- UC-09
     {
       id: 'AC1',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Quản trị mở Vai trò: danh sách vai trò kèm số tài khoản, mô tả và chip "Vai trò của bạn"; ma trận vai trò × quyền khớp dữ liệu; điện thoại hiện thẻ công tắc (UC-10, RBAC_FT13, RBAC_FT14)',
+      title: 'Quản trị mở Vai trò: danh sách vai trò kèm số tài khoản, mô tả và chip "Vai trò của bạn"; ma trận vai trò × quyền khớp dữ liệu; điện thoại hiện thẻ công tắc (UC-09, RBAC_FT13, RBAC_FT14)',
       steps: [
         'Đăng nhập quantri@ (có AdminUsers)',
         'Mở Quản trị › Vai trò',
@@ -242,7 +242,7 @@ export default {
     {
       id: 'AC2',
       role: 'admin',
-      title: 'Không tải được ma trận: báo lỗi tiếng Việt và có Thử lại, thử lại thì hiện ma trận (UC-10 E1)',
+      title: 'Không tải được ma trận: báo lỗi tiếng Việt và có Thử lại, thử lại thì hiện ma trận (UC-09 E1)',
       steps: ['Mở Vai trò khi GET /api/roles/capabilities trả 500 (giả lập)', 'Bấm Thử lại khi máy chủ đã trả lời bình thường'],
       expected: 'Thông báo lỗi tiếng Việt, không hiện mã thô, nút "Thử lại"; bấm Thử lại thì danh sách vai trò hiện ra',
       async run(qa) {
@@ -262,12 +262,12 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------- UC-12a
+    // ---------------------------------------------------------------- UC-11a
     {
       id: 'AC3',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tạo vai trò có tên, mô tả và một quyền: báo thành công, hiện trong danh sách (0 tài khoản) và ma trận, ghi nhật ký (UC-12a)',
+      title: 'Tạo vai trò có tên, mô tả và một quyền: báo thành công, hiện trong danh sách (0 tài khoản) và ma trận, ghi nhật ký (UC-11a)',
       steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Thu giọng mẫu hộ"', 'Bấm Tạo vai trò'],
       expected:
         'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Thu giọng mẫu hộ"; nhật ký có "role.created" kèm quyền',
@@ -328,7 +328,7 @@ export default {
     {
       id: 'AC4',
       role: 'admin',
-      title: 'Tạo vai trò không chọn quyền: được chấp nhận, dòng ma trận trống (UC-12a AF-1)',
+      title: 'Tạo vai trò không chọn quyền: được chấp nhận, dòng ma trận trống (UC-11a AF-1)',
       steps: ['POST /api/roles chỉ có tên', 'Mở ma trận'],
       expected: '201 MSG19, quyền = []; dòng của vai trò trong ma trận không có ô nào được tick',
       async run(qa) {
@@ -354,7 +354,7 @@ export default {
     {
       id: 'AC5',
       role: 'admin',
-      title: 'Thông tin vai trò sai: tên trống/dài quá và mô tả dài quá bị chặn ở form; tên > 64, mô tả > 256, quyền lạ bị từ chối cùng lúc; tên đúng 64 ký tự được nhận (UC-12a EX-1, RBAC_FT16)',
+      title: 'Thông tin vai trò sai: tên trống/dài quá và mô tả dài quá bị chặn ở form; tên > 64, mô tả > 256, quyền lạ bị từ chối cùng lúc; tên đúng 64 ký tự được nhận (UC-11a EX-1, RBAC_FT16)',
       steps: [
         'Form Tạo vai trò: để trống tên, bấm Tạo vai trò',
         'Form Tạo vai trò: tên 65 ký tự, mô tả 257 ký tự, bấm Tạo vai trò',
@@ -417,7 +417,7 @@ export default {
     {
       id: 'AC6',
       role: 'admin',
-      title: 'Trùng tên vai trò (không phân biệt hoa/thường, kể cả vai trò mặc định): báo MSG21 dưới ô tên, không tạo (UC-12a EX-2)',
+      title: 'Trùng tên vai trò (không phân biệt hoa/thường, kể cả vai trò mặc định): báo MSG21 dưới ô tên, không tạo (UC-11a EX-2)',
       steps: ['Form Tạo vai trò: tên "thư ký"', 'POST /api/roles với tên một vai trò [QA] viết HOA'],
       expected:
         'Ô Tên vai trò báo "Đã có vai trò dùng tên này. Hãy đặt một tên khác.", form vẫn mở; API 409 MSG21; không có vai trò mới',
@@ -448,11 +448,11 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------- UC-12b
+    // ---------------------------------------------------------------- UC-11b
     {
       id: 'AC7',
       role: 'admin',
-      title: 'Sửa vai trò tự tạo: form điền sẵn, đổi tên và mô tả, báo thành công, nhật ký có trước/sau, quyền giữ nguyên (UC-12b)',
+      title: 'Sửa vai trò tự tạo: form điền sẵn, đổi tên và mô tả, báo thành công, nhật ký có trước/sau, quyền giữ nguyên (UC-11b)',
       steps: ['Bấm Sửa trên vai trò [QA]', 'Đổi tên và mô tả', 'Bấm Lưu thay đổi'],
       expected:
         'Form điền sẵn tên/mô tả hiện tại; toast "Cập nhật vai trò thành công." (MSG22); danh sách hiện tên mới; quyền không đổi; nhật ký role.updated có Before/After',
@@ -493,7 +493,7 @@ export default {
     {
       id: 'AC8',
       role: 'admin',
-      title: 'Sửa vai trò: chỉ đổi hoa/thường được nhận; không đổi gì vẫn báo thành công mà không ghi nhật ký; trùng tên khác MSG21; tên trống MSG20; id lạ 404 (UC-12b AF-1, EX-2, EX-3)',
+      title: 'Sửa vai trò: chỉ đổi hoa/thường được nhận; không đổi gì vẫn báo thành công mà không ghi nhật ký; trùng tên khác MSG21; tên trống MSG20; id lạ 404 (UC-11b AF-1, EX-2, EX-3)',
       steps: [
         'PUT /api/roles/{id} cùng tên, cùng mô tả',
         'PUT tên viết HOA của chính nó',
@@ -552,7 +552,7 @@ export default {
     {
       id: 'AC9',
       role: 'admin',
-      title: 'Vai trò mặc định: có nhãn Mặc định, không có nút Sửa/Xoá; API từ chối đổi tên và xoá bằng MSG24; quyền của nó vẫn cấu hình được (UC-12b EX-1, UC-12c EX-1)',
+      title: 'Vai trò mặc định: có nhãn Mặc định, không có nút Sửa/Xoá; API từ chối đổi tên và xoá bằng MSG24; quyền của nó vẫn cấu hình được (UC-11b EX-1, UC-11c EX-1)',
       steps: [
         'Mở Vai trò, xem 4 vai trò mặc định',
         'PUT /api/roles/{Thư ký} (gửi đúng tên, mô tả hiện tại)',
@@ -588,12 +588,12 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------- UC-12c
+    // ---------------------------------------------------------------- UC-11c
     {
       id: 'AC10',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Xoá vai trò không ai mang: hỏi xác nhận, Huỷ thì giữ nguyên, xác nhận thì xoá, báo thành công, nhật ký role.deleted (UC-12c, AF-1)',
+      title: 'Xoá vai trò không ai mang: hỏi xác nhận, Huỷ thì giữ nguyên, xác nhận thì xoá, báo thành công, nhật ký role.deleted (UC-11c, AF-1)',
       steps: ['Bấm Xoá trên vai trò [QA] 0 tài khoản', 'Bấm Huỷ', 'Bấm Xoá lại, bấm Xoá vai trò'],
       expected:
         'Hộp xác nhận nêu tên vai trò; Huỷ: vai trò còn nguyên; xác nhận: toast "Xoá vai trò thành công." (MSG23), dòng biến mất khỏi danh sách và ma trận; nhật ký role.deleted có tên và quyền',
@@ -634,7 +634,7 @@ export default {
     {
       id: 'AC11',
       role: 'admin',
-      title: 'Không xoá được vai trò còn tài khoản mang, kể cả tài khoản đã vô hiệu hoá: hộp xác nhận nêu số tài khoản, API 409 MSG25 (UC-12c EX-2)',
+      title: 'Không xoá được vai trò còn tài khoản mang, kể cả tài khoản đã vô hiệu hoá: hộp xác nhận nêu số tài khoản, API 409 MSG25 (UC-11c EX-2)',
       steps: [
         'Gán tài khoản thử qa-fe03@ vào vai trò [QA] rồi vô hiệu hoá tài khoản đó',
         'Bấm Xoá trên vai trò',
@@ -670,12 +670,12 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------- UC-11
+    // ---------------------------------------------------------------- UC-10
     {
       id: 'AC12',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Cấu hình quyền trên ma trận: tick một ô hiện Lưu/Hoàn tác, Hoàn tác không lưu gì, Lưu báo thành công và ghi nhật ký trước/sau; hai dòng lưu độc lập (UC-11, RBAC_FT05)',
+      title: 'Cấu hình quyền trên ma trận: tick một ô hiện Lưu/Hoàn tác, Hoàn tác không lưu gì, Lưu báo thành công và ghi nhật ký trước/sau; hai dòng lưu độc lập (UC-10, RBAC_FT05)',
       steps: [
         'Mở tab Ma trận phân quyền',
         'Tick "Phê duyệt cuộc họp" ở vai trò [QA], bấm Hoàn tác',
@@ -750,7 +750,7 @@ export default {
     {
       id: 'AC13',
       role: 'admin',
-      title: 'Cấu hình quyền sai bị từ chối, không lưu: mã quyền lạ, vai trò lạ (MSG17); gửi đúng bộ quyền đang có thì MSG16 mà không ghi nhật ký (UC-11 EX-1, BR-23)',
+      title: 'Cấu hình quyền sai bị từ chối, không lưu: mã quyền lạ, vai trò lạ (MSG17); gửi đúng bộ quyền đang có thì MSG16 mà không ghi nhật ký (UC-10 EX-1, BR-007)',
       steps: [
         'PUT /api/roles/capabilities với "DeleteEverything"',
         'PUT với roleId không tồn tại',
@@ -787,7 +787,7 @@ export default {
     {
       id: 'AC14',
       role: 'admin',
-      title: 'Chống tự khoá: gỡ quyền quản trị người dùng của mọi vai trò bị cảnh báo trên ma trận và bị server từ chối (UC-11 EX-1, ADR-0007)',
+      title: 'Chống tự khoá: gỡ quyền quản trị người dùng của mọi vai trò bị cảnh báo trên ma trận và bị server từ chối (UC-10 EX-1, ADR-0007)',
       steps: [
         'Ma trận: bỏ tick "Quản trị người dùng" ở mọi vai trò đang có (chỉ nháp, không bấm Lưu)',
         'Bấm Hoàn tác',
@@ -818,7 +818,7 @@ export default {
     {
       id: 'AC15',
       role: 'anon',
-      title: 'Đổi quyền của vai trò áp dụng ngay cho người đang đăng nhập, không phải đăng nhập lại; vai trò không quyền vào như Thành viên (UC-11 bước 6, BR-313, UC-12a AF-1)',
+      title: 'Đổi quyền của vai trò áp dụng ngay cho người đang đăng nhập, không phải đăng nhập lại; vai trò không quyền vào như Thành viên (UC-10 bước 6, BR-008, UC-11a AF-1)',
       steps: [
         'Tài khoản thử qa-fe03@ mang vai trò [QA] không quyền, đăng nhập trong trình duyệt',
         'Quản trị cấp "Quản trị người dùng" cho vai trò đó',
@@ -970,12 +970,12 @@ export default {
       },
     })),
 
-    // ---------------------------------------------------------------- UC-13
+    // ---------------------------------------------------------------- UC-12
     {
       id: 'AC19',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Nhật ký hệ thống: tìm theo tên vai trò thấy các việc vừa làm, mới nhất trước, đủ thời điểm/người/sự kiện/đối tượng/IP; mở chi tiết chỉ đọc (UC-13, AF-1, AF-2)',
+      title: 'Nhật ký hệ thống: tìm theo tên vai trò thấy các việc vừa làm, mới nhất trước, đủ thời điểm/người/sự kiện/đối tượng/IP; mở chi tiết chỉ đọc (UC-12, AF-1, AF-2)',
       steps: [
         'Tạo rồi đổi tên một vai trò [QA] (API)',
         'Mở Quản trị › Nhật ký hệ thống, tìm theo tên mới',
@@ -1032,7 +1032,7 @@ export default {
     {
       id: 'AC20',
       role: 'admin',
-      title: 'Nhật ký: không có kết quả thì báo rõ; khoảng ngày ngược bị báo và không áp dụng; API từ chối bộ lọc sai bằng MSG469; không có cách sửa/xoá dòng nhật ký (UC-13 AF-3, EX-1, BR-440)',
+      title: 'Nhật ký: không có kết quả thì báo rõ; khoảng ngày ngược bị báo và không áp dụng; API từ chối bộ lọc sai bằng MSG469; không có cách sửa/xoá dòng nhật ký (UC-12 AF-3, EX-1, BR-012)',
       steps: [
         'Tìm "[QA] không-có-gì-khớp-…"',
         'Mở nhật ký với từ ngày 20/11/2026, đến ngày 10/11/2026',
@@ -1053,7 +1053,7 @@ export default {
         await qa.shot('xoa-bo-loc-thanh-cong')
 
         await qa.goto(`${AUDIT_PATH}?from=2026-11-20&to=2026-11-10`)
-        // A hand-edited link reaches the server: UC-13 EX-1 — no entry retrieved, the filter is reported invalid.
+        // A hand-edited link reaches the server: UC-12 EX-1 — no entry retrieved, the filter is reported invalid.
         await qa.expect(qa.page.getByText('Ngày bắt đầu không được sau ngày kết thúc.')).toBeVisible()
         await qa.expect(qa.page.getByText('Bộ lọc trên đường dẫn không hợp lệ.')).toBeVisible()
         await qa.expect(qa.page.locator('tbody tr.row-link')).toHaveCount(0)

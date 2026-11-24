@@ -1,10 +1,10 @@
-// FE-11 — Biểu quyết (QA subtask SCRUM-198): UC-52a/52b view votes and a vote's status, UC-53 create / edit / delete a
-// draft, UC-54 open (from the card and from the form), UC-55 cast, UC-56 close, UC-57 record the conclusion, UC-76a/76b
-// attach / detach vote documents and the read gate of UC-74 (MSG252), plus the rules the PO settled in Jira SCRUM-28 /
+// FE-11 — Biểu quyết (QA subtask SCRUM-198): UC-62a, UC-62b view votes and a vote's status, UC-63 create / edit / delete a
+// draft, UC-64 open (from the card and from the form), UC-65 cast, UC-66 close, UC-67 record the conclusion, UC-68a, UC-68b
+// attach / detach vote documents and the read gate of UC-42 (MSG252), plus the rules the PO settled in Jira SCRUM-28 /
 // SCRUM-96: the voter list is fixed at opening for everyone, drafts left when the meeting ends are deleted, a ballot is
 // never changed or withdrawn, a secret ballot never names its voter, the Chair picks the conclusion (never inferred).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-52a … UC-57, UC-76a/b), 06-business-rules.md,
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-62a … UC-67, UC-68a/b), 06-business-rules.md,
 // docs/03-api/15-bieu-quyet.md (§2 permissions by state, §7 as built), the message catalogue (MSG205–236, 252–255,
 // 265–270) and the Jira comments on SCRUM-28 / SCRUM-96.
 //
@@ -428,7 +428,7 @@ export default {
   title: 'FE-11 Biểu quyết: nháp, mở, bỏ phiếu, đóng, kết luận, tài liệu biểu quyết, quyền theo vai trò và trạng thái',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-53 Normal Flow
+    // ------------------------------------------------------------------------------------------- UC-63 Normal Flow
     {
       id: 'AC1',
       role: 'secretary',
@@ -471,7 +471,7 @@ export default {
         qa.expect(row?.isAnonymous).toBe(false)
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-53 EX-1
+    // ------------------------------------------------------------------------------------------- UC-63 EX-1
     {
       id: 'AC2',
       role: 'secretary',
@@ -544,7 +544,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-53 AF-1
+    // ------------------------------------------------------------------------------------------- UC-63 AF-1
     {
       id: 'AC3',
       role: 'chair',
@@ -595,7 +595,7 @@ export default {
         qa.expect(d.status).toBe('Draft')
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-53 AF-2
+    // ------------------------------------------------------------------------------------------- UC-63 AF-2
     {
       id: 'AC4',
       role: 'secretary',
@@ -627,7 +627,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-52a AF-1, BR-253
+    // ------------------------------------------------------------------------------------------- UC-62a AF-1, BR-086, BR-087
     {
       id: 'AC5',
       role: 'member',
@@ -667,7 +667,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- BR-29, AGENTS.md 404
+    // ------------------------------------------------------------------------------------------- BR-016, BR-017, AGENTS.md 404
     {
       id: 'AC6',
       role: 'admin',
@@ -696,7 +696,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-54 Normal Flow
+    // ------------------------------------------------------------------------------------------- UC-64 Normal Flow
     {
       id: 'AC7',
       role: 'chair',
@@ -735,7 +735,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-53 AF-3, UC-54 AF-1, EX-3
+    // ------------------------------------------------------------------------------------------- UC-63 AF-3, UC-64 AF-1, EX-3
     {
       id: 'AC8',
       role: 'chair',
@@ -781,7 +781,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-54 EX-2..EX-4
+    // ------------------------------------------------------------------------------------------- UC-64 EX-2..EX-4
     {
       id: 'AC9',
       role: 'secretary',
@@ -839,7 +839,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-55 Normal Flow, EX-5
+    // ------------------------------------------------------------------------------------------- UC-65 Normal Flow, EX-5
     {
       id: 'AC10',
       role: 'member',
@@ -892,7 +892,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-55 EX-1..EX-4, EX-7
+    // ------------------------------------------------------------------------------------------- UC-65 EX-1..EX-4, EX-7
     {
       id: 'AC11',
       role: 'member',
@@ -938,7 +938,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-52b step 5, realtime
+    // ------------------------------------------------------------------------------------------- UC-62b step 5, realtime
     {
       id: 'AC12',
       role: 'member',
@@ -985,7 +985,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-56, UC-52b AF-2 public
+    // ------------------------------------------------------------------------------------------- UC-66, UC-62b AF-2 public
     {
       id: 'AC13',
       role: 'chair',
@@ -1047,7 +1047,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-57
+    // ------------------------------------------------------------------------------------------- UC-67
     {
       id: 'AC14',
       role: 'chair',
@@ -1118,7 +1118,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- BR-259 secret ballot
+    // ------------------------------------------------------------------------------------------- BR-096, BR-097 secret ballot
     {
       id: 'AC15',
       role: 'member',
@@ -1167,7 +1167,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-56 EX-1
+    // ------------------------------------------------------------------------------------------- UC-66 EX-1
     {
       id: 'AC16',
       role: 'secretary',
@@ -1202,7 +1202,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-76a, UC-74, UC-55 EX-8
+    // ------------------------------------------------------------------------------------------- UC-68a, UC-42, UC-65 EX-8
     {
       id: 'AC17',
       role: 'chair',
@@ -1266,7 +1266,7 @@ export default {
           c.check('lastPageReached false', await (await client(qa, 'member')).post(confirmAt, { lastPageReached: false }), 400, 'MSG254')
 
           await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).click()
-          // BR-290: locked until the reader scrolls to the end of the last page; an A4 page at 100% is taller than the window.
+          // UC-42: locked until the reader scrolls to the end of the last page; an A4 page at 100% is taller than the window.
           const locked = qa.page.getByRole('button', { name: 'Đọc tới trang cuối' })
           await qa.expect(locked).toBeDisabled({ timeout: 20_000 })
           await qa.page.locator('.viewer-scroll .pdf-page').first().waitFor()
@@ -1296,7 +1296,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-76b
+    // ------------------------------------------------------------------------------------------- UC-68b
     {
       id: 'AC18',
       role: 'secretary',
@@ -1341,7 +1341,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- BR-252 / BR-160 by state
+    // ------------------------------------------------------------------------------------------- BR-086, BR-087 / BR-090 by state
     {
       id: 'AC19',
       role: 'secretary',
@@ -1384,7 +1384,7 @@ export default {
         c.done()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-56 AF-1, UC-57 AF-1, BR-165/189
+    // ------------------------------------------------------------------------------------------- UC-66 AF-1, UC-67 AF-1, BR-092, BR-093, BR-086, BR-087
     {
       id: 'AC20',
       role: 'chair',
@@ -1430,7 +1430,7 @@ export default {
         await form.getByRole('button', { name: 'Ghi kết luận' }).click()
         await qa.expect(toast(qa, 'Ghi kết luận biểu quyết thành công.')).toBeVisible()
         await qa.expect(crow.locator('.vote-meta .vote-conclusion-chip')).toHaveText('Thông qua')
-        // UC-57 step 6: the conclusion becomes read-only (as in AC14), the form gives way to it.
+        // UC-67 step 6: the conclusion becomes read-only (as in AC14), the form gives way to it.
         await qa.expect(crow.locator('.vote-box .vote-conclusion-chip')).toHaveText('Thông qua')
         await qa.expect(crow.locator('form.vote-conclusion-form')).toHaveCount(0)
         await crow.scrollIntoViewIfNeeded()
@@ -1469,7 +1469,7 @@ export default {
         )
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-52a / 52b list
+    // ------------------------------------------------------------------------------------------- UC-62a / 52b list
     {
       id: 'AC23',
       role: 'chair',
@@ -1582,7 +1582,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-52a EX-2 (AX)
+    // ------------------------------------------------------------------------------------------- UC-62a EX-2 (AX)
     {
       id: 'AC26',
       role: 'chair',
@@ -1625,7 +1625,7 @@ export default {
         await qa.shot('thu-lai-thanh-cong')
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-53 on an Approved meeting
+    // ------------------------------------------------------------------------------------------- UC-63 on an Approved meeting
     {
       id: 'AC27',
       role: 'chair',
@@ -1689,7 +1689,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-76a storage full (simulated)
+    // ------------------------------------------------------------------------------------------- UC-68a storage full (simulated)
     {
       id: 'AC28',
       role: 'chair',
@@ -1733,7 +1733,7 @@ export default {
         uploads.stop()
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-55 EX-6 (AX)
+    // ------------------------------------------------------------------------------------------- UC-65 EX-6 (AX)
     {
       id: 'AC29',
       role: 'member',
@@ -1785,7 +1785,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-56 cancelled
+    // ------------------------------------------------------------------------------------------- UC-76 cancelled
     {
       id: 'AC30',
       role: 'chair',
@@ -1820,7 +1820,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-57 abandoned
+    // ------------------------------------------------------------------------------------------- UC-67 abandoned
     {
       id: 'AC31',
       role: 'chair',
@@ -1875,7 +1875,7 @@ export default {
         }
       },
     },
-    // ------------------------------------------------------------------------------------------- UC-74 read gate
+    // ------------------------------------------------------------------------------------------- UC-42 read gate
     // R1/FE-11 (24/11/2026): AC mới — DOC_FT51 (nút xác nhận chỉ mở ở trang cuối, 200 MSG253).
     {
       id: 'AC32',
@@ -1888,7 +1888,7 @@ export default {
         'Cuộn xuống hết trang cuối, bấm "Xác nhận đã đọc", đóng trình xem, gửi phiếu',
       ],
       expected:
-        'Trước khi cuộn nút xanh "Đọc tới trang cuối" bị khoá; cuộn hết thì thành "Xác nhận đã đọc" và mở được (BR-290); bấm: backend 200 MSG253, toast "Đã xác nhận đọc tài liệu.", đầu trình xem "Đã xác nhận đọc"; về thẻ tài liệu "Đã đọc", "Gửi phiếu" mở được',
+        'Trước khi cuộn nút xanh "Đọc tới trang cuối" bị khoá; cuộn hết thì thành "Xác nhận đã đọc" và mở được (UC-42); bấm: backend 200 MSG253, toast "Đã xác nhận đọc tài liệu.", đầu trình xem "Đã xác nhận đọc"; về thẻ tài liệu "Đã đọc", "Gửi phiếu" mở được',
       async run(qa) {
         const c = checker(qa)
         const m = await meeting(qa, 'live', 'InProgress')
@@ -1916,7 +1916,7 @@ export default {
           // ADR-0066: the viewer is a layer over the tab (its link still carries ?read=1 for a new tab).
           await qa.expect(qa.page.getByRole('dialog', { name: 'Xem tài liệu' })).toBeVisible({ timeout: 20_000 })
           qa.expect(await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).getAttribute('href')).toContain('read=1')
-          // BR-290: locked until the reader reaches the end of the last page; the label says so (no tooltip on touch).
+          // UC-42: locked until the reader reaches the end of the last page; the label says so (no tooltip on touch).
           const locked = qa.page.getByRole('button', { name: 'Đọc tới trang cuối' })
           await qa.expect(locked).toBeDisabled({ timeout: 20_000 })
           await qa.page.locator('.viewer-scroll .pdf-page').first().waitFor()
@@ -1968,7 +1968,7 @@ export default {
         'Khách mở tab Biểu quyết, chọn phương án, gửi phiếu; Chủ toạ đọc lượt qua API',
       ],
       expected:
-        'Hòm phiếu của Khách không hiện tên người bỏ; gửi xong Khách thấy "Bạn đã gửi phiếu."; lượt kín tăng một, phiếu không gắn tên (UC-55)',
+        'Hòm phiếu của Khách không hiện tên người bỏ; gửi xong Khách thấy "Bạn đã gửi phiếu."; lượt kín tăng một, phiếu không gắn tên (UC-65)',
       async run(qa) {
         const m = await meeting(qa, 'live', 'InProgress')
         const email = `qa-khach-vote15-${Date.now().toString(36)}-${qa.device}@example.test`

@@ -32,9 +32,9 @@ const FORM_ID = 'slot-draft-form'
 type Field = 'title' | 'location' | 'onlineLink' | 'description' | 'plannedStartTime' | 'userIds'
 
 /**
- * UC-85b — a Draft meeting from a found slot. The time is the slot's and does not change here; the roster follows
- * BR-429 — the first person chairs, the rest are Members, the caller is Secretary — and the arrows pick who chairs.
- * The server rechecks the slot against the same shared data as the search (BR-428): someone who became busy since
+ * UC-81b — a Draft meeting from a found slot. The time is the slot's and does not change here; the roster follows
+ * UC-81b — the first person chairs, the rest are Members, the caller is Secretary — and the arrows pick who chairs.
+ * The server rechecks the slot against the same shared data as the search (BR-148): someone who became busy since
  * answers 409 MSG446 and the page searches again.
  */
 export function SlotDraftDialog({
@@ -97,7 +97,7 @@ export function SlotDraftDialog({
     setFormError(null)
     if (Object.keys(local).length > 0) return
 
-    // The acceptance the search showed: whoever was busy or unknown then may still be (BR-428, plan P2).
+    // The acceptance the search showed: whoever was busy or unknown then may still be (BR-148, plan P2).
     const accepted = [...slot.busyUserIds, ...slot.unknownUserIds]
     setPending(true)
     try {

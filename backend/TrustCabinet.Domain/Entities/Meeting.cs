@@ -34,25 +34,25 @@ public class Meeting : Entity
 
     /// <summary>
     /// An external meeting link. Null means the TrustCabinet online room, which is the default for
-    /// an Online or Hybrid meeting (BR-163).
+    /// an Online or Hybrid meeting (UC-13).
     /// </summary>
     public string? OnlineLink { get; set; }
 
     public DateTimeOffset PlannedStartTime { get; set; }
 
-    /// <summary>Always after <see cref="PlannedStartTime"/> (BR-62).</summary>
+    /// <summary>Always after <see cref="PlannedStartTime"/> (BR-013).</summary>
     public DateTimeOffset PlannedEndTime { get; set; }
 
-    /// <summary>Written by the system when the Chair starts the meeting (UC-21).</summary>
+    /// <summary>Written by the system when the Chair starts the meeting (UC-20).</summary>
     public DateTimeOffset? ActualStartedAt { get; set; }
 
-    /// <summary>Written by the system when the Chair ends the meeting (UC-22).</summary>
+    /// <summary>Written by the system when the Chair ends the meeting (UC-21).</summary>
     public DateTimeOffset? ActualEndedAt { get; set; }
 
-    /// <summary>When the meeting became <see cref="MeetingStatus.Cancelled"/> (UC-75, BR-298).</summary>
+    /// <summary>When the meeting became <see cref="MeetingStatus.Cancelled"/> (UC-22).</summary>
     public DateTimeOffset? CancelledAt { get; set; }
 
-    /// <summary>Who cancelled it; null when the system did because nobody started it (BR-301).</summary>
+    /// <summary>Who cancelled it; null when the system did because nobody started it (BR-029).</summary>
     public Guid? CancelledById { get; set; }
     public User? CancelledBy { get; set; }
 
@@ -60,7 +60,7 @@ public class Meeting : Entity
 
     /// <summary>
     /// The status it was cancelled from. A meeting cancelled after it was Published stays visible to the
-    /// people it was announced to; one cancelled earlier never reached them (BR-29).
+    /// people it was announced to; one cancelled earlier never reached them (BR-016, BR-017).
     /// </summary>
     public MeetingStatus? CancelledFromStatus { get; set; }
 

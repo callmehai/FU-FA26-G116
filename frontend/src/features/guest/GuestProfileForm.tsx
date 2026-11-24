@@ -10,7 +10,7 @@ import { readGuestEntry } from './guestStore'
 const MAX_LENGTH = 200
 
 /**
- * UC-04 step 5 (BR-180): after the code, the guest names themselves for this meeting. Only the email
+ * UC-04 step 5 (UC-04): after the code, the guest names themselves for this meeting. Only the email
  * was verified; the name and job title are what the guest says, and are labelled so wherever they show.
  * Starts from the name the Secretary invited them under. The backend re-checks everything (MSG377).
  */

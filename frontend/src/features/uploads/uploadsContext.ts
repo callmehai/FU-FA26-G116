@@ -16,7 +16,7 @@ export function useUploadJobs() {
 
 /**
  * Calls `onSettled` when an upload to `target` ends, done or not, so the screen shows its place as it is.
- * `'*'` hears every upload: the library, where a meeting's upload lands as well (BR-192).
+ * `'*'` hears every upload: the library, where a meeting's upload lands as well (UC-36a).
  * Nothing to hear on a guest page (UC-04), which has no upload queue: a guest never uploads.
  */
 export function useUploadsSettled(target: string, onSettled: (job: UploadJob) => void) {

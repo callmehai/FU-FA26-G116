@@ -60,7 +60,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<CalendarShare> CalendarShares => Set<CalendarShare>();
 
     /// <summary>
-    /// The audit row written alongside each lifecycle row (BR-445), keyed by the history row, so a retried save does
+    /// The audit row written alongside each lifecycle row (BR-022, BR-023), keyed by the history row, so a retried save does
     /// not write it twice.
     /// </summary>
     private readonly Dictionary<MeetingStatusHistory, AuditLogEntry> _historyAudit = new(ReferenceEqualityComparer.Instance);
@@ -81,7 +81,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     private void BeforeSave()
     {
         EnsureAppendOnly<MeetingStatusHistory>("Meeting lifecycle history is append-only.");
-        // BR-440: no function of the application changes or deletes an audit entry. Change tracker only:
+        // BR-012: no function of the application changes or deletes an audit entry. Change tracker only:
         // ExecuteUpdate/ExecuteDelete and raw SQL bypass it, so never point either at audit_log.
         EnsureAppendOnly<AuditLogEntry>("The audit log is append-only.");
         AuditMeetingHistory();
@@ -97,7 +97,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     }
 
     /// <summary>
-    /// BR-445 — every lifecycle row gets an audit row in the same save, so whichever of the six writers made it (the
+    /// BR-022, BR-023 — every lifecycle row gets an audit row in the same save, so whichever of the six writers made it (the
     /// overdue job included) the move reaches the audit log, and a move that fails to save leaves neither row. Done here
     /// rather than in each writer because a seventh writer would otherwise forget it.
     /// </summary>

@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Infrastructure.Access;
 
 /// <summary>
-/// UC-10 and UC-11's <c>:Role Permission Repository</c>. Queries and writes only — every rule
+/// UC-09, UC-10's <c>:Role Permission Repository</c>. Queries and writes only — every rule
 /// lives in <see cref="RolePermissionService"/>.
 /// </summary>
 public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePermissionRepository

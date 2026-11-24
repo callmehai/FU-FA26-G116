@@ -740,7 +740,7 @@ public sealed record MeetingResponse(
             : null);
 }
 
-/// <summary>Present only on a Cancelled meeting. A null <c>CancelledById</c> means the system cancelled it (BR-301).</summary>
+/// <summary>Present only on a Cancelled meeting. A null <c>CancelledById</c> means the system cancelled it (BR-029).</summary>
 public sealed record MeetingCancellationResponse(
     DateTimeOffset CancelledAt, Guid? CancelledById, string CancelledByName, string Reason);
 

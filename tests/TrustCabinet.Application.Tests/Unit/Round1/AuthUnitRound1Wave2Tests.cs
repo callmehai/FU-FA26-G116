@@ -71,7 +71,7 @@ public sealed class AuthUnitRound1Wave2Tests
         Assert.Equal(SignInOutcome.InvalidCredentials, result.Outcome);
         Assert.Null(result.RefreshToken);
         Assert.Empty(_refreshTokens.Live);
-        // BR-444: an attempt on an existing account is recorded (reason invalid_password).
+        // BR-009: an attempt on an existing account is recorded (reason invalid_password).
         Assert.Equal([AuditActions.SignInFailed], _audit.Actions);
     }
 

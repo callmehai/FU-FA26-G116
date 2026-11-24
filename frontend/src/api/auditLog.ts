@@ -2,7 +2,7 @@ import type { AuditEventType, AuditLogPage, AuditLogQuery } from '../types/audit
 import { api } from './client'
 
 /**
- * System audit log (SCRUM-16, UC-13). Both endpoints need `AdminUsers`: 401 signed out, 403 without it.
+ * System audit log (SCRUM-16, UC-12). Both endpoints need `AdminUsers`: 401 signed out, 403 without it.
  * A bad filter answers 400 MSG469 with `errors` per parameter; an unreadable log 500 MSG470.
  */
 export function listAuditLog(query: AuditLogQuery) {

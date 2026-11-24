@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.Audit;
 
-/// <summary>One kind of audit event, as the audit log screen's event filter lists it (UC-13 AF-1).</summary>
+/// <summary>One kind of audit event, as the audit log screen's event filter lists it (UC-12 AF-1).</summary>
 public sealed record AuditEventType(string Code, string Label, string Group);
 
 /// <summary>
@@ -120,7 +120,7 @@ public static class AuditEventCatalog
         new(AuditActions.CalendarShareEnded, "Ngừng chia sẻ lịch", CalendarSharing),
         new(AuditActions.CalendarShareStopped, "Dừng chia sẻ lịch (mất quyền hoặc vô hiệu hoá)", CalendarSharing),
         new(AuditActions.CalendarShareClosedAfterEndDate, "Đóng chia sẻ lịch đã quá hạn khi có chia sẻ mới", CalendarSharing),
-        // SCRUM-38 (BR-438): only the export is recorded, not viewing the report — the meeting report or a report query
+        // SCRUM-38 (BR-009–BR-011): only the export is recorded, not viewing the report — the meeting report or a report query
         // table (details.report names which).
         new(AuditActions.ReportExported, "Xuất báo cáo", Reports),
 

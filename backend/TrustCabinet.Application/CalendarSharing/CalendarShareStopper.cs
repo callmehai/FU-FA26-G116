@@ -5,10 +5,10 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// BR-424 — called by UC-06c (deactivate an account), UC-08 (change a role) and UC-11 (change a role's rights) inside their
+/// BR-142, BR-143 — called by UC-06c (deactivate an account), UC-08 (change a role) and UC-10 (change a role's rights) inside their
 /// own transaction, after their change is saved: every Effective share touching those people that is no longer live stops
 /// for good, and both sides are told. A Pending invitation is kept (PO 09/11/2026, Q-C): its asked side may then only
-/// decline it (UC-84c EX-5). A share past its end date is left alone (BR-425). Regaining the right or the account later
+/// decline it (UC-80c EX-5). A share past its end date is left alone (BR-142, BR-143). Regaining the right or the account later
 /// restarts nothing.
 /// </summary>
 public sealed class CalendarShareStopper(
@@ -23,7 +23,7 @@ public sealed class CalendarShareStopper(
         if (userIds.Count == 0) return 0;
         var ids = userIds.Distinct().ToArray();
         var now = clock.GetUtcNow();
-        // A share past its end date has already ended (BR-425, PO 09/11/2026 Q-B): it is left as it is — not stopped,
+        // A share past its end date has already ended (BR-142, BR-143, PO 09/11/2026 Q-B): it is left as it is — not stopped,
         // not audited, nobody told — even though its row still reads Effective, since nothing writes the lapse.
         var today = VietnamTime.Today(now);
         // Every caller runs this inside its own ReadCommitted transaction, which this joins: the row locks are held until

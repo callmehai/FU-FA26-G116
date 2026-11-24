@@ -46,7 +46,7 @@ type Open =
 type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | { kind: 'remove'; row: ParticipantRow }
 
 /**
- * The meeting's roster (SCRUM-20, UC-27–30): everyone may read it; the Chair and Secretaries add,
+ * The meeting's roster (SCRUM-20, UC-29–UC-32): everyone may read it; the Chair and Secretaries add,
  * invite guests, change roles, hand over the chair and remove people, while the status allows it.
  * What the caller may do comes from the server's participant context, never from guessing.
  *

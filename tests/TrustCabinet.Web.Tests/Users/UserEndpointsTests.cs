@@ -69,7 +69,7 @@ public class UserEndpointsTests : IDisposable
                 services.RemoveAll<IAdministratorInvariantGuard>();
                 services.AddSingleton<IAdministratorInvariantGuard>(Invariant);
 
-                // Stopping calendar shares (BR-424) needs PostgreSQL; CalendarShareStopTests covers it there.
+                // Stopping calendar shares (BR-142, BR-143) needs PostgreSQL; CalendarShareStopTests covers it there.
                 services.RemoveAll<ICalendarShareStopper>();
                 services.AddSingleton<ICalendarShareStopper>(new FakeCalendarShareStopper());
 

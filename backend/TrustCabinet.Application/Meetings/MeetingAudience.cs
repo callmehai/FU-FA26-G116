@@ -63,7 +63,7 @@ public sealed class MeetingAudience(IUnitOfWork unitOfWork, IMeetingRepository m
             return new MeetingAudienceMembers(active, readers);
         }, TransactionMode.None, ct);
 
-    /// <summary>The meeting's current, active Chair and Secretary: vote drafts (BR-253) and notes (BR-395).</summary>
+    /// <summary>The meeting's current, active Chair and Secretary: vote drafts (BR-086, BR-087) and notes (UC-55b).</summary>
     public Task<IReadOnlyList<Guid>> ManagersAsync(Guid meetingId, CancellationToken ct)
         => unitOfWork.ExecuteAsync<IReadOnlyList<Guid>>(async token =>
         {

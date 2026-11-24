@@ -226,7 +226,7 @@ public sealed class MeetingService(
                     return MeetingResult.Failure(MeetingOutcome.NotFound);
                 }
 
-                // Match UC-15: check the current, locked state before validating submitted fields.
+                // Match UC-14: check the current, locked state before validating submitted fields.
                 var reschedules = MeetingRules.IsReschedulable(meeting.Status);
                 if (!reschedules && !MeetingRules.IsEditable(meeting.Status))
                 {
@@ -267,8 +267,8 @@ public sealed class MeetingService(
     }
 
     /// <summary>
-    /// UC-15 AF-1. Only the times, place and link may move (BR-158); the rest must come back as it
-    /// is. The change is written to history and every current invitee is told in-app (BR-76).
+    /// UC-14 AF-1. Only the times, place and link may move (BR-015); the rest must come back as it
+    /// is. The change is written to history and every current invitee is told in-app (UC-14).
     /// </summary>
     private async Task<MeetingResult> RescheduleAsync(
         Meeting meeting, ValidatedMeetingInput input, Guid actorId, DateTimeOffset now, CancellationToken ct)
@@ -499,7 +499,7 @@ public sealed class MeetingService(
                     }
                 }
 
-                // Any status before the start may be cancelled (BR-297), so the source is the current one.
+                // Any status before the start may be cancelled (BR-028), so the source is the current one.
                 if (command.Action == MeetingTransitionAction.Cancel && !MeetingRules.IsCancellable(meeting.Status))
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
@@ -608,7 +608,7 @@ public sealed class MeetingService(
                 }
                 else if (command.Action == MeetingTransitionAction.Cancel)
                 {
-                    // The approver keeps their assignment for the record; the request simply closes (BR-299).
+                    // The approver keeps their assignment for the record; the request simply closes (BR-028).
                     meeting.CancelledAt = now;
                     meeting.CancelledById = actorId;
                     meeting.CancellationReason = command.Reason!;
@@ -700,7 +700,7 @@ public sealed class MeetingService(
                 {
                     if (fromStatus == MeetingStatus.Published)
                     {
-                        // Everyone it was announced to hears it, with the reason (BR-300). Staged in this
+                        // Everyone it was announced to hears it, with the reason (UC-22). Staged in this
                         // transaction and delivered afterwards, so a delivery failure cannot undo the cancellation.
                         await invitations.StageCancellationAsync(meeting, history.Id, actorId, command.Reason!, now, token);
                     }

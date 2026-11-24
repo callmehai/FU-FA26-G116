@@ -7,9 +7,9 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Audit;
 
 /// <summary>
-/// UC-13 — one page of the audit log, newest first, with the actor and the object of each row named (BR-441, BR-442).
+/// UC-12 — one page of the audit log, newest first, with the actor and the object of each row named (UC-12).
 /// The object is named as people know it — the meeting's title, the document's file name, the account's full name
-/// (PO 19/11/2026, replacing BR-443's "no meeting titles") — so a reader can tell two meetings apart; the id stays in the
+/// (PO 19/11/2026, replacing UC-12's "no meeting titles") — so a reader can tell two meetings apart; the id stays in the
 /// row for the detail view. Only the name is read: viewing the log still opens nothing it names. Nothing of a Mật
 /// meeting is named (Hải 20/11/2026).
 /// </summary>

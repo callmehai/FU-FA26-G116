@@ -1,4 +1,4 @@
-"""Stub OpenAI-compatible tối thiểu cho QA TRANS_FT61/Ft64 (không commit).
+"""Stub OpenAI-compatible tối thiểu cho QA TRANS_FT61/FT64.
 
 Trả lời POST */chat/completions bằng một completion canned ("OK"), đủ để
 backend TrustCabinet (OpenAiCompatibleModel) coi là "kết nối được" (200/MSG412)
@@ -6,7 +6,7 @@ và viết dự thảo qua nhánh API. Nội dung dự thảo của stub là ch�
 case FT64 chỉ kiểm tra *đường đi* (Normal qua API, Internal ở máy local),
 không kiểm tra chất lượng chữ AI.
 
-Chạy: python qa-fixtures/stub_api.py  (nghe 127.0.0.1:12121)
+Chạy: python tests/qa/fixtures/stub_api.py  (nghe 127.0.0.1:12121)
 """
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer

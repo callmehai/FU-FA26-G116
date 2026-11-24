@@ -10,7 +10,7 @@ import { workflowFailure, type WorkflowOutcome } from './workflowOutcome'
 const REASON_MAX = 1000
 
 /**
- * UC-75 Cancel Meeting: the organizer says why, before the meeting starts. Who hears about it depends on
+ * UC-22 Cancel Meeting: the organizer says why, before the meeting starts. Who hears about it depends on
  * the status, so the dialog says who (SCRUM-150): everyone invited once it is announced, the assigned
  * approver while it waits for approval, nobody otherwise. What was typed stays when the request fails.
  */

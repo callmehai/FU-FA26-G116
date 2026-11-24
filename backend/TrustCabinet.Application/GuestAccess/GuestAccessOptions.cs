@@ -21,7 +21,7 @@ public sealed class GuestAccessOptions
     [Range(1, 1000)]
     public int MaxCodesPerDay { get; set; } = 20;
 
-    /// <summary>BR-155. The guest token expires with the session; there is no refresh.</summary>
+    /// <summary>BR-053, BR-054. The guest token expires with the session; there is no refresh.</summary>
     [Range(1, 72)]
     public int SessionLifetimeHours { get; set; } = 12;
 }

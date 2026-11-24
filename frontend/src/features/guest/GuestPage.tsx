@@ -37,7 +37,7 @@ type Gate =
 
 /**
  * UC-04, screen 1.3: the page an invitation email links to (`/guest/{invitationId}#token=…`), and the
- * guest's way into that one meeting. Public, outside the internal session and its sidebar (BR-156).
+ * guest's way into that one meeting. Public, outside the internal session and its sidebar (BR-052).
  *
  * The gate decides what shows: the meeting while the stored session is good (ALT-1, the code is
  * skipped), else the code sent to the invited email, then the self-declared name. Every way the link

@@ -1,6 +1,6 @@
-// FE-04 — Quản lý cuộc họp (QA subtask SCRUM-191): UC-14 create, UC-15 update / reschedule, UC-16 detail, UC-17 list,
-// UC-18 submit, UC-19 approve / reject, UC-20 publish, UC-21 start, UC-22 end, UC-75 cancel, and the lifecycle rules
-// (BR-24, BR-27, BR-29, BR-62, BR-75, BR-118, BR-124/125, BR-158, BR-162, BR-297, BR-298, BR-320, BR-439).
+// FE-04 — Quản lý cuộc họp (QA subtask SCRUM-191): UC-13 create, UC-14 update / reschedule, UC-15 detail, UC-16 list,
+// UC-17 submit, UC-18 approve / reject, UC-19 publish, UC-20 start, UC-21 end, UC-22 cancel, and the lifecycle rules
+// (BR-013, BR-014, BR-016, BR-017, BR-015, BR-030, BR-021, BR-028).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/02-design/01-vong-doi-cuoc-hop.md, docs/03-api/05-quan-ly-cuoc-hop.md and the message catalogue.
@@ -189,7 +189,7 @@ export default {
   title: 'Quản lý cuộc họp: tạo, sửa, gửi duyệt, duyệt/từ chối, công bố, dời lịch, bắt đầu/kết thúc, huỷ, danh sách và chi tiết',
   devices: ['desktop'],
   criteria: [
-    // ----------------------------------------------------------------------------------------------- UC-14 Create
+    // ----------------------------------------------------------------------------------------------- UC-13 Create
     {
       id: 'AC1',
       role: 'secretary',
@@ -325,7 +325,7 @@ export default {
       title: 'Form tạo cuộc họp báo lỗi theo ô khi thiếu tên và chưa chọn người dự họp; không tạo gì',
       steps: ['Mở form tạo cuộc họp', 'Xoá trống tên, không chọn ai', 'Bấm "Tạo cuộc họp"'],
       expected:
-        'Ô Tên báo "Tên cuộc họp không được để trống.", ô Người dự họp báo lỗi; form vẫn mở, không có cuộc họp mới (UC-14 EX-1, EX-3)',
+        'Ô Tên báo "Tên cuộc họp không được để trống.", ô Người dự họp báo lỗi; form vẫn mở, không có cuộc họp mới (UC-13 EX-1, EX-3)',
       async run(qa) {
         const before = (await (await client(qa, 'secretary')).get('/api/meetings?status=Draft&pageSize=1')).body.totalCount
         await qa.goto(`/mgmt/meetings?create=${dayAhead(3)}`)
@@ -425,7 +425,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-15 Update
+    // ----------------------------------------------------------------------------------------------- UC-14 Update
     {
       id: 'AC5',
       role: 'secretary',
@@ -559,7 +559,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-18 Submit
+    // ----------------------------------------------------------------------------------------------- UC-17 Submit
     {
       id: 'AC8',
       role: 'secretary',
@@ -650,7 +650,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-19 Review
+    // ----------------------------------------------------------------------------------------------- UC-18 Review
     {
       id: 'AC10',
       role: 'chair',
@@ -782,7 +782,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-20 Publish
+    // ----------------------------------------------------------------------------------------------- UC-19 Publish
     {
       id: 'AC13',
       role: 'secretary',
@@ -843,7 +843,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-15 AF-1 Reschedule
+    // ----------------------------------------------------------------------------------------------- UC-14 AF-1 Reschedule
     {
       id: 'AC15',
       role: 'secretary',
@@ -925,7 +925,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-21 / UC-22
+    // ----------------------------------------------------------------------------------------------- UC-20 / UC-21
     {
       id: 'AC17',
       role: 'chair',
@@ -1066,7 +1066,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-75 Cancel
+    // ----------------------------------------------------------------------------------------------- UC-22 Cancel
     {
       id: 'AC19',
       role: 'secretary',
@@ -1180,7 +1180,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-16 / UC-17 / BR-29
+    // ----------------------------------------------------------------------------------------------- UC-15 / UC-16 / BR-016, BR-017
     {
       id: 'AC21',
       role: 'member',
@@ -1235,7 +1235,7 @@ export default {
     {
       id: 'AC22',
       role: 'chair',
-      title: 'Chủ toạ và người duyệt đọc cuộc họp đúng theo BR-29/BR-118; quản trị không tự đọc được cuộc họp không liên quan',
+      title: 'Chủ toạ và người duyệt đọc cuộc họp đúng theo BR-016, BR-017, BR-030; quản trị không tự đọc được cuộc họp không liên quan',
       steps: [
         'chutoa@ (Chủ toạ) GET cuộc họp Nháp của thuky@',
         'quantri@ (đủ capability, không trong thành phần, không được phân công) GET cuộc họp Nháp, Chờ duyệt, Đã công bố của thuky@ và tìm trên danh sách',
@@ -1261,7 +1261,7 @@ export default {
       title: 'Danh sách cuộc họp mở không lọc với bốn thẻ đếm (PO 20/11, PR #287: không còn mở sẵn "Họp hôm nay")',
       steps: ['Đăng nhập thuky@', 'Bấm "Cuộc họp" trên menu (mở /mgmt/meetings không tham số)'],
       expected:
-        'Bốn thẻ "Họp hôm nay", "Đã công bố", "Cần xử lý", "Bản nháp" hiện số đếm, không thẻ nào được chọn; Trạng thái "Mọi trạng thái", Mức độ "Mọi mức độ", Thời điểm "Mọi thời điểm"; URL không có tham số lọc; bảng liệt kê cuộc họp mọi trạng thái. UC-17 bước 1 còn ghi "Đang diễn ra": BA cập nhật',
+        'Bốn thẻ "Họp hôm nay", "Đã công bố", "Cần xử lý", "Bản nháp" hiện số đếm, không thẻ nào được chọn; Trạng thái "Mọi trạng thái", Mức độ "Mọi mức độ", Thời điểm "Mọi thời điểm"; URL không có tham số lọc; bảng liệt kê cuộc họp mọi trạng thái. UC-16 bước 1 còn ghi "Đang diễn ra": BA cập nhật',
       async run(qa) {
         await qa.goto('/mgmt/meetings')
         if (qa.device === 'phone') {
@@ -1333,7 +1333,7 @@ export default {
         'Tìm một chuỗi không có',
       ],
       expected:
-        'Tìm không dấu ra đúng 2 cuộc họp "[QA] FE-04 Kiểm Thử Đặc Biệt <mã> …" (BR-439); lọc Đã huỷ chỉ còn cuộc họp đã huỷ, có nhãn Đã huỷ (BR-297); không khớp: "Không có cuộc họp nào khớp bộ lọc."; không cuộn ngang',
+        'Tìm không dấu ra đúng 2 cuộc họp "[QA] FE-04 Kiểm Thử Đặc Biệt <mã> …"; lọc Đã huỷ chỉ còn cuộc họp đã huỷ, có nhãn Đã huỷ (BR-028); không khớp: "Không có cuộc họp nào khớp bộ lọc."; không cuộn ngang',
       async run(qa) {
         const tag = rand()
         const live = await meetingAt(qa, 'Draft', { title: `FE-04 Kiểm Thử Đặc Biệt ${tag} còn` })
