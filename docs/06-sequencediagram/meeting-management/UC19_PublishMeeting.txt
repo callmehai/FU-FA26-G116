@@ -41,7 +41,7 @@ else Eligible
     MeetingRepository-->MeetingService: Published
     deactivate MeetingRepository
 
-    MeetingService->NotificationService: Notify participants and send invitations (BR-031, BR-032, UC-19)
+    MeetingService->NotificationService: Notify participants and send invitations (BR-031, BR-032)
     activate NotificationService
     NotificationService-->MeetingService: Invitations queued
     deactivate NotificationService

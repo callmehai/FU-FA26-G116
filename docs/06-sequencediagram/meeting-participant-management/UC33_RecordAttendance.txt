@@ -41,7 +41,7 @@ else Secretary is no longer authorized - EX-3
     AttendancePage-->Secretary: Attendance not authorized
 
 else Valid submission
-    AttendanceService->AttendanceRepository: Save attendance together (BR-056, BR-057, UC-33)
+    AttendanceService->AttendanceRepository: Save attendance together (BR-056, BR-057)
     activate AttendanceRepository
     AttendanceRepository->Database: Update attendance
     activate Database

@@ -35,7 +35,7 @@ alt Notification is unread - AF-1
     else Notification is available
         alt Notification is already read
         else Notification is unread
-            NotificationService->NotificationRepository: Mark notification as read (UC-76, UC-77b, UC-78)
+            NotificationService->NotificationRepository: Mark notification as read (UC-76, UC-77b)
             activate NotificationRepository
 
             NotificationRepository->Database: Update notification read status

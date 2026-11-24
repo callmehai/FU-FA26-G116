@@ -83,7 +83,7 @@ else Take holds audio
         deactivate Database
         RecordingRepository-->RoomTakeService: Recording saved
         deactivate RecordingRepository
-        RoomTakeService->TranscriptRepository: Queue a Pending transcript for the recording (UC-52b)
+        RoomTakeService->TranscriptRepository: Queue a Pending transcript for the recording
         activate TranscriptRepository
         TranscriptRepository->Database: Insert Pending transcript
         activate Database
@@ -96,7 +96,7 @@ else Take holds audio
         activate RecordingStorage
         RecordingStorage-->RoomTakeService: Joined audio
         deactivate RecordingStorage
-        RoomTakeService->RecordingRepository: Add the take to the room recording with its place and length,\nupdate the duration and remove the separate take (UC-52b)
+        RoomTakeService->RecordingRepository: Add the take to the room recording with its place and length,\nupdate the duration and remove the separate take
         activate RecordingRepository
         RecordingRepository->Database: Update room recording, delete take
         activate Database
@@ -104,7 +104,7 @@ else Take holds audio
         deactivate Database
         RecordingRepository-->RoomTakeService: Recording saved
         deactivate RecordingRepository
-        RoomTakeService->TranscriptRepository: Put the whole recording back as Pending to transcribe it again (UC-52b)
+        RoomTakeService->TranscriptRepository: Put the whole recording back as Pending to transcribe it again
         activate TranscriptRepository
         TranscriptRepository->Database: Update transcript to Pending
         activate Database

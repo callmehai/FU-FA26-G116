@@ -16,7 +16,7 @@ activate NotificationController
 NotificationController->NotificationService: Mark all unread notifications as read
 activate NotificationService
 
-NotificationService->NotificationRepository: Mark all unread notifications for current user as read (BR-033, BR-034, UC-77b)
+NotificationService->NotificationRepository: Mark all unread notifications for current user as read (BR-033, BR-034)
 activate NotificationRepository
 
 NotificationRepository->Database: Update all unread notifications belonging to current user

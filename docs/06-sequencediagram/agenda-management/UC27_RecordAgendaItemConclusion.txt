@@ -36,7 +36,7 @@ else Conclusion can no longer be changed - EX-2
     AgendaPage-->Actor: MSG273 - The conclusion of this agenda item can no longer be changed.
 
 else Valid input
-    AgendaService->AgendaRepository: Save conclusion with actor and time (BR-066, BR-067, UC-27)
+    AgendaService->AgendaRepository: Save conclusion with actor and time (BR-066, BR-067)
     activate AgendaRepository
     AgendaRepository->Database: Update agenda item conclusion
     activate Database

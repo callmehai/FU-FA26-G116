@@ -27,7 +27,7 @@ else Participants are invalid - EX-2
     MeetingPage-->Organizer: MSG277 - The meeting participant list is not valid
 
 else Valid input
-    MeetingService->MeetingRepository: Create meeting with Draft status and participants\nwith Pending responses in one save (BR-013, UC-13)
+    MeetingService->MeetingRepository: Create meeting with Draft status and participants\nwith Pending responses in one save (BR-013)
     activate MeetingRepository
     MeetingRepository->Database: Insert meeting and participants
     activate Database

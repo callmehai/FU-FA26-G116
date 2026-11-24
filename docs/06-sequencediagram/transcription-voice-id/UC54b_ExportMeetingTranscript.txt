@@ -98,7 +98,7 @@ else Per-mic speech timeline
         ClipController-->RecordingsTab: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
         RecordingsTab-->Actor: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
     else Export allowed
-        ClipService->ClipRepository: Get the Meeting sentences that are not excluded (UC-54b)
+        ClipService->ClipRepository: Get the Meeting sentences that are not excluded
         activate ClipRepository
         ClipRepository->Database: Retrieve sentences in spoken order
         activate Database

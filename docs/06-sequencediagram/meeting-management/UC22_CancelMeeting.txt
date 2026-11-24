@@ -42,7 +42,7 @@ else Meeting can no longer be cancelled - EX-3
     DetailsPage-->Organizer: MSG263 - This meeting can no longer be cancelled.
 
 else Eligible
-    MeetingService->MeetingRepository: Change status to Cancelled, record history (BR-022, BR-023, UC-22)
+    MeetingService->MeetingRepository: Change status to Cancelled, record history (BR-022, BR-023)
     activate MeetingRepository
     MeetingRepository->Database: Save status and history
     activate Database
@@ -51,7 +51,7 @@ else Eligible
     MeetingRepository-->MeetingService: Cancelled
     deactivate MeetingRepository
 
-    MeetingService->NotificationService: Notify participants if published/waiting approval (UC-22, BR-035)
+    MeetingService->NotificationService: Notify participants if published/waiting approval (BR-035)
     activate NotificationService
     NotificationService-->MeetingService: Notified
     deactivate NotificationService

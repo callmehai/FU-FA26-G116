@@ -113,7 +113,7 @@ opt Change the speaker of one sentence - AF-2
         TranscriptController-->TranscriptView: No such voice in this recording
     else Assignment valid
         opt The chosen person has no voice yet
-            TranscriptionService->TranscriptRepository: Create the voice SPEAKER_NN with the smallest unused number,\nwith its own card, colour and duration (UC-55b)
+            TranscriptionService->TranscriptRepository: Create the voice SPEAKER_NN with the smallest unused number,\nwith its own card, colour and duration
             activate TranscriptRepository
             TranscriptRepository->Database: Insert speaker
             activate Database
@@ -122,7 +122,7 @@ opt Change the speaker of one sentence - AF-2
             TranscriptRepository-->TranscriptionService: Speaker created
             deactivate TranscriptRepository
         end
-        TranscriptionService->TranscriptRepository: Move only this sentence to that voice,\nupdate the durations and mark who moved it and when, so a later run carries it again (UC-55b, BR-125, BR-154)
+        TranscriptionService->TranscriptRepository: Move only this sentence to that voice,\nupdate the durations and mark who moved it and when, so a later run carries it again (BR-125, BR-154)
         activate TranscriptRepository
         TranscriptRepository->Database: Update the sentence and the durations
         activate Database

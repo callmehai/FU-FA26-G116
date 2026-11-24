@@ -41,7 +41,7 @@ else Eligible
     MeetingRepository-->MeetingService: Started
     deactivate MeetingRepository
 
-    MeetingService->NotificationService: Notify participants (UC-20, BR-035)
+    MeetingService->NotificationService: Notify participants (BR-035)
     activate NotificationService
     NotificationService-->MeetingService: Notified
     deactivate NotificationService

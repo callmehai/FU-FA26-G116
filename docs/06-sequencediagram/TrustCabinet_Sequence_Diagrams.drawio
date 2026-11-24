@@ -3948,7 +3948,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Create password reset request (60-minute, single-use link) (UC-07)" mermaidId="e:UserService-&gt;ResetTokenStore#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create password reset request (60-minute, single-use link) (UC-07)" id="59">
+        <UserObject label="Create password reset request (60-minute, single-use link)" mermaidId="e:UserService-&gt;ResetTokenStore#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create password reset request (60-minute, single-use link)" id="59">
           <mxCell edge="1" parent="1" source="37" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="31">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -3992,7 +3992,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Make the new link usable and retire the previous link (UC-07)" mermaidId="e:UserService-&gt;ResetTokenStore#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Make the new link usable and retire the previous link (UC-07)" id="63">
+        <UserObject label="Make the new link usable and retire the previous link" mermaidId="e:UserService-&gt;ResetTokenStore#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Make the new link usable and retire the previous link" id="63">
           <mxCell edge="1" parent="1" source="37" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="33">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -4146,7 +4146,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Check the reset link (UC-07)" mermaidId="e:UserService-&gt;ResetTokenStore#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Check the reset link (UC-07)" id="77">
+        <UserObject label="Check the reset link" mermaidId="e:UserService-&gt;ResetTokenStore#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Check the reset link" id="77">
           <mxCell edge="1" parent="1" source="43" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="40">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -7255,7 +7255,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Retrieve the matching audit entries and their total, newest first, one page (UC-12)" mermaidId="e:AuditLogQuery-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve the matching audit entries and their total, newest first, one page (UC-12)" id="39">
+        <UserObject label="Retrieve the matching audit entries and their total, newest first, one page" mermaidId="e:AuditLogQuery-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve the matching audit entries and their total, newest first, one page" id="39">
           <mxCell edge="1" parent="1" source="23" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="22">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -7332,7 +7332,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Page of entries with time, actor, event, object, IP address and recorded details (UC-12)" mermaidId="e:AuditLogQueryService-&gt;AuditLogEndpoints#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Page of entries with time, actor, event, object, IP address and recorded details (UC-12)" id="46">
+        <UserObject label="Page of entries with time, actor, event, object, IP address and recorded details" mermaidId="e:AuditLogQueryService-&gt;AuditLogEndpoints#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Page of entries with time, actor, event, object, IP address and recorded details" id="46">
           <mxCell edge="1" parent="1" source="26" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="27">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -7548,7 +7548,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Create meeting with Draft status and participants&#10;with Pending responses in one save (BR-013, UC-13)" mermaidId="e:MeetingService-&gt;MeetingRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create meeting with Draft status and participants&#10;with Pending responses in one save (BR-013, UC-13)" id="28">
+        <UserObject label="Create meeting with Draft status and participants&#10;with Pending responses in one save (BR-013)" mermaidId="e:MeetingService-&gt;MeetingRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create meeting with Draft status and participants&#10;with Pending responses in one save (BR-013)" id="28">
           <mxCell edge="1" parent="1" source="16" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="15">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -7916,7 +7916,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, UC-14, BR-015)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, UC-14, BR-015)" id="47">
+        <UserObject label="Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, BR-015)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, BR-015)" id="47">
           <mxCell edge="1" parent="1" source="28" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="26">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -7960,7 +7960,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Notify invitees when rescheduled (BR-035, UC-14)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify invitees when rescheduled (BR-035, UC-14)" id="51">
+        <UserObject label="Notify invitees when rescheduled (BR-035)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify invitees when rescheduled (BR-035)" id="51">
           <mxCell edge="1" parent="1" source="28" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="27">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -9376,7 +9376,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Notify participants and send invitations (BR-031, BR-032, UC-19)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants and send invitations (BR-031, BR-032, UC-19)" id="35">
+        <UserObject label="Notify participants and send invitations (BR-031, BR-032)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants and send invitations (BR-031, BR-032)" id="35">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -9666,7 +9666,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Notify participants (UC-20, BR-035)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants (UC-20, BR-035)" id="35">
+        <UserObject label="Notify participants (BR-035)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants (BR-035)" id="35">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -10250,7 +10250,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Change status to Cancelled, record history (BR-022, BR-023, UC-22)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Change status to Cancelled, record history (BR-022, BR-023, UC-22)" id="41">
+        <UserObject label="Change status to Cancelled, record history (BR-022, BR-023)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Change status to Cancelled, record history (BR-022, BR-023)" id="41">
           <mxCell edge="1" parent="1" source="22" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="20">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -10294,7 +10294,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Notify participants if published/waiting approval (UC-22, BR-035)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants if published/waiting approval (UC-22, BR-035)" id="45">
+        <UserObject label="Notify participants if published/waiting approval (BR-035)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify participants if published/waiting approval (BR-035)" id="45">
           <mxCell edge="1" parent="1" source="22" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="21">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -10571,7 +10571,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Create pending item after last position (UC-23a)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create pending item after last position (UC-23a)" id="34">
+        <UserObject label="Create pending item after last position" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create pending item after last position" id="34">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -10870,7 +10870,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save changes preserving status and timestamps (UC-23b)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save changes preserving status and timestamps (UC-23b)" id="34">
+        <UserObject label="Save changes preserving status and timestamps" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save changes preserving status and timestamps" id="34">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -11169,7 +11169,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Remove pending item and its links&#10;(UC-23c, UC-36b, UC-36d)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Remove pending item and its links&#10;(UC-23c, UC-36b, UC-36d)" id="34">
+        <UserObject label="Remove pending item and its links&#10;(UC-36b, UC-36d)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Remove pending item and its links&#10;(UC-36b, UC-36d)" id="34">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -11468,7 +11468,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save new order (UC-23d)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save new order (UC-23d)" id="34">
+        <UserObject label="Save new order" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save new order" id="34">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12536,7 +12536,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save conclusion with actor and time (BR-066, BR-067, UC-27)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save conclusion with actor and time (BR-066, BR-067, UC-27)" id="34">
+        <UserObject label="Save conclusion with actor and time (BR-066, BR-067)" mermaidId="e:AgendaService-&gt;AgendaRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save conclusion with actor and time (BR-066, BR-067)" id="34">
           <mxCell edge="1" parent="1" source="18" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -14646,7 +14646,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save attendance together (BR-056, BR-057, UC-33)" mermaidId="e:AttendanceService-&gt;AttendanceRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save attendance together (BR-056, BR-057, UC-33)" id="39">
+        <UserObject label="Save attendance together (BR-056, BR-057)" mermaidId="e:AttendanceService-&gt;AttendanceRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save attendance together (BR-056, BR-057)" id="39">
           <mxCell edge="1" parent="1" source="20" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="19">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -15108,7 +15108,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Get notifications and unread count without changing read status (UC-76, UC-77b, UC-78)" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get notifications and unread count without changing read status (UC-76, UC-77b, UC-78)" id="16">
+        <UserObject label="Get notifications and unread count without changing read status (UC-77b, UC-78)" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get notifications and unread count without changing read status (UC-77b, UC-78)" id="16">
           <mxCell edge="1" parent="1" source="10" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="9">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -15595,7 +15595,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Mark all unread notifications for current user as read (BR-033, BR-034, UC-77b)" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Mark all unread notifications for current user as read (BR-033, BR-034, UC-77b)" id="20">
+        <UserObject label="Mark all unread notifications for current user as read (BR-033, BR-034)" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Mark all unread notifications for current user as read (BR-033, BR-034)" id="20">
           <mxCell edge="1" parent="1" source="14" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="13">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -16025,7 +16025,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Mark notification as read (UC-76, UC-77b, UC-78)" mermaidId="e:NotificationService-&gt;NotificationRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Mark notification as read (UC-76, UC-77b, UC-78)" id="52">
+        <UserObject label="Mark notification as read (UC-76, UC-77b)" mermaidId="e:NotificationService-&gt;NotificationRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Mark notification as read (UC-76, UC-77b)" id="52">
           <mxCell edge="1" parent="1" source="35" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="42">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -28341,7 +28341,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Publish the shared screen; stop any earlier presentation (UC-45c)" mermaidId="e:Page-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Publish the shared screen; stop any earlier presentation (UC-45c)" id="11">
+        <UserObject label="Publish the shared screen; stop any earlier presentation" mermaidId="e:Page-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Publish the shared screen; stop any earlier presentation" id="11">
           <mxCell edge="1" parent="1" source="9" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="7">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -32105,7 +32105,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Queue a Pending transcript for the recording (UC-52b)" mermaidId="e:RoomTakeService-&gt;TranscriptRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Queue a Pending transcript for the recording (UC-52b)" id="85">
+        <UserObject label="Queue a Pending transcript for the recording" mermaidId="e:RoomTakeService-&gt;TranscriptRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Queue a Pending transcript for the recording" id="85">
           <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="38">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -32171,7 +32171,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Add the take to the room recording with its place and length,&#10;update the duration and remove the separate take (UC-52b)" mermaidId="e:RoomTakeService-&gt;RecordingRepository#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Add the take to the room recording with its place and length,&#10;update the duration and remove the separate take (UC-52b)" id="91">
+        <UserObject label="Add the take to the room recording with its place and length,&#10;update the duration and remove the separate take" mermaidId="e:RoomTakeService-&gt;RecordingRepository#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Add the take to the room recording with its place and length,&#10;update the duration and remove the separate take" id="91">
           <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="41">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -32215,7 +32215,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Put the whole recording back as Pending to transcribe it again (UC-52b)" mermaidId="e:RoomTakeService-&gt;TranscriptRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Put the whole recording back as Pending to transcribe it again (UC-52b)" id="95">
+        <UserObject label="Put the whole recording back as Pending to transcribe it again" mermaidId="e:RoomTakeService-&gt;TranscriptRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Put the whole recording back as Pending to transcribe it again" id="95">
           <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="43">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -35331,7 +35331,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Get the Meeting sentences that are not excluded (UC-54b)" mermaidId="e:ClipService-&gt;ClipRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get the Meeting sentences that are not excluded (UC-54b)" id="98">
+        <UserObject label="Get the Meeting sentences that are not excluded" mermaidId="e:ClipService-&gt;ClipRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get the Meeting sentences that are not excluded" id="98">
           <mxCell edge="1" parent="1" source="48" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -35959,7 +35959,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Replace segments and voices with the new ones, the names filled&#10;in and the suggestions; carry the names, edited text and moved sentences&#10;the Secretary set by hand onto the matching new voices and sentences&#10;and mark the transcript Completed (UC-54c, BR-120, BR-123, BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Replace segments and voices with the new ones, the names filled&#10;in and the suggestions; carry the names, edited text and moved sentences&#10;the Secretary set by hand onto the matching new voices and sentences&#10;and mark the transcript Completed (UC-54c, BR-120, BR-123, BR-125, BR-154)" id="77">
+        <UserObject label="Replace segments and voices with the new ones, the names filled&#10;in and the suggestions; carry the names, edited text and moved sentences&#10;the Secretary set by hand onto the matching new voices and sentences&#10;and mark the transcript Completed (BR-120, BR-123, BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Replace segments and voices with the new ones, the names filled&#10;in and the suggestions; carry the names, edited text and moved sentences&#10;the Secretary set by hand onto the matching new voices and sentences&#10;and mark the transcript Completed (BR-120, BR-123, BR-125, BR-154)" id="77">
           <mxCell edge="1" parent="1" source="44" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="42">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -36534,7 +36534,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Record the rerun: its text, edits and assigned names&#10;will be replaced, keeping what the Secretary set by hand (UC-54c, BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;AuditService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Record the rerun: its text, edits and assigned names&#10;will be replaced, keeping what the Secretary set by hand (UC-54c, BR-125, BR-154)" id="74">
+        <UserObject label="Record the rerun: its text, edits and assigned names&#10;will be replaced, keeping what the Secretary set by hand (BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;AuditService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Record the rerun: its text, edits and assigned names&#10;will be replaced, keeping what the Secretary set by hand (BR-125, BR-154)" id="74">
           <mxCell edge="1" parent="1" source="40" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="37">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -38153,7 +38153,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Create the voice SPEAKER_NN with the smallest unused number,&#10;with its own card, colour and duration (UC-55b)" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create the voice SPEAKER_NN with the smallest unused number,&#10;with its own card, colour and duration (UC-55b)" id="103">
+        <UserObject label="Create the voice SPEAKER_NN with the smallest unused number,&#10;with its own card, colour and duration" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create the voice SPEAKER_NN with the smallest unused number,&#10;with its own card, colour and duration" id="103">
           <mxCell edge="1" parent="1" source="51" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -38197,7 +38197,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Move only this sentence to that voice,&#10;update the durations and mark who moved it and when, so a later run carries it again (UC-55b, BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#5" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Move only this sentence to that voice,&#10;update the durations and mark who moved it and when, so a later run carries it again (UC-55b, BR-125, BR-154)" id="107">
+        <UserObject label="Move only this sentence to that voice,&#10;update the durations and mark who moved it and when, so a later run carries it again (BR-125, BR-154)" mermaidId="e:TranscriptionService-&gt;TranscriptRepository#5" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Move only this sentence to that voice,&#10;update the durations and mark who moved it and when, so a later run carries it again (BR-125, BR-154)" id="107">
           <mxCell edge="1" parent="1" source="51" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="49">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -47791,7 +47791,7 @@ deactivate LoginPage
         <mxCell id="20" parent="17" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[At least one readable Meeting]" vertex="1">
           <mxGeometry height="16" width="863" y="98" as="geometry" />
         </mxCell>
-        <UserObject label="View the manager figures and query a table with chosen parameters (UC-79a)" mermaidId="e:Actor-&gt;ReportsPage#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="View the manager figures and query a table with chosen parameters (UC-79a)" id="30">
+        <UserObject label="View the manager figures and query a table with chosen parameters" mermaidId="e:Actor-&gt;ReportsPage#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="View the manager figures and query a table with chosen parameters" id="30">
           <mxCell edge="1" parent="1" source="2" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="29">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -52384,7 +52384,7 @@ deactivate LoginPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save note with timestamp (UC-28)" mermaidId="e:NotesService-&gt;NotesRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save note with timestamp (UC-28)" id="39">
+        <UserObject label="Save note with timestamp" mermaidId="e:NotesService-&gt;NotesRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save note with timestamp" id="39">
           <mxCell edge="1" parent="1" source="20" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="19">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">

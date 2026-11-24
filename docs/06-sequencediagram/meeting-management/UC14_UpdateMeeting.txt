@@ -48,7 +48,7 @@ else Values changed
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Valid update
-        MeetingService->MeetingRepository: Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, UC-14, BR-015)
+        MeetingService->MeetingRepository: Save updates or reschedule; keep status and approver (BR-014, BR-022, BR-023, BR-015)
         activate MeetingRepository
         MeetingRepository->Database: Save meeting and history
         activate Database
@@ -57,7 +57,7 @@ else Values changed
         MeetingRepository-->MeetingService: Updated meeting
         deactivate MeetingRepository
 
-        MeetingService->NotificationService: Notify invitees when rescheduled (BR-035, UC-14)
+        MeetingService->NotificationService: Notify invitees when rescheduled (BR-035)
         activate NotificationService
         NotificationService-->MeetingService: Notifications queued
         deactivate NotificationService

@@ -16,7 +16,7 @@ activate NotificationController
 NotificationController->NotificationService: Get notifications for current user
 activate NotificationService
 
-NotificationService->NotificationRepository: Get notifications and unread count without changing read status (UC-76, UC-77b, UC-78)
+NotificationService->NotificationRepository: Get notifications and unread count without changing read status (UC-77b, UC-78)
 activate NotificationRepository
 
 NotificationRepository->Database: Retrieve user notifications and unread count

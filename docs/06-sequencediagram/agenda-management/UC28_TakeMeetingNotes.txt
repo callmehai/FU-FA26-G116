@@ -41,7 +41,7 @@ else Note was changed in another window - EX-3
     NotesPanel-->Secretary: MSG418 - This note was changed in another window. Reload to see the latest version.
 
 else Valid note
-    NotesService->NotesRepository: Save note with timestamp (UC-28)
+    NotesService->NotesRepository: Save note with timestamp
     activate NotesRepository
     NotesRepository->Database: Save note
     activate Database

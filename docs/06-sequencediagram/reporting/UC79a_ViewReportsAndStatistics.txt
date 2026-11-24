@@ -8,7 +8,7 @@ participant ":Meeting Repository" as MeetingRepository
 participant ":Report Fact Query" as ReportFactQuery
 database ":Database" as Database
 
-Actor->ReportsPage: View the manager figures and query a table with chosen parameters (UC-79a)
+Actor->ReportsPage: View the manager figures and query a table with chosen parameters
 activate ReportsPage
 
 ReportsPage->ReportController: Get meeting statistics and the queried table

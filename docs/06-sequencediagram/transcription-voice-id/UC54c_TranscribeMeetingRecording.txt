@@ -72,7 +72,7 @@ else Secretary may queue the recording
             deactivate TranscriptRepository
         else Transcript is Failed - AF-2, or Completed - AF-3
             opt Transcript is Completed
-                TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names\nwill be replaced, keeping what the Secretary set by hand (UC-54c, BR-125, BR-154)
+                TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names\nwill be replaced, keeping what the Secretary set by hand (BR-125, BR-154)
                 activate AuditService
                 AuditService-->TranscriptionService: Entry saved
                 deactivate AuditService

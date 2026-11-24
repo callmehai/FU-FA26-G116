@@ -34,7 +34,7 @@ else The permission is held
         AuditLogQueryService->AuditLogQuery: count(query), findPage(query, skip)
         activate AuditLogQuery
 
-        AuditLogQuery->Database: Retrieve the matching audit entries and their total, newest first, one page (UC-12)
+        AuditLogQuery->Database: Retrieve the matching audit entries and their total, newest first, one page
         activate Database
 
         Database-->AuditLogQuery: Entries and total
@@ -55,7 +55,7 @@ else The permission is held
         AuditLogQuery-->AuditLogQueryService: Names and emails
         deactivate AuditLogQuery
 
-        AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object, IP address and recorded details (UC-12)
+        AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object, IP address and recorded details
         AuditLogEndpoints-->AuditLogPage: 200 page of audit entries
 
         alt No entry matches - AF-3

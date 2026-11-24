@@ -36,7 +36,7 @@ else Invalid or outdated agenda order - EX-2
     AgendaPage-->Secretary: MSG143 - The agenda order is invalid or out of date. Refresh the agenda.
 
 else Valid order
-    AgendaService->AgendaRepository: Save new order (UC-23d)
+    AgendaService->AgendaRepository: Save new order
     activate AgendaRepository
     AgendaRepository->Database: Update item positions
     activate Database
