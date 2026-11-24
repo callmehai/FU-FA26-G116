@@ -1,7 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<mxfile host="app.diagrams.net" pages="7">
+<mxfile host="Electron" pages="7">
   <diagram id="system-admin" name="System Admin">
-    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1920" pageHeight="1660" math="0" shadow="0">
+    <mxGraphModel dx="1374" dy="934" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1920" pageHeight="1660" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -117,7 +116,7 @@
           <mxGeometry height="44" width="170" x="144" y="467.669" as="geometry" />
         </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="System Admin" vertex="1">
-          <mxGeometry height="61" width="31" x="40" y="693.0899999999999" as="geometry" />
+          <mxGeometry height="61" width="31" x="14" y="703.9999999999999" as="geometry" />
         </mxCell>
         <mxCell id="assoc-1" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-1" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -182,43 +181,49 @@
         <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
           <mxGeometry height="44" width="170" x="880" y="802" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-91-56-extend" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-56" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-56" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-91" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-91" value="">
+        <mxCell id="assoc-91" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-91" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="549.9" y="697.8" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell edge="1" id="assoc-view-locked-library" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-view-locked-library" value="">
+        <mxCell id="assoc-view-locked-library" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-view-locked-library" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+        <mxCell id="assoc-my-voice-id" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
           <mxGeometry height="61" width="31" x="1160" y="456" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-resend-email-8" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-8" value="">
+        <mxCell id="assoc-resend-email-8" edge="1" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-8" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
           <mxGeometry height="61" width="31" x="345" y="1520" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="360" y="1310" />
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="14QiLCO8Y04vz0oKd6m0-2" edge="1" parent="1" source="14QiLCO8Y04vz0oKd6m0-1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="actor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="14QiLCO8Y04vz0oKd6m0-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Collect Voice Samples for Attendees" vertex="1">
+          <mxGeometry height="52.64" width="210" x="148.39" y="780" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="meeting-organizer" name="Meeting Organizer">
-    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="2260" pageHeight="1480" math="0" shadow="0">
+    <mxGraphModel dx="853" dy="818" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2260" pageHeight="1480" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -390,7 +395,7 @@
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="NMIC7YAiUA4h1z98IjQs-1" edge="1" parent="1" target="uc-47" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="">
+        <mxCell id="NMIC7YAiUA4h1z98IjQs-1" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-47" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="NMIC7YAiUA4h1z98IjQs-6" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-50" value="">
@@ -408,36 +413,34 @@
         <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="985" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-cancel-meeting-17-extend" parent="1" source="uc-cancel-meeting" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0.0;exitY=0.611;entryX=1.0;entryY=0.389;" target="uc-17" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-cancel-meeting-17-extend" edge="1" parent="1" source="uc-cancel-meeting" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0.0;exitY=0.611;entryX=1.0;entryY=0.389;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1076" y="680" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+        <mxCell id="assoc-my-voice-id" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
           <mxGeometry height="61" width="31" x="1420" y="560" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-resend-email-21" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.3;" target="uc-21" value="">
+        <mxCell id="assoc-resend-email-21" edge="1" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.3;" target="uc-21" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-resend-email-cancel-meeting" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.7;" target="uc-cancel-meeting" value="">
+        <mxCell id="assoc-resend-email-cancel-meeting" edge="1" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.7;" target="uc-cancel-meeting" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
-          <mxGeometry height="61" width="31" x="515" y="1715" as="geometry" />
+          <mxGeometry height="61" width="31" x="1491" y="1276" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="531" y="1330" />
-            </Array>
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-      <mxCell id="uc-find-meeting-time" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Find Meeting Time" vertex="1">
+        <mxCell id="uc-find-meeting-time" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Find Meeting Time" vertex="1">
           <mxGeometry height="44" width="170" x="300" y="1530" as="geometry" />
         </mxCell>
         <mxCell id="uc-calendar-sharing" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Calendar Sharing" vertex="1">
@@ -452,7 +455,7 @@
         <mxCell id="assoc-find-time" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-find-meeting-time">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        </root>
+      </root>
     </mxGraphModel>
   </diagram>
   <diagram id="meeting-approver" name="Meeting Approver">
@@ -676,7 +679,6 @@
         <mxCell id="uc-36" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Complete Agenda Item" vertex="1">
           <mxGeometry height="44" width="170" x="1236" y="722" as="geometry" />
         </mxCell>
-
         <mxCell id="uc-43" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Start Meeting" vertex="1">
           <mxGeometry height="44" width="170" x="551" y="551" as="geometry" />
         </mxCell>
@@ -780,7 +782,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=#FFFFFF;" target="uc-89" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="280" y="1332" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="1332" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Chair" vertex="1">
           <mxGeometry height="62" width="35" x="69" y="995" as="geometry" />
@@ -800,7 +806,6 @@
         <mxCell id="assoc-22" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-22" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
         <mxCell id="assoc-46" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-46" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -870,13 +875,27 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-83-77-extend" edge="1" parent="1" source="uc-83" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="505" y="1206" as="points" /><mxPoint x="505" y="950" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="1206" as="points" />
+              <mxPoint x="505" y="950" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="505" y="1295" as="points" /><mxPoint x="505" y="950" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="1295" as="points" />
+              <mxPoint x="505" y="950" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="rel-correct-issued-minutes-77-extend" edge="1" parent="1" source="uc-correct-issued-minutes" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="965" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="965" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="35" x="90" y="178" as="geometry" />
@@ -952,7 +971,12 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell edge="1" id="rel-64-61-extend" parent="1" source="uc-64" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1145" y="560" as="points" /><mxPoint x="1145" y="905" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1145" y="560" as="points" />
+              <mxPoint x="1145" y="905" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell edge="1" id="rel-73-70-extend" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
@@ -976,7 +1000,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell edge="1" id="rel-my-recorded-speech-61-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" target="uc-61" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1110" y="888" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1110" y="888" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -988,13 +1016,18 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell edge="1" id="assoc-cloudflare-r2-57" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" target="uc-57" value="">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1560" y="1450" as="points" /><mxPoint x="1560" y="812" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1560" y="1450" as="points" />
+              <mxPoint x="1560" y="812" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="secretary" name="Secretary">
-    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="2260" pageHeight="2620" math="0" shadow="0">
+    <mxGraphModel dx="1240" dy="1189" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2260" pageHeight="2620" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1079,7 +1112,6 @@
         <mxCell id="uc-68" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Approve Meeting Summary" vertex="1">
           <mxGeometry height="44" width="170" x="1433" y="1757" as="geometry" />
         </mxCell>
-
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
           <mxGeometry height="44" width="170" x="912" y="1737" as="geometry" />
         </mxCell>
@@ -1236,7 +1268,6 @@
         <mxCell id="rel-68-66-extend" edge="1" parent="1" source="uc-68" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-66" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
         <mxCell id="rel-70-17-extend" edge="1" parent="1" source="uc-70" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0.437;exitY=0.0;exitDx=0;exitDy=0;entryX=0.563;entryY=1.0;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -1267,13 +1298,7 @@
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ai-provider" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="Google AI Provider" vertex="1">
-          <mxGeometry height="53.5" width="29.5" x="1744" y="1586" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-ai-provider" edge="1" parent="1" source="ai-provider" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-90" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-                <mxCell id="uc-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cast Vote" vertex="1">
+        <mxCell id="uc-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cast Vote" vertex="1">
           <mxGeometry height="44" width="170" x="600" y="1790" as="geometry" />
         </mxCell>
         <mxCell id="uc-confirm-doc-read" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Confirm Document Read" vertex="1">
@@ -1300,68 +1325,80 @@
         <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
           <mxGeometry height="44" width="170" x="334" y="1650" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-71" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-71" value="">
+        <mxCell id="assoc-71" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-71" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-73-70-extend" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-73-70-extend" edge="1" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-73-confirm-doc-read-include" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
+        <mxCell id="rel-73-confirm-doc-read-include" edge="1" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-71-70-extend" parent="1" source="uc-71" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0;entryY=0.7;" target="uc-70" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="1845" as="points" /></Array></mxGeometry>
+        <mxCell id="rel-71-70-extend" edge="1" parent="1" source="uc-71" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0;entryY=0.7;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="1845" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell edge="1" id="rel-manage-vote-docs-71-extend" parent="1" source="uc-manage-vote-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-71" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-manage-vote-docs-71-extend" edge="1" parent="1" source="uc-manage-vote-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-71" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-agenda-conclusion-54-extend" parent="1" source="uc-agenda-conclusion" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-54" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-agenda-conclusion-54-extend" edge="1" parent="1" source="uc-agenda-conclusion" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-54" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-floating-window-45-extend" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-floating-window-45-extend" edge="1" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-register-to-speak-45-extend" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-register-to-speak-45-extend" edge="1" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="rel-my-recorded-speech-45-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-my-recorded-speech-45-extend" edge="1" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="993" y="1066" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell edge="1" id="rel-my-recorded-speech-61-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-my-recorded-speech-61-extend" edge="1" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+        <mxCell id="assoc-my-voice-id" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
           <mxGeometry height="61" width="31" x="1330" y="2103" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-resend-email-80" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-80" value="">
+        <mxCell id="assoc-resend-email-80" edge="1" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-80" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
           <mxGeometry height="61" width="31" x="1740" y="1480" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.7;entryX=0.5;entryY=0;" target="uc-94" value="">
+        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.7;entryX=0.5;entryY=0;" target="uc-94" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell edge="1" id="assoc-cloudflare-r2-57" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.3;entryX=1;entryY=0.5;" target="uc-57" value="">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1670" y="1300" as="points" /></Array></mxGeometry>
+        <mxCell id="assoc-cloudflare-r2-57" edge="1" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.3;entryX=1;entryY=0.5;" target="uc-57" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1670" y="1300" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-      <mxCell id="uc-collect-voice-samples" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Collect Voice Samples for Attendees" vertex="1"><mxGeometry height="52.64" width="210" x="330" y="1718" as="geometry" /></mxCell><mxCell id="assoc-collect-voice-samples" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-collect-voice-samples" value="" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>        <mxCell id="uc-take-meeting-notes" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Take Meeting Notes" vertex="1">
+        <mxCell id="uc-take-meeting-notes" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Take Meeting Notes" vertex="1">
           <mxGeometry height="44" width="170" x="520" y="1160" as="geometry" />
         </mxCell>
         <mxCell id="assoc-secretary-take-notes" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-take-meeting-notes" value="">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="250" y="1102" as="points" /></Array></mxGeometry>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="250" y="1102" as="points" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="rel-take-notes-54-extend" edge="1" parent="1" source="uc-take-meeting-notes" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-54" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-</root>
+      </root>
     </mxGraphModel>
   </diagram>
   <diagram id="participant" name="Participant">
@@ -1683,7 +1720,7 @@
         </mxCell>
         <mxCell id="rel-73-70-extend" edge="1" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry">
-            </mxGeometry>
+          </mxGeometry>
         </mxCell>
         <mxCell id="uc-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Participants" vertex="1">
           <mxGeometry height="44" width="170" x="538" y="780" as="geometry" />
