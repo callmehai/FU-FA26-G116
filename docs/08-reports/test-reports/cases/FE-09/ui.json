@@ -27,7 +27,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · UC-43b · Manual only"
+          "note": "UC-43a · UC-43b · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Tệp tải lên: \"Tải lên\", \"Có bản gỡ băng\", 00:02, 63 KB, ngày lưu; trình phát mở sẵn. Evidence: tests/qa/out/MANUAL-R1/20261123-071738-03594e25/01-secretary-REC_FT01-desktop-danh-sach-ban-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "REC_FT02",
@@ -45,7 +48,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · Retention (Law 91/2025) · Manual only"
+          "note": "UC-43a · Retention (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC19+AC25: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/11-secretary-AC19-desktop-han-luu-tru-180-ngay.png; tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/01-member-AC25-desktop-danh-sach-chu-thich.png · Máy tính: chú thích hiện đúng \"Lưu bởi … · Mục đích … · Tự xoá ngày 21/05/2027\". Điện thoại: chạm dòng thông tin KHÔNG hiện chú thích (AC19 phone Failed, AC25 phone ghi chú) — nghi lỗi, xem bugs.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT03",
@@ -63,7 +69,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No recording yet. Repeat on an Ended meeting."
           ],
-          "note": "UC-43a · Manual only"
+          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC20: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/29-secretary-AC20-desktop-dang-dien-ra-chua-co-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/31-secretary-AC20-desktop-da-ket-thuc-van-tai-len.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT04",
@@ -83,7 +92,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43b · Manual only"
+          "note": "UC-43b · Manual only · Round1 Passed (2026-11-22): AC25+AC15: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Tua (0,30 s -> 5,27 s), tốc độ, âm lượng và tắt tiếng đổi đúng trên thẻ audio; chạy với tệp tổng hợp tiếng nhân tạo (không phải giọng thật).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT05",
@@ -93,14 +105,17 @@
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
           ],
           "expected": [
-            "The row shows only the \"Thu gọn\" toggle; there is no \"Xoá bản ghi\" and no \"Tải tệp ghi âm\" button.",
+            "The row shows only the \"Thu gọn\" toggle; there is no \"Xoá bản ghi\" and no \"Tải MP3\" button.",
             "There is no \"Tải tệp lên\" button in the toolbar."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · Manual only"
+          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC15+AC25: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT06",
@@ -118,46 +133,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The Secretary has the room mic on."
           ],
-          "note": "UC-43a · UC-44b · Manual only"
+          "note": "UC-43a · UC-44b · Manual only · Round1 Passed (2026-11-22): AC29: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/06-member-AC29-desktop-tu-lam-moi-sau-khi-tat-mic.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT07",
-          "description": "An erased recording leaves the tab.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Erase the recording (see Delete Take & Recording).",
-            "Reload the page."
-          ],
-          "expected": [
-            "The row disappears and \"Chưa có bản ghi.\" shows when it was the only one.",
-            "After reload it stays gone, although the backend keeps the evidence row with status Deleted."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
-          ],
-          "note": "UC-43a · UC-44e · Manual only"
-        },
-        {
-          "id": "REC_FT08",
-          "description": "The combined recording of an ended Hybrid meeting is labelled and plays without a transcript.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
-          ],
-          "expected": [
-            "The row shows the badge \"Tổng hợp\" and a file name like ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav.",
-            "Under the player the text \"Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.\" shows instead of a transcript."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "A Hybrid meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording and online sentences; the combined recording has been built."
-          ],
-          "note": "UC-43a · UC-43b · ADR-0061 · Manual only"
-        },
-        {
-          "id": "REC_FT09",
           "description": "An Online meeting shows the recordings tab without a room-recording panel.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -171,10 +153,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No room recording exists."
           ],
-          "note": "UC-43a · ADR-0040 · Manual only"
+          "note": "UC-43a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/25-secretary-AC11-phone-truc-tuyen-chi-micro-tung-nguoi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT10",
+          "id": "REC_FT08",
           "description": "The Bản ghi tab is hidden for someone who is not on the participant list.",
           "procedure": [
             "Sign in as the meeting's creator or approver who is not a participant.",
@@ -188,28 +173,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. The caller is not a participant."
           ],
-          "note": "UC-43a · Manual only"
+          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC16: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/28-admin-AC16-desktop-nguoi-tao-khong-co-tab-ban-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT11",
-          "description": "A failed load shows an error with a retry button.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Stop the backend or block the request, then open /mgmt/meetings/{meetingId}?tab=recordings.",
-            "Restore the backend and click \"Thử lại\"."
-          ],
-          "expected": [
-            "An alert with the server's message shows (for a database failure \"Không tải được danh sách bản ghi.\") and a \"Thử lại\" button.",
-            "After the retry the list loads."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
-          ],
-          "note": "UC-43a · MSG297 · Manual only"
-        },
-        {
-          "id": "REC_FT12",
+          "id": "REC_FT09",
           "description": "A playback failure shows its message on the row only.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -224,24 +194,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43b · Manual only"
-        },
-        {
-          "id": "REC_FT13",
-          "description": "A transcript still being made updates by itself.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Upload a recording and stay on /mgmt/meetings/{meetingId}?tab=recordings."
-          ],
-          "expected": [
-            "The row first shows the amber badge \"Đang chuyển chữ\".",
-            "Without reload the badge changes to \"Có bản gỡ băng\" (or the red \"Lỗi chuyển chữ\") when the worker finishes."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
-          ],
-          "note": "UC-43a · Manual only"
+          "note": "UC-43b · Manual only · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/11-member-AC26-desktop-loi-link-nghe-tren-dong.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/12-member-AC26-desktop-khong-phat-duoc-tep.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/15-member-AC26-phone-loi-link-nghe-tren-dong.png · Chèn lỗi bằng page.route (GET …/playback trả 404; GET …/audio bị huỷ).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -252,81 +208,93 @@
       ],
       "cases": [
         {
-          "id": "REC_FT14",
-          "description": "The Chair downloads the original recording file.",
+          "id": "REC_FT10",
+          "description": "The Chair downloads the recording as an MP3 file.",
           "procedure": [
             "Sign in as the Chair of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Click the button \"Tải tệp ghi âm\" on the recording."
+            "Click the button \"Tải MP3\" on the recording."
           ],
           "expected": [
             "Backend answers GET /api/recordings/{recordingId}/download with 200 and a link with download=1.",
-            "The browser saves the file under its original name; the audit log gets a recording.downloaded row."
+            "The browser saves the file as <original name>.mp3 (an mp3 is sent as it is; other formats are converted to MP3 by the server with ffmpeg, answer 503 MSG482 when ffmpeg is not installed); the audit log gets a recording.downloaded row."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · Manual only"
+          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/03-chair-AC17-desktop-chu-toa-tai-ve.png · Dùng bản ghi mp3: trình duyệt nhận qa-fe09-s1.mp3. Bản ghi định dạng khác cần ffmpeg ở máy chủ; máy chạy test không có ffmpeg nên API trả 503 MSG482 (giới hạn môi trường, không phải lỗi sản phẩm). Dòng audit recording.downloaded có trong audit_log. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT15",
-          "description": "The Secretary downloads the original recording file.",
+          "id": "REC_FT11",
+          "description": "The Secretary downloads the recording as an MP3 file.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Click \"Tải tệp ghi âm\"."
+            "Click \"Tải MP3\"."
           ],
           "expected": [
-            "The browser saves the original file; the page stays on the tab and shows no error."
+            "The browser saves the recording as an MP3 file; the page stays on the tab and shows no error."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · Manual only"
+          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC34: tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/04-secretary-AC34-desktop-thu-ky-tai-mp3.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/08-secretary-AC34-phone-thu-ky-tai-mp3.png · Tải qua nút \"Tải MP3\"; tệp lưu s1.mp3. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT16",
+          "id": "REC_FT12",
           "description": "A Member has no download button.",
           "procedure": [
             "Sign in as a Member of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
           ],
           "expected": [
-            "The row has no \"Tải tệp ghi âm\" button.",
+            "The row has no \"Tải MP3\" button.",
             "Opening GET /api/recordings/{recordingId}/download with the Member's token answers 403 MSG355."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · MSG355 · Manual only"
+          "note": "UC-43c · MSG355 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · API Thành viên tải bản ghi 403 MSG355 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT17",
+          "id": "REC_FT13",
           "description": "Nobody can download a recording of a Secret meeting.",
           "procedure": [
             "Sign in as the Chair of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
           ],
           "expected": [
-            "The row has no \"Tải tệp ghi âm\" button for the Chair or the Secretary, but listening still works.",
+            "The row has no \"Tải MP3\" button for the Chair or the Secretary, but listening still works.",
             "Calling the download endpoint answers 403 MSG356."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
           ],
-          "note": "UC-43c · MSG356 · Manual only"
+          "note": "UC-43c · MSG356 · Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thư ký không có \"Tải MP3\"; API tải về 403 MSG356, nghe 200. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/21-chair-REC_FT13-desktop-chair-hop-mat-khong-tai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/22-secretary-REC_FT13-desktop-secretary-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "REC_FT18",
+          "id": "REC_FT14",
           "description": "A download that the server refuses shows its message as a toast.",
           "procedure": [
             "Sign in as the Chair of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Remove the Chair's role from the meeting in another browser, then click \"Tải tệp ghi âm\"."
+            "Make the server refuse the download (remove the Chair's role from the meeting in another browser, or block the request with a 403 MSG355), then click \"Tải MP3\"."
           ],
           "expected": [
             "A red toast shows the server's message; no file is saved."
@@ -335,7 +303,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
-          "note": "UC-43c · Manual only"
+          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC27: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/17-chair-AC27-desktop-tai-bi-tu-choi-toast.png · Chèn lỗi: GET …/download trả 403 MSG355 (page.route) thay cho \"gỡ vai trò ở trình duyệt khác\"; toast đỏ đúng chữ máy chủ, không lưu tệp; bỏ chặn thì tải được. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -347,7 +318,7 @@
       ],
       "cases": [
         {
-          "id": "REC_FT19",
+          "id": "REC_FT15",
           "description": "The Secretary sees the floating mic card while the meeting runs, on every tab.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -361,10 +332,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · Manual only"
+          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC1+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/03-secretary-AC1-desktop-doi-tab-van-ghi.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/01-secretary-AC34-desktop-the-mic-thu-nho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT20",
+          "id": "REC_FT16",
           "description": "A Member and the Chair do not get the mic card.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -377,10 +351,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · Manual only"
+          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC4+AC15: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT21",
+          "id": "REC_FT17",
           "description": "Starting the first take asks the Secretary to confirm that the participants were told.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -395,10 +372,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · Consent (Law 91/2025) · Manual only"
+          "note": "UC-44a · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC1+AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/11-secretary-AC3-desktop-chua-tich-xac-nhan.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT22",
+          "id": "REC_FT18",
           "description": "Cancelling the consent dialog records nothing.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -412,10 +392,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · Manual only"
+          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/12-secretary-AC3-desktop-huy-khong-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/14-secretary-AC3-phone-huy-khong-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT23",
+          "id": "REC_FT19",
           "description": "Confirming consent starts the take and everyone sees it.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -431,10 +414,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · UC-44b · Manual only"
+          "note": "UC-44a · UC-44b · Manual only · Round1 Passed (2026-11-22): AC1+AC4+AC29: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/02-secretary-AC1-desktop-dang-ghi-ca-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT24",
+          "id": "REC_FT20",
           "description": "Switching the mic off saves the take and has the recording transcribed.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -448,10 +434,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Re-run AC35 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/01-secretary-AC35-desktop-tat-mic-luu-luot.png; tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/02-secretary-AC35-desktop-co-ban-go-bang.png · Toast \"Đã lưu lượt ghi.\", dòng \"Mic phòng\"; lượt ghi âm tiếng Việt (said.wav qua API) được chuyển chữ (\"Có bản gỡ băng\"), tải lại tab vẫn còn; gỡ băng: \"Kính thưa các đồng chí. / Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT25",
+          "id": "REC_FT21",
           "description": "A later take is appended without asking for consent again.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -466,10 +455,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. One saved room recording."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/09-secretary-AC2-desktop-luot-2-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/10-secretary-AC2-desktop-noi-thanh-2-luot.png · Bản gỡ băng làm lại chỉ kiểm tới nhãn \"Đang chuyển chữ\" (speech worker không chạy).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT26",
+          "id": "REC_FT22",
           "description": "Switching off a mic that heard nothing saves nothing.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -483,10 +475,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · MSG365 · Manual only"
+          "note": "UC-44b · MSG365 · Manual only · Round1 Passed (2026-11-22): AC30+AC6: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/09-secretary-AC30-desktop-bat-tat-ngay.png · Mic thử của trình duyệt luôn có tiếng nên không tạo được lượt rỗng thật: toast xanh kiểm bằng phản hồi chèn 200 MSG365 (page.route); API lượt rỗng thật kiểm ở AC6.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT27",
+          "id": "REC_FT23",
           "description": "The mic cannot be switched on for an Online meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -499,10 +494,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44a · ADR-0040 · Manual only"
+          "note": "UC-44a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT28",
+          "id": "REC_FT24",
           "description": "A second device sees that the mic is on elsewhere and the Secretary can save that take for it.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -517,10 +515,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · MSG360 · Manual only"
+          "note": "UC-44b · MSG360 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT29",
+          "id": "REC_FT25",
           "description": "A take left on this laptop by a closed tab can be continued or saved.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -534,10 +535,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT30",
+          "id": "REC_FT26",
           "description": "A slow network is reported without losing sound.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -551,10 +555,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT31",
+          "id": "REC_FT27",
           "description": "The room mic cannot start once the meeting has ended.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -567,7 +574,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · MSG359 · Manual only"
+          "note": "UC-44a · MSG359 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -578,7 +588,7 @@
       ],
       "cases": [
         {
-          "id": "REC_FT32",
+          "id": "REC_FT28",
           "description": "The Secretary uploads a recorded file after confirming consent.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -595,10 +605,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
           ],
-          "note": "UC-44c · MSG290 · Manual only"
+          "note": "UC-44c · MSG290 · Manual only · Re-run AC36 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/01-secretary-AC36-desktop-hop-luu-tep-tieng-viet.png; tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/02-secretary-AC36-desktop-tai-len-co-ban-go-bang.png · Hộp xác nhận tải tệp, 201 MSG290; dòng \"Tải lên\" (said.wav, 00:08, 239 KB), chuyển chữ xong \"Có bản gỡ băng\" chữ tiếng Việt (\"Kính thưa các đồng chí. Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"), tải lại vẫn còn",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT33",
+          "id": "REC_FT29",
           "description": "The upload button stays disabled until consent is confirmed.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -614,28 +627,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · Consent (Law 91/2025) · Manual only"
+          "note": "UC-44c · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC7+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/19-secretary-AC7-desktop-hop-luu-tep-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/02-secretary-AC34-desktop-huy-hop-tai-len.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT34",
-          "description": "A custom purpose is stored with the recording.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Choose a file, change \"Mục đích ghi âm\" to \"Họp giao ban tháng 11\", tick the box and click \"Tải lên\"."
-          ],
-          "expected": [
-            "The recording's tooltip reads \"Mục đích: Họp giao ban tháng 11\".",
-            "The field accepts at most 1000 characters."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
-          ],
-          "note": "UC-44c · Boundary: 1000 characters · Manual only"
-        },
-        {
-          "id": "REC_FT35",
+          "id": "REC_FT30",
           "description": "A file that is not audio is refused with the server's message.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -650,28 +648,34 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG292 · Manual only"
+          "note": "UC-44c · MSG292 · Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/23-secretary-AC8-desktop-tu-choi-dinh-dang.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT36",
+          "id": "REC_FT31",
           "description": "A file over the size limit is refused.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
             "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Choose an audio file larger than 300 MB and confirm."
+            "Choose an audio file larger than 300 MB."
           ],
           "expected": [
-            "Backend answers 413 MSG293.",
-            "The message \"Bản ghi vượt quá 300 MB.\" shows and the file stays available in the tray with \"Lưu về máy\"."
+            "After choosing the 301 MB file, a toast reports \"Bản ghi vượt quá 300 MB.\" (MSG293, shown without the code); no confirmation dialog opens and no recording is created.",
+            "A direct API upload of the 301 MB file answers 413 MSG293."
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only"
+          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Screen path 22/11: the upload tray reported \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" instead of \"Bản ghi vượt quá 300 MB.\" (direct API still answered 413 MSG293 in AC9); the server closes the connection while the file is still uploading, not re-checked through Caddy. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026). · Expected rewritten after 5e7f0414 (the screen now blocks over-limit files upfront with MSG293); the 23/11 Passed tested the old behavior on app e7dc0e7a, which predates 5e7f0414. Re-run AC32 24/11: Passed: tests/qa/out/SCRUM-196/20261124-041423-b5224b3f/01-secretary-AC32-desktop-qua-300-mb.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT37",
+          "id": "REC_FT32",
           "description": "No upload button for a Member, for an Online meeting or for a Hybrid meeting.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -686,14 +690,18 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Also one Online and one Hybrid meeting."
           ],
-          "note": "UC-44c · MSG358 · MSG478 · Manual only"
+          "note": "UC-44c · MSG358 · MSG478 · Manual only · Round1 Passed (2026-11-22): AC10+AC11+AC15: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/01-secretary-AC10-desktop-ket-hop-chi-mic-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Họp kết hợp (ADR-0072): trang cuộc họp không còn thẻ mic nổi, lời gợi ý \"Bật mic phòng trong phòng họp trực tuyến.\".",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT38",
+          "id": "REC_FT33",
           "description": "An upload before the meeting starts is refused.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
-            "Keep the \"Bản ghi\" tab open while another user cancels or while the meeting is still Scheduled, then upload a file."
+            "Open the meeting while it is Scheduled or Published: the \"Bản ghi\" tab is locked (\"Mở khi cuộc họp bắt đầu\"). To reach the upload dialog, open the tab on a meeting in progress and let the server answer 409 MSG294 to the upload (block the request or change the status in another browser).",
+            "Choose a file, tick the consent checkbox and click \"Tải lên\"."
           ],
           "expected": [
             "Backend answers 409 MSG294 and the page shows \"Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc.\".",
@@ -703,10 +711,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The tab was opened through its direct link."
           ],
-          "note": "UC-44c · MSG294 · Manual only"
+          "note": "UC-44c · MSG294 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/04-secretary-AC28-desktop-chua-dien-ra-409.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/07-secretary-AC28-phone-chua-dien-ra-409.png · Chèn lỗi: POST …/recordings trả 409 MSG294 (tab Bản ghi bị khoá cho tới khi họp bắt đầu nên không mở được ở trạng thái Scheduled). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT39",
+          "id": "REC_FT34",
           "description": "An upload by someone who lost the Secretary role is refused.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -721,7 +732,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A second account that can change participants."
           ],
-          "note": "UC-44c · MSG295 · Manual only"
+          "note": "UC-44c · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/05-secretary-AC28-desktop-mat-vai-tro-tai-len-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/08-secretary-AC28-phone-mat-vai-tro-tai-len-403.png · Chèn lỗi: POST trả 403 MSG295 rồi danh sách trả canUpload=false (page.route), không đổi vai trò thật ở trình duyệt thứ hai.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -733,7 +747,7 @@
       ],
       "cases": [
         {
-          "id": "REC_FT40",
+          "id": "REC_FT35",
           "description": "The Secretary erases a recording after a confirmation.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -750,10 +764,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Erasure on request · Manual only"
+          "note": "UC-44e · Erasure on request · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/06-secretary-AC18-desktop-hoi-xoa-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/07-secretary-AC18-desktop-da-xoa-ban-ghi.png · audit_log có recording.erased.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT41",
+          "id": "REC_FT36",
           "description": "Cancelling the erase keeps the recording.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -767,10 +784,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Manual only"
+          "note": "UC-44e · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/05-secretary-AC18-desktop-giu-lai-khong-xoa.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/08-secretary-AC18-phone-giu-lai-khong-xoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT42",
+          "id": "REC_FT37",
           "description": "A Member has no erase button.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -784,10 +804,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · MSG295 · Manual only"
+          "note": "UC-44e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · API Thành viên DELETE 403 MSG295 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT43",
+          "id": "REC_FT38",
           "description": "Erasing after losing the Secretary role is refused and the list refreshes.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -802,27 +825,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
-          "note": "UC-44e · MSG295 · Manual only"
+          "note": "UC-44e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/06-secretary-AC28-desktop-mat-vai-tro-xoa-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/09-secretary-AC28-phone-mat-vai-tro-xoa-403.png · Chèn lỗi: DELETE trả 403 MSG295 (page.route); hộp xoá hiện đúng câu, nút xoá bản ghi biến mất khi danh sách tải lại.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT44",
-          "description": "A take still being recorded cannot be erased.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Switch the room mic on and open the \"Bản ghi\" tab."
-          ],
-          "expected": [
-            "The open take row \"Mic phòng đang ghi\" has no \"Xoá bản ghi\" button.",
-            "Calling DELETE for it answers 409 MSG364 \"Mic phòng đang ghi lượt này. Tắt mic để lưu rồi mới xoá được.\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The room mic is on."
-          ],
-          "note": "UC-44e · MSG364 · Manual only"
-        },
-        {
-          "id": "REC_FT45",
+          "id": "REC_FT39",
           "description": "The Secretary deletes one take of a room recording.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -839,45 +848,13 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · MSG366 · Manual only"
+          "note": "UC-44d · MSG366 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Âm thanh là giọng máy tiếng Anh (Windows TTS) để có câu; hộp đúng hai câu; DELETE takes/2 200 MSG366, toast, còn \"2 lượt ghi\". Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/02-secretary-REC_FT35-desktop-ba-luot.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/03-secretary-REC_FT35-desktop-hoi-xoa-luot-2.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/04-secretary-REC_FT35-desktop-con-hai-luot.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "REC_FT46",
-          "description": "Cancelling the take deletion keeps the take.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Click \"Xoá lượt 2\", then \"Giữ lại\"."
-          ],
-          "expected": [
-            "The dialog closes; the recording still shows \"3 lượt ghi\" and all transcript lines."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
-          ],
-          "note": "UC-44d · Manual only"
-        },
-        {
-          "id": "REC_FT47",
-          "description": "The last remaining take cannot be deleted on its own.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Delete takes until one remains, then try to delete it (call the endpoint if the button is not offered)."
-          ],
-          "expected": [
-            "Backend answers 409 MSG367 with \"Bản ghi chỉ còn một lượt ghi. Xoá cả bản ghi nếu muốn bỏ lượt này.\".",
-            "The recording stays; the Secretary uses \"Xoá bản ghi\" to remove it all."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of two takes."
-          ],
-          "note": "UC-44d · MSG367 · Manual only"
-        },
-        {
-          "id": "REC_FT48",
+          "id": "REC_FT40",
           "description": "A Member sees no take delete button.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -890,7 +867,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · Manual only"
+          "note": "UC-44d · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Giọng máy tiếng Anh, 3 lượt; Thành viên thấy \"Lượt 1/2/3\" có giờ, không có thùng rác. Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/01-member-REC_FT36-desktop-thanh-vien-khong-xoa-luot.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     },
@@ -901,7 +881,7 @@
       ],
       "cases": [
         {
-          "id": "REC_FT49",
+          "id": "REC_FT41",
           "description": "The waiting screen tells the member that the meeting is recorded and when it is deleted.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -914,27 +894,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · Consent (Law 91/2025) · Manual only"
+          "note": "UC-80 · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC12: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/26-member-AC12-desktop-man-cho-thong-bao-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/27-member-AC12-phone-man-cho-thong-bao-ghi-am.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "REC_FT50",
-          "description": "A Guest must tick the recording notice before joining.",
-          "procedure": [
-            "Open the Guest link in a private window.",
-            "Look at the waiting screen, then tick the checkbox."
-          ],
-          "expected": [
-            "The checkbox \"Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau <n> ngày\" is shown and joining is not possible until it is ticked.",
-            "Without it the server refuses the Guest's sentences with 400 MSG380."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest invitation."
-          ],
-          "note": "UC-80 · MSG380 · Manual only"
-        },
-        {
-          "id": "REC_FT51",
+          "id": "REC_FT42",
           "description": "Speaking with the call's mic on records sentences that join the transcript under the speaker's name.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -950,59 +916,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · MSG318 · Manual only"
+          "note": "UC-80 · MSG318 · Manual only · Re-run AC37 24/11: Passed: tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/01-member-AC37-desktop-dang-ghi-loi-ban.png; tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/02-member-AC37-desktop-hai-cau-duoi-ten-nguoi-noi.png · Thành viên vào phòng họp trực tuyến thấy chip \"Đang ghi lời bạn\"; hai câu tiếng Việt hiện trên \"Bản ghi trực tiếp\" dưới tên người nói (Lê Thành Viên) mà không cần tải lại: \"Kính thưa các đồng chí.\" / \"Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ. năm hai nghìn không trăm hai mươi bảy.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT52",
-          "description": "Switching the call mic off stops recording.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Join the call room, switch the mic off and speak."
-          ],
-          "expected": [
-            "No sentence is sent and the header no longer shows \"Đang ghi lời bạn\"; nobody can switch another person's mic on."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_FT53",
-          "description": "A sentence that could not be sent is kept and sent again.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Join the call, cut the network, say a sentence, then restore the network."
-          ],
-          "expected": [
-            "The header shows \"Chưa gửi hết lời bạn\" with a count while offline.",
-            "After the network returns the sentence reaches the transcript without speaking again."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
-          ],
-          "note": "UC-80 · MSG312 · Manual only"
-        },
-        {
-          "id": "REC_FT54",
-          "description": "A sentence heard on a neighbour's microphone is marked, not hidden.",
-          "procedure": [
-            "Two members sit next to each other with open microphones and one speaks.",
-            "Open the \"Bản ghi\" tab as any participant."
-          ],
-          "expected": [
-            "The quieter copy shows the label \"Có thể là <name>\" (or \"Có đoạn của <name>\") with the tooltip \"Micro của <name> thu cùng câu này to hơn\"; the text is still readable."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_FT55",
+          "id": "REC_FT43",
           "description": "The Chair takes a sentence out of the record and puts it back.",
           "procedure": [
             "Sign in as the Chair of the meeting.",
@@ -1018,10 +938,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · UC-80 · Manual only"
+          "note": "UC-46c · UC-80 · Manual only · Re-run AC38 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/01-chair-AC38-desktop-cau-bi-loai.png; tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/02-chair-AC38-desktop-cau-duoc-khoi-phuc.png · Chủ toạ loại một câu duy nhất rồi khôi phục: toast \"Đã loại câu khỏi bản ghi.\" (MSG351 theo catalogue, plan cũ ghi nhầm \"biên bản\" đã sửa), câu gạch ngang kèm \"Đã bỏ khỏi biên bản\"; thành viên (API) thấy text \"\" và playback 404; \"Khôi phục\" → toast \"Đã đưa câu trở lại bản ghi.\" (MSG352), chữ trở lại; API loại 200 MSG351, khôi phục 200 MSG352",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT56",
+          "id": "REC_FT44",
           "description": "A Member has no exclude button.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -1034,10 +957,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · MSG353 · Manual only"
+          "note": "UC-46c · MSG353 · Manual only · Re-run AC39 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132734-ece83cb4/01-member-AC39-desktop-thanh-vien-khong-nut-loai-sua.png · Câu tiếng Việt hiện chữ nhưng Thành viên không có nút \"Bỏ khỏi biên bản\" và \"Sửa nội dung\" (đếm = 0); API loại câu 403 MSG353 \"Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT57",
+          "id": "REC_FT45",
           "description": "The Secretary corrects the text of a sentence.",
           "procedure": [
             "Sign in as the Secretary of the meeting.",
@@ -1052,77 +978,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-80 · MSG302 · Manual only"
-        },
-        {
-          "id": "REC_FT58",
-          "description": "The Secretary deletes someone else's sentence.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Click \"Xoá câu\" on a member's sentence.",
-            "In the dialog \"Xoá câu này?\" click \"Xoá câu\"."
-          ],
-          "expected": [
-            "The dialog quotes the sentence and says \"Câu và âm thanh của nó bị xoá khỏi cuộc họp.\".",
-            "Backend answers DELETE /api/speech-clips/{clipId} with 200 MSG322, a toast \"Đã xoá câu nói.\" shows and the sentence is gone for everyone."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
-          ],
-          "note": "UC-80 · UC-46d · MSG322 · Manual only"
-        },
-        {
-          "id": "REC_FT59",
-          "description": "A member cannot delete another member's sentence.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab)."
-          ],
-          "expected": [
-            "Only the member's own sentences have \"Xoá câu\"; calling DELETE for another member's sentence answers 403 MSG323 \"Chỉ người nói hoặc Thư ký được xoá câu này.\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. Sentences from two members."
-          ],
-          "note": "UC-80 · MSG323 · Manual only"
-        },
-        {
-          "id": "REC_FT60",
-          "description": "A listener hears a sentence again from the transcript.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Go to /mgmt/meetings/{meetingId}?tab=recordings (the \"Bản ghi\" tab).",
-            "Press play on a sentence."
-          ],
-          "expected": [
-            "Backend answers GET /api/speech-clips/{clipId}/playback with 200 and the sentence plays.",
-            "An excluded sentence offers no audio to a Member but does to the Chair and Secretary."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence with audio."
-          ],
-          "note": "UC-43b · Manual only"
-        },
-        {
-          "id": "REC_FT61",
-          "description": "Per-microphone recording is not offered for an InPerson meeting.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Open the meeting and its \"Bản ghi\" tab."
-          ],
-          "expected": [
-            "No \"Bản ghi trực tiếp\" panel shows; the room is recorded by the Secretary's room mic only.",
-            "Sending a sentence would be refused with 409 MSG320."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
-          ],
-          "note": "UC-80 · MSG320 · Manual only"
+          "note": "UC-80 · MSG302 · Manual only · Re-run AC40 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132743-ece83cb4/01-secretary-AC40-desktop-cau-da-sua.png · Thư ký sửa chữ câu thành \"Kính thưa các đồng chí, hôm nay chúng ta họp đã sửa.\": toast \"Đã lưu đoạn gỡ băng.\" (MSG302), câu hiện chữ mới kèm \"đã sửa\", tải lại trang vẫn còn, thành viên đọc qua API đúng chữ mới",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1133,7 +992,7 @@
       ],
       "cases": [
         {
-          "id": "REC_FT62",
+          "id": "REC_FT46",
           "description": "\"Ghi âm của tôi\" lists my own sentences, sent and waiting.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -1147,27 +1006,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · Manual only"
+          "note": "UC-80 · Manual only · Re-run AC41 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132902-ece83cb4/01-member-AC41-desktop-ghi-am-cua-toi.png · Hộp \"Ghi âm của tôi\": \"Chưa lên hệ thống · 1\" chip \"Chờ gửi lại\" (\"Đã thử 1 lần. Hệ thống tự gửi lại.\"); \"Đã lưu lên hệ thống · 2\" chip \"Đã chuyển chữ\", mới nhất trước theo startedAt (02:00:45 \"Kính thưa các đồng chí.\" trước 02:00:44 \"Hôm nay chúng ta họp...\"), mỗi câu có giờ nói và độ dài giây",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT63",
-          "description": "The dialog is reachable from the call room and links to the whole record.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "In the call room click the header chip \"Đang ghi lời bạn\" (or \"Chưa gửi hết lời bạn\").",
-            "Click \"Xem cả bản ghi cuộc họp\"."
-          ],
-          "expected": [
-            "The same dialog opens over the call; the link opens the meeting's recordings tab in a new tab so the call goes on."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_FT64",
+          "id": "REC_FT47",
           "description": "A member listens to one of their own sentences.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -1181,62 +1026,13 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · UC-43b · Manual only"
+          "note": "UC-80 · UC-43b · Manual only · Re-run AC42 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132919-ece83cb4/01-member-AC42-desktop-dang-nghe-lai.png · Thành viên bấm \"Nghe lại\" → nút đổi \"Dừng nghe\" (đang phát) → bấm dừng → \"Nghe lại\"; không có toast lỗi; API playback 200 có link ký sẵn",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_FT65",
-          "description": "A member takes back one of their own sentences.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Open \"Ghi âm của tôi\", click \"Xoá câu này\" on a sentence.",
-            "In the dialog \"Xoá câu này?\" click \"Xoá câu\"."
-          ],
-          "expected": [
-            "Backend answers DELETE /api/speech-clips/{clipId} with 200 MSG322 and a toast \"Đã xoá câu nói.\" shows.",
-            "The sentence leaves the dialog and the meeting's transcript for everyone, with its audio."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
-          ],
-          "note": "UC-80 · UC-46d · MSG322 · Manual only"
-        },
-        {
-          "id": "REC_FT66",
-          "description": "Cancelling the removal keeps the sentence.",
-          "procedure": [
-            "Sign in as a Member of the meeting.",
-            "Open \"Ghi âm của tôi\", click \"Xoá câu này\" then \"Giữ lại\"."
-          ],
-          "expected": [
-            "The dialog closes and the sentence is still listed."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_FT67",
-          "description": "A sentence the Chair left out is shown as such to its speaker.",
-          "procedure": [
-            "Sign in as the Chair of the meeting.",
-            "Exclude one of the member's sentences with \"Bỏ khỏi biên bản\".",
-            "Sign in as a Member of the meeting.",
-            "Open \"Ghi âm của tôi\"."
-          ],
-          "expected": [
-            "The sentence shows the chip \"Đã bỏ khỏi biên bản\" instead of \"Đã chuyển chữ\" and has no play button for the Member."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
-          ],
-          "note": "UC-80 · UC-46c · Manual only"
-        },
-        {
-          "id": "REC_FT68",
+          "id": "REC_FT48",
           "description": "With nothing said the dialog shows an empty state.",
           "procedure": [
             "Sign in as a Member of the meeting.",
@@ -1249,24 +1045,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_FT69",
-          "description": "A Guest sees and deletes only their own sentences.",
-          "procedure": [
-            "Join as a Guest, speak and open \"Ghi âm của tôi\".",
-            "Delete one sentence."
-          ],
-          "expected": [
-            "Only the Guest's sentences show, timed by the clock rather than the meeting time, with \"Xoá câu này\" on each and no link to the whole record.",
-            "Deleting answers 200 MSG322; a member's sentence cannot be deleted by the Guest (404)."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest admitted who has spoken."
-          ],
-          "note": "UC-80 · ADR-0051 · Manual only"
+          "note": "UC-80 · Manual only · Re-run AC43 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/01-member-AC43-desktop-phong-hop-chua-noi.png; tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/02-member-AC43-desktop-chua-co-cau-nao.png · Chưa nói câu nào thì \"Ghi âm của tôi\" hiện \"Chưa có câu nào\" + \"Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.\"; API danh sách câu của thanhvien@ trống (0 câu sau khi vào phòng không nói)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

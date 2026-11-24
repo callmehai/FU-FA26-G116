@@ -260,6 +260,17 @@ export default {
         const history = (await sec.get(`/api/meetings/${id}/history`)).body
         qa.expect(history.items.length).toBe(1)
         qa.expect(history.items[0].resultingStatus).toBe('Draft')
+        // FT01 E2 (Back must not reopen the dialog) lives in AC1B: this criterion opens the form a second
+        // time by URL to pick a day, which leaves the "?create=" deep link in the history — going Back
+        // through it reopening the dialog is that link working as designed, not BUG-01 (closed as not-a-bug
+        // 23/11, confirmed again by AC1B). Reload keeps the meeting; no notifications yet.
+        await qa.goto(`/mgmt/meetings/${id}`)
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: title })).toBeVisible()
+        await expectStatusChip(qa, 'Nháp')
+        for (const role of ['chair', 'secretary']) {
+          const notes = (await (await client(qa, role)).get('/api/notifications?page=1&pageSize=50')).body.items
+          qa.expect(notes.some((n) => n.meetingId === id), `${role} notified of a fresh Draft`).toBe(false)
+        }
         qa.note(`Tạo: ${title} (${id})`)
       },
     },
@@ -324,12 +335,29 @@ export default {
         const u = await users(qa)
         await form.getByRole('button', { name: `Bỏ ${u.secretary.name}` }).click()
         await qa.expect(form.getByText('Chưa chọn ai.')).toBeVisible()
+        // FT04: an empty title, date and times together, without choosing anyone.
+        await form.getByLabel('Ngày họp').fill('')
+        await form.getByLabel('Bắt đầu').fill('')
+        await form.getByLabel('Kết thúc').fill('')
+        await form.getByPlaceholder('Ví dụ: Giao ban tuần 40').click()
         await form.getByRole('button', { name: 'Tạo cuộc họp' }).click()
         await qa.expect(form.getByText('Tên cuộc họp không được để trống.')).toBeVisible()
+        // The date error and the start error share one line (errorOf('date') ?? errorOf('plannedStartTime')):
+        // with everything empty only the date error shows.
+        await qa.expect(form.getByText('Vui lòng chọn ngày họp.')).toBeVisible()
+        await qa.expect(form.getByText('Vui lòng chọn giờ kết thúc.')).toBeVisible()
         await qa.expect(form.getByPlaceholder('Ví dụ: Giao ban tuần 40')).toHaveAttribute('aria-invalid', 'true')
         await qa.expect(form.getByRole('combobox', { name: 'Tìm người dự họp' })).toHaveAttribute('aria-invalid', 'true')
         await settled(qa)
         await qa.shot('loi-thieu-ten-thanh-phan', { fullPage: true })
+        // Fill a valid date while the times stay empty: now the start error shows.
+        await form.getByLabel('Ngày họp').fill('25/11/2026')
+        await form.getByPlaceholder('Ví dụ: Giao ban tuần 40').click()
+        await form.getByRole('button', { name: 'Tạo cuộc họp' }).click()
+        await qa.expect(form.getByText('Vui lòng chọn giờ bắt đầu.')).toBeVisible()
+        await qa.expect(form.getByText('Vui lòng chọn giờ kết thúc.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('loi-thieu-gio-bat-dau', { fullPage: true })
         await qa.expect(form).toBeVisible()
         const after = (await (await client(qa, 'secretary')).get('/api/meetings?status=Draft&pageSize=1')).body.totalCount
         qa.expect(after).toBe(before)
@@ -431,6 +459,10 @@ export default {
         const got = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}`)).body
         qa.expect(got.title).toBe(renamed)
         qa.expect(got.status).toBe('Draft')
+        // FT12: an edit adds no history row (MSG30 is asserted by the API suite).
+        const historyAfter = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}/history`)).body
+        qa.expect(historyAfter.totalCount).toBe(1)
+        qa.expect(historyAfter.items[0].resultingStatus).toBe('Draft')
       },
     },
     {
@@ -463,6 +495,18 @@ export default {
           const after = (await sec.get(`/api/meetings/${m.id}`)).body
           c.fact(`${status} không đổi`, after.description === m.description && after.status === status)
         }
+        // FT14: Rejected stays Rejected on screen with the rejection bar after an edit.
+        const rej = await meetingAt(qa, 'Rejected')
+        const rejEdit = await sec.put(`/api/meetings/${rej.id}`, put(rej, { description: 'QA sửa bản bị từ chối.' }))
+        c.check('PUT Rejected', rejEdit, 200, 'MSG30')
+        c.fact('Rejected giữ trạng thái', rejEdit.body.meeting.status === 'Rejected', rejEdit.body.meeting.status)
+        await openMeeting(qa, rejEdit.body.meeting)
+        await qa.expect(qa.page.getByRole('heading', { name: 'Cuộc họp bị từ chối' })).toBeVisible()
+        await qa.expect(qa.page.getByRole('region', { name: 'Cuộc họp bị từ chối' }).getByText('QA: cần bổ sung nội dung chương trình.')).toBeVisible()
+        await qa.expect(qa.page.getByRole('button', { name: 'Gửi duyệt lại' })).toBeVisible()
+        await settled(qa)
+        await qa.shot('bi-tu-choi-van-giua')
+        await noSidewaysScroll(qa)
         const draft = await meetingAt(qa, 'Draft')
         c.check('PUT bởi chutoa@ (không phải người tạo)', await (await client(qa, 'chair')).put(`/api/meetings/${draft.id}`, put(draft, { description: 'x' })), 404)
         c.check('PUT bởi thanhvien@', await (await client(qa, 'member')).put(`/api/meetings/${draft.id}`, put(draft, { description: 'x' })), 403)
@@ -504,6 +548,14 @@ export default {
           await qa.shot(`khong-sua-${status}`)
           await noSidewaysScroll(qa)
         }
+        // FT20: the Chair reads the organizer's Draft but is offered no edit.
+        const draft = await meetingAt(qa, 'Draft')
+        await qa.signIn('chair')
+        await openMeeting(qa, draft)
+        await qa.expect(headerActions(qa).getByRole('link', { name: 'Chỉnh sửa' })).toHaveCount(0)
+        await qa.expect(headerActions(qa).getByRole('link', { name: 'Dời lịch' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('chu-toa-khong-nut-sua-nhap')
       },
     },
 
@@ -527,8 +579,11 @@ export default {
         const form = dialog(qa, 'Gửi duyệt cuộc họp')
         await qa.expect(form).toBeVisible()
         // Submitting without a pick is refused in the dialog.
+        let posts = 0
+        qa.page.on('request', (r) => r.method() === 'POST' && r.url().includes('/api/meetings/') && posts++)
         await form.getByRole('button', { name: 'Gửi duyệt' }).click()
         await qa.expect(form.getByText('Vui lòng chọn người duyệt.')).toBeVisible()
+        qa.expect(posts, 'an empty submit called the API').toBe(0)
         await form.getByRole('button', { name: 'Chọn người duyệt' }).click()
         await qa.page.getByRole('option', { name: new RegExp(u.chair.name) }).click()
         await settled(qa)
@@ -545,6 +600,11 @@ export default {
         const got = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}`)).body
         qa.expect(got.status).toBe('WaitingApproval')
         qa.expect(got.assignedApproverId).toBe(u.chair.id)
+        // FT41: the history names the approver and the approver is told (no email assertion on screen).
+        const hist = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}/history`)).body
+        qa.expect(hist.items[hist.items.length - 1].resultingStatus).toBe('WaitingApproval')
+        const chairNotes = (await (await client(qa, 'chair')).get('/api/notifications?page=1&pageSize=50')).body.items
+        qa.expect(chairNotes.some((n) => n.meetingId === m.id && n.type === 'MeetingWaitingApproval'), 'approver has no MeetingWaitingApproval').toBe(true)
       },
     },
     {
@@ -609,12 +669,19 @@ export default {
         await press(qa, qa.page.getByRole('button', { name: 'Duyệt', exact: true }))
         const confirm = dialog(qa, 'Duyệt cuộc họp')
         await qa.expect(confirm).toBeVisible()
+        await settled(qa)
+        await qa.shot('xac-nhan-duyet')
         await confirm.getByRole('button', { name: 'Duyệt', exact: true }).click()
         await qa.expect(toast(qa, 'Đã duyệt cuộc họp.')).toBeVisible()
         await expectStatusChip(qa, 'Đã duyệt')
         await qa.expect(qa.page.getByRole('heading', { name: 'Bạn đã duyệt cuộc họp này' })).toBeVisible()
+        // FT59: the approver is not offered "Công bố".
+        await qa.expect(headerActions(qa).getByRole('button', { name: 'Công bố', exact: true })).toHaveCount(0)
         await settled(qa)
         await qa.shot('da-duyet')
+        // FT49: the history gains "Duyệt" (MSG43 is asserted by the API suite).
+        const hist = (await (await client(qa, 'chair')).get(`/api/meetings/${m.id}/history`)).body
+        qa.expect(hist.items[hist.items.length - 1].resultingStatus).toBe('Approved')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
         const notes = (await (await client(qa, 'secretary')).get('/api/notifications?page=1&pageSize=50')).body.items
@@ -645,6 +712,9 @@ export default {
         await qa.expect(form.getByText('Cần nhập lý do từ chối.')).toBeVisible()
         await settled(qa)
         await qa.shot('ly-do-trong')
+        // FT51: the counter shows the 1,000 limit (maxLength caps input, so MSG84 stays API-only).
+        await form.getByRole('textbox').fill('QA')
+        await qa.expect(form.getByText('2/1.000')).toBeVisible()
         await form.getByRole('textbox').fill(reason)
         await form.getByRole('button', { name: 'Từ chối' }).click()
         await qa.expect(toast(qa, 'Đã từ chối cuộc họp.')).toBeVisible()
@@ -653,6 +723,13 @@ export default {
         await settled(qa)
         await qa.shot('da-tu-choi')
         await noSidewaysScroll(qa)
+        if (qa.device === 'desktop') {
+          // FT50: the organizer's notification carries the reason.
+          const rejNotes = (await (await client(qa, 'secretary')).get('/api/notifications?page=1&pageSize=50')).body.items
+          const rejNote = rejNotes.find((n) => n.meetingId === m.id && n.type === 'MeetingRejected')
+          qa.expect(rejNote, 'organizer has no MeetingRejected').toBeTruthy()
+          qa.expect(rejNote.body ?? '', 'notification hides the reason').toContain(reason)
+        }
 
         await qa.signIn('secretary')
         await openMeeting(qa, m)
@@ -723,6 +800,8 @@ export default {
         await press(qa, qa.page.getByRole('button', { name: 'Công bố', exact: true }))
         const confirm = dialog(qa, 'Công bố cuộc họp')
         await qa.expect(confirm).toBeVisible()
+        await settled(qa)
+        await qa.shot('xac-nhan-cong-bo')
         await confirm.getByRole('button', { name: 'Công bố', exact: true }).click()
         await qa.expect(toast(qa, 'Đã công bố cuộc họp.')).toBeVisible()
         await expectStatusChip(qa, 'Đã công bố')
@@ -779,6 +858,7 @@ export default {
         await press(qa, headerActions(qa).getByRole('link', { name: 'Dời lịch' }))
         const form = dialog(qa, 'Dời lịch cuộc họp')
         await qa.expect(form).toBeVisible()
+        await qa.expect(form.getByText('Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp')).toBeVisible()
         await qa.expect(form.getByPlaceholder('Ví dụ: Giao ban tuần 40')).toBeDisabled()
         await qa.expect(form.locator('textarea[name="description"]')).toBeDisabled()
         await qa.expect(form.getByRole('radio', { name: /Mật/ })).toBeDisabled()
@@ -793,6 +873,9 @@ export default {
         await settled(qa)
         await qa.shot('da-doi-lich')
         await noSidewaysScroll(qa)
+        // FT15: the history gains a "Dời lịch" row (MSG138 is asserted by the API suite).
+        const history = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}/history?pageSize=100`)).body
+        qa.expect(history.items.some((h) => h.action === 'Reschedule'), JSON.stringify(history.items.map((h) => h.action))).toBe(true)
         const memberNotes = (await (await client(qa, 'member')).get('/api/notifications?page=1&pageSize=50')).body.items
         qa.expect(memberNotes.some((n) => n.meetingId === m.id && n.type === 'MeetingRescheduled'), 'member has no MeetingRescheduled').toBe(true)
         const ownNotes = (await (await client(qa, 'secretary')).get('/api/notifications?page=1&pageSize=50')).body.items
@@ -889,44 +972,95 @@ export default {
         qa.expect(ended.status).toBe('Ended')
         qa.expect(ended.actualEndedAt).toBeTruthy()
         qa.expect(ended.actualStartedAt).toBe(running.actualStartedAt)
+        // FT65: dismissing the End dialog changes nothing.
+        const ending = await meetingAt(qa, 'InProgress')
+        await openMeeting(qa, ending)
+        await press(qa, headerActions(qa).getByRole('button', { name: 'Kết thúc họp' }))
+        const confirmEnd = dialog(qa, 'Kết thúc cuộc họp?')
+        await qa.expect(confirmEnd).toBeVisible()
+        await confirmEnd.getByRole('button', { name: 'Huỷ' }).click()
+        await qa.expect(confirmEnd).toHaveCount(0)
+        await expectStatusChip(qa, 'Đang diễn ra')
+        await qa.expect(headerActions(qa).getByRole('button', { name: 'Kết thúc họp' })).toBeVisible()
+        await settled(qa)
+        await qa.shot('huy-ket-thuc-khong-doi')
+        if (qa.device === 'desktop') {
+          // FT60: the Member has the "started" notification; FT64: the in-progress agenda item is Done.
+          const startedNotes = (await (await client(qa, 'member')).get('/api/notifications?page=1&pageSize=50')).body.items
+          qa.expect(startedNotes.some((n) => n.meetingId === m.id && n.type === 'MeetingStarted'), 'member has no MeetingStarted').toBe(true)
+          const chairApi = await client(qa, 'chair')
+          const secApi = await client(qa, 'secretary')
+          const item = (await secApi.post(`/api/meetings/${ending.id}/agenda`, { title: `Mục đang bàn ${rand()}`, description: '', presenterId: null, presenterGuestInvitationId: null })).body
+          qa.expectStatus(await chairApi.post(`/api/meetings/${ending.id}/agenda/${item.agendaItemId}/current`), 200)
+          const pending = (await secApi.post(`/api/meetings/${ending.id}/agenda`, { title: `Mục chờ ${rand()}`, description: '', presenterId: null, presenterGuestInvitationId: null })).body
+          await press(qa, headerActions(qa).getByRole('button', { name: 'Kết thúc họp' }))
+          const confirmEnd2 = dialog(qa, 'Kết thúc cuộc họp?')
+          await qa.expect(confirmEnd2).toBeVisible()
+          await confirmEnd2.getByRole('button', { name: 'Kết thúc họp' }).click()
+          await qa.expect(toast(qa, 'Kết thúc cuộc họp thành công.')).toBeVisible()
+          await expectStatusChip(qa, 'Đã kết thúc')
+          const snap = (await chairApi.get(`/api/meetings/${ending.id}/agenda`)).body
+          const byId = Object.fromEntries(snap.items.map((i) => [i.id, i.status]))
+          qa.expect(byId[item.agendaItemId], 'started item is not Done').toBe('Done')
+          qa.expect(byId[pending.agendaItemId], 'pending item changed').toBe('Pending')
+        }
       },
     },
     {
       id: 'AC18',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Người không phải Chủ toạ không thấy nút Bắt đầu/Kết thúc; API: không phải Chủ toạ 403, sai trạng thái 409',
+      title: 'Thư ký thấy và bấm được "Bắt đầu họp" (PO 20/11) nhưng không thấy "Kết thúc họp"; Thành viên không thấy cả hai; API phân quyền Start/End',
       steps: [
-        'thuky@ (người tổ chức, Thư ký) mở cuộc họp Đã công bố và Đang diễn ra',
-        'API: thuky@, thanhvien@ Start/End; chutoa@ Start cuộc họp Nháp, Đã duyệt, Đang diễn ra; End cuộc họp Đã công bố, Đã kết thúc',
+        'thuky@ (người tổ chức, Thư ký) mở cuộc họp Đã công bố: thấy "Bắt đầu họp", bấm, xác nhận "Vẫn bắt đầu"',
+        'thuky@ mở cuộc họp Đang diễn ra: không có "Kết thúc họp"',
+        'thanhvien@ mở cuộc họp Đã công bố và Đang diễn ra: không có nút nào',
+        'API: thanhvien@ Start/End; thuky@ End; thuky@ Start; chutoa@ Start/End sai trạng thái',
       ],
       expected:
-        'Không có "Bắt đầu họp"/"Kết thúc họp" với thuky@; Start bởi người không phải Chủ toạ 403 MSG112, End 403 MSG114; sai trạng thái 409 MSG112 / MSG114, trạng thái không đổi',
+        'Thư ký bấm Bắt đầu: toast "Bắt đầu cuộc họp thành công." (MSG110), Đang diễn ra; Thư ký không thấy "Kết thúc họp", Thành viên không thấy cả hai; API: thanhvien@ Start 403 MSG112, End 403 MSG114; thuky@ End 403 MSG114; thuky@ Start 200 MSG110; chutoa@ sai trạng thái 409 MSG112 / MSG114, trạng thái không đổi',
       async run(qa) {
+        const toStart = await meetingAt(qa, 'Published')
+        await openMeeting(qa, toStart)
+        const start = headerActions(qa).getByRole('button', { name: 'Bắt đầu họp' })
+        await qa.expect(start).toBeVisible()
+        await press(qa, start)
+        const early = dialog(qa, 'Bắt đầu sớm hơn lịch?')
+        await qa.expect(early).toBeVisible()
+        await settled(qa)
+        await qa.shot('thu-ky-bat-dau-som')
+        await early.getByRole('button', { name: 'Vẫn bắt đầu' }).click()
+        await qa.expect(toast(qa, 'Bắt đầu cuộc họp thành công.')).toBeVisible()
+        await expectStatusChip(qa, 'Đang diễn ra')
+        await qa.expect(headerActions(qa).getByRole('button', { name: 'Kết thúc họp' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thu-ky-khong-nut-ket-thuc')
+        await noSidewaysScroll(qa)
+        if (qa.device !== 'desktop') return
         const published = await meetingAt(qa, 'Published')
         const running = await meetingAt(qa, 'InProgress')
+        await qa.signIn('member')
         for (const m of [published, running]) {
           await openMeeting(qa, m)
           await qa.expect(headerActions(qa).getByRole('button', { name: /Bắt đầu họp|Kết thúc họp/ })).toHaveCount(0)
           await settled(qa)
-          await qa.shot(`khong-nut-${m.status}`)
+          await qa.shot(`thanh-vien-khong-nut-${m.status}`)
         }
-        if (qa.device !== 'desktop') return
         const c = checker(qa)
-        c.check('thuky@ Start', await transition(qa, 'secretary', published.id, { action: 'Start' }), 403, 'MSG112')
         c.check('thanhvien@ Start', await transition(qa, 'member', published.id, { action: 'Start' }), 403, 'MSG112')
-        c.check('thuky@ End', await transition(qa, 'secretary', running.id, { action: 'End' }), 403, 'MSG114')
         c.check('thanhvien@ End', await transition(qa, 'member', running.id, { action: 'End' }), 403, 'MSG114')
+        c.check('thuky@ End', await transition(qa, 'secretary', running.id, { action: 'End' }), 403, 'MSG114')
+        c.check('thuky@ Start', await transition(qa, 'secretary', published.id, { action: 'Start' }), 200, 'MSG110')
         for (const status of ['Draft', 'Approved']) {
           const m = await meetingAt(qa, status)
           c.check(`Start khi ${status}`, await transition(qa, 'chair', m.id, { action: 'Start' }), 409, 'MSG112')
         }
         c.check('Start khi InProgress', await transition(qa, 'chair', running.id, { action: 'Start' }), 409, 'MSG112')
-        c.check('End khi Published', await transition(qa, 'chair', published.id, { action: 'End' }), 409, 'MSG114')
+        const fresh = await meetingAt(qa, 'Published')
+        c.check('End khi Published', await transition(qa, 'chair', fresh.id, { action: 'End' }), 409, 'MSG114')
         const ended = await meetingAt(qa, 'Ended')
         c.check('End khi Ended', await transition(qa, 'chair', ended.id, { action: 'End' }), 409, 'MSG114')
         const sec = await client(qa, 'secretary')
-        c.fact('Published không đổi', (await sec.get(`/api/meetings/${published.id}`)).body.status === 'Published')
         c.fact('InProgress không đổi', (await sec.get(`/api/meetings/${running.id}`)).body.status === 'InProgress')
         c.done()
       },
@@ -963,6 +1097,9 @@ export default {
         await qa.expect(form.getByText('Cần nhập lý do huỷ cuộc họp.')).toBeVisible()
         await settled(qa)
         await qa.shot('ly-do-huy-trong')
+        // FT70: the counter shows the 1,000 limit (maxLength caps input, so MSG345 stays API-only).
+        await form.getByRole('textbox').fill('QA')
+        await qa.expect(form.getByText('2/1.000')).toBeVisible()
         await form.getByRole('textbox').fill(reason)
         await form.getByRole('button', { name: 'Huỷ cuộc họp' }).click()
         await qa.expect(toast(qa, 'Đã huỷ cuộc họp.')).toBeVisible()
@@ -983,6 +1120,18 @@ export default {
         const seen = await member.get(`/api/meetings/${m.id}`)
         qa.expectStatus(seen, 200)
         qa.expect(seen.body.cancellation?.reason).toBe(reason)
+        if (qa.device === 'desktop') {
+          // FT68: the history gains "Huỷ cuộc họp" (MSG261 is asserted by the API suite).
+          const hist = (await (await client(qa, 'secretary')).get(`/api/meetings/${m.id}/history`)).body
+          qa.expect(hist.items[hist.items.length - 1].resultingStatus).toBe('Cancelled')
+        }
+        // FT72: the Chair is not offered the cancel button on a Published meeting.
+        const pub = await meetingAt(qa, 'Published')
+        await qa.signIn('chair')
+        await openMeeting(qa, pub)
+        await qa.expect(headerActions(qa).getByRole('button', { name: 'Huỷ cuộc họp' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('chu-toa-khong-nut-huy')
       },
     },
     {
@@ -1011,6 +1160,12 @@ export default {
           const m = await meetingAt(qa, status)
           c.check(`Cancel khi ${status}`, await transition(qa, 'secretary', m.id, { action: 'Cancel', reason: 'QA' }), 409, 'MSG263')
         }
+        // FT71: an InProgress meeting offers no cancel button on screen.
+        const running = await meetingAt(qa, 'InProgress')
+        await openMeeting(qa, running)
+        await qa.expect(headerActions(qa).getByRole('button', { name: 'Huỷ cuộc họp' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('dang-dien-ra-khong-nut-huy')
         const gone = await meetingAt(qa, 'Cancelled', { cancelFrom: 'Approved' })
         const sec = await client(qa, 'secretary')
         c.check('PUT khi Cancelled', await sec.put(`/api/meetings/${gone.id}`, { title: gone.title, plannedStartTime: gone.plannedStartTime, plannedEndTime: gone.plannedEndTime, mode: gone.mode, location: 'x', onlineLink: null, sensitivity: gone.sensitivity, description: gone.description }), 409, 'MSG33')
@@ -1048,6 +1203,12 @@ export default {
         await qa.expect(qa.page.locator('.record-facts').getByText('Phòng họp QA')).toBeVisible()
         await qa.expect(headerActions(qa).getByRole('link', { name: /Chỉnh sửa|Dời lịch/ })).toHaveCount(0)
         await qa.expect(headerActions(qa).getByRole('button', { name: /Huỷ cuộc họp|Bắt đầu họp/ })).toHaveCount(0)
+        // FT33: tabs, sensitivity, people and the history card on the detail page.
+        for (const tab of ['Thông tin chung', 'Thành phần tham dự', 'Nội dung cuộc họp', 'Tài liệu', 'Biểu quyết', 'Bản ghi']) {
+          await qa.expect(qa.page.getByRole('tab', { name: tab })).toBeVisible()
+        }
+        await qa.expect(qa.page.getByText('Thường', { exact: true }).first()).toBeVisible()
+        await qa.expect(qa.page.getByRole('heading', { name: 'Lịch sử trạng thái' })).toBeVisible()
         await settled(qa)
         await qa.shot('chi-tiet-da-cong-bo', { fullPage: true })
         await noSidewaysScroll(qa)
@@ -1097,10 +1258,10 @@ export default {
       id: 'AC23',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Danh sách cuộc họp mở sẵn thẻ "Họp hôm nay": mọi trạng thái, Thời điểm Hôm nay (PO, PR #287)',
+      title: 'Danh sách cuộc họp mở không lọc với bốn thẻ đếm (PO 20/11, PR #287: không còn mở sẵn "Họp hôm nay")',
       steps: ['Đăng nhập thuky@', 'Bấm "Cuộc họp" trên menu (mở /mgmt/meetings không tham số)'],
       expected:
-        'Thẻ "Họp hôm nay" được chọn, Trạng thái "Mọi trạng thái", Thời điểm "Hôm nay" (PO chọn khi đổi sang bốn thẻ AI-eCabinet, PR #287; docs/03-api/05). UC-16 bước 1 còn ghi "Đang diễn ra": BA cập nhật',
+        'Bốn thẻ "Họp hôm nay", "Đã công bố", "Cần xử lý", "Bản nháp" hiện số đếm, không thẻ nào được chọn; Trạng thái "Mọi trạng thái", Mức độ "Mọi mức độ", Thời điểm "Mọi thời điểm"; URL không có tham số lọc; bảng liệt kê cuộc họp mọi trạng thái. UC-16 bước 1 còn ghi "Đang diễn ra": BA cập nhật',
       async run(qa) {
         await qa.goto('/mgmt/meetings')
         if (qa.device === 'phone') {
@@ -1111,11 +1272,20 @@ export default {
         await settled(qa)
         await qa.shot('bo-loc-mac-dinh')
         const status = await qa.page.getByRole('button', { name: /^Trạng thái:/ }).getAttribute('aria-label')
+        const level = await qa.page.getByRole('button', { name: /^Mức độ:/ }).getAttribute('aria-label')
         const when = await qa.page.getByRole('button', { name: /^Thời điểm:/ }).getAttribute('aria-label')
-        qa.note(`Mặc định: ${status} · ${when} · URL ${qa.page.url()}`)
-        qa.expect(status, `the list opens with "${status}" / "${when}"`).toBe('Trạng thái: Mọi trạng thái')
-        qa.expect(when, `the list opens with "${status}" / "${when}"`).toBe('Thời điểm: Hôm nay')
-        await qa.expect(qa.page.getByRole('button', { name: /Họp hôm nay/ })).toHaveAttribute('aria-pressed', 'true')
+        qa.note(`Mặc định: ${status} · ${level} · ${when} · URL ${qa.page.url()}`)
+        qa.expect(status, `the list opens with "${status}"`).toBe('Trạng thái: Mọi trạng thái')
+        qa.expect(level, `the list opens with "${level}"`).toBe('Mức độ: Mọi mức độ')
+        qa.expect(when, `the list opens with "${when}"`).toBe('Thời điểm: Mọi thời điểm')
+        for (const card of ['Họp hôm nay', 'Đã công bố', 'Cần xử lý', 'Bản nháp']) {
+          const btn = qa.page.getByRole('button', { name: new RegExp(card) })
+          await qa.expect(btn, `card "${card}"`).toBeVisible()
+          qa.expect(await btn.getAttribute('aria-pressed'), `card "${card}" pressed`).toBe('false')
+        }
+        qa.expect(qa.page.url().split('?')[1] ?? '', 'URL carries no filter').toBe('')
+        await qa.expect(qa.page.locator('table.meetings-table tbody tr').first()).toBeVisible()
+        await noSidewaysScroll(qa)
       },
     },
     {
@@ -1228,6 +1398,13 @@ export default {
         c.fact('thanhvien@ không thấy nháp/huỷ trước công bố', member.totalCount === 0, `totalCount ${member.totalCount}`)
         qa.note(`Nháp ${draft.id}, huỷ ${gone.id}`)
         c.done()
+        // FT30 evidence: an invalid status in the URL is dropped silently (readListState falls back
+        // to the default) — no "Bộ lọc trên đường dẫn không hợp lệ." screen exists for this input.
+        await qa.goto(`/mgmt/meetings?status=Khac`)
+        await qa.expect(qa.page.locator('table.meetings-table tbody tr').first()).toBeVisible()
+        await qa.expect(qa.page.getByText('Bộ lọc trên đường dẫn không hợp lệ.')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('loc-sai-bi-loai-bo')
       },
     },
     {
@@ -1263,6 +1440,77 @@ export default {
         qa.expectStatus(seen, 200)
         qa.expect(seen.body.items.length).toBe(own.length)
         qa.expect(seen.body.items.every((h) => h.rejectionReason == null), 'member sees the rejection reason').toBe(true)
+        qa.expect(seen.body.items.every((h) => h.actorName), 'history hides the actor').toBe(true)
+        // FT35: the Member reads the same timeline on screen without the reason.
+        await qa.signIn('member')
+        await openMeeting(qa, m)
+        await qa.expect(qa.page.getByRole('heading', { name: 'Lịch sử trạng thái' })).toBeVisible()
+        await qa.expect(qa.page.getByText('QA: cần bổ sung nội dung chương trình.')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('lich-su-goc-thanh-vien', { fullPage: true })
+      },
+    },
+    {
+      id: 'AC28',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Tài khoản mới chưa có cuộc họp: trạng thái trống, không khớp, ngày yên tĩnh',
+      steps: [
+        'Tạo người dùng Thành viên mới qua API, đăng nhập bằng form',
+        'Mở Danh sách: "Chưa có cuộc họp nào." + gợi ý thành viên, không có nút tạo',
+        'Đổi vai trò thành Thư ký, tải lại: có nút "Tạo cuộc họp"',
+        'Tìm chuỗi không có rồi bấm "Xoá bộ lọc"',
+        'Bấm thẻ "Họp hôm nay" rồi "Xem mọi cuộc họp"',
+      ],
+      expected:
+        'Thành viên mới: "Chưa có cuộc họp nào." + "Cuộc họp bạn được mời sẽ hiện ở đây sau khi được công bố.", không nút tạo. Lên Thư ký: có nút "Tạo cuộc họp". Không khớp: "Không có cuộc họp nào khớp bộ lọc.", "Xoá bộ lọc" đưa về trạng thái trống. Thẻ Hôm nay khi không có gì: "Hôm nay không có cuộc họp nào." + "Xem mọi cuộc họp" đưa về trạng thái trống',
+      async run(qa) {
+        const admin = await client(qa, 'admin')
+        const email = `qa-fe04-empty-${rand()}@trustcabinet.local`
+        const fullName = qa.name('FE-04 Người dùng trống')
+        const password = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
+        const created = await admin.post('/api/users', {
+          fullName, email, password, roleId: '01a0ce78-7204-7558-b181-e908a08e83a3',
+        })
+        qa.expectStatus(created, 201)
+        const userId = created.body.user.id
+        try {
+          await qa.goto('/login')
+          await qa.page.getByLabel('Email').fill(email)
+          await qa.page.getByLabel('Mật khẩu', { exact: true }).fill(password)
+          await qa.page.getByRole('button', { name: 'Đăng nhập bằng mật khẩu' }).click()
+          await qa.expect(qa.page).not.toHaveURL(/\/login/)
+          await qa.goto('/mgmt/meetings')
+          await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
+          await qa.expect(qa.page.getByText('Cuộc họp bạn được mời sẽ hiện ở đây sau khi được công bố.')).toBeVisible()
+          await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' })).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('trong-voi-thanh-vien')
+          qa.expectStatus(await admin.put(`/api/users/${userId}`, { fullName, email, roleId: '01a0ce78-7203-7c7f-8326-7a0baebf4c22' }), 200)
+          await qa.page.reload()
+          await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
+          await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' }).first()).toBeVisible()
+          await settled(qa)
+          await qa.shot('trong-voi-thu-ky')
+          await noSidewaysScroll(qa)
+          await qa.page.getByRole('searchbox', { name: 'Tìm theo tên cuộc họp' }).fill(`khong-ton-tai-${rand()}-zz`)
+          await qa.expect(qa.page.getByText('Không có cuộc họp nào khớp bộ lọc.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('khong-khop-trang-moi')
+          await press(qa, qa.page.locator('table.meetings-table').getByRole('button', { name: 'Xoá bộ lọc' }))
+          await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('xoa-bo-loc-ve-trong')
+          await press(qa, qa.page.getByRole('button', { name: /Họp hôm nay/ }))
+          await qa.expect(qa.page.getByText('Hôm nay không có cuộc họp nào.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('ngay-yen-tinh')
+          await press(qa, qa.page.getByRole('button', { name: 'Xem mọi cuộc họp' }))
+          await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
+          await noSidewaysScroll(qa)
+        } finally {
+          qa.expectStatus(await admin.put(`/api/users/${userId}/status`, { isActive: false }), 200)
+        }
       },
     },
     {

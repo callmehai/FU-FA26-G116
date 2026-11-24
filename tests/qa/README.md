@@ -12,6 +12,9 @@ chạy trong CI: cần app đang chạy.
 ## Chạy
 
 ```bash
+# Dựng stack local (idempotent — xem scripts/dev-up.ps1; sau khi reboot Windows mà
+# postgres không bind được port thì chạy admin `net stop winnat` + `net start winnat` rồi chạy lại):
+powershell -ExecutionPolicy Bypass -File scripts/dev-up.ps1
 # app phải đang chạy (backend :5225, frontend :5173) — xem .claude/skills/verify-ui-in-browser §1
 cd tests/qa
 npm ci                                   # lần đầu

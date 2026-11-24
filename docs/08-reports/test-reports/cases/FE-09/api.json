@@ -26,7 +26,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)"
+          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_API_IT02",
@@ -43,7 +46,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
+          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_API_IT03",
@@ -61,24 +67,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The outsider and the creator are not participants."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
+          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_API_IT04",
-          "description": "Verify GET /api/meetings/{meetingId}/recordings without a token answers 401.",
-          "procedure": [
-            "Send GET /api/meetings/{meetingId}/recordings with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-43a · Manual only"
-        },
-        {
-          "id": "REC_API_IT05",
           "description": "Verify GET /api/meetings/{meetingId}/recordings answers 403 for a Guest token.",
           "procedure": [
             "Join the meeting as a Guest through the guest link and keep the guest token.",
@@ -92,10 +87,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation admitted to the call."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
+          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT06",
+          "id": "REC_API_IT05",
           "description": "Verify GET /api/meetings/{meetingId}/recordings shows the room-mic take being recorded to everyone as Pending.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token. Open a take with POST /api/meetings/{meetingId}/recordings/takes.",
@@ -111,29 +109,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has consented for the first take."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT07",
-          "description": "Verify GET /api/meetings/{meetingId}/recordings keeps an erased recording as evidence with status Deleted.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId} for a stored recording.",
-            "Send GET /api/meetings/{meetingId}/recordings with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "The item has \"status\": \"Deleted\" and a \"deletedAt\" time; \"canErase\": false.",
-            "No audio can be fetched for it."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
-          ],
-          "note": "UC-43a · Erasure evidence · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
-        },
-        {
-          "id": "REC_API_IT08",
+          "id": "REC_API_IT06",
           "description": "Verify GET /api/meetings/{meetingId}/recordings reports canUpload false for Online and Hybrid meetings.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -148,10 +130,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "One Online and one Hybrid meeting in InProgress, each with the same Secretary."
           ],
-          "note": "UC-43a · UC-44a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)"
+          "note": "UC-43a · UC-44a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT09",
+          "id": "REC_API_IT07",
           "description": "Verify GET /api/meetings/{meetingId}/recordings lists the combined recording of an ended Hybrid meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -166,24 +151,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room-mic recording and online sentences with sound; the combined recording has been built."
           ],
-          "note": "UC-43a · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)"
-        },
-        {
-          "id": "REC_API_IT10",
-          "description": "Verify GET /api/meetings/{meetingId}/recordings answers 500 MSG297 when the database cannot be read.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/recordings with Authorization: Bearer <accessToken>. Do it while the database is unavailable."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG297\", \"message\": \"Không tải được danh sách bản ghi.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Database made unavailable by the QA lead."
-          ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
+          "note": "UC-43a · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -194,7 +165,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT11",
+          "id": "REC_API_IT08",
           "description": "Verify POST /api/meetings/{meetingId}/recordings stores an audio file with consent, purpose and retention.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -210,27 +181,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT12",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings accepts a codec parameter on the file's content type and uses the default purpose when none is sent.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings\n   Headers: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\n   Form: file=<ghi-am.webm; audio/webm;codecs=opus>, consentConfirmed=true (no consentPurpose)"
-          ],
-          "expected": [
-            "HTTP 201 Created, \"code\": \"MSG290\".",
-            "The stored recording's purpose is \"Lập biên bản cuộc họp\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A small valid webm file."
-          ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)"
-        },
-        {
-          "id": "REC_API_IT13",
+          "id": "REC_API_IT09",
           "description": "Verify POST /api/meetings/{meetingId}/recordings refuses to store anything without the Secretary's consent confirmation.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -245,28 +202,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
+          "note": "UC-44c · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT14",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings rejects a consent purpose longer than 1000 characters.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings\n   Headers: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\n   Form: file=<ghi-am.mp3; audio/mpeg>, consentConfirmed=true, consentPurpose=<1001 characters>"
-          ],
-          "expected": [
-            "HTTP 400 Bad Request.",
-            "Body: { \"code\": \"MSG291\", \"errors\": { \"consentPurpose\": [\"Mục đích không quá 1000 ký tự.\"] } }.",
-            "Nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
-          ],
-          "note": "UC-44c · Boundary: 1000 characters · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
-        },
-        {
-          "id": "REC_API_IT15",
+          "id": "REC_API_IT10",
           "description": "Verify POST /api/meetings/{meetingId}/recordings rejects a request that is not multipart or carries no file.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -281,10 +223,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Manual only"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingRound1Tests.cs (Upload_rejects_a_non_multipart_or_fileless_request)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT16",
+          "id": "REC_API_IT11",
           "description": "Verify POST /api/meetings/{meetingId}/recordings rejects source BrowserCapture and a non-numeric durationMs.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -299,10 +244,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT17",
+          "id": "REC_API_IT12",
           "description": "Verify POST /api/meetings/{meetingId}/recordings rejects a file that is not audio.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -317,28 +265,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT18",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings rejects a file over the size limit.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings\n   Headers: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\n   Form: file=<audio larger than Recordings:MaxUploadMegabytes (300 MB by default)>, consentConfirmed=true"
-          ],
-          "expected": [
-            "HTTP 413 Payload Too Large.",
-            "Body: { \"code\": \"MSG293\", \"message\": \"Bản ghi vượt quá 300 MB.\" }.",
-            "The partly written file is removed; no recording is listed."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build may set a smaller MaxUploadMegabytes."
-          ],
-          "note": "UC-44c · Boundary: MaxUploadMegabytes · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
-        },
-        {
-          "id": "REC_API_IT19",
+          "id": "REC_API_IT13",
           "description": "Verify POST /api/meetings/{meetingId}/recordings is refused before the meeting has started.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -353,10 +286,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Nothing_is_recorded_before_the_meeting_starts)"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Nothing_is_recorded_before_the_meeting_starts)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT20",
+          "id": "REC_API_IT14",
           "description": "Verify POST /api/meetings/{meetingId}/recordings is refused for an Online meeting, which has no room recording.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -370,10 +306,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · ADR-0040 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (An_online_meeting_has_no_room_recording)"
+          "note": "UC-44c · ADR-0040 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (An_online_meeting_has_no_room_recording)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT21",
+          "id": "REC_API_IT15",
           "description": "Verify POST /api/meetings/{meetingId}/recordings is refused for a Hybrid meeting, which is recorded live only.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -387,10 +326,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)"
+          "note": "UC-44c · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT22",
+          "id": "REC_API_IT16",
           "description": "Verify POST /api/meetings/{meetingId}/recordings answers 403 MSG295 for a participant who is not the Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -406,56 +348,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
-        },
-        {
-          "id": "REC_API_IT23",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings answers 404 for a user who is not on the participant list.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings\n   Headers: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\n   Form: file=<ghi-am.mp3; audio/mpeg>, consentConfirmed=true"
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body.",
-            "Nothing is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
-        },
-        {
-          "id": "REC_API_IT24",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{meetingId}/recordings with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-44c · Manual only"
-        },
-        {
-          "id": "REC_API_IT25",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings answers 503 MSG298 when the save fails and leaves no file behind.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings\n   Headers: Authorization: Bearer <accessToken>; Content-Type: multipart/form-data\n   Form: file=<ghi-am.mp3; audio/mpeg>, consentConfirmed=true. Send it while the database rejects the write."
-          ],
-          "expected": [
-            "HTTP 503 Service Unavailable.",
-            "Body: { \"code\": \"MSG298\", \"message\": \"Không lưu được thay đổi bản ghi. Vui lòng thử lại.\" }.",
-            "The uploaded file is deleted from storage and no recording row exists."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database write failure forced by the QA lead."
-          ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
+          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -466,58 +362,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT26",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} accepts the first part starting with a WAV header.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/recordings/{recordingId}/parts/1\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: 320000 bytes: a 16 kHz mono 16-bit WAV header followed by PCM"
-          ],
-          "expected": [
-            "HTTP 204 No Content, no body.",
-            "The part is written at position 0 of the take's file."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT27",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} accepts the last part with final=true at a shorter size.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/recordings/{recordingId}/parts/2?final=true\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: 100000 bytes of PCM"
-          ],
-          "expected": [
-            "HTTP 204 No Content.",
-            "A further part after the final one is refused with HTTP 400 MSG361."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT28",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} re-sending a part overwrites the same place only.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/recordings/{recordingId}/parts/1\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: the same 320000 bytes again"
-          ],
-          "expected": [
-            "HTTP 204 No Content.",
-            "The file length is unchanged and no duplicate audio is added."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT29",
+          "id": "REC_API_IT17",
           "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} refuses a part sent out of order.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -532,10 +377,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT30",
+          "id": "REC_API_IT18",
           "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} refuses a non-final part whose size is not partSize.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -548,88 +396,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
-          "note": "UC-44b · Boundary: partSize · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT31",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} refuses part 1 without the 16 kHz mono 16-bit WAV header.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/recordings/{recordingId}/parts/1\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: 320000 bytes of random data"
-          ],
-          "expected": [
-            "HTTP 400 Bad Request, \"code\": \"MSG361\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT32",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} answers 413 MSG293 when the take would pass the recording limit.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send parts one after another until the total passes Recordings:MaxUploadMegabytes."
-          ],
-          "expected": [
-            "HTTP 413 Payload Too Large.",
-            "Body: { \"code\": \"MSG293\" }; the browser then starts a new take by itself."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). The test build sets a small MaxUploadMegabytes."
-          ],
-          "note": "UC-44b · Boundary: MaxUploadMegabytes · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_cannot_grow_past_the_recording_limit)"
-        },
-        {
-          "id": "REC_API_IT33",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} answers 409 MSG362 once the take has been saved.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token. Close the take with POST /api/recordings/{recordingId}/complete.",
-            "Send PUT /api/recordings/{recordingId}/parts/2\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: 320000 bytes"
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG362\", \"message\": \"Lượt ghi này đã được lưu, không thêm tiếng vào được nữa.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT34",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} answers 404 for anyone but the user who opened the take.",
-          "procedure": [
-            "Sign in as another Secretary or a Member (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/recordings/{recordingId}/parts/1\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/octet-stream\n   Body: 320000 bytes"
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body.",
-            "The take's file is unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
-        },
-        {
-          "id": "REC_API_IT35",
-          "description": "Verify PUT /api/recordings/{recordingId}/parts/{part} without a token answers 401.",
-          "procedure": [
-            "Send PUT /api/recordings/{recordingId}/parts/1 with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Boundary: partSize · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -640,7 +410,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT36",
+          "id": "REC_API_IT19",
           "description": "Verify POST /api/recordings/{recordingId}/complete turns the first take into the meeting's room recording.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -655,63 +425,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open first take with sound uploaded in parts."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT37",
-          "description": "Verify POST /api/recordings/{recordingId}/complete appends a later take and has the whole recording transcribed again.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/recordings/{recordingId}/complete with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK, \"code\": \"MSG363\", \"appended\": true.",
-            "The existing recording grows and gains one more entry in \"takes\"; its transcript returns to Pending."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A saved room recording and a second open take with sound."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)"
-        },
-        {
-          "id": "REC_API_IT38",
-          "description": "Verify POST /api/recordings/{recordingId}/complete drops a take in which nothing was heard.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/recordings/{recordingId}/complete with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "Body: { \"code\": \"MSG365\", \"message\": \"Mic chưa thu được tiếng nào nên lượt này không được lưu.\", \"recordingId\": null }.",
-            "No recording is added."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take that received no part."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_the_mic_heard_nothing_in_is_dropped)"
-        },
-        {
-          "id": "REC_API_IT39",
-          "description": "Verify POST /api/recordings/{recordingId}/complete called again on a saved take still answers MSG363.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/recordings/{recordingId}/complete with Authorization: Bearer <accessToken>.",
-            "Send the same request a second time."
-          ],
-          "expected": [
-            "Both calls answer HTTP 200 with \"code\": \"MSG363\".",
-            "The recording is not appended twice."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take already saved."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
-        },
-        {
-          "id": "REC_API_IT40",
+          "id": "REC_API_IT20",
           "description": "Verify POST /api/recordings/{recordingId}/complete lets another Secretary save a take left open on another machine.",
           "procedure": [
             "Sign in as a second current Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -725,28 +445,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two Secretaries; a take opened by the first and left open."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT41",
-          "description": "Verify a take left open with no part for Recordings:IdleTakeHours is saved by the server.",
-          "procedure": [
-            "Open a take as the Secretary and send a few parts.",
-            "Send nothing for longer than Recordings:IdleTakeHours (12 by default) and wait for the retention worker (every 15 minutes)."
-          ],
-          "expected": [
-            "The take becomes an Available recording, or is dropped if empty.",
-            "The audit row recording.take_saved has no actor.",
-            "A later part answers HTTP 409 MSG362."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build sets a short IdleTakeHours."
-          ],
-          "note": "UC-44b · Boundary: IdleTakeHours · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_left_open_is_saved_by_the_server_once_no_part_has_come_for_hours)"
-        },
-        {
-          "id": "REC_API_IT42",
+          "id": "REC_API_IT21",
           "description": "Verify POST /api/recordings/{recordingId}/complete answers 403 MSG295 for a participant who is not a Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -760,25 +465,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT43",
-          "description": "Verify POST /api/recordings/{recordingId}/complete answers 404 for a user who is not on the participant list and 401 without a token.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/recordings/{recordingId}/complete with Authorization: Bearer <accessToken>.",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the outsider.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
-          ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -789,7 +479,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT44",
+          "id": "REC_API_IT22",
           "description": "Verify POST /api/meetings/{meetingId}/recordings/takes opens the first take after the Secretary confirms consent.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -804,10 +494,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT45",
+          "id": "REC_API_IT23",
           "description": "Verify POST /api/meetings/{meetingId}/recordings/takes refuses the first take without consent.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -821,10 +514,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
-          "note": "UC-44b · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
+          "note": "UC-44b · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT46",
+          "id": "REC_API_IT24",
           "description": "Verify POST /api/meetings/{meetingId}/recordings/takes asks for consent only on the first take of the meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -838,10 +534,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A room recording already saved from an earlier take; no take open."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT47",
+          "id": "REC_API_IT25",
           "description": "Verify POST /api/meetings/{meetingId}/recordings/takes answers 403 MSG295 for a participant who is not the Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -855,89 +554,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT48",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings/takes is refused for an Online meeting.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings/takes\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"consentConfirmed\": true }"
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG358\", \"message\": \"Cuộc họp trực tuyến ghi theo micro từng người, không có bản ghi phòng.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT49",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings/takes is refused when the meeting is not running.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings/takes\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"consentConfirmed\": true }"
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG359\", \"message\": \"Chỉ bật mic phòng khi cuộc họp đang diễn ra.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT50",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings/takes allows only one open take per meeting.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token. Open a take with POST /api/meetings/{meetingId}/recordings/takes.",
-            "Send the same request again from a second browser or device with the same token."
-          ],
-          "expected": [
-            "HTTP 409 Conflict.",
-            "Body: { \"code\": \"MSG360\", \"message\": \"Mic phòng đang ghi ở một máy khác.\" }.",
-            "Only the first take stays Pending."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT51",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings/takes answers 404 for a user who is not on the participant list.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/{meetingId}/recordings/takes\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"consentConfirmed\": true }"
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT52",
-          "description": "Verify POST /api/meetings/{meetingId}/recordings/takes without a token answers 401.",
-          "procedure": [
-            "Send POST /api/meetings/{meetingId}/recordings/takes with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -948,7 +568,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT53",
+          "id": "REC_API_IT26",
           "description": "Verify DELETE /api/recordings/{recordingId}/takes/{take} cuts one take out of the recording and its lines out of the transcript.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -964,10 +584,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
+          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT54",
+          "id": "REC_API_IT27",
           "description": "Verify DELETE /api/recordings/{recordingId}/takes/{take} refuses to delete the only remaining take.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -982,10 +605,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording with a single take."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
+          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT55",
+          "id": "REC_API_IT28",
           "description": "Verify DELETE /api/recordings/{recordingId}/takes/{take} answers 403 MSG295 for a participant who is not the Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -999,42 +625,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
-        },
-        {
-          "id": "REC_API_IT56",
-          "description": "Verify DELETE /api/recordings/{recordingId}/takes/{take} answers 404 for a take that does not exist, an uploaded file or an erased recording.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId}/takes/9 with Authorization: Bearer <accessToken>.",
-            "Repeat on a recording whose source is Upload, then on an erased recording."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body in each call."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes, an uploaded recording and an erased one."
-          ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
-        },
-        {
-          "id": "REC_API_IT57",
-          "description": "Verify DELETE /api/recordings/{recordingId}/takes/{take} answers 404 for a user who is not on the participant list and 401 without a token.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId}/takes/1 with Authorization: Bearer <accessToken>.",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the outsider.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
-          ],
-          "note": "UC-44d · Manual only"
+          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1045,7 +639,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT58",
+          "id": "REC_API_IT29",
           "description": "Verify DELETE /api/recordings/{recordingId} erases the audio and transcript but keeps the evidence row.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1061,28 +655,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Erasure on request · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
+          "note": "UC-44e · Erasure on request · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT59",
-          "description": "Verify DELETE /api/recordings/{recordingId} called again on an erased recording still answers MSG296.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId} with Authorization: Bearer <accessToken>.",
-            "Send the same request again."
-          ],
-          "expected": [
-            "Both calls answer HTTP 200 with \"code\": \"MSG296\".",
-            "No second audit row is added."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
-          ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
-        },
-        {
-          "id": "REC_API_IT60",
+          "id": "REC_API_IT30",
           "description": "Verify DELETE /api/recordings/{recordingId} answers 403 MSG295 for a participant who is not the Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1098,41 +677,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
+          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT61",
-          "description": "Verify DELETE /api/recordings/{recordingId} answers 404 for a user who is not on the participant list.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId} with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body.",
-            "The recording stays Available."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
-          ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
-        },
-        {
-          "id": "REC_API_IT62",
-          "description": "Verify DELETE /api/recordings/{recordingId} without a token answers 401.",
-          "procedure": [
-            "Send DELETE /api/recordings/{recordingId} with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-44e · Manual only"
-        },
-        {
-          "id": "REC_API_IT63",
+          "id": "REC_API_IT31",
           "description": "Verify DELETE /api/recordings/{recordingId} refuses to erase a take that is still being recorded.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1146,42 +697,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take open (status Pending)."
           ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
-        },
-        {
-          "id": "REC_API_IT64",
-          "description": "Verify the retention sweep erases a recording whose retainUntil has passed and only that one.",
-          "procedure": [
-            "Store two recordings, one with an expired retainUntil (test build with a short Recordings:RetentionDays) and one still valid.",
-            "Wait for the retention worker (every 15 minutes), then send GET /api/meetings/{meetingId}/recordings."
-          ],
-          "expected": [
-            "The expired recording has status Deleted, its audio and transcript are gone, and an audit row recording.erased has no actor.",
-            "The valid recording stays Available."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Two recordings as described."
-          ],
-          "note": "UC-44e · Retention (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Retention_sweep_erases_only_what_has_expired)"
-        },
-        {
-          "id": "REC_API_IT65",
-          "description": "Verify DELETE /api/recordings/{recordingId} answers 503 MSG298 when the erase cannot be saved.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/recordings/{recordingId} with Authorization: Bearer <accessToken>. Send it while the database rejects the write."
-          ],
-          "expected": [
-            "HTTP 503.",
-            "Body: { \"code\": \"MSG298\", \"message\": \"Không lưu được thay đổi bản ghi. Vui lòng thử lại.\" }.",
-            "The recording and its audio are unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; write failure forced by the QA lead."
-          ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
+          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1192,7 +711,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT66",
+          "id": "REC_API_IT32",
           "description": "Verify GET /api/recordings/{recordingId}/playback hands a participant a signed, expiring listening link.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1207,61 +726,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
+          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT67",
-          "description": "Verify GET /api/recordings/{recordingId}/playback answers 404 for a user who is not on the participant list, including the creator.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/recordings/{recordingId}/playback with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body.",
-            "No link is issued."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; the caller is not a participant."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
-        },
-        {
-          "id": "REC_API_IT68",
-          "description": "Verify GET /api/recordings/{recordingId}/playback answers 404 for an erased recording and for a take still being recorded.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/recordings/{recordingId}/playback with Authorization: Bearer <accessToken>.",
-            "Repeat on a Pending take."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body in both calls."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One erased recording and one open take."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
-        },
-        {
-          "id": "REC_API_IT69",
-          "description": "Verify GET /api/recordings/{recordingId}/playback without a token answers 401 and with a Guest token answers 403.",
-          "procedure": [
-            "Send GET /api/recordings/{recordingId}/playback with no Authorization header.",
-            "Repeat with a Guest token."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized without a token.",
-            "HTTP 403 Forbidden for the Guest."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted to the call."
-          ],
-          "note": "UC-43b · Manual only"
-        },
-        {
-          "id": "REC_API_IT70",
+          "id": "REC_API_IT33",
           "description": "Verify GET /api/recordings/{recordingId}/playback issues a link for the combined recording of a Hybrid meeting.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1275,24 +746,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in Ended with a Chair, a Secretary and a Member on its participant list. A combined recording built."
           ],
-          "note": "UC-43b · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)"
-        },
-        {
-          "id": "REC_API_IT71",
-          "description": "Verify GET /api/recordings/{recordingId}/playback answers 500 MSG297 when the database cannot be read.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/recordings/{recordingId}/playback with Authorization: Bearer <accessToken>. Send it while the database is unavailable."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG297\", \"message\": \"Không tải được bản ghi.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
+          "note": "UC-43b · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1303,7 +760,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT72",
+          "id": "REC_API_IT34",
           "description": "Verify GET /api/recordings/{recordingId}/audio streams the file with range support through a valid signed link and no token.",
           "procedure": [
             "Obtain a link from GET /api/recordings/{recordingId}/playback.",
@@ -1318,10 +775,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
+          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT73",
+          "id": "REC_API_IT35",
           "description": "Verify GET /api/recordings/{recordingId}/audio answers 404 for a forged signature or a missing parameter.",
           "procedure": [
             "Send GET /api/recordings/{recordingId}/audio?expires=<valid>&signature=<changed by one character>.",
@@ -1334,55 +794,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A valid link for the recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
-        },
-        {
-          "id": "REC_API_IT74",
-          "description": "Verify GET /api/recordings/{recordingId}/audio answers 404 once the link has expired.",
-          "procedure": [
-            "Obtain a link and wait until after expiresAt (test build with a short PlaybackUrlMinutes).",
-            "Send GET <url>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "A valid link for the recording."
-          ],
-          "note": "UC-43b · Boundary: link lifetime · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
-        },
-        {
-          "id": "REC_API_IT75",
-          "description": "Verify GET /api/recordings/{recordingId}/audio answers 404 after the recording is erased.",
-          "procedure": [
-            "Obtain a link, then erase the recording with DELETE /api/recordings/{recordingId} as the Secretary.",
-            "Send GET <url>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body: the audio no longer exists."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
-        },
-        {
-          "id": "REC_API_IT76",
-          "description": "Verify a listening link cannot be turned into a download by adding download=1.",
-          "procedure": [
-            "Obtain a link from GET /api/recordings/{recordingId}/playback as a Member.",
-            "Send GET <url>&download=1."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body: the download signature differs from the listening one."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
-          ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
+          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1393,7 +808,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT77",
+          "id": "REC_API_IT36",
           "description": "Verify GET /api/recordings/{recordingId}/download gives the Chair a link that saves the original file.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1409,10 +824,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
+          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT78",
+          "id": "REC_API_IT37",
           "description": "Verify GET /api/recordings/{recordingId}/download gives the Secretary the same link.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1425,10 +843,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
+          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT79",
+          "id": "REC_API_IT38",
           "description": "Verify GET /api/recordings/{recordingId}/download answers 403 MSG355 for a Member.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1443,10 +864,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
+          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT80",
+          "id": "REC_API_IT39",
           "description": "Verify GET /api/recordings/{recordingId}/download answers 403 MSG356 for everybody on a Secret meeting.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1462,41 +886,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. The meeting is Secret (Mật)."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)"
-        },
-        {
-          "id": "REC_API_IT81",
-          "description": "Verify GET /api/recordings/{recordingId}/download answers 404 for a user who is not on the participant list.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/recordings/{recordingId}/download with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
-          ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
-        },
-        {
-          "id": "REC_API_IT82",
-          "description": "Verify GET /api/recordings/{recordingId}/download answers 404 for an erased recording and 401 without a token.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/recordings/{recordingId}/download with Authorization: Bearer <accessToken>.",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the erased recording.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. An erased recording."
-          ],
-          "note": "UC-43c · Manual only"
+          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1508,7 +901,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT83",
+          "id": "REC_API_IT40",
           "description": "Verify GET /api/meetings/{meetingId}/speech-clips lists the per-microphone sentences of the meeting for a participant.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1522,10 +915,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Sentences from two members."
           ],
-          "note": "UC-43a · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_meeting_joined_from_afar_is_captured_per_mic)"
+          "note": "UC-43a · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_meeting_joined_from_afar_is_captured_per_mic)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT84",
+          "id": "REC_API_IT41",
           "description": "Verify GET /api/meetings/{meetingId}/speech-clips?since= returns only new or changed sentences and those within 2 seconds of them.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1540,28 +936,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An earlier read with its readAt."
           ],
-          "note": "UC-80 · Boundary: 2 seconds · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)"
+          "note": "UC-80 · Boundary: 2 seconds · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT85",
-          "description": "Verify GET /api/meetings/{meetingId}/speech-clips marks a quiet copy of a neighbour's sentence as leaked without hiding it.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/speech-clips with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "The quieter sentence has \"leak\": { \"clipId\", \"speakerName\", \"whole\": true|false, \"words\": [...] }; its text is still present.",
-            "The louder original has \"leak\": null."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two overlapping sentences of the same words, one louder."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)"
-        },
-        {
-          "id": "REC_API_IT86",
+          "id": "REC_API_IT42",
           "description": "Verify GET /api/meetings/{meetingId}/speech-clips shows an excluded sentence's text only to the Chair and Secretary.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1576,10 +957,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One sentence excluded from the record."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)"
+          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT87",
+          "id": "REC_API_IT43",
           "description": "Verify GET /api/meetings/{meetingId}/speech-clips gives the Secretary the editing and export rights and canCapture only for a running remote meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1593,10 +977,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One Online and one InPerson meeting."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
+          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT88",
+          "id": "REC_API_IT44",
           "description": "Verify GET /api/meetings/{meetingId}/speech-clips returns only a Guest's own sentences.",
           "procedure": [
             "Join as a Guest through the guest link and keep the guest token.",
@@ -1610,54 +997,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken, and sentences of members."
           ],
-          "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
-        },
-        {
-          "id": "REC_API_IT89",
-          "description": "Verify GET /api/meetings/{meetingId}/speech-clips answers 404 for a user who is not on the participant list.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/speech-clips with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Sentences_are_taken_only_from_people_of_a_running_meeting_joined_from_afar)"
-        },
-        {
-          "id": "REC_API_IT90",
-          "description": "Verify GET /api/meetings/{meetingId}/speech-clips without a token answers 401.",
-          "procedure": [
-            "Send GET /api/meetings/{meetingId}/speech-clips with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_API_IT91",
-          "description": "Verify GET /api/meetings/{meetingId}/speech-clips answers 500 MSG299 when the database cannot be read.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{meetingId}/speech-clips with Authorization: Bearer <accessToken>. Send it while the database is unavailable."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG299\", \"message\": \"Không tải được bản gỡ băng.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_database_outage_on_read_says_so)"
+          "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1668,7 +1011,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT92",
+          "id": "REC_API_IT45",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} transcribes and stores a member's sentence under their own name.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1683,45 +1026,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker running; clientClipId is a new GUID."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)"
+          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT93",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} sent twice stores the sentence once.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: a WAV of speech",
-            "Send the same request again with the same clientClipId."
-          ],
-          "expected": [
-            "Both calls answer HTTP 200 with \"code\": \"MSG318\" and the same clip id.",
-            "The sentence is transcribed once and listed once."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)"
-        },
-        {
-          "id": "REC_API_IT94",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} stores nothing when the sentence is only silence.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: an audio file of silence"
-          ],
-          "expected": [
-            "HTTP 204 No Content, no body.",
-            "No sentence is listed and no audio is stored."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Silence_stores_nothing)"
-        },
-        {
-          "id": "REC_API_IT95",
+          "id": "REC_API_IT46",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} refuses a body that is not wav, webm or ogg audio.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1736,10 +1047,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
+          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT96",
+          "id": "REC_API_IT47",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} refuses a missing startedAt or durationMs.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1754,10 +1068,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
+          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT97",
+          "id": "REC_API_IT48",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} refuses an audio body over 3 MB.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1771,28 +1088,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Boundary: 3 MB · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
+          "note": "UC-80 · Boundary: 3 MB · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT98",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} is refused for an InPerson meeting and for one that has not started.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: a WAV of speech",
-            "Repeat on a Scheduled meeting."
-          ],
-          "expected": [
-            "HTTP 409 Conflict in both calls.",
-            "Body: { \"code\": \"MSG320\", \"message\": \"Cuộc họp trực tiếp không ghi theo micro từng người, hoặc cuộc họp không còn đang diễn ra.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "One InPerson meeting in InProgress and one Online meeting in Scheduled."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Sentences_are_taken_only_from_people_of_a_running_meeting_joined_from_afar)"
-        },
-        {
-          "id": "REC_API_IT99",
+          "id": "REC_API_IT49",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} still accepts a sentence kept on the device up to 7 days after the meeting ended and refuses it later.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1807,46 +1109,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. Clock control by the QA lead."
           ],
-          "note": "UC-80 · Boundary: 7 days · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting)"
+          "note": "UC-80 · Boundary: 7 days · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT100",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} answers 503 MSG312 when the speech worker is not available and keeps nothing.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: a WAV of speech"
-          ],
-          "expected": [
-            "HTTP 503 Service Unavailable.",
-            "Body: { \"code\": \"MSG312\", \"message\": \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\" }.",
-            "Nothing is stored, so the browser sends the sentence again later."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker stopped."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_worker_outage_keeps_nothing_so_the_browser_sends_it_again)"
-        },
-        {
-          "id": "REC_API_IT101",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} answers 404 for a user who is not on the participant list and 401 without a token.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: a WAV of speech",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the outsider.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_API_IT102",
+          "id": "REC_API_IT50",
           "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} refuses a Guest who has not confirmed the recording notice.",
           "procedure": [
             "Use a Guest token whose session has no call.guest_admitted record (recording notice never acknowledged).",
@@ -1861,23 +1130,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation that was never admitted with the notice confirmed."
           ],
-          "note": "UC-80 · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_is_recorded_only_after_the_notice_and_reads_in_the_transcript_under_their_name_as_a_guest)"
-        },
-        {
-          "id": "REC_API_IT103",
-          "description": "Verify PUT /api/meetings/{meetingId}/speech-clips/{clientClipId} answers 404 for a Guest of another meeting or a revoked invitation.",
-          "procedure": [
-            "Use a Guest token of another meeting, then one whose invitation was revoked.",
-            "Send PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=<ISO time>&durationMs=2400\n   Headers: Authorization: Bearer <accessToken>; Content-Type: audio/wav\n   Body: a WAV of speech"
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body in both calls."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
-          ],
-          "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_of_another_meeting_or_before_the_meeting_runs_is_refused)"
+          "note": "UC-80 · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_is_recorded_only_after_the_notice_and_reads_in_the_transcript_under_their_name_as_a_guest)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1888,24 +1144,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT104",
-          "description": "Verify GET /api/speech-clips/{clipId}/playback hands a participant a signed link to a sentence.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/speech-clips/{clipId}/playback with Authorization: Bearer <accessToken>."
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "Body: { \"url\": \"/api/speech-clips/<id>/audio?expires=<unix>&signature=<hmac>\", \"expiresAt\": \"<time>\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
-        },
-        {
-          "id": "REC_API_IT105",
+          "id": "REC_API_IT51",
           "description": "Verify GET /api/speech-clips/{clipId}/playback answers 404 for an excluded sentence unless the caller is the Chair or Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1920,73 +1159,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence excluded from the record."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)"
-        },
-        {
-          "id": "REC_API_IT106",
-          "description": "Verify GET /api/speech-clips/{clipId}/playback answers 404 for a user who is not on the participant list and for a sentence without audio.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/speech-clips/{clipId}/playback with Authorization: Bearer <accessToken>.",
-            "Repeat as a Member on a sentence stored before audio was kept."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body in both calls."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence without stored audio."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
-        },
-        {
-          "id": "REC_API_IT107",
-          "description": "Verify GET /api/speech-clips/{clipId}/playback lets a Guest hear only their own sentence.",
-          "procedure": [
-            "Use the Guest token.",
-            "Send GET /api/speech-clips/{clipId}/playback with Authorization: Bearer <accessToken>.",
-            "Repeat for a sentence of a member."
-          ],
-          "expected": [
-            "HTTP 200 OK with a link for the Guest's own sentence.",
-            "HTTP 404 Not Found for the member's sentence."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
-          ],
-          "note": "UC-43b · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
-        },
-        {
-          "id": "REC_API_IT108",
-          "description": "Verify GET /api/speech-clips/{clipId}/playback without a token answers 401.",
-          "procedure": [
-            "Send GET /api/speech-clips/{clipId}/playback with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200)."
-          ],
-          "note": "UC-43b · Manual only"
-        },
-        {
-          "id": "REC_API_IT109",
-          "description": "Verify GET /api/speech-clips/{clipId}/playback answers 500 MSG297 when the database cannot be read.",
-          "procedure": [
-            "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/speech-clips/{clipId}/playback with Authorization: Bearer <accessToken>. Send it while the database is unavailable."
-          ],
-          "expected": [
-            "HTTP 500.",
-            "Body: { \"code\": \"MSG297\", \"message\": \"Không tải được bản ghi.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
-          ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_database_outage_while_signing_a_link_says_so)"
+          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1997,7 +1173,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT110",
+          "id": "REC_API_IT52",
           "description": "Verify GET /api/speech-clips/{clipId}/audio streams a sentence through a valid signed link with range support and no token.",
           "procedure": [
             "Obtain a link from GET /api/speech-clips/{clipId}/playback.",
@@ -2012,10 +1188,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
+          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT111",
+          "id": "REC_API_IT53",
           "description": "Verify GET /api/speech-clips/{clipId}/audio answers 404 for a forged, expired or missing signature.",
           "procedure": [
             "Send GET <url> with the signature changed.",
@@ -2029,23 +1208,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A valid link for the sentence."
           ],
-          "note": "UC-43b · Boundary: link lifetime · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
-        },
-        {
-          "id": "REC_API_IT112",
-          "description": "Verify GET /api/speech-clips/{clipId}/audio answers 404 once the sentence has been deleted.",
-          "procedure": [
-            "Obtain a link, then delete the sentence with DELETE /api/speech-clips/{clipId}.",
-            "Send GET <url>."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body: the audio was erased with the sentence."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
-          ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Deleting_a_sentence_or_its_retention_running_out_erases_its_audio)"
+          "note": "UC-43b · Boundary: link lifetime · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2057,7 +1223,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT113",
+          "id": "REC_API_IT54",
           "description": "Verify PUT /api/speech-clips/{clipId}/exclusion takes a sentence out of the record without deleting it.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -2072,10 +1238,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence marked as leaked."
           ],
-          "note": "UC-46c · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
+          "note": "UC-46c · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT114",
+          "id": "REC_API_IT55",
           "description": "Verify PUT /api/speech-clips/{clipId}/exclusion accepts reason Other and lets the Secretary exclude too.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -2089,64 +1258,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
+          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT115",
-          "description": "Verify PUT /api/speech-clips/{clipId}/exclusion puts an excluded sentence back into the record.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/speech-clips/{clipId}/exclusion\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"excluded\": false }"
-          ],
-          "expected": [
-            "HTTP 200 OK.",
-            "Body: { \"code\": \"MSG352\", \"message\": \"Đã đưa câu trở lại bản ghi.\" }.",
-            "The sentence is no longer excluded; an audit row speech_clip.restored exists."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An excluded sentence."
-          ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
-        },
-        {
-          "id": "REC_API_IT116",
-          "description": "Verify PUT /api/speech-clips/{clipId}/exclusion called again with the same state changes nothing and writes no audit row.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/speech-clips/{clipId}/exclusion\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"excluded\": true, \"reason\": \"Other\" }",
-            "Send the same request again."
-          ],
-          "expected": [
-            "Both calls answer HTTP 200 MSG351.",
-            "Only one speech_clip.excluded audit row exists."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
-          ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
-        },
-        {
-          "id": "REC_API_IT117",
-          "description": "Verify PUT /api/speech-clips/{clipId}/exclusion rejects a reason other than Leak or Other.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/speech-clips/{clipId}/exclusion\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"excluded\": true, \"reason\": \"Spam\" }"
-          ],
-          "expected": [
-            "HTTP 400 Bad Request.",
-            "Body: { \"code\": \"MSG354\", \"message\": \"Lý do loại câu không hợp lệ.\" }.",
-            "The sentence stays in the record."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
-          ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
-        },
-        {
-          "id": "REC_API_IT118",
+          "id": "REC_API_IT56",
           "description": "Verify PUT /api/speech-clips/{clipId}/exclusion answers 403 MSG353 for a Member.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -2160,10 +1278,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
+          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT119",
+          "id": "REC_API_IT57",
           "description": "Verify PUT /api/speech-clips/{clipId}/exclusion answers 403 for a Guest token.",
           "procedure": [
             "Use a Guest token.",
@@ -2177,25 +1298,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken."
           ],
-          "note": "UC-46c · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
-        },
-        {
-          "id": "REC_API_IT120",
-          "description": "Verify PUT /api/speech-clips/{clipId}/exclusion answers 404 for a user who is not on the participant list and 401 without a token.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/speech-clips/{clipId}/exclusion\n   Headers: Authorization: Bearer <accessToken>; Content-Type: application/json\n   Body: { \"excluded\": true, \"reason\": \"Other\" }",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the outsider.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
-          ],
-          "note": "UC-46c · Manual only"
+          "note": "UC-46c · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -2207,7 +1313,7 @@
       ],
       "cases": [
         {
-          "id": "REC_API_IT121",
+          "id": "REC_API_IT58",
           "description": "Verify DELETE /api/speech-clips/{clipId} lets a speaker take back their own sentence.",
           "procedure": [
             "Sign in as the Member who spoke the sentence (POST /api/auth/login) and keep the access token.",
@@ -2222,10 +1328,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by the Member."
           ],
-          "note": "UC-80 · UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
+          "note": "UC-80 · UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT122",
+          "id": "REC_API_IT59",
           "description": "Verify DELETE /api/speech-clips/{clipId} lets the Secretary delete another person's sentence.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -2239,10 +1348,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
-          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
+          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "REC_API_IT123",
+          "id": "REC_API_IT60",
           "description": "Verify DELETE /api/speech-clips/{clipId} answers 403 MSG323 for a participant who is neither the speaker nor the Secretary.",
           "procedure": [
             "Sign in as another Member or the Chair (POST /api/auth/login) and keep the access token.",
@@ -2257,59 +1369,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
-          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
-        },
-        {
-          "id": "REC_API_IT124",
-          "description": "Verify DELETE /api/speech-clips/{clipId} lets a Guest delete only their own sentence.",
-          "procedure": [
-            "Use the Guest token.",
-            "Send DELETE /api/speech-clips/{clipId} with Authorization: Bearer <accessToken>.",
-            "Repeat for a sentence of a member."
-          ],
-          "expected": [
-            "HTTP 200 MSG322 for the Guest's own sentence; the audit row speech_clip.deleted has no actor and records guestInvitationId and guestSessionId.",
-            "HTTP 404 Not Found for the member's sentence."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
-          ],
-          "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
-        },
-        {
-          "id": "REC_API_IT125",
-          "description": "Verify DELETE /api/speech-clips/{clipId} answers 404 for a user who is not on the participant list and 401 without a token.",
-          "procedure": [
-            "Sign in as an account that is not on the meeting's participant list (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/speech-clips/{clipId} with Authorization: Bearer <accessToken>.",
-            "Repeat with no Authorization header."
-          ],
-          "expected": [
-            "HTTP 404 Not Found with no body for the outsider.",
-            "HTTP 401 Unauthorized without a token."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
-          ],
-          "note": "UC-80 · Manual only"
-        },
-        {
-          "id": "REC_API_IT126",
-          "description": "Verify the retention period erases a sentence's text and audio together with the recording retention.",
-          "procedure": [
-            "Store a sentence, let Recordings:RetentionDays pass (test build with a short period) and wait for the retention worker.",
-            "Send GET /api/meetings/{meetingId}/speech-clips and GET /api/speech-clips/{clipId}/playback."
-          ],
-          "expected": [
-            "The sentence is no longer listed and its audio is gone; the playback call answers HTTP 404."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "An Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored sentence."
-          ],
-          "note": "UC-80 · Retention (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Deleting_a_sentence_or_its_retention_running_out_erases_its_audio)"
+          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -27,7 +27,10 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "At least 21 accounts including a deactivated one and a Google-only one."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC1): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/01-admin-AC1-desktop-danh-sach.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/02-admin-AC1-desktop-dong-qa-a.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT02",
@@ -44,30 +47,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/01-admin-AC22-desktop-dang-tai-skeleton.png; tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/02-admin-AC22-desktop-loi-tai-danh-sach.png; tests/qa/out/SCRUM-189/20261121-221018-eb5a3255/03-admin-AC22-desktop-thu-lai-thanh-cong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "USER_FT03",
-          "description": "Verify searching by name or email ignores case and diacritics.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Type \"nguyen\" in \"Tìm theo tên hoặc email…\".",
-            "Type part of an email, e.g. \"trustcabinet\"."
-          ],
-          "expected": [
-            "Step 2: the list narrows at once to accounts whose name contains \"Nguyễn\" (and \"Nguyen\"), with no extra API call.",
-            "Step 3: rows whose email contains the text remain.",
-            "The URL gets \"?q=\" after a short pause and the page goes back to page 1."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "Accounts named \"Nguyễn …\" and \"Đặng …\" exist."
-          ],
-          "note": "UC-05 · Manual only"
-        },
-        {
-          "id": "USER_FT04",
           "description": "Verify the role and status filters combine with the search.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -83,10 +69,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/01-admin-AC2-desktop-tim-khong-dau.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/05-admin-AC2-phone-tim-khong-dau.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT05",
+          "id": "USER_FT04",
           "description": "Verify an empty result shows \"Không có tài khoản nào khớp bộ lọc.\" and \"Xoá bộ lọc\" restores the list.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -101,10 +90,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC2): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/04-admin-AC2-desktop-da-xoa-bo-loc.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/08-admin-AC2-phone-da-xoa-bo-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT06",
+          "id": "USER_FT05",
           "description": "Verify filters and page survive a reload and a shared link.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -120,10 +112,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Enough accounts for a second page at a page size of 20."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/05-admin-AC23-desktop-trang-qua-lon-ve-cuoi.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/06-admin-AC23-desktop-vai-tro-moi-trong-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT07",
+          "id": "USER_FT06",
           "description": "Verify paging and the page-size selector.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -138,10 +133,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "More than 20 accounts."
           ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/03-admin-AC23-desktop-trang-2-co-20-dong.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT08",
+          "id": "USER_FT07",
           "description": "Verify a caller without AdminUsers cannot open the user list.",
           "procedure": [
             "Sign in as the Secretary (no AdminUsers).",
@@ -155,26 +153,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active Secretary account without AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-05 · Manual only"
-        },
-        {
-          "id": "USER_FT09",
-          "description": "Verify losing AdminUsers while the page is open sends the user away with a message.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser, an Administrator moves the first account to the \"Thành viên\" role.",
-            "In the first browser click \"Sửa\" on any row (or reload the list)."
-          ],
-          "expected": [
-            "The backend answers 403; the page shows the toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" and goes to the meeting list.",
-            "The sidebar no longer offers \"Quản trị\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second Administrator in another browser."
-          ],
-          "note": "UC-05 · Manual only"
+          "note": "UC-05 · Manual only · Evidence(AC19): tests/qa/out/SCRUM-189/20261121-221106-eb5a3255/01-secretary-AC19-desktop-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -185,7 +167,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT10",
+          "id": "USER_FT08",
           "description": "Verify an Administrator creates an account with \"Tạo tài khoản\".",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -204,10 +186,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The email is not used."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC3): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/10-admin-AC3-desktop-form-tao.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/11-admin-AC3-desktop-dong-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT11",
+          "id": "USER_FT09",
           "description": "Verify the dialog opens with the default role and \"Tạo mật khẩu\" shows the generated password.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -223,10 +208,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC3): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/09-admin-AC3-desktop-mat-khau-hien-sao-chep.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT12",
+          "id": "USER_FT10",
           "description": "Verify the dialog marks every empty or invalid field and focuses the first one, without calling the API.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -241,10 +229,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC4): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/12-admin-AC4-desktop-mat-khau-tao-san.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/13-admin-AC4-desktop-email-sai-dinh-dang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT13",
+          "id": "USER_FT11",
           "description": "Verify a duplicate email shows \"Email đã được sử dụng.\" under the email field.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -259,10 +250,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC4): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/11-admin-AC4-desktop-email-trung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT14",
+          "id": "USER_FT12",
           "description": "Verify a role deleted after the dialog was opened shows the server's field error.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -278,10 +272,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A custom role without members and a second browser."
           ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC15): tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/12-admin-AC15-desktop-vai-tro-khong-ton-tai.png; tests/qa/out/SCRUM-189/20261121-220046-eb5a3255/13-admin-AC15-desktop-tao-vai-tro-khong-ton-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT15",
+          "id": "USER_FT13",
           "description": "Verify closing the dialog with typed input asks before discarding.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -296,26 +293,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06a · Manual only"
-        },
-        {
-          "id": "USER_FT16",
-          "description": "Verify a caller who lost AdminUsers is turned away when saving a new account.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Tạo tài khoản\" and fill valid values.",
-            "In a second browser remove AdminUsers from this Administrator's role, then submit."
-          ],
-          "expected": [
-            "POST /api/users answers 403; the toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" shows and the app goes to the meeting list.",
-            "No account is created."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second Administrator in another browser."
-          ],
-          "note": "UC-06a · Manual only"
+          "note": "UC-06a · Manual only · Evidence(AC24): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/37-admin-AC24-desktop-hoi-bo-thay-doi-tao.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/38-admin-AC24-desktop-bo-thay-doi-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -326,7 +307,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT17",
+          "id": "USER_FT14",
           "description": "Verify \"Sửa\" loads the account and \"Lưu thay đổi\" saves name and email.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -342,28 +323,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/19-admin-AC5-desktop-form-sua.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/21-admin-AC5-desktop-da-luu.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT18",
-          "description": "Verify the dialog shows the sign-in methods and where the password is changed.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\" on a Google-linked account, then on a password-only account."
-          ],
-          "expected": [
-            "The line \"Đăng nhập bằng: Google\" / \"mật khẩu\" / \"mật khẩu, Google\" matches the row.",
-            "Its tooltip says that changing the email does not change the linked Google account, or that the first Google sign-in with the same email links it, and that the password is changed with \"Gửi liên kết đặt lại mật khẩu\" in the list."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "One password-only and one Google-linked account."
-          ],
-          "note": "UC-06b · Manual only"
-        },
-        {
-          "id": "USER_FT19",
+          "id": "USER_FT15",
           "description": "Verify an email change warns that the person will be signed out.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -378,10 +344,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5+AC25): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/20-admin-AC5-desktop-email-trung.png; tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/04-admin-AC25-desktop-doi-email-minh-ve-login.png; tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/05-admin-AC25-desktop-dang-nhap-lai-ve-dung-trang.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT20",
+          "id": "USER_FT16",
           "description": "Verify the other person is signed out after their email changes.",
           "procedure": [
             "In browser B, sign in as the target and open /mgmt/meetings.",
@@ -397,10 +366,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC26): tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/06-admin-AC26-desktop-b-bi-doi-email-ve-login.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT21",
+          "id": "USER_FT17",
           "description": "Verify a duplicate email on edit shows \"Email đã được sử dụng.\" and keeps the dialog open.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -413,10 +385,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/20-admin-AC5-desktop-email-trung.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT22",
+          "id": "USER_FT18",
           "description": "Verify invalid input on edit is marked per field, and closing with edits asks first.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -431,10 +406,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC5+AC24): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/19-admin-AC5-desktop-form-sua.png; tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/38-admin-AC24-desktop-bo-thay-doi-sua.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT23",
+          "id": "USER_FT19",
           "description": "Verify the edit dialog shows the load error when the account cannot be loaded.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -447,7 +425,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06b · Manual only"
+          "note": "UC-06b · Manual only · Evidence(AC28): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/12-admin-AC28-desktop-sua-dang-tai.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/13-admin-AC28-desktop-sua-loi-tai.png; tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/14-admin-AC28-desktop-sua-thu-lai-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -458,7 +439,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT24",
+          "id": "USER_FT20",
           "description": "Verify deactivating an account asks for confirmation and updates the row.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -475,10 +456,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "An active target account."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC7): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/25-admin-AC7-desktop-hoi-lai-vo-hieu-hoa.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/26-admin-AC7-desktop-da-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT25",
+          "id": "USER_FT21",
           "description": "Verify a deactivated person is signed out and cannot sign in.",
           "procedure": [
             "In browser B, sign in as the target and open /mgmt/meetings.",
@@ -493,10 +477,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC27): tests/qa/out/SCRUM-189/20261121-220801-eb5a3255/07-admin-AC27-desktop-b-bi-vo-hieu-hoa-ve-login.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT26",
+          "id": "USER_FT22",
           "description": "Verify reactivating an account restores sign-in.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -512,10 +499,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "A deactivated target account with a password."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC7): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/27-admin-AC7-desktop-da-kich-hoat-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT27",
+          "id": "USER_FT23",
           "description": "Verify the status button is disabled on your own row.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -528,10 +518,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06c · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC8): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/31-admin-AC8-desktop-dong-cua-minh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT28",
+          "id": "USER_FT24",
           "description": "Verify cancelling the confirmation changes nothing.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -544,45 +537,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-06c · Manual only"
-        },
-        {
-          "id": "USER_FT29",
-          "description": "Verify a stale list is told so when the account is already in the requested state.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser deactivate account X.",
-            "Here, still showing X as active, click \"Vô hiệu hoá\" on X and confirm."
-          ],
-          "expected": [
-            "The backend answers 409 \"MSG12\"; the page re-reads the account and the dialog shows \"Tài khoản này đã bị vô hiệu hoá từ trước. Danh sách đã được cập nhật.\"; the row now shows \"Đã vô hiệu hoá\".",
-            "The reverse case shows \"Tài khoản này đã được kích hoạt từ trước. Danh sách đã được cập nhật.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second browser signed in as another Administrator."
-          ],
-          "note": "UC-06c · Manual only"
-        },
-        {
-          "id": "USER_FT30",
-          "description": "Verify a deactivated account's library opens from the row, and an active one's does not.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Hover the folder button on an active row, then on a deactivated row.",
-            "Click \"Xem kho\" on the deactivated row."
-          ],
-          "expected": [
-            "Active row: the folder button is disabled with the tooltip \"Chỉ xem được kho của tài khoản đã vô hiệu hoá\".",
-            "Deactivated row: the link \"Xem kho tài liệu\" opens /mgmt/admin/users/{id}/library showing the person's documents read-only."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A deactivated account with documents in its personal library."
-          ],
-          "note": "UC-06c · SCRUM-113 · Manual only"
+          "note": "UC-06c · Manual only · Evidence(AC29): tests/qa/out/SCRUM-189/20261121-215233-eb5a3255/43-admin-AC29-desktop-huy-vo-hieu-hoa.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -593,7 +551,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT31",
+          "id": "USER_FT25",
           "description": "Verify an Administrator changes a person's role in the edit dialog.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -608,10 +566,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Evidence(AC13): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/45-admin-AC13-desktop-chon-vai-tro.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/46-admin-AC13-desktop-vai-tro-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT32",
+          "id": "USER_FT26",
           "description": "Verify the changed role applies to the person at once without signing them out.",
           "procedure": [
             "In browser B, sign in as the target Member and keep /mgmt/meetings open.",
@@ -627,27 +588,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "Target account signed in in a second browser."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Evidence(AC13+AC14): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/46-admin-AC13-desktop-vai-tro-moi.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/50-qa-fe02-a-trustcabinet-local-AC14-desktop-nhan-thong-bao.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT33",
-          "description": "Verify editing your own role refreshes the shell.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\" on your own row, change only \"Vai trò\" to a role that keeps AdminUsers, and save."
-          ],
-          "expected": [
-            "\"MSG10\" toast; the session reloads from /api/auth/me and the sidebar and name stay consistent with the saved role."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role that also holds AdminUsers."
-          ],
-          "note": "UC-08 · Manual only"
-        },
-        {
-          "id": "USER_FT34",
+          "id": "USER_FT27",
           "description": "Verify demoting the last administrator is refused with a clear message.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -662,27 +609,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The signed-in account is the only active account holding AdminUsers."
           ],
-          "note": "UC-08 · Manual only"
+          "note": "UC-08 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 409 MSG12, hộp báo đúng câu và vẫn mở; vai trò không đổi. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/04-admin-USER_FT27-desktop-khong-the-ha-quan-tri.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "USER_FT35",
-          "description": "Verify a role deleted meanwhile is reported on the field.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Click \"Sửa\", choose a custom role, and in a second browser delete that role, then save."
-          ],
-          "expected": [
-            "PUT /api/users/{id} answers 400 \"MSG09\"; \"Vai trò không tồn tại.\" shows under \"Vai trò\"; the dialog stays open."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A custom role without members and a second browser."
-          ],
-          "note": "UC-08 · Manual only"
-        },
-        {
-          "id": "USER_FT36",
+          "id": "USER_FT28",
           "description": "Verify the role filter list matches the roles that exist.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -696,7 +629,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
           ],
-          "note": "UC-08 · UC-12a · Manual only"
+          "note": "UC-08 · UC-12a · Manual only · Evidence(AC23): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/06-admin-AC23-desktop-vai-tro-moi-trong-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -707,7 +643,7 @@
       ],
       "cases": [
         {
-          "id": "USER_FT37",
+          "id": "USER_FT29",
           "description": "Verify the Administrator sends a reset link from the list.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -723,28 +659,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "An active target account with a password; SMTP to a controlled inbox."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hộp nói đủ bốn ý; 200 MSG13, toast; mailpit nhận thư có liên kết reset-password#token=. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/04-admin-USER_FT29-desktop-hop-dat-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "USER_FT38",
-          "description": "Verify the reset button is disabled for deactivated and Google-only accounts.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Hover the key button on a deactivated row, then on a Google-only row."
-          ],
-          "expected": [
-            "Google-only: disabled, tooltip \"Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại\".",
-            "Deactivated: disabled, tooltip \"Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu\".",
-            "A Google-only account that is also deactivated shows the Google message first."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT39",
+          "id": "USER_FT30",
           "description": "Verify the dialog warns when you reset your own password.",
           "procedure": [
             "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
@@ -758,46 +679,13 @@
             "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
             "The signed-in Administrator has a password."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Evidence(AC30): tests/qa/out/SCRUM-189/20261121-220310-eb5a3255/15-admin-AC30-desktop-canh-bao-tu-dat-cho-minh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "USER_FT40",
-          "description": "Verify a stale list is corrected when the account was deactivated meanwhile.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "In a second browser deactivate the target, then here click \"Gửi liên kết\" without reloading."
-          ],
-          "expected": [
-            "POST answers 409 \"MSG14\"; the dialog shows \"Tài khoản này đã bị vô hiệu hoá nên không đặt lại mật khẩu được. Danh sách đã được cập nhật.\" and \"Gửi liên kết\" is disabled; the row now shows \"Đã vô hiệu hoá\".",
-            "For an account that has no password the text is \"Tài khoản này chỉ đăng nhập bằng Google, không có mật khẩu để đặt lại. Danh sách đã được cập nhật.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "A second browser signed in as another Administrator."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT41",
-          "description": "Verify a mail failure keeps the dialog open so the Administrator can retry.",
-          "procedure": [
-            "Go to /mgmt/admin/users (sidebar \"Quản trị\" > \"Người dùng\").",
-            "Turn the mail server off, click \"Gửi liên kết\", then turn it on and click again."
-          ],
-          "expected": [
-            "POST answers 503 \"MSG15\"; the dialog shows \"Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.\" and stays open.",
-            "The retry succeeds with \"MSG13\" and the toast \"Đã gửi email đặt lại mật khẩu.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
-            "The QA lead can stop and start the mail server."
-          ],
-          "note": "UC-07 · Manual only"
-        },
-        {
-          "id": "USER_FT42",
+          "id": "USER_FT31",
           "description": "Verify the person sets a new password from the emailed link.",
           "procedure": [
             "Open the link from the email (/reset-password#token=...).",
@@ -813,26 +701,31 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A fresh reset link sent to an active account with a password."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai lỗi đúng, không gửi request; 200 MSG92, về /login; mật khẩu mới đăng nhập 200, cũ 401. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/05-anon-USER_FT31-desktop-loi-mat-khau.png; tests/qa/out/MANUAL-R1/20261123-073358-03594e25/06-anon-USER_FT31-desktop-ve-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "USER_FT43",
-          "description": "Verify a used, expired or replaced link shows the dead-link notice.",
+          "id": "USER_FT32",
+          "description": "Verify a used link shows the dead-link notice.",
           "procedure": [
             "Use the link once successfully, then open the same link again, type a valid password and submit."
           ],
           "expected": [
-            "POST answers 400 \"MSG93\"; the form gives way to the error \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\" with the hint \"Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.\" and a link \"Về trang đăng nhập\".",
-            "An older link replaced by a newer one behaves the same."
+            "POST answers 400 \"MSG93\"; the form gives way to the error \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\" with the hint \"Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.\" and a link \"Về trang đăng nhập\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A reset link that was already used."
           ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 400 MSG93, báo và gợi ý đúng, có \"Về trang đăng nhập\". Passed cho nhánh link đã dùng; nhánh link bị link mới thay chưa kiểm. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/07-anon-USER_FT32-desktop-lien-ket-het-hieu-luc.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
-          "id": "USER_FT44",
+          "id": "USER_FT33",
           "description": "Verify the page without a token does not call the API and keeps the link usable.",
           "procedure": [
             "Go to /reset-password with no \"#token=\"."
@@ -843,22 +736,10 @@
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito."
           ],
-          "note": "UC-07 · MSG129 · Manual only"
-        },
-        {
-          "id": "USER_FT45",
-          "description": "Verify a too-short password the server rejects keeps the form and the link.",
-          "procedure": [
-            "Open a valid link, fill a password of exactly 11 characters in both fields only if the client check is bypassed (QA lead disables the client check), then submit."
-          ],
-          "expected": [
-            "POST answers 400 \"MSG94\"; the message under \"Mật khẩu mới\" is \"Mật khẩu phải có ít nhất 12 ký tự.\"; the form stays and a corrected password then succeeds with the same link."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "A fresh reset link; QA lead can bypass the client-side check (for example with a proxy)."
-          ],
-          "note": "UC-07 · Manual only"
+          "note": "UC-07 · MSG129 · Manual only · Evidence(AC11): tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/39-anon-AC11-desktop-khong-co-ma.png; tests/qa/out/SCRUM-189/20261121-214728-eb5a3255/42-anon-AC11-phone-khong-co-ma.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

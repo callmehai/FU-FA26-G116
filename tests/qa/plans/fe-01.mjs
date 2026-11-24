@@ -13,6 +13,8 @@ import { randomBytes, randomUUID } from 'node:crypto'
 
 const RUN = Date.now().toString(36)
 const DOMAIN = 'trustcabinet.local'
+const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
+const SECRETARY_EMAIL = 'thuky@trustcabinet.local'
 const MSG01 = 'Email hoặc mật khẩu không đúng.'
 const MSG01_REFRESH = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
 const MSG02 = 'Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.'
@@ -56,7 +58,10 @@ async function noRawCodes(qa) {
 }
 
 async function settled(qa) {
-  await qa.page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
+  // Infinite animations (the pinging call-to-action) never finish: only finite ones count as "still running".
+  await qa.page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+  )
 }
 
 const emailField = (qa) => qa.page.getByLabel('Email')
@@ -84,6 +89,78 @@ async function bearer(qa) {
   const res = await qa.context.request.post('/api/auth/refresh')
   qa.expect(res.status(), 'refresh for a bearer token').toBe(200)
   return (await res.json()).accessToken
+}
+
+/** A bearer token for the seed Secretary, by direct login (for criteria whose browser has no session). */
+async function secretaryToken(qa) {
+  const res = await qa.context.request.post('/api/auth/login', { data: { email: SECRETARY_EMAIL, password: PASSWORD } })
+  qa.expect(res.status(), 'secretary sign-in').toBe(200)
+  return (await res.json()).accessToken
+}
+
+/** Messages mailpit (http://localhost:8025) received for `to`: id and subject, newest first. */
+async function mailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+/** How many messages to `to` have a subject matching `re`. */
+async function mailCount(to, re) {
+  return (await mailpit(to)).filter((x) => re.test(x.subject)).length
+}
+
+/** The six-digit code of the newest "Mã xác minh" email to a Guest. */
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await mailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
+}
+
+/** A Published meeting the QA account (as Member) can open, created once per run. */
+let memberMeeting = null
+async function ensureMemberMeeting(qa, memberEmail) {
+  if (memberMeeting) return memberMeeting
+  const sec = await qa.api('secretary')
+  const chair = await qa.api('chair')
+  const admin = await qa.api('admin')
+  const users = await admin.get('/api/users')
+  qa.expectStatus(users, 200)
+  const member = users.body.find((u) => u.email === memberEmail)
+  const chairMe = (await chair.get('/api/auth/me')).body
+  const secMe = (await sec.get('/api/auth/me')).body
+  const title = qa.name('FE-01 họp cho QA')
+  const start = new Date(Date.now() + 86_400_000)
+  start.setUTCMinutes(0, 0, 0)
+  const created = await sec.post('/api/meetings', {
+    title,
+    plannedStartTime: start.toISOString(),
+    plannedEndTime: new Date(start.getTime() + 3_600_000).toISOString(),
+    mode: 'Online',
+    location: '',
+    sensitivity: 'Normal',
+    description: 'QA FE-01',
+    participants: [
+      { userId: chairMe.id, role: 'Chair' },
+      { userId: secMe.id, role: 'Secretary' },
+      { userId: member.id, role: 'Member' },
+    ],
+  })
+  qa.expectStatus(created, 201)
+  const id = created.body.meeting.id
+  qa.expectStatus(await sec.post(`/api/meetings/${id}/transitions`, { action: 'SubmitForApproval', assignedApproverId: chairMe.id }), 200)
+  qa.expectStatus(await chair.post(`/api/meetings/${id}/transitions`, { action: 'Approve' }), 200)
+  qa.expectStatus(await sec.post(`/api/meetings/${id}/transitions`, { action: 'Publish' }), 200)
+  memberMeeting = { id, title }
+  return memberMeeting
 }
 
 /** Finds the reusable Published "[QA]" meeting and its guest invitation: { meetingId, invitationId } or null. */
@@ -134,7 +211,7 @@ async function ensureGuestInvitation(qa) {
   const parts = await sec.get(`/api/meetings/${meetingId}/participants?pageSize=100`)
   const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
   const res = await qa.context.request.post(`/api/meetings/${meetingId}/guest-invitations`, {
-    headers: { Authorization: `Bearer ${await bearer(qa)}`, 'If-Match': etag },
+    headers: { Authorization: `Bearer ${await secretaryToken(qa)}`, 'If-Match': etag },
     data: { invitedName: qa.name('Khách FE-01'), email: GUEST_EMAIL },
   })
   qa.expect(res.status(), `guest invitation: ${await res.text()}`).toBe(201)
@@ -153,10 +230,10 @@ export default {
       id: 'AC1',
       role: 'anon',
       devices: ['desktop', 'phone'],
-      title: 'UC-01: đăng nhập bằng email và mật khẩu đúng thì vào Lịch làm việc; màn đăng nhập không có chỗ chọn vai trò',
-      steps: ['Mở /login', 'Nhập email, mật khẩu của tài khoản [QA] đang hoạt động', 'Bấm "Đăng nhập bằng mật khẩu"'],
+      title: 'UC-01: đăng nhập bằng email và mật khẩu đúng thì vào Lịch làm việc; màn đăng nhập không có chỗ chọn vai trò; nút khoá khi đang gửi; Thành viên không thấy mục Quản trị',
+      steps: ['Mở /login', 'Nhập email, mật khẩu của tài khoản [QA] đang hoạt động (chặn /api/auth/login 400ms)', 'Bấm "Đăng nhập bằng mật khẩu"', 'Xem sidebar ở Lịch làm việc'],
       expected:
-        'Màn đăng nhập chỉ có Email, Mật khẩu (BR-002: không chọn vai trò); sau khi bấm vào /calendar, sidebar có tài khoản vừa đăng nhập; không cuộn ngang; trên điện thoại ô nhập và nút cao ≥ 40px',
+        'Màn đăng nhập chỉ có Email, Mật khẩu (BR-002: không chọn vai trò); khi đang gửi nút hiện "Đang đăng nhập…" và bị khoá (AUTH_FT01 E1); sau khi bấm vào /calendar, sidebar có tài khoản vừa đăng nhập; Thành viên không thấy mục "Quản trị"/"Người dùng" (AUTH_FT01 E4); không cuộn ngang; trên điện thoại ô nhập và nút cao ≥ 40px',
       async run(qa) {
         const { active } = await ensureUsers(qa)
         await qa.goto('/login')
@@ -171,9 +248,23 @@ export default {
             qa.expect(box?.height ?? 0, `${what} is shorter than 40px on touch`).toBeGreaterThanOrEqual(40)
           }
         }
-        await signInOnScreen(qa, active.email, active.password)
+        // AUTH_FT01 E1: while the request is in flight the button locks with "Đang đăng nhập…".
+        await qa.page.route('**/api/auth/login', async (route) => {
+          await new Promise((r) => setTimeout(r, 1500))
+          await route.continue()
+        })
+        await emailField(qa).fill(active.email)
+        await passwordField(qa).fill(active.password)
+        await submitButton(qa).click()
+        const busy = qa.page.getByRole('button', { name: 'Đang đăng nhập…', exact: true })
+        await qa.expect(busy).toBeVisible()
+        await qa.expect(busy).toBeDisabled()
+        await qa.page.unroute('**/api/auth/login')
         await qa.expect(qa.page).toHaveURL(/\/calendar(\?|$)/)
         await qa.expect(qa.page.getByLabel(`Tài khoản ${active.fullName}`)).toBeVisible()
+        // AUTH_FT01 E4: a Member is offered no administration entry.
+        await qa.expect(qa.page.getByRole('button', { name: 'Quản trị' })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('link', { name: 'Người dùng', exact: true })).toHaveCount(0)
         // The calendar's own toolbar, not the "Đang tải…" placeholder of its lazy chunk.
         await qa.expect(qa.page.getByRole('button', { name: 'Hôm nay' })).toBeVisible()
         await settled(qa)
@@ -321,12 +412,13 @@ export default {
     {
       id: 'AC6',
       role: 'anon',
-      title: 'UC-01 POST-3: mở một trang khi chưa đăng nhập thì sau khi đăng nhập vào đúng trang đó; trang tài khoản không mở được thì về Lịch làm việc',
+      title: 'UC-01 POST-3: mở một trang khi chưa đăng nhập thì sau khi đăng nhập vào đúng trang đó; trang tài khoản không mở được thì về Lịch làm việc; link chi tiết hiện lời mời đăng nhập',
       steps: [
         'Chưa đăng nhập, mở /mgmt/meetings → bị đưa về /login → đăng nhập [QA]',
         'Phiên mới: chưa đăng nhập, mở /mgmt/admin/ai (thành viên không có quyền) → đăng nhập [QA]',
+        'Phiên mới: chưa đăng nhập, mở /mgmt/meetings/{id} của cuộc họp mình được xem → đăng nhập [QA]',
       ],
-      expected: 'Lần 1 vào "Danh sách cuộc họp" (/mgmt/meetings). Lần 2 vào /calendar, không thấy "Không tìm thấy trang"',
+      expected: 'Lần 1 vào "Danh sách cuộc họp" (/mgmt/meetings). Lần 2 vào /calendar, không thấy "Không tìm thấy trang". Lần 3: /login hiện "Đăng nhập để mở cuộc họp." (AUTH_FT07 E1), sau đăng nhập vào đúng trang chi tiết cuộc họp (AUTH_FT07 E2)',
       async run(qa) {
         const { active } = await ensureUsers(qa)
         await qa.goto('/mgmt/meetings')
@@ -346,6 +438,20 @@ export default {
         await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toHaveCount(0)
         await settled(qa)
         await qa.shot('khong-co-quyen-ve-lich')
+        // AUTH_FT07: a meeting detail link asks to sign in, then lands on that meeting.
+        const meeting = await ensureMemberMeeting(qa, active.email)
+        await qa.context.clearCookies()
+        await qa.page.evaluate(() => localStorage.clear())
+        await qa.goto(`/mgmt/meetings/${meeting.id}`)
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        await qa.expect(qa.page.getByText('Đăng nhập để mở cuộc họp.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('link-cuoc-hop-moi-dang-nhap')
+        await signInOnScreen(qa, active.email, active.password)
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${meeting.id}`))
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: meeting.title })).toBeVisible()
+        await settled(qa)
+        await qa.shot('vao-dung-chi-tiet-cuoc-hop')
       },
     },
     {
@@ -424,16 +530,16 @@ export default {
       id: 'AC11',
       role: 'anon',
       devices: ['desktop', 'phone'],
-      title: 'UC-03: Đăng xuất hỏi xác nhận; Huỷ thì giữ phiên; xác nhận thì về /login, trang bảo vệ không mở lại được, phiên ở server đã bị huỷ',
+      title: 'UC-03: Đăng xuất hỏi xác nhận; Huỷ thì giữ phiên; xác nhận thì nút báo đang xử lý rồi về /login; Back không mở lại trang cũ; trang bảo vệ không mở lại được, phiên ở server đã bị huỷ',
       steps: [
         'Đăng nhập [QA], mở Danh sách cuộc họp',
         'Bấm tài khoản ở chân sidebar → Đăng xuất → Huỷ',
-        'Lại Đăng xuất → Đăng xuất',
+        'Lại Đăng xuất → Đăng xuất (chặn /api/auth/logout 400ms)',
         'Đăng nhập lại ngay trên màn đăng nhập',
-        'Đăng xuất lần nữa, mở lại /mgmt/meetings; gọi /api/auth/refresh bằng cookie cũ',
+        'Đăng xuất lần nữa, mở lại /mgmt/meetings; gọi /api/auth/refresh bằng cookie cũ; bấm Back',
       ],
       expected:
-        'Hộp "Đăng xuất" hỏi "Bạn có chắc muốn đăng xuất?…"; Huỷ: vẫn ở trang; xác nhận: về /login; đăng nhập lại vào /calendar (đăng xuất chủ động không giữ trang cũ); sau khi đăng xuất mở trang bảo vệ → /login; refresh → 401 MSG01',
+        'Hộp "Đăng xuất" hỏi "Bạn có chắc muốn đăng xuất?…"; Huỷ: vẫn ở trang; xác nhận: nút hiện "Đang đăng xuất…" và bị khoá (AUTH_FT17 E2), rồi về /login; đăng nhập lại vào /calendar (đăng xuất chủ động không giữ trang cũ); sau khi đăng xuất mở trang bảo vệ → /login; refresh → 401 MSG01; Back không mở lại dữ liệu cũ (AUTH_FT17 E3)',
       async run(qa) {
         const { active } = await ensureUsers(qa)
         await qa.goto('/login')
@@ -455,7 +561,15 @@ export default {
         await qa.expect(dialog).toHaveCount(0)
         await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings/)
         dialog = await askSignOut(qa, active.fullName)
+        await qa.page.route('**/api/auth/logout', async (route) => {
+          await new Promise((r) => setTimeout(r, 400))
+          await route.continue()
+        })
         await dialog.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
+        // AUTH_FT17 E2: the confirm button reports the work in progress.
+        await qa.expect(dialog.getByRole('button', { name: 'Đang đăng xuất…', exact: true })).toBeVisible()
+        await qa.expect(dialog.getByRole('button', { name: 'Đang đăng xuất…', exact: true })).toBeDisabled()
+        await qa.page.unroute('**/api/auth/logout')
         await qa.expect(qa.page).toHaveURL(/\/login/)
         await qa.expect(submitButton(qa)).toBeVisible()
         await qa.expect(qa.page.getByRole('button', { name: /bằng Google/ })).toBeVisible({ timeout: 15_000 })
@@ -475,6 +589,13 @@ export default {
         const refresh = await qa.context.request.post('/api/auth/refresh')
         qa.expect(refresh.status(), 'the refresh cookie still works after sign-out').toBe(401)
         qa.expect((await refresh.json()).message).toBe(MSG01_REFRESH)
+        // AUTH_FT17 E3: Back does not bring the previous screen's data back.
+        await qa.page.goBack()
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        await qa.expect(qa.page.getByRole('heading', { name: 'Danh sách cuộc họp' })).toHaveCount(0)
+        await qa.expect(submitButton(qa)).toBeVisible()
+        await settled(qa)
+        await qa.shot('back-khong-mo-lai-trang-cu')
       },
     },
     {
@@ -604,6 +725,419 @@ export default {
         qa.inconclusive(
           'Mã OTP chỉ gửi tới email được mời và link mời chứa token ký bằng khoá bí mật của server, nên không lấy được trên máy local (domain trustcabinet.local không gửi thư). Người kiểm: trên cuộc họp đã công bố, Thư ký mời một hộp thư thật (ví dụ hộp thư tạm), mở link trong thư, rồi kiểm từng mong đợi ở cột Mong đợi.',
         )
+      },
+    },
+    // ------------------------------------------------------------ AC bổ sung cho Round 1 (R1-FE01)
+    {
+      id: 'AC17',
+      role: 'member',
+      devices: ['desktop', 'phone'],
+      title: 'Vai trò không capability (Thành viên seed): chỉ thấy màn hình chung; URL quản trị hiện đúng trang 404 như đường dẫn lạ (AUTH_FT05)',
+      steps: ['Đăng nhập thanhvien@ (capabilities rỗng)', 'Xem sidebar', 'Mở /mgmt/admin/users và /mgmt/khong-co-trang-nay'],
+      expected:
+        'Vào /calendar; không có mục "Quản trị"; hai đường dẫn hiện cùng một trang "Không tìm thấy trang" (không lộ chữ "không có quyền"); không cuộn ngang',
+      async run(qa) {
+        const { capabilities } = await qa.capabilities()
+        qa.expect(capabilities, 'seed member gained capabilities').toEqual([])
+        await qa.goto('/calendar')
+        await qa.expect(qa.page).toHaveURL(/\/calendar/)
+        await qa.expect(qa.page.getByRole('button', { name: 'Quản trị' })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('link', { name: 'Người dùng', exact: true })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('sidebar-khong-co-quan-tri')
+        const texts = []
+        for (const [path, slug] of [['/mgmt/admin/users', 'url-quan-tri-404'], ['/mgmt/khong-co-trang-nay', 'url-la-404']]) {
+          await qa.goto(path)
+          await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible()
+          texts.push(await qa.page.locator('main').innerText())
+          await settled(qa)
+          await qa.shot(slug)
+          await noSidewaysScroll(qa)
+        }
+        qa.expect(texts[0]).toBe(texts[1])
+      },
+    },
+    {
+      id: 'AC18',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Bấm đăng nhập khi để trống: báo lỗi từng ô, không gửi request, ở lại /login (AUTH_FT02 — case đòi một câu gộp, sản phẩm báo riêng từng ô)',
+      steps: ['Mở /login', 'Bấm "Đăng nhập bằng mật khẩu" khi cả hai ô trống'],
+      expected:
+        'Ô Email: "Vui lòng nhập email."; ô Mật khẩu: "Vui lòng nhập mật khẩu."; không có POST /api/auth/login; vẫn ở /login',
+      async run(qa) {
+        await qa.goto('/login')
+        await qa.expect(submitButton(qa)).toBeVisible()
+        let posts = 0
+        qa.page.on('request', (r) => {
+          if (r.url().endsWith('/api/auth/login')) posts += 1
+        })
+        await submitButton(qa).click()
+        await qa.expect(qa.page.getByText('Vui lòng nhập email.')).toBeVisible()
+        await qa.expect(qa.page.getByText('Vui lòng nhập mật khẩu.')).toBeVisible()
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        await settled(qa)
+        await qa.shot('form-trong-bao-tung-o')
+        await noSidewaysScroll(qa)
+        qa.expect(posts, 'an empty form was sent to the server').toBe(0)
+        qa.note('AUTH_FT02 E1 đòi một câu "Vui lòng nhập email và mật khẩu." — sản phẩm báo riêng từng ô như ResetPasswordPage.')
+      },
+    },
+    {
+      id: 'AC19',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Không tải được dịch vụ Google thì báo rõ và vẫn đăng nhập bằng mật khẩu được (AUTH_FT12)',
+      steps: ['Chặn accounts.google.com', 'Mở /login', 'Đăng nhập bằng tài khoản [QA]'],
+      expected:
+        'Vùng Google hiện "Không tải được dịch vụ đăng nhập của Google. Vui lòng thử lại sau."; đăng nhập mật khẩu vẫn vào /calendar; không cuộn ngang',
+      async run(qa) {
+        const { active } = await ensureUsers(qa)
+        await qa.page.route(/accounts\.google\.com/, (route) => route.abort('connectionfailed'))
+        await qa.goto('/login')
+        await qa.expect(qa.page.getByText('Không tải được dịch vụ đăng nhập của Google. Vui lòng thử lại sau.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('google-khong-tai-duoc')
+        await signInOnScreen(qa, active.email, active.password)
+        await qa.expect(qa.page).toHaveURL(/\/calendar(\?|$)/)
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
+      id: 'AC20',
+      role: 'member',
+      title: 'Tải lại trang và mở tab mới giữ phiên đăng nhập (AUTH_FT13)',
+      steps: ['Đăng nhập thanhvien@, mở /calendar', 'Tải lại trang', 'Mở /calendar trong tab mới cùng trình duyệt'],
+      expected:
+        'Sau tải lại vẫn ở /calendar với cùng tài khoản, không thấy form đăng nhập; tab mới vào thẳng /calendar mà không qua /login',
+      async run(qa) {
+        const me = (await (await qa.api()).get('/api/auth/me')).body
+        await qa.goto('/calendar')
+        await qa.expect(qa.page.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+        await qa.page.reload()
+        await qa.expect(qa.page).toHaveURL(/\/calendar/)
+        await qa.expect(qa.page.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+        await qa.expect(submitButton(qa)).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('tai-lai-van-phien')
+        const tab2 = await qa.page.context().newPage()
+        try {
+          await tab2.goto(`${new URL(qa.page.url()).origin}/calendar`)
+          await qa.expect(tab2.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+          await qa.expect(tab2).toHaveURL(/\/calendar/)
+        } finally {
+          await tab2.close()
+        }
+      },
+    },
+    {
+      id: 'AC21',
+      role: 'anon',
+      title: 'Sai mật khẩu 5 lần thì lần 6 bị chặn 429, hết một phút lại đăng nhập được (AUTH_FT06)',
+      steps: [
+        'Tạo tài khoản [QA] riêng, POST /api/auth/login sai mật khẩu 5 lần',
+        'Lần 6 dùng đúng mật khẩu qua API, rồi trên màn hình',
+        'Chờ 65 giây, đăng nhập lại bằng đúng mật khẩu',
+      ],
+      expected:
+        '5 lần đầu 401 MSG01; lần 6: 429 MSG414 "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.", không đăng nhập; màn hình hiện đúng câu đó, vẫn ở /login; sau ~1 phút đăng nhập đúng vào /calendar',
+      async run(qa) {
+        const admin = await qa.api('admin')
+        const roles = (await admin.get('/api/roles')).body
+        const memberRole = roles.find((r) => r.isDefault) ?? roles.find((r) => r.name === 'Thành viên')
+        const email = `qa-fe01-chan-${RUN}@${DOMAIN}`
+        const password = `Qa-${randomBytes(12).toString('base64url')}-9`
+        let userId = null
+        try {
+          const mk = await admin.post('/api/users', { fullName: qa.name(`FE-01 chờ chặn ${RUN}`), email, password, roleId: memberRole.id })
+          qa.expectStatus(mk, 201)
+          userId = mk.body.user.id
+          const anon = await qa.api('anon')
+          for (let i = 0; i < 5; i++) {
+            const r = await anon.post('/api/auth/login', { email, password: 'Sai-mat-khau-QA-123' })
+            qa.expectStatus(r, 401)
+            qa.expect(r.body.code, `lần ${i + 1} không phải MSG01`).toBe('MSG01')
+          }
+          const sixth = await anon.post('/api/auth/login', { email, password })
+          qa.expectStatus(sixth, 429)
+          qa.expect(sixth.body.code).toBe('MSG414')
+          qa.expect(sixth.body.message).toBe('Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.')
+          qa.expect(sixth.body, 'lần 6 vẫn trả accessToken').not.toHaveProperty('accessToken')
+          await qa.goto('/login')
+          await signInOnScreen(qa, email, password)
+          await qa.expect(qa.page).toHaveURL(/\/login/)
+          await qa.expect(qa.page.getByRole('alert')).toHaveText('Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.')
+          await settled(qa)
+          await qa.shot('bi-chan-429')
+          await noRawCodes(qa)
+          await qa.page.waitForTimeout(65_000)
+          await signInOnScreen(qa, email, password)
+          await qa.expect(qa.page).toHaveURL(/\/calendar(\?|$)/)
+          await qa.expect(qa.page.getByLabel(`Tài khoản ${mk.body.user.fullName}`)).toBeVisible()
+          await settled(qa)
+          await qa.shot('het-chan-lai-vao-duoc')
+        } finally {
+          if (userId) await admin.put(`/api/users/${userId}/status`, { isActive: false })
+        }
+      },
+    },
+    {
+      id: 'AC22',
+      role: 'anon',
+      title: 'Vô hiệu hoá giữa phiên: trang hiện tại đưa về đăng nhập kèm lời nhắn, đăng nhập lại bị từ chối (AUTH_FT15)',
+      steps: [
+        'Tạo tài khoản [QA] riêng, đăng nhập trên màn hình, mở /calendar',
+        'Quản trị vô hiệu hoá tài khoản đó, tải lại trang',
+        'Đăng nhập lại bằng tài khoản đó',
+      ],
+      expected:
+        'Sau khi bị vô hiệu hoá, tải lại đưa về /login kèm "Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại."; đăng nhập lại báo MSG02 "Tài khoản không khả dụng…"',
+      async run(qa) {
+        const admin = await qa.api('admin')
+        const roles = (await admin.get('/api/roles')).body
+        const memberRole = roles.find((r) => r.isDefault) ?? roles.find((r) => r.name === 'Thành viên')
+        const email = `qa-fe01-giua-phien-${RUN}@${DOMAIN}`
+        const password = `Qa-${randomBytes(12).toString('base64url')}-9`
+        let userId = null
+        try {
+          const mk = await admin.post('/api/users', { fullName: qa.name(`FE-01 giữa phiên ${RUN}`), email, password, roleId: memberRole.id })
+          qa.expectStatus(mk, 201)
+          userId = mk.body.user.id
+          await qa.goto('/login')
+          await signInOnScreen(qa, email, password)
+          await qa.expect(qa.page).toHaveURL(/\/calendar(\?|$)/)
+          qa.expectStatus(await admin.put(`/api/users/${userId}/status`, { isActive: false }), 200)
+          await qa.page.reload()
+          await qa.expect(qa.page).toHaveURL(/\/login/)
+          await qa.expect(qa.page.getByText('Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('giua-phien-ve-dang-nhap')
+          await signInOnScreen(qa, email, password)
+          await qa.expect(qa.page.getByRole('alert')).toHaveText(MSG02)
+          await qa.expect(qa.page).toHaveURL(/\/login/)
+        } finally {
+          if (userId) await admin.put(`/api/users/${userId}/status`, { isActive: true })
+        }
+      },
+    },
+    {
+      id: 'AC23',
+      role: 'member',
+      title: 'Đăng xuất ở tab này thì tab kia cùng trình duyệt cũng hết phiên (AUTH_FT20)',
+      steps: ['Tab 1 mở /calendar', 'Tab 2 cùng trình duyệt mở /calendar', 'Tab 1 đăng xuất qua menu tài khoản', 'Tab 2 tải lại'],
+      expected: 'Tab 1 về /login; tab 2 tải lại cũng về /login, không còn dữ liệu cũ',
+      async run(qa) {
+        const me = (await (await qa.api()).get('/api/auth/me')).body
+        await qa.goto('/calendar')
+        await qa.expect(qa.page.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+        const tab2 = await qa.page.context().newPage()
+        try {
+          await tab2.goto(`${new URL(qa.page.url()).origin}/calendar`)
+          await qa.expect(tab2.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+          const dialog = await askSignOut(qa, me.fullName)
+          await dialog.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
+          await qa.expect(qa.page).toHaveURL(/\/login/)
+          await tab2.reload()
+          await qa.expect(tab2).toHaveURL(/\/login/)
+          await qa.expect(tab2.getByRole('heading', { name: 'Danh sách cuộc họp' })).toHaveCount(0)
+          await tab2.getByRole('heading', { name: 'TrustCabinet' }).first().waitFor().catch(() => undefined)
+          await settled(qa).catch(() => undefined)
+          await qa.shot('tab2-cung-ve-login')
+        } finally {
+          await tab2.close()
+        }
+      },
+    },
+    {
+      id: 'AC24',
+      role: 'member',
+      title: 'Đăng xuất ở trình duyệt thì phiên API của thiết bị khác vẫn còn (AUTH_FT21)',
+      steps: ['Thiết bị B: đăng nhập thanhvien@ qua API riêng', 'Thiết bị A (trình duyệt) đăng xuất qua menu tài khoản', 'Thiết bị B gọi /api/auth/me và refresh'],
+      expected:
+        'Trình duyệt về /login; thiết bị B vẫn gọi /api/auth/me 200 và refresh 200 — đăng xuất một nơi không đá nơi khác',
+      async run(qa) {
+        const me = (await (await qa.api()).get('/api/auth/me')).body
+        const other = await qa.api('member')
+        qa.expectStatus(await other.get('/api/auth/me'), 200)
+        await qa.goto('/calendar')
+        await qa.expect(qa.page.getByLabel(`Tài khoản ${me.fullName}`)).toBeVisible()
+        const dialog = await askSignOut(qa, me.fullName)
+        await dialog.getByRole('button', { name: 'Đăng xuất', exact: true }).click()
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        qa.expectStatus(await other.get('/api/auth/me'), 200)
+        qa.expectStatus(await other.post('/api/auth/refresh'), 200)
+        await settled(qa)
+        await qa.shot('trinh-duyet-ve-login-thiet-bi-khac-con')
+        qa.note('Thiết bị B là một API client độc lập (cookie refresh riêng), tương đương một trình duyệt khác trên máy khác.')
+      },
+    },
+    {
+      id: 'AC25',
+      role: 'secretary',
+      title: 'Lời mời Khách đã bị thu hồi: mở link cũng chỉ thấy "Không mở được lời mời" kèm MSG371 (AUTH_FT33 nhánh thu hồi)',
+      steps: [
+        'Thư ký mời một Khách phụ vào cuộc họp [QA] đã công bố',
+        'Thu hồi lời mời đó (DELETE …/guest-invitations)',
+        'Mở /guest/{lời mời đã thu hồi}#token=sai',
+      ],
+      expected:
+        'Tiêu đề "Không mở được lời mời", câu "Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.", không có ô nhập mã; không phân biệt lý do thu hồi hay mã bịa',
+      async run(qa) {
+        const { invitationId, meetingId } = await ensureGuestInvitation(qa)
+        qa.expect(invitationId, 'không có lời mời [QA] để mượn cuộc họp').toBeTruthy()
+        await qa.goto('/calendar')
+        const token = await bearer(qa)
+        const base = new URL(qa.page.url()).origin
+        const post = (path, data, etag) =>
+          qa.context.request.post(`${base}${path}`, {
+            headers: { Authorization: `Bearer ${token}`, 'If-Match': etag },
+            data,
+          })
+        const parts = await (await qa.api()).get(`/api/meetings/${meetingId}/participants?pageSize=100`)
+        const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+        const email = `qa-khach-thuhoi-${RUN}@${DOMAIN}`
+        const invited = await post(`/api/meetings/${meetingId}/guest-invitations`, { invitedName: qa.name('Khách bị thu hồi'), email }, etag)
+        qa.expect(invited.status(), `mời khách phụ: ${await invited.text()}`).toBe(201)
+        const extraId = (await invited.json()).createdIds?.[0]
+        qa.expect(extraId, 'POST guest-invitations trả thiếu createdIds').toBeTruthy()
+        const parts2 = await (await qa.api()).get(`/api/meetings/${meetingId}/participants?pageSize=100`)
+        const etag2 = parts2.headers.etag ?? `"participants-${parts2.body.revision}"`
+        const revoked = await qa.context.request.delete(`${base}/api/meetings/${meetingId}/guest-invitations/${extraId}`, {
+          headers: { Authorization: `Bearer ${token}`, 'If-Match': etag2 },
+        })
+        qa.expect(revoked.status(), `thu hồi lời mời: ${await revoked.text()}`).toBe(200)
+        await qa.goto(`/guest/${extraId}#token=token-sai-qa`)
+        await qa.expect(qa.page.getByRole('heading', { name: 'Không mở được lời mời' })).toBeVisible()
+        await qa.expect(qa.page.getByRole('alert')).toHaveText(MSG371)
+        await qa.expect(qa.page.getByRole('textbox')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('loi-moi-da-thu-hoi')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      },
+    },
+    {
+      // AUTH_FT14: the access token lives 15 minutes; the open tab must keep working by silently refreshing it.
+      id: 'AC26',
+      role: 'secretary',
+      devices: ['desktop'],
+      title: 'Tab mở hơn 15 phút không thao tác: bấm sang mục khác vẫn tải bình thường, refresh token 200 (AUTH_FT14)',
+      steps: ['Đăng nhập thuky@, mở /calendar, để yên 16 phút', 'Bấm "Cuộc họp" ở sidebar'],
+      expected:
+        'Trang Cuộc họp tải dữ liệu bình thường, không về đăng nhập, không lỗi; POST /api/auth/refresh 200; không cuộn ngang',
+      async run(qa) {
+        await qa.goto('/calendar')
+        await qa.expect(qa.page).not.toHaveURL(/\/login/)
+        const refreshed = qa.page.waitForResponse(
+          (r) => r.url().endsWith('/api/auth/refresh') && r.request().method() === 'POST',
+          { timeout: 20 * 60_000 },
+        )
+        await new Promise((r) => setTimeout(r, 16 * 60_000))
+        await qa.page.getByRole('link', { name: 'Cuộc họp' }).first().click()
+        const res = await refreshed
+        qa.expect(res.status()).toBe(200)
+        await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings/)
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Danh sách cuộc họp' })).toBeVisible()
+        await settled(qa)
+        await qa.shot('sau-15-phut')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      },
+    },
+    {
+      // AUTH_FT23: five wrong guest codes lock the code; the right one cannot be used; resending gives a new working code.
+      id: 'AC27',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Nhập sai mã xác minh Khách 5 lần thì khoá mã, mã đúng cũng không dùng được; gửi lại mã mới thì vào được (AUTH_FT23)',
+      steps: [
+        'Thư ký mời Khách mới (email riêng cho lần chạy) vào cuộc họp Đã công bố',
+        'Mở link trong thư mời, nhập 5 mã sai',
+        'Nhập mã đúng, rồi "Gửi lại mã" và nhập mã mới',
+      ],
+      expected:
+        'Sau lần sai thứ 5: "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới." (MSG372), nút "Xác minh" khoá; mã đúng cũng không qua; mã mới vào được form "Thông tin hiển thị"',
+      async run(qa) {
+        const email = `qa-khach-ft23-${RUN}-${qa.device}@example.test`
+        const sec = await qa.api('secretary')
+        const base = await findGuestInvitation(qa)
+        const meetingId = base ? base.meetingId : (await ensureGuestInvitation(qa)).meetingId
+        const parts = await sec.get(`/api/meetings/${meetingId}/participants?pageSize=100`)
+        const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+        const invited = await qa.context.request.post(`/api/meetings/${meetingId}/guest-invitations`, {
+          headers: { Authorization: `Bearer ${await secretaryToken(qa)}`, 'If-Match': etag },
+          data: { invitedName: qa.name('Khách FT23'), email },
+        })
+        qa.expect(invited.status(), `guest invitation: ${await invited.text()}`).toBe(201)
+        let link = null
+        await qa.expect
+          .poll(
+            async () => {
+              const box = await mailpit(email)
+              for (const m of box) {
+                const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+                // Match on the raw text: collapsing every whitespace run glues the next line
+                // ("Người tổ chức: …") onto the token. Only a line break inside the link is joined.
+                const raw = full.Text ?? ''
+                const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+                const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+                if (found) {
+                  link = found[0]
+                  return link
+                }
+              }
+              return null
+            },
+            { timeout: 90_000 },
+          )
+          .not.toBeNull()
+        const u = new URL(link)
+        await qa.goto(u.pathname + u.hash)
+        await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+        const real = await guestCode(email)
+        qa.expect(real, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+        // A code that is certainly wrong but still six digits.
+        const wrong = ((parseInt(real[0], 10) + 1) % 10).toString() + real.slice(1)
+        const code = wrong === real ? '111111' : wrong
+        const err = qa.page.locator('#guest-code-note.field-error')
+        const locked = 'Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.'
+        // Each wrong code is one counted attempt: wait for the note to move on before the next press,
+        // otherwise the button is still busy and the click is dropped.
+        let lockedNow = false
+        for (let i = 0; i < 8 && !lockedNow; i++) {
+          await qa.page.getByLabel('Chữ số 1').fill(code)
+          await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+          lockedNow = await qa.expect
+            .poll(async () => (await err.innerText().catch(() => '')).includes(locked) ? 'locked' : 'trying', { timeout: 10_000 })
+            .not.toBe('trying')
+            .then(() => true)
+            .catch(() => false)
+        }
+        await qa.expect(err).toContainText(locked, { timeout: 15_000 })
+        await qa.shot('ma-bi-khoa')
+        // The app keeps "Xác minh" pressable after the lock (the server answers, it does not hide the button):
+        // the right code must still not get through, and the locked note must stay.
+        await qa.page.getByLabel('Chữ số 1').fill(real)
+        await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+        await qa.expect(err).toContainText(locked, { timeout: 15_000 })
+        await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toHaveCount(0)
+        await qa.expect(qa.page).toHaveURL(/\/guest\//)
+        const resend = qa.page.getByRole('button', { name: /^Gửi lại mã/ })
+        await qa.expect(resend).toBeEnabled({ timeout: 90_000 })
+        await resend.click()
+        let fresh = real
+        const until = Date.now() + 90_000
+        while (fresh === real && Date.now() < until) {
+          await new Promise((r) => setTimeout(r, 2000))
+          fresh = await guestCode(email)
+        }
+        qa.expect(fresh, 'no new code arrived').not.toBe(real)
+        await qa.page.getByLabel('Chữ số 1').fill(fresh)
+        await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+        await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+        await qa.expect(qa.page.getByRole('button', { name: 'Vào cuộc họp' })).toBeVisible()
+        await qa.shot('ma-moi-vao-duoc')
+        await noSidewaysScroll(qa)
       },
     },
   ],

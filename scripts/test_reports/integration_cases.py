@@ -13,11 +13,10 @@ Usage (from the repository root):
   python scripts/test_reports/integration_cases.py scaffold   # create the missing FE-xx/{ui,api}.json, groups only
   python scripts/test_reports/integration_cases.py check      # validate; exit 1 on an error
   python scripts/test_reports/integration_cases.py md         # write cases/preview/FE-xx/{ui,api}.md
-  python scripts/test_reports/integration_cases.py build      # check + md + Report 5.2.2
-  python scripts/test_reports/integration_cases.py build --with-ui   # ... and Report 5.2 as well
+  python scripts/test_reports/integration_cases.py build      # check + md + Report 5.2 and 5.2.2
 
-Report 5.2 is not rebuilt by default: the workbook in use is version 1.1 kept cell for cell plus 22 sheets
-(see the test-reports README), and building it from FE-xx/ui.json would replace it.
+Both workbooks are built from cases/FE-xx/{ui,api}.json (team decision 2026-11-20; the hand-made v1.2 of
+Report 5.2 is retired). Test results live in the JSON (round1/date1/tester1 ...), so a rebuild keeps them.
 
 The workbooks are output: never edit them in Excel, edit the JSON and build again.
 """
@@ -262,15 +261,17 @@ def bulleted(items):
     return '\n'.join(f'- {s}' for s in items)
 
 
-def height_for(values_and_widths, line_height=13.5):
+def height_for(values_and_widths, line_height=15):
     lines = 1
     for value, width in values_and_widths:
         if not value:
             continue
-        per_line = max(int(width * 1.15), 8)
+        # Conservative: Calibri 11 averages ~1 char per width unit, and the
+        # +2 lines cover rounding (Excel never breaks mid-word like ceil does).
+        per_line = max(int(width * 1.0), 8)
         n = sum(max(1, math.ceil(len(part) / per_line)) for part in str(value).split('\n'))
         lines = max(lines, n)
-    return min(409, lines * line_height + 4)
+    return min(409, lines * line_height + 6)
 
 
 def styles_of(ws, row, cols):
@@ -290,6 +291,68 @@ def clear_from(ws, first_row):
         ws.delete_rows(first_row, ws.max_row - first_row + 1)
 
 
+HEADER_BLUE = ('FF000080', 'FF333399')     # house-template header fills of the first three sheets
+HEADER_GREEN = 'FF76923C'                  # header fill of the feature sheets
+TEXT_COLOURS = ('FF993300', 'FF008000', 'FF0000FF')   # brown labels, green notes, blue descriptions
+
+
+def harmonise(wb):
+    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Calibri 11, the green
+    header fill, thin borders, black text (links stay blue), instead of the house template's Tahoma,
+    navy headers, hair borders and brown/green/blue text."""
+    from openpyxl.styles import Border, Font, PatternFill, Side
+    thin = Side(style='thin')
+    for name in ('Cover', 'Test Cases', 'Test Statistics'):
+        ws = wb[name]
+        for row in ws.iter_rows():
+            for cell in row:
+                font = copy(cell.font)
+                size = 20 if (font.sz or 0) >= 20 else 11
+                rgb = font.color.rgb if font.color is not None and font.color.type == 'rgb' else None
+                if cell.hyperlink:
+                    colour = font.color
+                elif rgb in TEXT_COLOURS:
+                    colour = None
+                else:
+                    colour = font.color
+                cell.font = Font(name='Calibri', sz=size, b=font.b, i=False if size == 11 else font.i,
+                                 u=font.u if cell.hyperlink else None, color=colour)
+                fill = cell.fill
+                if fill.fill_type == 'solid' and fill.fgColor.type == 'rgb' and fill.fgColor.rgb in HEADER_BLUE:
+                    cell.fill = PatternFill('solid', fgColor=HEADER_GREEN)
+                border = cell.border
+                if any(side is not None and side.style == 'hair' for side in (border.left, border.right, border.top, border.bottom)):
+                    cell.border = Border(*(thin if side is not None and side.style else side
+                                           for side in (border.left, border.right, border.top, border.bottom)))
+
+    # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
+    # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
+    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
+    # cell falls back to the Normal style on reload. Build a real Font.
+    from openpyxl.styles import Font as _IFont
+    for ws in wb.worksheets:
+        if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
+            continue
+        for row in ws.iter_rows():
+            for cell in row:
+                font = cell.font
+                if font.name != 'Calibri' or font.sz != 11:
+                    cell.font = _IFont(name='Calibri', size=11, bold=font.bold,
+                                       italic=font.italic, underline=font.underline,
+                                       strike=font.strike, color=font.color,
+                                       vertAlign=font.vertAlign)
+    normal = wb._named_styles['Normal']
+    normal.font = Font(name='Calibri', sz=11)
+    wb._fonts[0] = Font(name='Calibri', sz=11)
+
+
+def case_values(c):
+    return [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
+            bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
+            c.get('round2'), c.get('date2'), c.get('tester2'),
+            c.get('round3'), c.get('date3'), c.get('tester3'), '', c['note']]
+
+
 def build_book(book, m):
     import openpyxl
     from openpyxl.worksheet.datavalidation import DataValidation
@@ -298,34 +361,67 @@ def build_book(book, m):
     wb = openpyxl.load_workbook(TEMPLATE)
     cover, tc, ts, proto = wb['Cover'], wb['Test Cases'], wb['Test Statistics'], wb['Feature']
 
-    # Cover
+    # Cover. A book may carry its own version and issue date (meta["version"], meta["issueDate"]) and
+    # a change may be limited to some books (change["books"]); the rest is shared.
+    version = meta.get('version', m['cover']['version'])
+    issue_date = meta.get('issueDate', m['cover']['issueDate'])
+    changes = [ch for ch in m['cover']['changes'] if book in ch.get('books', BOOKS)]
     cover['B2'] = meta['title']
     cover['B4'] = m['project']
     cover['B5'] = m['projectCode']
     cover['F4'] = m['cover']['creator']
-    cover['F5'] = m['cover']['issueDate']
-    cover['F6'] = m['cover']['version']
+    cover['F5'] = issue_date
+    cover['F6'] = version
     change_style = styles_of(cover, 11, 6)
     clear_from(cover, 11)
-    for i, ch in enumerate(m['cover']['changes']):
+    for i, ch in enumerate(changes):
         r = 11 + i
         apply(cover, r, change_style)
         for col, key in zip('ABCDEF', ('date', 'version', 'item', 'type', 'description', 'reference')):
             cover[f'{col}{r}'] = ch[key]
+        cover.row_dimensions[r].height = height_for(
+            [(ch['item'], 14.4), (ch['description'], 75.9), (ch['reference'], 48.1)], line_height=15)
 
     # Feature sheets, cloned from the prototype
-    group_style = styles_of(proto, 11, 15)
-    case_style = styles_of(proto, 12, 15)
-    widths = {k: v.width for k, v in proto.column_dimensions.items()}
-    widths['O'] = 32
+    group_style = styles_of(proto, 11, 16)
+    case_style = styles_of(proto, 12, 16)
+    # Auto-fit: each column is only as wide as its longest line (+2 padding),
+    # capped so long-text columns wrap instead of stretching. Uniform per book.
+    # A=id, B=description, C=procedure, D=expected, E=pre-conditions,
+    # F..N=rounds/dates/testers, O=empty spacer, P=hidden evidence/note.
+    CAPS = {'A': (14, 20), 'B': (23, 45), 'C': (22, 45), 'D': (18, 50),
+            'E': (16, 45), 'F': (9, 12), 'G': (11, 13), 'H': (8, 20),
+            'I': (9, 12), 'J': (11, 13), 'K': (8, 20), 'L': (9, 12),
+            'M': (11, 13), 'N': (8, 20), 'O': (10, 15)}
+    HEADERS = ['Test Case ID', 'Test Case Description', 'Test Case Procedure',
+               'Expected Results', 'Pre-conditions', 'Round 1', 'Test date',
+               'Tester', 'Round 2', 'Test date', 'Tester', 'Round 3',
+               'Test date', 'Tester', '']
+    docs = [(sheet, load(case_file(book, sheet))) for sheet in m['sheets']]
+    longest = {col: len(h) for col, h in zip('ABCDEFGHIJKLMNO', HEADERS)}
+    for _, doc in docs:
+        for g in doc['groups']:
+            for c in g['cases']:
+                for col, v in zip('ABCDEFGHIJKLMNO', case_values(c)):
+                    for part in str(v or '').split('\n'):
+                        longest[col] = max(longest[col], len(part))
+    widths = {col: min(cap, max(mn, longest[col] + 2))
+              for col, (mn, cap) in CAPS.items()}
+    widths['P'] = proto.column_dimensions['P'].width or 7.63
     built = []
-    for sheet in m['sheets']:
-        doc = load(case_file(book, sheet))
+    for sheet, doc in docs:
         ws = wb.copy_worksheet(proto)
         ws.title = sheet['sheet']
         clear_from(ws, 11)
         for k, w in widths.items():
             ws.column_dimensions[k].width = w
+        ws.row_dimensions[10].height = 18
+        # Column O stays visible but empty for the council; the real evidence lives in
+        # hidden column P so agents (openpyxl reads hidden cells normally) still fetch it.
+        ws.column_dimensions['P'].hidden = True
+        header_from = copy(ws['O10']._style)
+        ws['P10'] = 'Actual result / Evidence / Defect (hidden)'
+        ws['P10']._style = header_from
         ws['B2'] = sheet['sheet']
         ws['B3'] = sheet[book]['requirement']
         r, case_rows = 11, []
@@ -333,17 +429,16 @@ def build_book(book, m):
             apply(ws, r, group_style)
             ws.cell(r, 1, g['title'])
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=15)
+            ws.row_dimensions[r].height = 24
             r += 1
             for c in g['cases']:
                 apply(ws, r, case_style)
-                values = [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
-                          bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
-                          c.get('round2'), c.get('date2'), c.get('tester2'),
-                          c.get('round3'), c.get('date3'), c.get('tester3'), c['note']]
+                values = case_values(c)
                 for col, v in enumerate(values, 1):
                     ws.cell(r, col, v)
                 ws.row_dimensions[r].height = height_for(
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
+                    # Hidden P (long evidence note) must not drive the height.
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)
@@ -380,7 +475,12 @@ def build_book(book, m):
         tc[f'D{r}'] = sheet['sheet']
         tc[f'E{r}'] = f"{sheet[book]['requirement']} ({n} cases)"
         tc[f'F{r}'] = doc['precondition']
-        tc.row_dimensions[r].height = height_for([(tc[f'E{r}'].value, 28), (doc['precondition'], 30)])
+        for col in 'BCDEF':
+            al = copy(tc[f'{col}{r}'].alignment)
+            al.vertical = 'top'
+            tc[f'{col}{r}'].alignment = al
+        tc.row_dimensions[r].height = height_for(
+            [(tc[f'C{r}'].value, 32), (tc[f'E{r}'].value, 23), (doc['precondition'], 26)], line_height=15)
 
     # Test Statistics
     data_style = styles_of(ts, 11, 8)
@@ -388,8 +488,8 @@ def build_book(book, m):
     cover_style = styles_of(ts, 14, 8)
     ts['C3'] = m['project']
     ts['C4'] = m['projectCode']
-    ts['C5'] = f"{m['projectCode']}_{'API_Test' if book == 'api' else 'Integration_Test'}_v{m['cover']['version']}"
-    ts['G5'] = m['cover']['issueDate']
+    ts['C5'] = f"{m['projectCode']}_{'API_Test' if book == 'api' else 'Integration_Test'}_v{version}"
+    ts['G5'] = issue_date
     ts['C6'] = meta['note']
     clear_from(ts, 11)
     for i, (sheet, _, _) in enumerate(built, 1):
@@ -415,6 +515,15 @@ def build_book(book, m):
         ts[f'E{r}'] = formula
         ts[f'F{r}'] = '%'
 
+    for r in range(11, t):
+        ts.row_dimensions[r].height = 21 if len(str(ts[f'C{r}'].value)) <= 18 else 32
+    ts.row_dimensions[t].height = 21
+    notes = copy(ts['C6'].alignment)
+    notes.wrap_text = True
+    notes.vertical = 'top'
+    ts['C6'].alignment = notes
+    harmonise(wb)
+
     target = REPORTS / meta['file']
     try:
         wb.save(target)
@@ -432,10 +541,7 @@ def cmd_build(args):
         sys.exit(f'{len(errors)} error(s): fix them before building.')
     cmd_md(args)
     m = manifest()
-    books = BOOKS if args.with_ui else tuple(b for b in BOOKS if b != 'ui')
-    if 'ui' not in books:
-        print('Report 5.2 skipped: it is the v1.2 workbook, not built from cases/ (pass --with-ui to replace it)')
-    for book in books:
+    for book in BOOKS:
         build_book(book, m)
     print(f'{len(todo)} group(s) still without cases')
 
@@ -443,8 +549,6 @@ def cmd_build(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('command', choices=('routes', 'scaffold', 'check', 'md', 'build'))
-    parser.add_argument('--with-ui', action='store_true',
-                        help='build: also rebuild Report 5.2 from FE-xx/ui.json, replacing the v1.2 workbook')
     args = parser.parse_args()
     return {'routes': cmd_routes, 'scaffold': cmd_scaffold, 'check': cmd_check,
             'md': cmd_md, 'build': cmd_build}[args.command](args) or 0

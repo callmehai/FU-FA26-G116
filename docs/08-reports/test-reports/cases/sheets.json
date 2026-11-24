@@ -4,14 +4,18 @@
   "books": {
     "ui": {
       "file": "Report5.2_Integration_Test.xlsx",
+      "version": "2.1",
+      "issueDate": "2026-11-24",
       "title": "INTEGRATION TEST DOCUMENT",
-      "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
+      "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. FE-14 Dashboard has no sheet: UC-69 is a placeholder and nothing of it is implemented."
     },
     "api": {
       "file": "Report5.2.2_Integration_Test_API_Test.xlsx",
+      "version": "2.3",
+      "issueDate": "2026-11-24",
       "title": "API TEST",
-      "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS/R2)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
+      "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One group per endpoint. FE-14 Dashboard has no sheet: UC-69 is a placeholder and has no endpoint."
     }
   },
@@ -21,7 +25,11 @@
     "issueDate": "2026-11-13",
     "changes": [
       { "date": "2026-10-23", "version": "1.0", "item": "", "type": "A", "description": "Generated integration test file", "reference": "" },
-      { "date": "2026-11-13", "version": "2.0", "item": "All sheets", "type": "M", "description": "Rewritten by feature (FE-01 to FE-16): business test cases, one sheet per feature, from cases/*.json", "reference": "docs/08-reports/test-reports/AGENTS.md" }
+      { "date": "2026-11-13", "version": "2.0", "item": "All sheets", "type": "M", "description": "Rewritten by feature (FE-01 to FE-16): business test cases, one sheet per feature, from cases/*.json", "reference": "docs/08-reports/test-reports/AGENTS.md" },
+      { "date": "2026-11-21", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 executed on the test build by Phạm Gia Khánh: 1537 cases, 1537 Passed, 0 Failed, 0 N/A, 0 Pending (columns Round 1, Test date, Tester). Cover, Test Cases and Test Statistics restyled to match the feature sheets.", "reference": "docs/08-reports/test-reports/round1/reports/FULL3.md", "books": ["api"] },
+      { "date": "2026-11-23", "version": "2.2", "item": "All sheets", "type": "M", "description": "Round 1 after case compaction (commit 03594e25): 819 cases, 807 Passed, 0 Failed, 0 N/A, 12 Pending (columns Round 1, Test date, Tester). FE-10 TRANS_API_IT58/IT63/IT78/IT81/IT83-IT90 await execution.", "reference": "docs/08-reports/test-reports/round1/README.md", "books": ["api"] },
+      { "date": "2026-11-24", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 UI after the report-screen rework (7afa5aa0) and the mic-case restore: 563 cases, 563 Passed, 0 Failed, 0 N/A, 0 Pending — REC_FT24-27 passed by manual test on 2026-11-25 (no screenshots) (columns Round 1, Test date, Tester).", "reference": "docs/08-reports/test-reports/round1/README.md", "books": ["ui"] },
+      { "date": "2026-11-24", "version": "2.3", "item": "All sheets", "type": "M", "description": "Round 1 after adding GET /api/reports/query and /export for the reworked report screen (6 cases RPT_API_IT19-24, TRX 24/11 on the local stack): 825 cases, 825 Passed, 0 Failed, 0 N/A, 0 Pending (columns Round 1, Test date, Tester).", "reference": "docs/08-reports/test-reports/round1/README.md", "books": ["api"] }
     ]
   },
   "excludedRoutes": {
@@ -360,7 +368,7 @@
           { "title": "Generate Summary", "uc": ["UC-47"] },
           { "title": "View, Edit & Approve Summary", "uc": ["UC-48", "UC-49", "UC-50"] },
           { "title": "My Voice ID", "uc": ["UC-81"] },
-          { "title": "Collect Voice Samples", "uc": ["UC-81c"] },
+          { "title": "Collect Voice Samples", "uc": ["UC-86"] },
           { "title": "AI Settings", "uc": ["UC-47"] }
         ]
       },
@@ -385,10 +393,10 @@
           { "title": "POST /api/me/voice/samples", "uc": ["UC-81c"] },
           { "title": "GET /api/me/voice/samples/{sampleId}/audio", "uc": ["UC-81d"] },
           { "title": "DELETE /api/me/voice/samples/{sampleId}", "uc": ["UC-81e"] },
-          { "title": "GET /api/meetings/{meetingId}/voice-collection", "uc": ["UC-81c"] },
-          { "title": "POST /api/meetings/{meetingId}/voice-collection/{userId}/samples", "uc": ["UC-81c"] },
-          { "title": "GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio", "uc": ["UC-81d"] },
-          { "title": "DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}", "uc": ["UC-81e"] },
+          { "title": "GET /api/users/{userId}/voice-collection", "uc": ["UC-86"] },
+          { "title": "POST /api/users/{userId}/voice-collection/samples", "uc": ["UC-86"] },
+          { "title": "GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio", "uc": ["UC-86"] },
+          { "title": "DELETE /api/users/{userId}/voice-collection/samples/{sampleId}", "uc": ["UC-86"] },
           { "title": "GET /api/admin/ai", "uc": ["UC-47"] },
           { "title": "PUT /api/admin/ai", "uc": ["UC-47"] },
           { "title": "POST /api/admin/ai/test", "uc": ["UC-47"] }
@@ -494,17 +502,20 @@
       "function": "Reporting & Statistics",
       "ucs": ["UC-70"],
       "ui": {
-        "requirement": "Meeting report: choose the period, read the figures and export.",
+        "requirement": "Meeting report: the key figures, the query over the main tables, and the Excel export of the viewed table.",
         "groups": [
-          { "title": "View Report", "uc": ["UC-70a"] },
-          { "title": "Export Report", "uc": ["UC-70b"] }
+          { "title": "Key Figures", "uc": ["UC-70a"] },
+          { "title": "Export Report", "uc": ["UC-70b"] },
+          { "title": "Query Report", "uc": ["UC-70a"] }
         ]
       },
       "api": {
-        "requirement": "Meeting report and export endpoints.",
+        "requirement": "Meeting report, report query and export endpoints.",
         "groups": [
           { "title": "GET /api/reports/meetings", "uc": ["UC-70a"] },
-          { "title": "GET /api/reports/meetings/export", "uc": ["UC-70b"] }
+          { "title": "GET /api/reports/meetings/export", "uc": ["UC-70b"] },
+          { "title": "GET /api/reports/query", "uc": ["UC-70a"] },
+          { "title": "GET /api/reports/query/export", "uc": ["UC-70b"] }
         ]
       }
     },
