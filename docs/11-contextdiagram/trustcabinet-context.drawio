@@ -73,7 +73,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E02-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Meeting documents &amp;amp; version data" vertex="1">
+        <mxCell id="E02-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Meeting documents" vertex="1">
           <mxGeometry height="202" width="658" x="700" y="770" as="geometry" />
         </mxCell>
         <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.3235294118;exitY=0.0322352941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000000000;entryY=1.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E02" value="">

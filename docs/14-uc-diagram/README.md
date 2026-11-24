@@ -27,13 +27,16 @@ id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số 
 ## Theo UML chặt (24/11/2026)
 
 Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
-([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 10 quan hệ: *Keep Meeting in a
+([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 8 quan hệ: *Keep Meeting in a
 Floating Window*, *Register to Speak*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
 *Manage My Recorded Speech* `<<extend>>` *View & Play Meeting Recordings*; *Comment on Meeting Document* `<<extend>>` *View
-Meeting Documents*; *Manage Vote Documents* `<<extend>>` *Create / Configure Vote*; *View Participant Response Status*
-`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Edit Transcript &
-Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document Read* `<<extend>>` *Cast Vote*.
+Meeting Documents*; *View Participant Response Status*
+`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Confirm Document
+Read* `<<extend>>` *Cast Vote*.
 
+- *Edit Transcript & Speaker Attribution* (UC-55) và *Manage Vote Documents* (UC-68) nối thẳng actor, cùng dạng với *Edit
+  Meeting Summary* và *Edit Meeting Minutes* (sửa theo review PR #531); trên trang Chair và Secretary hai ô được chuyển vào
+  cột phải, ngay dưới *View Meeting Transcript* và *Create / Configure Vote*.
 - Bỏ mọi `extend` kiểu "mở thao tác từ màn hình" (sửa, gửi duyệt, công bố, quản lý…) và kiểu chuyển màn hình / tab
   (danh sách → chi tiết, chi tiết → các tab, thông báo → đối tượng). Các UC đó nối thẳng với actor của trang.
 - *Record Room Audio* nối thẳng Thư ký (trước là `extend` *View & Play Meeting Recordings*): họp trực tiếp ghi âm mà không
@@ -46,7 +49,7 @@ Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document R
   chia hai cột theo số UC — cột trái đọc từ trên xuống, cột phải đọc từ dưới lên, nên nhóm phòng họp và bản ghi nằm cạnh
   *Join Meeting Room* — mỗi cột nối với actor cùng bên. UC mở rộng ở cột giữa, gần UC nền. Actor ngoài (OAuth Provider,
   Resend Email, File Storage) đặt ngoài khung, gần UC của nó. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor
-  thêm mới có id `assoc-<actor>-<uc>`.
+  thêm mới có id `assoc-<id actor>-<id UC>`, ví dụ `assoc-actor-uc-62`.
 - HuyNQ chỉnh tay bố cục trong draw.io (24/11/2026): chữ to hơn (14–16), dời ô cho thoáng, nối thẳng actor ngoài. Sửa tiếp
   bằng tay trong draw.io rồi xuất lại PNG theo lệnh ở cuối file và thay ảnh trong Report 3 §I.4.3.
 
@@ -55,7 +58,7 @@ Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document R
 Đổi tên actor theo Report 3: Meeting Organizer → **Member**, Meeting Approver → **Approver** (tên trang, nhãn actor,
 tiêu đề khung; id trang `meeting-organizer`, `meeting-approver` giữ nguyên). Ảnh đổi tên thành `uc-member.png`,
 `uc-approver.png`. Xuất lại PNG các trang System Admin, Member, Approver, Chair, Secretary, Guest theo bố cục đã sửa
-trong draw.io; trang Participant không đổi nên giữ ảnh cũ. Số UC trong README theo [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md).
+trong draw.io; trang Participant không đổi nên giữ ảnh cũ (sau đó vẫn xuất lại khi chuyển sang UML chặt, xem trên). Số UC trong README theo [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md).
 
 ## Đồng bộ với inventory (02/11/2026)
 

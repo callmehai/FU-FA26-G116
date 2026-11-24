@@ -57,12 +57,15 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 
 - **`<<extend>>` theo UML chặt** (từ 24/11/2026). Chỉ vẽ `extend` khi đủ ba điều: UC nền tự hoàn chỉnh khi không có UC
   mở rộng; UC mở rộng chèn hành vi vào lúc UC nền **đang chạy**, tại một điểm có điều kiện, xong quay lại UC nền; và UC mở
-  rộng không phải mục tiêu riêng của actor. Mũi tên đi **từ UC mở rộng → UC nền**. Còn đúng 10 quan hệ: UC-49, UC-50,
-  UC-53 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-51; UC-38 `<<extend>>` UC-35; UC-68 `<<extend>>` UC-63; UC-32
-  `<<extend>>` UC-29; UC-77 `<<extend>>` UC-76; UC-55 `<<extend>>` UC-54; UC-42 `<<extend>>` UC-65 (khi phiếu có tài liệu).
+  rộng không phải mục tiêu riêng của actor. Mũi tên đi **từ UC mở rộng → UC nền**. Còn đúng 8 quan hệ: UC-49, UC-50,
+  UC-53 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-51; UC-38 `<<extend>>` UC-35; UC-32 `<<extend>>` UC-29; UC-77
+  `<<extend>>` UC-76; UC-42 `<<extend>>` UC-65 (khi phiếu có tài liệu).
   - UC-52 (Record Room Audio) **không** extend UC-43: với họp trực tiếp Thư ký bật mic phòng từ thẻ ghi âm hoặc tab Bản ghi
     mà không vào phòng trực tuyến (UC-52a PRE-2), và tải tệp audio (UC-52c) khi họp đang diễn ra hoặc đã kết thúc. UC-52
     nối thẳng Thư ký.
+  - UC-55 (sửa bản gỡ băng, gán người nói) và UC-68 (gắn, bỏ gắn tài liệu biểu quyết) nối thẳng actor, cùng dạng với UC-60
+    và UC-71: actor chủ động chọn đoạn để sửa hoặc bấm kẹp giấy trên phiếu nháp, tức là mục tiêu riêng, không phải hành vi
+    chèn vào lúc đang xem.
   - UC-42 `<<extend>>` UC-65 chờ PO/BA xác nhận: điều kiện "phiếu có tài liệu" hợp với `extend`, nhưng khi phiếu có tài
     liệu thì UC-65 không tự hoàn chỉnh nếu chưa xác nhận đọc (`MSG252` chặn gửi phiếu).
 - **Thao tác mở từ một màn hình không phải `extend`.** Sửa, gửi duyệt, công bố, quản lý, tạo… là mục tiêu riêng của actor,
@@ -73,8 +76,8 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
   cần khi phiếu có tài liệu, nên là `extend` UC-65, không phải `include`.
 - **Vòng đời không phải `include/extend`.** Chuỗi *Tạo → Gửi duyệt → Duyệt → Publish → Start → End* thể hiện bằng State /
   Activity / Sequence Diagram, không bằng quan hệ UC (xem [§6](#6-vòng-đời--phụ-thuộc)).
-- **Guest:** UC-31, UC-35, UC-43 có cả actor nội bộ lẫn Guest, nên diagram tổng **không** vẽ `include UC-04` vô điều kiện.
-  Trên diagram riêng của Guest có thể ghi `UC-31 / UC-35 / UC-43 [Guest path] --<<include>>--> UC-04`.
+- **Guest:** UC-31, UC-35, UC-43 có cả actor nội bộ lẫn Guest. Xác minh lời mời (UC-04) là điều kiện truy cập của Guest,
+  giống đăng nhập với người nội bộ, nên ghi ở Preconditions của các UC đó, không vẽ `include UC-04`.
 
 # 2. Actor
 
@@ -218,8 +221,8 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-54 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-54a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-54b Xuất bản gỡ băng.txt (Chủ toạ, Thư ký; cấm khi Mật), UC-54c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng; bản ghi tổng hợp báo MSG479, không đưa vào hàng chờ; chạy lại giữ phần Thư ký sửa tay theo BR-125, BR-154) | User có quyền; Secretary | Đã đặc tả các UC con | Nối thẳng actor; nền của UC-55 (UC-54c `<<include>>` từ UC-52b, UC-52c) |
-| UC-55 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-55a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-55b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm; đổi người nói một câu ghi dấu người/lúc chuyển để lần chạy lại mang theo theo BR-125, BR-154), UC-55c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-55d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-54 |
+| UC-54 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-54a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-54b Xuất bản gỡ băng.txt (Chủ toạ, Thư ký; cấm khi Mật), UC-54c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng; bản ghi tổng hợp báo MSG479, không đưa vào hàng chờ; chạy lại giữ phần Thư ký sửa tay theo BR-125, BR-154) | User có quyền; Secretary | Đã đặc tả các UC con | Nối thẳng actor (UC-54c `<<include>>` từ UC-52b, UC-52c) |
+| UC-55 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-55a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-55b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm; đổi người nói một câu ghi dấu người/lúc chuyển để lần chạy lại mang theo theo BR-125, BR-154), UC-55c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-55d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | Nối thẳng actor |
 | UC-58 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* — dự thảo 3 mục I–III, chỉ Chủ tọa/Thư ký; AI chạy tại chỗ, xếp hàng, hỏi lại mỗi 5 giây; kết quả biểu quyết chép từ dữ liệu | Chair, Secretary; AI Drafting Service | Đã đặc tả | Nối thẳng actor |
 | UC-59 | Xem tóm tắt *(View Meeting Summary)* — người khác chỉ thấy sau khi duyệt | Chair, Secretary (bản chưa duyệt); User có quyền (sau khi duyệt) | Đã đặc tả | Nối thẳng actor |
 | UC-60 | Chỉnh tóm tắt *(Edit Meeting Summary)* — lưu là mất dấu đã duyệt, phải duyệt lại | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
@@ -233,12 +236,12 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
 | UC-62 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-62a Xem danh sách, UC-62b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | Nối thẳng actor |
-| UC-63 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | Nối thẳng actor; nền của UC-68 |
+| UC-63 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-64 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-65 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | Nối thẳng actor; nền của UC-42 |
 | UC-66 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-67 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | Nối thẳng actor |
-| UC-68 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-68a Gắn tài liệu vào Vote nháp, UC-68b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | `<<extend>>` UC-63 |
+| UC-68 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-68a Gắn tài liệu vào Vote nháp, UC-68b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | Nối thẳng actor |
 
 ## FE-12 — Biên bản & Duyệt, ban hành *(Meeting Minutes & Approval)*
 
