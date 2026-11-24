@@ -1024,7 +1024,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A Member is speaking in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC29): tests/qa/out/SCRUM-195/20261124-050904-02ec608b/01-chair-AC29-desktop-luot-dang-noi.png; tests/qa/out/SCRUM-195/20261124-050904-02ec608b/02-chair-AC29-desktop-xac-nhan-ket-thuc-luot.png; tests/qa/out/SCRUM-195/20261124-050904-02ec608b/03-chair-AC29-desktop-het-luot-ve-gio-tay.png · Desktop-only (phone has no Phát biểu button in footer.room-controls); member button back to Giơ tay asserted.",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "ROOM_FT46",

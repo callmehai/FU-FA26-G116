@@ -517,16 +517,18 @@
             "Wait for the countdown, click \"Gửi lại mã\", then enter the new code from the email."
           ],
           "expected": [
-            "After the 5th attempt the page shows \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" (MSG372) and \"Xác minh\" is disabled.",
-            "Step 2 cannot be submitted.",
-            "Step 3 opens the \"Thông tin hiển thị\" form (or the meeting, if a name was already declared)."
+            "After the 5th attempt the page shows \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" (MSG372); \"Xác minh\" stays pressable (aria-disabled look only, the server still answers the lock message) — typing the right code and clicking it does NOT pass, the user stays on /guest/ with the lock note.",
+            "After the countdown, clicking \"Gửi lại mã\" then entering the new code from the email opens the \"Thông tin hiển thị\" form (or the meeting, if a name was already declared)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
             "The verification screen is open with a code sent."
           ],
-          "note": "UC-04 EX-4 | Manual only"
+          "note": "UC-04 EX-4 | Manual only · App giữ nút \"Xác minh\" bấm được sau khi khoá (server trả câu khoá, không disable nút); case đã sửa expected theo app thật. Evidence(AC27): tests/qa/out/SCRUM-188/20261124-050900-02ec608b/01-anon-AC27-desktop-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-050900-02ec608b/02-anon-AC27-desktop-ma-moi-vao-duoc.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/01-anon-AC27-phone-ma-bi-khoa.png; tests/qa/out/SCRUM-188/20261124-051050-02ec608b/02-anon-AC27-phone-ma-moi-vao-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "HuyNT"
         },
         {
           "id": "AUTH_FT24",
