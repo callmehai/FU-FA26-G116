@@ -158,7 +158,7 @@ Lưu bằng chứng lượt đó ở `TestResults/scrum69-review-full.trx` để
 
 ## Tích hợp main mới sau review P1 — 23/10/2026
 
-Tích hợp `origin/main` tại `e75bb65` (bao gồm `da5caf6`, Documents/R2) vào nhánh
+Tích hợp `origin/main` tại `e75bb65` (bao gồm `da5caf6`, Documents/kho tệp) vào nhánh
 SCRUM-69 từ `d9138df`, dùng merge chưa commit. Bỏ seed Document/DocumentVersions
 và `Scenario.DocumentId` không được lifecycle test sử dụng; không khôi phục model cũ.
 Resolve catalogue bằng cách giữ cả contract SCRUM-69 và SCRUM-107, mã tiếp theo `MSG290`.

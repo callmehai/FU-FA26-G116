@@ -45,8 +45,8 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
   Transcript* (UC-45).
 - **Actor còn thiếu trên trang:** UC-27 và UC-30 (Chair, Participant, Guest), UC-55 (Chair, Secretary), UC-45
   (Chair, Participant).
-- **Hai actor ngoài mới:** *Resend Email* (UC-04, UC-07, UC-20, UC-61, UC-75) và *Cloudflare R2* (UC-36, và UC-33 trên
-  trang Chair, Secretary). Hai actor này luôn nằm ngoài khung hệ thống.
+- **Hai actor ngoài mới:** *Resend Email* (UC-04, UC-07, UC-20, UC-61, UC-75) và *File Storage* (UC-36, và UC-33 trên
+  trang Chair, Secretary; hình còn ghi tên cũ *Cloudflare R2*, chờ vẽ lại). Hai actor này luôn nằm ngoài khung hệ thống.
 - **Quan hệ mới:** UC-73 `<<extend>>` UC-27; UC-75 `<<extend>>` UC-16; UC-76 `<<extend>>` UC-53; UC-77 `<<extend>>`
   UC-26; UC-78, UC-79 `<<extend>>` UC-37; UC-80 `<<extend>>` UC-37 và UC-43a; UC-81, UC-34b độc lập.
 
