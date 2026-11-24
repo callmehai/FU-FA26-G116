@@ -140,7 +140,7 @@ AGENTS.md                        # hướng dẫn cho AI coding agent (CLAUDE.md
 | Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10, code-first — [ERD](docs/02-design/02-erd.md) |
 | Realtime | SignalR |
 | Thoại/video | WebRTC qua LiveKit SFU tự host — [ADR-0010](docs/05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) |
-| Lưu tệp | SeaweedFS khi dev, SeaweedFS tự host trên server `app` (R2 chỉ dùng ở server demo cũ đã gỡ) — [ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md) |
+| Lưu tệp | SeaweedFS (kho S3 tự host) khi dev và trên server `app` — [deploy/README.md §9](deploy/README.md) |
 | Nhận dạng giọng nói | sherpa-onnx, tự chạy — [ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md) |
 | Email | Resend — [ADR-0031](docs/05-decisions/0031-gui-email-qua-resend.md) |
 

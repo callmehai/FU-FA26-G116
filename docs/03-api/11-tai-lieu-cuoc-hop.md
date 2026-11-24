@@ -1,8 +1,8 @@
 # Tài liệu cuộc họp — tải lên (SCRUM-107), xem và tải về (SCRUM-21), gắn và gỡ (SCRUM-58), góp ý (SCRUM-23)
 
 UC-36a AF-1 *Upload files from the computer* (SCRUM-107); UC-35a *View Meeting Documents* và UC-35b *Preview
-Meeting Document* ở [mục SCRUM-21](#scrum-21--xem-và-tải-tài-liệu). Byte lưu trên Cloudflare R2, mọi lượt tải lên đi qua
-backend ([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)); mô hình dữ liệu theo
+Meeting Document* ở [mục SCRUM-21](#scrum-21--xem-và-tải-tài-liệu). Byte lưu trên kho tệp S3 tự host (SeaweedFS), mọi lượt tải lên đi qua
+backend ([deploy/README.md §9](../../deploy/README.md)); mô hình dữ liệu theo
 [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) và
 [ERD §2](../02-design/02-erd.md). Sequence: [UC36a_UploadDocumentsToMeeting](../06-sequencediagram/document-management/UC36a_UploadDocumentsToMeeting.txt).
 
@@ -31,7 +31,7 @@ Server cũng nhận tên `files[]`. Part tệp mang tên khác bị bỏ qua, pa
    khai (BR-069, UC-36a, UC-39, NFR). Đuôi phải khớp nội dung vì tệp sẽ được tải về dưới chính tên đó (SCRUM-21):
    một trang HTML không được quay về từ origin của mình dưới tên `x.html`. PDF còn phải **đọc được cấu trúc** và có ít
    nhất một trang; số trang lưu vào `StoredFile.PageCount` là số server đếm (ADR-0044).
-6. Ghi trước các dòng `StoredFile` (chưa có gì trỏ tới), đẩy từng tệp lên R2, rồi ghi `Document` và
+6. Ghi trước các dòng `StoredFile` (chưa có gì trỏ tới), đẩy từng tệp lên kho tệp, rồi ghi `Document` và
    `MeetingDocument` trong một transaction có khoá cuộc họp, **kiểm lại quyền và trạng thái dưới khoá**. Lỗi ở
    bất kỳ bước nào thì xoá các object đã đẩy trong lần đó (UC-36a, UC-36b, UC-39). Object nào còn sót (xoá lỗi, hay
    process chết giữa chừng) vẫn có dòng `StoredFile` không ai trỏ tới, nên job dọn xoá nó sau thời gian chờ.
@@ -85,8 +85,8 @@ dung vẫn là tài liệu mới (BR-068).
 | 404 | `MSG174` | Không xem được cuộc họp hoặc cuộc họp không tồn tại — **cùng một body**, không lộ cuộc họp có tồn tại |
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
 | 409 | `MSG349` | Cuộc họp đã huỷ (BR-028). FE ẩn nút tải lên khi cuộc họp `Cancelled` |
-| 409 | `MSG346` | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ (ADR-0034, mặc định 10 GB). Kiểm dưới khoá chung trước khi đẩy byte lên R2; không tệp nào được thêm |
-| 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp), hoặc chờ quá 30 giây mà hai tiến trình kiểm PDF vẫn bận (ADR-0044 §6). Không tệp nào được thêm |
+| 409 | `MSG346` | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ (ADR-0034, ADR-0084, mặc định 250 GB). Kiểm dưới khoá chung trước khi đẩy byte lên kho tệp; không tệp nào được thêm |
+| 503 | `MSG166` | Không lưu được (kho tệp lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp), hoặc chờ quá 30 giây mà hai tiến trình kiểm PDF vẫn bận (ADR-0044 §6). Không tệp nào được thêm |
 
 `errors` của `MSG164`:
 
@@ -401,7 +401,7 @@ Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
   mới thêm. Lỗi lưu
   `503 MSG166` (theo sequence).
 - AF-1: như UC-36a AF-1 — giới hạn `MSG288` (PO 27/10/2026 áp cho UC-36b AF-1), kiểm tệp `MSG164`, dòng kho vào thư mục
-  `<tên cuộc họp> – dd/mm/yyyy`, cùng thứ tự ghi R2; thêm liên kết mục trong cùng transaction. Lỗi lưu `503 MSG166`.
+  `<tên cuộc họp> – dd/mm/yyyy`, cùng thứ tự ghi kho tệp; thêm liên kết mục trong cùng transaction. Lỗi lưu `503 MSG166`.
 - Tất cả hoặc không (UC-36b). Lỗi chung: `403 MSG240`, `409 MSG247`.
 
 ### `DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` — gỡ khỏi một mục (UC-36d)
@@ -531,9 +531,9 @@ tham chiếu; job vẫn được kiểm bằng `OrphanFilePurgerTests`.
 
 ## Dữ liệu cá nhân (Luật 91/2025/QH15)
 
-Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà R2 lưu ngoài Việt Nam, tức là chuyển dữ liệu cá nhân xuyên
-biên giới (Điều 20). Server test chỉ dùng dữ liệu
-giả. Byte bị xoá khỏi R2 khi job dọn chạy (sau khi không còn ai tham chiếu); dòng `StoredFile` giữ tên
+Tài liệu cuộc họp có thể chứa dữ liệu cá nhân. Byte nằm trong kho tệp trên đĩa server `app`, mà server test đặt ở
+Singapore, ngoài Việt Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Điều 20). Server test chỉ dùng dữ liệu
+giả. Byte bị xoá khỏi kho tệp khi job dọn chạy (sau khi không còn ai tham chiếu); dòng `StoredFile` giữ tên
 tệp và SHA-256 làm bằng chứng, không giữ nội dung. Nghĩa vụ khi đưa vào dùng thật ghi ở ADR-0024.
 
 ## Migration
@@ -557,7 +557,7 @@ mục chỉ đổi liên kết của mục đó. UC-36b, UC-36d (SCRUM-58) có e
 - `MeetingDocumentEndpointsTests` (PostgreSQL thật, kho tệp trong bộ nhớ): 3 PDF + 1 DOCX; Chủ toạ;
   ảnh đổi đuôi, DOCM, zip thiếu `word/document.xml`; 11 tệp; body khai > 100 MB; tổng hai tệp quá 100 MB; tệp quá 10 MB; không
   tệp / không multipart; Thành viên, Người tổ chức, người ngoài, cuộc họp không tồn tại; Thư ký đã bị
-  gỡ, tài khoản bị khoá; cuộc họp đã kết thúc và kết thúc giữa lúc tải; R2 lỗi ở tệp thứ hai; DB lỗi
+  gỡ, tài khoản bị khoá; cuộc họp đã kết thúc và kết thúc giữa lúc tải; kho tệp lỗi ở tệp thứ hai; DB lỗi
   sau khi object đã lên; xoá dọn cũng lỗi (object còn lại có dòng `StoredFile` cho job dọn); dòng `StoredFile`
   có trước khi object được đẩy; `pageCounts` (kể cả dài 1 KB) bị bỏ qua và số trang là số server đếm, PDF chỉ có header
   và PDF có rác sau `%%EOF` → `MSG164`, quá 64 part, part lạ 1 MB bị bỏ qua; chưa cấu hình

@@ -22,10 +22,10 @@ public sealed class FileStorageOptions
     public int OrphanGracePeriodHours { get; set; } = 24;
 
     /// <summary>
-    /// What every stored document together may take, in GB (PO 27/10/2026, ADR-0034): R2's free tier holds 10 GB.
-    /// The organisation that takes the system over raises it to what it pays for.
+    /// What every stored document together may take, in GB (ADR-0034, ADR-0084): the files sit on the app server's own
+    /// disk, which the database shares, so uploads must never fill it. Override with <c>STORAGE_MAX_GB</c> on the server.
     /// </summary>
-    public int MaxTotalGigabytes { get; set; } = 10;
+    public int MaxTotalGigabytes { get; set; } = 250;
 
     public long MaxTotalBytes => MaxTotalGigabytes * 1024L * 1024 * 1024;
 
