@@ -24,6 +24,26 @@ cũ theo baseline 05/10/2026 (94 UC, file `.drawio` + `.pdf` riêng từng actor
 Id của ô UC trong file `.drawio` vẫn là số cũ (`uc-45` là *Join Meeting Room*, tức UC-43); UC thêm từ 02/11/2026 dùng
 id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số cũ.
 
+## Theo UML chặt (24/11/2026)
+
+Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
+([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 11 quan hệ: *Keep Meeting in a
+Floating Window*, *Register to Speak*, *Record Room Audio*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
+*Manage My Recorded Speech* `<<extend>>` *View & Play Meeting Recordings*; *Comment on Meeting Document* `<<extend>>` *View
+Meeting Documents*; *Manage Vote Documents* `<<extend>>` *Create / Configure Vote*; *View Participant Response Status*
+`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Edit Transcript &
+Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document Read* `<<extend>>` *Cast Vote*.
+
+- Bỏ mọi `extend` kiểu "mở thao tác từ màn hình" (sửa, gửi duyệt, công bố, quản lý…) và kiểu chuyển màn hình / tab
+  (danh sách → chi tiết, chi tiết → các tab, thông báo → đối tượng). Các UC đó nối thẳng với actor của trang.
+- *Record Room Audio* chuyển từ `extend` *View & Play Meeting Recordings* sang `extend` *Join Meeting Room*: Thư ký bật
+  ghi âm trong lúc họp. *Take Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
+  *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu. Hai mục "để BA chốt" về UC-42 → UC-65
+  và UC-54 → UC-51a ở dưới vì vậy đã xong.
+- Bố cục mới, mọi trang giống nhau: actor bên trái; UC nối thẳng xếp một cột theo số UC; UC mở rộng ở cột thứ hai ngang UC
+  nền; actor ngoài (OAuth Provider, Resend Email, Cloudflare R2) bên phải. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá,
+  cạnh nối actor thêm mới có id `assoc-<actor>-<uc>`.
+
 ## Cập nhật 24/11/2026
 
 Đổi tên actor theo Report 3: Meeting Organizer → **Member**, Meeting Approver → **Approver** (tên trang, nhãn actor,

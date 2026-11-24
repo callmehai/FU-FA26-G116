@@ -55,10 +55,17 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 
 # 1. Quy ước quan hệ UML
 
-- **`<<extend>>`** — hành động tuỳ chọn mở ra từ một UC nền đã tự hoàn chỉnh. UC dạng *View/List* thường là UC nền;
-  CRUD hoặc thao tác nghiệp vụ mở từ màn hình đó extend UC nền. Mũi tên đi **từ UC mở rộng → UC nền**.
+- **`<<extend>>` theo UML chặt** (từ 24/11/2026). Chỉ vẽ `extend` khi đủ ba điều: UC nền tự hoàn chỉnh khi không có UC
+  mở rộng; UC mở rộng chèn hành vi vào lúc UC nền **đang chạy**, tại một điểm có điều kiện, xong quay lại UC nền; và UC mở
+  rộng không phải mục tiêu riêng của actor. Mũi tên đi **từ UC mở rộng → UC nền**. Còn đúng 11 quan hệ: UC-49, UC-50,
+  UC-52, UC-53 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-51; UC-38 `<<extend>>` UC-35; UC-68 `<<extend>>` UC-63; UC-32
+  `<<extend>>` UC-29; UC-77 `<<extend>>` UC-76; UC-55 `<<extend>>` UC-54; UC-42 `<<extend>>` UC-65 (khi phiếu có tài liệu).
+- **Thao tác mở từ một màn hình không phải `extend`.** Sửa, gửi duyệt, công bố, quản lý, tạo… là mục tiêu riêng của actor,
+  chỉ tình cờ bắt đầu bằng nút trên màn hình *View*; chuyển tab hay chuyển màn hình (danh sách → chi tiết, chi tiết → tab)
+  cũng vậy. Các UC đó **nối thẳng với actor**. Trước 24/11/2026 inventory vẽ chúng là `extend` UC *View* nền; đã bỏ.
 - **`<<include>>`** — chỉ dùng khi UC **bắt buộc** chạy một hành vi dùng chung mỗi lần. Không dùng `include` chỉ vì cần
-  đăng nhập, vì UC trước tạo dữ liệu cho UC sau, hay vì hai UC là hai bước trong vòng đời.
+  đăng nhập, vì UC trước tạo dữ liệu cho UC sau, hay vì hai UC là hai bước trong vòng đời. Xác nhận đã đọc tài liệu chỉ
+  cần khi phiếu có tài liệu, nên là `extend` UC-65, không phải `include`.
 - **Vòng đời không phải `include/extend`.** Chuỗi *Tạo → Gửi duyệt → Duyệt → Publish → Start → End* thể hiện bằng State /
   Activity / Sequence Diagram, không bằng quan hệ UC (xem [§6](#6-vòng-đời--phụ-thuộc)).
 - **Guest:** UC-31, UC-35, UC-43 có cả actor nội bộ lẫn Guest, nên diagram tổng **không** vẽ `include UC-04` vô điều kiện.
@@ -107,90 +114,90 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-01 | Đăng nhập bằng Email và Mật khẩu *(Sign in with Email and Password)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
-| UC-02 | Đăng nhập bằng Google *(Sign in with Google)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant; OAuth Provider | Đã đặc tả | Độc lập |
-| UC-03 | Đăng xuất *(Sign Out)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
-| UC-04 | Truy cập cuộc họp qua lời mời Guest *(Access Meeting via Guest Invitation)* | Guest; Email / SMTP | Đã đặc tả | Độc lập — xác minh email + profile tự khai, guest access cho UC-31, UC-35, UC-38, UC-43, UC-65 |
+| UC-01 | Đăng nhập bằng Email và Mật khẩu *(Sign in with Email and Password)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
+| UC-02 | Đăng nhập bằng Google *(Sign in with Google)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant; OAuth Provider | Đã đặc tả | Nối thẳng actor |
+| UC-03 | Đăng xuất *(Sign Out)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
+| UC-04 | Truy cập cuộc họp qua lời mời Guest *(Access Meeting via Guest Invitation)* | Guest; Email / SMTP | Đã đặc tả | Nối thẳng actor (Guest) — xác minh email + profile tự khai, guest access cho UC-31, UC-35, UC-38, UC-43, UC-65 |
 
 ## FE-02 — Quản lý Người dùng & Hồ sơ *(User & Profile Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-05 | Xem danh sách tài khoản *(View User Accounts)* | System Admin | Đã đặc tả | Nền |
-| UC-06 | Quản lý tài khoản *(Manage User Accounts)* — gồm UC-06a Tạo, UC-06b Cập nhật, UC-06c Vô hiệu hoá / Kích hoạt lại | System Admin | Đã đặc tả | `<<extend>>` UC-05 |
-| UC-07 | Đặt lại mật khẩu *(Reset User Password)* | System Admin; Email / SMTP | Đã đặc tả | `<<extend>>` UC-05 |
-| UC-08 | Gán vai trò hệ thống *(Assign System Role to User)* | System Admin | Đã đặc tả | `<<extend>>` UC-05 |
+| UC-05 | Xem danh sách tài khoản *(View User Accounts)* | System Admin | Đã đặc tả | Nối thẳng actor |
+| UC-06 | Quản lý tài khoản *(Manage User Accounts)* — gồm UC-06a Tạo, UC-06b Cập nhật, UC-06c Vô hiệu hoá / Kích hoạt lại | System Admin | Đã đặc tả | Nối thẳng actor |
+| UC-07 | Đặt lại mật khẩu *(Reset User Password)* | System Admin; Email / SMTP | Đã đặc tả | Nối thẳng actor |
+| UC-08 | Gán vai trò hệ thống *(Assign System Role to User)* | System Admin | Đã đặc tả | Nối thẳng actor |
 
 ## FE-03 — Kiểm soát truy cập theo vai trò *(Role-Based Access Control)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-09 | Xem ma trận vai trò & quyền *(View Role & Permission Matrix)* | System Admin | Đã đặc tả | Nền |
-| UC-10 | Cấu hình quyền của vai trò *(Configure Role Permissions)* | System Admin | Đã đặc tả | `<<extend>>` UC-09 |
-| UC-11 | Quản lý vai trò *(Manage Roles)* — gồm UC-11a Tạo, UC-11b Cập nhật, UC-11c Xoá | System Admin | Đã đặc tả | `<<extend>>` UC-09 |
-| UC-12 | Xem nhật ký kiểm toán *(View Audit Log)* | System Admin | Đã đặc tả | Độc lập |
+| UC-09 | Xem ma trận vai trò & quyền *(View Role & Permission Matrix)* | System Admin | Đã đặc tả | Nối thẳng actor |
+| UC-10 | Cấu hình quyền của vai trò *(Configure Role Permissions)* | System Admin | Đã đặc tả | Nối thẳng actor |
+| UC-11 | Quản lý vai trò *(Manage Roles)* — gồm UC-11a Tạo, UC-11b Cập nhật, UC-11c Xoá | System Admin | Đã đặc tả | Nối thẳng actor |
+| UC-12 | Xem nhật ký kiểm toán *(View Audit Log)* | System Admin | Đã đặc tả | Nối thẳng actor |
 
 ## FE-04 — Quản lý cuộc họp *(Meeting Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-13 | Tạo cuộc họp *(Create Meeting)* — kèm lịch, hình thức, địa điểm, link tuỳ chọn | Meeting Organizer | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-14 | Cập nhật / dời lịch cuộc họp *(Update Meeting)* — sửa khi `Draft`/`Rejected`; *Reschedule* khi `Published` | Meeting Organizer | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-15 | Xem chi tiết cuộc họp *(View Meeting Details)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-16 | Xem danh sách cuộc họp *(View Meeting List)* | Actor có quan hệ với cuộc họp | Đã đặc tả | Nền |
-| UC-17 | Gửi duyệt cuộc họp *(Submit Meeting for Approval)* | Meeting Organizer | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-18 | Duyệt / Từ chối cuộc họp *(Review Meeting Approval)* | Meeting Approver | Đã đặc tả | Độc lập |
-| UC-19 | Công bố cuộc họp *(Publish Meeting)* | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-20 | Bắt đầu cuộc họp *(Start Meeting)* | Chair | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-21 | Kết thúc cuộc họp *(End Meeting)* — không phụ thuộc Vote Open hay điểm danh đủ/thiếu | Chair | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-22 | Huỷ cuộc họp *(Cancel Meeting)* — Organizer huỷ trước khi họp bắt đầu, bắt buộc nêu lý do; Meeting `Cancelled` chỉ đọc và thông báo cho người được mời nếu đã `Published` | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-15 |
+| UC-13 | Tạo cuộc họp *(Create Meeting)* — kèm lịch, hình thức, địa điểm, link tuỳ chọn | Meeting Organizer | Đã đặc tả | Nối thẳng actor |
+| UC-14 | Cập nhật / dời lịch cuộc họp *(Update Meeting)* — sửa khi `Draft`/`Rejected`; *Reschedule* khi `Published` | Meeting Organizer | Đã đặc tả | Nối thẳng actor |
+| UC-15 | Xem chi tiết cuộc họp *(View Meeting Details)* | Actor có quan hệ với cuộc họp | Đã đặc tả | Nối thẳng actor |
+| UC-16 | Xem danh sách cuộc họp *(View Meeting List)* | Actor có quan hệ với cuộc họp | Đã đặc tả | Nối thẳng actor |
+| UC-17 | Gửi duyệt cuộc họp *(Submit Meeting for Approval)* | Meeting Organizer | Đã đặc tả | Nối thẳng actor |
+| UC-18 | Duyệt / Từ chối cuộc họp *(Review Meeting Approval)* | Meeting Approver | Đã đặc tả | Nối thẳng actor |
+| UC-19 | Công bố cuộc họp *(Publish Meeting)* | Meeting Organizer; Email / SMTP | Đã đặc tả | Nối thẳng actor |
+| UC-20 | Bắt đầu cuộc họp *(Start Meeting)* | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-21 | Kết thúc cuộc họp *(End Meeting)* — không phụ thuộc Vote Open hay điểm danh đủ/thiếu | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-22 | Huỷ cuộc họp *(Cancel Meeting)* — Organizer huỷ trước khi họp bắt đầu, bắt buộc nêu lý do; Meeting `Cancelled` chỉ đọc và thông báo cho người được mời nếu đã `Published` | Meeting Organizer; Email / SMTP | Đã đặc tả | Nối thẳng actor |
 
 ## FE-05 — Quản lý chương trình nghị sự *(Agenda Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-23 | Quản lý mục agenda *(Manage Agenda Items)* — gồm UC-23a Tạo, UC-23b Cập nhật, UC-23c Xoá, UC-23d Sắp xếp | Secretary | Đã đặc tả | `<<extend>>` UC-26 |
-| UC-24 | Đặt mục agenda hiện tại *(Set Current Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
-| UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
-| UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-27 | Ghi kết luận mục agenda *(Record Agenda Item Conclusion)* — Chair/Secretary ghi hoặc sửa kết luận của mục `InProgress`/`Done` cho tới khi sinh biên bản nháp | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-26 |
-| UC-28 | Ghi chú cuộc họp *(Take Meeting Notes)* — Thư ký ghi chú thời gian thực theo mục nghị sự hoặc cả cuộc họp; Chủ toạ đọc; BR-134, BR-133; MSG415–MSG423 | Secretary (ghi), Chair (đọc) | Đã đặc tả | `<<extend>>` UC-26 |
+| UC-23 | Quản lý mục agenda *(Manage Agenda Items)* — gồm UC-23a Tạo, UC-23b Cập nhật, UC-23c Xoá, UC-23d Sắp xếp | Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-24 | Đặt mục agenda hiện tại *(Set Current Agenda Item)* | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | Nối thẳng actor |
+| UC-27 | Ghi kết luận mục agenda *(Record Agenda Item Conclusion)* — Chair/Secretary ghi hoặc sửa kết luận của mục `InProgress`/`Done` cho tới khi sinh biên bản nháp | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-28 | Ghi chú cuộc họp *(Take Meeting Notes)* — Thư ký ghi chú thời gian thực theo mục nghị sự hoặc cả cuộc họp; Chủ toạ đọc; BR-134, BR-133; MSG415–MSG423 | Secretary (ghi), Chair (đọc) | Đã đặc tả | Nối thẳng actor |
 
 ## FE-06 — Quản lý thành phần tham dự *(Meeting Participant Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-29 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary, Chair, Participant, Guest | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-30 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-30a thêm nhiều người nội bộ cùng vai trò/quyền hoặc mời từng Guest, UC-30b Quản lý vai trò cuộc họp, UC-30c Xoá / thu hồi | Meeting Organizer, Secretary | Đã đặc tả | Secretary: `<<extend>>` UC-29; Organizer gán Thư ký khi chưa có hoặc không còn trong giai đoạn chuẩn bị: `<<extend>>` UC-15 |
-| UC-31 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
-| UC-32 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant, Guest | Đã đặc tả | Mở từ cuộc họp có thể truy cập; Member/Guest cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
-| UC-33 | Ghi nhận điểm danh *(Record Attendance)* — Secretary lưu Present/Absent cho một/nhiều người được chọn khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-29 |
-| UC-34 | Chuyển vai trò Chair cho người khác *(Hand Over Chair to Another Participant)* — Chair hiện hành chuyển trong một bước: người nhận thành Chair, người chuyển thành Member | Chair | Đã đặc tả | `<<extend>>` UC-29 |
+| UC-29 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary, Chair, Participant, Guest | Đã đặc tả | Nối thẳng actor; nền của UC-32 |
+| UC-30 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-30a thêm nhiều người nội bộ cùng vai trò/quyền hoặc mời từng Guest, UC-30b Quản lý vai trò cuộc họp, UC-30c Xoá / thu hồi | Meeting Organizer, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-31 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Secretary, Participant, Guest | Đã đặc tả | Nối thẳng actor; Guest đi qua UC-04 |
+| UC-32 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant, Guest | Đã đặc tả | `<<extend>>` UC-29 — thêm nhãn phản hồi vào danh sách đang xem; Member/Guest cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
+| UC-33 | Ghi nhận điểm danh *(Record Attendance)* — Secretary lưu Present/Absent cho một/nhiều người được chọn khi `InProgress` | Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-34 | Chuyển vai trò Chair cho người khác *(Hand Over Chair to Another Participant)* — Chair hiện hành chuyển trong một bước: người nhận thành Chair, người chuyển thành Member | Chair | Đã đặc tả | Nối thẳng actor |
 
 ## FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp *(Personal Document Library & Meeting Document Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-35 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-35a Xem danh sách, UC-35b Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b cũ vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Internal: `<<extend>>` UC-15; Guest qua UC-04 |
-| UC-36 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-36a Thêm một hoặc nhiều tài liệu cùng lần, UC-36b Gắn vào mục (tái cấp theo ADR-0020), UC-36c Gỡ khỏi cuộc họp, UC-36d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | `<<extend>>` UC-35 |
-| UC-37 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
-| UC-37a | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-085, BR-009–BR-011) | System Admin | Đã đặc tả | Độc lập |
+| UC-35 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-35a Xem danh sách, UC-35b Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b cũ vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Nối thẳng actor; Guest qua UC-04; nền của UC-38 |
+| UC-36 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-36a Thêm một hoặc nhiều tài liệu cùng lần, UC-36b Gắn vào mục (tái cấp theo ADR-0020), UC-36c Gỡ khỏi cuộc họp, UC-36d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | Nối thẳng actor |
+| UC-37 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
+| UC-37a | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-085, BR-009–BR-011) | System Admin | Đã đặc tả | Nối thẳng actor |
 | UC-38 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-35 |
-| UC-39 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 100 MB mỗi lần, 10 MB mỗi tệp — họp 19/11/2026; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-37 |
-| UC-40 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-40a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-40b Đổi tên, UC-40c Chuyển thư mục | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-37 |
-| UC-41 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-41a Tạo, UC-41b Đổi tên, UC-41c Chuyển, UC-41d Xoá thư mục rỗng; lồng tối đa 5 cấp | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-37 |
-| UC-42 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-65 |
+| UC-39 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 100 MB mỗi lần, 10 MB mỗi tệp — họp 19/11/2026; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
+| UC-40 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-40a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-40b Đổi tên, UC-40c Chuyển thư mục | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Nối thẳng actor |
+| UC-41 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-41a Tạo, UC-41b Đổi tên, UC-41c Chuyển, UC-41d Xoá thư mục rỗng; lồng tối đa 5 cấp | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Nối thẳng actor |
+| UC-42 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | `<<extend>>` UC-65 khi phiếu có tài liệu |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-43 | Vào phòng họp *(Join Meeting Room)* | Chair, Secretary, Participant có phân công hiện hành; Guest có lời mời hợp lệ | Đã đặc tả | Internal: `<<extend>>` UC-15; Guest qua UC-04; UC-49 `<<extend>>` UC-43 |
-| UC-44 | Rời phòng họp *(Leave Meeting Room)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
-| UC-45 | Điều khiển trong phòng *(Manage Meeting Room Controls)* — gồm UC-45a Micro, UC-45b Camera, UC-45c Chia sẻ màn hình, UC-45d Chọn thiết bị âm thanh và hình ảnh | User đang trong phòng | Đã đặc tả bốn UC con | Độc lập khi đã kết nối |
-| UC-46 | Xem người đang trong phòng *(View Meeting Room Participants)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
-| UC-47 | Điều phối phòng họp *(Moderate Meeting Room)* — chỉ tắt mic người khác, một chiều | Chair hiện hành | Đã đặc tả | Độc lập khi đã kết nối |
-| UC-48 | Chat trong phòng *(Use In-room Chat)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
+| UC-43 | Vào phòng họp *(Join Meeting Room)* | Chair, Secretary, Participant có phân công hiện hành; Guest có lời mời hợp lệ | Đã đặc tả | Nối thẳng actor; Guest qua UC-04; nền của UC-49, UC-50, UC-52, UC-53 |
+| UC-44 | Rời phòng họp *(Leave Meeting Room)* | User đang trong phòng | Đã đặc tả | Nối thẳng actor, khi đã kết nối |
+| UC-45 | Điều khiển trong phòng *(Manage Meeting Room Controls)* — gồm UC-45a Micro, UC-45b Camera, UC-45c Chia sẻ màn hình, UC-45d Chọn thiết bị âm thanh và hình ảnh | User đang trong phòng | Đã đặc tả bốn UC con | Nối thẳng actor, khi đã kết nối |
+| UC-46 | Xem người đang trong phòng *(View Meeting Room Participants)* | User đang trong phòng | Đã đặc tả | Nối thẳng actor, khi đã kết nối |
+| UC-47 | Điều phối phòng họp *(Moderate Meeting Room)* — chỉ tắt mic người khác, một chiều | Chair hiện hành | Đã đặc tả | Nối thẳng actor, khi đã kết nối |
+| UC-48 | Chat trong phòng *(Use In-room Chat)* | User đang trong phòng | Đã đặc tả | Nối thẳng actor, khi đã kết nối |
 | UC-49 | Giữ cuộc họp trong cửa sổ nổi *(Keep Meeting in a Floating Window)* | User đang trong phòng | Đã đặc tả | `<<extend>>` UC-43 |
 | UC-50 | Đăng ký phát biểu *(Register to Speak)* — giơ tay, Chủ toạ mời từng người, phát biểu theo lượt | Chair, Secretary, Participant, Guest trong phòng; Chair mời | Đã đặc tả (yêu cầu, chưa cài) | `<<extend>>` UC-43 |
 
@@ -198,61 +205,61 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-51 | Xem & nghe bản ghi cuộc họp *(View & Play Meeting Recordings)* — gồm UC-51a Xem danh sách bản ghi (kèm bản ghi tổng hợp của họp kết hợp đã kết thúc), UC-51b Phát audio (bản ghi phòng, bản ghi tổng hợp hoặc câu nói), UC-51c Tải bản ghi audio (Chủ toạ, Thư ký; cấm khi cuộc họp Mật) | User có quyền | Đã đặc tả các UC con | `<<extend>>` UC-15 |
-| UC-52 | Ghi âm phòng họp & Tải tệp audio *(Record Room Audio)* — gồm UC-52a Bắt đầu ghi mic phòng (hỏi xác nhận trước lượt đầu), UC-52b Dừng và lưu lượt ghi (nối vào bản ghi phòng duy nhất, tự xếp hàng gỡ băng), UC-52c Tải tệp âm thanh cuộc họp (chỉ họp Trực tiếp khi In Progress hoặc Ended; họp kết hợp báo MSG478), UC-52d Xoá một lượt ghi, UC-52e Xoá bản ghi cuộc họp (xoá tệp và transcript, giữ vết kiểm toán; bản ghi tổng hợp bị xoá thì không dựng lại) | **Secretary**; System (tự lưu, tự dựng bản tổng hợp, hết hạn) | Đã đặc tả các UC con | `<<extend>>` UC-51a |
-| UC-53 | Quản lý câu nói đã ghi của tôi *(Manage My Recorded Speech)* — xem câu chờ gửi và đã lưu, nghe lại, rút/xoá câu của mình khỏi dòng thời gian | Chair, Secretary, Participant hiện hành | Đã đặc tả | `<<extend>>` UC-43, UC-51a |
+| UC-51 | Xem & nghe bản ghi cuộc họp *(View & Play Meeting Recordings)* — gồm UC-51a Xem danh sách bản ghi (kèm bản ghi tổng hợp của họp kết hợp đã kết thúc), UC-51b Phát audio (bản ghi phòng, bản ghi tổng hợp hoặc câu nói), UC-51c Tải bản ghi audio (Chủ toạ, Thư ký; cấm khi cuộc họp Mật) | User có quyền | Đã đặc tả các UC con | Nối thẳng actor; nền của UC-53 |
+| UC-52 | Ghi âm phòng họp & Tải tệp audio *(Record Room Audio)* — gồm UC-52a Bắt đầu ghi mic phòng (hỏi xác nhận trước lượt đầu), UC-52b Dừng và lưu lượt ghi (nối vào bản ghi phòng duy nhất, tự xếp hàng gỡ băng), UC-52c Tải tệp âm thanh cuộc họp (chỉ họp Trực tiếp khi In Progress hoặc Ended; họp kết hợp báo MSG478), UC-52d Xoá một lượt ghi, UC-52e Xoá bản ghi cuộc họp (xoá tệp và transcript, giữ vết kiểm toán; bản ghi tổng hợp bị xoá thì không dựng lại) | **Secretary**; System (tự lưu, tự dựng bản tổng hợp, hết hạn) | Đã đặc tả các UC con | `<<extend>>` UC-43 — Thư ký bật ghi âm trong lúc họp |
+| UC-53 | Quản lý câu nói đã ghi của tôi *(Manage My Recorded Speech)* — xem câu chờ gửi và đã lưu, nghe lại, rút/xoá câu của mình khỏi dòng thời gian | Chair, Secretary, Participant hiện hành | Đã đặc tả | `<<extend>>` UC-43, UC-51 |
 
 ## FE-10 — Gỡ băng, nhận diện người nói và tóm tắt *(Transcription, Speaker Identification & Meeting Summary)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-54 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-54a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-54b Xuất bản gỡ băng.txt (Chủ toạ, Thư ký; cấm khi Mật), UC-54c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng; bản ghi tổng hợp báo MSG479, không đưa vào hàng chờ; chạy lại giữ phần Thư ký sửa tay theo BR-125, BR-154) | User có quyền; Secretary | Đã đặc tả các UC con | `<<extend>>` UC-51a (UC-54c `<<include>>` từ UC-52b, UC-52c) |
-| UC-55 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-55a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-55b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm; đổi người nói một câu ghi dấu người/lúc chuyển để lần chạy lại mang theo theo BR-125, BR-154), UC-55c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-55d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-51a, UC-54a |
-| UC-58 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* — dự thảo 3 mục I–III, chỉ Chủ tọa/Thư ký; AI chạy tại chỗ, xếp hàng, hỏi lại mỗi 5 giây; kết quả biểu quyết chép từ dữ liệu | Chair, Secretary; AI Drafting Service | Đã đặc tả | `<<extend>>` UC-54a |
-| UC-59 | Xem tóm tắt *(View Meeting Summary)* — người khác chỉ thấy sau khi duyệt | Chair, Secretary (bản chưa duyệt); User có quyền (sau khi duyệt) | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-60 | Chỉnh tóm tắt *(Edit Meeting Summary)* — lưu là mất dấu đã duyệt, phải duyệt lại | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-59 |
-| UC-61 | Duyệt tóm tắt *(Approve Meeting Summary)* — từ đây người dự họp khác đọc được | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-59 |
-| UC-51 cũ | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Bỏ/retired (tạm giữ số, sau đánh số lại) | `<<extend>>` UC-59 |
-| UC-56 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-56a Xem thông tin giọng nói (có tab "Người khác thu hộ"), UC-56b Xác nhận đồng ý Voice ID (thông báo 1.5; "cho phép người khác thu" = đồng ý ≥ 1.4), UC-56c Thu âm mẫu giọng (tối đa 5 mẫu tự thu, 6–60s; mẫu thu hộ tối đa 50, tính riêng), UC-56d Nghe lại mẫu giọng (cả hai bộ, chỉ chính chủ), UC-56e Xoá mẫu giọng, UC-56f Rút đồng ý Voice ID (xoá ngay cả hai bộ mẫu và mọi gợi ý) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Độc lập (UC-56b–f `<<extend>>` UC-56a) |
-| UC-57 | Thu giọng mẫu hộ *(Collect Voice Samples for Attendees)* — gồm UC-57a Xem danh sách thu hộ, UC-57b Thu mẫu giọng cho người khác (cần quyền Thu giọng mẫu hộ, ở màn Quản trị → Người dùng, cần đồng ý thường trực ≥ 1.4 và xác nhận từng lần thu, thiếu xác nhận → `400 MSG483`), UC-57c Nghe lại mẫu đã thu (ghi nhật ký), UC-57d Xoá mẫu đã thu | Voice sample collection permission holder (mặc định Administrator) | Đã đặc tả các UC con (SCRUM-152, sửa note 58) | Độc lập |
+| UC-54 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-54a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-54b Xuất bản gỡ băng.txt (Chủ toạ, Thư ký; cấm khi Mật), UC-54c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng; bản ghi tổng hợp báo MSG479, không đưa vào hàng chờ; chạy lại giữ phần Thư ký sửa tay theo BR-125, BR-154) | User có quyền; Secretary | Đã đặc tả các UC con | Nối thẳng actor; nền của UC-55 (UC-54c `<<include>>` từ UC-52b, UC-52c) |
+| UC-55 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-55a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-55b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm; đổi người nói một câu ghi dấu người/lúc chuyển để lần chạy lại mang theo theo BR-125, BR-154), UC-55c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-55d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-54 |
+| UC-58 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* — dự thảo 3 mục I–III, chỉ Chủ tọa/Thư ký; AI chạy tại chỗ, xếp hàng, hỏi lại mỗi 5 giây; kết quả biểu quyết chép từ dữ liệu | Chair, Secretary; AI Drafting Service | Đã đặc tả | Nối thẳng actor |
+| UC-59 | Xem tóm tắt *(View Meeting Summary)* — người khác chỉ thấy sau khi duyệt | Chair, Secretary (bản chưa duyệt); User có quyền (sau khi duyệt) | Đã đặc tả | Nối thẳng actor |
+| UC-60 | Chỉnh tóm tắt *(Edit Meeting Summary)* — lưu là mất dấu đã duyệt, phải duyệt lại | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-61 | Duyệt tóm tắt *(Approve Meeting Summary)* — từ đây người dự họp khác đọc được | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-51 cũ | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Bỏ/retired (tạm giữ số, sau đánh số lại) | — (đã bỏ) |
+| UC-56 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-56a Xem thông tin giọng nói (có tab "Người khác thu hộ"), UC-56b Xác nhận đồng ý Voice ID (thông báo 1.5; "cho phép người khác thu" = đồng ý ≥ 1.4), UC-56c Thu âm mẫu giọng (tối đa 5 mẫu tự thu, 6–60s; mẫu thu hộ tối đa 50, tính riêng), UC-56d Nghe lại mẫu giọng (cả hai bộ, chỉ chính chủ), UC-56e Xoá mẫu giọng, UC-56f Rút đồng ý Voice ID (xoá ngay cả hai bộ mẫu và mọi gợi ý) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Nối thẳng actor |
+| UC-57 | Thu giọng mẫu hộ *(Collect Voice Samples for Attendees)* — gồm UC-57a Xem danh sách thu hộ, UC-57b Thu mẫu giọng cho người khác (cần quyền Thu giọng mẫu hộ, ở màn Quản trị → Người dùng, cần đồng ý thường trực ≥ 1.4 và xác nhận từng lần thu, thiếu xác nhận → `400 MSG483`), UC-57c Nghe lại mẫu đã thu (ghi nhật ký), UC-57d Xoá mẫu đã thu | Voice sample collection permission holder (mặc định Administrator) | Đã đặc tả các UC con (SCRUM-152, sửa note 58) | Nối thẳng actor |
 
 ## FE-11 — Biểu quyết *(Voting Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-62 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-62a Xem danh sách, UC-62b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | `<<extend>>` UC-15 |
-| UC-63 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | `<<extend>>` UC-62 |
-| UC-64 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | `<<extend>>` UC-62 |
-| UC-65 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | `<<extend>>` UC-62 |
-| UC-66 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | `<<extend>>` UC-62 |
-| UC-67 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | `<<extend>>` UC-62 |
+| UC-62 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-62a Xem danh sách, UC-62b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | Nối thẳng actor |
+| UC-63 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | Nối thẳng actor; nền của UC-68 |
+| UC-64 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-65 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | Nối thẳng actor; nền của UC-42 |
+| UC-66 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | Nối thẳng actor |
+| UC-67 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-68 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-68a Gắn tài liệu vào Vote nháp, UC-68b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | `<<extend>>` UC-63 |
 
 ## FE-12 — Biên bản & Duyệt, ban hành *(Meeting Minutes & Approval)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-69 | Xem biên bản *(View Meeting Minutes)* — bản nháp, chờ duyệt, bị trả lại chỉ Chủ tọa/Thư ký; bản đã ban hành (và bản cũ) cho mọi người đọc được cuộc họp, trừ Khách; tải Word/PDF trừ họp Mật (BR-139) | Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-15 |
-| UC-70 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-71 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (UC-71, NFR) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-72 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-73 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-009–BR-011) | **Chair** | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-74 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | `<<extend>>` UC-69 |
-| UC-75 | Tạo bản đính chính biên bản *(Correct Issued Meeting Minutes)* — bản mới từ bản đã ban hành, bản cũ giữ nguyên | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-69 |
+| UC-69 | Xem biên bản *(View Meeting Minutes)* — bản nháp, chờ duyệt, bị trả lại chỉ Chủ tọa/Thư ký; bản đã ban hành (và bản cũ) cho mọi người đọc được cuộc họp, trừ Khách; tải Word/PDF trừ họp Mật (BR-139) | Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
+| UC-70 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-71 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (UC-71, NFR) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
+| UC-72 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | Nối thẳng actor |
+| UC-73 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-009–BR-011) | **Chair** | Đã đặc tả | Nối thẳng actor |
+| UC-74 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | Nối thẳng actor |
+| UC-75 | Tạo bản đính chính biên bản *(Correct Issued Meeting Minutes)* — bản mới từ bản đã ban hành, bản cũ giữ nguyên | Chair, Secretary | Đã đặc tả | Nối thẳng actor |
 
 ## FE-13 — Email & Thông báo trong ứng dụng *(Email & In-App Notification)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-76 | Xem thông báo *(View Notifications)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nền |
+| UC-76 | Xem thông báo *(View Notifications)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor; nền của UC-77 |
 | UC-77 | Đánh dấu đã đọc *(Mark Notifications as Read)* — gồm UC-77a Một thông báo, UC-77b Tất cả | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-76 |
-| UC-78 | Mở đối tượng từ thông báo *(Open Notification Target)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-76 |
+| UC-78 | Mở đối tượng từ thông báo *(Open Notification Target)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
 
 ## FE-15 — Báo cáo & Thống kê *(Reporting & Statistics)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-79 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-79a Xem (dải số quản lý + truy vấn theo bảng/nhóm/bộ lọc/top N, EX `400 MSG484` khi tham số không có; BR-152 nới cho dòng nhóm theo người/cuộc họp; phạm vi thấy theo BR-153, BR-151), UC-79b Xuất (đúng bảng đang xem, tệp `bao-cao-<bảng>_<từ>_<đến>.xlsx`, nhãn audit "Xuất báo cáo") | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con (SCRUM-38, 09/11/2026; truy vấn 22/11/2026, PR #488) | Độc lập (UC-79b `<<extend>>` UC-79a) |
+| UC-79 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-79a Xem (dải số quản lý + truy vấn theo bảng/nhóm/bộ lọc/top N, EX `400 MSG484` khi tham số không có; BR-152 nới cho dòng nhóm theo người/cuộc họp; phạm vi thấy theo BR-153, BR-151), UC-79b Xuất (đúng bảng đang xem, tệp `bao-cao-<bảng>_<từ>_<đến>.xlsx`, nhãn audit "Xuất báo cáo") | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con (SCRUM-38, 09/11/2026; truy vấn 22/11/2026, PR #488) | Nối thẳng actor |
 
 ## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
 
@@ -260,8 +267,8 @@ Quyết định phạm vi: [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-g
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-80 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-80a Yêu cầu xem lịch, UC-80b Tự chia sẻ lịch (luôn Mốc 1), UC-80c Trả lời chia sẻ lịch, UC-80d Thay đổi chia sẻ lịch, UC-80e Rút hoặc ngừng chia sẻ lịch, UC-80f Xem danh sách chia sẻ; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-140, BR-141) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-80a `<<extend>>` UC-81a |
-| UC-81 | Tìm giờ họp *(Find Meeting Time)* — gồm UC-81a Tìm khung giờ (tối đa 10 người ngoài người tìm), UC-81b Tạo nháp từ khung giờ, UC-81c Xem lịch được chia sẻ | Meeting Organizer | Đã đặc tả các UC con | UC-81b `<<extend>>` UC-81a, dùng lại luồng UC-13 |
+| UC-80 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-80a Yêu cầu xem lịch, UC-80b Tự chia sẻ lịch (luôn Mốc 1), UC-80c Trả lời chia sẻ lịch, UC-80d Thay đổi chia sẻ lịch, UC-80e Rút hoặc ngừng chia sẻ lịch, UC-80f Xem danh sách chia sẻ; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-140, BR-141) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | Nối thẳng actor |
+| UC-81 | Tìm giờ họp *(Find Meeting Time)* — gồm UC-81a Tìm khung giờ (tối đa 10 người ngoài người tìm), UC-81b Tạo nháp từ khung giờ, UC-81c Xem lịch được chia sẻ | Meeting Organizer | Đã đặc tả các UC con | Nối thẳng actor; UC-81b dùng lại luồng UC-13 |
 
 ---
 
