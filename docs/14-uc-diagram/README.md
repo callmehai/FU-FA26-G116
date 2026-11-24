@@ -40,9 +40,12 @@ Speaker Attribution* `<<extend>>` *View Meeting Transcript*; *Confirm Document R
   ghi âm trong lúc họp. *Take Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
   *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu. Hai mục "để BA chốt" về UC-42 → UC-65
   và UC-54 → UC-51a ở dưới vì vậy đã xong.
-- Bố cục mới, mọi trang giống nhau: actor bên trái; UC nối thẳng xếp một cột theo số UC; UC mở rộng ở cột thứ hai ngang UC
-  nền; actor ngoài (OAuth Provider, Resend Email, Cloudflare R2) bên phải. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá,
-  cạnh nối actor thêm mới có id `assoc-<actor>-<uc>`.
+- Bố cục mới, mọi trang giống nhau, để ảnh gần vuông và đọc được khi đưa vào Report: actor của trang vẽ **hai lần**, bên
+  trái và bên phải khung hệ thống (UML cho phép một actor xuất hiện nhiều lần; bản bên phải có id `<id>-2`). UC nối thẳng
+  chia hai cột theo số UC — cột trái đọc từ trên xuống, cột phải đọc từ dưới lên, nên nhóm phòng họp và bản ghi nằm cạnh
+  *Join Meeting Room* — mỗi cột nối với actor cùng bên, không đường nào cắt qua oval. UC mở rộng ở cột giữa, ngang UC nền.
+  Actor ngoài (OAuth Provider, Resend Email, Cloudflare R2) ở trên hoặc dưới khung, đi dây qua khe giữa các cột. Id ô giữ
+  nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor thêm mới có id `assoc-<actor>-<uc>`.
 
 ## Cập nhật 24/11/2026
 
