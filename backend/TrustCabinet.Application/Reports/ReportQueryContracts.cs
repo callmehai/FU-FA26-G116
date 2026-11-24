@@ -31,7 +31,7 @@ public sealed record ReportMeetingRow(
     bool ViewerOnRoster);
 
 /// <summary>
-/// One current participant (not removed, not delegated away) or one guest whose invitation stands. A guest's
+/// One current participant (not removed) or one guest whose invitation stands. A guest's
 /// <see cref="PersonKey"/> is "guest:" and the invitation id — never the email (PO 01/11/2026).
 /// </summary>
 public sealed record ReportParticipantRow(Guid MeetingId, string PersonKey, string PersonName, MeetingRole Role,

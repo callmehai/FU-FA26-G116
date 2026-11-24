@@ -39,7 +39,7 @@
 ### UC-82 – Take Meeting Notes (Ghi chú cuộc họp) — SCRUM-30
 
 Thuộc FE-05, `<<extend>>` UC-26. Sequence Diagram:
-[UC82_TakeMeetingNotes.txt](../06-sequencediagram/agenda-management/UC82_TakeMeetingNotes.txt)
+[UC82_TakeMeetingNotes.txt](../06-sequencediagram/agenda-management/UC28_TakeMeetingNotes.txt)
 
 | Mục | Nội dung |
 |---|---|

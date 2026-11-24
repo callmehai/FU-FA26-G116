@@ -90,7 +90,7 @@ Hai điểm phía ghi ảnh hưởng tới phía đọc:
 
 ### UC-13 – View Audit Log (Xem nhật ký hệ thống) — SCRUM-16
 
-Thuộc FE-03. Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt)
+Thuộc FE-03. Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC12_ViewAuditLog.txt)
 
 | Mục | Nội dung |
 |---|---|

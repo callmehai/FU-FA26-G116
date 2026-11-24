@@ -226,9 +226,6 @@
         <mxCell id="R42" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Joins" vertex="1">
           <mxGeometry height="64" width="124" x="874" y="1400" as="geometry" />
         </mxCell>
-        <mxCell id="R43" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Delegated to" vertex="1">
-          <mxGeometry height="64" width="124" x="1064" y="1040" as="geometry" />
-        </mxCell>
         <mxCell id="R44" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Invites" vertex="1">
           <mxGeometry height="64" width="124" x="640" y="620" as="geometry" />
         </mxCell>
@@ -580,16 +577,6 @@
             <Array as="points">
               <mxPoint x="266.5" y="492" />
               <mxPoint x="266.5" y="1432" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e86" edge="1" parent="1" source="MeetingParticipant" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R43">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e87" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="R43">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1126" y="1252" />
             </Array>
           </mxGeometry>
         </mxCell>

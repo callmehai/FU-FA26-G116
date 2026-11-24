@@ -24,10 +24,9 @@ Publish ghi status, history và notifications trong cùng transaction. Sau SaveC
 service commit publication trước rồi gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext.
 Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu nội dung job một lần.
 
-- Notification chỉ chọn participant có user active và `Response != Delegated`, trừ chính người
-  Publish; delegate cần participant row riêng hợp lệ. Email chọn toàn bộ participant có user active
-  theo producer SCRUM-15, gồm cả người Publish, không lọc `Response` và không tự thêm
-  `DelegatedToUserId`.
+- Notification chỉ chọn participant current có user active, trừ chính người
+  Publish (BR-046: phản hồi chỉ Accepted/Declined, không uỷ quyền). Email chọn toàn bộ participant có user active
+  theo producer SCRUM-15, gồm cả người Publish, không lọc `Response`.
 - `DeduplicationKey` là `meeting:{meetingId}:published:{userId}`.
 - Jobs Publish lưu `ToAddress`, `Subject`, `Body` (có giờ họp) và `CalendarAttachment` (`.ics` theo lịch dự kiến).
   Bốn cột email không dùng `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot`
@@ -70,7 +69,7 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
 - Reject bắt buộc reason 1–1.000 ký tự sau trim; không cho Organizer chọn chính mình làm approver hoặc tự Approve/Reject.
 - Organizer active/có `MeetingCreator` được rút WaitingApproval khi assignment thiếu, trỏ về
   Organizer, hoặc approver inactive/mất quyền. Approver khác Organizer còn hợp lệ thì không cho rút.
-- Organizer/current approver đọc full history; Secretary được gán, active/chưa ủy quyền đọc rejection reason qua history cả trước Publish, nhưng snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc timeline đã redacted sau Publish.
+- Organizer/current approver đọc full history; Secretary được gán, active đọc rejection reason qua history cả trước Publish, nhưng snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc timeline đã redacted sau Publish.
 - Publish yêu cầu đúng một Chair active và ít nhất một Secretary active; invitation response không
   ảnh hưởng readiness. Roster không đạt trả `409 MSG137`, giữ Approved và không ghi history,
   notification hoặc email job. `MSG46` chỉ còn cho meeting không còn Approved hoặc Organizer mất

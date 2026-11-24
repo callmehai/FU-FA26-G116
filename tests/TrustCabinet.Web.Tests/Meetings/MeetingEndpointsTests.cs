@@ -14,6 +14,7 @@ using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Authentication;
@@ -1247,8 +1248,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData("globalRoleOnly")]
     [InlineData("otherMeeting")]
-    [InlineData("delegated")]
-    [InlineData("delegationTarget")]
+    [InlineData("removed")]
+    [InlineData("guestRole")]
     public async Task Invalid_secretary_assignment_does_not_grant_history_access(string invalid)
     {
         var creator = GivenCreator();
@@ -1262,9 +1263,9 @@ public sealed class MeetingEndpointsTests : IDisposable
                 MeetingId = invalid == "otherMeeting" ? Guid.CreateVersion7() : meeting.Id,
                 UserId = secretary.Id,
                 User = secretary,
-                Role = MeetingRole.Secretary,
-                Response = invalid == "delegated" ? InvitationResponse.Delegated : InvitationResponse.Accepted,
-                DelegatedToUserId = invalid == "delegationTarget" ? Guid.CreateVersion7() : null,
+                Role = invalid == "guestRole" ? MeetingRole.Guest : MeetingRole.Secretary,
+                Response = InvitationResponse.Accepted,
+                AssignmentStatus = invalid == "removed" ? AssignmentStatus.Removed : AssignmentStatus.Current,
             });
         }
         _factory.Meetings.Meetings.Add(meeting);

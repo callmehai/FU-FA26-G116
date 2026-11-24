@@ -127,7 +127,7 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
     [Theory]
     [InlineData("inactive")]
     [InlineData("removed")]
-    [InlineData("delegated")]
+    [InlineData("guestRole")]
     public async Task Start_requires_active_current_secretary_but_end_does_not(string reason)
     {
         var s = await fixture.Seed();
@@ -136,7 +136,7 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
             var secretary = await db.MeetingParticipants.Include(p => p.User).SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Secretary);
             if (reason == "inactive") secretary.User.IsActive = false;
             if (reason == "removed") { secretary.AssignmentStatus = AssignmentStatus.Removed; secretary.RemovedAt = fixture.Clock.Now; secretary.RemovedById = s.Chair; }
-            if (reason == "delegated") { secretary.Response = InvitationResponse.Delegated; secretary.DelegatedToUserId = s.Member; }
+            if (reason == "guestRole") secretary.Role = MeetingRole.Guest;
             await db.SaveChangesAsync();
         }
         await Expect(await Act(s, "Start"), 409, "MSG112");

@@ -115,7 +115,7 @@ _UC gom — đặc tả nằm ở các UC con UC-84a, UC-84b, UC-84c, UC-84d, UC
 #### UC-84a – Request Calendar Share (Yêu cầu xem lịch)
 
 Thuộc FE-16, `<<extend>>` UC-85a (xin chia sẻ từ người "Chưa được chia sẻ lịch" trên màn tìm giờ).
-Sequence Diagram: [UC84a_RequestCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC84a_RequestCalendarShare.txt)
+Sequence Diagram: [UC84a_RequestCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC80a_RequestCalendarShare.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -131,7 +131,7 @@ Sequence Diagram: [UC84a_RequestCalendarShare.txt](../06-sequencediagram/calenda
 #### UC-84b – Share Calendar Directly (Chủ lịch tự chia sẻ)
 
 Thuộc FE-16. Sequence Diagram:
-[UC84b_ShareCalendarDirectly.txt](../06-sequencediagram/calendar-sharing/UC84b_ShareCalendarDirectly.txt)
+[UC84b_ShareCalendarDirectly.txt](../06-sequencediagram/calendar-sharing/UC80b_ShareCalendarDirectly.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -149,7 +149,7 @@ Thuộc FE-16. Sequence Diagram:
 Thuộc FE-16. Dùng chung một sequence cho câu trả lời của yêu cầu UC-84a, chia sẻ UC-84b và thay đổi đang chờ
 của UC-84d (mẫu gọi API ở §6).
 Sequence Diagram:
-[UC84c_RespondToCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC84c_RespondToCalendarShare.txt)
+[UC84c_RespondToCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC80c_RespondToCalendarShare.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -165,7 +165,7 @@ Sequence Diagram:
 #### UC-84d – Change Calendar Share (Thay đổi chia sẻ)
 
 Thuộc FE-16. Sequence Diagram:
-[UC84d_ChangeCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC84d_ChangeCalendarShare.txt)
+[UC84d_ChangeCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC80d_ChangeCalendarShare.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -181,7 +181,7 @@ Thuộc FE-16. Sequence Diagram:
 #### UC-84e – Withdraw or End Calendar Share (Rút hoặc ngừng chia sẻ)
 
 Thuộc FE-16. Sequence Diagram:
-[UC84e_WithdrawOrEndCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC84e_WithdrawOrEndCalendarShare.txt)
+[UC84e_WithdrawOrEndCalendarShare.txt](../06-sequencediagram/calendar-sharing/UC80e_WithdrawOrEndCalendarShare.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -197,7 +197,7 @@ Thuộc FE-16. Sequence Diagram:
 #### UC-84f – View Calendar Shares (Xem danh sách chia sẻ)
 
 Thuộc FE-16. Sequence Diagram:
-[UC84f_ViewCalendarShares.txt](../06-sequencediagram/calendar-sharing/UC84f_ViewCalendarShares.txt)
+[UC84f_ViewCalendarShares.txt](../06-sequencediagram/calendar-sharing/UC80f_ViewCalendarShares.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -220,7 +220,7 @@ _UC gom — đặc tả nằm ở các UC con UC-85a, UC-85b… bên dưới._
 
 Thuộc FE-16 (tab Tìm khung giờ). Từ người hiện “Chưa được chia sẻ lịch” có thể bắt đầu UC-84a.
 Sequence Diagram:
-[UC85a_FindMeetingTimeSlots.txt](../06-sequencediagram/calendar-sharing/UC85a_FindMeetingTimeSlots.txt)
+[UC85a_FindMeetingTimeSlots.txt](../06-sequencediagram/calendar-sharing/UC81a_FindMeetingTimeSlots.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -237,7 +237,7 @@ Sequence Diagram:
 
 Thuộc FE-16, `<<extend>>` UC-85a (từ một khung đã tìm). Tạo nháp là tạo cuộc họp Draft rồi đi luồng duyệt thường (UC-14).
 Sequence Diagram:
-[UC85b_CreateDraftMeetingFromSlot.txt](../06-sequencediagram/calendar-sharing/UC85b_CreateDraftMeetingFromSlot.txt)
+[UC85b_CreateDraftMeetingFromSlot.txt](../06-sequencediagram/calendar-sharing/UC81b_CreateDraftMeetingFromSlot.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -253,7 +253,7 @@ Sequence Diagram:
 #### UC-85c – View Shared Calendar (Xem lịch được chia sẻ)
 
 Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
-[UC85c_ViewSharedCalendar.txt](../06-sequencediagram/calendar-sharing/UC85c_ViewSharedCalendar.txt)
+[UC85c_ViewSharedCalendar.txt](../06-sequencediagram/calendar-sharing/UC81c_ViewSharedCalendar.txt)
 
 | Mục | Nội dung |
 |---|---|

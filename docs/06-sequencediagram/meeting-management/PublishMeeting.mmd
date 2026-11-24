@@ -51,8 +51,7 @@ sequenceDiagram
         Service-->>API: 409 MSG46
         API-->>Page: Tải lại trạng thái hiện tại
     else Được phép công bố
-        Service->>Service: Chọn recipient notification: user active và Response khác Delegated (code hiện tại)
-        Note over Service: DelegatedToUserId riêng không thêm recipient notification.
+        Service->>Service: Chọn recipient notification: participant current có user active (BR-046: chỉ Accepted/Declined, không uỷ quyền)
         Service->>DB: Đổi Published, thêm history và participant notifications
         Service->>DB: SaveChanges khi transaction còn mở
         Service->>Producer: QueueForPublishedMeetingAsync(meetingId)
@@ -60,7 +59,7 @@ sequenceDiagram
             Producer-->>Service: Trả 0, không tạo job email mới
         else SMTP được bật
             Producer->>DB: Đọc meeting Published và participant có user active
-            DB-->>Producer: Meeting và người nhận, gồm cả row Response=Delegated
+            DB-->>Producer: Meeting và người nhận (toàn bộ participant có user active, không lọc Response)
             Producer->>DB: Persist Subject, Body, .ics, DeduplicationKey và Queued jobs
             Note over Producer,DB: Key=meeting:{meetingId}:published:{userId}, nội dung lưu một lần.
             Note over DB: EmailMessage có Status=Queued và SentAt=null.
