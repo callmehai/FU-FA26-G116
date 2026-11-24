@@ -20,7 +20,7 @@
           "preconditions": [
             "An Online meeting \"[SYS] Họp trực tuyến WF-05\" in progress with Chủ toạ Member A, Thư ký Member B, Members C and E and a guest; the media server is running; camera and microphone allowed."
           ],
-          "aiNote": "BF-03 · UC-37 · 5.2: ROOM_FT01, ROOM_FT02, ROOM_FT49 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-03 · UC-43 · 5.2: ROOM_FT01, ROOM_FT02, ROOM_FT49 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -45,7 +45,7 @@
           "preconditions": [
             "TC01 passed; the invitation and the code reach a mailbox the tester can read."
           ],
-          "aiNote": "BF-03 · UC-04, UC-37 · BR-150, BR-152 · 5.2: ROOM_FT17, ROOM_FT51 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space, app 6baba24f), the only environment with the speech worker, the local language model, Google Sign-In and real mail.",
+          "aiNote": "BF-03 · UC-04, UC-43 · BR-049–BR-052 · 5.2: ROOM_FT17, ROOM_FT51 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -71,7 +71,7 @@
           "preconditions": [
             "TC01 passed; no open speaking request."
           ],
-          "aiNote": "BF-03 · UC-79 · BR-337, BR-338 · 5.2: ROOM_FT73, ROOM_FT75, ROOM_FT76 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-03 · UC-50 · BR-104–BR-106 · 5.2: ROOM_FT73, ROOM_FT75, ROOM_FT76 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -94,7 +94,7 @@
           "preconditions": [
             "TC01 passed; a person speaking into a real microphone."
           ],
-          "aiNote": "BF-03 · UC-44a · ADR-0040 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space, app 6baba24f), the only environment with the speech worker, the local language model, Google Sign-In and real mail.",
+          "aiNote": "BF-03 · UC-52a · ADR-0040 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -118,7 +118,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-03 · UC-38, UC-22 · BR-143 · MSG331 · 5.2: ROOM_FT24, ROOM_FT26, ROOM_FT28 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-03 · UC-44, UC-21 · BR-025 · MSG331 · 5.2: ROOM_FT24, ROOM_FT26, ROOM_FT28 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

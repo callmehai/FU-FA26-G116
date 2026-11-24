@@ -335,9 +335,19 @@ def build_workbook(p, target):
 
     tc['D3'] = p['project']
     tc['D4'] = p['projectCode']
-    # Keep the template's Test Environment (D5) and Execution note (B6) as-is:
-    # plan.json holds the run environment for agents; the printed TEST CASE LIST
-    # stays standard like the initial template with no extra tall/empty rows.
+    # 5.3 prints the real Round 1 environment (plan.json) and a 5.3-specific
+    # execution note, not the integration template's leftover text (old role
+    # names, "the attendee UI is not implemented", "remain in Report 5.2.2").
+    tc['D5'] = p['environment']
+    tc['B6'] = ('Execution: run each workflow in order; a later case runs on data left by an earlier one — '
+                'check each precondition first. Round 1: Passed = ran on the app with evidence in the hidden AI context column; '
+                'Failed = ran with Bug in AI context; Pending = not run; N/A = blocked by a failed predecessor with the reason in AI context. '
+                'Enter actual outcome, test date and tester for each completed round; the Note column stays empty.')
+    from openpyxl.styles import Alignment
+    tc['D5'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
+    tc['B6'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
+    tc.row_dimensions[5].height = height_for([(tc['D5'].value, 90)])
+    tc.row_dimensions[6].height = height_for([(tc['B6'].value, 90)])
     row_style = styles_of(tc, 9, 6)
     clear_from(tc, 9)
     for i, (wf, n) in enumerate(built, 1):

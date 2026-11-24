@@ -20,7 +20,7 @@
           "preconditions": [
             "WF-02 to WF-08 were run; a Draft and a Published \"[SYS] WF-10\" meeting with Member C as member."
           ],
-          "aiNote": "BF-01 · UC-17 · BR-29 · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-01 · UC-16 · BR-016, BR-017 · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -45,7 +45,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-01 · UC-16 · BR-29 · AGENTS.md 403/404 rule · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-01 · UC-15 · BR-016, BR-017 · AGENTS.md 403/404 rule · 5.2: MEET_FT36 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -70,7 +70,7 @@
           "preconditions": [
             "WF-03 and WF-08 were run."
           ],
-          "aiNote": "BF-01 · UC-58, UC-32c · BR-29, BR-275 · 5.2: DOC_FT79 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-01 · UC-69, UC-35b · BR-016, BR-017, BR-079, BR-080 · 5.2: DOC_FT79 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -92,7 +92,7 @@
           "preconditions": [
             "A guest session (code read from a real mailbox)."
           ],
-          "aiNote": "BF-01 · UC-04 · BR-150, BR-152, BR-180 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space, app 6baba24f), the only environment with the speech worker, the local language model, Google Sign-In and real mail.",
+          "aiNote": "BF-01 · UC-04 · BR-049–BR-052, UC-04 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

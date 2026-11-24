@@ -3,16 +3,16 @@
   "projectCode": "SEP490-G116",
   "file": "Report5.3_System_Test_FRs.xlsx",
   "title": "SYSTEM TEST REPORT DOCUMENT",
-  "environment": "1. TrustCabinet test server (Staging build of app) or local build of the same commit. Round 1 (23/11/2026): app commit 6baba24f, by hand on the app server and by the QA runner on a local build; changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504)\n2. Database: PostgreSQL 17\n3. LiveKit server, speech worker, local language model for the AI steps\n4. Google Chrome (latest) and Microsoft Edge on desktop; Chrome on an Android phone (390px)\n5. Mailbox the tester can read for invitation and notification emails",
+  "environment": "1. TrustCabinet test server (Staging build of app) or local build of the same commit. Round 1 (23-24/11/2026): QA runner on a local build of app 6baba24f (+docs); hand runs on the app server — 23/11 daytime Staging app e7dc0e7a (deployed 04:12Z, Deployments 7990246591), 24/11 Staging app 1acb600a (deployed 09:00Z, Deployments 8023165204); changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504)\n2. Database: PostgreSQL 17\n3. LiveKit server, speech worker, local language model for the AI steps\n4. Google Chrome (latest) and Microsoft Edge on desktop; Chrome on an Android phone (390px)\n5. Mailbox the tester can read for invitation and notification emails",
   "cover": {
     "creator": "TrustCabinet Team",
     "issueDate": "2026-11-22",
-    "version": "1.0",
+    "version": "1.1",
     "changes": [
       {"date": "2026-11-22", "version": "v1.0", "item": "All workflows", "type": "A",
        "description": "Create System Test file from the business flows BF-01 to BF-04", "reference": "docs/09-bussinessflow"},
       {"date": "2026-11-24", "version": "v1.1", "item": "WorkFlow1, WorkFlow4", "type": "M",
-       "description": "Review PR 507: add password reset (UC-07) and correction of issued minutes (UC-83); correct WF04 TC01, TC04, TC05, WF06 TC02, WF07 TC02 to match the app; short Note, detail in a hidden AI context column", "reference": "PR 507"}
+       "description": "Review PR 507: add password reset (UC-07) and correction of issued minutes (UC-75); correct WF04 TC01, TC04, TC05, WF06 TC02, WF07 TC02 to match the app; short Note, detail in a hidden AI context column", "reference": "PR 507"}
     ]
   },
   "workflows": [

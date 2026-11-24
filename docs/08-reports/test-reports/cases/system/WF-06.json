@@ -18,7 +18,7 @@
           "preconditions": [
             "Member C has no Voice ID consent."
           ],
-          "aiNote": "BF-04 · UC-81b · ADR-0027 · MSG305 · 5.2: TRANS_FT60, TRANS_FT61 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-04 · UC-56b · ADR-0027 · MSG305 · 5.2: TRANS_FT60, TRANS_FT61 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -44,7 +44,7 @@
           "preconditions": [
             "TC01 passed; a person reading aloud; the speech worker computes the voice embedding."
           ],
-          "aiNote": "BF-04 · UC-81c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space, app 6baba24f), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Expected corrected per review PR 507: on the UI \"Bắt đầu ghi\" and \"Lưu giọng mẫu\" are disabled until the agreement is ticked, so MSG483 is reached only by calling the API without personAgreed; the QA runner did that on the local build and got 400 MSG483.",
+          "aiNote": "BF-04 · UC-56c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Expected corrected per review PR 507: on the UI \"Bắt đầu ghi\" and \"Lưu giọng mẫu\" are disabled until the agreement is ticked, so MSG483 is reached only by calling the API without personAgreed; the QA runner did that on the local build and got 400 MSG483. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -66,7 +66,7 @@
           "preconditions": [
             "TC02 passed; the speech worker is running."
           ],
-          "aiNote": "BF-04 · UC-45, UC-46b · ADR-0074 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space, app 6baba24f), the only environment with the speech worker, the local language model, Google Sign-In and real mail.",
+          "aiNote": "BF-04 · UC-54, UC-55b · ADR-0074 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -90,7 +90,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-04 · UC-81f · Law 91/2025/QH15 · MSG306 · 5.2: TRANS_FT67 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-04 · UC-56f · Law 91/2025/QH15 · MSG306 · 5.2: TRANS_FT67 · Evidence: QA run SYS-WF06 20261123-065345-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

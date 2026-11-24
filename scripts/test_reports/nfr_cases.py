@@ -236,7 +236,7 @@ def cmd_build(a):
         print(f'dry run; add --overwrite to write {target.relative_to(ROOT)}')
         return 0
     if target.exists():
-        bak = target.with_name(f"{target.name}.bak-{datetime.now():%Y%m%d-%H%M%S}")
+        bak = target.with_name(f"{target.stem}.bak-{datetime.now():%Y%m%d-%H%M%S}{target.suffix}")
         shutil.copy2(target, bak)
         print(f'backup  {bak.relative_to(ROOT)}')
     build_book(p).save(target)
