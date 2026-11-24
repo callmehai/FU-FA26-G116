@@ -428,8 +428,8 @@ docker run --rm --network trustcabinet-test_default curlimages/curl:8.11.1 -s -X
 Chuyển bản ghi thành chữ, Voice ID và ghi theo micro từng người đều cần worker nhận dạng giọng nói
 ([`workers/speech`](../workers/speech/README.md), [ADR-0026](../docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
 Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy
-nổi**: bật trên máy 1 GB thì server hết RAM. Có hai cách, chỉ khác nhau ở `deploy/.env`. Server test chạy
-**cách A** từ 01/11/2026.
+nổi**: bật trên máy 1 GB thì server hết RAM. Có ba cách, chỉ khác nhau ở `deploy/.env`. Server test chạy
+**cách A** từ 01/11/2026; **cách C** (Mac chạy trước, server dự phòng) là A cộng B.
 
 Dù chọn cách nào, đặt khoá mã hoá giọng mẫu **một lần** rồi giữ nguyên (đổi khoá là mất mọi giọng mẫu đã lưu):
 
@@ -501,6 +501,75 @@ các chức năng giọng nói báo `MSG312` như chưa bật.
    ```
 
 Muốn quay về cách A thì đổi `SPEECH_URL` thành `http://speech:8090` và thêm `COMPOSE_PROFILES=speech`.
+
+#### Cách C: Mac chạy trước, worker trên server dự phòng
+
+Mac M1 chạy thẳng bằng venv nhanh hơn server 2 vCPU 5–10 lần (RTF 0,07–0,10 so với 0,2–0,26), nhưng không bật suốt.
+Cách C để Mac làm máy chính và worker của cách A làm dự phòng ([ADR-0081](../docs/05-decisions/0081-chuyen-chu-chay-may-mac-truoc-server-du-phong.md)):
+
+- Mac không nhận kết nối trong 5 giây (tắt, ngủ, rời Tailscale), hoặc kết nối đứt khi đang chạy, thì app gửi lại cả
+  tệp âm thanh sang worker trên server, và **2 phút** sau mới hỏi lại Mac. Trong 2 phút đó mọi việc đi thẳng sang
+  server, câu nói theo micro không phải chờ 5 giây nữa.
+- Mac đã trả lời thì không chuyển, kể cả khi đó là lỗi (`401` sai khoá, `400` tệp hỏng, `500`): lỗi đó cần sửa, không
+  che đi. Sai khoá ở Mac thì mọi việc báo lỗi cho tới khi sửa khoá, không tự về server.
+- Thanh tiến độ hỏi đúng máy đang chạy bản ghi. Mỗi lần chuyển, log app có một dòng
+  `Speech primary unreachable ..., using backup`.
+- Voice ID không đổi: hai máy chạy cùng model đã ghim mã băm, nên mẫu giọng thu lúc Mac bật vẫn so được với bản ghi chuyển
+  chữ trên server và ngược lại. Mac phải chạy **đúng bản `workers/speech` của nhánh `app`**; lệch model thì mẫu giọng chỉ
+  không được so, không so nhầm.
+
+Âm thanh mọi cuộc họp, kể cả Mật, và mẫu giọng đi sang Mac khi Mac bật (qua Tailscale, mã hoá; worker không lưu gì).
+Giữ Mac như giữ server: có mật khẩu, worker chỉ nghe trên IP Tailscale, có khoá.
+
+1. **Server**: làm xong cách A (máy 4 GB, `COMPOSE_PROFILES=speech`) và bước 1–2 của cách B (Tailscale ở cả hai máy).
+2. **Mac, một lần**: cài và tải model (Python 3.12 qua [uv](https://docs.astral.sh/uv/), `ffmpeg` để đọc webm, m4a, mp3):
+
+   ```bash
+   brew install uv ffmpeg
+   git switch app && git pull                 # trong thư mục repo trên Mac
+   cd workers/speech
+   uv venv -p 3.12 .venv && uv pip install -p .venv -r requirements.txt
+   .venv/bin/python fetch_models.py      # ~230 MB vào ~/.cache/trustcabinet-speech/models, kiểm tra mã băm
+   ```
+
+   Mỗi lần `workers/speech` trên `app` đổi (nhất là `models.manifest` hay `requirements.txt`): `git pull`, chạy lại hai
+   lệnh `uv pip install` và `fetch_models.py`, rồi khởi động lại worker.
+3. **Mac, mỗi lần chạy**: worker nghe trên **IP Tailscale** của Mac, không phải `0.0.0.0`: ở wifi quán cà phê,
+   `0.0.0.0` mở worker cho mọi máy cùng mạng. `caffeinate -i` giữ máy không ngủ khi đang chạy:
+
+   ```bash
+   cd workers/speech                          # trong thư mục repo trên Mac
+   SPEECH_HOST=$(tailscale ip -4) SPEECH_PORT=8090 SPEECH_API_KEY=<khoá> caffeinate -i .venv/bin/python -m speech
+   ```
+
+   `SPEECH_THREADS` để mặc định (4 luồng trên M1). Log in `listening on 100.x.y.z:8090, bearer auth on` là đúng.
+
+   Muốn worker tự chạy khi đăng nhập thì tạo một LaunchAgent trong `~/Library/LaunchAgents/` (không có sẵn trong repo):
+   `ProgramArguments` là `caffeinate -i <đường dẫn>/.venv/bin/python -m speech`, `WorkingDirectory` là thư mục
+   `workers/speech`, `EnvironmentVariables` đặt `SPEECH_HOST` (ghi thẳng IP `100.x.y.z`, launchd không chạy được
+   `$(…)`), `SPEECH_API_KEY` và `PATH` có `/opt/homebrew/bin` (để thấy `ffmpeg`), `KeepAlive` bật để launchd chạy lại
+   khi worker thoát (lúc Tailscale chưa lên, worker không nghe được trên IP đó và thoát ngay). Nạp bằng
+   `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<tên>.plist`.
+4. **Server**: thêm vào `deploy/.env` (giữ `COMPOSE_PROFILES=speech`), rồi khởi động lại app:
+
+   ```bash
+   SPEECH_URL=http://100.x.y.z:8090
+   SPEECH_BACKUP_URL=http://speech:8090
+   SPEECH_API_KEY=<cùng khoá ở bước 3>
+   ```
+
+   ```bash
+   curl -s http://100.x.y.z:8090/health && cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
+   ```
+
+   Worker trong Docker không đặt khoá nên nhận request mang khoá của Mac. Hai máy phải báo cùng mã `embedding` trong
+   `/health`; so với worker trên server:
+
+   ```bash
+   docker compose -f deploy/docker-compose.yml exec speech python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8090/health').read().decode())"
+   ```
+
+Bỏ cách C thì xoá `SPEECH_BACKUP_URL` và đổi `SPEECH_URL` về `http://speech:8090` (cách A).
 
 ### 11. Máy AI viết dự thảo biên bản (tuỳ chọn)
 
