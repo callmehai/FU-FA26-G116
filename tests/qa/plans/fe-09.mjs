@@ -937,7 +937,7 @@ export default {
       title: 'Họp kết hợp đang diễn ra (ADR-0072): có bản ghi trực tiếp theo micro, không có "Tải tệp lên", trang cuộc họp không còn thẻ mic phòng (công tắc nằm trong phòng họp)',
       steps: ['thuky@ mở tab Bản ghi của cuộc họp kết hợp Đang diễn ra, chưa có bản ghi phòng'],
       expected:
-        'Thẻ "Bản ghi trực tiếp" (micro từng người); phần "Bản ghi" ghi "Chưa có bản ghi.", không có nút "Tải tệp lên"; KHÔNG có thẻ ghi âm góc màn hình khi phòng họp dùng được (ADR-0072 điểm 2, thay ADR-0040 điểm 4); API canUpload false, canRecord true. Lời gợi ý "Bật mic phòng ở ô góc màn hình." còn hiện dù không có ô (nghi lỗi nhỏ)',
+        'Thẻ "Bản ghi trực tiếp" (micro từng người); phần "Bản ghi" ghi "Chưa có bản ghi.", không có nút "Tải tệp lên"; KHÔNG có thẻ ghi âm góc màn hình khi phòng họp dùng được (ADR-0072 điểm 2, thay ADR-0040 điểm 4); API canUpload false, canRecord true. Lời gợi ý "Bật mic phòng trong phòng họp trực tuyến."',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'hyRun')
         await clean(qa, m.id)
@@ -945,11 +945,11 @@ export default {
         await qa.expect(qa.page.getByRole('heading', { name: /Bản ghi trực tiếp/ })).toBeVisible()
         const sec = roomSection(qa)
         await qa.expect(sec.getByText('Chưa có bản ghi.')).toBeVisible()
-        await qa.expect(sec.getByText('Bật mic phòng ở ô góc màn hình.')).toBeVisible()
+        await qa.expect(sec.getByText('Bật mic phòng trong phòng họp trực tuyến.')).toBeVisible()
         await qa.expect(sec.getByRole('button', { name: 'Tải tệp lên' })).toHaveCount(0)
         await qa.page.waitForTimeout(2000)
         await qa.expect(micCard(qa)).toHaveCount(0)
-        qa.note('Họp kết hợp: không có thẻ mic nổi trên trang cuộc họp (ADR-0072); gợi ý "Bật mic phòng ở ô góc màn hình." vẫn hiện')
+        qa.note('Họp kết hợp: không có thẻ mic nổi trên trang cuộc họp (ADR-0072); gợi ý "Bật mic phòng trong phòng họp trực tuyến."')
         await settled(qa)
         await qa.shot('ket-hop-chi-mic-phong', { fullPage: true })
         await noSidewaysScroll(qa)
