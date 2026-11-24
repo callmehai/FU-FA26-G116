@@ -13,6 +13,8 @@ import { randomBytes, randomUUID } from 'node:crypto'
 
 const RUN = Date.now().toString(36)
 const DOMAIN = 'trustcabinet.local'
+const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
+const SECRETARY_EMAIL = 'thuky@trustcabinet.local'
 const MSG01 = 'Email hoặc mật khẩu không đúng.'
 const MSG01_REFRESH = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
 const MSG02 = 'Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.'
@@ -56,7 +58,10 @@ async function noRawCodes(qa) {
 }
 
 async function settled(qa) {
-  await qa.page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
+  // Infinite animations (the pinging call-to-action) never finish: only finite ones count as "still running".
+  await qa.page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+  )
 }
 
 const emailField = (qa) => qa.page.getByLabel('Email')
@@ -84,6 +89,40 @@ async function bearer(qa) {
   const res = await qa.context.request.post('/api/auth/refresh')
   qa.expect(res.status(), 'refresh for a bearer token').toBe(200)
   return (await res.json()).accessToken
+}
+
+/** A bearer token for the seed Secretary, by direct login (for criteria whose browser has no session). */
+async function secretaryToken(qa) {
+  const res = await qa.context.request.post('/api/auth/login', { data: { email: SECRETARY_EMAIL, password: PASSWORD } })
+  qa.expect(res.status(), 'secretary sign-in').toBe(200)
+  return (await res.json()).accessToken
+}
+
+/** Messages mailpit (http://localhost:8025) received for `to`: id and subject, newest first. */
+async function mailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+/** How many messages to `to` have a subject matching `re`. */
+async function mailCount(to, re) {
+  return (await mailpit(to)).filter((x) => re.test(x.subject)).length
+}
+
+/** The six-digit code of the newest "Mã xác minh" email to a Guest. */
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await mailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
 }
 
 /** A Published meeting the QA account (as Member) can open, created once per run. */
@@ -172,7 +211,7 @@ async function ensureGuestInvitation(qa) {
   const parts = await sec.get(`/api/meetings/${meetingId}/participants?pageSize=100`)
   const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
   const res = await qa.context.request.post(`/api/meetings/${meetingId}/guest-invitations`, {
-    headers: { Authorization: `Bearer ${await bearer(qa)}`, 'If-Match': etag },
+    headers: { Authorization: `Bearer ${await secretaryToken(qa)}`, 'If-Match': etag },
     data: { invitedName: qa.name('Khách FE-01'), email: GUEST_EMAIL },
   })
   qa.expect(res.status(), `guest invitation: ${await res.text()}`).toBe(201)
@@ -975,6 +1014,130 @@ export default {
         await qa.shot('loi-moi-da-thu-hoi')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
+      },
+    },
+    {
+      // AUTH_FT14: the access token lives 15 minutes; the open tab must keep working by silently refreshing it.
+      id: 'AC26',
+      role: 'secretary',
+      devices: ['desktop'],
+      title: 'Tab mở hơn 15 phút không thao tác: bấm sang mục khác vẫn tải bình thường, refresh token 200 (AUTH_FT14)',
+      steps: ['Đăng nhập thuky@, mở /calendar, để yên 16 phút', 'Bấm "Cuộc họp" ở sidebar'],
+      expected:
+        'Trang Cuộc họp tải dữ liệu bình thường, không về đăng nhập, không lỗi; POST /api/auth/refresh 200; không cuộn ngang',
+      async run(qa) {
+        await qa.goto('/calendar')
+        await qa.expect(qa.page).not.toHaveURL(/\/login/)
+        const refreshed = qa.page.waitForResponse(
+          (r) => r.url().endsWith('/api/auth/refresh') && r.request().method() === 'POST',
+          { timeout: 20 * 60_000 },
+        )
+        await new Promise((r) => setTimeout(r, 16 * 60_000))
+        await qa.page.getByRole('link', { name: 'Cuộc họp' }).first().click()
+        const res = await refreshed
+        qa.expect(res.status()).toBe(200)
+        await qa.expect(qa.page).toHaveURL(/\/mgmt\/meetings/)
+        await qa.expect(qa.page.getByRole('heading', { level: 1, name: 'Danh sách cuộc họp' })).toBeVisible()
+        await settled(qa)
+        await qa.shot('sau-15-phut')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      },
+    },
+    {
+      // AUTH_FT23: five wrong guest codes lock the code; the right one cannot be used; resending gives a new working code.
+      id: 'AC27',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Nhập sai mã xác minh Khách 5 lần thì khoá mã, mã đúng cũng không dùng được; gửi lại mã mới thì vào được (AUTH_FT23)',
+      steps: [
+        'Thư ký mời Khách mới (email riêng cho lần chạy) vào cuộc họp Đã công bố',
+        'Mở link trong thư mời, nhập 5 mã sai',
+        'Nhập mã đúng, rồi "Gửi lại mã" và nhập mã mới',
+      ],
+      expected:
+        'Sau lần sai thứ 5: "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới." (MSG372), nút "Xác minh" khoá; mã đúng cũng không qua; mã mới vào được form "Thông tin hiển thị"',
+      async run(qa) {
+        const email = `qa-khach-ft23-${RUN}-${qa.device}@example.test`
+        const sec = await qa.api('secretary')
+        const base = await findGuestInvitation(qa)
+        const meetingId = base ? base.meetingId : (await ensureGuestInvitation(qa)).meetingId
+        const parts = await sec.get(`/api/meetings/${meetingId}/participants?pageSize=100`)
+        const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+        const invited = await qa.context.request.post(`/api/meetings/${meetingId}/guest-invitations`, {
+          headers: { Authorization: `Bearer ${await secretaryToken(qa)}`, 'If-Match': etag },
+          data: { invitedName: qa.name('Khách FT23'), email },
+        })
+        qa.expect(invited.status(), `guest invitation: ${await invited.text()}`).toBe(201)
+        let link = null
+        await qa.expect
+          .poll(
+            async () => {
+              const box = await mailpit(email)
+              for (const m of box) {
+                const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+                // Match on the raw text: collapsing every whitespace run glues the next line
+                // ("Người tổ chức: …") onto the token. Only a line break inside the link is joined.
+                const raw = full.Text ?? ''
+                const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+                const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+                if (found) {
+                  link = found[0]
+                  return link
+                }
+              }
+              return null
+            },
+            { timeout: 90_000 },
+          )
+          .not.toBeNull()
+        const u = new URL(link)
+        await qa.goto(u.pathname + u.hash)
+        await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+        const real = await guestCode(email)
+        qa.expect(real, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+        // A code that is certainly wrong but still six digits.
+        const wrong = ((parseInt(real[0], 10) + 1) % 10).toString() + real.slice(1)
+        const code = wrong === real ? '111111' : wrong
+        const err = qa.page.locator('#guest-code-note.field-error')
+        const locked = 'Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.'
+        // Each wrong code is one counted attempt: wait for the note to move on before the next press,
+        // otherwise the button is still busy and the click is dropped.
+        let lockedNow = false
+        for (let i = 0; i < 8 && !lockedNow; i++) {
+          await qa.page.getByLabel('Chữ số 1').fill(code)
+          await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+          lockedNow = await qa.expect
+            .poll(async () => (await err.innerText().catch(() => '')).includes(locked) ? 'locked' : 'trying', { timeout: 10_000 })
+            .not.toBe('trying')
+            .then(() => true)
+            .catch(() => false)
+        }
+        await qa.expect(err).toContainText(locked, { timeout: 15_000 })
+        await qa.shot('ma-bi-khoa')
+        // The app keeps "Xác minh" pressable after the lock (the server answers, it does not hide the button):
+        // the right code must still not get through, and the locked note must stay.
+        await qa.page.getByLabel('Chữ số 1').fill(real)
+        await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+        await qa.expect(err).toContainText(locked, { timeout: 15_000 })
+        await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toHaveCount(0)
+        await qa.expect(qa.page).toHaveURL(/\/guest\//)
+        const resend = qa.page.getByRole('button', { name: /^Gửi lại mã/ })
+        await qa.expect(resend).toBeEnabled({ timeout: 90_000 })
+        await resend.click()
+        let fresh = real
+        const until = Date.now() + 90_000
+        while (fresh === real && Date.now() < until) {
+          await new Promise((r) => setTimeout(r, 2000))
+          fresh = await guestCode(email)
+        }
+        qa.expect(fresh, 'no new code arrived').not.toBe(real)
+        await qa.page.getByLabel('Chữ số 1').fill(fresh)
+        await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+        await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+        await qa.expect(qa.page.getByRole('button', { name: 'Vào cuộc họp' })).toBeVisible()
+        await qa.shot('ma-moi-vao-duoc')
+        await noSidewaysScroll(qa)
       },
     },
   ],

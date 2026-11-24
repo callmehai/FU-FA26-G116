@@ -1651,5 +1651,71 @@ export default {
         )
       },
     },
+    {
+      // ROOM_FT45: the Chair ends a speaking turn from the row; the member's button goes back to "Raise hand".
+      id: 'AC29',
+      role: 'chair',
+      devices: ['desktop'],
+      title: 'Chủ toạ kết thúc lượt đang nói từ dòng trong hàng đợi: hộp xác nhận đúng câu, xong lượt rời hàng đợi, nút của người nói về "Giơ tay" (ROOM_FT45)',
+      steps: [
+        'Thành viên vào phòng và giơ tay (cửa sổ thứ hai), Chủ toạ mời + bắt đầu (API)',
+        'Chủ toạ mở Phát biểu, bấm "Kết thúc" ở dòng của Thành viên, xác nhận "Kết thúc lượt"',
+      ],
+      expected:
+        'Hộp "Kết thúc lượt phát biểu" nói "Kết thúc lượt của <tên>? Thời gian nói được giữ cho biên bản."; sau xác nhận dòng rời hàng đợi ("Chưa có ai giơ tay."); nút của Thành viên về "Giơ tay"',
+      run: guarded(async (qa) => {
+        const m = await reused(qa, 'live')
+        const u = await users()
+        const queueOf = (who) => get(who, `/api/meetings/${m.id}/speaking-requests`)
+        const q = (id) => `/api/meetings/${m.id}/speaking-requests/${id}`
+        for (const r of (await queueOf('chair')).body?.requests ?? []) {
+          if (r.status === 'Speaking' || r.status === 'Invited') await post('chair', `${q(r.id)}/finish`)
+          else if (r.status === 'Queued') await post('chair', `${q(r.id)}/decline`)
+        }
+        await setPrefs(qa.context, { mic: false, cam: false })
+        await openLobby(qa, m)
+        await joinRoom(qa)
+        const member = await person(qa, 'member')
+        await openLobby(qa, m, member)
+        await joinRoom(qa, member)
+        const raise = controls(member).getByRole('button', { name: 'Giơ tay' })
+        await qa.expect(raise).toBeVisible({ timeout: 15_000 })
+        await raise.click()
+        let myId = null
+        await qa.expect
+          .poll(async () => { myId = (await queueOf('member')).body?.myRequestId ?? null; return myId; }, { timeout: 30_000 })
+          .not.toBeNull()
+        const qstate = (await queueOf('chair')).body
+        qa.note(`queue: ${JSON.stringify((qstate.requests ?? []).map((r) => [r.id, r.status, r.displayName]))}; mine=${myId}`)
+        qa.expect((await post('chair', `${q(myId)}/invite`)).status, 'invite').toBe(200)
+        // "Bắt đầu phát biểu" lives in the member's own speaking panel, not in the room footer.
+        const memberPanel = member.getByRole('complementary', { name: 'Phát biểu' })
+        await qa.expect(member.getByText('Đến lượt bạn phát biểu')).toBeVisible({ timeout: 15_000 })
+        // The member is a separate desktop context even when the criterion runs on a phone: click, never tap.
+        await controls(member).getByRole('button', { name: 'Phát biểu' }).click()
+        const start = memberPanel.getByRole('button', { name: 'Bắt đầu phát biểu' })
+        await qa.expect(start).toBeVisible({ timeout: 15_000 })
+        await start.click()
+        const speakingButton = controls(qa.page).getByRole('button', { name: 'Phát biểu' })
+        await press(qa, speakingButton)
+        const panel = qa.page.getByRole('complementary', { name: 'Phát biểu' })
+        const row = panel.getByRole('listitem').filter({ hasText: u.member.name })
+        await qa.expect(row).toBeVisible({ timeout: 15_000 })
+        await qa.shot('luot-dang-noi')
+        await press(qa, row.getByRole('button', { name: 'Kết thúc', exact: true }))
+        const dialog = panel.getByRole('dialog')
+        await qa.expect(dialog.getByText('Kết thúc lượt phát biểu')).toBeVisible({ timeout: 10_000 })
+        await qa.expect(dialog.getByText(`Kết thúc lượt của ${u.member.name}?`)).toBeVisible()
+        await qa.expect(dialog.getByText('Thời gian nói được giữ cho biên bản.')).toBeVisible()
+        await qa.shot('xac-nhan-ket-thuc-luot')
+        await press(qa, dialog.getByRole('button', { name: 'Kết thúc lượt', exact: true }))
+        await qa.expect(row).toHaveCount(0, { timeout: 10_000 })
+        await qa.expect(panel.getByText('Chưa có ai giơ tay.')).toBeVisible({ timeout: 15_000 })
+        await qa.expect(controls(member).getByRole('button', { name: 'Giơ tay' })).toBeVisible({ timeout: 15_000 })
+        await qa.shot('het-luot-ve-gio-tay')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      }),
+    },
   ],
 }
