@@ -3,8 +3,8 @@ using TrustCabinet.Domain.CalendarSharing;
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
 /// <summary>
-/// UC-85a steps 3–4 — the slots a search proposes: working hours, lunch, past starts and the step (BR-422, D15), unknown
-/// days (BR-415), common slots versus the most people free (AF-1), and the 200-slot cap.
+/// UC-81a steps 3–4 — the slots a search proposes: working hours, lunch, past starts and the step (UC-81a, D15), unknown
+/// days (BR-144, BR-145), common slots versus the most people free (AF-1), and the 200-slot cap.
 /// </summary>
 public sealed class MeetingSlotFinderTests
 {
@@ -30,7 +30,7 @@ public sealed class MeetingSlotFinderTests
 
     private static SlotPerson Windowed(Guid id, KnownDays window, params BusyInterval[] busy) => new(id, window, busy);
 
-    /// <summary>The finder's own calendar: known on every day (BR-418).</summary>
+    /// <summary>The finder's own calendar: known on every day (BR-144, BR-145).</summary>
     private static SlotPerson Own(params BusyInterval[] busy) => new(Me, null, busy);
 
     private static BusyInterval Busy(DateOnly day, (int H, int M) from, (int H, int M) to)
@@ -40,7 +40,7 @@ public sealed class MeetingSlotFinderTests
         => [.. finding.Slots.Select(s => TimeOnly.FromDateTime(VietnamTime.ToLocal(s.Start).DateTime))];
 
     [Fact]
-    public void The_BR_422_example_gives_10_00()
+    public void The_gap_and_step_example_gives_10_00()
     {
         // A meeting ending 09:10, a 30-minute gap and a 30-minute step: the earliest start after it is 10:00.
         var finding = MeetingSlotFinder.Find(Search(), SundayMorning,
@@ -228,7 +228,7 @@ public sealed class MeetingSlotFinderTests
     public void A_gap_reaching_into_a_day_outside_the_share_makes_the_person_unknown()
     {
         // Shared Monday only; a meeting on Sunday evening. A 4-hour gap around 00:00 Monday reaches back into Sunday:
-        // the answer must not depend on Sunday at all (BR-415, review of PR #319).
+        // the answer must not depend on Sunday at all (BR-144, BR-145, review of PR #319).
         var window = new KnownDays(Monday, Monday);
         var sunday = Monday.AddDays(-1);
         SlotPerson[] withSunday = [Windowed(A, window, Busy(sunday, (22, 0), (23, 0)))];

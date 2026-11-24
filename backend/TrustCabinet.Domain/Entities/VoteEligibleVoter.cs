@@ -4,7 +4,7 @@ namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
 /// One person entitled to vote, fixed when the vote opens from its eligible roles and their Meeting
-/// access at that moment (BR-190). Attendance plays no part. Kept as rows rather than recomputed,
+/// access at that moment (BR-091). Attendance plays no part. Kept as rows rather than recomputed,
 /// because roles and participants can change while the vote is open and eligibility must not.
 /// </summary>
 public class VoteEligibleVoter : Entity

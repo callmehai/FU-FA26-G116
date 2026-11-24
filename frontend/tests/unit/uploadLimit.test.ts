@@ -1,4 +1,4 @@
-// BR-340–BR-357, MSG293: a recording past the server's limit is refused before it is sent, and a connection dropped
+// BR-107–BR-115, MSG293: a recording past the server's limit is refused before it is sent, and a connection dropped
 // while sending one reads as that refusal, not as "no network" (round 1 QA, REC_FT27).
 // Run with `npm test` (node --test, which strips the types itself); uploadLimit.ts imports nothing for that reason.
 import assert from 'node:assert/strict'

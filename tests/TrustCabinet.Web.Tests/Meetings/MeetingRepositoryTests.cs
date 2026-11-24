@@ -1736,7 +1736,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Authorized_page_time_range_matches_meetings_whose_own_schedule_overlaps()
     {
-        // BR-30: [PlannedStartTime, PlannedEndTime] overlaps [from, to], both ends inclusive.
+        // [PlannedStartTime, PlannedEndTime] overlaps [from, to], both ends inclusive.
         var from = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
         var to = from.AddHours(1);
         var startsBefore = ListMeeting("Starts before", MeetingStatus.Draft, from.AddMinutes(-30));

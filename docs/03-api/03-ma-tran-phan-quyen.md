@@ -1,6 +1,6 @@
 # 03 · Ma trận vai trò – quyền
 
-Hiện thực **UC-10 và UC-11 (SCRUM-60)**: xem ma trận vai trò ↔ quyền, và sửa quyền của từng vai
+Hiện thực **UC-09, UC-10 (SCRUM-60)**: xem ma trận vai trò ↔ quyền, và sửa quyền của từng vai
 trò mà không phải deploy lại.
 
 Sequence diagram chia bốn participant: `Role & Permission Management Page` →
@@ -28,8 +28,8 @@ cách đọc lại tài khoản người gọi từ database — không tin vào
 
 | Method | Path | Use case |
 |---|---|---|
-| `GET` | `/api/roles/capabilities` | UC-10 — xem ma trận |
-| `PUT` | `/api/roles/capabilities` | UC-11 — đặt quyền cho một vai trò |
+| `GET` | `/api/roles/capabilities` | UC-09 — xem ma trận |
+| `PUT` | `/api/roles/capabilities` | UC-10 — đặt quyền cho một vai trò |
 
 ### `GET /api/roles/capabilities`
 
@@ -178,7 +178,7 @@ SELECT pg_advisory_xact_lock(hashtext('admin-users-invariant'))
 ```
 
 gọi ở `RolePermissionService.UpdateAsync`, `UserService.UpdateAsync` và
-`UserService.ChangeStatusAsync`. Request `GET` (UC-10) không lấy khoá nên vẫn đọc bình thường; chỉ
+`UserService.ChangeStatusAsync`. Request `GET` (UC-09) không lấy khoá nên vẫn đọc bình thường; chỉ
 request ghi thứ hai phải đợi. Chi tiết và lý do chọn isolation `Read Committed` ở
 [ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md).
 
@@ -340,7 +340,7 @@ Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Reposito
 `confirmResetToDefault()` ở `Page`). Nhưng:
 
 - Ticket không nhắc tới nó ở bất kỳ tiêu chí nghiệm thu nào,
-- Không có sequence diagram cho nó (chỉ có UC-10 và UC-11).
+- Không có sequence diagram cho nó (chỉ có UC-09, UC-10).
 
 Đã thống nhất **không làm** trong sprint này.
 
@@ -356,9 +356,9 @@ Bản vẽ vẽ `Role` là `<<entity>>` với `roleId: UUID`, `roleName`, `descr
 > `name`, `description`, `isBuiltIn` — đúng `<<entity>> Role` của bản vẽ. BA không cần sửa gì ở
 > mục này.
 
-### 4. UC-11 có thêm nhánh "không đổi gì"
+### 4. UC-10 có thêm nhánh "không đổi gì"
 
-Bản vẽ UC-11 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
+Bản vẽ UC-10 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
 trạng thái hiện tại thì trả `MSG16` nhưng **không ghi audit log và không báo cho ai**.
 
 Không phải tối ưu vặt: ghi một dòng audit "đã đổi quyền" cho một lần không đổi gì sẽ làm bẩn đúng

@@ -57,7 +57,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         var vote = Assert.Single((await chair.GetFromJsonAsync<JsonElement>(s.Url + "/votes")).GetProperty("votes").EnumerateArray());
         Assert.Equal("Draft", vote.GetProperty("status").GetString());
         Assert.True(vote.GetProperty("actions").GetProperty("canEdit").GetBoolean());
-        // Opening waits for the sitting (BR-160).
+        // Opening waits for the sitting (BR-090).
         Assert.False(vote.GetProperty("actions").GetProperty("canOpen").GetBoolean());
         Assert.Empty((await member.GetFromJsonAsync<JsonElement>(s.Url + "/votes")).GetProperty("votes").EnumerateArray());
         await Code(await member.GetAsync($"{s.Url}/votes/{id}"), 404, "MSG205");
@@ -71,7 +71,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(new[] { "Member" }, detail.GetProperty("eligibleRoles").EnumerateArray().Select(r => r.GetString()!).ToArray());
         Assert.Equal(new[] { "1 Có", "2 Không" }, detail.GetProperty("options").EnumerateArray()
             .Select(o => $"{o.GetProperty("position").GetInt32()} {o.GetProperty("label").GetString()}").ToArray());
-        // Only the Chair opens from the form, and only during the sitting (UC-53 AF-3).
+        // Only the Chair opens from the form, and only during the sitting (UC-63 AF-3).
         await Code(await secretary.PutAsJsonAsync($"{s.Url}/votes/{id}", Body(openImmediately: true)), 409, "MSG218");
         Assert.Equal("Đã sửa", (await Detail(secretary, s, id)).GetProperty("title").GetString());
 
@@ -123,7 +123,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         await Code(await member.PostAsJsonAsync(s.Url + "/votes", Body()), 409, "MSG213");
         await Code(await outsider.PostAsJsonAsync(s.Url + "/votes", Body()), 404, "MSG205");
         await Code(await outsider.GetAsync(s.Url + "/votes"), 404, "MSG205");
-        // An Open vote keeps its configuration and is never deleted (BR-254, BR-189).
+        // An Open vote keeps its configuration and is never deleted (BR-088, BR-086, BR-087).
         var open = await Opened(chair, s);
         await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{open}", Body()), 409, "MSG213");
         await Code(await chair.DeleteAsync($"{s.Url}/votes/{open}"), 409, "MSG213");
@@ -145,12 +145,12 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(s.Member, Assert.Single(vote.EligibleVoters, e => e.UserId is not null).UserId);
         Assert.Equal(guest.Id, Assert.Single(vote.EligibleVoters, e => e.GuestInvitationId is not null).GuestInvitationId);
 
-        // A role change after opening moves nobody in or out (BR-268).
+        // A role change after opening moves nobody in or out (BR-091).
         await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE meeting_participants SET role = 'Secretary' WHERE id = {s.MemberAssignment}");
         Assert.Equal(2, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
         Assert.True((await Detail(member, s, id)).GetProperty("actions").GetProperty("canCast").GetBoolean());
 
-        // One Open vote per meeting (BR-266).
+        // One Open vote per meeting (BR-090).
         var second = await Draft(secretary, s);
         Assert.False((await Detail(chair, s, second)).GetProperty("actions").GetProperty("canOpen").GetBoolean());
         await Code(await chair.PostAsync($"{s.Url}/votes/{second}/open", null), 409, "MSG219");
@@ -205,7 +205,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
 
         await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}", Body("Bản mới", openImmediately: true)), 409, "MSG219");
         await Unchanged();
-        // Another Open vote is reported before the form is validated, as in UC-54 — for creating and editing alike.
+        // Another Open vote is reported before the form is validated, as in UC-64 — for creating and editing alike.
         await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}", Body(" ", openImmediately: true)), 409, "MSG219");
         await Code(await chair.PostAsJsonAsync(s.Url + "/votes", Body(" ", openImmediately: true)), 409, "MSG219");
         await Unchanged();
@@ -236,11 +236,11 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         await Code(await Ballot(chair, s, id, Guid.CreateVersion7()), 400, "MSG223");
         await Code(await Ballot(outsider, s, id, options[0]), 404, "MSG205");
         await Code(await Ballot(member, s, id, options[1]), 200, "MSG227");
-        // Sent once, never changed or withdrawn (BR-265).
+        // Sent once, never changed or withdrawn (BR-092, BR-093).
         await Code(await Ballot(member, s, id, options[0]), 409, "MSG226");
         await Code(await Ballot(secretary, s, id, options[0]), 200, "MSG227");
 
-        // While open: turnout only (BR-260).
+        // While open: turnout only (UC-62b).
         var open = await Detail(member, s, id);
         Assert.Equal(2, open.GetProperty("receiptCount").GetInt32());
         Assert.Equal(3, open.GetProperty("eligibleCount").GetInt32());
@@ -255,7 +255,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
             .Select(o => o.GetProperty("percentage").GetDouble()).ToArray());
         await Code(await Ballot(chair, s, id, options[0]), 409, "MSG225");
 
-        // A closed public vote names each eligible voter's choice, or that they did not vote (BR-273).
+        // A closed public vote names each eligible voter's choice, or that they did not vote (BR-096, BR-097).
         var voters = (await Detail(member, s, id)).GetProperty("result").GetProperty("voters").EnumerateArray()
             .ToDictionary(v => v.GetProperty("id").GetGuid(), v => v.GetProperty("optionId"));
         Assert.Equal(options[1], voters[s.Member].GetGuid());
@@ -292,7 +292,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
             await Code(await Ballot(client, s, id, option), 200, "MSG227");
         }
 
-        // Nothing is stored per secret choice (BR-259): a plain SELECT has nothing to line up with the receipts.
+        // Nothing is stored per secret choice (BR-096, BR-097): a plain SELECT has nothing to line up with the receipts.
         Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == id));
         // The counters moved, every option row was rewritten in the same statement — one row version for all of
         // them — and none of their timestamps tells when.
@@ -340,7 +340,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         using var guest = f.Guest(s.MeetingId, invitation.Id);
         Assert.Single((await guest.GetFromJsonAsync<JsonElement>(s.Url + "/votes")).GetProperty("votes").EnumerateArray());
         await Code(await Ballot(guest, s, id, options[2]), 200, "MSG227");
-        // Back in the room with a new session, still the same invitation (BR-181).
+        // Back in the room with a new session, still the same invitation (BR-055).
         using var again = f.Guest(s.MeetingId, invitation.Id);
         await Code(await Ballot(again, s, id, options[0]), 409, "MSG226");
         using var unverified = f.Guest(s.MeetingId, invitation.Id, verified: false);
@@ -368,7 +368,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         var options = await Options(chair, s, id);
         Assert.Equal(3, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
 
-        // PO 08/11/2026: the list is fixed at opening for Guests too (BR-190); the 30/10 exception is withdrawn.
+        // PO 08/11/2026: the list is fixed at opening for Guests too (BR-091); the 30/10 exception is withdrawn.
         var created = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
             new { invitedName = "Khách đến muộn", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
         var invitation = created.GetProperty("createdIds")[0].GetGuid();
@@ -390,7 +390,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
     public async Task A_guest_removed_and_invited_again_while_the_vote_is_open_still_has_one_ballot()
     {
         // SCRUM-133: the five steps of Hải's report, plus the same person before they had voted. Both were on the list
-        // when it was fixed at opening, so this is not a new voter (BR-190).
+        // when it was fixed at opening, so this is not a new voter (BR-091).
         var s = await f.Seed(MeetingStatus.InProgress);
         var voted = await Guest(f, s); var notYet = await Guest(f, s);
         using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
@@ -453,7 +453,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         await using (var db = f.Db())
             await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(m => m.SetProperty(x => x.Status, MeetingStatus.Ended));
 
-        // Ending the meeting stopped new ballots but did not close the vote (ADR-0017, BR-159).
+        // Ending the meeting stopped new ballots but did not close the vote (ADR-0017, BR-026).
         await Code(await Ballot(member, s, id, options[0]), 409, "MSG225");
         await Code(await chair.PostAsync($"{s.Url}/votes/{id}/close", null), 200, "MSG229");
         await Code(await member.PostAsJsonAsync($"{s.Url}/votes/{id}/conclusion", new { conclusion = "Passed" }), 409, "MSG234");

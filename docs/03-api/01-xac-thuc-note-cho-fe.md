@@ -99,7 +99,7 @@ lúc nào; `code` là hợp đồng.
 ## 3. Mã thông báo: đánh số chung toàn dự án
 
 Mỗi mã chỉ mang một nghĩa trên mọi endpoint — xem [danh mục mã](00-danh-muc-ma-thong-bao.md).
-Trước đây UC-01 và UC-02 mỗi bên tự đánh số từ `MSG01`, nên cùng một mã mang hai nghĩa; nay đã
+Trước đây UC-01, UC-02 mỗi bên tự đánh số từ `MSG01`, nên cùng một mã mang hai nghĩa; nay đã
 đánh lại.
 
 | Tình huống | `/api/auth/login` | `/api/auth/google` | `/api/auth/refresh` |

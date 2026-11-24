@@ -5,7 +5,7 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Application.Speaking;
 
-/// <summary>UC-79 Register to Speak (SCRUM-27). Contract in docs/03-api/20-dang-ky-phat-bieu.md.</summary>
+/// <summary>UC-50 Register to Speak (SCRUM-27). Contract in docs/03-api/20-dang-ky-phat-bieu.md.</summary>
 public enum SpeakingOperation { Raise, Lower, MoveUp, MoveDown, Decline, Invite, Start, Finish }
 
 public enum SpeakingFailure
@@ -15,13 +15,13 @@ public enum SpeakingFailure
     NotFound,
     /// <summary>The caller's account is deactivated.</summary>
     Inactive,
-    /// <summary>The meeting is not In Progress (UC-79 EX-1).</summary>
+    /// <summary>The meeting is not In Progress (UC-50 EX-1).</summary>
     NotInProgress,
-    /// <summary>The caller is not connected to the meeting room (UC-79 step 2).</summary>
+    /// <summary>The caller is not connected to the meeting room (UC-50 step 2).</summary>
     NotInRoom,
-    /// <summary>A Chair action by someone who is not the current Chair (UC-79 EX-4, BR-338).</summary>
+    /// <summary>A Chair action by someone who is not the current Chair (UC-50 EX-4, BR-104–BR-106).</summary>
     NotChair,
-    /// <summary>Someone already holds the floor (BR-338).</summary>
+    /// <summary>Someone already holds the floor (BR-104–BR-106).</summary>
     FloorTaken,
     /// <summary>The request is not in a state this action applies to.</summary>
     NotOpen,
@@ -59,7 +59,7 @@ public interface ISpeakingChangePublisher
 }
 
 /// <summary>
-/// Ending the meeting ends every open request: a turn in progress is Finished, the rest Cancelled (BR-337).
+/// Ending the meeting ends every open request: a turn in progress is Finished, the rest Cancelled (BR-104–BR-106).
 /// Caller owns the meeting lock, transaction and SaveChanges, as for <c>IAgendaMeetingEnd</c>.
 /// </summary>
 public interface ISpeakingMeetingEnd
@@ -81,7 +81,7 @@ public static class SpeakingRules
 
     public static bool IsOpen(SpeakingRequestStatus status) => OpenStatuses.Contains(status);
 
-    /// <summary>Re-read on every request, so a Chair handed over through UC-73 loses the controls at once (EX-4).</summary>
+    /// <summary>Re-read on every request, so a Chair handed over through UC-34 loses the controls at once (EX-4).</summary>
     public static bool IsChair(Meeting meeting, SpeakingViewer viewer) => viewer.UserId is { } id
         && meeting.Participants.Any(p => p.UserId == id && ParticipantRules.Active(p) && p.Role == MeetingRole.Chair);
 
@@ -91,7 +91,7 @@ public static class SpeakingRules
 
     /// <summary>
     /// Ends a request at <paramref name="endedAt"/>: a turn that started is Finished, anything else is Cancelled
-    /// (BR-337). <paramref name="now"/> is when the row is written, which may be later than when the person left.
+    /// (BR-104–BR-106). <paramref name="now"/> is when the row is written, which may be later than when the person left.
     /// Returns false when the request was already closed.
     /// </summary>
     public static bool Close(SpeakingRequest request, DateTimeOffset endedAt, DateTimeOffset now)

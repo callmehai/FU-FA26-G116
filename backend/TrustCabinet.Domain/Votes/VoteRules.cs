@@ -13,11 +13,11 @@ public static class VoteRules
     /// <summary>The conclusion note: the API contract, this check and the column all say 2000.</summary>
     public const int NoteMax = 2000;
 
-    /// <summary>Drafts are prepared, edited and deleted while the meeting is Approved, Published or InProgress (BR-252, BR-189).</summary>
+    /// <summary>Drafts are prepared, edited and deleted while the meeting is Approved, Published or InProgress (BR-086, BR-087).</summary>
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
 
-    /// <summary>Ending the meeting does not close its vote, so the Chair may still close and conclude it (ADR-0017, BR-270).</summary>
+    /// <summary>Ending the meeting does not close its vote, so the Chair may still close and conclude it (ADR-0017, BR-098).</summary>
     public static bool Closable(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;
 
     public static bool IsChair(Meeting meeting, VoteViewer viewer) => viewer.UserId is { } id
@@ -56,7 +56,7 @@ public static class VoteRules
         Options = input.Options?.Select(o => o?.Trim()).ToArray()
     };
 
-    /// <summary>Checks a normalized draft configuration (BR-255, BR-256, BR-257, BR-272).</summary>
+    /// <summary>Checks a normalized draft configuration (UC-63, BR-089).</summary>
     public static IReadOnlyDictionary<string, string[]> Validate(VoteInput input, out List<MeetingRole> roles)
     {
         var errors = new Dictionary<string, string[]>();
@@ -86,7 +86,7 @@ public static class VoteRules
 
     /// <summary>
     /// The internal users entitled to vote once it opens: current, active holders of the selected roles who can read
-    /// the meeting (BR-190). Attendance plays no part. Guests are added by invitation, outside this list.
+    /// the meeting (BR-091). Attendance plays no part. Guests are added by invitation, outside this list.
     /// </summary>
     public static IReadOnlyList<Guid> EligibleUsers(Meeting meeting, IReadOnlyCollection<MeetingRole> roles)
         => meeting.Participants.Where(p => ParticipantRules.Active(p) && roles.Contains(p.Role)

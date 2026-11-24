@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "a2a2ad26-8a2d-4824-bab6-def62e004fcb",
-    "name": "SCRUM-27 — Đăng ký phát biểu (UC-79)",
+    "name": "SCRUM-27 — Đăng ký phát biểu (UC-50)",
     "description": "Chạy tuần tự trên backend Development sau khi chạy scrum27-room-setup.sql. Xem docs/03-api/20-dang-ky-phat-bieu.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -202,7 +202,7 @@
       }
     },
     {
-      "name": "06 Thành viên giơ tay (UC-79 bước 1–2)",
+      "name": "06 Thành viên giơ tay (UC-50 bước 1–2)",
       "event": [
         {
           "listen": "test",
@@ -240,7 +240,7 @@
       }
     },
     {
-      "name": "07 Giơ tay lần nữa giữ nguyên yêu cầu (EX-2, BR-337)",
+      "name": "07 Giơ tay lần nữa giữ nguyên yêu cầu (EX-2, BR-104–BR-106)",
       "event": [
         {
           "listen": "test",
@@ -503,7 +503,7 @@
       }
     },
     {
-      "name": "14 Mời người thứ hai khi đang có người nắm lượt (BR-338)",
+      "name": "14 Mời người thứ hai khi đang có người nắm lượt (BR-104–BR-106)",
       "event": [
         {
           "listen": "test",

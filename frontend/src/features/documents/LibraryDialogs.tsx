@@ -14,7 +14,7 @@ import { childrenOf, LIBRARY_ROOT, placeName, trailOf } from './libraryTree'
 const FIELD_CODES = ['MSG188', 'MSG347', 'MSG348']
 
 /**
- * A new folder, or a new name for a folder or a document (UC-72a, UC-72b, UC-71b). A document keeps its
+ * A new folder, or a new name for a folder or a document (UC-41a, UC-41b, UC-40b). A document keeps its
  * extension: only the part before it is edited, the extension is shown after the field (MSG347 otherwise).
  */
 export function NameDialog({
@@ -118,8 +118,8 @@ export function NameDialog({
 }
 
 /**
- * "Chuyển đến…" (UC-71c, UC-72c): browse the library one level at a time and move into the place shown.
- * A folder cannot go into itself or below it (BR-222): those rows are not offered.
+ * "Chuyển đến…" (UC-40c, UC-41c): browse the library one level at a time and move into the place shown.
+ * A folder cannot go into itself or below it (BR-084): those rows are not offered.
  */
 export function MoveDialog({
   folders,
@@ -217,7 +217,7 @@ export function MoveDialog({
 }
 
 /**
- * UC-36: files from the computer into the open folder, through the upload queue, one request each. What the
+ * UC-39: files from the computer into the open folder, through the upload queue, one request each. What the
  * library still holds is checked before queuing (MSG346); the page re-reads when each one ends, so a folder
  * that went away meanwhile (MSG179) shows as it is.
  */

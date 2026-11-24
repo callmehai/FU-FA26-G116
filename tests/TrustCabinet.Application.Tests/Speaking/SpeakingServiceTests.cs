@@ -9,7 +9,7 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Application.Tests.Speaking;
 
-/// <summary>SCRUM-178 (CA-13): the speaking queue (UC-79) over the unit of work, with every storage call faked.</summary>
+/// <summary>SCRUM-178 (CA-13): the speaking queue (UC-50) over the unit of work, with every storage call faked.</summary>
 public sealed class SpeakingServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 16, 8, 0, 0, TimeSpan.Zero);
@@ -249,7 +249,7 @@ public sealed class SpeakingServiceTests
 
         var outcome = await Mutate(null, _member, SpeakingOperation.Raise);
 
-        // UC-79 EX-2: the hand is raised either way, and the queue is read again in a transaction of its own.
+        // UC-50 EX-2: the hand is raised either way, and the queue is read again in a transaction of its own.
         Assert.Equal(SpeakingFailure.None, outcome.Failure);
         Assert.NotNull(outcome.Data);
         Assert.Equal([TransactionMode.ReadCommitted, TransactionMode.RepeatableRead], _unitOfWork.Modes);

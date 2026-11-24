@@ -15,8 +15,8 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 namespace TrustCabinet.Web.Tests.Audit;
 
 /// <summary>
-/// SCRUM-16, UC-13 — GET /api/audit-log and /api/audit-log/event-types against a real PostgreSQL, and the write side the
-/// log depends on: a row per lifecycle move (BR-445) and the append-only guard (BR-440).
+/// SCRUM-16, UC-12 — GET /api/audit-log and /api/audit-log/event-types against a real PostgreSQL, and the write side the
+/// log depends on: a row per lifecycle move (BR-022, BR-023) and the append-only guard (BR-012).
 /// </summary>
 public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<SummaryFixture>
 {
@@ -89,7 +89,7 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
         var s = await f.Seed();
         using var anonymous = f.Client();
         using var secretary = f.Client(s.Secretary, nameof(Capability.MeetingCreator));
-        // The token claims the capability, the database says the role does not hold it (BR-440, EX-3).
+        // The token claims the capability, the database says the role does not hold it (BR-012, EX-3).
         using var claims = f.Client(log.User, nameof(Capability.AdminUsers));
         foreach (var path in new[] { Url, Url + "/event-types" })
         {
@@ -112,7 +112,7 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
         Assert.Equal(Base.AddMinutes(7), items[0].GetProperty("occurredAt").GetDateTimeOffset());
         Assert.Equal(["user", "system", "guest", "guest", "guest", "guest", "user", "user"],
             items.Select(i => i.GetProperty("actor").GetProperty("kind").GetString()));
-        // A Guest is named from the invitation, whichever key the writer used (BR-441).
+        // A Guest is named from the invitation, whichever key the writer used (UC-12).
         foreach (var guest in items[2..6].Select(i => i.GetProperty("actor")))
         {
             Assert.Equal(log.Invitation, guest.GetProperty("id").GetGuid());

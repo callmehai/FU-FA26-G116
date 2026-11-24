@@ -2,7 +2,7 @@ import type { Slot, SlotSearchRequest } from '../../types/meetingSlots'
 import { addDaysTo, spanDays } from '../calendarSharing/shareFormat'
 
 /**
- * SCRUM-137 — the search limits of the backend (MeetingSlotRules, BR-421, BR-422, ADR-0058 §7), mirrored so the commonest
+ * SCRUM-137 — the search limits of the backend (MeetingSlotRules, UC-81a, ADR-0058 §7), mirrored so the commonest
  * mistakes never cost a round trip. The messages are the backend's own; the server checks again (MSG444).
  */
 export const MAX_PEOPLE = 10
@@ -59,7 +59,7 @@ export function defaultTo(from: string) {
   return addDaysTo(from, weekday === 6 ? 6 : toFriday)
 }
 
-/** The backend's defaults (BR-421, BR-422), from today in Vietnam. */
+/** The backend's defaults (UC-81a), from today in Vietnam. */
 export function defaultSettings(today: string): SlotSettings {
   return {
     duration: 120,
@@ -89,7 +89,7 @@ function fitsOneBlock(s: SlotSettings) {
   return s.lunch ? fits(ws, minutesOf(s.lunchStart)!) || fits(minutesOf(s.lunchEnd)!, we) : fits(ws, we)
 }
 
-/** BR-421, BR-422 as MeetingSlotRules checks them; empty when the search may be sent. */
+/** UC-81a as MeetingSlotRules checks them; empty when the search may be sent. */
 export function validateSettings(s: SlotSettings, today: string): SettingsErrors {
   const errors: SettingsErrors = {}
   if (!s.from || s.from < today || s.from > addDaysTo(today, MAX_DAYS_AHEAD))

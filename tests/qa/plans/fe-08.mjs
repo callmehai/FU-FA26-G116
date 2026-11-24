@@ -1,14 +1,14 @@
-// FE-08 — Phòng họp trực tuyến (QA subtask SCRUM-195): UC-37 join (lobby, recording notice, device check), UC-38 leave,
-// UC-39a microphone, UC-39b camera, UC-39c screen sharing, UC-39d device pickers, UC-40 participants panel, UC-41 Chair
-// mutes another person, UC-42 in-room chat, UC-78 floating window, UC-79 raise hand (as far as the room shows it), and
-// the rules they cite: BR-143, BR-323 → BR-332, BR-336 → BR-338.
+// FE-08 — Phòng họp trực tuyến (QA subtask SCRUM-195): UC-43 join (lobby, recording notice, device check), UC-44 leave,
+// UC-45a microphone, UC-45b camera, UC-45c screen sharing, UC-45d device pickers, UC-46 participants panel, UC-47 Chair
+// mutes another person, UC-48 in-room chat, UC-49 floating window, UC-50 raise hand (as far as the room shows it), and
+// the rules they cite: BR-025, BR-100–BR-106.
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-37 → UC-42, UC-78, UC-79),
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-43 → UC-48, UC-49, UC-50),
 // 06-business-rules.md, docs/03-api/09-phong-hop-truc-tuyen.md, docs/03-api/00-danh-muc-ma-thong-bao.md (MSG117, MSG123,
 // MSG280, MSG282, MSG328 → MSG343, MSG350), ADR-0056 (what the recording notice says per sensitivity) and the SCRUM-41
-// comments (the room opens only while the meeting is InProgress, PO 26/10; UC-41 is mute only — removing someone from
-// the room and muting everyone are out of this version; Chair hand-over is UC-73 on the roster, and the room follows it,
-// BR-329).
+// comments (the room opens only while the meeting is InProgress, PO 26/10; UC-47 is mute only — removing someone from
+// the room and muting everyone are out of this version; Chair hand-over is UC-34 on the roster, and the room follows it,
+// UC-46).
 //
 // Two people in one room are two browser contexts inside one criterion (`person()` below), each signed in as its own
 // seed account, both on Chromium's fake camera and microphone. What needs a real voice, a second machine, a phone camera,
@@ -231,7 +231,7 @@ const joinButton = (page) => page.getByRole('button', { name: 'Vào phòng', exa
 const controls = (page) => page.locator('footer.room-controls')
 const leaveButton = (page) => controls(page).getByRole('button', { name: 'Rời phòng' })
 
-/** The person's devices: mic and camera as given, remembered in the browser before the page loads (BR-331). */
+/** The person's devices: mic and camera as given, remembered in the browser before the page loads (UC-45a, UC-45b, UC-45d). */
 async function setPrefs(context, prefs) {
   await context.addInitScript((p) => {
     try {
@@ -365,7 +365,7 @@ export default {
         'Mở chi tiết cuộc họp, bấm "Vào phòng họp"',
       ],
       expected:
-        'Phòng họp mở ở tab mới, tab chi tiết cuộc họp giữ nguyên (PO 19/11). Màn chờ "Sẵn sàng tham gia?" với tên cuộc họp, khung xem trước "Camera đang tắt", nút Tắt micro (micro bật) và Bật camera (camera tắt), ô chọn Micro/Camera, dòng "Cuộc họp được ghi âm để lập biên bản · tự xoá sau N ngày" (N từ server), nút Vào phòng và "Quay lại trang cuộc họp"; không cuộn ngang trên điện thoại (UC-37 bước 1–3, BR-331)',
+        'Phòng họp mở ở tab mới, tab chi tiết cuộc họp giữ nguyên (PO 19/11). Màn chờ "Sẵn sàng tham gia?" với tên cuộc họp, khung xem trước "Camera đang tắt", nút Tắt micro (micro bật) và Bật camera (camera tắt), ô chọn Micro/Camera, dòng "Cuộc họp được ghi âm để lập biên bản · tự xoá sau N ngày" (N từ server), nút Vào phòng và "Quay lại trang cuộc họp"; không cuộn ngang trên điện thoại (UC-43 bước 1–3, UC-45a, UC-45b, UC-45d)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const state = ok(qa, await get('chair', `/api/meetings/${m.id}/call`), 200, 'GET call')
@@ -439,7 +439,7 @@ export default {
         'Tải lại trang',
       ],
       expected:
-        'Camera bật: khung xem trước hiện hình, nút thành "Tắt camera". Micro tắt: nút thành "Bật micro". Ô chọn liệt kê camera giả lập. Tải lại: vẫn camera bật, micro tắt (UC-39a/39b/39d, BR-331)',
+        'Camera bật: khung xem trước hiện hình, nút thành "Tắt camera". Micro tắt: nút thành "Bật micro". Ô chọn liệt kê camera giả lập. Tải lại: vẫn camera bật, micro tắt (UC-45a, UC-45b, UC-45d)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await qa.page.addInitScript(() => {
@@ -481,7 +481,7 @@ export default {
       title: 'Thành viên vào phòng: lưới hình với ô của mình, thanh điều khiển, không có thông báo thành công; cuộc họp và điểm danh không đổi',
       steps: ['thanhvien@ mở màn chờ của cuộc họp đang diễn ra (micro tắt, camera tắt)', 'Bấm Vào phòng'],
       expected:
-        'Phòng mở: đầu phòng có tên cuộc họp và số người trong phòng, ô của mình; nút Bật micro, Bật camera, Rời phòng, Người dự, Chat (máy tính có thêm Chia sẻ màn hình; điện thoại không có). Cuộc họp vẫn Đang diễn ra; điểm danh của thanhvien@ không đổi (UC-37 bước 5–8, BR-324, BR-330, UC-39c AF-2)',
+        'Phòng mở: đầu phòng có tên cuộc họp và số người trong phòng, ô của mình; nút Bật micro, Bật camera, Rời phòng, Người dự, Chat (máy tính có thêm Chia sẻ màn hình; điện thoại không có). Cuộc họp vẫn Đang diễn ra; điểm danh của thanhvien@ không đổi (UC-43 bước 5–8, BR-101, UC-45c AF-2)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const before = ok(qa, await get('secretary', `/api/meetings/${m.id}/attendance?pageSize=100`), 200, 'attendance before')
@@ -506,7 +506,7 @@ export default {
         await noRawCodes(qa)
         await qa.shot('trong phong')
         const after = ok(qa, await get('secretary', `/api/meetings/${m.id}/attendance?pageSize=100`), 200, 'attendance after')
-        qa.expect(mine(after), 'joining the room changed attendance (BR-330)').toBe(mine(before))
+        qa.expect(mine(after), 'joining the room changed attendance (BR-101)').toBe(mine(before))
         qa.expect((await get('secretary', `/api/meetings/${m.id}`)).body.status).toBe('InProgress')
       }),
     },
@@ -521,7 +521,7 @@ export default {
         'Máy tính: Ctrl+D, Ctrl+E',
       ],
       expected:
-        'Bật camera: ô của mình hiện hình, nút thành "Tắt camera". Bật micro: nút thành "Tắt micro". Phím tắt đảo lại cả hai (UC-39a/39b)',
+        'Bật camera: ô của mình hiện hình, nút thành "Tắt camera". Bật micro: nút thành "Tắt micro". Phím tắt đảo lại cả hai (UC-45a, UC-45b)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await setPrefs(qa.context, { mic: false, cam: false })
@@ -562,7 +562,7 @@ export default {
         'chutoa@ rời phòng',
       ],
       expected:
-        'Panel "Người dự (2)": Chủ toạ đứng trước (Nguyễn Hoàng Thanh Hương · Chủ toạ), rồi "Lê An (Bạn) · Thành viên"; micro của từng người hiện trạng thái; thành viên không có nút Tắt mic. Khi chủ toạ rời, danh sách còn 1 không cần tải lại (UC-40, BR-330)',
+        'Panel "Người dự (2)": Chủ toạ đứng trước (Nguyễn Hoàng Thanh Hương · Chủ toạ), rồi "Lê An (Bạn) · Thành viên"; micro của từng người hiện trạng thái; thành viên không có nút Tắt mic. Khi chủ toạ rời, danh sách còn 1 không cần tải lại (UC-46, BR-101)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -606,7 +606,7 @@ export default {
         'thanhvien@ bấm Bật micro',
       ],
       expected:
-        'Chủ toạ: toast "Đã tắt micro của Lê An." (MSG342). Thành viên: toast "Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu." (MSG339), nút thành Bật micro; bật lại được và chủ toạ thấy micro bật lại, nút Tắt mic hiện lại (UC-41, BR-325)',
+        'Chủ toạ: toast "Đã tắt micro của Lê An." (MSG342). Thành viên: toast "Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu." (MSG339), nút thành Bật micro; bật lại được và chủ toạ thấy micro bật lại, nút Tắt mic hiện lại (UC-47, BR-102)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -646,7 +646,7 @@ export default {
         'thuky@ (cửa sổ thứ ba) vào phòng sau, mở Chat',
       ],
       expected:
-        'Nút Chat của chủ toạ hiện số 1; panel có câu "Tin nhắn chỉ hiện với người đang trong phòng và không được lưu lại sau cuộc họp.", tin của Lê An kèm giờ; đếm "n/1000"; tin của chủ toạ hiện "Bạn", ô nhập trống, đếm về 0/1000; thuky@ vào sau thấy "Chưa có tin nhắn nào." (UC-42, BR-327)',
+        'Nút Chat của chủ toạ hiện số 1; panel có câu "Tin nhắn chỉ hiện với người đang trong phòng và không được lưu lại sau cuộc họp.", tin của Lê An kèm giờ; đếm "n/1000"; tin của chủ toạ hiện "Bạn", ô nhập trống, đếm về 0/1000; thuky@ vào sau thấy "Chưa có tin nhắn nào." (UC-48, BR-103)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -708,7 +708,7 @@ export default {
         'Bấm Vào phòng họp lần nữa',
       ],
       expected:
-        'Hộp "Rời phòng họp" với câu "Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.", nút Ở lại / Rời phòng; Ở lại: vẫn trong phòng; "Trang cuộc họp": chi tiết cuộc họp mở ở tab khác, không hỏi, vẫn trong phòng (PO 19/11); Rời phòng: về trang chi tiết, chủ toạ thấy số người giảm, cuộc họp vẫn Đang diễn ra; vào lại được, phòng mở ở tab mới (UC-38, BR-324)',
+        'Hộp "Rời phòng họp" với câu "Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.", nút Ở lại / Rời phòng; Ở lại: vẫn trong phòng; "Trang cuộc họp": chi tiết cuộc họp mở ở tab khác, không hỏi, vẫn trong phòng (PO 19/11); Rời phòng: về trang chi tiết, chủ toạ thấy số người giảm, cuộc họp vẫn Đang diễn ra; vào lại được, phòng mở ở tab mới (UC-44, BR-101)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const chair = await person(qa, 'chair')
@@ -760,7 +760,7 @@ export default {
       title: 'Một tài khoản một kết nối: vào từ cửa sổ khác thì cửa sổ cũ báo MSG329 và có nút Vào lại',
       steps: ['thanhvien@ vào phòng', 'Cùng tài khoản vào phòng ở cửa sổ thứ hai'],
       expected:
-        'Cửa sổ đầu: "Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng." với nút Vào lại và Về trang cuộc họp (UC-38 EX-2, BR-328)',
+        'Cửa sổ đầu: "Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng." với nút Vào lại và Về trang cuộc họp (UC-44 EX-2, UC-43)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await setPrefs(qa.context, { mic: false, cam: false })
@@ -784,7 +784,7 @@ export default {
       title: 'Chủ toạ kết thúc cuộc họp khi đang có người trong phòng: phòng đóng, báo MSG331, không có Vào lại',
       steps: ['thanhvien@ vào phòng của một cuộc họp riêng đang diễn ra', 'Chủ toạ kết thúc cuộc họp (API)'],
       expected:
-        'Thành viên bị đưa ra: "Cuộc họp đã kết thúc, phòng họp đã đóng." với "Về trang cuộc họp", không có nút Vào lại; mở lại link phòng vẫn báo câu đó (UC-38 EX-1, BR-143)',
+        'Thành viên bị đưa ra: "Cuộc họp đã kết thúc, phòng họp đã đóng." với "Về trang cuộc họp", không có nút Vào lại; mở lại link phòng vẫn báo câu đó (UC-44 EX-1, BR-025)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'InProgress', 'kết thúc khi đang trong phòng')
         await setPrefs(qa.context, { mic: false, cam: false })
@@ -810,7 +810,7 @@ export default {
       title: 'Người bị gỡ khỏi thành phần khi đang trong phòng bị đưa ra với MSG330, không vào lại được',
       steps: ['thanhvien@ vào phòng của một cuộc họp riêng đang diễn ra', 'Thư ký gỡ thanhvien@ khỏi thành phần (API)'],
       expected:
-        'Thành viên bị đưa ra: "Bạn không còn trong danh sách tham dự phòng họp này." không có Vào lại, nút "Về danh sách cuộc họp" (không có "Về trang cuộc họp", trang đó giờ là 404 với họ) mở danh sách cuộc họp; GET …/call và POST …/call/join của thanhvien@ trả 404; mở lại link phòng là trang "Không tìm thấy trang" (UC-38 EX-3, UC-37 EX-4, BR-101)',
+        'Thành viên bị đưa ra: "Bạn không còn trong danh sách tham dự phòng họp này." không có Vào lại, nút "Về danh sách cuộc họp" (không có "Về trang cuộc họp", trang đó giờ là 404 với họ) mở danh sách cuộc họp; GET …/call và POST …/call/join của thanhvien@ trả 404; mở lại link phòng là trang "Không tìm thấy trang" (UC-44 EX-3, UC-43 EX-4)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'InProgress', 'gỡ người khi đang trong phòng')
         const u = await users()
@@ -839,14 +839,14 @@ export default {
     {
       id: 'AC13',
       role: 'member',
-      title: 'Bàn giao Chủ toạ khi đang trong phòng: vai trò mới hiện ngay trong panel, chủ toạ mới tắt mic được, chủ toạ cũ không (BR-329)',
+      title: 'Bàn giao Chủ toạ khi đang trong phòng: vai trò mới hiện ngay trong panel, chủ toạ mới tắt mic được, chủ toạ cũ không (UC-46)',
       steps: [
         'chutoa@ (cửa sổ thứ hai) và thanhvien@ cùng trong phòng của một cuộc họp riêng, thanhvien@ mở Người dự',
         'chutoa@ bàn giao Chủ toạ cho thanhvien@ (API)',
         'chutoa@ cũ thử tắt mic thanhvien@ (API)',
       ],
       expected:
-        'Không cần vào lại: dòng của Lê An thành Chủ toạ, dòng của Nguyễn Hoàng Thanh Hương thành Thành viên, và Lê An có nút Tắt mic ở dòng người kia khi micro người đó bật; chủ toạ cũ tắt mic trả 403 MSG123 (UC-40 AF-2, UC-41 EX-1)',
+        'Không cần vào lại: dòng của Lê An thành Chủ toạ, dòng của Nguyễn Hoàng Thanh Hương thành Thành viên, và Lê An có nút Tắt mic ở dòng người kia khi micro người đó bật; chủ toạ cũ tắt mic trả 403 MSG123 (UC-46 AF-2, UC-47 EX-1)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'InProgress', 'bàn giao chủ toạ trong phòng')
         const u = await users()
@@ -902,7 +902,7 @@ export default {
         'Mở chi tiết từng cuộc họp',
       ],
       expected:
-        'Lần lượt "Phòng họp chỉ mở khi cuộc họp đang diễn ra.", "Cuộc họp đã kết thúc, phòng họp đã đóng.", "Cuộc họp đã huỷ nên phòng họp không mở.", "Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến."; mỗi màn có tên cuộc họp và "Về trang cuộc họp", không có Vào phòng; chi tiết cuộc họp không có nút Vào phòng họp (UC-37 AF-3, EX-1, EX-2, EX-6)',
+        'Lần lượt "Phòng họp chỉ mở khi cuộc họp đang diễn ra.", "Cuộc họp đã kết thúc, phòng họp đã đóng.", "Cuộc họp đã huỷ nên phòng họp không mở.", "Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến."; mỗi màn có tên cuộc họp và "Về trang cuộc họp", không có Vào phòng; chi tiết cuộc họp không có nút Vào phòng họp (UC-43 AF-3, EX-1, EX-2, EX-6)',
       run: guarded(async (qa) => {
         const cases = [
           ['published', 'Phòng họp chỉ mở khi cuộc họp đang diễn ra.'],
@@ -930,7 +930,7 @@ export default {
       role: 'member',
       title: 'Đang chờ ở màn "chỉ mở khi đang diễn ra" thì Chủ toạ bắt đầu cuộc họp: màn chờ tự mở thành "Sẵn sàng tham gia?"',
       steps: ['thanhvien@ mở phòng của một cuộc họp riêng đã công bố, chưa bắt đầu', 'Chủ toạ bắt đầu cuộc họp (API)'],
-      expected: 'Không tải lại trang, màn đổi sang "Sẵn sàng tham gia?" có nút Vào phòng (UC-37 AF-3)',
+      expected: 'Không tải lại trang, màn đổi sang "Sẵn sàng tham gia?" có nút Vào phòng (UC-43 AF-3)',
       run: guarded(async (qa) => {
         const m = await fresh(qa, 'Published', 'tự mở khi bắt đầu')
         await qa.goto(`/mgmt/meetings/${m.id}/room`)
@@ -951,7 +951,7 @@ export default {
         'quantri@ là người tạo (không trong thành phần) của một cuộc họp đang diễn ra; là người duyệt (không trong thành phần) của một cuộc họp khác',
         'Mở chi tiết và /room của từng cuộc họp; mở /room của một id không tồn tại',
       ],
-      expected: 'Chi tiết mở được nhưng không có "Vào phòng họp"; /room hiện "Không tìm thấy trang" như id không tồn tại (BR-323, UC-37 EX-4)',
+      expected: 'Chi tiết mở được nhưng không có "Vào phòng họp"; /room hiện "Không tìm thấy trang" như id không tồn tại (BR-100, UC-43 EX-4)',
       run: guarded(async (qa) => {
         const caps = await qa.capabilities('admin')
         qa.note(`quantri@ mang vai trò "${caps.roleName}": ${caps.capabilities.join(', ')}`)
@@ -1040,7 +1040,7 @@ export default {
         'chutoa@ tắt mic trong cuộc họp đã kết thúc; quantri@ (không trong thành phần) gọi mute',
       ],
       expected:
-        'Thư ký / Thành viên: 403 MSG123. Người không trong phòng: 409 MSG282. Đã kết thúc: 409 MSG117 hoặc 404. quantri@: 404 (UC-41, BR-325, docs/03-api/09)',
+        'Thư ký / Thành viên: 403 MSG123. Người không trong phòng: 409 MSG282. Đã kết thúc: 409 MSG117 hoặc 404. quantri@: 404 (UC-47, BR-102, docs/03-api/09)',
       run: async (qa) => {
         const u = await users()
         const live = await reused(qa, 'live')
@@ -1052,7 +1052,7 @@ export default {
         k.check('member mutes chair', await post('member', path(live, u.chair.id)), 403, 'MSG123')
         k.check('chair mutes someone not in the room', await post('chair', path(live, '0199ffff-ffff-7fff-bfff-000000000001')), 409, 'MSG282')
         const endedRes = await post('chair', path(ended, u.member.id))
-        k.fact('chair mutes in an ended meeting: 409 MSG117 (UC-41 EX-5)', endedRes.status === 409 && endedRes.body?.code === 'MSG117', `${endedRes.status} ${JSON.stringify(endedRes.body).slice(0, 120)}`)
+        k.fact('chair mutes in an ended meeting: 409 MSG117 (UC-47 EX-5)', endedRes.status === 409 && endedRes.body?.code === 'MSG117', `${endedRes.status} ${JSON.stringify(endedRes.body).slice(0, 120)}`)
         k.check('admin (not on roster) mutes', await post('admin', path(adminOrg, u.member.id)), 404)
         k.done()
       },
@@ -1106,7 +1106,7 @@ export default {
         'thanhvien@ hạ tay / kết thúc để dọn hàng đợi',
       ],
       expected:
-        'Nút Phát biểu của Chủ toạ hiện số 1, bảng liệt kê Lê An; Mời → thành viên thấy dải "Đến lượt bạn phát biểu" với nút Bắt đầu phát biểu; giơ tay không bật micro (UC-79, BR-337, BR-338)',
+        'Nút Phát biểu của Chủ toạ hiện số 1, bảng liệt kê Lê An; Mời → thành viên thấy dải "Đến lượt bạn phát biểu" với nút Bắt đầu phát biểu; giơ tay không bật micro (UC-50, BR-104–BR-106)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -1149,7 +1149,7 @@ export default {
       title: 'Chia sẻ màn hình trên máy tính: người trình bày thấy "Bạn đang trình bày cho mọi người", người khác thấy tên người trình bày',
       steps: ['chutoa@ và thanhvien@ (cửa sổ thứ hai) cùng trong phòng', 'Chủ toạ bấm Chia sẻ màn hình', 'Bấm Dừng chia sẻ'],
       expected:
-        'Sân khấu hiện màn hình chia sẻ, chú thích "Bạn đang trình bày cho mọi người"; thành viên thấy "Nguyễn Hoàng Thanh Hương đang trình bày"; dừng thì về lưới (UC-39c)',
+        'Sân khấu hiện màn hình chia sẻ, chú thích "Bạn đang trình bày cho mọi người"; thành viên thấy "Nguyễn Hoàng Thanh Hương đang trình bày"; dừng thì về lưới (UC-45c)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const u = await users()
@@ -1183,10 +1183,10 @@ export default {
     {
       id: 'AC22',
       role: 'secretary',
-      title: 'Cửa sổ nổi (UC-78): mở thì sân khấu báo "Cuộc họp đang ở cửa sổ nổi", đưa về được, không vào phòng lần hai',
+      title: 'Cửa sổ nổi (UC-49): mở thì sân khấu báo "Cuộc họp đang ở cửa sổ nổi", đưa về được, không vào phòng lần hai',
       steps: ['thuky@ vào phòng', 'Bấm Mở cửa sổ nổi', 'Bấm "Đưa cuộc họp về cửa sổ này"'],
       expected:
-        'Sân khấu chính: "Cuộc họp đang ở cửa sổ nổi" với nút đưa về; số người trong phòng không tăng; đưa về thì lưới trở lại (UC-78, BR-332)',
+        'Sân khấu chính: "Cuộc họp đang ở cửa sổ nổi" với nút đưa về; số người trong phòng không tăng; đưa về thì lưới trở lại (UC-49)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         await setPrefs(qa.context, { mic: false, cam: false })
@@ -1195,7 +1195,7 @@ export default {
         const pip = controls(qa.page).getByRole('button', { name: 'Mở cửa sổ nổi' })
         if ((await pip.count()) === 0)
           qa.inconclusive(
-            'Chromium của bộ chạy không có Document Picture-in-Picture nên nút Mở cửa sổ nổi không hiện (UC-78 AF-3, đúng đặc tả). Kiểm tay khi diễn tập trên Chrome thật: bấm Mở cửa sổ nổi, chuyển tab, rời phòng từ cửa sổ nổi không hỏi xác nhận.',
+            'Chromium của bộ chạy không có Document Picture-in-Picture nên nút Mở cửa sổ nổi không hiện (UC-49 AF-3, đúng đặc tả). Kiểm tay khi diễn tập trên Chrome thật: bấm Mở cửa sổ nổi, chuyển tab, rời phòng từ cửa sổ nổi không hỏi xác nhận.',
           )
         await qa.expect.poll(() => headerCount(qa.page), { timeout: 15_000 }).toBeGreaterThanOrEqual(1)
         const count = await headerCount(qa.page)
@@ -1205,7 +1205,7 @@ export default {
           await qa.expect(elsewhere).toBeVisible({ timeout: 10_000 })
         } catch {
           qa.inconclusive(
-            'Trình duyệt không giao diện từ chối mở cửa sổ nổi (UC-78 EX-1: không báo gì, cuộc gọi ở lại cửa sổ chính). Kiểm tay khi diễn tập trên Chrome thật.',
+            'Trình duyệt không giao diện từ chối mở cửa sổ nổi (UC-49 EX-1: không báo gì, cuộc gọi ở lại cửa sổ chính). Kiểm tay khi diễn tập trên Chrome thật.',
           )
         }
         qa.expect(await headerCount(qa.page), 'the floating window joined a second time').toBe(count)
@@ -1225,7 +1225,7 @@ export default {
         'Khách tick "Tôi biết cuộc họp được ghi âm…", bấm Vào phòng',
       ],
       expected:
-        'Trước khi tick, nút Vào phòng bị khoá; màn chờ không có nhãn mức độ mật và (i) không nói về AI; vào phòng thì Chủ toạ thấy dòng "Khách"; Khách không có nút Tắt mic; thu hồi lời mời thì Khách bị đưa ra màn kết thúc (UC-37 AF-2, EX-9, UC-04)',
+        'Trước khi tick, nút Vào phòng bị khoá; màn chờ không có nhãn mức độ mật và (i) không nói về AI; vào phòng thì Chủ toạ thấy dòng "Khách"; Khách không có nút Tắt mic; thu hồi lời mời thì Khách bị đưa ra màn kết thúc (UC-43 AF-2, EX-9, UC-04)',
       run: async (qa) => {
         qa.inconclusive(
           'Khách cần mã OTP gửi tới một hộp thư thật (UC-04), bộ chạy không đọc được thư. Kiểm tay khi diễn tập (SCRUM-205): mời một email thật vào cuộc họp Trực tuyến, khách xác minh OTP, khai tên, chờ ở màn chờ tới khi Chủ toạ bắt đầu (trang tự hỏi lại mỗi 10 giây), tick xác nhận ghi âm rồi Vào phòng; Chủ toạ thấy "Khách" trong Người dự và tắt mic khách được; thu hồi lời mời thì khách bị đưa ra ngay.',
@@ -1243,7 +1243,7 @@ export default {
         'Trình duyệt chặn tự phát âm thanh',
       ],
       expected:
-        'Nghe rõ không vọng; dải "Mất kết nối, đang kết nối lại…" (MSG333), rồi "Mất kết nối tới phòng họp." (MSG332) có Vào lại; chặn quyền: MSG334, vẫn vào nghe được; MSG338 với nút "Bấm để nghe mọi người"; người thứ 51 không vào được (BR-336, chưa có mã)',
+        'Nghe rõ không vọng; dải "Mất kết nối, đang kết nối lại…" (MSG333), rồi "Mất kết nối tới phòng họp." (MSG332) có Vào lại; chặn quyền: MSG334, vẫn vào nghe được; MSG338 với nút "Bấm để nghe mọi người"; người thứ 51 không vào được (NFR, chưa có mã)',
       run: async (qa) => {
         qa.inconclusive(
           'Cần người thật và thiết bị thật: chất lượng tiếng/vọng, viền người đang nói theo giọng thật, mất mạng (MSG333 → MSG332), chặn quyền thiết bị (MSG334) và chặn phát âm thanh (MSG338) cần thao tác trong cài đặt trình duyệt; 50 người cần bộ tải tests/load. Kiểm tay khi diễn tập (SCRUM-205) trên hai máy và một điện thoại.',

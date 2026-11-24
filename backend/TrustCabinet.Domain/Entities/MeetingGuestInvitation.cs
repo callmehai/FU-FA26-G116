@@ -22,7 +22,7 @@ public class MeetingGuestInvitation : Entity
     public Guid? AttendanceRecordedById { get; set; }
     public DateTimeOffset? AttendanceRecordedAt { get; set; }
     public string InitialInvitationDeliveryKey { get; set; } = string.Empty;
-    /// <summary>BR-180: what the verified guest says about themselves; never replaces InvitedName or Email.</summary>
+    /// <summary>UC-04: what the verified guest says about themselves; never replaces InvitedName or Email.</summary>
     public string? SelfDeclaredDisplayName { get; set; }
     public string? SelfDeclaredJobTitle { get; set; }
 }

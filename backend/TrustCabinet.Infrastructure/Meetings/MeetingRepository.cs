@@ -29,7 +29,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             meetings = meetings.Where(m => m.Sensitivity == sensitivity);
         }
 
-        // BR-30: a meeting matches when its own planned interval overlaps the range.
+        // a meeting matches when its own planned interval overlaps the range.
         if (query.From is { } from)
         {
             meetings = meetings.Where(m => m.PlannedEndTime >= from);
@@ -150,7 +150,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             return null;
         }
 
-        // Participants are the invitees a reschedule notifies (BR-76).
+        // Participants are the invitees a reschedule notifies (UC-14).
         return await db.Meetings
             .AsSplitQuery()
             .Include(m => m.Participants)

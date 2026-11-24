@@ -185,10 +185,10 @@ public sealed partial class MessageCodeCatalogueTests
     }
 
     [Theory]
-    [InlineData("MSG238", "UC-33b / Normal Flow")]
-    [InlineData("MSG239", "UC-33d / Normal Flow")]
-    [InlineData("MSG252", "UC-55 / EX-8")]
-    [InlineData("MSG253", "UC-74 / Main Flow")]
+    [InlineData("MSG238", "UC-36b / Normal Flow")]
+    [InlineData("MSG239", "UC-36d / Normal Flow")]
+    [InlineData("MSG252", "UC-65 / EX-8")]
+    [InlineData("MSG253", "UC-42 / Main Flow")]
     public void Participants_preserve_main_code_reservations(string code, string source)
     {
         var endpoint = File.ReadAllText(Path.Combine(

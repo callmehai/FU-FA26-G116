@@ -12,7 +12,7 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Reports;
 
-/// <summary>SCRUM-38 — GET /api/reports/meetings (UC-70a) and GET /api/reports/meetings/export (UC-70b).</summary>
+/// <summary>SCRUM-38 — GET /api/reports/meetings (UC-79a) and GET /api/reports/meetings/export (UC-79b).</summary>
 public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportFixture>
 {
     private const string Report = "/api/reports/meetings";
@@ -32,13 +32,13 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         var (me, other) = (await f.Users(2)) is [var a, var b] ? (a, b) : default;
         await f.Meeting(me, Local(2026, 1, 10), MeetingStatus.Draft, Sensitivity.Normal);
         await f.Meeting(me, Local(2026, 1, 20), MeetingStatus.Published, Sensitivity.Secret);
-        // 31/01 18:00 UTC is 01/02 01:00 in Vietnam: a February meeting (BR-433).
+        // 31/01 18:00 UTC is 01/02 01:00 in Vietnam: a February meeting (UC-79a).
         await f.Meeting(me, new DateTimeOffset(2026, 1, 31, 18, 0, 0, TimeSpan.Zero), MeetingStatus.Cancelled, Sensitivity.Internal);
         await f.Meeting(me, Local(2026, 3, 1, 0), MeetingStatus.Ended, Sensitivity.Secret, Local(2026, 3, 1, 2));
         // Outside the period on either side, by an hour in Vietnam time.
         await f.Meeting(me, new DateTimeOffset(2025, 12, 31, 16, 0, 0, TimeSpan.Zero));
         await f.Meeting(me, new DateTimeOffset(2026, 3, 31, 17, 0, 0, TimeSpan.Zero));
-        // Someone else's meeting the caller may not read (BR-432).
+        // Someone else's meeting the caller may not read (BR-149, BR-150).
         await f.Meeting(other, Local(2026, 2, 5), MeetingStatus.Published, Sensitivity.Secret);
 
         using var client = f.Client(me);
@@ -54,7 +54,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Equal(["2026-01", "2026-02", "2026-03"],
             report.GetProperty("byMonth").EnumerateArray().Select(m => m.GetProperty("month").GetString()!));
         Assert.Equal([2, 1, 1], report.GetProperty("byMonth").EnumerateArray().Select(m => m.GetProperty("count").GetInt32()));
-        // Every status and sensitivity, zeros included, in the enum's order (BR-434).
+        // Every status and sensitivity, zeros included, in the enum's order (BR-149, BR-150).
         Assert.Equal(Enum.GetNames<MeetingStatus>(),
             report.GetProperty("byStatus").EnumerateArray().Select(s => s.GetProperty("status").GetString()!));
         Assert.Equal(1, Count(report, "byStatus", "status", "Draft"));
@@ -67,7 +67,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Equal(1, Count(report, "bySensitivity", "sensitivity", "Normal"));
         Assert.Equal(1, Count(report, "bySensitivity", "sensitivity", "Internal"));
         Assert.Equal(2, Count(report, "bySensitivity", "sensitivity", "Secret"));
-        // BR-437: figures only — no id or title anywhere in the body.
+        // BR-152: figures only — no id or title anywhere in the body.
         var raw = report.GetRawText();
         Assert.DoesNotContain("Cuộc họp trong báo cáo", raw);
         Assert.DoesNotContain("\"id\"", raw, StringComparison.OrdinalIgnoreCase);
@@ -101,7 +101,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
                 new MeetingGuestInvitation { MeetingId = taken, InvitedName = "Khách bị thu hồi", Email = $"{Guid.NewGuid():N}@guest.test",
                     InvitedById = organizer, Attendance = AttendanceStatus.Absent, RevokedAt = Local(2026, 6, 2), RevokedById = organizer,
                     InitialInvitationDeliveryKey = Guid.NewGuid().ToString("N") });
-            // The first issue counts; the correction issued later does not (BR-436).
+            // The first issue counts; the correction issued later does not (BR-151).
             var first = new MeetingMinutes { MeetingId = taken, RevisionNumber = 1, CreatedById = secretary,
                 Status = MinutesStatus.Issued, IssuedAt = endedAt.AddHours(10) };
             db.MeetingMinutes.Add(first);
@@ -115,7 +115,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         using var client = f.Client(organizer);
         var report = await client.GetFromJsonAsync<JsonElement>($"{Report}?from=2026-06&to=2026-06");
         Assert.Equal(3, report.GetProperty("total").GetInt32());
-        // Present: Chair, Secretary, the guest — of four current participants and one guest (BR-435).
+        // Present: Chair, Secretary, the guest — of four current participants and one guest (BR-151).
         var attendance = report.GetProperty("attendance");
         Assert.Equal(0.6, attendance.GetProperty("averageRate").GetDouble());
         Assert.Equal(1, attendance.GetProperty("meetings").GetInt32());
@@ -140,7 +140,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
     [Fact]
     public async Task A_viewer_with_nothing_readable_gets_zeros_and_no_averages()
     {
-        // An administrator is counted like anyone else: no meeting of theirs, nothing to count (BR-432).
+        // An administrator is counted like anyone else: no meeting of theirs, nothing to count (BR-149, BR-150).
         var (admin, organizer) = (await f.Users(2)) is [var a, var b] ? (a, b) : default;
         await using (var db = f.Db())
         {
@@ -259,7 +259,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Contains(rows, r => r is ["Mật", "1"]);
         Assert.Contains(rows, r => r is ["Tỷ lệ tham dự trung bình", "Chưa có dữ liệu", "0", "0"]);
         Assert.Contains(rows, r => r is ["Thời lượng họp trung bình (phút)", "Chưa có dữ liệu", "0", "0"]);
-        // BR-437: no title in the file.
+        // BR-152: no title in the file.
         Assert.DoesNotContain("Tiêu đề không được lộ", sheet.ToString());
 
         await using var db = f.Db();
@@ -326,7 +326,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(Report)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(Export)).StatusCode);
 
-        // A Guest may not view or export the report (BR-432, PO 09/11/2026 Q3): a guest token has no internal account.
+        // A Guest may not view or export the report (BR-149, BR-150, PO 09/11/2026 Q3): a guest token has no internal account.
         using var guest = f.GuestClient();
         Assert.Equal(HttpStatusCode.Forbidden, (await guest.GetAsync(Report)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await guest.GetAsync(Export)).StatusCode);

@@ -8,9 +8,9 @@ using TrustCabinet.Domain.Documents;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-32a, UC-32c — list, view and download meeting documents (SCRUM-21); UC-33a AF-1 — upload
-/// files from the computer into a meeting (SCRUM-107, ADR-0024); UC-33a from the library, UC-33b,
-/// UC-33c, UC-33d — add, link, remove and unlink (SCRUM-58). A guest with a current UC-04 session reads the
+/// UC-35a, UC-35b — list, view and download meeting documents (SCRUM-21); UC-36a AF-1 — upload
+/// files from the computer into a meeting (SCRUM-107, ADR-0024); UC-36a from the library, UC-36b,
+/// UC-36c, UC-36d — add, link, remove and unlink (SCRUM-58). A guest with a current UC-04 session reads the
 /// list and the content too (SCRUM-123); every change stays internal-only.
 /// </summary>
 public static class MeetingDocumentEndpoints
@@ -49,7 +49,7 @@ public static class MeetingDocumentEndpoints
     /// <summary>MSG346, for the library upload as well (ADR-0034).</summary>
     internal const string StorageFullMessage =
         "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
-    /// <summary>MSG164 and MSG288, for the vote and library uploads as well (BR-214, BR-319).</summary>
+    /// <summary>MSG164 and MSG288, for the vote and library uploads as well (UC-36a, UC-39, NFR, UC-36b).</summary>
     internal const string InvalidFilesMessage = "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.";
     internal const string SubmissionTooLargeMessage = "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.";
     private const string Msg349MeetingCancelled = "MSG349";
@@ -93,7 +93,7 @@ public static class MeetingDocumentEndpoints
         Msg247LinksLocked, "Không thể thay đổi liên kết tài liệu sau khi cuộc họp đã kết thúc.",
         Msg244LinkFailed, "Không gắn được tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại.");
 
-    /// <summary>UC-33b AF-1 and AF-2 add documents to the meeting as well, so a failed save is UC-33a's.</summary>
+    /// <summary>UC-36b AF-1 and AF-2 add documents to the meeting as well, so a failed save is UC-36a's.</summary>
     private static readonly ChangeCodes LinkNewCodes = LinkCodes with { Failed = AddCodes.Failed, FailedMessage = AddCodes.FailedMessage };
 
     private static readonly ChangeCodes UnlinkCodes = new(
@@ -101,7 +101,7 @@ public static class MeetingDocumentEndpoints
         Msg247LinksLocked, LinkCodes.EndedMessage,
         Msg245UnlinkFailed, "Không gỡ được liên kết tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại.");
 
-    /// <summary>Meeting document IDs for UC-33b, library document IDs for UC-33a and UC-33b AF-2.</summary>
+    /// <summary>Meeting document IDs for UC-36b, library document IDs for UC-36a, UC-36b AF-2.</summary>
     internal sealed record DocumentIdsBody(Guid[]? DocumentIds);
 
     public static void MapMeetingDocumentEndpoints(this IEndpointRouteBuilder app)
@@ -121,7 +121,7 @@ public static class MeetingDocumentEndpoints
             .RequireActiveUser(Map(new(DocumentUploadFailure.StoreFailed), Guid.Empty))
             .MapPost("/upload", UploadAsync);
 
-        // UC-33a: from the caller's library.
+        // UC-36a: from the caller's library.
         app.MapGroup(prefix).RequireActiveUser(Change(new(DocumentUploadFailure.StoreFailed), AddCodes))
             .MapPost("", async (Guid meetingId, DocumentIdsBody body, HttpContext context, IMeetingDocumentService service,
                 MeetingDocumentChangePublisher publisher, ILoggerFactory logs, CancellationToken ct) =>
@@ -132,7 +132,7 @@ public static class MeetingDocumentEndpoints
                 return Map(outcome, meetingId);
             });
 
-        // UC-33c.
+        // UC-36c.
         app.MapGroup(prefix).RequireActiveUser(Change(new(DocumentUploadFailure.StoreFailed), RemoveCodes))
             .MapDelete("/{meetingDocumentId:guid}", async (Guid meetingId, Guid meetingDocumentId, HttpContext context,
                 IMeetingDocumentService service, MeetingDocumentChangePublisher publisher, ILoggerFactory logs,
@@ -146,7 +146,7 @@ public static class MeetingDocumentEndpoints
                 }));
             });
 
-        // UC-33b and UC-33d: a link between a meeting document and an agenda item, for the Chair or the Secretary.
+        // UC-36b, UC-36d: a link between a meeting document and an agenda item, for the Chair or the Secretary.
         const string links = "/api/meetings/{meetingId:guid}/agenda/{agendaItemId:guid}/documents";
         app.MapGroup(links).RequireActiveUser(Change(new(DocumentUploadFailure.StoreFailed), LinkCodes))
             .MapPost("", (Guid meetingId, Guid agendaItemId, DocumentIdsBody body, HttpContext context,
@@ -177,8 +177,8 @@ public static class MeetingDocumentEndpoints
     }
 
     /// <summary>
-    /// Streams the stored bytes unchanged (BR-183, BR-216); the browser renders PDF and DOCX itself.
-    /// <paramref name="download"/> marks the attachment as a download, refused for a Secret meeting (BR-188).
+    /// Streams the stored bytes unchanged (BR-068); the browser renders PDF and DOCX itself.
+    /// <paramref name="download"/> marks the attachment as a download, refused for a Secret meeting (BR-081).
     /// </summary>
     private static async Task<IResult> ContentAsync(Guid meetingId, Guid meetingDocumentId, HttpContext context,
         IMeetingDocumentService service, IMeetingGuestIdentityResolver identities, CancellationToken ct, bool download = false)
@@ -211,7 +211,7 @@ public static class MeetingDocumentEndpoints
         var (status, code, message) = failure switch
         {
             // Same answer for a meeting that does not exist, one the caller cannot see, and a
-            // document removed from it or from another meeting (SCRUM-22, BR-211).
+            // document removed from it or from another meeting (SCRUM-22, BR-074–BR-076).
             DocumentReadFailure.NotFound => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
             DocumentReadFailure.DownloadForbidden => (403, Msg159SecretNoDownload,
                 "Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về."),
@@ -247,7 +247,7 @@ public static class MeetingDocumentEndpoints
         }
     }
 
-    /// <summary>UC-33b AF-1: the same checks and write order as UC-33a AF-1, plus the agenda item.</summary>
+    /// <summary>UC-36b AF-1: the same checks and write order as UC-36a AF-1, plus the agenda item.</summary>
     private static async Task<IResult> AttachUploadAsync(Guid meetingId, Guid agendaItemId, HttpContext context,
         IMeetingDocumentService service, MeetingDocumentChangePublisher publisher, ILoggerFactory logs, CancellationToken ct)
     {
@@ -282,9 +282,9 @@ public static class MeetingDocumentEndpoints
     }
 
     /// <summary>
-    /// Reads and checks the files of a multipart upload: the request's form, its size (BR-319), then each file
-    /// by its bytes (BR-187, BR-214, BR-215). The caller deletes <paramref name="tempFiles"/>; the library
-    /// upload (UC-36) uses this too.
+    /// Reads and checks the files of a multipart upload: the request's form, its size (UC-36a, UC-36b, UC-39), then each file
+    /// by its bytes (BR-069, UC-36a, UC-39, NFR). The caller deletes <paramref name="tempFiles"/>; the library
+    /// upload (UC-39) uses this too.
     /// </summary>
     internal static async Task<DocumentUploadOutcome> ReadFilesAsync(HttpContext context, List<string> tempFiles,
         CancellationToken ct)
@@ -392,7 +392,7 @@ public static class MeetingDocumentEndpoints
         }
     }
 
-    /// <summary>UC-33a, from the computer or from the library.</summary>
+    /// <summary>UC-36a, from the computer or from the library.</summary>
     private static IResult Map(DocumentUploadOutcome outcome, Guid meetingId)
         => Change(outcome, AddCodes, () => Results.Json(new
         {
@@ -403,7 +403,7 @@ public static class MeetingDocumentEndpoints
             documents = outcome.Documents,
         }, statusCode: StatusCodes.Status201Created));
 
-    /// <summary>UC-33b: <c>documents</c> lists the meeting documents AF-1 and AF-2 added; linking existing ones adds none.</summary>
+    /// <summary>UC-36b: <c>documents</c> lists the meeting documents AF-1 and AF-2 added; linking existing ones adds none.</summary>
     private static IResult Attached(DocumentUploadOutcome outcome, Guid meetingId, Guid agendaItemId, ChangeCodes codes)
         => Change(outcome, codes, () => Results.Ok(new
         {
@@ -435,7 +435,7 @@ public static class MeetingDocumentEndpoints
                 "Hãy chọn một hoặc nhiều tài liệu còn trong kho của bạn."),
             DocumentUploadFailure.AlreadyInMeeting => (409, Msg165AlreadyInMeeting,
                 "Một hoặc nhiều tài liệu đã chọn đã có trong cuộc họp."),
-            // Removed, or of another meeting: the same answer (BR-211).
+            // Removed, or of another meeting: the same answer (BR-074–BR-076).
             DocumentUploadFailure.NotInMeeting => (404, Msg170NotInMeeting,
                 "Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu."),
             DocumentUploadFailure.AgendaItemNotFound => (404, Msg242AgendaItemUnavailable,

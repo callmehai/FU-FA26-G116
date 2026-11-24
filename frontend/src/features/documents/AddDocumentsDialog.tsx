@@ -34,27 +34,27 @@ function isStale(err: unknown) {
   return (
     isApiError(err, 404, 'MSG174') ||
     isApiError(err, 409, 'MSG349') ||
-    // The general group (UC-33a).
+    // The general group (UC-36a).
     isApiError(err, 403, 'MSG162') ||
     isApiError(err, 409, 'MSG172') ||
-    // An agenda item (UC-33b).
+    // An agenda item (UC-36b).
     isApiError(err, 403, 'MSG240') ||
     isApiError(err, 409, 'MSG247') ||
     isApiError(err, 404, 'MSG242') ||
     isApiError(err, 404, 'MSG170') ||
-    // A vote (UC-76a): no longer a draft or no longer the caller's to manage, or no longer visible.
+    // A vote (UC-68a): no longer a draft or no longer the caller's to manage, or no longer visible.
     isApiError(err, 409, 'MSG213') ||
     isApiError(err, 404, 'MSG205')
   )
 }
 
 /**
- * Adding documents to a meeting (SCRUM-107, SCRUM-58): to the general group (UC-33a) from the computer or the
- * library, or to one agenda item (UC-33b) or one draft vote (UC-76a, SCRUM-96) from the meeting's own documents,
+ * Adding documents to a meeting (SCRUM-107, SCRUM-58): to the general group (UC-36a) from the computer or the
+ * library, or to one agenda item (UC-36b) or one draft vote (UC-68a, SCRUM-96) from the meeting's own documents,
  * the library or the computer.
- * A choice from the library or the meeting is all or none (BR-304). Files from the computer go to the upload
+ * A choice from the library or the meeting is all or none (UC-36b). Files from the computer go to the upload
  * queue, one request each (PO 27/10/2026): each is all or none on its own, meeting and library together
- * (BR-194), and lands in the uploader's library, in the meeting's folder (BR-192).
+ * (UC-36a), and lands in the uploader's library, in the meeting's folder (UC-36a).
  */
 export function AddDocumentsDialog({
   meeting,
@@ -71,7 +71,7 @@ export function AddDocumentsDialog({
   meeting: Meeting
   /** The agenda item to link to; the general group when neither this nor `vote` is given. */
   item?: { id: string; number: number; title: string; documentIds: string[] }
-  /** The draft vote to attach to (UC-76a). */
+  /** The draft vote to attach to (UC-68a). */
   vote?: { id: string; title: string; documentIds: string[] }
   /** Every document of the meeting, for "Trong cuộc họp"; null while it loads. */
   meetingDocuments?: MeetingDocument[] | null
@@ -230,7 +230,7 @@ export function AddDocumentsDialog({
           <LibraryPicker
             selected={fromLibrary}
             reloadKey={libraryReload}
-            // The general group only: an item or a vote links a document already in the meeting (UC-33b, UC-76a AF-2).
+            // The general group only: an item or a vote links a document already in the meeting (UC-36b, UC-68a AF-2).
             meetingId={target ? undefined : meeting.id}
             onToggle={(doc) =>
               setFromLibrary((all) => {
@@ -295,7 +295,7 @@ export function AddDocumentsDialog({
         <p className="alert alert-info">
           {source === 'computer' ? (
             // Not the folder's name: it is "<title> – dd/mm/yyyy" when first made, but the owner may rename or move
-            // it and uploads still go there (BR-227).
+            // it and uploads still go there (UC-36a).
             'Tệp cũng được lưu vào Kho tài liệu của bạn, trong thư mục của cuộc họp này.'
           ) : source === 'library' ? (
             'Cuộc họp dùng tên hiện tại của tài liệu; đổi tên trong kho sau đó không đổi tên trong cuộc họp.'

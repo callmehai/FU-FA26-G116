@@ -1052,7 +1052,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Empty(_repository.StagedPublicationIds);
     }
 
-    // UC-75 Cancel Meeting (SCRUM-99).
+    // UC-22 Cancel Meeting (SCRUM-99).
 
     [Fact]
     public async Task Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees()

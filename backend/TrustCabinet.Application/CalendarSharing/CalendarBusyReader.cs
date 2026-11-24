@@ -4,9 +4,9 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// The busy periods of a set of people over a time range, as far as each may be shown (BR-414 → BR-420, BR-427). The
-/// shared week (UC-85c) uses it now; the meeting-time search (UC-85a, SCRUM-137) reuses it, passing a null level for the
-/// finder's own calendar (BR-418). Nothing about a meeting leaves this class but when it keeps someone busy.
+/// The busy periods of a set of people over a time range, as far as each may be shown (BR-140, BR-141, BR-144–BR-147). The
+/// shared week (UC-81c) uses it now; the meeting-time search (UC-81a, SCRUM-137) reuses it, passing a null level for the
+/// finder's own calendar (BR-144, BR-145). Nothing about a meeting leaves this class but when it keeps someone busy.
 /// </summary>
 public sealed class CalendarBusyReader(ICalendarBusyQuery query, TimeProvider clock)
 {

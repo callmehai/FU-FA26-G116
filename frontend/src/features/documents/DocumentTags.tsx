@@ -28,7 +28,7 @@ export function FileTypeTag({ pdf, size = 32 }: { pdf: boolean; size?: number })
   )
 }
 
-/** BR-188: a Secret meeting's documents are read in the browser only. */
+/** BR-081: a Secret meeting's documents are read in the browser only. */
 export function OnlineOnly() {
   return (
     <span className="online-only" data-tooltip="Cuộc họp Mật: tài liệu chỉ xem trực tuyến, không tải về">

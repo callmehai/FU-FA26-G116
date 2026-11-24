@@ -8,9 +8,9 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Documents;
 
 /// <summary>
-/// The personal library (ADR-0006, ADR-0018): folders (UC-72a–d, SCRUM-110) and documents (UC-34, UC-36,
-/// UC-71a–c, SCRUM-111). Only the owner sees it; another person's folder or document is answered as missing
-/// (BR-242). Every change runs under a per-owner lock, so two moves at once cannot build a cycle or a sixth
+/// The personal library (ADR-0006, ADR-0018): folders (UC-41a–d, SCRUM-110) and documents (UC-37, UC-39,
+/// UC-40a–c, SCRUM-111). Only the owner sees it; another person's folder or document is answered as missing
+/// (BR-083). Every change runs under a per-owner lock, so two moves at once cannot build a cycle or a sixth
 /// level, and two uploads at once cannot both slip under the quota.
 /// </summary>
 public sealed class PersonalLibraryService(IPersonalLibraryRepository library, StoredFileWriter writer,
@@ -27,8 +27,8 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
                 if (!await MayReadAsync(readerId, ownerId, token)) return new LibraryOutcome<LibraryView>(LibraryFailure.NotFound);
                 if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
                     return new LibraryOutcome<LibraryView>(LibraryFailure.NotFound);
-                // SCRUM-124: only who may add to the meeting (its current Chair or Secretary, BR-184) learns what is in
-                // it. A Member must not, since a document on a draft vote is hidden from them (BR-253).
+                // SCRUM-124: only who may add to the meeting (its current Chair or Secretary, BR-070, BR-071) learns what is in
+                // it. A Member must not, since a document on a draft vote is hidden from them (BR-086, BR-087).
                 if (meetingId is { } asked && !await library.IsMeetingManagerAsync(asked, readerId, token))
                     meetingId = null;
                 HashSet<Guid>? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, token);
@@ -112,7 +112,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
             var (failure, value) = FolderName(name);
             if (failure != LibraryFailure.None) return new(failure);
             if (Depth(folders, parentId) + 1 > DocumentFileRules.MaxFolderDepth) return new(LibraryFailure.TooDeep);
-            // Duplicate names are allowed (BR-221).
+            // Duplicate names are allowed (UC-41a, UC-41b).
             var now = clock.GetUtcNow();
             var folder = new Folder { OwnerId = ownerId, ParentId = parentId, Name = value!, CreatedAt = now, UpdatedAt = now };
             library.AddFolder(folder);
@@ -140,10 +140,10 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
         {
             if (!folders.ContainsKey(folderId)) return new(LibraryFailure.NotFound);
             if (parentId is { } parent && !folders.ContainsKey(parent)) return new(LibraryFailure.DestinationNotFound);
-            // The destination's own chain reaching the folder means it is the folder or one of its subfolders (BR-222).
+            // The destination's own chain reaching the folder means it is the folder or one of its subfolders (BR-084).
             for (var at = parentId; at is { } id; at = folders[id])
                 if (id == folderId) return new(LibraryFailure.IntoItself);
-            // The whole subtree moves along, so its deepest folder must stay within level five (BR-191).
+            // The whole subtree moves along, so its deepest folder must stay within level five (UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d).
             if (Depth(folders, parentId) + Height(folders, folderId) > DocumentFileRules.MaxFolderDepth)
                 return new(LibraryFailure.TooDeep);
             var folder = await library.FindFolderAsync(folderId, token);
@@ -157,10 +157,10 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
         => (await InLibraryLockAsync<bool>(ownerId, "delete a folder", async (folders, token) =>
         {
             if (!folders.ContainsKey(folderId)) return new(LibraryFailure.NotFound);
-            // Only an empty folder (BR-223); the Restrict foreign keys are the backstop.
+            // Only an empty folder (BR-084); the Restrict foreign keys are the backstop.
             if (folders.ContainsValue(folderId) || await library.HasDocumentsAsync(folderId, token))
                 return new(LibraryFailure.NotEmpty);
-            // A meeting's upload folder too: the next upload to that meeting makes a new one (BR-228).
+            // A meeting's upload folder too: the next upload to that meeting makes a new one (UC-36a).
             await library.DeleteFolderAsync(folderId, token);
             return new(Value: true);
         }, ct)).Failure;
@@ -183,7 +183,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
         return LibraryFailure.SaveFailed;
     }
 
-    /// <summary>UC-36. The system's storage limit is the writer's to check (ADR-0034).</summary>
+    /// <summary>UC-39. The system's storage limit is the writer's to check (ADR-0034).</summary>
     public async Task<LibraryOutcome<IReadOnlyList<LibraryDocument>>> UploadAsync(Guid ownerId, Guid? folderId,
         IReadOnlyList<DocumentUploadFile> files, CancellationToken ct = default)
         => await writer.WriteAsync<LibraryOutcome<IReadOnlyList<LibraryDocument>>>(ownerId, files,
@@ -192,7 +192,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
                 await library.LockLibraryAsync(ownerId, token);
                 if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
                     return new(LibraryFailure.DestinationNotFound);
-                // Original names; the same name or bytes twice is still two documents (BR-229).
+                // Original names; the same name or bytes twice is still two documents (BR-068).
                 var added = stored.Select(file => new Document { OwnerId = ownerId, FolderId = folderId,
                     StoredFileId = file.Id, FileName = file.OriginalFileName, CreatedAt = now, UpdatedAt = now }).ToList();
                 library.AddDocuments(added);
@@ -211,7 +211,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
             if (name is null || Path.GetFileNameWithoutExtension(name).Trim().Length == 0
                 || !DocumentFileRules.MatchesContentType(name, document.StoredFile.ContentType))
                 return Task.FromResult(LibraryFailure.NameInvalid);
-            // The meeting copies keep their own name (BR-276).
+            // The meeting copies keep their own name (UC-40b).
             document.FileName = name;
             return Task.FromResult(LibraryFailure.None);
         }, ct);
@@ -222,7 +222,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
         {
             if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
                 return LibraryFailure.DestinationNotFound;
-            // Only the library row moves; meetings using the file are untouched (BR-245).
+            // Only the library row moves; meetings using the file are untouched (UC-40c).
             document.FolderId = folderId;
             return LibraryFailure.None;
         }, ct);
@@ -231,7 +231,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
         => (await InLibraryLockAsync<bool>(ownerId, "delete a document", async (_, token) =>
         {
             // Only the library row: the meeting copies keep pointing at the stored file (their DocumentId goes
-            // null), and the purge deletes the bytes once nothing uses them (BR-186, BR-213, BR-232).
+            // null), and the purge deletes the bytes once nothing uses them (BR-074–BR-077).
             var deleted = await library.DeleteDocumentAsync(ownerId, documentId, token);
             return deleted == 0 ? new(LibraryFailure.NotFound) : new(Value: true);
         }, ct)).Failure;
@@ -243,8 +243,8 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
     /// <summary>
     /// What an administrator reading someone else's library must not see: the files of any Secret
     /// meeting, attached now or earlier, and that meeting's upload folder — named after it — with its subfolders.
-    /// Even when the administrator may view the meeting: there it opens under the meeting's own rules (BR-188 no
-    /// download, BR-211 removed, the audit row), and the library must not become a way round them.
+    /// Even when the administrator may view the meeting: there it opens under the meeting's own rules (BR-081 no
+    /// download, BR-074–BR-076 removed, the audit row), and the library must not become a way round them.
     /// </summary>
     private async Task<HashSet<Guid>> HiddenFromAsync(Guid ownerId, CancellationToken ct)
     {
@@ -313,7 +313,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
     private static (LibraryFailure Failure, string? Value) FolderName(string? name)
     {
         var value = name?.Trim();
-        // Not unique (BR-221), only not blank (BR-220).
+        // Not unique (UC-41a, UC-41b), only not blank (UC-41a, UC-41b).
         if (string.IsNullOrEmpty(value)) return (LibraryFailure.NameRequired, null);
         return value.Length > DocumentFileRules.MaxFolderNameLength ? (LibraryFailure.NameTooLong, null) : (LibraryFailure.None, value);
     }

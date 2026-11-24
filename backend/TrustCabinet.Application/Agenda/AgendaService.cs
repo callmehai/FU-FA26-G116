@@ -75,7 +75,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IUnitOfWork unitO
     private async Task<AgendaOutcome> SnapshotAsync(Meeting meeting, Guid? actorId, bool planning, CancellationToken ct)
     {
         var items = await agenda.ListAsync(meeting.Id, false, ct);
-        // Whoever may read the meeting may read its documents (BR-275), as in GET …/documents.
+        // Whoever may read the meeting may read its documents (BR-079, BR-080), as in GET …/documents.
         var linked = await documents.ListAsync(meeting.Id, ct);
         var byItem = linked.SelectMany(d => d.AgendaItemIds.Select(id => (ItemId: id, Document: d)))
             .ToLookup(d => d.ItemId, d => d.Document);
@@ -134,7 +134,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IUnitOfWork unitO
                 if (itemId.HasValue && item is null) return new(AgendaFailure.NotFound);
                 var execution = operation is AgendaOperation.Start or AgendaOperation.Complete;
                 var conclusion = operation == AgendaOperation.RecordConclusion;
-                // Starting and completing an item stays the Chair's alone (BR-69); planning and conclusions are both roles'.
+                // Starting and completing an item stays the Chair's alone (BR-060–BR-062); planning and conclusions are both roles'.
                 if (execution ? !AgendaRules.HasRole(meeting, actorId, MeetingRole.Chair) : !AgendaRules.IsPlanner(meeting, actorId))
                     return new(AgendaFailure.Forbidden);
                 if (conclusion
@@ -159,7 +159,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IUnitOfWork unitO
                     if (errors.Count != 0) return new(AgendaFailure.Invalid, Errors: errors);
                     var existingDocuments = item is null ? [] : (await documents.ListAsync(meetingId, token))
                         .Where(d => d.AgendaItemIds.Contains(item.Id)).Select(d => d.Id).ToArray();
-                    // Omitted keeps the item's links: the editor no longer picks documents, UC-33b links them.
+                    // Omitted keeps the item's links: the editor no longer picks documents, UC-36b links them.
                     input = input with { DocumentIds = input.DocumentIds ?? existingDocuments };
                     var presenterChanged = item is null ? input.PresenterId.HasValue || input.PresenterGuestInvitationId.HasValue
                         : item.PresenterId != input.PresenterId || item.PresenterGuestInvitationId != input.PresenterGuestInvitationId;

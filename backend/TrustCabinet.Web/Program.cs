@@ -49,7 +49,7 @@ builder.Services.AddHostedService<NotificationWorker>();
 builder.Services.AddHostedService<CallRoomJanitor>();
 builder.Services.AddHostedService<RecordingRetentionWorker>();
 builder.Services.AddHostedService<CombinedRecordingWorker>();
-// SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
+// SCRUM-99: cancels meetings nobody started a day after their planned start (BR-029).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
 // ADR-0067: orphaned audio, drafts of cancelled meetings, old notifications, guest codes and email bodies.
 builder.Services.AddHostedService<DataRetentionWorker>();
@@ -192,16 +192,16 @@ app.UseRateLimiter();
 // POST /api/auth/login, /refresh, /logout and GET /api/auth/me — UC-01.
 app.MapAuthEndpoints();
 
-// /api/users — UC-05 and UC-06 (SCRUM-13). Every route requires the AdminUsers capability.
+// /api/users — UC-05, UC-06 (SCRUM-13). Every route requires the AdminUsers capability.
 app.MapUserEndpoints();
 
-// /api/roles/capabilities — UC-10 and UC-11 (SCRUM-60). Same gate as /api/users.
+// /api/roles/capabilities — UC-09, UC-10 (SCRUM-60). Same gate as /api/users.
 app.MapRolePermissionEndpoints();
 
-// /api/roles — UC-12a … UC-12c, create / rename / delete a role (SCRUM-63). Same gate.
+// /api/roles — UC-11a … UC-11c, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
 
-// /api/meetings — UC-14/UC-15 mutations (SCRUM-17) and UC-17 list (SCRUM-18).
+// /api/meetings — UC-13, UC-14 mutations (SCRUM-17) and UC-16 list (SCRUM-18).
 app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
@@ -241,7 +241,7 @@ app.MapMeetingNoteEndpoints();
 // SCRUM-142: calendar sharing and the shared week.
 app.MapCalendarSharingEndpoints();
 app.MapMeetingSlotEndpoints();
-// SCRUM-38: meeting report (UC-70a) and its Excel export (UC-70b).
+// SCRUM-38: meeting report (UC-79a) and its Excel export (UC-79b).
 app.MapReportEndpoints();
 app.MapReportQueryEndpoints();
 

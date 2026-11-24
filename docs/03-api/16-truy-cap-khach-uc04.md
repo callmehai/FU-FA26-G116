@@ -5,7 +5,7 @@ hồ sơ tự khai → dùng token Khách gọi các API của đúng cuộc h�
 `meeting_participants`; Khách luôn gắn với một dòng `meeting_guest_invitations` (SCRUM-20).
 
 Đặc tả nguồn: UC-04, [sequence](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt),
-BR-148, BR-152–BR-157, BR-180–BR-182, [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md).
+BR-052–BR-054, BR-044, BR-055, [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md).
 Adapter tích hợp: [Agenda](08-agenda-contract-tich-hop-guest-uc04.md),
 [Thành phần tham dự](09-thanh-phan-tham-du-guest-uc04.md).
 
@@ -16,8 +16,8 @@ Adapter tích hợp: [Agenda](08-agenda-contract-tich-hop-guest-uc04.md),
 | Hiệu lực mã OTP | 15 phút kể từ lúc tạo | `CodeLifetimeMinutes` = 15 |
 | Nhập sai tối đa | 5 lần cho một mã; lần sai thứ 5 vô hiệu mã | `MaxFailedAttempts` = 5 |
 | Gửi lại mã | cách lần gửi trước tối thiểu 1 phút | `ResendIntervalSeconds` = 60 |
-| Số mã tối đa | 20 mã đã gửi được cho một lời mời trong 24 giờ bất kỳ (cửa sổ trượt, chốt 31/10/2026 khi review PR #203; BA bổ sung vào UC-04/BR-153) | `MaxCodesPerDay` = 20 |
-| Hiệu lực phiên Khách (BR-155) | 12 giờ kể từ lúc xác minh; token hết hạn cùng lúc, không có refresh | `SessionLifetimeHours` = 12 |
+| Số mã tối đa | 20 mã đã gửi được cho một lời mời trong 24 giờ bất kỳ (cửa sổ trượt, chốt 31/10/2026 khi review PR #203; BA bổ sung vào UC-04, BR-053, BR-054) | `MaxCodesPerDay` = 20 |
+| Hiệu lực phiên Khách (BR-053, BR-054) | 12 giờ kể từ lúc xác minh; token hết hạn cùng lúc, không có refresh | `SessionLifetimeHours` = 12 |
 | Khách sau khi cuộc họp kết thúc | mất mọi quyền đọc (Agenda, thành phần, tài liệu, realtime…) khi cuộc họp `Ended` — PO chốt 30/10/2026 (Jira SCRUM-116) | — |
 
 Phiên Khách còn hiệu lực khi **tất cả** đúng: phiên chưa hết hạn, chưa bị thu hồi (đăng xuất); lời mời
@@ -69,7 +69,7 @@ Chỉ đọc. FE gọi khi mở link để hiện tên cuộc họp và email b�
 
 ### 3.2 `POST /api/guest-access/invitations/{invitationId}/code` — gửi / gửi lại mã
 
-Tạo mã 6 chữ số, gửi ngay tới **email được mời** (BR-153), không qua hàng đợi email và không lưu mã
+Tạo mã 6 chữ số, gửi ngay tới **email được mời** (BR-053, BR-054), không qua hàng đợi email và không lưu mã
 thô (chỉ lưu HMAC). Mã mới vô hiệu mã cũ. Hai request đồng thời được xếp hàng bằng khoá dòng lời mời,
 nên chỉ một mã được tạo. Mỗi lời mời gửi được tối đa 20 mã trong 24 giờ bất kỳ; mã gửi lỗi đã bị xoá nên
 không tính. Khoảng chờ 1 phút được xét trước giới hạn này.
@@ -95,7 +95,7 @@ Body `{ "token": "…", "code": "123456" }`. Chỉ mã mới nhất của lời 
 | 503 `MSG374` | Không lưu được kết quả xác minh (EX-3); không có phiên nào được tạo |
 
 Tiêu thụ mã chạy trong transaction có khoá dòng lời mời: hai request cùng mã đúng thì chỉ một nhận
-token, request kia nhận `MSG126`. Cùng transaction đó ghi một dòng `audit_log` `guest.verified` (BR-444,
+token, request kia nhận `MSG126`. Cùng transaction đó ghi một dòng `audit_log` `guest.verified` (BR-009–BR-011,
 `object_type = GuestSession`, `object_id` = phiên mới, `details`: `meetingId`, `guestInvitationId`, không có
 `actor_id`), xem [nhật ký kiểm toán](21-nhat-ky-kiem-toan.md#nhận-diện-khách).
 
@@ -123,7 +123,7 @@ bấm rồi mới bị từ chối. Độ mật không được gửi; server v�
 `404/MSG378` khi phiên hết hạn, đã đăng xuất, lời mời bị thu hồi hoặc cuộc họp không còn
 `Published`/`InProgress` — FE xoá token và hiện màn kết thúc / mở lại link.
 
-### 4.2 `PUT /api/guest-access/session/profile` — hồ sơ tự khai (BR-180)
+### 4.2 `PUT /api/guest-access/session/profile` — hồ sơ tự khai (UC-04)
 
 Body `{ "displayName": "…", "jobTitle": "…" }`. `displayName` bắt buộc, cắt khoảng trắng hai đầu, tối
 đa 200 ký tự; `jobTitle` tuỳ chọn, tối đa 200 ký tự, rỗng thành `null`. Cả hai không được chứa ký tự điều
@@ -162,7 +162,7 @@ Guid rỗng) và bị từ chối. Hub `/hubs/meetings` nhận token qua `access
 kết nối khi token hết hạn.
 
 Khách dùng token này cho: `GET /api/meetings/{id}/agenda`, các GET của thành phần tham dự
-(`/participant-context`, `/participants`, `/invitation-response`), `PUT /invitation-response` (UC-29),
+(`/participant-context`, `/participants`, `/invitation-response`), `PUT /invitation-response` (UC-31),
 `GET /attendance`, hub `/hubs/meetings`, phòng họp trực tuyến `GET /call`, `POST /call/join` (SCRUM-59,
 [contract](09-phong-hop-truc-tuyen.md#khách-scrum-59)), và micro của chính Khách trong phòng: gửi, đọc, nghe lại và
 xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)), `…/speaking-requests`
@@ -177,7 +177,7 @@ xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-c
 | `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời; mã tạo quá 24 giờ (đã hết hạn, ngoài cửa sổ giới hạn 20 mã) bị xoá ở lần gửi mã kế tiếp của lời mời đó, và job `DataRetentionWorker` xoá mọi mã hết hạn quá `Retention:GuestChallengeDays` ngày (mặc định 1) dù lời mời không gửi mã nữa ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)). Phiên Khách giữ lại làm bằng chứng |
 | `guest_sessions` | `invitation_id`, `expires_at`, `revoked_at` | Một dòng mỗi lần xác minh thành công; `id` là `SessionId` ổn định khi reconnect. Giữ lại sau khi hết hạn: đây là bằng chứng Khách đã xác minh email (không chứa dữ liệu cá nhân ngoài id và thời điểm) |
 | `meeting_guest_invitations` | thêm `self_declared_display_name`, `self_declared_job_title` | Nullable; tách khỏi `invited_name`/`email` |
-| `audit_log` | `action = guest.verified`, `object_type = GuestSession` | Một dòng mỗi lần xác minh thành công (§3.3, BR-444); vào phòng họp ghi thêm `call.guest_admitted` ([phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)) |
+| `audit_log` | `action = guest.verified`, `object_type = GuestSession` | Một dòng mỗi lần xác minh thành công (§3.3, BR-009–BR-011); vào phòng họp ghi thêm `call.guest_admitted` ([phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)) |
 
 Không ghi mã OTP, link token hay access token vào log, audit hay `email_messages`. Link mời nằm trong
 `email_messages` của thư mời như mọi link khác (quyền đọc bảng giới hạn như outbox hiện có).
@@ -200,14 +200,14 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 
 ## 8. Màn hình FE (SCRUM-121, SCRUM-123)
 
-- Link mời mở `/guest/{invitationId}#token=…` (màn 1.3), ngoài phiên nội bộ và sidebar (BR-156). FE đọc `token` trong
+- Link mời mở `/guest/{invitationId}#token=…` (màn 1.3), ngoài phiên nội bộ và sidebar (BR-052). FE đọc `token` trong
   fragment rồi xoá khỏi thanh địa chỉ. Mở màn là gửi mã (`…/code`); `429/MSG373` lúc mở trang nghĩa là đã có mã gửi
   chưa tới 1 phút (có thể đã dùng): FE nói cả hai khả năng và đếm ngược "Gửi lại mã" theo `retryAfterSeconds`.
 - Token Khách và link token lưu trong `localStorage` (`trustcabinet.guest`, theo `invitationId`), tách khỏi phiên nội bộ.
   Còn phiên thì mở lại link vào thẳng cuộc họp (ALT-1). Khi trang Khách đang mở, mọi request và hub của tab dùng token
   Khách, không dùng phiên nội bộ dù trình duyệt đang đăng nhập.
 - Sau xác minh: form tên hiển thị / chức vụ (bước 5), rồi trang cuộc họp `/guest/{invitationId}` với các tab Nội dung,
-  Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-29). Tài liệu mở ở
+  Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-31). Tài liệu mở ở
   `/guest/{invitationId}/documents/{meetingDocumentId}`, có bảng Góp ý như thành viên (từ 02/11/2026, xem
   [Khách góp ý](11-tai-lieu-cuoc-hop.md#khách-góp-ý)); tab Tài liệu có nhóm Biểu quyết với "Đã đọc"/"Chưa đọc" của
   chính Khách. Cuộc họp Mật (`canDownload = false`)

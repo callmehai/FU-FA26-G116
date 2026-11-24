@@ -14,7 +14,7 @@ type State =
   | { kind: 'gone' }
 
 /**
- * The meeting's documents (UC-32a), shared by the Tài liệu tab and the call room's panel. Re-reads on
+ * The meeting's documents (UC-35a), shared by the Tài liệu tab and the call room's panel. Re-reads on
  * `documentsChanged` (an upload), on `agendaChanged` (an item added, renamed or started) and when the
  * hub comes back after a gap. A read overtaken by a newer one is dropped.
  */
@@ -48,7 +48,7 @@ export function useMeetingDocuments(meetingId: string) {
     }
   }, [load])
 
-  // A vote opened, closed or given documents changes the Biểu quyết group (UC-32a AF-1); a ballot does not.
+  // A vote opened, closed or given documents changes the Biểu quyết group (UC-35a AF-1); a ballot does not.
   // Ending the meeting turns every canConfirmRead off, so "Chưa đọc" goes with it. A comment moves its document's count.
   useMeetingEvents(meetingId, () => void load(), [
     'documentsChanged',
@@ -63,7 +63,7 @@ export function useMeetingDocuments(meetingId: string) {
 
 /**
  * Every document of the meeting the caller sees, once each: under agenda items, under votes or general. A vote's own
- * document is listed only under its vote (BR-280, option B), so counting or looking one up needs all three groups.
+ * document is listed only under its vote (UC-36b, UC-36d, option B), so counting or looking one up needs all three groups.
  */
 export function everyDocument(list: MeetingDocumentList): MeetingDocument[] {
   const all = [

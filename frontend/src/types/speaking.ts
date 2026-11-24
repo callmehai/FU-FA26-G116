@@ -1,10 +1,10 @@
 import type { MeetingStatus } from './meeting'
 
 /**
- * Register to Speak (SCRUM-27, UC-79). Contract in docs/03-api/20-dang-ky-phat-bieu.md.
+ * Register to Speak (SCRUM-27, UC-50). Contract in docs/03-api/20-dang-ky-phat-bieu.md.
  *
  * Only open requests are listed: closed ones (`Finished`, `Cancelled`) stay with the meeting for the minutes
- * (BR-339) but never come back here.
+ * (BR-104–BR-106) but never come back here.
  */
 export type SpeakingStatus = 'Queued' | 'Invited' | 'Speaking'
 

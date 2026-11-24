@@ -13,10 +13,10 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Application.Documents;
 
 /// <summary>
-/// UC-35 (SCRUM-23): comments on a meeting's copy of a document, so the same file in two meetings has two
-/// separate discussions. Anyone who can view the meeting may read and write them (BR-249, BR-275) until it
-/// ends (BR-282) or is cancelled; a removed document's comments stay in the database but are no longer shown (BR-284).
-/// A verified guest reads and writes as a Participant does (BR-181), under their invitation (ADR-0016), while their
+/// UC-38 (SCRUM-23): comments on a meeting's copy of a document, so the same file in two meetings has two
+/// separate discussions. Anyone who can view the meeting may read and write them (BR-082, BR-079, BR-080) until it
+/// ends (BR-079, BR-080) or is cancelled; a removed document's comments stay in the database but are no longer shown (BR-074–BR-076).
+/// A verified guest reads and writes as a Participant does (BR-055), under their invitation (ADR-0016), while their
 /// UC-04 session is current, rechecked on every call: a revoked invitation stops the next comment.
 /// </summary>
 public sealed class DocumentCommentService(IMeetingRepository meetings, IDocumentCommentRepository comments,
@@ -65,17 +65,17 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, IDocumen
             return await unitOfWork.ExecuteAsync(async token =>
             {
                 // A share lock on the meeting row, so a comment sent as the meeting ends or is cancelled is refused
-                // rather than slipped in after it (BR-282), while comments do not queue behind one another.
+                // rather than slipped in after it (BR-079, BR-080), while comments do not queue behind one another.
                 await comments.LockMeetingSharedAsync(meetingId, token);
                 // Likewise the guest's session row, so a comment sent as the guest signs out lands before it or not at all.
                 if (actor.Guest is { } session)
                     await sessions.LockSessionSharedAsync(session.SessionId, token);
-                // A guest whose meeting just ended has lost it altogether (BR-181), so MSG156 rather than MSG251.
+                // A guest whose meeting just ended has lost it altogether (BR-055), so MSG156 rather than MSG251.
                 var meeting = await FindReadableAsync(meetingId, actor, token);
                 if (meeting is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
                 var document = await comments.FindPageInfoAsync(meetingId, meetingDocumentId,
                     MeetingDocumentService.SeesDrafts(meeting, actor), token);
-                // Removed, of another meeting, or only on a draft vote the actor may not see: the same answer (BR-211, BR-253).
+                // Removed, of another meeting, or only on a draft vote the actor may not see: the same answer (BR-074–BR-076, BR-086, BR-087).
                 if (document is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
                 if (meeting.Status == MeetingStatus.Ended) return new CommentOutcome<DocumentCommentRow>(CommentFailure.Ended);
                 if (meeting.Status == MeetingStatus.Cancelled) return new CommentOutcome<DocumentCommentRow>(CommentFailure.Cancelled);
@@ -83,13 +83,13 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, IDocumen
                 Guid? threadId = null;
                 if (parentCommentId is { } parentId)
                 {
-                    // A reply to a reply joins the same thread: one level deep (BR-317).
+                    // A reply to a reply joins the same thread: one level deep (UC-38).
                     var parent = await comments.FindParentAsync(parentId, meetingDocumentId, token);
                     if (parent is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
                     threadId = parent.Value.ParentCommentId ?? parent.Value.Id;
                 }
 
-                // A page belongs to a top-level comment on a PDF, within the pages it has (BR-248).
+                // A page belongs to a top-level comment on a PDF, within the pages it has (UC-38).
                 var page = threadId is null && document.ContentType == DocumentFileRules.PdfContentType
                     && pageNumber >= 1 && (document.PageCount is null || pageNumber <= document.PageCount) ? pageNumber : null;
                 var now = clock.GetUtcNow();

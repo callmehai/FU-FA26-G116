@@ -4,7 +4,7 @@
 
 ## Phạm vi triển khai
 
-1. Domain: bỏ grants/recovery/response-summary operations; manager active Chair/Secretary; exactly-one Chair; giữ Secretary sau Published; Chair đọc trước Published; recipient/confirmation/ngoại lệ inactive Chair cho UC-73.
+1. Domain: bỏ grants/recovery/response-summary operations; manager active Chair/Secretary; exactly-one Chair; giữ Secretary sau Published; Chair đọc trước Published; recipient/confirmation/ngoại lệ inactive Chair cho UC-34.
 2. Tạo họp: input roster 1..100 unique active internal, đúng một Chair; khóa user FOR SHARE; save meeting/history/assignments nguyên tử; revision0, Pending, delivery key theo assignment; MSG277 validation. Update không nhận roster.
 3. API: roster response/totals, context myRole + ba flags, options ba roles, detail chair/secretaries/myMeetingRole. JSON mutation strict và If-Match giữ nguyên; MSG85/256/257/259/275/276.
 4. Persistence: xóa bảng grants, sửa migration chưa lên main và regenerate snapshot, giữ SQL preflight/delivery-key/Down guard, backfill creator Chair khi thiếu; seed mọi meeting có Chair.

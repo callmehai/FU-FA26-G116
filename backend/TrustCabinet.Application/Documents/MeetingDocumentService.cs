@@ -28,11 +28,11 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 // Same answer for a meeting that does not exist and one the caller cannot see (SCRUM-22).
                 if (await FindReadableAsync(meetingId, reader, token) is not { } meeting) return new MeetingDocumentListOutcome(DocumentReadFailure.NotFound);
                 var list = await documents.ListAsync(meetingId, token);
-                // A draft vote and its documents are the Chair's and the Secretary's alone (BR-253).
+                // A draft vote and its documents are the Chair's and the Secretary's alone (BR-086, BR-087).
                 var includeDrafts = SeesDrafts(meeting, reader);
                 var votes = await documents.ListVoteGroupsAsync(meetingId, includeDrafts, reader.UserId,
                     reader.Guest?.InvitationId, token);
-                // UC-74 takes a confirmation only while the meeting is InProgress.
+                // UC-42 takes a confirmation only while the meeting is InProgress.
                 if (meeting.Status != MeetingStatus.InProgress) votes = [.. votes.Select(v => v with { CanConfirmRead = false })];
                 return new MeetingDocumentListOutcome(List: list with { Votes = votes });
             }, TransactionMode.None, ct);
@@ -65,7 +65,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             return new(DocumentReadFailure.ReadFailed);
         }
         // Removed, never in this meeting, or only on a draft vote the reader may not see: the same answer, so an ID
-        // reveals nothing (BR-211, BR-253).
+        // reveals nothing (BR-074–BR-076, BR-086, BR-087).
         if (meeting is null) return new(DocumentReadFailure.NotFound);
         if (file is null) return new(DocumentReadFailure.NotFound);
         if (download && meeting.Sensitivity == Sensitivity.Secret) return new(DocumentReadFailure.DownloadForbidden);
@@ -86,7 +86,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         if (meeting.Sensitivity == Sensitivity.Secret)
         {
             // Recorded only once the file is actually there to hand over, and before it is: no
-            // audit row, no content (BR-318).
+            // audit row, no content (BR-011).
             try
             {
                 // A guest has no user row, so its invitation names who read it.
@@ -94,7 +94,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                     ? new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString(),
                         guestInvitationId = guest.InvitationId }
                     : new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() };
-                // Only a view reaches here: downloading a Secret meeting's document was refused above (BR-188).
+                // Only a view reaches here: downloading a Secret meeting's document was refused above (BR-081).
                 await audit.RecordAsync(AuditActions.DocumentViewed,
                     AuditActions.MeetingDocumentObjectType, meetingDocumentId, reader.UserId, details, ct);
             }
@@ -110,7 +110,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         return new(Content: new(content, file.FileName, file.ContentType, file.ByteSize));
     }
 
-    /// <summary>Whether <paramref name="reader"/> sees draft votes and their documents: the Chair and the Secretary (BR-253).</summary>
+    /// <summary>Whether <paramref name="reader"/> sees draft votes and their documents: the Chair and the Secretary (BR-086, BR-087).</summary>
     internal static bool SeesDrafts(Meeting meeting, ParticipantActor reader)
         => reader.UserId is { } userId && ParticipantRules.IsManager(meeting, userId);
 
@@ -179,9 +179,9 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         => InMeetingLockAsync(meetingId, actorId, "remove a document from", async (meeting, now, token) =>
         {
             var document = await documents.FindForRemoveAsync(meeting.Id, meetingDocumentId, token);
-            // Removed, or never in this meeting: the same answer (BR-211).
+            // Removed, or never in this meeting: the same answer (BR-074–BR-076).
             if (document is null) return (DocumentUploadFailure.NotInMeeting, []);
-            // The row and its comments stay as history, out of every list (BR-197, BR-281, BR-284).
+            // The row and its comments stay as history, out of every list (BR-011, BR-074–BR-076).
             document.RemovedAt = now;
             document.RemovedById = actorId;
             document.UpdatedAt = now;
@@ -202,7 +202,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             var found = await documents.FindLinkStatesAsync(meeting.Id, agendaItemId, ids, token);
             if (ids.Length == 0 || found.Count != ids.Length) return (DocumentUploadFailure.NotInMeeting, (IReadOnlyList<UploadedMeetingDocument>)[]);
             if (found.Any(d => d.Linked)) return (DocumentUploadFailure.AlreadyLinked, (IReadOnlyList<UploadedMeetingDocument>)[]);
-            // Links to other items stay as they are (BR-277).
+            // Links to other items stay as they are (UC-36b).
             documents.AddAgendaItemLinks(ids.Select(id => new MeetingDocumentAgendaItem
                 { MeetingDocumentId = id, AgendaItemId = agendaItemId }));
             return (DocumentUploadFailure.None, (IReadOnlyList<UploadedMeetingDocument>)[]);
@@ -250,14 +250,14 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 return (DocumentUploadFailure.AgendaItemNotFound, (IReadOnlyList<UploadedMeetingDocument>)[]);
             var link = await documents.FindAgendaItemLinkAsync(meetingDocumentId, agendaItemId, token);
             if (link is null) return (DocumentUploadFailure.NotLinked, (IReadOnlyList<UploadedMeetingDocument>)[]);
-            // Only this link: with none left the document shows as a general one (BR-280).
+            // Only this link: with none left the document shows as a general one (UC-36b, UC-36d).
             documents.RemoveAgendaItemLink(link);
             return (DocumentUploadFailure.None, (IReadOnlyList<UploadedMeetingDocument>)[]);
         }, ct);
 
     /// <summary>
     /// Locks the meeting and checks who may change its documents now: its current Chair or Secretary until it
-    /// ends (BR-184, BR-185, BR-195, BR-279).
+    /// ends (BR-070, BR-071, UC-36b, UC-36d).
     /// </summary>
     private async Task<(Meeting? Meeting, DocumentUploadFailure Access)> LockAsync(Guid meetingId, Guid actorId,
         CancellationToken ct)

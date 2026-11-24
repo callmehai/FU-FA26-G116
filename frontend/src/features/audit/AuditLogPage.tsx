@@ -97,9 +97,9 @@ function objectLabel(item: AuditLogItem): string | null {
 }
 
 /**
- * UC-13 View Audit Log (SCRUM-16), screen 3.3. Read-only: the server filters, pages and names each actor;
+ * UC-12 View Audit Log (SCRUM-16), screen 3.3. Read-only: the server filters, pages and names each actor;
  * nothing here filters rows itself. The criteria live in the URL. No CSV export (Q3), and the object
- * column names only accounts and roles (BR-443).
+ * column names only accounts and roles (UC-12).
  */
 export function AuditLogPage() {
   const handleAccessLost = useAccessLost()
@@ -264,7 +264,7 @@ export function AuditLogPage() {
       </tr>
     ))
   } else if (data.items.length === 0) {
-    // AF-3 / BR-12: no code from the server, the sentence is the screen's.
+    // AF-3 / no code from the server, the sentence is the screen's.
     body = filtered ? (
       <EmptyRow>
         <p className="empty-title">Không có sự kiện nào khớp bộ lọc.</p>

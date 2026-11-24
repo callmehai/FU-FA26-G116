@@ -37,13 +37,13 @@ type Open =
   | { kind: 'detach'; vote: VoteSummary; doc: VoteDocument }
 
 /**
- * The meeting's votes (SCRUM-28, UC-52a–UC-57), written once for the detail tab and the call room's
+ * The meeting's votes (SCRUM-28, UC-62a–UC-67), written once for the detail tab and the call room's
  * side panel (ADR-0011). It reads its own data and listens on `/hubs/meetings` itself; what the caller
  * may do comes from the server's `permissions` and `actions`. The Chair or the Secretary prepares
  * drafts; the Chair opens one at a time while the meeting runs, closes it and records the conclusion;
  * everyone on the list fixed at opening casts one ballot. One line per vote; a vote waiting on the
  * caller starts opened, the rest open on demand. On the page, the Chair and the Secretary attach documents
- * to a draft from its paperclip and detach them (UC-76a, UC-76b, SCRUM-96), which needs the meeting itself.
+ * to a draft from its paperclip and detach them (UC-68a, UC-68b, SCRUM-96), which needs the meeting itself.
  */
 export function VotingPanel({
   meetingId,
@@ -52,7 +52,7 @@ export function VotingPanel({
 }: {
   meetingId: string
   variant: 'page' | 'room'
-  /** The page's meeting, for attaching documents; the room attaches none, as for agenda items (BR-316). */
+  /** The page's meeting, for attaching documents; the room attaches none, as for agenda items (UC-35a). */
   meeting?: Meeting
 }) {
   const toast = useToast()
@@ -181,7 +181,7 @@ export function VotingPanel({
       )}
 
       {votes.length === 0 ? (
-        // MSG207: shown by the FE (UC-52a AF-1).
+        // MSG207: shown by the FE (UC-62a AF-1).
         <div className="agenda-empty vote-empty">
           <Icon name="vote" size={24} />
           <p>Không có biểu quyết nào để hiển thị.</p>
@@ -393,9 +393,9 @@ function VoteCard({
   onClose: () => void
   onCast: (optionId: string) => Promise<boolean>
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
-  /** The paperclip of a draft the caller may attach to (UC-76a); absent otherwise. */
+  /** The paperclip of a draft the caller may attach to (UC-68a); absent otherwise. */
   onAttach?: (source: DocumentSource) => void
-  /** Detach one document (UC-76b); offered only where the server says documents may change. */
+  /** Detach one document (UC-68b); offered only where the server says documents may change. */
   onDetach?: (doc: VoteDocument) => void
 }) {
   const { actions } = vote
@@ -655,7 +655,7 @@ function VoteBody({
         <VoteDocuments
           meetingId={meetingId}
           detail={detail}
-          // Only while the documents may still change: a draft the caller manages (BR-288).
+          // Only while the documents may still change: a draft the caller manages (BR-094, BR-095).
           onDetach={detail.actions.canAttachDocuments ? onDetach : undefined}
         />
       )}
@@ -699,7 +699,7 @@ function Times({ detail }: { detail: VoteDetail }) {
 
 /**
  * The vote's documents, each opening the viewer over the page (in the room too: the call keeps running).
- * A voter must have confirmed reading each one before the ballot is accepted (MSG252, UC-74): one not
+ * A voter must have confirmed reading each one before the ballot is accepted (MSG252, UC-42): one not
  * read yet opens with `read=1`, and the viewer offers the confirmation once its last page is reached.
  * The panel re-reads when the viewer closes, so coming back unlocks "Gửi phiếu".
  */
@@ -744,7 +744,7 @@ function VoteDocuments({
 }
 
 /**
- * UC-76a for one draft, with the meeting's documents for "Trong cuộc họp" and the vote's own (so they are
+ * UC-68a for one draft, with the meeting's documents for "Trong cuộc họp" and the vote's own (so they are
  * not offered twice) read while it is open. Files from the computer go to the upload queue; the panel hears
  * `voteChanged` when each lands.
  */
@@ -795,7 +795,7 @@ function VoteAttachDialog({
   )
 }
 
-/** UC-55: one choice, sent once. A secret vote never shows back what was chosen. */
+/** UC-65: one choice, sent once. A secret vote never shows back what was chosen. */
 function Ballot({ detail, onCast }: { detail: VoteDetail; onCast: (optionId: string) => Promise<boolean> }) {
   const [choice, setChoice] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
@@ -856,7 +856,7 @@ function Ballot({ detail, onCast }: { detail: VoteDetail; onCast: (optionId: str
   )
 }
 
-/** UC-56: the tally per option; percentages of the ballots cast, none when nobody voted (BR-261). */
+/** UC-66: the tally per option; percentages of the ballots cast, none when nobody voted (BR-098). */
 function Result({ detail }: { detail: VoteDetail }) {
   const result = detail.result!
   const labelOf = new Map(detail.options.map((o) => [o.id, o.label]))
@@ -919,7 +919,7 @@ function ConclusionChip({ value }: { value: VoteConclusionValue }) {
   )
 }
 
-/** UC-57, recorded: read-only for good (BR-262). */
+/** UC-67, recorded: read-only for good (BR-099). */
 function Conclusion({ detail }: { detail: VoteDetail }) {
   const conclusion = detail.conclusion!
   const who = [conclusion.concludedByName, conclusion.concludedAt && formatDateTime(conclusion.concludedAt)]
@@ -936,14 +936,14 @@ function Conclusion({ detail }: { detail: VoteDetail }) {
   )
 }
 
-/** UC-57: the Chair picks the outcome — the system never derives it from the tally (BR-263). */
+/** UC-67: the Chair picks the outcome — the system never derives it from the tally (BR-099). */
 function ConclusionForm({
   onConclude,
 }: {
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
 }) {
   // Starts on "Thông qua": a control with nothing picked showed three plain words and read as text, not as
-  // something to press (Hải 23/11/2026). The Chair still picks and records it; the tally never sets it (BR-263).
+  // something to press (Hải 23/11/2026). The Chair still picks and records it; the tally never sets it (BR-099).
   const [value, setValue] = useState<VoteConclusionValue>('Passed')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)

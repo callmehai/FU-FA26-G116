@@ -6,7 +6,7 @@ import type { AuditActor, AuditLogItem } from '../../types/auditLog'
 import { detailLabel, detailValue } from './detailLabels'
 import { objectTypeLabel } from './objectTypes'
 
-/** BR-441: an account, a Guest by the invitation's name, or the system. */
+/** UC-12: an account, a Guest by the invitation's name, or the system. */
 export function ActorCell({ actor }: { actor: AuditActor }) {
   if (actor.kind === 'system') {
     return (
@@ -57,7 +57,7 @@ const withSeconds = new Intl.DateTimeFormat('vi-VN', {
 })
 
 /**
- * UC-13 AF-2: one entry, read-only, beside the list. `details` is shown key by key exactly as recorded —
+ * UC-12 AF-2: one entry, read-only, beside the list. `details` is shown key by key exactly as recorded —
  * its field names differ between event types, so none is singled out.
  */
 export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose: () => void }) {

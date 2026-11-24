@@ -8,9 +8,9 @@ using static TrustCabinet.Web.Tests.CalendarSharing.CalendarSharingFixture;
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
 /// <summary>
-/// UC-85c — GET /api/calendar/shared-week: only busy blocks at the shared level (BR-414, BR-417), only meetings and
-/// assignments that count (BR-419, BR-420), unknown days outside the range (BR-415), stopped people listed without hours
-/// (BR-424), shares past their end date left out (BR-425), and nothing about any meeting (BR-427).
+/// UC-81c — GET /api/calendar/shared-week: only busy blocks at the shared level (BR-140, BR-141, BR-144, BR-145), only meetings and
+/// assignments that count (BR-146, BR-147), unknown days outside the range (BR-144, BR-145), stopped people listed without hours
+/// (BR-142, BR-143), shares past their end date left out (BR-142, BR-143), and nothing about any meeting (BR-140, BR-141).
 /// </summary>
 public sealed class SharedWeekEndpointTests(CalendarSharingFixture f) : IClassFixture<CalendarSharingFixture>
 {
@@ -70,7 +70,7 @@ public sealed class SharedWeekEndpointTests(CalendarSharingFixture f) : IClassFi
         var response = await organizer.GetAsync($"/api/calendar/shared-week?week={Day(Monday.AddDays(2))}");
         var raw = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, raw);
-        // BR-427: no title, place or attendee of any meeting, ever.
+        // BR-140, BR-141: no title, place or attendee of any meeting, ever.
         Assert.DoesNotContain(SecretTitle, raw);
         Assert.DoesNotContain("Họp giao ban", raw);
         Assert.DoesNotContain("Phòng 301", raw);

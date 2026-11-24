@@ -7,11 +7,11 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// SCRUM-142 — UC-85c: the week of busy hours people shared with the caller, the whole week (Monday to Sunday) and the
+/// SCRUM-142 — UC-81c: the week of busy hours people shared with the caller, the whole week (Monday to Sunday) and the
 /// whole day (00:00–24:00) in Vietnam: a meeting in the evening or at the weekend is busy time too (Hải, 19/11/2026 —
 /// it used to stop at Friday 17:00). The page opens scrolled to the working hours.
-/// Busy blocks only — no title, place, attendee or level of any meeting (BR-427). A stopped share is listed with its
-/// status and shows no hours (BR-424); a share past its end date is left out altogether (BR-425, PO 09/11/2026 Q-B).
+/// Busy blocks only — no title, place, attendee or level of any meeting (BR-140, BR-141). A stopped share is listed with its
+/// status and shows no hours (BR-142, BR-143); a share past its end date is left out altogether (BR-142, BR-143, PO 09/11/2026 Q-B).
 /// </summary>
 public sealed class SharedCalendarService(
     ICalendarShareRepository calendarShares,
@@ -82,7 +82,7 @@ public sealed class SharedCalendarService(
     private static SharedDay Day(CalendarShare share, DateOnly date,
         IReadOnlyDictionary<Guid, IReadOnlyList<BusyInterval>> intervals)
     {
-        // BR-415: a day outside the share's range is unknown — neither free nor busy.
+        // BR-144, BR-145: a day outside the share's range is unknown — neither free nor busy.
         if (date < share.StartDate || date > share.EndDate) return new(date, false, []);
         var blocks = intervals.TryGetValue(share.OwnerId, out var found) ? found : [];
         // Cut at each midnight: a meeting running past 24:00 shows on both days, ending at "next day 00:00" on the first.

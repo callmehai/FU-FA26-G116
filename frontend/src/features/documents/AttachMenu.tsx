@@ -11,7 +11,7 @@ const ATTACH_SOURCES: { source: DocumentSource; icon: IconName; label: string }[
 
 /**
  * The paperclip: a menu of where to take documents from, as AI-eCabinet has it; each opens the add dialog there.
- * One component for an agenda item (UC-33b) and a draft vote (UC-76a, SCRUM-96), as BR-304 is one rule for both.
+ * One component for an agenda item (UC-36b) and a draft vote (UC-68a, SCRUM-96), as UC-36b is one rule for both.
  */
 export function AttachMenu({ title, onPick }: { title: string; onPick: (source: DocumentSource) => void }) {
   const [open, setOpen] = useState(false)

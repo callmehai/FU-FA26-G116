@@ -12,7 +12,7 @@ import { useNotifications } from './notificationsContext'
 const CLOCK_TICK_MS = 30_000
 
 /**
- * The list behind the bell (UC-66 … UC-68): newest first, unread rows tinted, "Xem thêm" for older
+ * The list behind the bell (UC-76 … UC-78): newest first, unread rows tinted, "Xem thêm" for older
  * pages. Each open re-reads page 1, but keeps what was already on screen while it does, so the
  * panel never flashes empty.
  */
@@ -40,7 +40,7 @@ export function NotificationPanel({ id, onClose }: { id: string; onClose: () => 
       // The new location key still tells the page to re-read what it shows.
       navigate(url, { replace: url === location.pathname + location.search })
     } catch (error) {
-      // UC-68: the meeting was deleted, or the user may no longer read it.
+      // UC-78: the meeting was deleted, or the user may no longer read it.
       toast.show(isApiError(error, 404) ? 'Thông báo này không còn khả dụng.' : errorMessage(error), 'error')
     } finally {
       setOpening(null)

@@ -6,7 +6,7 @@ export type ViewerTarget =
       kind: 'meeting'
       meetingId: string
       documentId: string
-      /** Opened from a vote still waiting on this reader (UC-74): the viewer offers the read confirmation. */
+      /** Opened from a vote still waiting on this reader (UC-42): the viewer offers the read confirmation. */
       read?: boolean
     }
   | { kind: 'library'; documentId: string; folderId: string | null; userId?: string }

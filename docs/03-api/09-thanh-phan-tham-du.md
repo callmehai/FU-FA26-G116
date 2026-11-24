@@ -1,6 +1,6 @@
 # SCRUM-20 / SCRUM-97 — API thành phần tham dự
 
-Baseline PO Hải ngày 20/10/2026, thay thế các quy tắc roster cũ của PR #92. UC-73 bàn giao Chủ toạ được thực hiện ngay trong SCRUM-20. UC/BR/sequence được BA đồng bộ tại Final Review; không dùng các mô tả grants/recovery cũ để tích hợp API này.
+Baseline PO Hải ngày 20/10/2026, thay thế các quy tắc roster cũ của PR #92. UC-34 bàn giao Chủ toạ được thực hiện ngay trong SCRUM-20. UC/BR/sequence được BA đồng bộ tại Final Review; không dùng các mô tả grants/recovery cũ để tích hợp API này.
 
 ## 1. Quyền và bất biến
 
@@ -117,7 +117,7 @@ Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migration
 | 500/MSG95 | Đọc roster thất bại |
 | 503/MSG99, MSG102, MSG104, MSG108 | Lưu add, assignments, remove, response thất bại |
 
-MSG152/153 ngừng dùng, không tái cấp. MSG258/260 đã triển khai ở hai API UC-73 chuyên biệt (§8); PUT vẫn giữ mapping hiện hành.
+MSG152/153 ngừng dùng, không tái cấp. MSG258/260 đã triển khai ở hai API UC-34 chuyên biệt (§8); PUT vẫn giữ mapping hiện hành.
 
 Hub `/hubs/meetings`: join bằng `JoinMeeting(meetingId)`, nghe `participantsChanged` payload `{eventId,meetingId,revision,occurredAt}`. Sau commit có thay đổi, kể cả response, gửi đến hợp readers trước/sau: active participants, creator, approver lọc MeetingReadPolicy, Guest sessions hợp lệ qua adapter. Người vừa bị gỡ vẫn nhận invalidation, reload nhận 404. Payload không mang roster/PII. Lỗi transport ghi log, không rollback; hook disconnect room là port riêng.
 
@@ -138,7 +138,7 @@ Xem [bàn giao FE/test thủ công](09-thanh-phan-tham-du-ban-giao.md) và [ADR-
 - Worker cô lập lỗi dispatch, kể cả lỗi khi truy vấn hoặc ghi trạng thái retry; hàng đợi email đã có (gồm reset mật khẩu) vẫn được xử lý ở scope riêng.
 - Add internal trùng email current Guest trả 400/MSG97 với errors.userIds.
 
-## 8. SCRUM-97 — API chuyên biệt UC-73
+## 8. SCRUM-97 — API chuyên biệt UC-34
 
 Bổ sung ngày 22/10/2026 trên baseline `875dde2`. PUT assignments tiếp tục tương thích. POST mới chỉ dành cho **current Chair nội bộ active** tự bàn giao ở **Published/InProgress**. Secretary thay Chair inactive tiếp tục dùng PUT đã có confirmation; không được dùng POST này. Organizer/admin không có đặc quyền chuyển giao từ system role.
 
@@ -200,13 +200,13 @@ Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự
 
 GET áp dụng bước1–3 trước query validation. Mã409/MSG260 chỉ áp dụng hai API mới, không đổi lỗi PUT assignments. Cựu Chair gửi lại ETag cũ nhận MSG260; candidate bị gỡ/inactive/thành Secretary nhận MSG259 kể cả ETag stale; actor/recipient vẫn hợp lệ nhưng thay đổi chỗ khác trong roster nhận MSG275.
 
-| HTTP/code | UC-73 |
+| HTTP/code | UC-34 |
 |---|---|
 | 200/MSG258 | Toàn meeting không có candidate; không phải API error |
 | 400/MSG101 | JSON sai/null, key thừa/trùng/sai hoa thường, GUID thiếu/sai/rỗng, confirmed thiếu hoặc khác true |
 | 400/MSG259 | Recipient chính mình, Secretary, Guest, inactive, Removed/delegated, không tồn tại hoặc assignment meeting khác |
 | 400/MSG276 | Query sai, POST có query, If-Match thiếu/sai |
-| 403/MSG85 | Guest đọc hợp lệ gọi UC-73 |
+| 403/MSG85 | Guest đọc hợp lệ gọi UC-34 |
 | 409/MSG260 | Internal reader không phải current Chair hoặc status không cho bàn giao |
 | 409/MSG275 | Roster revision stale sau khi actor và recipient vẫn hợp lệ |
 | 409/MSG109 | Thiếu vai trò bắt buộc sau swap |

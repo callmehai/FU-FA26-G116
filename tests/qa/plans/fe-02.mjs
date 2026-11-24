@@ -1,8 +1,8 @@
 // FE-02 — Quản lý Người dùng & Hồ sơ (QA subtask SCRUM-189): UC-05 xem danh sách tài khoản, UC-06a tạo, UC-06b sửa,
 // UC-06c vô hiệu hoá / kích hoạt lại, UC-07 đặt lại mật khẩu (gửi liên kết và trang /reset-password), UC-08 gán / đổi
-// vai trò, UC-09 mở khoá tài khoản (docs/uc-map.html maps exactly these UCs to FE-02).
+// vai trò, UC-09 cũ mở khoá tài khoản (docs/uc-map.html maps exactly these UCs to FE-02).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-05..UC-09), BR-10..BR-22, BR-167, BR-314,
+// Criteria come from docs/01-requirements/05-use-case-specifications.md (UC-05..UC-08), BR-005, BR-006, BR-009, BR-001, BR-008,
 // the API docs 02-quan-ly-nguoi-dung.md (+ note cho FE), the message catalogue and the SCRUM-13 comments (BA Final
 // Review 03/10: a Google-only account cannot reset; an email change ends the sessions; 403 on /api/users is intended).
 //
@@ -64,7 +64,7 @@ async function ensureUser(qa, api, key, { active = true, roleId = ROLE.member.id
   return user
 }
 
-/** Audit entries about one account (BR-16), newest first. */
+/** Audit entries about one account (BR-009), newest first. */
 async function auditFor(qa, api, userId, action) {
   const params = new URLSearchParams({ action, pageSize: '50' })
   const res = await api.get(`/api/audit-log?${params}`)
@@ -146,7 +146,7 @@ export default {
       title: 'Quản trị mở Người dùng: mọi tài khoản hiện đúng họ tên, email, vai trò, trạng thái, theo thứ tự backend (UC-05)',
       steps: ['Đăng nhập quantri@ (có AdminUsers)', 'Bấm "Người dùng" ở sidebar (máy tính) hoặc mở /mgmt/admin/users'],
       expected:
-        'Bảng có đúng số dòng như GET /api/users trang nhận, cùng thứ tự (BR-167); dòng đầu trang nói "N tài khoản, M đang hoạt động"; mỗi dòng có họ tên, email, vai trò, trạng thái; không lộ mật khẩu hay mã băm (BR-10); điện thoại: không cuộn ngang, vai trò hiện dưới email, nút thao tác trong màn hình',
+        'Bảng có đúng số dòng như GET /api/users trang nhận, cùng thứ tự; dòng đầu trang nói "N tài khoản, M đang hoạt động"; mỗi dòng có họ tên, email, vai trò, trạng thái; không lộ mật khẩu hay mã băm (NFR); điện thoại: không cuộn ngang, vai trò hiện dưới email, nút thao tác trong màn hình',
       async run(qa) {
         const api = await qa.api()
         await ensureUser(qa, api, 'a')
@@ -219,7 +219,7 @@ export default {
       id: 'AC2',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tìm theo tên/email, lọc theo trạng thái và vai trò, không khớp thì báo "không có tài khoản nào khớp"; bộ lọc giữ khi tải lại (UC-05 AF-1..3, BR-12, BR-167)',
+      title: 'Tìm theo tên/email, lọc theo trạng thái và vai trò, không khớp thì báo "không có tài khoản nào khớp"; bộ lọc giữ khi tải lại (UC-05 AF-1..3)',
       steps: [
         'Gõ "nguoi dung a" (không dấu) vào ô tìm',
         'Xoá ô tìm, lọc "Đã vô hiệu hoá", rồi lọc thêm vai trò Thành viên',
@@ -276,7 +276,7 @@ export default {
     {
       id: 'AC3',
       role: 'admin',
-      title: 'Tạo tài khoản qua form: báo "Tạo tài khoản thành công.", dòng mới ở trạng thái Hoạt động, đăng nhập được, có nhật ký (UC-06a, BR-15, BR-16)',
+      title: 'Tạo tài khoản qua form: báo "Tạo tài khoản thành công.", dòng mới ở trạng thái Hoạt động, đăng nhập được, có nhật ký (UC-06a, BR-006, BR-009)',
       steps: [
         'Bấm "Tạo tài khoản"',
         'Nhập họ tên, email mới, bấm "Tạo mật khẩu", giữ vai trò mặc định',
@@ -331,7 +331,7 @@ export default {
       id: 'AC4',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tạo tài khoản sai: mọi ô sai báo cùng lúc; email đã có (khác hoa thường) báo "Email đã được sử dụng.", không tạo gì (UC-06a EX-1, EX-2, BR-13, BR-14)',
+      title: 'Tạo tài khoản sai: mọi ô sai báo cùng lúc; email đã có (khác hoa thường) báo "Email đã được sử dụng.", không tạo gì (UC-06a EX-1, EX-2, BR-005, UC-06b)',
       steps: [
         'Mở "Tạo tài khoản", để trống, bấm "Tạo tài khoản"',
         'Nhập họ tên, email = QA-FE02-A@… (đã có, viết hoa), mật khẩu 12 ký tự, bấm "Tạo tài khoản"',
@@ -450,7 +450,7 @@ export default {
           // The seed account was not touched by the refused save.
           const chair = (await listUsers(qa, api)).filter((u) => u.email === 'chutoa@trustcabinet.local')
           qa.expect(chair.length).toBe(1)
-          qa.note('BR-17 / UC-06b bước 3 nói sửa được Chức danh và Thông tin liên hệ; form và API chỉ có Họ tên, Email, Vai trò.')
+          qa.note('UC-06b bước 3 nói sửa được Chức danh và Thông tin liên hệ; form và API chỉ có Họ tên, Email, Vai trò.')
         } finally {
           await ensureUser(qa, api, 'a')
         }
@@ -504,7 +504,7 @@ export default {
       id: 'AC7',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Vô hiệu hoá có hỏi lại, báo "Đổi trạng thái tài khoản thành công.", người đó bị đăng xuất và không đăng nhập được; kích hoạt lại thì đăng nhập lại được (UC-06c, BR-03, BR-18)',
+      title: 'Vô hiệu hoá có hỏi lại, báo "Đổi trạng thái tài khoản thành công.", người đó bị đăng xuất và không đăng nhập được; kích hoạt lại thì đăng nhập lại được (UC-06c, BR-001)',
       steps: [
         'qa-fe02-b đăng nhập (một phiên riêng)',
         'Quản trị bấm Vô hiệu hoá ở dòng [QA] FE-02 Người dùng B, đọc hộp xác nhận, bấm Vô hiệu hoá',
@@ -651,7 +651,7 @@ export default {
       id: 'AC10',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Tài khoản không đủ điều kiện: nút đặt lại mật khẩu của tài khoản đã vô hiệu hoá bị khoá; API 409 MSG14, tài khoản không có 404 (UC-07 EX-1, EX-3, BR-22)',
+      title: 'Tài khoản không đủ điều kiện: nút đặt lại mật khẩu của tài khoản đã vô hiệu hoá bị khoá; API 409 MSG14, tài khoản không có 404 (UC-07 EX-1, EX-3)',
       steps: [
         'Xem dòng [QA] FE-02 Người dùng C (đã vô hiệu hoá)',
         'POST /api/users/{C}/password-reset; POST /api/users/{id lạ}/password-reset',
@@ -763,7 +763,7 @@ export default {
       id: 'AC13',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Đổi vai trò trong form sửa: báo "Cập nhật tài khoản thành công.", dòng hiện vai trò mới, người đó không bị đăng xuất và nhận quyền mới, nhật ký có vai trò cũ/mới (UC-08, AF-1, BR-314)',
+      title: 'Đổi vai trò trong form sửa: báo "Cập nhật tài khoản thành công.", dòng hiện vai trò mới, người đó không bị đăng xuất và nhận quyền mới, nhật ký có vai trò cũ/mới (UC-08, AF-1, BR-008)',
       steps: [
         'qa-fe02-a đăng nhập (một phiên riêng)',
         'Quản trị bấm Sửa ở dòng A, chọn vai trò Thư ký, Lưu thay đổi',
@@ -810,7 +810,7 @@ export default {
     {
       id: 'AC14',
       role: QA_USERS.a.email,
-      title: 'Người được đổi vai trò đang mở app: thấy "Quyền truy cập của bạn vừa được cập nhật." và menu đổi theo, không phải tải lại hay đăng nhập lại (UC-08 POST-4, BR-314, MSG287)',
+      title: 'Người được đổi vai trò đang mở app: thấy "Quyền truy cập của bạn vừa được cập nhật." và menu đổi theo, không phải tải lại hay đăng nhập lại (UC-08 POST-4, BR-008, MSG287)',
       steps: ['qa-fe02-a (Thành viên) mở Lịch làm việc', 'Quản trị đổi A sang Thư ký (API)', 'Quản trị đổi A về Thành viên'],
       expected:
         'Toast MSG287 hiện trong trang đang mở; A vẫn ở trong app; /api/auth/me của trang đổi vai trò theo',
@@ -892,11 +892,11 @@ export default {
       },
     },
 
-    // ---------------------------------------------------------------- UC-09
+    // ---------------------------------------------------------------- former UC-09
     {
       id: 'AC17',
       role: 'admin',
-      title: 'Mở khoá tài khoản bị khoá do đăng nhập sai (UC-09)',
+      title: 'Mở khoá tài khoản bị khoá do đăng nhập sai (UC-09 cũ)',
       steps: ['Tìm trạng thái "bị khoá" và thao tác "Mở khoá" trên danh sách tài khoản và trong API'],
       expected: 'Tài khoản bị khoá hiện trạng thái khoá; có thao tác Mở khoá, xác nhận rồi xoá khoá và bộ đếm, ghi nhật ký',
       async run(qa) {
@@ -905,7 +905,7 @@ export default {
         const unlockButtons = await qa.page.getByRole('button', { name: /Mở khoá/ }).count()
         await qa.shot('khong-co-mo-khoa')
         qa.inconclusive(
-          `UC-09 "Đã đặc tả" và không bị PO bỏ, nhưng hệ thống không có trạng thái khoá tài khoản: API trả ${lockFields.length ? lockFields.join(', ') : 'không trường nào về khoá'}, danh sách có ${unlockButtons} nút "Mở khoá"; giới hạn đăng nhập sai (SCRUM-132) chỉ chặn 429 theo IP/email trong một phút rồi tự hết, không để lại khoá nào cho quản trị viên mở. Cần PO/BA quyết: bỏ UC-09 khỏi phạm vi hay làm cơ chế khoá + mở khoá.`,
+          `UC-09 cũ "Đã đặc tả" và không bị PO bỏ, nhưng hệ thống không có trạng thái khoá tài khoản: API trả ${lockFields.length ? lockFields.join(', '): 'không trường nào về khoá'}, danh sách có ${unlockButtons} nút "Mở khoá"; giới hạn đăng nhập sai (SCRUM-132) chỉ chặn 429 theo IP/email trong một phút rồi tự hết, không để lại khoá nào cho quản trị viên mở. Cần PO/BA quyết: bỏ UC-09 cũ khỏi phạm vi hay làm cơ chế khoá + mở khoá.`,
         )
       },
     },

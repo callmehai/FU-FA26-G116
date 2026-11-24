@@ -4,8 +4,8 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Domain.CalendarSharing;
 
 /// <summary>
-/// The limits and defaults of a meeting-time search (BR-421, BR-422, ADR-0058 §7) and of the slot sent back to create a
-/// draft (UC-85b). No database: whether each invitee exists and is active is checked by the service.
+/// The limits and defaults of a meeting-time search (UC-81a, ADR-0058 §7) and of the slot sent back to create a
+/// draft (UC-81b). No database: whether each invitee exists and is active is checked by the service.
 /// </summary>
 public static class MeetingSlotRules
 {
@@ -16,7 +16,7 @@ public static class MeetingSlotRules
     public const int DefaultDuration = 120;
     public const int MaxRangeDays = 31;
     /// <summary>A search starts at most this many days ahead, so dates near the end of the calendar never reach the
-    /// arithmetic (review of PR #319). A share covers at most 365 days (BR-431), so nothing later could be known anyway.</summary>
+    /// arithmetic (review of PR #319). A share covers at most 365 days (UC-80a), so nothing later could be known anyway.</summary>
     public const int MaxDaysAhead = 365;
     public const int MaxBuffer = 240;
     public const int DefaultBuffer = 30;
@@ -51,7 +51,7 @@ public static class MeetingSlotRules
     public const string AcceptedBusyError = "Danh sách người bận chỉ gồm người trong khung đã chọn.";
 
     /// <summary>
-    /// UC-85a step 2: applies the defaults and checks every field (BR-421, BR-422). Errors are keyed by the request's
+    /// UC-81a step 2: applies the defaults and checks every field (UC-81a). Errors are keyed by the request's
     /// field name so the page can highlight them (MSG444).
     /// </summary>
     public static bool TryValidate(SlotSearchInput input, Guid finderId, DateOnly today, out SlotSearch? search,
@@ -106,7 +106,7 @@ public static class MeetingSlotRules
         if (step is < MinStep or > MaxStep || step % Grain != 0) fieldErrors["stepMinutes"] = StepError;
 
         // The ticket's "end of the working day after start + duration": the meeting must fit in one block of working
-        // time, the morning or the afternoon when there is a lunch break (a slot never overlaps lunch, BR-422), starting on
+        // time, the morning or the afternoon when there is a lunch break (a slot never overlaps lunch, UC-81a), starting on
         // the step grid — otherwise the search could only ever come back empty.
         if (hoursOk && lunchOk && !fieldErrors.ContainsKey("durationMinutes") && !fieldErrors.ContainsKey("stepMinutes")
             && !FitsOneBlock(workStart, workEnd, lunchStart, lunchEnd, duration, step))
@@ -122,14 +122,14 @@ public static class MeetingSlotRules
         return true;
     }
 
-    /// <summary>1 to 10 distinct people, none empty and never the finder (BR-421, D14).</summary>
+    /// <summary>1 to 10 distinct people, none empty and never the finder (UC-81a, D14).</summary>
     public static bool ValidInvitees(IReadOnlyList<Guid> userIds, Guid finderId)
         => userIds.Count is >= 1 and <= MaxPeople
             && userIds.Distinct().Count() == userIds.Count
             && !userIds.Contains(Guid.Empty)
             && !userIds.Contains(finderId);
 
-    /// <summary>"Cách cuộc họp khác" (BR-422): 0 to 4 hours in steps of 5 minutes.</summary>
+    /// <summary>"Cách cuộc họp khác" (UC-81a): 0 to 4 hours in steps of 5 minutes.</summary>
     public static bool ValidBuffer(int minutes) => minutes is >= 0 and <= MaxBuffer && minutes % Grain == 0;
 
     /// <summary>The Friday of the week <paramref name="from"/> falls in; from a Saturday or Sunday, the next Friday.</summary>
@@ -151,14 +151,14 @@ public static class MeetingSlotRules
         return TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
     }
 
-    /// <summary>An ISO 8601 timestamp with an offset — exactly what UC-14 accepts for planned times (one parser for both).</summary>
+    /// <summary>An ISO 8601 timestamp with an offset — exactly what UC-13 accepts for planned times (one parser for both).</summary>
     public static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
         => MeetingRules.TryParseTimestamp(value, out timestamp);
 
     /// <summary>
-    /// UC-85b, before any arithmetic on the slot: it starts after now, on or before the last day a search can reach, and
-    /// lasts at most 8 hours (BR-421). Keeps dates near either end of the calendar away from start − buffer / end + buffer,
-    /// and keeps the recheck from being asked about past days. Errors are keyed like UC-14's (MSG31).
+    /// UC-81b, before any arithmetic on the slot: it starts after now, on or before the last day a search can reach, and
+    /// lasts at most 8 hours (UC-81a). Keeps dates near either end of the calendar away from start − buffer / end + buffer,
+    /// and keeps the recheck from being asked about past days. Errors are keyed like UC-13's (MSG31).
     /// </summary>
     public static void CheckSlotTimes(DateTimeOffset start, DateTimeOffset end, DateTimeOffset now,
         IDictionary<string, string> errors)

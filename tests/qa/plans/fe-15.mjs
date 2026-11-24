@@ -1,6 +1,6 @@
-// FE-15 — Báo cáo & Thống kê (QA subtask SCRUM-202). docs/uc-map.html maps FE-15 to UC-70, UC-70a View Reports &
-// Statistics and UC-70b Export Report (story SCRUM-38). Criteria come from the UC specification
-// (docs/01-requirements/05-use-case-specifications.md), BR-432 → BR-438 and BR-447 (06-business-rules.md), the contract
+// FE-15 — Báo cáo & Thống kê (QA subtask SCRUM-202). docs/uc-map.html maps FE-15 to UC-79, UC-79a View Reports &
+// Statistics and UC-79b Export Report (story SCRUM-38). Criteria come from the UC specification
+// (docs/01-requirements/05-use-case-specifications.md), BR-149–BR-152, BR-010 (06-business-rules.md), the contract
 // docs/03-api/22-bao-cao-thong-ke.md, NOTE-dac-ta-so-bo-scrum-38.md, MSG463–MSG466 in the catalogue, and the SCRUM-38
 // comments (PO 09/11: Q1 admin sees only what it may read, Q2 duration added and no PDF, Q3 no capability).
 //
@@ -12,10 +12,10 @@
 //   and thanhvien@ as Member: one meeting in each of the 8 statuses, mixed sensitivities, varied hours; the Ended one
 //   has attendance taken (Chair and Secretary present, Member absent). Reused across runs, never cancelled.
 // - AC5 creates one more meeting each run ("[QA] FE-15 đếm thêm …", same day) and cancels it in the same criterion: the
-//   report counts Cancelled meetings too (BR-434), so each run leaves one Cancelled meeting behind.
+//   report counts Cancelled meetings too (BR-149, BR-150), so each run leaves one Cancelled meeting behind.
 // - "[QA] FE-15 tài khoản tạm" (qa-fe15-inactive@trustcabinet.local, role Thành viên) is reactivated, signed in and
 //   deactivated by AC12, and left deactivated.
-// Every export (AC1, AC10, AC9) writes one audit row report.exported, as BR-438 requires.
+// Every export (AC1, AC10, AC9) writes one audit row report.exported, as BR-010 requires.
 //
 // The screen was reworked after the supervisor's review of 22/11/2026 (PR #488, docs/03-api/22-bao-cao-thong-ke.md): a
 // band of manager figures from GET /api/reports/meetings on top, then a query over the main tables (GET /api/reports/query:
@@ -35,7 +35,7 @@ const EMAIL = {
 const REPORTER = 'qa-fe15-reporter@trustcabinet.local'
 const INACTIVE = 'qa-fe15-inactive@trustcabinet.local'
 
-// ---- months and days, in Vietnam's calendar as the server counts them (BR-433) ----
+// ---- months and days, in Vietnam's calendar as the server counts them (UC-79a) ----
 const vnToday = () =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(
     new Date(),
@@ -51,7 +51,7 @@ const vnMonthOf = (iso) =>
 
 const TODAY = vnToday()
 const NOW_MONTH = TODAY.slice(0, 7)
-const DEFAULT = { from: addMonths(NOW_MONTH, -11), to: NOW_MONTH } // BR-433: 12 months ending with this month
+const DEFAULT = { from: addMonths(NOW_MONTH, -11), to: NOW_MONTH } // UC-79a: 12 months ending with this month
 const FAR = addDays(TODAY, 105) // fifteen weeks ahead
 const FAR_MONTH = FAR.slice(0, 7)
 // AC6/AC7: three past months in which the seed accounts have meetings on this database (Sept–Oct 2026 hold data).
@@ -78,7 +78,7 @@ const MSG465 = 'Không xuất được báo cáo. Vui lòng thử lại.'
 const MSG466 = 'Không có cuộc họp nào bạn xem được trong khoảng này.'
 const NO_DATA = 'Chưa có dữ liệu'
 
-/** The reporter's meetings: one per status (BR-434 counts every status, Cancelled included). */
+/** The reporter's meetings: one per status (BR-149, BR-150 counts every status, Cancelled included). */
 const MEETINGS = [
   { status: 'Draft', title: 'FE-15 bản nháp', sensitivity: 'Normal', from: '07:30', to: '08:15' },
   { status: 'WaitingApproval', title: 'FE-15 chờ duyệt', sensitivity: 'Internal', from: '08:45', to: '09:30' },
@@ -211,7 +211,7 @@ async function meeting(qa, status) {
   }[status]
   for (const [who, action] of path) await transition(qa, who, m.id, action)
   if (status === 'Ended') {
-    // BR-435: Chair and Secretary present, Member absent; then the Chair ends the meeting.
+    // BR-151: Chair and Secretary present, Member absent; then the Chair ends the meeting.
     const att = await api.get(`/api/meetings/${m.id}/attendance?pageSize=100`)
     qa.expectStatus(att, 200)
     const entries = att.body.items.map((i) => ({
@@ -233,7 +233,7 @@ async function prepareAll(qa) {
 /** The month the plan's meetings are in: they are reused across runs, so it is the month of the day they were made. */
 const planMonth = () => vnMonthOf(made.Ended.plannedStartTime)
 
-/** What is wrong with a report on its own terms (BR-433, BR-434, BR-437 and the contract's shape). */
+/** What is wrong with a report on its own terms (UC-79a, BR-149, BR-150, BR-152 and the contract's shape). */
 function problems(rep, from, to) {
   const wrong = []
   if (rep.from !== from || rep.to !== to) wrong.push(`period ${rep.from}..${rep.to}, asked ${from}..${to}`)
@@ -258,7 +258,7 @@ function problems(rep, from, to) {
   if ((t.averageHours === null) !== (t.meetings === 0)) wrong.push(`averageHours ${t.averageHours} with ${t.meetings} meetings`)
   if (a.averageRate !== null && (a.averageRate < 0 || a.averageRate > 1)) wrong.push(`averageRate ${a.averageRate} out of 0..1`)
   if (!/\+07:00$/.test(rep.generatedAt)) wrong.push(`generatedAt ${rep.generatedAt} is not in Vietnam time`)
-  // BR-437: counts, rates and averages only.
+  // BR-152: counts, rates and averages only.
   const keys = new Set()
   const walk = (v) => {
     if (Array.isArray(v)) v.forEach(walk)
@@ -403,7 +403,7 @@ async function expectTableMatches(qa, table) {
   qa.expect(wrong, wrong.join('\n')).toEqual([])
 }
 
-/** The screen shows exactly what the page received (UC-70a step 4): the band, then the query table. */
+/** The screen shows exactly what the page received (UC-79a step 4): the band, then the query table. */
 async function expectScreenMatches(qa, rep, table) {
   await expectBandMatches(qa, rep)
   if (table) await expectTableMatches(qa, table)
@@ -472,7 +472,7 @@ function readXlsx(buf) {
 }
 
 /**
- * The exported file holds exactly the table on screen (BR-438): what was asked at the top, then one row per group with
+ * The exported file holds exactly the table on screen (BR-010): what was asked at the top, then one row per group with
  * its rank, then Tổng. A meeting title may appear only when the table is grouped by meeting.
  */
 function tableFileProblems(file, table, titles = []) {
@@ -522,7 +522,7 @@ async function downloadExport(qa) {
 }
 
 /**
- * The audit row of the export just made by `who`, read by the admin (BR-438): exactly one since `since`, with `want` in its
+ * The audit row of the export just made by `who`, read by the admin (BR-010): exactly one since `since`, with `want` in its
  * details (which table, grouping and filters).
  */
 async function expectAuditRow(qa, who, from, to, since, want = {}) {
@@ -545,7 +545,7 @@ async function expectAuditRow(qa, who, from, to, since, want = {}) {
 
 export default {
   ticket: 'SCRUM-202',
-  title: 'FE-15 Báo cáo & Thống kê (UC-70a, UC-70b — SCRUM-38)',
+  title: 'FE-15 Báo cáo & Thống kê (UC-79a, UC-79b — SCRUM-38)',
   devices: ['desktop'],
   criteria: [
     {
@@ -564,7 +564,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------- who may see it (BR-432)
+    // ------------------------------------------------------------------------- who may see it (BR-149, BR-150)
     {
       id: 'AC1',
       role: 'anon',
@@ -585,7 +585,7 @@ export default {
           if (r.status !== 200) wrong.push(`${who} report → ${r.status}`)
           if (r.headers['cache-control'] !== 'private, no-store') wrong.push(`${who} report Cache-Control "${r.headers['cache-control']}"`)
           if (r.status === 200 && (r.body.from !== DEFAULT.from || r.body.to !== DEFAULT.to))
-            wrong.push(`${who} default period ${r.body.from}..${r.body.to}, expected ${DEFAULT.from}..${DEFAULT.to} (BR-433)`)
+            wrong.push(`${who} default period ${r.body.from}..${r.body.to}, expected ${DEFAULT.from}..${DEFAULT.to} (UC-79a)`)
           const x = await api.get(`/api/reports/meetings/export?from=${DEFAULT.from}&to=${DEFAULT.to}`)
           if (x.status !== 200) wrong.push(`${who} export → ${x.status}`)
           if (x.headers['content-type'] !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -629,7 +629,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------- the page (UC-70a Normal Flow)
+    // ------------------------------------------------------------------------- the page (UC-79a Normal Flow)
     {
       id: 'AC2',
       role: 'member',
@@ -709,7 +709,7 @@ export default {
       title: 'API tự khớp với mọi vai trò và nhiều khoảng: tổng theo tháng = theo trạng thái = theo mức độ = total, đủ tháng, 8 trạng thái đúng thứ tự enum, không trường nào mô tả cuộc họp',
       steps: [`Gọi GET /api/reports/meetings bằng 4 tài khoản seed với khoảng mặc định, ${DEFAULT.to}..${DEFAULT.to}, ${addMonths(NOW_MONTH, -23)}..${NOW_MONTH} (24 tháng) và ${NOW_MONTH}..${FAR_MONTH}`],
       expected:
-        'Mỗi lần: byMonth đủ mọi tháng kể cả tháng 0; byStatus Draft, WaitingApproval, Rejected, Approved, Published, InProgress, Ended, Cancelled; bySensitivity Normal, Internal, Secret; ba tổng bằng total; cơ sở của 3 chỉ số trung bình cộng lại bằng số Đã kết thúc; trung bình null đúng khi không có cuộc họp để tính; generatedAt +07:00; không id/tiêu đề (BR-437)',
+        'Mỗi lần: byMonth đủ mọi tháng kể cả tháng 0; byStatus Draft, WaitingApproval, Rejected, Approved, Published, InProgress, Ended, Cancelled; bySensitivity Normal, Internal, Secret; ba tổng bằng total; cơ sở của 3 chỉ số trung bình cộng lại bằng số Đã kết thúc; trung bình null đúng khi không có cuộc họp để tính; generatedAt +07:00; không id/tiêu đề (BR-152)',
       async run(qa) {
         const wrong = []
         const periods = [
@@ -737,7 +737,7 @@ export default {
         'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh',
         'Chọn Dữ liệu = Cuộc họp, Nhóm theo = Từng cuộc họp, Hiển thị = Tất cả',
       ],
-      expected: `Bảng theo trạng thái: mỗi trạng thái bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-432/BR-434), mỗi trạng thái ≥ 1; Tỷ lệ có mặt = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-435); Giờ họp = tổng giờ thực tế của cuộc Đã kết thúc; dải số: Đã họp, Sắp họp, Đã huỷ đúng danh sách, Thông qua "0 / 0 biểu quyết", Biên bản ban hành 0 (chưa ban hành biên bản nào); Người dự họp theo điểm danh: Có mặt = số người có mặt, Vắng = số người vắng của cuộc Đã kết thúc, Lượt mời = 3 × số cuộc họp; Từng cuộc họp: đúng các cuộc họp của tài khoản, tên là link /mgmt/meetings/{id}, ẩn 3 cột luôn 1/0; màn khớp API; không cuộn ngang`,
+      expected: `Bảng theo trạng thái: mỗi trạng thái bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-149, BR-150), mỗi trạng thái ≥ 1; Tỷ lệ có mặt = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-151); Giờ họp = tổng giờ thực tế của cuộc Đã kết thúc; dải số: Đã họp, Sắp họp, Đã huỷ đúng danh sách, Thông qua "0 / 0 biểu quyết", Biên bản ban hành 0 (chưa ban hành biên bản nào); Người dự họp theo điểm danh: Có mặt = số người có mặt, Vắng = số người vắng của cuộc Đã kết thúc, Lượt mời = 3 × số cuộc họp; Từng cuộc họp: đúng các cuộc họp của tài khoản, tên là link /mgmt/meetings/{id}, ẩn 3 cột luôn 1/0; màn khớp API; không cuộn ngang`,
       async run(qa) {
         await prepareAll(qa)
         // The plan's meetings are reused across runs, so they sit in the month of the day they were first made.
@@ -835,7 +835,7 @@ export default {
         'Huỷ cuộc họp đó, đọc lại báo cáo người tổ chức',
       ],
       expected:
-        'Người tổ chức: total +1, tháng +1, Draft +1, Secret +1, các nhóm khác giữ nguyên. Quản trị (All-in-one, không tham dự) và Thành viên (chưa công bố): không đổi — Quản trị không thấy toàn hệ thống (BR-432, PO Q1). Sau huỷ: Draft −1, Cancelled +1, total giữ nguyên (BR-434: đã huỷ vẫn đếm)',
+        'Người tổ chức: total +1, tháng +1, Draft +1, Secret +1, các nhóm khác giữ nguyên. Quản trị (All-in-one, không tham dự) và Thành viên (chưa công bố): không đổi — Quản trị không thấy toàn hệ thống (BR-149, BR-150, PO Q1). Sau huỷ: Draft −1, Cancelled +1, total giữ nguyên (BR-149, BR-150: đã huỷ vẫn đếm)',
       async run(qa) {
         await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
         const read = (who) => report(qa, who, FAR_MONTH, FAR_MONTH)
@@ -968,7 +968,7 @@ export default {
     {
       id: 'AC8',
       role: 'member',
-      title: 'API từ chối khoảng sai bằng 400 MSG463 ở cả xem và xuất (BR-433); 24 tháng vẫn được',
+      title: 'API từ chối khoảng sai bằng 400 MSG463 ở cả xem và xuất (UC-79a); 24 tháng vẫn được',
       steps: [
         'Gọi /api/reports/meetings và /export với: chỉ from; chỉ to; 2026-1; 2026-13; 1999-12; 9999-01; from sau to; 25 tháng',
         'Gọi với đúng 24 tháng',
@@ -1007,7 +1007,7 @@ export default {
       id: 'AC9',
       role: REPORTER,
       devices: ['desktop', 'phone'],
-      title: 'Không có cuộc họp nào đọc được trong khoảng (AF-2): dải số toàn 0, MSG466 thay cho bảng; vẫn xuất được tệp bảng với Tổng 0 (UC-70b AF-1)',
+      title: 'Không có cuộc họp nào đọc được trong khoảng (AF-2): dải số toàn 0, MSG466 thay cho bảng; vẫn xuất được tệp bảng với Tổng 0 (UC-79b AF-1)',
       steps: [
         `${REPORTER} (chỉ có cuộc họp tháng ${monthLabel(FAR_MONTH)}) mở Báo cáo với khoảng mặc định`,
         `Mở /mgmt/reports?from=${EMPTY.from}&to=${EMPTY.to}, bấm Xuất Excel`,
@@ -1054,18 +1054,18 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------- UC-70b export
+    // ------------------------------------------------------------------------- UC-79b export
     {
       id: 'AC10',
       role: REPORTER,
-      title: `Xuất Excel từ màn (UC-70b): tệp là đúng bảng đang xem (Người dự họp theo điểm danh, lọc Đã kết thúc, tháng của các cuộc họp kế hoạch), số là số, có dòng Tổng; đúng một dòng audit`,
+      title: `Xuất Excel từ màn (UC-79b): tệp là đúng bảng đang xem (Người dự họp theo điểm danh, lọc Đã kết thúc, tháng của các cuộc họp kế hoạch), số là số, có dòng Tổng; đúng một dòng audit`,
       steps: [
         `${REPORTER} mở /mgmt/reports trong tháng của các cuộc họp kế hoạch`,
         'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh, Trạng thái cuộc họp = Đã kết thúc',
         'Bấm Xuất Excel',
         'Quản trị đọc nhật ký hệ thống, sự kiện report.exported',
       ],
-      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-438)`,
+      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-010)`,
       async run(qa) {
         await prepareAll(qa)
         const FAR_MONTH = planMonth()

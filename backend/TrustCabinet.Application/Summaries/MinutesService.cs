@@ -18,8 +18,8 @@ namespace TrustCabinet.Application.Summaries;
 /// <summary>
 /// SCRUM-32 — the Secretary's draft of the minutes: built from the meeting's records and its AI draft, then edited and
 /// saved as often as needed. SCRUM-33 — one approver, and approving issues: the Secretary sends the draft to the Chair
-/// (UC-61), who issues it (UC-64) or returns it with a reason (UC-65); issued text is never changed, a correction is a new
-/// revision (UC-83). Until a revision is issued it is the Chair's and the Secretary's alone (BR-386, BR-412).
+/// (UC-72), who issues it (UC-73) or returns it with a reason (UC-74); issued text is never changed, a correction is a new
+/// revision (UC-75). Until a revision is issued it is the Chair's and the Secretary's alone (BR-131, BR-139).
 /// </summary>
 public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSourceQuery sources,
     ISummarySourceQuery summarySources, IMeetingSummaryRepository summaries, IMinutesRenderer renderer,
@@ -61,7 +61,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         try
         {
             // The meeting row is locked as a note save locks it (SCRUM-30): a note saved before is in these minutes, one
-            // saved after is refused (BR-396).
+            // saved after is refused (UC-60, UC-61).
             return await AnnounceAsync(meetingId, await unitOfWork.ExecuteAsync<MinutesOutcome>(async token =>
             {
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token, forUpdate: true);
@@ -73,7 +73,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 var current = await minutes.FindLatestAsync(meetingId, token);
                 if (current is not null && !Editable(current.Status)) return new(MinutesFailure.Locked);
                 if (current is not null && !rebuild) return new(MinutesFailure.Exists);
-                // A correction starts from the issued text; the records behind it were sealed with it (BR-413).
+                // A correction starts from the issued text; the records behind it were sealed with it (BR-137, BR-138).
                 if (current?.SupersedesId is not null) return new(MinutesFailure.CorrectionRebuild);
 
                 var (draft, draftAt) = await DraftAsync(meetingId, token);
@@ -119,7 +119,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 meetingId = meeting.Id;
                 // Someone who may not edit learns nothing about a draft they may not read.
                 if (!SummaryService.Manages(meeting, actorId)) return new(Hidden(row.Status));
-                // A returned revision is corrected again before it is sent back (BR-407).
+                // A returned revision is corrected again before it is sent back (BR-135, BR-136).
                 if (!Editable(row.Status)) return new(MinutesFailure.Locked);
                 // Only the allow-list is stored (ADR-0055): whatever else the request carries never reaches a reader. A
                 // document of empty paragraphs says nothing, so it is refused like an empty one.
@@ -163,7 +163,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 var (meeting, failure) = await ReadableAsync(row.MeetingId, actorId, token);
                 if (meeting is null) return new(failure);
                 // Issued minutes, and the revisions they replaced, download for everyone who may read them (PO, Q7 settled
-                // 08/11/2026); a draft or a revision waiting for approval is the two officers' alone (BR-412).
+                // 08/11/2026); a draft or a revision waiting for approval is the two officers' alone (BR-139).
                 if (!SummaryService.Manages(meeting, actorId) && !ReaderVisible(row.Status)) return new(MinutesFailure.NotFound);
                 if (meeting.Sensitivity == Sensitivity.Secret) return new(MinutesFailure.SecretMeeting);
                 var name = string.Concat($"Biên bản - {meeting.Title}".Split(Path.GetInvalidFileNameChars()));
@@ -206,7 +206,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
     public Task<MinutesOutcome> SubmitAsync(Guid minutesId, Guid actorId, DateTimeOffset? loadedAt, CancellationToken ct = default)
         => TransitionAsync(minutesId, actorId, "submit", (meeting, row, now, _) =>
         {
-            // Sequence UC-61: someone who is neither officer learns nothing (EX-6); the Chair is told it is not theirs (EX-1).
+            // Sequence UC-72: someone who is neither officer learns nothing (EX-6); the Chair is told it is not theirs (EX-1).
             if (!SummaryService.Manages(meeting, actorId)) return Task.FromResult(MinutesFailure.NotFound);
             if (!Holds(meeting, actorId, MeetingRole.Secretary)) return Task.FromResult(MinutesFailure.NotSecretary);
             if (meeting.Status != MeetingStatus.Ended) return Task.FromResult(MinutesFailure.MeetingNotEnded);
@@ -229,20 +229,20 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
             if (!Holds(meeting, actorId, MeetingRole.Chair)) return MinutesFailure.NotChair;
             if (row.Status != MinutesStatus.WaitingApproval) return MinutesFailure.NotWaiting;
             if (!Fresh(row, loadedAt)) return MinutesFailure.Stale;
-            // Approving issues at once, and the meeting keeps its Ended status: being issued is the minutes' state (BR-408).
+            // Approving issues at once, and the meeting keeps its Ended status: being issued is the minutes' state (BR-137, BR-138).
             row.Status = MinutesStatus.Issued;
             row.ApprovedById = actorId;
             row.ApprovedAt = now;
             row.IssuedAt = now;
             row.UpdatedAt = now;
-            // A correction replaces the revision it corrects, which stays readable as superseded (BR-409).
+            // A correction replaces the revision it corrects, which stays readable as superseded (BR-137, BR-138).
             if (row.SupersedesId is { } earlierId)
             {
                 var earlier = await minutes.GetAsync(earlierId, token);
                 earlier.Status = MinutesStatus.Superseded;
                 earlier.UpdatedAt = now;
             }
-            // BR-446 — saved with the issue itself, so minutes are never issued without the evidence of who issued them.
+            // BR-010 — saved with the issue itself, so minutes are never issued without the evidence of who issued them.
             auditLog.Add(new AuditLogEntry
             {
                 ActorId = actorId, Action = AuditActions.MinutesIssued, ObjectType = AuditActions.MinutesObjectType,
@@ -286,11 +286,11 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
     public Task<MinutesOutcome> CorrectAsync(Guid minutesId, Guid actorId, CancellationToken ct = default)
         => TransitionAsync(minutesId, actorId, "correct", async (meeting, row, now, token) =>
         {
-            // Sequence UC-83: a reader of the issued text is told it is not theirs to write (EX-1); anything they may not
+            // Sequence UC-75: a reader of the issued text is told it is not theirs to write (EX-1); anything they may not
             // read is not there (EX-5).
             if (!SummaryService.Manages(meeting, actorId)) return Hidden(row.Status);
             if (row.Status != MinutesStatus.Issued) return MinutesFailure.NotIssued;
-            // At most one revision is not issued yet (BR-410): an issued revision with a later one has its correction.
+            // At most one revision is not issued yet (BR-137, BR-138): an issued revision with a later one has its correction.
             if (await minutes.HasLaterRevisionAsync(row.MeetingId, row.RevisionNumber, token))
                 return MinutesFailure.CorrectionInProgress;
             minutes.Add(new MeetingMinutes
@@ -299,7 +299,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 Content = row.Content, BuiltFromDraftAt = row.BuiltFromDraftAt, Status = MinutesStatus.Draft,
                 CreatedById = actorId, CreatedAt = now, UpdatedAt = now,
             });
-            // Nobody is told until the correction is issued (UC-83 POST-3).
+            // Nobody is told until the correction is issued (UC-75 POST-3).
             return MinutesFailure.None;
         }, ct);
 
@@ -329,7 +329,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         }
         catch (UniqueConflictException error)
         {
-            // Two corrections of the same revision at once: the revision-number index lets one through (BR-410).
+            // Two corrections of the same revision at once: the revision-number index lets one through (BR-137, BR-138).
             logger.LogWarning(error.InnerException ?? error, "Concurrent minutes {Action} on {MinutesId}", action, minutesId);
             return new(MinutesFailure.CorrectionInProgress);
         }
@@ -340,17 +340,17 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         }
     }
 
-    /// <summary>A revision is edited, rebuilt and submitted while it is a draft or was returned (BR-388, BR-407).</summary>
+    /// <summary>A revision is edited, rebuilt and submitted while it is a draft or was returned (UC-71, BR-135, BR-136).</summary>
     private static bool Editable(MinutesStatus status) => status is MinutesStatus.Draft or MinutesStatus.Rejected;
 
-    /// <summary>What someone who is neither officer may read: the issued text and the revisions it replaced (BR-412).</summary>
+    /// <summary>What someone who is neither officer may read: the issued text and the revisions it replaced (BR-139).</summary>
     private static bool ReaderVisible(MinutesStatus status) => status is MinutesStatus.Issued or MinutesStatus.Superseded;
 
     /// <summary>Refusal for someone who is neither officer: forbidden on what they may read, not there otherwise.</summary>
     private static MinutesFailure Hidden(MinutesStatus status)
         => ReaderVisible(status) ? MinutesFailure.Forbidden : MinutesFailure.NotFound;
 
-    /// <summary>The copy the caller read is still the stored one (BR-389), within the precision PostgreSQL keeps.</summary>
+    /// <summary>The copy the caller read is still the stored one (UC-71), within the precision PostgreSQL keeps.</summary>
     private static bool Fresh(MeetingMinutes row, DateTimeOffset? loadedAt)
         => loadedAt is { } at && row.UpdatedAt >= at.AddMilliseconds(-1) && row.UpdatedAt <= at.AddMilliseconds(1);
 
@@ -359,7 +359,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
     private static IEnumerable<Guid> Holders(Meeting meeting, MeetingRole role) => meeting.Participants
         .Where(p => p.Role == role && ParticipantRules.Active(p)).Select(p => p.UserId);
 
-    /// <summary>Everyone who may read the issued minutes (BR-412): the current participants, the organizer and the
+    /// <summary>Everyone who may read the issued minutes (BR-139): the current participants, the organizer and the
     /// approver of the meeting. Never a Guest, whom the meeting's read policy does not count as a participant.</summary>
     private async Task<IReadOnlyCollection<Guid>> ReadersAsync(Meeting meeting, CancellationToken ct)
     {
@@ -406,7 +406,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         }
     }
 
-    /// <summary>In-app notifications saved with the state change (BR-411); the realtime dispatcher pushes them.</summary>
+    /// <summary>In-app notifications saved with the state change (UC-72, UC-73, UC-74); the realtime dispatcher pushes them.</summary>
     private void Notify(IEnumerable<Guid> recipients, Guid actorId, Meeting meeting, MeetingMinutes row, DateTimeOffset now,
         NotificationType type, string key, string title, string body)
     {
@@ -424,7 +424,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
 
     /// <summary>
     /// The revision the caller reads: <paramref name="selectedId"/> when given, otherwise the latest for the two officers
-    /// and the latest issued for everyone else (BR-386, BR-412). The history is filtered on the server the same way, so a
+    /// and the latest issued for everyone else (BR-131, BR-139). The history is filtered on the server the same way, so a
     /// reader never learns that a correction is being written or waits for approval.
     /// </summary>
     private async Task<MinutesState> StateAsync(Meeting meeting, Guid actorId, CancellationToken ct, Guid? selectedId = null)
@@ -488,7 +488,7 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
             lines, agenda, await SummaryService.VoteLinesAsync(summarySources, meeting.Id, ct), await SecretaryNotesAsync(meeting, ct));
     }
 
-    /// <summary>The current Secretary's notes (SCRUM-30, BR-402); the Chair reads them but writes none.</summary>
+    /// <summary>The current Secretary's notes (SCRUM-30, UC-70); the Chair reads them but writes none.</summary>
     private async Task<IReadOnlyList<MinutesNote>> SecretaryNotesAsync(Meeting meeting, CancellationToken ct)
     {
         var secretaries = meeting.Participants

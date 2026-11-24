@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Application.Email;
 
-/// <param name="Reason">Why the meeting was cancelled; only on a <see cref="InvitationEventKind.Cancelled"/> event (BR-300).</param>
+/// <param name="Reason">Why the meeting was cancelled; only on a <see cref="InvitationEventKind.Cancelled"/> event (UC-22).</param>
 /// <param name="PreviousStartsAt">The time a reschedule moved the meeting from, so the email can show old and new; null on
 /// every other event and on reschedules staged before it was recorded.</param>
 public sealed record InvitationPayload(string Name, string Email, string MeetingTitle, string Description,

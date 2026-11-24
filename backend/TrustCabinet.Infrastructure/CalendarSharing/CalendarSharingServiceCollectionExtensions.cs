@@ -6,8 +6,8 @@ namespace TrustCabinet.Infrastructure.CalendarSharing;
 public static class CalendarSharingServiceCollectionExtensions
 {
     /// <summary>
-    /// SCRUM-142 — calendar sharing (UC-84a → UC-84f), its stop (BR-424) and the shared week (UC-85c); SCRUM-137 — the
-    /// meeting-time search and the draft from a slot (UC-85a, UC-85b). The services are registered by
+    /// SCRUM-142 — calendar sharing (UC-80a → UC-80f), its stop (BR-142, BR-143) and the shared week (UC-81c); SCRUM-137 — the
+    /// meeting-time search and the draft from a slot (UC-81a, UC-81b). The services are registered by
     /// <c>AddApplication</c>.
     /// </summary>
     public static IServiceCollection AddTrustCabinetCalendarSharing(this IServiceCollection services)

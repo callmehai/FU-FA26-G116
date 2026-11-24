@@ -21,7 +21,7 @@ export interface SlotSearchRequest {
   stepMinutes: number
 }
 
-/** How a person of the search is counted: the caller's own calendar, a shared one, or none (BR-416). */
+/** How a person of the search is counted: the caller's own calendar, a shared one, or none (BR-144, BR-145). */
 export type SlotPersonStatus = 'Own' | 'Shared' | 'NotShared'
 
 export interface SlotPerson {
@@ -60,7 +60,7 @@ export interface SlotSearchResult {
 }
 
 /**
- * POST /api/calendar/slots/draft. The roster is built by the server (BR-429): `userIds[0]` chairs, the rest are
+ * POST /api/calendar/slots/draft. The roster is built by the server (UC-81b): `userIds[0]` chairs, the rest are
  * Members, the caller is Secretary. `acceptedBusyUserIds` are those already busy or unknown when the slot was found.
  */
 export interface SlotDraftRequest {

@@ -41,7 +41,7 @@ public sealed class CallRoomService(
 
     /// <summary>
     /// Someone left, or the room closed, and the repository closed <paramref name="closedHands"/> raised hands with it
-    /// (BR-337): the queue panels refetch. Nothing is sent when no hand was up.
+    /// (BR-104–BR-106): the queue panels refetch. Nothing is sent when no hand was up.
     /// </summary>
     private Task SpeakingLeftAsync(Guid meetingId, int closedHands)
         => speaking is null || closedHands == 0 ? Task.CompletedTask : SpeakingService.PublishAsync(speaking, logger,
@@ -246,7 +246,7 @@ public sealed class CallRoomService(
                     }, ct);
 
                     // A join ticket outlives the meeting by up to its TTL, and LiveKit recreates a
-                    // deleted room for whoever still holds one. Close it again now (UC-22, BR-143)
+                    // deleted room for whoever still holds one. Close it again now (UC-21, BR-025)
                     // instead of at the next reconciliation; the stint above records the visit.
                     if (access is not null && CallRoomRules.StatusOf(access.Status, access.Mode) != CallRoomStatus.Open)
                     {

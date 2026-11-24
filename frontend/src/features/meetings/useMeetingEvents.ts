@@ -21,7 +21,7 @@ import type { VoteChangedEvent } from '../../types/vote'
  * `transcriptChanged` when the Secretary names a voice of a transcript or corrects or moves one of its lines. Votes
  * (SCRUM-28) say `voteChanged` for any change, and `voteOpened` as well when the Chair opens one, so the call room
  * can tell everyone. `voteListChanged` is every vote change but a ballot or a conclusion: what a list of the votes and
- * their documents shows (UC-32a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
+ * their documents shows (UC-35a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
  * `notesChanged` (SCRUM-30) reaches only the Chair and the Secretary: a note was saved in another window.
  * `speakingChanged` (SCRUM-27) is any change to the queue of raised hands; `speakingInvited` reaches only the person
  * the Chair just invited, with the same event id, so the room can tell them it is their turn.

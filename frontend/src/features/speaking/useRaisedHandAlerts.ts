@@ -4,7 +4,7 @@ import type { Speaking } from './useSpeaking'
 
 /**
  * Tells the Chair in the call room "… giơ tay" when a hand goes up while the speaking panel is closed, as Meet does
- * (UC-79 step 3). Hands already up when the room opens, or when the caller becomes Chair, are not announced: the
+ * (UC-50 step 3). Hands already up when the room opens, or when the caller becomes Chair, are not announced: the
  * count on the "Phát biểu" button shows them.
  */
 export function useRaisedHandAlerts(speaking: Speaking, panelOpen: boolean) {

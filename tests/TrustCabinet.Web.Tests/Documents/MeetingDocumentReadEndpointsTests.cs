@@ -11,7 +11,7 @@ using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
-/// <summary>SCRUM-21 — GET documents (UC-32a) and GET content (UC-32c) against PostgreSQL.</summary>
+/// <summary>SCRUM-21 — GET documents (UC-35a) and GET content (UC-35b) against PostgreSQL.</summary>
 [Collection("Documents")]
 public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) : IAsyncLifetime
 {
@@ -85,13 +85,13 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
 
         Assert.Equal(200, (int)response.StatusCode);
         Assert.Equal(s.MeetingId, body.GetProperty("meetingId").GetGuid());
-        // The room panel puts the item under discussion first (BR-316).
+        // The room panel puts the item under discussion first (UC-35a).
         Assert.Equal(items[1], body.GetProperty("currentAgendaItemId").GetGuid());
         var groups = body.GetProperty("agendaItems").EnumerateArray().ToArray();
         Assert.Equal(items, groups.Select(g => g.GetProperty("id").GetGuid()));
         Assert.Equal([1, 2, 3], groups.Select(g => g.GetProperty("position").GetInt32()));
         Assert.Equal("InProgress", groups[1].GetProperty("status").GetString());
-        // Linked to items 1 and 3: shows under both (BR-277); the removed one nowhere (BR-211).
+        // Linked to items 1 and 3: shows under both (UC-36b); the removed one nowhere (BR-074–BR-076).
         Assert.Equal([both], Ids(groups[0].GetProperty("documents")));
         Assert.Equal([second], Ids(groups[1].GetProperty("documents")));
         Assert.Equal([both], Ids(groups[2].GetProperty("documents")));
@@ -183,7 +183,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal("Báo cáo quý 3.pdf", disposition.FileNameStar);
         Assert.Contains("no-store", response.Headers.CacheControl!.ToString());
         Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
-        // Normal meeting: nothing to audit (BR-318 covers Secret only).
+        // Normal meeting: nothing to audit (BR-011 covers Secret only).
         Assert.Empty(await Audit(id));
         Assert.Equal(200, (int)(await client.GetAsync(s.ContentUrl(id, download: true))).StatusCode);
         Assert.Empty(await Audit(id));
@@ -204,7 +204,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal(s.Member, viewed.ActorId);
         Assert.Contains(s.MeetingId.ToString(), viewed.Details);
 
-        // Also the Chair: no role may download from a Secret meeting (BR-188).
+        // Also the Chair: no role may download from a Secret meeting (BR-081).
         using var chair = fixture.Client(s.Chair);
         await AssertCode(await chair.GetAsync(s.ContentUrl(id, download: true)), 403, "MSG159");
         Assert.Single(await Audit(id));
@@ -239,7 +239,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         using var member = fixture.Client(s.Member);
         using var secretary = fixture.Client(s.Secretary);
 
-        // General means no agenda item and no vote (BR-280, option B): a vote's own document is under the vote only.
+        // General means no agenda item and no vote (UC-36b, UC-36d, option B): a vote's own document is under the vote only.
         var forMember = await member.GetFromJsonAsync<JsonElement>(s.ListUrl);
         Assert.Equal([general], Ids(forMember.GetProperty("general")));
         Assert.Equal([onDraftAndItem], Ids(forMember.GetProperty("agendaItems")[0].GetProperty("documents")));
@@ -250,7 +250,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal([general], Ids(forSecretary.GetProperty("general")));
         Assert.Equal([open, draft], forSecretary.GetProperty("votes").EnumerateArray().Select(v => v.GetProperty("id").GetGuid()));
 
-        // Reached only through a draft, the document is not in the meeting for a Member (BR-253), comments included.
+        // Reached only through a draft, the document is not in the meeting for a Member (BR-086, BR-087), comments included.
         var hidden = await AssertCode(await member.GetAsync(s.ContentUrl(onDraft)), 404, "MSG156");
         var unknown = await AssertCode(await member.GetAsync(s.ContentUrl(Guid.NewGuid())), 404, "MSG156");
         Assert.Equal(unknown.ToString(), hidden.ToString());
@@ -262,7 +262,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal(200, (int)(await secretary.GetAsync(s.ContentUrl(onDraft))).StatusCode);
         Assert.Equal(200, (int)(await secretary.GetAsync(CommentsUrl(s, onDraft))).StatusCode);
 
-        // Past the draft (here closed; one Open vote per meeting, BR-266) everyone reads it.
+        // Past the draft (here closed; one Open vote per meeting, BR-090) everyone reads it.
         await using (var db = fixture.Db())
             await db.VotingSessions.Where(v => v.Id == draft)
                 .ExecuteUpdateAsync(u => u.SetProperty(v => v.Status, VotingStatus.Closed));

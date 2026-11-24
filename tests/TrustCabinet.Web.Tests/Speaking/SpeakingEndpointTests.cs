@@ -14,12 +14,12 @@ using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Speaking;
 
-/// <summary>SCRUM-27, UC-79 Register to Speak; BR-337, BR-338, BR-339.</summary>
+/// <summary>SCRUM-27, UC-50 Register to Speak; BR-104–BR-106.</summary>
 public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<ParticipantFixture>
 {
     private static string Queue(ParticipantFixture.Scenario s) => s.Url + "/speaking-requests";
 
-    /// <summary>Puts the person in the meeting room as LiveKit would report them (UC-79 step 2).</summary>
+    /// <summary>Puts the person in the meeting room as LiveKit would report them (UC-50 step 2).</summary>
     private async Task InRoom(ParticipantFixture.Scenario s, CallMember member)
     {
         await using var scope = f.Host.Services.CreateAsyncScope();
@@ -79,7 +79,7 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
 
         var first = await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created);
-        // UC-79 EX-2: the hand stays raised, nothing changes.
+        // UC-50 EX-2: the hand stays raised, nothing changes.
         var again = await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.OK);
         Assert.Equal(Mine(first), Mine(again));
         await Json(await secretary.PostAsync(Queue(s), null), HttpStatusCode.Created);
@@ -126,7 +126,7 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         var finished = await Json(await member.PostAsync($"{Queue(s)}/{id}/finish", null), HttpStatusCode.OK);
         Assert.Empty(Statuses(finished));
 
-        // BR-339: who spoke and for how long stays with the meeting.
+        // BR-104–BR-106: who spoke and for how long stays with the meeting.
         await using var db = f.Db();
         var row = await db.SpeakingRequests.SingleAsync(r => r.Id == id);
         Assert.Equal(SpeakingRequestStatus.Finished, row.Status);
@@ -152,11 +152,11 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         await Json(await chair.PostAsync($"{Queue(s)}/{second}/invite", null), HttpStatusCode.OK);
         await Code(await chair.PostAsync($"{Queue(s)}/{first}/invite", null), 409, "MSG459");
 
-        // UC-79 AF-3: the Chair declines; the hand is lowered and the request leaves the queue.
+        // UC-50 AF-3: the Chair declines; the hand is lowered and the request leaves the queue.
         await Json(await chair.PostAsync($"{Queue(s)}/{first}/decline", null), HttpStatusCode.OK);
         await Code(await chair.PostAsync($"{Queue(s)}/{first}/decline", null), 409, "MSG460");
 
-        // UC-79 EX-4: after a handover the old Chair has no controls, at once.
+        // UC-50 EX-4: after a handover the old Chair has no controls, at once.
         await using (var db = f.Db())
         {
             var chairRow = await db.MeetingParticipants.SingleAsync(p => p.Id == s.ChairAssignment);
@@ -227,14 +227,14 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         var memberRequest = Mine(await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created));
         var guestRequest = Mine(await Json(await guest.PostAsync(Queue(s), null), HttpStatusCode.Created));
 
-        // UC-79 EX-3: the person left the room; the Chair's queue moves up.
+        // UC-50 EX-3: the person left the room; the Chair's queue moves up.
         await Leave(s, CallMember.User(s.Member));
         await Leave(s, CallMember.Guest(guestSession));
         await using (var db = f.Db())
             Assert.All(await db.SpeakingRequests.Where(r => r.Id == memberRequest || r.Id == guestRequest).ToListAsync(),
                 r => Assert.Equal(SpeakingRequestStatus.Cancelled, r.Status));
 
-        // Removed from the meeting while waiting: the hand is lowered too (BR-337).
+        // Removed from the meeting while waiting: the hand is lowered too (BR-104–BR-106).
         await InRoom(s, CallMember.User(s.Member));
         var again = Mine(await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created));
         await Code(await Write(secretary, s.Url + $"/participants/{s.MemberAssignment}", HttpMethod.Delete), 200, "MSG103");
@@ -326,7 +326,7 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         var startedAt = f.Clock.Now;
         await Json(await member.PostAsync($"{Queue(s)}/{id}/start", null), HttpStatusCode.OK);
 
-        // The reconciliation notices the drop three minutes late; the turn lasted two (BR-339).
+        // The reconciliation notices the drop three minutes late; the turn lasted two (BR-104–BR-106).
         f.Clock.Now = startedAt.AddMinutes(5);
         await using (var scope = f.Host.Services.CreateAsyncScope())
         {

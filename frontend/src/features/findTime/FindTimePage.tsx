@@ -54,9 +54,9 @@ type Search =
   | { kind: 'error'; message: string; retry: boolean }
 
 /**
- * SCRUM-137 — Tìm giờ họp (UC-85a, UC-85b) and the week of shared hours (UC-85c), wireframe v12 16.7–16.10, laid out
+ * SCRUM-137 — Tìm giờ họp (UC-81a, UC-81b) and the week of shared hours (UC-81c), wireframe v12 16.7–16.10, laid out
  * after AI-eCabinet's page. Only calendars shared with the caller count, each at its level; the fixed sentence beside
- * the tabs says so (BR-428). The route needs `MeetingCreator`; the server checks again (403 MSG448).
+ * the tabs says so (BR-148). The route needs `MeetingCreator`; the server checks again (403 MSG448).
  */
 export function FindTimePage() {
   const { user } = useAuth()

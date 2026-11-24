@@ -7,17 +7,17 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 Đã có:
 
 - [SCRUM-69 — bàn giao Start/End](10-scrum69-ban-giao.md), [báo cáo kiểm thử](10-scrum69-kiem-thu.md), [Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json).
-- [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
+- [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-33; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
 
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 - [`16-truy-cap-khach-uc04.md`](16-truy-cap-khach-uc04.md) — UC-04 / SCRUM-116: link mời, OTP, phiên và token Khách (`/api/guest-access/*`); giá trị OTP và hạn phiên đã chốt; mã `MSG126`, `MSG371`–`MSG378`.
 - [`17-du-thao-bien-ban.md`](17-du-thao-bien-ban.md) — SCRUM-36 / SCRUM-32: dự thảo AI (`/api/meetings/{id}/summary`) và bản nháp biên bản theo mẫu cố định (`/api/meetings/{id}/minutes`, `/api/minutes/{id}`), cấu hình máy AI `Ai:*`; mã `MSG384`–`MSG406`. SCRUM-33: gửi duyệt, duyệt và ban hành, trả lại, đính chính biên bản; mã `MSG424`–`MSG434`, `MSG456`.
 - [`18-may-ai.md`](18-may-ai.md) — ADR-0056: màn Cấu hình AI của quản trị (`/api/admin/ai`), chọn máy local hay API cho dự thảo của cuộc họp Thường; mã `MSG408`–`MSG413`.
-- [`19-ghi-chu-cuoc-hop.md`](19-ghi-chu-cuoc-hop.md) — SCRUM-30 / UC-82: ghi chú của Thư ký trong lúc họp (`GET`/`PUT /api/meetings/{id}/notes`), sự kiện `notesChanged`, ghi chú đi vào bản nháp biên bản; mã `MSG415`–`MSG423`.
-- [`20-dang-ky-phat-bieu.md`](20-dang-ky-phat-bieu.md) — SCRUM-27 / UC-79: giơ tay trong phòng họp, hàng đợi của Chủ toạ, mời/bắt đầu/kết thúc lượt (`/api/meetings/{id}/speaking-requests`), sự kiện `speakingChanged`/`speakingInvited`; mã `MSG457`–`MSG462`.
-- [`21-nhat-ky-kiem-toan.md`](21-nhat-ky-kiem-toan.md) — SCRUM-16 / UC-13: xem nhật ký hệ thống (`GET /api/audit-log`, `/event-types`) sau quyền *Quản trị người dùng*, lọc theo khoảng thời gian, người thực hiện (tài khoản, Khách, hệ thống), loại sự kiện, từ khoá; các sự kiện mới được ghi (đăng nhập, chuyển trạng thái cuộc họp, ban hành biên bản); mã `MSG469`–`MSG470`.
-- [`22-bao-cao-thong-ke.md`](22-bao-cao-thong-ke.md) — SCRUM-38 / UC-70a, UC-70b: báo cáo cuộc họp theo tháng, trạng thái, mức mật, tỷ lệ tham dự, thời lượng họp và thời gian ban hành biên bản (`GET /api/reports/meetings`), xuất Excel có audit (`…/export`); mã `MSG463`–`MSG466`.
+- [`19-ghi-chu-cuoc-hop.md`](19-ghi-chu-cuoc-hop.md) — SCRUM-30 / UC-28: ghi chú của Thư ký trong lúc họp (`GET`/`PUT /api/meetings/{id}/notes`), sự kiện `notesChanged`, ghi chú đi vào bản nháp biên bản; mã `MSG415`–`MSG423`.
+- [`20-dang-ky-phat-bieu.md`](20-dang-ky-phat-bieu.md) — SCRUM-27 / UC-50: giơ tay trong phòng họp, hàng đợi của Chủ toạ, mời/bắt đầu/kết thúc lượt (`/api/meetings/{id}/speaking-requests`), sự kiện `speakingChanged`/`speakingInvited`; mã `MSG457`–`MSG462`.
+- [`21-nhat-ky-kiem-toan.md`](21-nhat-ky-kiem-toan.md) — SCRUM-16 / UC-12: xem nhật ký hệ thống (`GET /api/audit-log`, `/event-types`) sau quyền *Quản trị người dùng*, lọc theo khoảng thời gian, người thực hiện (tài khoản, Khách, hệ thống), loại sự kiện, từ khoá; các sự kiện mới được ghi (đăng nhập, chuyển trạng thái cuộc họp, ban hành biên bản); mã `MSG469`–`MSG470`.
+- [`22-bao-cao-thong-ke.md`](22-bao-cao-thong-ke.md) — SCRUM-38 / UC-79a, UC-79b: báo cáo cuộc họp theo tháng, trạng thái, mức mật, tỷ lệ tham dự, thời lượng họp và thời gian ban hành biên bản (`GET /api/reports/meetings`), xuất Excel có audit (`…/export`); mã `MSG463`–`MSG466`.
 - [`16-truy-cap-khach-uc04-ket-qua-kiem-thu.md`](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md) — SCRUM-122: kết quả kiểm thử E2E Khách (UC-04 → UC-26 Agenda, thu hồi, hết hạn, cuộc họp kết thúc) bằng email và phiên thật; kèm FE SCRUM-121/SCRUM-123.
 
 - `GET /api/health` — không cần đăng nhập, không có file riêng: `200` với `status: "ok"`, `database: "ok"`;
@@ -38,12 +38,12 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   vì sao đổi trạng thái là endpoint riêng, và vì sao vô hiệu hoá phải kết thúc phiên. UC-07 đặt lại
   mật khẩu qua liên kết email (`POST /api/users/{id}/password-reset`, `POST /api/auth/password-reset`,
   mã `MSG13`–`MSG15`, `MSG92`–`MSG94`); UC-08 gán vai trò chạy trên `PUT /api/users/{id}`
-- [`postman/`](postman/README.md) — collection Postman kiểm thử API UC-07 và UC-08 trên backend local,
+- [`postman/`](postman/README.md) — collection Postman kiểm thử API UC-07, UC-08 trên backend local,
   kèm cách chạy bằng newman
 - [`02-quan-ly-nguoi-dung-note-cho-fe.md`](02-quan-ly-nguoi-dung-note-cho-fe.md) — note cho FE khi
   làm màn hình quản lý người dùng: `isActive` bắt buộc gửi đúng tên field, ba nguyên nhân khác nhau
   của cùng mã `MSG12`, và vì sao `403` giữa phiên là chuyện bình thường chứ không phải bug
-- [`03-ma-tran-phan-quyen.md`](03-ma-tran-phan-quyen.md) — ma trận vai trò ↔ quyền (UC-10, UC-11 /
+- [`03-ma-tran-phan-quyen.md`](03-ma-tran-phan-quyen.md) — ma trận vai trò ↔ quyền (UC-09, UC-10 /
   SCRUM-60): `GET`/`PUT /api/roles/capabilities`; mã `MSG16`–`MSG18`; luật chống tự khoá hệ thống,
   vì sao đổi ma trận phải kết thúc phiên, và năm chỗ code khác class diagram cần BA sửa. Kèm cảnh
   báo về bước seed sau khi bỏ `HasData` ([ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md))
@@ -61,7 +61,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
-  họp (`SCRUM-17`/`SCRUM-18`, UC-14–UC-17): quyền theo từng cuộc họp, lọc và phân trang ở
+  họp (`SCRUM-17`/`SCRUM-18`, UC-13–UC-16): quyền theo từng cuộc họp, lọc và phân trang ở
   server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
 - [`06-scrum19-ban-giao-tich-hop.md`](06-scrum19-ban-giao-tich-hop.md) — contract FE/Tester và tích hợp producer SCRUM-15 qua `meetingId`, tạo email job khi SMTP bật
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
@@ -84,22 +84,22 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`09-thanh-phan-tham-du-guest-uc04.md`](09-thanh-phan-tham-du-guest-uc04.md) — port và gate tích hợp OTP/session Guest production
 - [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu
 - [`11-tai-lieu-cuoc-hop.md`](11-tai-lieu-cuoc-hop.md) — SCRUM-107: tải tệp từ máy lên cuộc họp
-  (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
+  (UC-36a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
   file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
-  SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
-  Mật, nhật ký kiểm toán khi xem tài liệu Mật (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
-  SCRUM-58 (SCRUM-112): thêm từ kho (UC-33a), gắn mục nghị sự ba nguồn (UC-33b), gỡ khỏi cuộc họp (UC-33c), gỡ khỏi
-  mục (UC-33d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-35). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`).
+  SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-35a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
+  Mật, nhật ký kiểm toán khi xem tài liệu Mật (UC-35b), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
+  SCRUM-58 (SCRUM-112): thêm từ kho (UC-36a), gắn mục nghị sự ba nguồn (UC-36b), gỡ khỏi cuộc họp (UC-36c), gỡ khỏi
+  mục (UC-36d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-38). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`).
   SCRUM-123: Khách có phiên UC-04 đọc danh sách và nội dung (xem, tải về) tài liệu cuộc họp; mọi thao tác ghi vẫn từ chối Khách
 - [`14-kho-tai-lieu-ca-nhan.md`](14-kho-tai-lieu-ca-nhan.md) — SCRUM-58 (SCRUM-110, SCRUM-111): thư mục kho cá nhân
-  (UC-72a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-34, UC-36, UC-71a–c), hạn mức 10 GB
+  (UC-41a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-37, UC-39, UC-40a–c), hạn mức 10 GB
   của cả hệ thống (ADR-0034), Quản trị viên đọc kho của tài khoản đã khoá có kiểm toán; mã `MSG175`–`MSG198`, `MSG346`–`MSG348`
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 - [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
 - [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`
-- [`15-bieu-quyet.md`](15-bieu-quyet.md) — contract FE-11 (Backend đã triển khai: SCRUM-28, SCRUM-96): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-76), xác nhận đã đọc (UC-74); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
-- [`23-chia-se-lich.md`](23-chia-se-lich.md) — SCRUM-142: chia sẻ lịch bận/rảnh (UC-84a → UC-84f), danh sách người để chọn `share-candidates`, xem tuần được chia sẻ (UC-85c), dừng khi vô hiệu hoá / mất quyền tạo cuộc họp (BR-424), hết ngày kết thúc tính lúc đọc (BR-425); mã `MSG435`–`MSG455`, `MSG467`, `MSG468`. Note cho FE: [`23-chia-se-lich-note-cho-fe.md`](23-chia-se-lich-note-cho-fe.md)
-- [`24-tim-gio-hop.md`](24-tim-gio-hop.md) — SCRUM-137: tìm khung giờ mọi người cùng rảnh từ lịch đã chia sẻ (UC-85a, `POST /api/calendar/slots`) và tạo cuộc họp Nháp từ một khung (UC-85b, `POST /api/calendar/slots/draft`); mã `MSG444`–`MSG446`, dùng lại `MSG448`, `MSG453`, `MSG29`, `MSG31`, `MSG35`, `MSG277`. Note cho FE: [`24-tim-gio-hop-note-cho-fe.md`](24-tim-gio-hop-note-cho-fe.md)
+- [`15-bieu-quyet.md`](15-bieu-quyet.md) — contract FE-11 (Backend đã triển khai: SCRUM-28, SCRUM-96): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-68), xác nhận đã đọc (UC-42); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
+- [`23-chia-se-lich.md`](23-chia-se-lich.md) — SCRUM-142: chia sẻ lịch bận/rảnh (UC-80a → UC-80f), danh sách người để chọn `share-candidates`, xem tuần được chia sẻ (UC-81c), dừng khi vô hiệu hoá / mất quyền tạo cuộc họp (BR-142, BR-143), hết ngày kết thúc tính lúc đọc (BR-142, BR-143); mã `MSG435`–`MSG455`, `MSG467`, `MSG468`. Note cho FE: [`23-chia-se-lich-note-cho-fe.md`](23-chia-se-lich-note-cho-fe.md)
+- [`24-tim-gio-hop.md`](24-tim-gio-hop.md) — SCRUM-137: tìm khung giờ mọi người cùng rảnh từ lịch đã chia sẻ (UC-81a, `POST /api/calendar/slots`) và tạo cuộc họp Nháp từ một khung (UC-81b, `POST /api/calendar/slots/draft`); mã `MSG444`–`MSG446`, dùng lại `MSG448`, `MSG453`, `MSG29`, `MSG31`, `MSG35`, `MSG277`. Note cho FE: [`24-tim-gio-hop-note-cho-fe.md`](24-tim-gio-hop-note-cho-fe.md)
 - [`25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md`](25-tu-cap-nhat-khi-nguoi-khac-thay-doi.md) — màn hình tự đọc lại khi người khác thay đổi: event `meetingChanged`, `minutesChanged`, `commentsChanged` trên `/hubs/meetings`, màn hình đọc lại theo thông báo hoặc khi quay lại tab
 
 Dự kiến có thêm:
@@ -111,4 +111,4 @@ Dự kiến có thêm:
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).
 
-SCRUM-98 thay thế contract Agenda SCRUM-25: [bàn giao BE → FE/BA](08-scrum98-ban-giao.md), [báo cáo kiểm thử riêng](08-scrum98-ket-qua-kiem-thu.md). UC-77, presenter Internal/Guest, bỏ duration và reorder mọi trạng thái. Báo cáo SCRUM-25 là lịch sử, không ghi đè.
+SCRUM-98 thay thế contract Agenda SCRUM-25: [bàn giao BE → FE/BA](08-scrum98-ban-giao.md), [báo cáo kiểm thử riêng](08-scrum98-ket-qua-kiem-thu.md). UC-27, presenter Internal/Guest, bỏ duration và reorder mọi trạng thái. Báo cáo SCRUM-25 là lịch sử, không ghi đè.

@@ -1,15 +1,15 @@
 namespace TrustCabinet.Domain.CalendarSharing;
 
 /// <summary>
-/// UC-85a step 3–4 without a database: the candidate slots of a search and, for each, who among the counted people is
-/// free, busy or unknown. Only busy periods come in — nothing about the meetings behind them (BR-427).
+/// UC-81a step 3–4 without a database: the candidate slots of a search and, for each, who among the counted people is
+/// free, busy or unknown. Only busy periods come in — nothing about the meetings behind them (BR-140, BR-141).
 /// </summary>
 public static class MeetingSlotFinder
 {
     /// <summary>
     /// Every start on the step grid counted from midnight (D15) inside working hours, never overlapping lunch, never in
-    /// the past (BR-422), on the chosen weekdays. Common slots when some fit everyone counted; otherwise the slots with
-    /// the most people free (UC-85a AF-1); nothing when nobody is counted or nobody is ever free.
+    /// the past (UC-81a), on the chosen weekdays. Common slots when some fit everyone counted; otherwise the slots with
+    /// the most people free (UC-81a AF-1); nothing when nobody is counted or nobody is ever free.
     /// </summary>
     public static SlotFinding Find(SlotSearch search, DateTimeOffset now, IReadOnlyList<SlotPerson> persons)
     {
@@ -52,9 +52,9 @@ public static class MeetingSlotFinder
 
     /// <summary>
     /// Who is busy and whose day is unknown for [<paramref name="start"/>, <paramref name="end"/>). A person is unknown,
-    /// never free, when any day of [start − buffer, end + buffer) lies outside their known days (BR-415); otherwise a busy
-    /// period closer than the buffer on either side makes them busy (BR-422, D15).
-    /// Used by the search and by the recheck before a draft (UC-85b, BR-428).
+    /// never free, when any day of [start − buffer, end + buffer) lies outside their known days (BR-144, BR-145); otherwise a busy
+    /// period closer than the buffer on either side makes them busy (UC-81a, D15).
+    /// Used by the search and by the recheck before a draft (UC-81b, BR-148).
     /// </summary>
     public static (IReadOnlyList<Guid> Busy, IReadOnlyList<Guid> Unknown) Check(DateTimeOffset start, DateTimeOffset end,
         int bufferMinutes, IReadOnlyList<SlotPerson> persons)
@@ -89,7 +89,7 @@ public static class MeetingSlotFinder
         var from = start - buffer;
         var to = end + buffer;
         // Every day the busy check reads must be known, the buffer included: a gap that reaches past midnight into a day
-        // outside the share would otherwise tell busy from free on that day (BR-415, review of PR #319).
+        // outside the share would otherwise tell busy from free on that day (BR-144, BR-145, review of PR #319).
         var firstDay = DateOnly.FromDateTime(VietnamTime.ToLocal(from).DateTime);
         var lastDay = DateOnly.FromDateTime(VietnamTime.ToLocal(to.AddTicks(-1)).DateTime);
         var busy = new List<Guid>();

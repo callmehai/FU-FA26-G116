@@ -5,7 +5,7 @@ namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
 /// Everything said in a meeting as one timeline, for the summary (SCRUM-36): the sentences of each person's mic
-/// (SCRUM-109) and the segments of the room mic or an uploaded file (SCRUM-31). Excluded sentences stay out (BR-358).
+/// (SCRUM-109) and the segments of the room mic or an uploaded file (SCRUM-31). Excluded sentences stay out (UC-54b).
 /// Numbers read aloud arrive as digits (<see cref="SpokenNumbers"/>). In a hybrid meeting the room mic's copy of an
 /// online attendee's words, heard through the room's speakers, is left out: their own mic has them (ADR-0061). Called
 /// inside the caller's unit of work, which translates a storage failure.

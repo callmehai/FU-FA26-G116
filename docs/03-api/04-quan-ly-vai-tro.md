@@ -130,9 +130,9 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 | Method | Path | Việc |
 |---|---|---|
 | `GET` | `/api/roles` | Liệt kê vai trò |
-| `POST` | `/api/roles` | Tạo vai trò (UC-12a) |
-| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12b) |
-| `DELETE` | `/api/roles/{id}` | Xoá (UC-12c) |
+| `POST` | `/api/roles` | Tạo vai trò (UC-11a) |
+| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-11b) |
+| `DELETE` | `/api/roles/{id}` | Xoá (UC-11c) |
 
 ### 4.1 `GET /api/roles`
 
@@ -181,7 +181,7 @@ Thành công: `201`, `Location: /api/roles/{id}`:
 { "name": "Phó thư ký", "description": null }
 ```
 
-Thứ tự kiểm theo sequence diagram UC-12b:
+Thứ tự kiểm theo sequence diagram UC-11b:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24` (trước cả validate: không có gì để sửa trong form)
@@ -198,7 +198,7 @@ không chạm quyền, không chạm người.
 
 ### 4.4 `DELETE /api/roles/{id}`
 
-Thứ tự theo UC-12c, chạy trong guard:
+Thứ tự theo UC-11c, chạy trong guard:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24`
@@ -241,7 +241,7 @@ Thứ tự theo UC-12c, chạy trong guard:
 | `MSG28` | `500` | Xoá: như trên — nhánh "Unable to delete role" | `Không thể xoá vai trò. Vui lòng thử lại.` |
 
 Diagram không đặt mã cho nhánh "Unable to create/update/delete role". Trước đây ba nhánh tạm dùng
-chung `MSG18` của UC-10; nay mỗi nhánh có mã riêng theo [danh mục mã](00-danh-muc-ma-thong-bao.md).
+chung `MSG18` của UC-09; nay mỗi nhánh có mã riêng theo [danh mục mã](00-danh-muc-ma-thong-bao.md).
 
 ---
 
@@ -279,10 +279,10 @@ thì FK từ chối (`23503`) và API trả `MSG09` `errors.roleId` như vai tr�
 ## 7. Đăng nhập và phiên
 
 - **Tạo / đổi tên / xoá không kết thúc phiên của ai.** `/api/auth/me` trả tên mới ở lần FE đọc lại.
-- Sửa quyền của vai trò **không** kết thúc phiên người giữ nó (BR-313): quyền mới áp dụng từ hành động tiếp theo, hệ thống báo cho người giữ vai trò, không phải đăng nhập lại.
+- Sửa quyền của vai trò **không** kết thúc phiên người giữ nó (BR-008): quyền mới áp dụng từ hành động tiếp theo, hệ thống báo cho người giữ vai trò, không phải đăng nhập lại.
 - **Đã bỏ nhánh `MSG04` của UC-01 (và `MSG05` của UC-02) — số cũ, trước khi đánh lại mã chung** theo đề xuất: mọi vai trò không có quyền
   nào đều đăng nhập được như `Member`. Refresh cũng không còn cắt phiên vì "hết quyền" — token mới
-  đơn giản không mang quyền nào. **Chờ BA sửa UC-01/UC-02** (mục 10). Nếu BA muốn giữ, cần định
+  đơn giản không mang quyền nào. **Chờ BA sửa UC-01, UC-02** (mục 10). Nếu BA muốn giữ, cần định
   nghĩa mới không dựa vào tên vai trò (ví dụ cờ `can_sign_in` trên `roles`) — phạm vi thêm.
 
 ## 8. Phần FE
@@ -319,9 +319,9 @@ thực hiện theo luồng ở mục 9 trước khi ticket được đánh dấu
 
 ## 10. Câu hỏi mở cho BA
 
-1. ~~Chốt số UC (hiện dùng UC-11/12/13 theo sequence diagram) và mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-11 là cấu hình quyền, UC-12a là tạo, UC-12b là sửa, UC-12c là xoá, UC-13 là xem nhật ký (khớp inventory + sequence UC12a/b/c).
+1. ~~Chốt số UC (hiện dùng UC-10, UC-11, UC-12 theo sequence diagram) và mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-10 là cấu hình quyền, UC-11a là tạo, UC-11b là sửa, UC-11c là xoá, UC-12 là xem nhật ký (khớp inventory + sequence UC12a/b/c).
 2. **Bỏ `MSG04` của UC-01 / `MSG05` của UC-02 (số cũ)** — xem ghi chú dưới. **Code đã bỏ**; cần BA quyết giữ
-   hay bỏ và sửa đặc tả UC-01/UC-02 theo.
+   hay bỏ và sửa đặc tả UC-01, UC-02 theo.
 3. ~~Nhánh "Unable to create/update/delete role" dùng chung `MSG18` hay có mã riêng.~~ Đã chốt: mã riêng `MSG26`–`MSG28`.
 4. Vai trò mặc định có cần đổi **mô tả** được không? Hiện khoá cả tên lẫn mô tả.
 5. `MSG24` và `MSG25` trả `409` — tester có kỳ vọng mã HTTP khác không?
@@ -353,7 +353,7 @@ trò thành dữ liệu (ADR-0008) thì:
 
 | Phương án | Việc phải làm |
 |---|---|
-| **A. Chấp nhận bỏ** (đề xuất) | Sửa đặc tả UC-01/UC-02: xoá bước kiểm quyền và `MSG04`/`MSG05` (số cũ) loại này; FE bỏ xử lý hai mã đó |
+| **A. Chấp nhận bỏ** (đề xuất) | Sửa đặc tả UC-01, UC-02: xoá bước kiểm quyền và `MSG04`/`MSG05` (số cũ) loại này; FE bỏ xử lý hai mã đó |
 | B. Giữ luật "không có quyền thì không vào" | Cần định nghĩa không dựa vào tên: ví dụ cờ `can_sign_in` trên `roles` do quản trị viên bật/tắt. Thêm cột, migration, UI — ticket riêng |
 
 ## 11. Xong là khi
@@ -390,9 +390,9 @@ Nếu các điểm trên đã ổn định trong môi trường tích hợp thì
 
 ### Cần BA chốt
 
-- ~~Chốt số UC (hiện tài liệu dùng UC-11/12/13) và dải mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-11 cấu hình quyền, UC-12a tạo, UC-12b sửa, UC-12c xoá.
+- ~~Chốt số UC (hiện tài liệu dùng UC-10, UC-11, UC-12) và dải mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-10 cấu hình quyền, UC-11a tạo, UC-11b sửa, UC-11c xoá.
 - Chốt bỏ hay giữ nhánh đăng nhập khi vai trò không có capability nào (`MSG04` UC-01 / `MSG05`
-  UC-02, số cũ). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01/UC-02.
+  UC-02, số cũ). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01, UC-02.
 - ~~Chốt dùng chung `MSG18` cho lỗi tạo/sửa/xoá hay cần mã riêng.~~ Đã chốt: `MSG26`–`MSG28`.
 - Chốt vai trò mặc định có được sửa mô tả không; hợp đồng hiện khoá cả tên và mô tả.
 - Xác nhận `MSG24` và `MSG25` dùng HTTP `409`.

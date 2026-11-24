@@ -9,8 +9,8 @@ using TrustCabinet.Web.Tests.Access;
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
 /// <summary>
-/// BR-424 through the real administration endpoints: deactivating an account (UC-06c), changing a person's role (UC-08) and
-/// taking MeetingCreator off a role (UC-11) stop the affected Effective shares at once, for good, telling both sides.
+/// BR-142, BR-143 through the real administration endpoints: deactivating an account (UC-06c), changing a person's role (UC-08) and
+/// taking MeetingCreator off a role (UC-10) stop the affected Effective shares at once, for good, telling both sides.
 /// A Pending invitation is kept (PO 09/11/2026, Q-C).
 /// </summary>
 public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFixture<CalendarSharingFixture>
@@ -54,7 +54,7 @@ public sealed class CalendarShareStopTests(CalendarSharingFixture f) : IClassFix
     public async Task A_share_past_its_end_date_is_left_alone_when_an_account_is_deactivated_or_loses_the_right()
     {
         var p = await f.Seed();
-        // Ended on 31/10 and still Effective, since nothing writes the lapse (BR-425, PO 09/11/2026 Q-B).
+        // Ended on 31/10 and still Effective, since nothing writes the lapse (BR-142, BR-143, PO 09/11/2026 Q-B).
         var lapsedOwned = await f.AddShare(p.Owner, p.Organizer, start: Today.AddDays(-20), end: new DateOnly(2026, 10, 31));
         var lapsedViewed = await f.AddShare(p.Owner2, p.Organizer2, start: Today.AddDays(-20), end: Today.AddDays(-1));
         // The last day is today: still in force, so it does stop.

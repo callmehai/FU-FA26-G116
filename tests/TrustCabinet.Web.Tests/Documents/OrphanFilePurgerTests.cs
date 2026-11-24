@@ -13,7 +13,7 @@ using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
-/// <summary>BR-213 — the orphan purge, against PostgreSQL.</summary>
+/// <summary>BR-077 — the orphan purge, against PostgreSQL.</summary>
 [Collection("Documents")]
 public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifetime
 {

@@ -5,7 +5,7 @@ namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
 /// A person of the search as the finder may see them: a name from the finder's own invite list and the share the finder
-/// is one side of — nothing about any meeting (BR-427).
+/// is one side of — nothing about any meeting (BR-140, BR-141).
 /// </summary>
 public sealed record SlotPersonView(
     Guid Id,
@@ -35,17 +35,17 @@ public sealed record SlotSearchResult(
 public enum MeetingSlotFailure
 {
     None,
-    /// <summary>MSG448: the caller is not a Meeting Organizer (BR-430).</summary>
+    /// <summary>MSG448: the caller is not a Meeting Organizer (BR-140, BR-141).</summary>
     NotOrganizer,
-    /// <summary>MSG444: search parameters break BR-421/BR-422 (UC-85a EX-1).</summary>
+    /// <summary>MSG444: search parameters break UC-81a (UC-81a EX-1).</summary>
     InvalidSearch,
-    /// <summary>MSG453: shares, people or meetings could not be read (UC-85a EX-3, UC-85b EX-3).</summary>
+    /// <summary>MSG453: shares, people or meetings could not be read (UC-81a EX-3, UC-81b EX-3).</summary>
     ReadFailed,
-    /// <summary>MSG446: someone free when the slot was found is now busy or unknown (UC-85b EX-1).</summary>
+    /// <summary>MSG446: someone free when the slot was found is now busy or unknown (UC-81b EX-1).</summary>
     SlotTaken,
-    /// <summary>MSG31: the slot's times, buffer or accepted list are not valid (UC-85b through UC-14 EX-1).</summary>
+    /// <summary>MSG31: the slot's times, buffer or accepted list are not valid (UC-81b through UC-13 EX-1).</summary>
     InvalidSlot,
-    /// <summary>MSG277: the invitee list is not valid (UC-85b through UC-14 EX-3).</summary>
+    /// <summary>MSG277: the invitee list is not valid (UC-81b through UC-13 EX-3).</summary>
     InvalidInvitees,
 }
 
@@ -55,7 +55,7 @@ public sealed record SlotSearchOutcome(
     IReadOnlyDictionary<string, string>? Errors = null);
 
 /// <summary>
-/// UC-85b: the meeting fields of UC-14, the invitees in order (the first becomes Chair, BR-429) and what the slot looked
+/// UC-81b: the meeting fields of UC-13, the invitees in order (the first becomes Chair, UC-81b) and what the slot looked
 /// like when it was found: the buffer used and who was already busy or unknown then.
 /// </summary>
 public sealed record SlotDraftInput(
@@ -72,13 +72,13 @@ public sealed record SlotDraftInput(
     int? BufferMinutes,
     IReadOnlyList<Guid>? AcceptedBusyUserIds);
 
-/// <summary>A failure before the meeting was created, or the result of UC-14's creation.</summary>
+/// <summary>A failure before the meeting was created, or the result of UC-13's creation.</summary>
 public sealed record SlotDraftOutcome(
     MeetingSlotFailure Failure,
     MeetingResult? Meeting = null,
     IReadOnlyDictionary<string, string>? Errors = null);
 
-/// <summary>SCRUM-137 — UC-85a find meeting time slots, UC-85b create a draft from one. The caller id comes from the token.</summary>
+/// <summary>SCRUM-137 — UC-81a find meeting time slots, UC-81b create a draft from one. The caller id comes from the token.</summary>
 public interface IMeetingSlotService
 {
     Task<SlotSearchOutcome> FindAsync(Guid actorId, SlotSearchInput input, CancellationToken ct = default);

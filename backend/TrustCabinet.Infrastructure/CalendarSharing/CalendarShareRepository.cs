@@ -31,7 +31,7 @@ public sealed class CalendarShareRepository(TrustCabinetDbContext db) : ICalenda
         var people = db.Users.AsNoTracking().Where(u => u.IsActive && u.Id != userId);
         if (query.Purpose != CandidatePurpose.Request)
         {
-            // UC-84b: only a Meeting Organizer can receive a share (BR-430).
+            // UC-80b: only a Meeting Organizer can receive a share (BR-140, BR-141).
             people = people.Where(u => db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId
                 && rc.Capability == Capability.MeetingCreator));
         }
@@ -51,7 +51,7 @@ public sealed class CalendarShareRepository(TrustCabinetDbContext db) : ICalenda
             .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
             .Select(u => new ShareCandidate(u.Id, u.FullName, u.Email,
                 // The same direction as the share about to be sent: the candidate owns it for a request, views it for
-                // a direct share. A share past its end date no longer counts (BR-425).
+                // a direct share. A share past its end date no longer counts (BR-142, BR-143).
                 db.CalendarShares.Any(s => (request ? s.OwnerId == u.Id && s.ViewerId == userId
                         : s.OwnerId == userId && s.ViewerId == u.Id)
                     && (s.Status == CalendarShareStatus.Pending || s.Status == CalendarShareStatus.Effective)

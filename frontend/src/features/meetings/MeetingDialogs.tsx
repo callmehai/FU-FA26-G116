@@ -40,7 +40,7 @@ function useCloseParam(param: string) {
 }
 
 /**
- * UC-14 Create Meeting, as a dialog over whatever page carries `?create=` (AI-eCabinet's
+ * UC-13 Create Meeting, as a dialog over whatever page carries `?create=` (AI-eCabinet's
  * CreateMeetingHost). Mounted once in the shell. The meeting is saved as a draft with who attends
  * (SCRUM-20); the detail page then takes the agenda, documents and the request for approval.
  */
@@ -76,7 +76,7 @@ export function CreateMeetingHost() {
 }
 
 /**
- * UC-15 Update Meeting, as a dialog on the meeting's page (`?edit=1`). The page decides whether to
+ * UC-14 Update Meeting, as a dialog on the meeting's page (`?edit=1`). The page decides whether to
  * offer it (the creator, Draft or Rejected; Published only to reschedule, AF-1) and passes the
  * meeting it already shows. The backend re-checks ownership and status on save.
  */

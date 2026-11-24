@@ -11,8 +11,8 @@ public sealed class MeetingReportQuery(TrustCabinetDbContext db) : IMeetingRepor
     public Task<List<MeetingReportGroup>> ListGroupsAsync(Guid actorId, DateTimeOffset start, DateTimeOffset end,
         CancellationToken ct = default)
     {
-        // BR-434: one GROUP BY over month (Vietnam time), status and sensitivity; the three tables are sums of it.
-        // The permission filter stays in the query, before anything is counted (BR-432).
+        // BR-149, BR-150: one GROUP BY over month (Vietnam time), status and sensitivity; the three tables are sums of it.
+        // The permission filter stays in the query, before anything is counted (BR-149, BR-150).
         return db.Meetings.AsNoTracking()
             .Where(MeetingReadPolicy.ForUser(actorId))
             .Where(m => m.PlannedStartTime >= start && m.PlannedStartTime < end)
@@ -25,7 +25,7 @@ public sealed class MeetingReportQuery(TrustCabinetDbContext db) : IMeetingRepor
     public Task<List<MeetingReportEndedRow>> ListEndedRowsAsync(Guid actorId, DateTimeOffset start, DateTimeOffset end,
         CancellationToken ct = default)
     {
-        // BR-435, BR-436 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
+        // BR-151 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
         return db.Meetings.AsNoTracking()
             .Where(MeetingReadPolicy.ForUser(actorId))
             .Where(m => m.PlannedStartTime >= start && m.PlannedStartTime < end)

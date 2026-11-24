@@ -29,7 +29,7 @@ export function ProxyTab({
   const toast = useToast()
   const proxy = profile.proxy
   const player = useSamplePlayer()
-  // UC-81e step 2: a sample is erased for good, so the person confirms first.
+  // UC-56e step 2: a sample is erased for good, so the person confirms first.
   const [erasing, setErasing] = useState<string | null>(null)
 
   const remove = async (sampleId: string) => {

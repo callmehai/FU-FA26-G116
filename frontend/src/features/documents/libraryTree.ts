@@ -21,7 +21,7 @@ export function trailOf(folders: LibraryFolder[], folderId: string | null) {
   return trail
 }
 
-/** `folderId` and every folder below it: where a folder may not be moved (BR-222). */
+/** `folderId` and every folder below it: where a folder may not be moved (BR-084). */
 export function subtreeOf(folders: LibraryFolder[], folderId: string) {
   const ids = new Set([folderId])
   for (let grew = true; grew;) {

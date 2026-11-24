@@ -17,7 +17,7 @@ public sealed class FileStorageOptions
 
     public int OrphanPurgeIntervalMinutes { get; set; } = 60;
 
-    /// <summary>How long an unreferenced file is left alone, so one being attached is not purged mid-way (BR-213).
+    /// <summary>How long an unreferenced file is left alone, so one being attached is not purged mid-way (BR-077).
     /// At least an hour, whatever is configured: an upload's own rows are unreferenced until it commits.</summary>
     public int OrphanGracePeriodHours { get; set; } = 24;
 

@@ -1,6 +1,6 @@
 # Báo cáo và thống kê — SCRUM-38
 
-UC-70a *View Reports & Statistics* và UC-70b *Export Report*, theo
+UC-79a *View Reports & Statistics* và UC-79b *Export Report*, theo
 [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-38.md). Người dùng xem số liệu tổng hợp về các cuộc họp mình đọc
 được trong một khoảng tháng, và tải cùng số liệu đó về dạng Excel.
 
@@ -24,7 +24,7 @@ gọi API ở [`api/reports.ts`](../../frontend/src/api/reports.ts).
 |---|---|
 | Chưa đăng nhập | `401` |
 | Tài khoản đã bị vô hiệu hoá, hoặc token Khách | `403`, không mã (như mọi endpoint `RequireActiveUser`) |
-| Mọi người dùng nội bộ đang hoạt động, kể cả Quản trị | `200`. Không cần capability (BR-432) |
+| Mọi người dùng nội bộ đang hoạt động, kể cả Quản trị | `200`. Không cần capability (BR-149, BR-150) |
 
 - **Chỉ đếm cuộc họp người xem đọc được:** server lọc bằng `MeetingReadPolicy.ForUser` ngay trong câu truy vấn, trước khi
   đếm. Đây là cùng luật với danh sách cuộc họp: người tạo, người duyệt được giao, Chủ toạ/Thư ký hiện tại, thành phần hiện
@@ -32,15 +32,15 @@ gọi API ở [`api/reports.ts`](../../frontend/src/api/reports.ts).
 - **Quản trị không thấy toàn hệ thống** (D2 trong note, PO chốt Q1 ngày 09/11/2026). Quản trị chỉ thấy số liệu của cuộc họp
   mình đọc được, như mọi người khác.
 - **Không có capability riêng** (PO chốt Q3 ngày 09/11/2026): ai đăng nhập bằng tài khoản nội bộ cũng xem và xuất được.
-- **Không lộ cuộc họp (BR-437):** body và tệp của `GET /api/reports/meetings` chỉ có số đếm, tỷ lệ và trung bình. Không có
+- **Không lộ cuộc họp (BR-152):** body và tệp của `GET /api/reports/meetings` chỉ có số đếm, tỷ lệ và trung bình. Không có
   `id`, tiêu đề, người dự hay nội dung cuộc họp.
-- **Truy vấn báo cáo (đổi BR-437, góp ý 22/11/2026):** khi nhóm theo người (Chủ toạ, người tạo, người dự, người đưa tài
+- **Truy vấn báo cáo (đổi BR-152, góp ý 22/11/2026):** khi nhóm theo người (Chủ toạ, người tạo, người dự, người đưa tài
   liệu lên, người lập biên bản) hoặc theo từng cuộc họp, mỗi dòng mang tên người hoặc `id` và tiêu đề cuộc họp. Đó chỉ là
   những cuộc họp người xem đã đọc được, và những người họ đã thấy trong các cuộc họp đó, nên không lộ gì hơn danh sách cuộc
   họp. Không bao giờ có nội dung cuộc họp, và Khách chỉ có tên, không có email (PO 01/11/2026).
 - **Thấy gì trong từng bảng, như trên các tab của cuộc họp:**
   - biểu quyết `Draft` chỉ được đếm cho Chủ toạ/Thư ký đang giữ vai trò của cuộc họp đó;
-  - biên bản chưa ban hành (`Draft`, `WaitingApproval`, `Rejected`) chỉ được đếm cho Chủ toạ/Thư ký (BR-412);
+  - biên bản chưa ban hành (`Draft`, `WaitingApproval`, `Rejected`) chỉ được đếm cho Chủ toạ/Thư ký (BR-139);
   - bản ghi chỉ được đếm cho người đang là thành phần của cuộc họp (`RecordingRules.CanListen`): người duyệt hay người tạo
     không có tên trong thành phần thì không thấy; bản ghi đã xoá không bao giờ được đếm.
 
@@ -55,7 +55,7 @@ gọi API ở [`api/reports.ts`](../../frontend/src/api/reports.ts).
 
 Cả hai trả header `Cache-Control: private, no-store`.
 
-### Khoảng thời gian (BR-433)
+### Khoảng thời gian (UC-79a)
 
 - `from`, `to` có dạng `yyyy-MM`, tính theo giờ Việt Nam (`+07:00`, không có giờ mùa hè).
 - Bỏ cả hai thì server lấy 12 tháng, kết thúc ở tháng hiện tại theo giờ Việt Nam.
@@ -64,7 +64,7 @@ Cả hai trả header `Cache-Control: private, no-store`.
   - tham số sai dạng, ví dụ `2026-1`, `2026-13`, hoặc năm ngoài khoảng 2000–9998;
   - tháng bắt đầu sau tháng kết thúc;
   - khoảng thời gian dài quá 24 tháng.
-- Cuộc họp thuộc tháng chứa **giờ bắt đầu dự kiến** của nó (BR-434). Cuộc họp đã huỷ vẫn được đếm.
+- Cuộc họp thuộc tháng chứa **giờ bắt đầu dự kiến** của nó (BR-149, BR-150). Cuộc họp đã huỷ vẫn được đếm.
 
 ### `MeetingReport`
 
@@ -94,27 +94,27 @@ Cả hai trả header `Cache-Control: private, no-store`.
   - `recordings`: số bản ghi chưa xoá; `recordedHours` là giờ nghe được (`Available`), không tính bản tổng hợp (`Combined`)
     vì nó trộn lại các bản khác (ADR-0061); `transcribedHours` là giờ của các bản đã gỡ băng xong. Làm tròn 1 chữ số.
 
-- **`attendance` (BR-435):** chỉ tính cuộc họp `Ended`.
+- **`attendance` (BR-151):** chỉ tính cuộc họp `Ended`.
   - Tỷ lệ của một cuộc họp = số người có mặt (`Present`) / (thành phần nội bộ hiện tại + Khách chưa bị thu hồi lời mời).
   - Cuộc họp chưa ai được điểm danh `Present` hoặc `Absent` thì không tính, và được đếm vào `meetingsWithoutAttendance`.
   - `averageRate` là trung bình các tỷ lệ, dạng phân số (`0.87` là 87 %), làm tròn 4 chữ số. Bằng `null` khi không có
     cuộc họp nào để tính.
-- **`duration` (PO chốt Q2 ngày 09/11/2026, BR-447 đề xuất):** chỉ tính cuộc họp `Ended`.
+- **`duration` (PO chốt Q2 ngày 09/11/2026, BR-151 đề xuất):** chỉ tính cuộc họp `Ended`.
   - Thời lượng của một cuộc họp = từ `actualStartedAt` tới `actualEndedAt`.
   - Cuộc họp thiếu một trong hai mốc thì không tính, và được đếm vào `meetingsWithoutTimes`.
   - `averageMinutes` làm tròn 1 chữ số. Bằng `null` khi không có cuộc họp nào để tính.
-- **`minutesTurnaround` (BR-436):** chỉ tính cuộc họp `Ended`.
+- **`minutesTurnaround` (BR-151):** chỉ tính cuộc họp `Ended`.
   - Thời gian của một cuộc họp = từ `actualEndedAt` tới lần **ban hành đầu tiên** của biên bản (`IssuedAt` nhỏ nhất).
     Bản đính chính ban hành sau không tính.
   - Cuộc họp chưa có biên bản ban hành thì không tính, và được đếm vào `meetingsWithoutIssuedMinutes`.
   - `averageHours` làm tròn 2 chữ số. Bằng `null` khi không có cuộc họp nào để tính. Mốc ban hành là
     `IssuedAt` do luồng duyệt và ban hành biên bản (SCRUM-33, đã vào `main`) ghi; bản bị thay (`Superseded`) vẫn giữ mốc
     ban hành đầu.
-- **`total = 0`:** FE hiện `MSG466` (UC-70a AF-2). Server vẫn trả `200`, không có mã.
+- **`total = 0`:** FE hiện `MSG466` (UC-79a AF-2). Server vẫn trả `200`, không có mã.
 - Server đếm bằng một `GROUP BY` (tháng theo giờ Việt Nam, trạng thái, mức mật) trên database. Hai chỉ số trung bình
   được tính từ các con số của từng cuộc họp `Ended`. Không con số nào mang id hay tiêu đề.
 
-### Tệp Excel (UC-70b, BR-438)
+### Tệp Excel (UC-79b, BR-010)
 
 - Tên tệp là `bao-cao-cuoc-hop_<from>_<to>.xlsx`. Content type là
   `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`.
@@ -139,7 +139,7 @@ Mọi tham số là chuỗi trên query string. Bỏ trống một tham số l�
 | Tham số | Giá trị | Mặc định |
 |---|---|---|
 | `entity` | `meetings`, `participants`, `votes`, `documents`, `minutes`, `recordings` | `meetings` |
-| `from`, `to` | như BR-433 ở trên | 12 tháng tới tháng này |
+| `from`, `to` | như UC-79a ở trên | 12 tháng tới tháng này |
 | `groupBy` | một cột nhóm của bảng (bảng dưới) | cột đầu của bảng |
 | `sort` | `group` (thứ tự của nhóm: tháng theo thời gian, trạng thái theo thứ tự liệt kê, tên theo ABC, cuộc họp theo giờ bắt đầu dự kiến) hoặc khoá một số liệu của bảng, lớn trước | `group` khi nhóm theo tháng, còn lại số liệu đầu |
 | `top` | 1–500: chỉ giữ chừng ấy nhóm đầu sau khi sắp xếp | mọi nhóm |
@@ -150,16 +150,16 @@ Mọi tham số là chuỗi trên query string. Bỏ trống một tham số l�
 | `minutesStatus` | lọc biên bản (chỉ `minutes`) | — |
 | `source`, `transcript` | lọc bản ghi (chỉ `recordings`) | — |
 
-Một dòng của mỗi bảng thuộc tháng chứa **giờ bắt đầu dự kiến của cuộc họp** của nó, như BR-434. Mọi bảng nhóm được theo
+Một dòng của mỗi bảng thuộc tháng chứa **giờ bắt đầu dự kiến của cuộc họp** của nó, như BR-149, BR-150. Mọi bảng nhóm được theo
 `month`, `meeting` (từng cuộc họp), `status`, `mode`, `sensitivity`.
 
 | `entity` | Một dòng là | Cột nhóm riêng | Số liệu (`columns`) |
 |---|---|---|---|
-| `meetings` (Cuộc họp) | một cuộc họp | `chair` (Chủ toạ hiện tại, `None` khi chưa có), `creator` | `count`; `ended` (đã kết thúc); `cancelled`; `hours` (tổng giờ họp thực tế của cuộc họp đã kết thúc); `attendance` (tỷ lệ có mặt trung bình, BR-435) |
+| `meetings` (Cuộc họp) | một cuộc họp | `chair` (Chủ toạ hiện tại, `None` khi chưa có), `creator` | `count`; `ended` (đã kết thúc); `cancelled`; `hours` (tổng giờ họp thực tế của cuộc họp đã kết thúc); `attendance` (tỷ lệ có mặt trung bình, BR-151) |
 | `participants` (Người dự họp) | một thành phần hiện tại hoặc một Khách còn lời mời | `person` (id người dùng, hoặc `guest:<id lời mời>`), `role`, `attendance`, `response` | `count` (lượt mời); `present`; `absent` (vắng, kể cả vắng có phép); `rate` (có mặt / số lần được điểm danh) |
 | `votes` (Biểu quyết) | một biểu quyết | `conclusion` (`None` khi chưa kết luận), `voteStatus`, `ballot` (`public`, `anonymous`) | `count`; `passed`; `notPassed`; `turnout` (phiếu đã bỏ / số người được bỏ phiếu, trên biểu quyết đã mở) |
 | `documents` (Tài liệu) | một tài liệu đang gắn với cuộc họp | `uploader`, `fileType` (theo đuôi tên tệp) | `count`; `pages`; `size` (MB); `comments`; `reads` (lượt xác nhận đã đọc) |
-| `minutes` (Biên bản) | một bản biên bản | `minutesStatus`, `author` | `count`; `issued`; `waiting`; `returned`; `turnaround` (giờ từ khi họp xong tới lần ban hành đầu, trung bình, BR-436) |
+| `minutes` (Biên bản) | một bản biên bản | `minutesStatus`, `author` | `count`; `issued`; `waiting`; `returned`; `turnaround` (giờ từ khi họp xong tới lần ban hành đầu, trung bình, BR-151) |
 | `recordings` (Bản ghi) | một bản ghi chưa xoá | `source`, `transcript` (`None` khi chưa gỡ băng) | `count`; `hours` (giờ nghe được, không tính bản tổng hợp); `transcribed` |
 
 ### `ReportTable`
@@ -191,7 +191,7 @@ Một dòng của mỗi bảng thuộc tháng chứa **giờ bắt đầu dự k
   `ban-ghi`. Một sheet, đặt tên theo bảng.
 - Đầu sheet: khoảng thời gian, nhóm theo, bộ lọc (bằng chữ), thời điểm xuất. Sau đó là bảng: `#`, nhóm, từng số liệu, và
   dòng *Tổng*. Số vẫn là số; tỷ lệ giữ định dạng phần trăm.
-- **Audit:** như UC-70b, mỗi lần xuất ghi một dòng `report.exported` với `details = { report: "<entity>", groupBy, from, to,
+- **Audit:** như UC-79b, mỗi lần xuất ghi một dòng `report.exported` với `details = { report: "<entity>", groupBy, from, to,
   filters: "status=Ended, …", rows }`. Không ghi được audit thì không trả tệp (`MSG465`).
 
 ## Lỗi
@@ -239,7 +239,7 @@ Các test phủ:
   để xếp theo nó (lớn trước), bấm tiêu đề nhóm để về thứ tự của nhóm. Dòng *Tổng* ở cuối; khi bị cắt thì có dòng
   "5 / 84 nhóm". Nhóm theo cuộc họp thì tên là link mở cuộc họp; trạng thái và mức độ hiện bằng `StatusBadge`/`SensitivityBadge`.
   Trên điện thoại mỗi dòng thành một khối: hạng và nhóm ở dòng đầu, các số liệu kèm tên ở dưới.
-- **`MSG463`:** FE kiểm tra trước, cùng luật BR-433 và cùng câu thông báo. Khoảng sai thì hiện lỗi dưới thanh chọn tháng,
+- **`MSG463`:** FE kiểm tra trước, cùng luật UC-79a và cùng câu thông báo. Khoảng sai thì hiện lỗi dưới thanh chọn tháng,
   không gọi API, và khoá *Xuất Excel*. Nếu server vẫn trả `MSG463`, FE hiện câu của server ở cùng chỗ.
 - **`MSG464`:** thông báo của server kèm nút *Thử lại*, trong thẻ truy vấn (hoặc thay dải số liệu khi đó là lỗi của
   `GET /api/reports/meetings`). **`MSG465`:** toast. **`MSG466`:** FE tự hiện khi không đọc được cuộc họp nào trong khoảng.

@@ -14,7 +14,7 @@ import {
 } from './slotRules'
 
 /**
- * UC-85a step 1 — the search conditions, AI-eCabinet's left column: length, dates, weekdays, working hours, lunch, the
+ * UC-81a step 1 — the search conditions, AI-eCabinet's left column: length, dates, weekdays, working hours, lunch, the
  * gap to other meetings and the start-time step. "Tìm giờ" sits at its foot.
  */
 export function SlotSettingsPanel({

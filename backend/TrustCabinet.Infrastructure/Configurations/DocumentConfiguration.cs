@@ -17,7 +17,7 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .HasForeignKey(d => d.OwnerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Restrict: a folder is deleted only once it is empty (UC-72d), so the database refusing a
+        // Restrict: a folder is deleted only once it is empty (UC-41d), so the database refusing a
         // non-empty one is the backstop, not a cascade that silently takes the files with it.
         builder.HasOne(d => d.Folder)
             .WithMany()

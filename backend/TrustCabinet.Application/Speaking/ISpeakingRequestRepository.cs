@@ -10,7 +10,7 @@ public sealed record SpeakingRequestRow(Guid Id, Guid? UserId, Guid? GuestInvita
     Guid? AgendaItemId, string? AgendaItemTitle, string? UserName, string? GuestName);
 
 /// <summary>
-/// Speaking requests for the queue use cases (SCRUM-27, UC-79). Reads of requests return tracked rows, which the
+/// Speaking requests for the queue use cases (SCRUM-27, UC-50). Reads of requests return tracked rows, which the
 /// service changes and saves through <c>IUnitOfWork.SaveChangesAsync</c>. It also closes open requests for the
 /// Participants module, through <see cref="ISpeakingRequestCloser"/>.
 /// </summary>
@@ -50,7 +50,7 @@ public interface ISpeakingRequestRepository : ISpeakingRequestCloser
     Task<IReadOnlyList<SpeakingRequestRow>> ListOpenAsync(Guid meetingId, CancellationToken ct);
 
     /// <summary>
-    /// Closes every open request of the meeting as it ends (BR-337), at <paramref name="endedAt"/>. Requires the
+    /// Closes every open request of the meeting as it ends (BR-104–BR-106), at <paramref name="endedAt"/>. Requires the
     /// caller's transaction, which holds the meeting lock: throws <see cref="InvalidOperationException"/> without
     /// one. Staged; the caller saves.
     /// </summary>

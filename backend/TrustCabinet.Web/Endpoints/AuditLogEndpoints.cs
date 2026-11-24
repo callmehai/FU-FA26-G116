@@ -4,7 +4,7 @@ using TrustCabinet.Domain.Audit;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-13 — the read-only audit log (SCRUM-16). Behind <c>AdminUsers</c> like the other administration screens (BR-440):
+/// UC-12 — the read-only audit log (SCRUM-16). Behind <c>AdminUsers</c> like the other administration screens (BR-012):
 /// <c>403</c> without it, since the path is a fixed, documented endpoint. Nothing here writes the log, and viewing it
 /// is not itself recorded.
 /// </summary>
@@ -63,7 +63,7 @@ public static class AuditLogEndpoints
     }
 }
 
-/// <summary>Turns the audit log's query string into validated criteria (BR-442, UC-13 EX-1).</summary>
+/// <summary>Turns the audit log's query string into validated criteria (UC-12 EX-1).</summary>
 internal static class AuditLogQueryParser
 {
     private const int SearchMaxLength = 100;

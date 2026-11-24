@@ -2,7 +2,7 @@ import type { AgendaEditorOptions, AgendaItemInput, AgendaMutationResponse, Agen
 import { api } from './client'
 
 /**
- * Meeting agenda (SCRUM-25, SCRUM-98, UC-77). Contract in docs/03-api/08-chuong-trinh-nghi-su.md.
+ * Meeting agenda (SCRUM-25, SCRUM-98, UC-27). Contract in docs/03-api/08-chuong-trinh-nghi-su.md.
  *
  * Every write answers only `{ code, message }`: re-read the snapshot afterwards. The snapshot's
  * `actions` and `permissions` say what the caller may do; the server re-checks on every write.
@@ -37,6 +37,6 @@ export const startAgendaItem = (meetingId: string, itemId: string) =>
 export const completeAgendaItem = (meetingId: string, itemId: string) =>
   api.post<AgendaMutationResponse>(`${base(meetingId)}/${itemId}/complete`)
 
-/** UC-77, Chair or Secretary: 1–2,000 characters after trimming; locked once minutes exist. */
+/** UC-27, Chair or Secretary: 1–2,000 characters after trimming; locked once minutes exist. */
 export const saveAgendaConclusion = (meetingId: string, itemId: string, conclusion: string) =>
   api.put<AgendaMutationResponse>(`${base(meetingId)}/${itemId}/conclusion`, { conclusion })

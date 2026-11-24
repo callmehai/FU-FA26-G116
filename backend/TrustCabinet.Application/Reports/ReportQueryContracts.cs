@@ -9,7 +9,7 @@ namespace TrustCabinet.Application.Reports;
 /// <see cref="ViewerManages"/>: the caller is an active Chair or Secretary of it (who also sees draft votes and minutes
 /// not yet issued). <see cref="ViewerOnRoster"/>: the caller is an active participant (who may list its recordings).
 /// <see cref="Invitees"/>, <see cref="Present"/> and <see cref="Marked"/> count current internal participants and guests
-/// whose invitation stands, as BR-435 does. Untracked.
+/// whose invitation stands, as BR-151 does. Untracked.
 /// </summary>
 public sealed record ReportMeetingRow(
     Guid Id,

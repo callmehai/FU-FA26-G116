@@ -33,7 +33,7 @@ export const routes = {
   adminRoles: '/mgmt/admin/roles',
   /** ADR-0056: which model writes the AI drafts of ordinary meetings. */
   adminAi: '/mgmt/admin/ai',
-  /** SCRUM-16 (UC-13): the system audit log, read-only. */
+  /** SCRUM-16 (UC-12): the system audit log, read-only. */
   adminAuditLog: '/mgmt/admin/audit-log',
   /** SCRUM-113: a deactivated person's library, read-only, for the administrator who recovers it. */
   userLibrary: (userId: string, folderId: string | null = null) =>
@@ -47,17 +47,17 @@ export const routes = {
     `/mgmt/documents/${id}${folderId ? `?folder=${folderId}` : ''}`,
   // SCRUM-35: the signed-in person's own Voice ID.
   myVoice: '/mgmt/my-voice',
-  /** SCRUM-38: the meeting report, open to every internal user (BR-432); `?from=&to=` hold the period. */
+  /** SCRUM-38: the meeting report, open to every internal user (BR-149, BR-150); `?from=&to=` hold the period. */
   reports: '/mgmt/reports',
   calendar: '/calendar',
   /**
-   * SCRUM-142: calendar sharing (UC-84a → UC-84f) and the shared week (`?tab=week&week=`, UC-85c). The backend links its
+   * SCRUM-142: calendar sharing (UC-80a → UC-80f) and the shared week (`?tab=week&week=`, UC-81c). The backend links its
    * notifications here as `?share={id}`.
    */
   calendarSharing: '/calendar/sharing',
   /**
-   * SCRUM-137: find a time everyone shared is free (UC-85a) and draft a meeting from it (UC-85b); `?tab=shared&week=` is
-   * the week of shared hours (UC-85c). Needs `MeetingCreator`.
+   * SCRUM-137: find a time everyone shared is free (UC-81a) and draft a meeting from it (UC-81b); `?tab=shared&week=` is
+   * the week of shared hours (UC-81c). Needs `MeetingCreator`.
    */
   findTime: '/calendar/find',
 } as const

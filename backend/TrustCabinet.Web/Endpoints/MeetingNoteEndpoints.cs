@@ -2,7 +2,7 @@ using TrustCabinet.Application.Notes;
 
 namespace TrustCabinet.Web.Endpoints;
 
-/// <summary>SCRUM-30 — the Secretary's running notes (UC-82): read them, save one.</summary>
+/// <summary>SCRUM-30 — the Secretary's running notes (UC-28): read them, save one.</summary>
 public static class MeetingNoteEndpoints
 {
     private const string Msg415Saved = "MSG415";

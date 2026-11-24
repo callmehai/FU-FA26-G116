@@ -42,7 +42,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         foreach (var (name, bytes, _) in files)
         {
             var row = meetingDocuments.Single(d => d.FileName == name);
-            // Library row and meeting row share one stored file: no copy (ADR-0018, BR-210).
+            // Library row and meeting row share one stored file: no copy (ADR-0018, BR-072, BR-073).
             Assert.Equal(row.StoredFileId, row.Document!.StoredFileId);
             Assert.Equal(folder.Id, row.Document.FolderId);
             Assert.Equal(s.Secretary, row.Document.OwnerId);
@@ -54,7 +54,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
             Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), file.ContentSha256);
             Assert.Equal(s.Secretary, file.UploadedById);
             Assert.Null(file.PurgedAt);
-            // Stored exactly as received (BR-183, BR-216).
+            // Stored exactly as received (BR-068).
             Assert.Equal(bytes, fixture.Storage.Objects[file.StorageKey]);
             var docx = name.EndsWith(".docx");
             Assert.Equal(docx ? DocumentFileRules.DocxContentType : DocumentFileRules.PdfContentType, file.ContentType);
@@ -396,7 +396,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
             await db.SaveChangesAsync();
         }
 
-        // Same name, same bytes: still a second document (BR-229).
+        // Same name, same bytes: still a second document (BR-068).
         await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(("a.pdf", same, "1"))), 201, "MSG161");
         await using (var db = fixture.Db())
         {
@@ -406,7 +406,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
             Assert.Equal(2, await db.MeetingDocuments.CountAsync(d => d.MeetingId == s.MeetingId));
             Assert.Equal(2, documents.Select(d => d.StoredFileId).Distinct().Count());
 
-            // Deleting the folder is UC-72d (SCRUM-58); emulate it: library rows go, meeting rows stay.
+            // Deleting the folder is UC-41d (SCRUM-58); emulate it: library rows go, meeting rows stay.
             db.Documents.RemoveRange(documents);
             await db.SaveChangesAsync();
             await db.Folders.Where(f => f.Id == first).ExecuteDeleteAsync();

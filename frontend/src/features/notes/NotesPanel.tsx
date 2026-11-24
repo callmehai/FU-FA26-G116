@@ -29,7 +29,7 @@ const GENERAL = 'general'
 const itemOf = (key: string) => (key === GENERAL ? null : key)
 const keyOf = (note: MeetingNote) => note.agendaItemId ?? GENERAL
 
-/** Saves this long after typing stops (UC-82 step 4). */
+/** Saves this long after typing stops (UC-28 step 4). */
 const SAVE_DELAY_MS = 1_000
 /** After a failed save that was not a refusal, tries again this often. */
 const RETRY_MS = 10_000
@@ -55,7 +55,7 @@ type Status =
   | { kind: 'idle' }
   | { kind: 'dirty' }
   | { kind: 'saving' }
-  /** MSG415 with the time it was saved (UC-82 step 5). */
+  /** MSG415 with the time it was saved (UC-28 step 5). */
   | { kind: 'saved'; at: string; message: string }
   | { kind: 'offline' }
   | { kind: 'failed'; message: string }
@@ -65,12 +65,12 @@ type Status =
   | { kind: 'refused'; message: string }
 
 /**
- * The Secretary's running notes (SCRUM-30, UC-82), on the meeting page and in the call room (ADR-0011).
+ * The Secretary's running notes (SCRUM-30, UC-28), on the meeting page and in the call room (ADR-0011).
  *
  * The Secretary types into the note of the item the Chair has in progress — it follows the Chair until the Secretary
  * picks another — or into the meeting-wide note. Text is saved a second after typing stops, and kept in this browser
- * until the server has it, so a dropped connection or a closed tab loses nothing (BR-403). Two windows never overwrite
- * each other: a save from an older copy is refused (MSG418) and both versions are shown (BR-399). The Chair reads the
+ * until the server has it, so a dropped connection or a closed tab loses nothing (UC-28). Two windows never overwrite
+ * each other: a save from an older copy is refused (MSG418) and both versions are shown (UC-28). The Chair reads the
  * notes; the server says who may write (`canWrite`), never a guess from the role.
  */
 export function NotesPanel({ meetingId, variant }: { meetingId: string; variant: 'dialog' | 'room' }) {
@@ -87,7 +87,7 @@ export function NotesPanel({ meetingId, variant }: { meetingId: string; variant:
     } catch (err) {
       if (handleAccessLost(err)) return
       if (isApiError(err, 404)) {
-        // No longer the Chair's or the Secretary's (EX-1, EX-8): nothing of these notes stays on the device (BR-403),
+        // No longer the Chair's or the Secretary's (EX-1, EX-8): nothing of these notes stays on the device (UC-28),
         // but text typed here and never saved stays on the page to copy until it is closed.
         const taken = takeNoteDrafts(userId, meetingId)
         return setLoad((s) => {
@@ -296,7 +296,7 @@ function NoteEditor({
   const handleAccessLost = useAccessLost()
   const notes = useMemo(() => new Map(data.notes.map((n) => [keyOf(n), n])), [data.notes])
   const current = data.currentAgendaItemId ?? GENERAL
-  // null follows the item the Chair has in progress (BR-397, UC-24); a pick holds until it is the current one again.
+  // null follows the item the Chair has in progress (BR-134, UC-24); a pick holds until it is the current one again.
   const [picked, setPicked] = useState<string | null>(null)
   // A picked item that has since been deleted (EX-5) no longer holds: the note follows the Chair again.
   const held = picked === GENERAL || items.some((i) => i.id === picked) ? picked : null

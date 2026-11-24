@@ -26,7 +26,7 @@ Cần: khi `lists` đã tải xong, có `focusId` mà không có dòng nào kh�
 | Người dùng không có quyền tạo cuộc họp (đã mất quyền, nên chia sẻ cho họ xem đã dừng) | câu `MSG439` |
 | Còn lại (chia sẻ đã đóng, quá ngày kết thúc, hoặc không phải của họ) | "Chia sẻ này không còn." |
 
-Cơ sở: UC-84f AF-3 (Report 3 §UC-84f), quyết định PO ở Jira `10516`. Không cần BE đổi gì: dữ liệu đã đủ trong `GET /api/calendar/shares`.
+Cơ sở: UC-80f AF-3 (Report 3 §UC-80f), quyết định PO ở Jira `10516`. Không cần BE đổi gì: dữ liệu đã đủ trong `GET /api/calendar/shares`.
 Nên có một test FE hoặc kiểm tay: mở `/calendar/sharing?share=<id không tồn tại>`, thấy toast và URL sạch `?share=`.
 
 ## Những điểm dễ sai
@@ -34,19 +34,19 @@ Nên có một test FE hoặc kiểm tay: mở `/calendar/sharing?share=<id khô
 - **Nút hiện theo `actions`** của từng chia sẻ (`accept`, `decline`, `withdraw`, `requestChange`, `update`, `end`). Đừng tự suy từ `status`:
   ví dụ lời mời có `senderDeactivated = true` chỉ còn `decline`, và FE hiện câu `MSG468` ("Tài khoản người gửi đã bị vô hiệu hoá…"); yêu cầu mà người xin đã mất quyền tạo cuộc họp cũng chỉ còn `decline`.
 - `requestChange` (người xem) và `update` (chủ lịch) cùng gọi `PATCH /api/calendar/shares/{id}`; người xem nhận `201 MSG454`, chủ lịch `200 MSG442`.
-- `accept` của chủ lịch với yêu cầu UC-84a cho phép chọn mốc thấp hơn / khoảng ngắn hơn **trong** khoảng được xin; với chia sẻ UC-84b
+- `accept` của chủ lịch với yêu cầu UC-80a cho phép chọn mốc thấp hơn / khoảng ngắn hơn **trong** khoảng được xin; với chia sẻ UC-80b
   (`initiatedBy = Owner`) thì không gửi `level`/ngày (gửi khác giá trị hiện tại là `400 MSG443`).
 - `status = Stopped`: FE tự hiện nhãn "Đã dừng" và câu `MSG439` khi bấm vào; BE không gửi mã này. **Không có** trạng thái `Expired`:
   chia sẻ quá ngày kết thúc biến khỏi danh sách (PO 09/11).
 - Người không có quyền tạo cuộc họp (Thành viên) vẫn mở được màn Chia sẻ lịch để thấy **lịch mình đã chia sẻ** (`asOwner`) — trả lời yêu cầu,
-  tự chia sẻ (UC-84b), đổi, ngừng. `asViewer` của họ luôn rỗng; nút "Xin xem lịch" và tab Lịch được chia sẻ ẩn với họ
+  tự chia sẻ (UC-80b), đổi, ngừng. `asViewer` của họ luôn rỗng; nút "Xin xem lịch" và tab Lịch được chia sẻ ẩn với họ
   (gọi vẫn trả `403 MSG448`). **PO chốt 10/11/2026 (L8, Jira 10498)** — giống AI-eCabinet, nên đặt màn Chia sẻ lịch ở chỗ mọi tài khoản vào được (eCab để trong menu tài khoản).
 - Ô chọn người: `GET /api/calendar/share-candidates?purpose=request` (xin xem) hoặc `purpose=direct` (tự chia sẻ), tìm theo `q`, phân trang;
   `hasOpenShare = true` thì làm mờ người đó. Lỗi đọc `500 MSG467`.
-- Ngày gửi lên dạng `YYYY-MM-DD` theo lịch Việt Nam; ngày bắt đầu sớm nhất là hôm nay, tối đa 365 ngày tính cả hai đầu (BR-431) — kiểm ở FE
+- Ngày gửi lên dạng `YYYY-MM-DD` theo lịch Việt Nam; ngày bắt đầu sớm nhất là hôm nay, tối đa 365 ngày tính cả hai đầu (UC-80a) — kiểm ở FE
   cho tiện người dùng, server vẫn kiểm (`400 MSG443`).
 - Tab Lịch được chia sẻ (`GET /api/calendar/shared-week?week=`): `known = false` là "chưa biết", **không** vẽ như rảnh. Giờ bận là ISO có
-  `+07:00`. Mỗi người một màu; khối chồng nhau đặt cạnh nhau. Không có tên cuộc họp nào để hiện (BR-427).
+  `+07:00`. Mỗi người một màu; khối chồng nhau đặt cạnh nhau. Không có tên cuộc họp nào để hiện (BR-140, BR-141).
 - Thông báo chia sẻ lịch có `targetType = "CalendarShare"`, `meetingId = null`; luồng mở thông báo hiện có (`/api/notifications/{id}/target`)
   dùng được, chỉ cần FE có route.
 
@@ -73,7 +73,7 @@ và gọi `accept` trả `409 MSG450`. FE đọc `actions` và đã xử lý `MS
 
 Hai lỗi nhỏ phía FE, review tìm ra, BE không sửa:
 
-1. `frontend/src/features/calendarSharing/ShareDialogs.tsx` (khoảng dòng 353): hộp thoại "Đồng ý thay đổi" của chia sẻ UC-84b hiện tên
+1. `frontend/src/features/calendarSharing/ShareDialogs.tsx` (khoảng dòng 353): hộp thoại "Đồng ý thay đổi" của chia sẻ UC-80b hiện tên
    chủ lịch (chính người đang bấm). Thay đổi chờ luôn do người xem gửi, nên khi có `pendingChange` thì người gửi là `share.viewer`:
    `const sender = change ? share.viewer : (share.initiatedBy === 'Viewer' ? share.viewer : share.owner)`.
 2. `ShareDialogs.tsx` (khoảng dòng 141 và 307): `onRefused` truyền vào là arrow function viết tại chỗ và nằm trong deps của `useEffect`,

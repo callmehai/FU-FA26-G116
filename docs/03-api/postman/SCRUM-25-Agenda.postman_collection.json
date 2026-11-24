@@ -567,7 +567,7 @@
       }
     },
     {
-      "name": "UC-77 — ghi kết luận (InProgress/Done, chưa có biên bản)",
+      "name": "UC-27 — ghi kết luận (InProgress/Done, chưa có biên bản)",
       "request": {
         "method": "PUT",
         "header": [

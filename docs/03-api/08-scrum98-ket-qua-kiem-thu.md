@@ -23,7 +23,7 @@ Trong tổng suite: Agenda 140, Participants 152, Meetings 339, Attendance 60, D
 
 - Validation/title-only, strict JSON, field cũ duration/presenterName/pendingItemIds, unknown/duplicate/case/type/Unicode, giới hạn body/chunked, phân quyền và concealment.
 - Chỉnh presenter/document ở cả ba item status, reorder hỗn hợp có gap và no-op, start Pending bất kỳ, một current, complete không cần conclusion, actual timestamp không bị planning sửa.
-- UC-77: Chair/Secretary; Pending và trạng thái Meeting bị khóa; null/whitespace/length 1/2000/2001, UTF-16 emoji, newline/trim, metadata từ server, mọi MSG271–274/174, anonymous/Guest/reader, rollback khi persistence lỗi, sự tồn tại biên bản với mọi MinutesStatus và content rỗng.
+- UC-27: Chair/Secretary; Pending và trạng thái Meeting bị khóa; null/whitespace/length 1/2000/2001, UTF-16 emoji, newline/trim, metadata từ server, mọi MSG271–274/174, anonymous/Guest/reader, rollback khi persistence lỗi, sự tồn tại biên bản với mọi MinutesStatus và content rỗng.
 - Presenter current Internal/Guest (kể cả Declined), foreign/revoked/missing/inactive, tên legacy không dùng làm assignment. Notification đúng kênh/trạng thái, không gửi khi chỉ đổi title/bỏ presenter, A→Guest→A, dedup cùng event concurrent, recheck recipient, lỗi enqueue không undo Agenda.
 - Remove/revoke clear presenter ở Pending/InProgress/Done cùng transaction; failure rollback cả roster/presenter; giữ position/timestamps/conclusion/document links. Event PresenterCleared chỉ sau commit.
 - Many-to-many document: hai item cùng tài liệu, bỏ/xóa một link giữ tài liệu/StoredFile/link khác; organizer đọc metadata. Regression upload/storage/access chạy trong full suite.
@@ -55,7 +55,7 @@ Benchmark TestServer/SignalR LongPolling/PostgreSQL: 100 viewer, 50 item, 100 t�
 
 ## Lỗi phát hiện và xử lý trong quá trình chạy
 
-- Lượt targeted đầu: 318/322 passed; thiếu assertion MSG mới và các test downgrade cũ đi qua migration mới. Đã bổ sung test UC-77, tách phạm vi historical migration; các lỗi này đã hết.
+- Lượt targeted đầu: 318/322 passed; thiếu assertion MSG mới và các test downgrade cũ đi qua migration mới. Đã bổ sung test UC-27, tách phạm vi historical migration; các lỗi này đã hết.
 - Test race mới ban đầu tạo removed/revoked row thiếu actor/time nên vi phạm check có sẵn. Đã sửa fixture để mô phỏng đúng evidence removal; không sửa constraint.
 - Full suite đầu: 1376/1402 passed; 25 test auth kết nối nhầm Redis 3.0.504 ở cổng localhost:6379 và 1 test workflow migration downgrade qua SCRUM-98. Probe TCP/StackExchange xác nhận Redis cũ; dùng Redis 8 cổng test riêng. Test workflow chuyển sang database lịch sử riêng. Không đổi auth implementation hay nới timeout.
 - Một lần build test bị file lock do suite trước còn chạy; đợi hoàn tất rồi chạy tuần tự, build cuối không warning/error.
@@ -65,6 +65,6 @@ Benchmark TestServer/SignalR LongPolling/PostgreSQL: 100 viewer, 50 item, 100 t�
 
 Frontend không sửa; lint/build không chứng minh tương thích breaking API. Postman collection đã cập nhật/parse JSON, chưa chạy collection thủ công. Không browser/visual UI test vì ngoài phạm vi BE.
 
-UC-04 Guest login production và UC-59 sinh nháp chưa triển khai; có consumer tests và simulated minutes writer cùng lock. Email worker/retry có regression tests, không gửi SMTP thật. Enqueue best effort sau commit không có outbox mới, event chưa persist bị lỗi chỉ log. Các giới hạn và nghĩa vụ integration được ghi trong handoff.
+UC-04 Guest login production và UC-70 sinh nháp chưa triển khai; có consumer tests và simulated minutes writer cùng lock. Email worker/retry có regression tests, không gửi SMTP thật. Enqueue best effort sau commit không có outbox mới, event chưa persist bị lỗi chỉ log. Các giới hạn và nghĩa vụ integration được ghi trong handoff.
 
 Không commit, push, merge, deploy hoặc chuyển Jira Done. Container Redis tạm được dọn sau suite; không tác động Redis/PostgreSQL/server dùng chung ngoài database test tách riêng.

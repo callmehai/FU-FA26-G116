@@ -32,7 +32,7 @@ public sealed class VoteHubTests(ParticipantFixture f) : IClassFixture<Participa
         await managerHub.InvokeAsync("JoinMeeting", s.MeetingId);
         await memberHub.InvokeAsync("JoinMeeting", s.MeetingId);
 
-        // A draft is news only to the Chair and Secretary (BR-253), and carries no content.
+        // A draft is news only to the Chair and Secretary (BR-086, BR-087), and carries no content.
         var id = await Draft(chair, s, Body("Thông qua dự toán"));
         var created = await Next(managerEvents.Reader);
         Assert.Equal(("DraftCreated", id, s.MeetingId), (created.ChangeType, created.VoteId, created.MeetingId));

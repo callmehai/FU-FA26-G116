@@ -3,7 +3,7 @@ namespace TrustCabinet.Domain.Enums;
 /// <summary>
 /// The meeting state machine, in the order a meeting travels through it. It stops at Ended: the
 /// minutes have their own status (ADR-0013). Cancelled is the other final state, reached only before
-/// the meeting starts (UC-75, ADR-0032). Documented in
+/// the meeting starts (UC-22, ADR-0032). Documented in
 /// docs/02-design/01-vong-doi-cuoc-hop.md, which is the authority — keep the two in step.
 ///
 /// Stored as a string, not an int, so the database stays readable and inserting a new state
@@ -31,14 +31,14 @@ public enum MeetingHistoryAction
     ReturnToDraft,
     Publish,
     TransferOrganizer,
-    /// <summary>The organizer moved a Published meeting's schedule, place or link (UC-15 AF-1).</summary>
+    /// <summary>The organizer moved a Published meeting's schedule, place or link (UC-14 AF-1).</summary>
     Reschedule,
     LegacyTransition,
     Start,
     End,
-    /// <summary>The organizer cancelled the meeting before it started (UC-75).</summary>
+    /// <summary>The organizer cancelled the meeting before it started (UC-22).</summary>
     Cancel,
-    /// <summary>The system cancelled a meeting nobody started a day after its planned start (BR-301).</summary>
+    /// <summary>The system cancelled a meeting nobody started a day after its planned start (BR-029).</summary>
     AutoCancel,
     /// <summary>
     /// The system ended a meeting nobody ended 24 hours after its planned end, or after its actual start when that was

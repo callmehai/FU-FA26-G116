@@ -14,7 +14,7 @@ using TrustCabinet.Web.Tests.Persistence;
 namespace TrustCabinet.Web.Tests.Access;
 
 /// <summary>
-/// The rules of UC-10 and UC-11 (SCRUM-60), one test per branch of each sequence diagram, plus the
+/// The rules of UC-09, UC-10 (SCRUM-60), one test per branch of each sequence diagram, plus the
 /// cases the diagrams leave implicit — an unknown role, a no-op save, and the lock-out rule the
 /// acceptance criteria add.
 ///
@@ -36,7 +36,7 @@ public class RolePermissionServiceTests
         _roles, new TranslatingUnitOfWork(_roles.SaveChangesAsync), _audit, _publisher, _invariant, _calendarShares,
         NullLogger<RolePermissionService>.Instance);
 
-    // ------------------------------------------------------ UC-10 · View role & permission matrix
+    // ------------------------------------------------------ UC-09 · View role & permission matrix
 
     [Fact]
     public async Task Matrix_lists_every_role_even_one_with_no_capabilities()
@@ -100,7 +100,7 @@ public class RolePermissionServiceTests
         Assert.All(matrix.Capabilities, c => Assert.False(string.IsNullOrWhiteSpace(c.Name)));
     }
 
-    // ------------------------------------------------------- UC-11 · Configure role permissions
+    // ------------------------------------------------------- UC-10 · Configure role permissions
 
     [Fact]
     public async Task Update_saves_the_requested_capabilities()
@@ -263,7 +263,7 @@ public class RolePermissionServiceTests
         Assert.Equal([Capability.MeetingApprover], _roles.CapabilitiesOf(BuiltInRoles.Member));
     }
 
-    // ------------------------------------------- UC-11 · MSG17, invalid permission configuration
+    // ------------------------------------------- UC-10 · MSG17, invalid permission configuration
 
     [Fact]
     public async Task Update_refuses_to_remove_admin_users_from_the_last_role_holding_it()
@@ -402,7 +402,7 @@ public class RolePermissionServiceTests
         Assert.Equal(0, _roles.SaveCount);
     }
 
-    // ------------------------------------------------ UC-11 · MSG18, configuration cannot be saved
+    // ------------------------------------------------ UC-10 · MSG18, configuration cannot be saved
 
     [Fact]
     public async Task Update_answers_save_failed_when_the_database_refuses()

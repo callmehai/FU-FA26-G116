@@ -1,7 +1,7 @@
 # Chia sẻ lịch — contract Backend SCRUM-142
 
 **Trạng thái:** BE đã triển khai (PR #315, 10/11/2026); FE đã triển khai (màn Chia sẻ lịch, 10/11/2026) — xem §8.
-**Use case:** UC-84a → UC-84f (chia sẻ lịch), UC-85c (xem lịch được chia sẻ). **BR:** BR-414 → BR-431.
+**Use case:** UC-80a → UC-80f (chia sẻ lịch), UC-81c (xem lịch được chia sẻ). **BR:** BR-140, BR-141, BR-144–BR-147, BR-142, BR-143, BR-010, BR-148.
 **Nguồn:** [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-137-142.md), sequence trong
 [calendar-sharing/](../06-sequencediagram/calendar-sharing/), quyết định PO 09/11/2026 (Q-A → Q-E, [note 39](../notes/ban-giao-ba-final-review/39-scrum-142-thieu-sequence-chia-se-lich.md)),
 [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md). Mã thông báo: [danh mục](00-danh-muc-ma-thong-bao.md) mục *Chia sẻ lịch*.
@@ -11,32 +11,32 @@ Ghi chú cho FE: [23-chia-se-lich-note-cho-fe.md](23-chia-se-lich-note-cho-fe.md
 
 - Mọi route cần đăng nhập (`401`) và tài khoản còn hoạt động (`403` không body). ID người gọi luôn lấy từ token.
 - Quyền tạo cuộc họp (`MeetingCreator`, actor *Meeting Organizer*) kiểm **ở server** trong từng thao tác cần nó và trả
-  `403 MSG448` có body: xin xem lịch, danh sách chủ lịch để xin, xem tuần. Chủ lịch chỉ cần là tài khoản nội bộ đang hoạt động (BR-430).
+  `403 MSG448` có body: xin xem lịch, danh sách chủ lịch để xin, xem tuần. Chủ lịch chỉ cần là tài khoản nội bộ đang hoạt động (BR-140, BR-141).
 - Chia sẻ mà người gọi không phải một trong hai bên → `404` **không body** (không lộ chia sẻ hay tài khoản, POST-3).
 - Mọi ngày là `YYYY-MM-DD` theo lịch Việt Nam (`Asia/Ho_Chi_Minh`). "Hôm nay" luôn là ngày ở Việt Nam, không phải giờ máy chủ.
-- **Hết ngày kết thúc thì chia sẻ tự hết** (BR-425, PO 09/11 Q-B): không có job, không có trạng thái `Expired`, không thông báo.
+- **Hết ngày kết thúc thì chia sẻ tự hết** (BR-142, BR-143, PO 09/11 Q-B): không có job, không có trạng thái `Expired`, không thông báo.
   Chia sẻ có `endDate` trước hôm nay bị loại khỏi mọi danh sách và mọi thao tác trên nó trả `409 MSG450`. Lời mời hoặc thay đổi đang chờ
   của nó cũng hết theo.
 - `Cache-Control: no-store` cho mọi `GET`.
-- Mỗi bước ghi audit (`calendar_share.*`) và thông báo trong ứng dụng cho bên kia (BR-426), cùng một transaction: lưu lỗi thì không ai được báo.
+- Mỗi bước ghi audit (`calendar_share.*`) và thông báo trong ứng dụng cho bên kia (BR-010), cùng một transaction: lưu lỗi thì không ai được báo.
 
 ## 2. Trạng thái và hành động
 
 | `status` | Nghĩa |
 |---|---|
-| `Pending` | Chờ bên được hỏi trả lời (UC-84c) |
+| `Pending` | Chờ bên được hỏi trả lời (UC-80c) |
 | `Effective` | Đang hiệu lực; người xem thấy giờ bận ở mốc đã chia sẻ |
 | `Declined`, `Withdrawn`, `Ended` | Đã đóng (từ chối, rút, ngừng) |
-| `Stopped` | Dừng hẳn vì người xem mất quyền tạo cuộc họp hoặc một bên bị vô hiệu hoá (BR-424); FE hiện `MSG439` |
+| `Stopped` | Dừng hẳn vì người xem mất quyền tạo cuộc họp hoặc một bên bị vô hiệu hoá (BR-142, BR-143); FE hiện `MSG439` |
 
-Một cặp **có chiều** (chủ lịch → người xem) chỉ có tối đa một chia sẻ `Pending` hoặc `Effective` (BR-423). `Stopped` và các trạng thái
+Một cặp **có chiều** (chủ lịch → người xem) chỉ có tối đa một chia sẻ `Pending` hoặc `Effective` (BR-142, BR-143). `Stopped` và các trạng thái
 đóng không bao giờ quay lại; muốn xem lại phải xin chia sẻ mới.
 
 `actions` trong mỗi chia sẻ là những gì **người gọi** làm được ngay lúc đó — FE hiện nút theo mảng này:
 
 | Trạng thái | Người gọi | `actions` |
 |---|---|---|
-| `Pending` | bên được hỏi (chủ lịch nếu `initiatedBy = Viewer`, người xem nếu `Owner`) | `accept`, `decline` — chỉ `decline` khi `senderDeactivated = true` (UC-84c EX-5) hoặc người xem đã mất quyền tạo cuộc họp (Chấp nhận → `409 MSG450`) |
+| `Pending` | bên được hỏi (chủ lịch nếu `initiatedBy = Viewer`, người xem nếu `Owner`) | `accept`, `decline` — chỉ `decline` khi `senderDeactivated = true` (UC-80c EX-5) hoặc người xem đã mất quyền tạo cuộc họp (Chấp nhận → `409 MSG450`) |
 | `Pending` | bên gửi | `withdraw` |
 | `Effective`, không có thay đổi chờ | người xem / chủ lịch | `requestChange`, `end` / `update`, `end` |
 | `Effective`, có thay đổi chờ | người xem / chủ lịch | `withdraw`, `end` / `accept`, `decline`, `update`, `end` — không có `accept` khi thay đổi chờ không còn hợp với khoảng hiện tại (xem `accept` bên dưới) |
@@ -57,61 +57,61 @@ Một cặp **có chiều** (chủ lịch → người xem) chỉ có tối đa 
 }
 ```
 
-`level`: `Level1` = họp Thường; `Level2` = Thường + Nội bộ; họp Mật **không bao giờ** được chia sẻ (BR-414). `pendingChange` là `null`
-khi không có thay đổi chờ. Không có trường nào về cuộc họp (BR-427).
+`level`: `Level1` = họp Thường; `Level2` = Thường + Nội bộ; họp Mật **không bao giờ** được chia sẻ (BR-140, BR-141). `pendingChange` là `null`
+khi không có thay đổi chờ. Không có trường nào về cuộc họp (BR-140, BR-141).
 
 ## 4. Endpoint
 
-### `GET /api/calendar/shares` — UC-84f
+### `GET /api/calendar/shares` — UC-80f
 
 `200 { "asOwner": Share[], "asViewer": Share[] }`, mới nhất trước, đã loại chia sẻ quá ngày kết thúc. `asViewer` chỉ có dữ liệu khi
 người gọi có `MeetingCreator`; người không có quyền nhận `asViewer = []` nhưng vẫn thấy `asOwner` để trả lời, đổi hoặc ngừng chia sẻ
 lịch của mình (PO chốt L8 ngày 10/11/2026, Jira 10498). Đọc lỗi → `500 MSG453`.
 
-### `GET /api/calendar/share-candidates?purpose=request|direct&q=&page=1&pageSize=20` — UC-84a/UC-84b bước 1
+### `GET /api/calendar/share-candidates?purpose=request|direct&q=&page=1&pageSize=20` — UC-80a, UC-80b bước 1
 
-- `purpose=request` (UC-84a): cần `MeetingCreator` (`403 MSG448`); trả mọi tài khoản đang hoạt động trừ người gọi.
-- `purpose=direct` (UC-84b): mọi tài khoản đang hoạt động; trả người có `MeetingCreator`, trừ người gọi.
+- `purpose=request` (UC-80a): cần `MeetingCreator` (`403 MSG448`); trả mọi tài khoản đang hoạt động trừ người gọi.
+- `purpose=direct` (UC-80b): mọi tài khoản đang hoạt động; trả người có `MeetingCreator`, trừ người gọi.
 - `q` (≤ 200 ký tự) tìm theo tên hoặc email, không phân biệt hoa thường và dấu (20/11/2026); `%`, `_` là ký tự thường. Sắp theo tên rồi ID.
   `page` từ 1, `pageSize` 1–100 (mặc định 20). Thiếu/sai `purpose`, tham số lạ hoặc lặp, paging sai → `400` không body.
 
 `200 { "items": [{ "id", "fullName", "email", "hasOpenShare" }], "total", "page", "pageSize" }`. `hasOpenShare` = đã có chia sẻ
 `Pending`/`Effective` cùng chiều với người này (FE làm mờ); server vẫn kiểm lại khi gửi. Đọc lỗi → `500 MSG467`.
 
-### `POST /api/calendar/shares` — UC-84a
+### `POST /api/calendar/shares` — UC-80a
 
 Body `{ "ownerId": "…", "level": "Level1|Level2", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD" }`.
 Kiểm theo thứ tự bước 2 của UC: quyền (`403 MSG448`) → chủ lịch là chính mình / không tồn tại / bị vô hiệu hoá (`404` không body) →
-đã có chia sẻ mở cùng chiều (`409 MSG449`) → mốc / khoảng ngày (`400 MSG443`). Khoảng hợp lệ (BR-431): `hôm nay ≤ startDate ≤ endDate`,
+đã có chia sẻ mở cùng chiều (`409 MSG449`) → mốc / khoảng ngày (`400 MSG443`). Khoảng hợp lệ (UC-80a): `hôm nay ≤ startDate ≤ endDate`,
 tối đa 365 ngày tính cả hai đầu. Thành công `201 { code: "MSG435", message, share }`, báo chủ lịch.
 Chia sẻ cũ cùng chiều đã quá ngày kết thúc được đóng lặng lẽ (`Ended`, không thông báo, audit `calendar_share.closed_after_end_date`).
 
-### `POST /api/calendar/shares/direct` — UC-84b
+### `POST /api/calendar/shares/direct` — UC-80b
 
 Body `{ "viewerId", "startDate", "endDate" }`, luôn `Level1`. Bên nhận là mình / không tồn tại / bị vô hiệu hoá / không có
 `MeetingCreator` → `400 MSG455`; trùng → `409 MSG449`; khoảng sai → `400 MSG443`. Thành công `201 MSG441`, báo bên nhận.
 
-### `POST /api/calendar/shares/{id}/accept` — UC-84c
+### `POST /api/calendar/shares/{id}/accept` — UC-80c
 
 Body tuỳ chọn `{ "level", "startDate", "endDate" }`.
 
 - Chia sẻ `Pending`, người gọi là bên được hỏi:
   - người gửi đã bị vô hiệu hoá → `409 MSG468` (EX-5; vẫn Từ chối được);
-  - yêu cầu UC-84a: chủ lịch có thể hạ mốc / thu hẹp khoảng **trong** khoảng được xin, ngày kết thúc từ hôm nay → sai `400 MSG443`;
-  - chia sẻ UC-84b: không được đổi gì (trường gửi lên phải trống hoặc bằng giá trị hiện tại) → sai `400 MSG443`;
+  - yêu cầu UC-80a: chủ lịch có thể hạ mốc / thu hẹp khoảng **trong** khoảng được xin, ngày kết thúc từ hôm nay → sai `400 MSG443`;
+  - chia sẻ UC-80b: không được đổi gì (trường gửi lên phải trống hoặc bằng giá trị hiện tại) → sai `400 MSG443`;
   - thành công `200 MSG436`, chia sẻ `Effective`, báo bên gửi.
 - Chia sẻ `Effective` có thay đổi chờ, người gọi là chủ lịch: áp dụng đúng mốc và ngày kết thúc bên xem đã xin → `200 MSG442`, báo
-  người xem. Trường gửi lên phải trống hoặc bằng cái đã xin, sai → `400 MSG443`. Lúc duyệt kiểm lại BR-431: ngày kết thúc được xin phải
-  từ hôm nay, không trước ngày bắt đầu **hiện tại** và trong 365 ngày tính từ ngày đó. Chủ lịch có thể đã dời ngày (UC-84d AF-1) hoặc
+  người xem. Trường gửi lên phải trống hoặc bằng cái đã xin, sai → `400 MSG443`. Lúc duyệt kiểm lại UC-80a: ngày kết thúc được xin phải
+  từ hôm nay, không trước ngày bắt đầu **hiện tại** và trong 365 ngày tính từ ngày đó. Chủ lịch có thể đã dời ngày (UC-80d AF-1) hoặc
   ngày xin đã qua; khi đó thay đổi chờ chỉ còn Từ chối được: `actions` không có `accept`, gọi `accept` → `409 MSG450`, không ghi gì.
 - Người gửi gọi `accept` trên yêu cầu của chính mình → `404` (EX-1). Không có gì đang chờ, đã đóng, đã quá ngày → `409 MSG450`.
 
-### `POST /api/calendar/shares/{id}/decline` — UC-84c
+### `POST /api/calendar/shares/{id}/decline` — UC-80c
 
 Không body. Từ chối chia sẻ `Pending` → `200 MSG437` (`Declined`); từ chối thay đổi chờ → `200 MSG452` (chia sẻ giữ như cũ). Báo bên gửi /
 người xem. Lỗi như `accept`.
 
-### `PATCH /api/calendar/shares/{id}` — UC-84d
+### `PATCH /api/calendar/shares/{id}` — UC-80d
 
 Body `{ "level"?, "startDate"?, "endDate"? }`; chỉ trên chia sẻ `Effective` (khác → `409 MSG450`).
 
@@ -121,16 +121,16 @@ Body `{ "level"?, "startDate"?, "endDate"? }`; chỉ trên chia sẻ `Effective`
   phải đổi ít nhất một thứ; được làm cả khi người xem đang có thay đổi chờ (thay đổi đó vẫn chờ). Thành công `200 MSG442`, báo người xem.
 - Giá trị sai → `400 MSG443`.
 
-### `POST /api/calendar/shares/{id}/withdraw` — UC-84e
+### `POST /api/calendar/shares/{id}/withdraw` — UC-80e
 
 Bên gửi rút chia sẻ `Pending` (`Withdrawn`), hoặc người xem rút thay đổi đang chờ (chia sẻ giữ nguyên) → `200 MSG438`, báo bên kia.
 Khác → `409 MSG450`.
 
-### `POST /api/calendar/shares/{id}/end` — UC-84e AF-1
+### `POST /api/calendar/shares/{id}/end` — UC-80e AF-1
 
 Một trong hai bên ngừng chia sẻ `Effective` → `200 MSG451` (`Ended`), báo bên kia. Khác → `409 MSG450`.
 
-### `GET /api/calendar/shared-week?week=YYYY-MM-DD` — UC-85c
+### `GET /api/calendar/shared-week?week=YYYY-MM-DD` — UC-81c
 
 Cần `MeetingCreator` (`403 MSG448`). `week` là một ngày bất kỳ của tuần (vắng = tuần hiện tại theo giờ Việt Nam; Chủ nhật thuộc tuần bắt đầu
 thứ Hai trước đó); sai định dạng → `400` không body. Đọc lỗi → `500 MSG453`.
@@ -151,11 +151,11 @@ thứ Hai trước đó); sai định dạng → `400` không body. Đọc lỗi
 
 - Mỗi chủ lịch một dòng: chia sẻ mới nhất có `status` `Effective` hoặc `Stopped` và chưa quá ngày kết thúc. `Stopped` → `days = []`.
 - Cả tuần, thứ Hai → Chủ nhật (7 ngày), mỗi ngày 00:00–24:00 (Hải 19/11/2026: họp buổi tối, cuối tuần cũng là giờ bận; trước đây chỉ
-  thứ Hai → thứ Sáu, 08:00–17:00). Ngày ngoài khoảng chia sẻ → `known = false` ("chưa biết", không phải rảnh, BR-415).
-- Giờ bận (BR-419, BR-420): chỉ phân công hiện hành Chủ toạ / Thư ký / Thành viên chưa từ chối (Chủ toạ luôn tính); họp Chờ duyệt, Đã duyệt,
+  thứ Hai → thứ Sáu, 08:00–17:00). Ngày ngoài khoảng chia sẻ → `known = false` ("chưa biết", không phải rảnh, BR-144, BR-145).
+- Giờ bận (BR-146, BR-147): chỉ phân công hiện hành Chủ toạ / Thư ký / Thành viên chưa từ chối (Chủ toạ luôn tính); họp Chờ duyệt, Đã duyệt,
   Đã công bố, Đang họp (từ lúc bắt đầu thật, dài bằng thời lượng dự kiến, ít nhất đến bây giờ), Đã kết thúc (đến giờ kết thúc thật). Mốc lọc theo §3. Các khoảng chồng/chạm nhau đã gộp và cắt theo từng ngày ở nửa đêm: cuộc họp vắt qua 24:00 hiện ở cả hai ngày, phần ngày đầu kết thúc
   ở `00:00` của ngày sau.
-- Không bao giờ có tên, địa điểm, người dự hay mức mật của cuộc họp (BR-427).
+- Không bao giờ có tên, địa điểm, người dự hay mức mật của cuộc họp (BR-140, BR-141).
 
 ## 5. Thông báo
 
@@ -163,7 +163,7 @@ thứ Hai trước đó); sai định dạng → `400` không body. Đọc lỗi
 một trong hai bên, `url = /calendar/sharing?share={id}`. Loại: `CalendarShareRequested`, `…Received`, `…Accepted`, `…Declined`,
 `…ChangeRequested`, `…Updated`, `…ChangeDeclined`, `…Withdrawn`, `…Ended`, `…Stopped` (gửi cả hai bên, một lần mỗi chia sẻ).
 
-## 6. Dừng chia sẻ (BR-424)
+## 6. Dừng chia sẻ (BR-142, BR-143)
 
 Chạy trong cùng transaction với thao tác của quản trị, sau khi thao tác đã lưu:
 
@@ -171,9 +171,9 @@ Chạy trong cùng transaction với thao tác của quản trị, sau khi thao 
 |---|---|
 | UC-06c vô hiệu hoá tài khoản (`PUT /api/users/{id}/status`) | mọi chia sẻ **Effective** mà tài khoản là chủ lịch hoặc người xem. Lời mời `Pending` được giữ (Q-C), bên được hỏi chỉ Từ chối được |
 | UC-08 đổi vai trò (`PUT /api/users/{id}`) sang vai trò không có `MeetingCreator` | chia sẻ **Effective** mà người đó là người xem |
-| UC-11 bỏ `MeetingCreator` khỏi vai trò (`PUT /api/roles/capabilities`) | chia sẻ **Effective** mà người giữ vai trò đó đang xem |
+| UC-10 bỏ `MeetingCreator` khỏi vai trò (`PUT /api/roles/capabilities`) | chia sẻ **Effective** mà người giữ vai trò đó đang xem |
 
-Chia sẻ đã quá ngày kết thúc (vẫn ghi `Effective` vì không có job) **không** bị dừng: giữ nguyên, không audit, không thông báo (BR-425, Q-B).
+Chia sẻ đã quá ngày kết thúc (vẫn ghi `Effective` vì không có job) **không** bị dừng: giữ nguyên, không audit, không thông báo (BR-142, BR-143, Q-B).
 Mở lại tài khoản hoặc có lại quyền không làm chia sẻ chạy lại. Khoá tạm do gõ sai mật khẩu không tính (Q-A). Thao tác nào trên một
 chia sẻ `Effective` thấy nó đã "chết" (vì một đường mất quyền chưa có hook) thì dừng nó ngay rồi trả `409 MSG450`.
 
@@ -186,8 +186,8 @@ Bảng `calendar_shares` (migration `AddCalendarShares`), mô tả ở [ERD](../
 Màn **Chia sẻ lịch** ở `/calendar/sharing` (`frontend/src/features/calendarSharing/`), mở từ **menu tài khoản** ở chân sidebar như AI-eCabinet,
 cho mọi tài khoản (PO chốt L8 ngày 10/11/2026).
 
-- **Hai thẻ.** "Người xem được lịch của tôi" (`asOwner`, nút *Chia sẻ lịch* → UC-84b) và "Lịch được chia sẻ với tôi" (`asViewer`, nút
-  *Xin xem lịch* → UC-84a). Thẻ thứ hai, nút xin xem và tab tuần chỉ hiện khi người dùng có `MeetingCreator`; thiếu quyền thì chỉ có thẻ đầu.
+- **Hai thẻ.** "Người xem được lịch của tôi" (`asOwner`, nút *Chia sẻ lịch* → UC-80b) và "Lịch được chia sẻ với tôi" (`asViewer`, nút
+  *Xin xem lịch* → UC-80a). Thẻ thứ hai, nút xin xem và tab tuần chỉ hiện khi người dùng có `MeetingCreator`; thiếu quyền thì chỉ có thẻ đầu.
 - **Một dòng một chia sẻ:** người bên kia, rồi một hàng chip — trạng thái ("Chờ bạn trả lời" khi bên được hỏi là mình, "Chờ trả lời" khi mình
   là bên gửi, "Đang chia sẻ", "Đã dừng" kèm (i) câu `MSG439`, các trạng thái đã đóng màu xám) — mức xem, khoảng ngày, và "Xin đổi: …" khi có
   `pendingChange` (cùng hàng chip, không thành dòng riêng). Mọi dòng một khuôn: nút nằm bên phải ngang tên người, chỗ của nút "…" luôn được giữ;
@@ -195,14 +195,14 @@ cho mọi tài khoản (PO chốt L8 ngày 10/11/2026).
   đã kết thúc (Từ chối / Đã rút / Đã dừng / Đã kết thúc) gom sau nút "Chia sẻ đã kết thúc (N)".
 - **Nút theo `actions`.** *Từ chối* / *Đồng ý* hiện thẳng trên dòng; *Xin thay đổi*, *Đổi chia sẻ*, *Rút yêu cầu*, *Ngừng chia sẻ* / *Thôi xem lịch*
   nằm sau nút "…". Từ chối, rút và ngừng đều hỏi xác nhận.
-- **Đồng ý** (UC-84c): yêu cầu UC-84a cho chủ lịch hạ mức và thu hẹp khoảng **trong** khoảng đã xin (gửi `level`, `startDate`, `endDate`); chia sẻ
-  UC-84b và thay đổi đang chờ chỉ hiện lại giá trị rồi gửi body rỗng.
-- **Ngày.** "Hôm nay" theo giờ Việt Nam; FE kiểm BR-431 trước khi gửi (bắt đầu từ hôm nay, kết thúc không trước bắt đầu, tối đa 365 ngày, khoảng
+- **Đồng ý** (UC-80c): yêu cầu UC-80a cho chủ lịch hạ mức và thu hẹp khoảng **trong** khoảng đã xin (gửi `level`, `startDate`, `endDate`); chia sẻ
+  UC-80b và thay đổi đang chờ chỉ hiện lại giá trị rồi gửi body rỗng.
+- **Ngày.** "Hôm nay" theo giờ Việt Nam; FE kiểm UC-80a trước khi gửi (bắt đầu từ hôm nay, kết thúc không trước bắt đầu, tối đa 365 ngày, khoảng
   đã xin khi thu hẹp); chọn nhanh 1 tuần / 1 tháng / 3 tháng; mặc định 30 ngày từ hôm nay.
 - **Lỗi.** `400` (`MSG443`, `MSG455`) và `5xx` hiện trong hộp thoại, giữ nguyên dữ liệu đã nhập. `404`, `403`, `409 MSG449` / `MSG450` /
   `MSG468` nghĩa là danh sách đã cũ: đóng hộp thoại, báo bằng toast (404 không body → "Chia sẻ này không còn.") rồi tải lại. `500 MSG453`
   khi đọc danh sách: câu của server kèm *Thử lại*.
-- **Tab Lịch được chia sẻ** (`?tab=week&week=YYYY-MM-DD`, UC-85c): bảy cột thứ Hai → Chủ nhật, cột giờ 00:00–24:00 có vạch mỗi giờ, cuộn
+- **Tab Lịch được chia sẻ** (`?tab=week&week=YYYY-MM-DD`, UC-81c): bảy cột thứ Hai → Chủ nhật, cột giờ 00:00–24:00 có vạch mỗi giờ, cuộn
   trong khung và mở sẵn ở 08:00 (cuộn lên xem giờ sớm, xuống xem buổi tối); giờ bận
   tô màu của người đó, ngày `known = false` gạch chéo "Chưa biết" (không bao giờ vẽ như rảnh), người `Stopped` hiện "Đã dừng" và "Không còn xem
   được". Trên điện thoại chọn từng ngày, giờ bận viết ra dưới thanh vì chạm không mở được tooltip.

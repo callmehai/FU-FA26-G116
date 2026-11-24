@@ -38,9 +38,9 @@ type TabId = (typeof TABS)[number]['id']
 
 /**
  * The invited meeting as a verified guest sees it (UC-04 step 6, SCRUM-121): what a Member reads —
- * agenda, documents (SCRUM-123), votes, roster — and the invitation to answer (6.4, UC-29). The shared
+ * agenda, documents (SCRUM-123), votes, roster — and the invitation to answer (6.4, UC-31). The shared
  * panels take what the guest may do from the server, which grants a guest nothing to manage. No sidebar
- * and no internal menu (BR-156): the bar holds the logo, who the guest said they are, and "Thoát".
+ * and no internal menu (BR-052): the bar holds the logo, who the guest said they are, and "Thoát".
  */
 export function GuestMeetingPage() {
   const guest = useGuest()!
@@ -154,7 +154,7 @@ export function GuestMeetingPage() {
   )
 }
 
-/** UC-32c for a guest (SCRUM-123): the shared viewer, fed by the guest's session instead of the meeting API. */
+/** UC-35b for a guest (SCRUM-123): the shared viewer, fed by the guest's session instead of the meeting API. */
 export function GuestDocumentPage() {
   const guest = useGuest()!
   const { documentId = '' } = useParams()
@@ -226,7 +226,7 @@ function GuestBar() {
   )
 }
 
-/** The guest's own invitation (UC-29): the answer given and whether the question still stands. */
+/** The guest's own invitation (UC-31): the answer given and whether the question still stands. */
 function useMyInvitation(meetingId: string) {
   const [current, setCurrent] = useState<InvitationResponseResult['response'] | null>(null)
   const reload = useCallback(() => {

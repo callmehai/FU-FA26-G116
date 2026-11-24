@@ -55,7 +55,7 @@ public sealed class GuestCallRoomTests(GuestAccessFixture f) : IClassFixture<Gue
         Assert.Equal("Khách tự khai", f.LiveKit.LastTicket!.Value.Name);
 
         await using var check = f.Db();
-        // The session's other row is its verification (BR-444).
+        // The session's other row is its verification (BR-009–BR-011).
         var admitted = await check.AuditLog.SingleAsync(a => a.ObjectId == session && a.Action != AuditActions.GuestVerified);
         Assert.Equal((AuditActions.CallGuestAdmitted, AuditActions.GuestSessionObjectType, (Guid?)null),
             (admitted.Action, admitted.ObjectType, admitted.ActorId));

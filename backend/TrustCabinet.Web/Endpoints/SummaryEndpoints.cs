@@ -3,7 +3,7 @@ using TrustCabinet.Application.Summaries;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// SCRUM-36 — the AI draft of a meeting's content (UC-47 to UC-50): read it, ask the AI for it (again), correct it, review
+/// SCRUM-36 — the AI draft of a meeting's content (UC-58 to UC-61): read it, ask the AI for it (again), correct it, review
 /// it. Writing it takes minutes, so asking only queues it; the page polls GET until it is ready.
 /// </summary>
 public static class SummaryEndpoints
