@@ -11,20 +11,19 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu
 > cá nhân 91/2025/QH15).
 
-**Hai server, hai nhánh** ([ADR-0065](../docs/05-decisions/0065-hai-nhanh-hai-server.md), [ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)):
+**Một server, nhánh `app`** ([ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md), [ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)):
 
 | Nhánh | Server Lightsail | URL | Bản |
 |---|---|---|---|
-| `main` | `trustcabinet-4gb` | https://trustcabinet.workspace-hub.space | Bản demo cũ, backend ba project — đóng băng từ 20/11 |
-| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
+| `app` | `trustcabinet-app` (compute-optimized 4 vCPU, 8 GB, từ 24/11) | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
 
-Hai server dựng giống nhau theo file này, mỗi máy một database, một bộ secret và một kho tệp riêng. Server `app`
-không dùng R2 mà dùng kho tệp tự host (§9, cách B). Từ 20/11 mọi việc làm trên `app` (nhánh mặc định của repo);
-`main` không nhận thay đổi mới và không còn merge sang `app` ([ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)).
+Server `app` dùng kho tệp tự host (§9, cách B), không dùng R2. Server demo của nhánh `main` (`trustcabinet-4gb`,
+https://trustcabinet.workspace-hub.space) đã xoá ngày 24/11 cùng bản ghi DNS; nhánh `main` vẫn giữ trên GitHub ở
+commit đóng băng nhưng không còn được deploy ([ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)).
 
 ## Dành cho người test
 
-Mở <https://trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
+Mở <https://app.trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
 
 | Email | Vai trò |
 |---|---|
@@ -98,10 +97,10 @@ sang commit mới, đổi Caddyfile thì khởi động lại Caddy) nhưng khô
 - Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
   server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
   chủ repo ghi lần deploy gần nhất, kèm link mở server.
-- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `main` hoặc `app`.
+- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `app`.
 - CI đỏ thì không deploy; server giữ bản cũ. Trên pull request, check deploy hiện là *Skipped*.
 
-**Chỉ `main` và `app` được deploy**, mỗi nhánh lên server của nó. Chọn nhánh khác ở *Run workflow* thì workflow đỏ
+**Chỉ `app` được deploy.** Chọn nhánh khác ở *Run workflow* thì workflow đỏ
 ngay bước đầu: deploy một nhánh có migration chưa merge rồi quay về sẽ để lại schema mà nhánh đó không biết.
 
 **Không lùi.** Hai PR merge sát nhau, CI của commit trước có thể xong sau commit sau. Commit cần deploy cũ hơn
@@ -110,10 +109,9 @@ commit server đang chạy thì workflow bỏ qua, vẫn xanh, kèm thông báo 
 
 ### Thiết lập một lần
 
-Workflow cần ba secret cho mỗi server, đặt trong **environment** của server đó: `server-test` cho `main`,
-`server-app` cho `app` (**GitHub → repo → Settings → Environments → chọn environment → Add environment secret**).
-Job chọn environment theo nhánh nên cùng tên secret trỏ tới đúng máy. Server test có ba secret ở mức repo từ
-trước, vẫn dùng được: secret của environment chỉ đè lên khi có. Làm trong terminal của server (Lightsail → máy →
+Workflow cần ba secret, đặt trong **environment** `server-app` (**GitHub → repo → Settings → Environments →
+server-app → Add environment secret**). Environment `server-test` và ba secret cấp repo của server `main` đã xoá
+ngày 24/11. Làm trong terminal của server (Lightsail → máy →
 **Connect using SSH**):
 
 1. Tạo SSH key riêng cho GitHub Actions và cho phép nó đăng nhập server:
@@ -608,7 +606,7 @@ Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy
 
 ## Sau khi bảo vệ xong
 
-Xoá cả hai máy (`trustcabinet-4gb`, `trustcabinet-refactor`) **và** hai IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
+Xoá máy `trustcabinet-app` **và** IP tĩnh `trustcabinet-refactor-ip` trên Lightsail, các snapshot còn lại, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
 plan: hết credit là AWS trừ tiền thẻ.
 
 ## Lỗi thường gặp
