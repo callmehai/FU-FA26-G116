@@ -33,13 +33,14 @@ import { returnToMeetingTab, useTabName } from '../meetingTabs'
 import { MeetingPageLink } from '../TabLinks'
 import { VoiceShortcut } from '../../voice/VoiceShortcut'
 import { useNotifications } from '../../notifications/notificationsContext'
-import { RecorderCard } from '../../recordings/RecorderCard'
+import { lobbyMicOn, lobbyMicPress, roomMicStopsWhen } from '../../recordings/hybridMic'
 import { useHeldRoomMic } from '../../recordings/roomMicContext'
-import { useRoomRecordings } from '../../recordings/useRoomRecordings'
+import type { RoomRecorder } from '../../recordings/useRoomRecorder'
 import { DevicePicker, MicLevel } from './devices'
 import { RoomView, type LobbyMic } from './RoomView'
 import {
   ROOM_OPTIONS,
+  callEnd,
   deviceErrorMessage,
   deviceFailure,
   devicesNotice,
@@ -195,27 +196,25 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   // A guest's meeting page closes with the meeting (UC-04 EX-1), so a room that is over has nowhere to send them back.
   const asGuest = recheckGuest !== undefined
   const [lobbyMic, setLobbyMic] = useState<LobbyMic>()
-  // ADR-0072: a hybrid meeting's room mic outlives the call screen. Out of the call (the lobby, after leaving or losing
-  // the connection) the floating card shows it is still on, and switches it off; a room that is over stops it.
+  // ADR-0072: a hybrid meeting's room mic outlives the call screen; a room that is over stops it. ADR-0085: the call room
+  // shows it with no floating card. The lobby's mic switch and the call's mic button are the room mic; out of the call
+  // with it still on (the connection dropped), the page says so in a line with its switch.
   const over = call.status === 'Ended' || call.status === 'Cancelled'
   const roomMic = useHeldRoomMic(meeting.id, over ? false : undefined)
-  const showsRoomMic = roomMic !== null && roomMic.phase !== 'off' && phase.kind !== 'inRoom'
-  const roomRecordings = useRoomRecordings(meeting.id, showsRoomMic)
-  const roomMicCard = showsRoomMic && (
-    <RecorderCard
-      title={meeting.title}
-      room={roomMic}
-      list={roomRecordings.list}
-      open={roomRecordings.open}
-      onChanged={roomRecordings.reload}
-    />
-  )
+  const roomMicRef = useRef(roomMic)
+  useEffect(() => {
+    roomMicRef.current = roomMic
+  })
+  const roomMicLine = roomMic !== null && roomMic.phase !== 'off' && <RoomMicLine mic={roomMic} />
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
       // A connection that never opened is the lobby's to report (MSG480), not a lost one (MSG332).
       if (leavingRef.current || !connectedRef.current) return
       setPhase({ kind: 'left', reason })
+      // ADR-0085: the room mic goes with the call. Joined from another tab or device, it is switched off here (the take
+      // saved) so that it opens there; taken off the roster, it stops.
+      if (roomMicStopsWhen(callEnd(reason))) roomMicRef.current?.stop()
       // Put out by the server — for a guest a revoked invitation or a lapsed session — or the meeting ended: the guest
       // page then replaces the room with its closed screen, taking the meeting off the screen.
       if (
@@ -250,29 +249,24 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
       Open: '',
     }[call.status]
     return (
-      <>
-        <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!(asGuest && over)} />
-        {roomMicCard}
-      </>
+      <LobbyMessage
+        meetingId={meeting.id}
+        title={meeting.title}
+        text={text}
+        showHome={!(asGuest && over)}
+        line={roomMicLine}
+      />
     )
   }
 
   if (!call.available) {
     return (
-      <>
-        <LobbyMessage meetingId={meeting.id} title={meeting.title} text={roomMessage.notConfigured} />
-        {roomMicCard}
-      </>
+      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={roomMessage.notConfigured} line={roomMicLine} />
     )
   }
 
   if (phase.kind === 'inRoom') {
-    return (
-      <>
-        <RoomView room={room} meeting={meeting} myRole={call.myRole} lobbyMic={lobbyMic} onLeave={leave} />
-        {roomMicCard}
-      </>
-    )
+    return <RoomView room={room} meeting={meeting} myRole={call.myRole} lobbyMic={lobbyMic} onLeave={leave} />
   }
 
   if (phase.kind === 'left') {
@@ -280,46 +274,42 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
     // Taken off the roster (MSG330): the meeting page is a 404 to them now, so the way out is the meeting list.
     const removed = phase.reason === DisconnectReason.PARTICIPANT_REMOVED
     return (
-      <>
-        <LobbyMessage
-          meetingId={meeting.id}
-          title={meeting.title}
-          text={text}
-          showHome={!asGuest || canRejoin}
-          toList={removed}
-        >
-          {canRejoin && (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => {
-                connectedRef.current = false
-                setPhase({ kind: 'lobby' })
-              }}
-            >
-              Vào lại
-            </button>
-          )}
-        </LobbyMessage>
-        {roomMicCard}
-      </>
+      <LobbyMessage
+        meetingId={meeting.id}
+        title={meeting.title}
+        text={text}
+        showHome={!asGuest || canRejoin}
+        toList={removed}
+        line={roomMicLine}
+      >
+        {canRejoin && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              connectedRef.current = false
+              setPhase({ kind: 'lobby' })
+            }}
+          >
+            Vào lại
+          </button>
+        )}
+      </LobbyMessage>
     )
   }
 
   return (
-    <>
-      <PreJoin
-        room={room}
-        meeting={meeting}
-        call={call}
-        onJoined={(mic) => {
-          connectedRef.current = true
-          setLobbyMic(mic)
-          setPhase({ kind: 'inRoom' })
-        }}
-      />
-      {roomMicCard}
-    </>
+    <PreJoin
+      room={room}
+      meeting={meeting}
+      call={call}
+      roomMic={sendsRoomMic(meeting, call.myRole) ? roomMic : null}
+      onJoined={(mic) => {
+        connectedRef.current = true
+        setLobbyMic(mic)
+        setPhase({ kind: 'inRoom' })
+      }}
+    />
   )
 }
 
@@ -351,11 +341,14 @@ function PreJoin({
   room,
   meeting,
   call,
+  roomMic,
   onJoined,
 }: {
   room: Room
   meeting: Meeting | GuestMeeting
   call: CallRoomState
+  /** A hybrid meeting's Secretary: the room mic, which the lobby's mic switch shows and switches (ADR-0085). */
+  roomMic: RoomRecorder | null
   /** `mic`: the lobby's mic switch and the mic picked there. */
   onJoined: (mic: LobbyMic) => void
 }) {
@@ -369,7 +362,9 @@ function PreJoin({
   const [joining, setJoining] = useState(false)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const micOn = prefs.mic && !micFailure
+  // ADR-0085: a hybrid meeting's room mic still on in this tab is the lobby's mic, whatever was chosen here last time.
+  const roomPhase = roomMic?.phase ?? null
+  const micOn = lobbyMicOn(prefs.mic, roomPhase) && !micFailure
   // Labels only come once a permission is granted, so the lists are read again then.
   const { devices, reload: reloadDevices } = useDeviceList(micAllowed)
   const ofKind = (kind: MediaDeviceKind) => devices.filter((d) => d.kind === kind)
@@ -452,6 +447,8 @@ function PreJoin({
   }
 
   const camOn = prefs.cam && !previewFailure
+  // The Secretary's switch is the room mic's, as the call's button is (ADR-0072).
+  const micLabel = roomMic ? (micOn ? 'Tắt mic phòng' : 'Bật mic phòng') : micOn ? 'Tắt micro' : 'Bật micro'
   // Micro and camera refused alike (a blocked site) are said once, not in two near-identical notices.
   const deviceNotice = devicesNotice(micFailure, prefs.cam ? (previewFailure ?? null) : null)
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
@@ -478,10 +475,16 @@ function PreJoin({
               <button
                 type="button"
                 className={`prejoin-toggle${micOn ? '' : ' is-off'}`}
-                aria-label={micOn ? 'Tắt micro' : 'Bật micro'}
-                title={micOn ? 'Tắt micro' : 'Bật micro'}
-                disabled={Boolean(micFailure)}
-                onClick={() => update({ ...prefs, mic: !prefs.mic })}
+                aria-label={micLabel}
+                title={micLabel}
+                disabled={Boolean(micFailure) || roomPhase === 'starting' || roomPhase === 'saving'}
+                onClick={() => {
+                  // Off while the room mic records: the room mic goes off, its take saved, as in the call.
+                  if (lobbyMicPress(roomPhase) === 'stopRoomMic') {
+                    roomMic?.stop()
+                    update({ ...prefs, mic: false })
+                  } else update({ ...prefs, mic: !prefs.mic })
+                }}
               >
                 <Icon name={micOn ? 'mic' : 'micOff'} />
               </button>
@@ -742,12 +745,34 @@ export function RoomPage({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * ADR-0085 — out of the call (the connection dropped, or the room cannot be joined) while a hybrid meeting's room mic
+ * still records: said in the page, with its switch, rather than in a floating card. The room goes on recording, as the
+ * meeting goes on in the room.
+ */
+function RoomMicLine({ mic }: { mic: RoomRecorder }) {
+  const saving = mic.phase === 'saving'
+  return (
+    <p className="room-mic-line" role="status">
+      <span className={`mic-status-dot${saving ? '' : ' is-live'}`} aria-hidden="true" />
+      {saving ? 'Đang lưu lượt ghi…' : 'Mic phòng vẫn đang ghi'}
+      {!saving && (
+        <button type="button" className="btn btn-outline btn-sm" onClick={mic.stop} disabled={mic.phase !== 'on'}>
+          <Icon name="micOff" size={16} />
+          Tắt mic phòng
+        </button>
+      )}
+    </p>
+  )
+}
+
 export function LobbyMessage({
   meetingId,
   title,
   text,
   showHome = true,
   toList = false,
+  line,
   children,
 }: {
   meetingId: string
@@ -757,6 +782,8 @@ export function LobbyMessage({
   showHome?: boolean
   /** The way back leads to the meeting list instead: a member who may no longer open the meeting page. */
   toList?: boolean
+  /** A line under the title: the room mic still on out of the call (ADR-0085). */
+  line?: ReactNode
   children?: ReactNode
 }) {
   const meetingHome = useMeetingHome(meetingId)
@@ -765,6 +792,7 @@ export function LobbyMessage({
       <main className="prejoin-message">
         <h1>{text}</h1>
         <p className="prejoin-meeting">{title}</p>
+        {line}
         <div className="prejoin-message-actions">
           {showHome && (
             <MeetingPageLink className="btn btn-outline" to={toList ? routes.meetings : meetingHome}>
