@@ -218,6 +218,7 @@ def build_workbook(p, target):
             apply(ws, r, group_style)
             ws.cell(r, 1, g['title'])
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=15)
+            ws.row_dimensions[r].height = 24.0  # single-line group header; template rows vary
             r += 1
             for c in g['cases']:
                 apply(ws, r, case_style)
