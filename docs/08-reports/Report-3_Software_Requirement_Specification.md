@@ -82,6 +82,7 @@ Table of Contents
 | 24/11/2026 | M, A | HuyNQ | [decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12). |
 | 24/11/2026 | M | LocHD | [BF review] BF-02 to BF-04 aligned with the built system: BF-02 adds finding a common time (UC-81) and cancelling (UC-22); BF-03 adds room recording (UC-52); BF-04 adds summary approval (UC-61) and minutes from the fixed template (UC-70). |
 | 24/11/2026 | M | HuyNQ | [UC relations, strict UML] Use Case diagrams keep only real <<extend>> relations (11): Keep Meeting in a Floating Window, Register to Speak, Record Room Audio and Manage My Recorded Speech extend Join Meeting Room; Manage My Recorded Speech also extends View & Play Meeting Recordings; Comment on Meeting Document, Manage Vote Documents, View Participant Response Status, Mark Notifications as Read and Edit Transcript & Speaker Attribution extend the list they act on; Confirm Document Read extends Cast Vote (was an include). Operations opened from a screen and screen or tab navigation now connect straight to the actor. Section 4.3 images redrawn; 'Extends UC-81a' removed from UC-80a and UC-81b. |
+| 24/11/2026 | M | HuyNQ | [Context diagram] Diagram re-laid out by hand; storage actor renamed Cloudflare R2 → File Storage (self-hosted SeaweedFS, ADR-0084, PR #529); AI flow label shortened to 'AI draft'. Section 1 text now names the four service actors as drawn (OAuth Provider, AI drafting service, Resend Email, File Storage). |
 
 *A - Added M - Modified D - Deleted
 
@@ -106,7 +107,7 @@ Table of Contents
 
 ### 1. Context Diagram
 
-TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: System Admin, Member, Approver, Participant, and Guest. Chair and Secretary are meeting roles, not system roles (ADR-0075). The context diagram also shows four service actors outside the TrustCabinet backend: OAuth Provider, Google AI Provider, Resend Email and Cloudflare R2.
+TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: System Admin, Member, Approver, Participant, and Guest. Chair and Secretary are meeting roles, not system roles (ADR-0075). The context diagram also shows four service actors outside the TrustCabinet backend: OAuth Provider, AI drafting service, Resend Email and File Storage.
 
 - OAuth Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
 
@@ -114,7 +115,7 @@ TrustCabinet is an Internal Meeting and Document Management System that interact
 
 - Resend Email handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
 
-- Cloudflare R2 stores the files uploaded to TrustCabinet, such as personal and meeting documents, and returns them to the system when an authorized user opens or downloads them.
+- File Storage, the team's self-hosted S3-compatible store (SeaweedFS, ADR-0084), stores the files uploaded to TrustCabinet, such as personal and meeting documents, and returns them to the system when an authorized user opens or downloads them.
 
 Through these interactions, TrustCabinet acts as the central point connecting meeting participants, meeting records, documents, voting results, and post-meeting minutes, while external services are used only for specific supporting functions outside the main system boundary.
 
