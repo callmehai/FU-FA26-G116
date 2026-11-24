@@ -242,7 +242,7 @@ export function RecorderCard({
                 onClick={() => void closeElsewhere(elsewhere)}
                 data-tooltip="Lưu phần máy kia đã ghi để chuyển chữ, rồi bật mic ở máy này"
               >
-                <Icon name="check" size={16} />
+                <Icon name="micOff" size={16} />
                 {closing ? 'Đang lưu…' : 'Dừng ghi ở máy kia'}
               </button>
             </div>
