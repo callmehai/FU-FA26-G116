@@ -61,7 +61,11 @@ services:
       # máy của nhóm qua Tailscale (ADR-0036). Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro
       # trả 503/MSG312. Xem deploy/README.md §10.
       Speech__BaseUrl: "${SPEECH_URL:-}"
-      # Bắt buộc khi worker ở ngoài server: worker từ chối mọi request không mang khoá này.
+      # Worker dự phòng (ADR-0081): SPEECH_URL không kết nối được trong 5 giây, hoặc đứt giữa chừng, thì gửi lại
+      # sang đây, 2 phút sau mới hỏi lại máy chính. Thường là Mac qua Tailscale làm chính, http://speech:8090 dự phòng.
+      Speech__BackupBaseUrl: "${SPEECH_BACKUP_URL:-}"
+      # Bắt buộc khi worker ở ngoài server: worker từ chối mọi request không mang khoá này. Gửi cho cả hai máy;
+      # worker trong Docker không đặt khoá nên nhận mọi request.
       Speech__ApiKey: "${SPEECH_API_KEY:-}"
       # Máy AI viết dự thảo biên bản (ADR-0054): server có API chuẩn OpenAI (Ollama, llama.cpp…) trên máy của
       # nhóm, qua Tailscale. Để trống thì app vẫn chạy, nút tạo dự thảo báo 503/MSG394. Xem deploy/README.md §11.

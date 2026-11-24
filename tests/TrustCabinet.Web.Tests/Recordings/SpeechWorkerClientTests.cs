@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Infrastructure.Transcription;
@@ -31,7 +32,8 @@ public sealed class SpeechWorkerClientTests
     }
 
     private static SpeechWorkerClient Client(Func<HttpResponseMessage> answer)
-        => new(new Clients(new Handler(answer)), Options.Create(new SpeechOptions { BaseUrl = "http://speech.test" }));
+        => new(new Clients(new Handler(answer)), Options.Create(new SpeechOptions { BaseUrl = "http://speech.test" }),
+            TimeProvider.System, NullLogger<SpeechWorkerClient>.Instance);
 
     private static Task<SpeechTranscription> Transcribe(SpeechWorkerClient client)
         => client.TranscribeAsync(new MemoryStream([1, 2, 3]), "audio/wav", diarize: true, clip: false, CancellationToken.None);
