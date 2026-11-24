@@ -21,6 +21,8 @@ nhóm. Để chúng trong một thư mục ngoài repo.
 | `score_transcript.py` | Chấm một bản ghi thật theo bản gỡ băng có nhãn `[mm:ss] Người nói N: …` | Python 3 chuẩn |
 | `hotwords_wer.py` | WER/CER của Gipformer theo từng cấu hình giải mã (từ khoá ưu tiên, `max_active_paths`, `blank_penalty`), chạy thẳng code worker không qua HTTP | venv của worker (sherpa-onnx, numpy, ffmpeg) |
 | `bleed.py` | Cuộc họp tổng hợp theo micro từng người, mỗi micro nghe lọt người khác; đo từ trùng trước và sau khi đánh dấu (`fold.py`, bản Python của `SpeechClipFold`) | numpy, Node 22.18+ |
+| `far_meeting.py` | Dựng cuộc họp dài, mic xa (30–60 phút, tiếng vọng, ồn, nói chồng, người nói rất ít, một người qua loa laptop, âm lượng −40 dBFS) từ VIVOS, có đáp án chính xác ai nói lúc nào | numpy, ffmpeg |
+| `meeting_bench.py` | Chạy thẳng code worker (không qua HTTP) trên các bộ cuộc họp có đáp án, theo từng cấu hình hằng số của `pipeline.py`: WER, CER, số nhãn so với số người, DER, độ thuần, người nói rất ít còn nhãn riêng không, RTF. Bản ghi thật không có đáp án thì chỉ báo số giọng và số giây mỗi giọng | venv của worker |
 
 Chạy worker trước (xem [README của worker](../README.md#chạy-cục-bộ)). Các script nhận `--url`, mặc
 định `http://127.0.0.1:8090`. Script cần numpy thì chạy bằng venv của worker
@@ -146,6 +148,39 @@ giữa các lần chạy ở cùng điều kiện; dùng `--repeat 3` để lấ
 trước, rồi người sửa các lỗi rõ ràng bằng cách đối chiếu bản Whisper, bản Gipformer và ngữ cảnh. Nó không phải bản gỡ băng
 do người nghe lại từ đầu, nên WER tuyệt đối chỉ là ước lượng; so sánh giữa các cấu hình trên cùng đáp án thì đáng tin hơn.
 Âm thanh, đáp án, `--out` và `--cache` đều là dữ liệu cá nhân: để ngoài repo và xoá khi đo xong.
+
+## 6. Cuộc họp dài, mic xa (tách người nói và chuyển chữ cả buổi)
+
+Bản ghi mic phòng thật dài cả giờ, một laptop trên bàn, người ngồi xa, nói chồng nhau, nên máy tách ra nhiều giọng vụn
+hơn hẳn số người. Cuộc họp thật không có đáp án chính xác ai nói lúc nào; ghép câu đọc của người đã biết vào một "phòng"
+tổng hợp thì có. Cần tập `train` của VIVOS (46 người, mỗi người khoảng 19 phút, đủ cho một giờ họp):
+
+```bash
+tar xzf vivos.tar.gz vivos/train vivos/test
+../.venv/bin/python -I far_meeting.py vivos/train /tmp/far-long --meetings 3 --minutes 40 --people 7 --seed 11
+../.venv/bin/python -I far_meeting.py vivos/train /tmp/far-hard --meetings 2 --minutes 60 --people 6 --rare 2 \
+  --overlap 0.25 --snr 10 --level -42 --seed 23
+../.venv/bin/python -I far_meeting.py vivos/test /tmp/far-test --meetings 3 --minutes 10 --people 6 --seed 7
+../.venv/bin/python -I vivos_dataset.py vivos/test /tmp/vivos-room --meetings 12 --seed 1 --channel room
+SPEECH_THREADS=4 ../.venv/bin/python -I meeting_bench.py /tmp/far-long /tmp/far-hard /tmp/far-test /tmp/vivos-room \
+  --config before:MIN_SPEAKER_SHARE=0,RECOGNISE_BY_REGION=0 --config after
+```
+
+- Mỗi người ngồi một khoảng cách riêng (nhỏ hơn người chủ trì 2–15 dB), qua một phản hồi phòng tổng hợp (RT60 0,3–0,7 s,
+  người càng xa càng vang), một người nghe qua loa laptop (300–3400 Hz); ồn hồng 10–15 dB dưới lời, tiếng rì rầm của bốn
+  người khác 25 dB dưới lời; cả bản ghi ở −40 dBFS như laptop đặt giữa bàn. Một phần ba lượt là một câu ngắn (chen ngang),
+  15–25% lượt bắt đầu khi người trước chưa dứt.
+- `--rare` người chỉ nói một đến ba câu ngắn: bộ đo báo họ còn giữ được nhãn riêng không.
+- `--config tên:HẰNG_SỐ=giá_trị,…` đổi hằng số của `speech/pipeline.py` cho một lần chạy (`threshold=` là ngưỡng gom
+  nhóm); không có `:` là cấu hình mặc định của code. `--diar-only` bỏ bước chuyển chữ để quét các hằng số tách người nói
+  nhanh, vector giọng từng khung được giữ lại giữa các cấu hình (`--cache` giữ ra đĩa: đó là dữ liệu giọng, để ngoài repo,
+  xoá khi xong).
+- DER theo kiểu NIST, không chừa biên: phần thời gian lời bị sót, bị báo thừa, hay bị gán nhầm người, mỗi nhãn ứng nhiều nhất
+  một người (ghép tham lam theo thời gian trùng), nên một người bị tách đôi thì phần nhỏ hơn tính là sai. Câu VIVOS có
+  khoảng lặng hai đầu; `far_meeting.py` cắt bỏ nên đáp án chỉ là lời, còn bộ của `vivos_dataset.py` thì không, nên phần
+  "sót" của hai bộ đó cao giả tạo (khoảng lặng trong đáp án mà VAD bỏ đúng).
+- Chạy trên bản ghi thật (đặt tệp vào `<bộ>/meetings/` không kèm `.json`): chỉ báo số giọng và số giây mỗi giọng, đủ để
+  so trước và sau một thay đổi.
 
 ## Đọc kết quả của `evaluate.py`
 

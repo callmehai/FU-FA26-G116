@@ -33,6 +33,12 @@ log = logging.getLogger(__name__)
 SAMPLE_RATE = 16000
 
 # --- Transcription ----------------------------------------------------------------------------
+# The recogniser's files (models.manifest): Gipformer as published, in fp32, not its int8 copy (ADR-0085). The int8
+# copy loses words where the speech is far and noisy: on synthetic far-field meetings WER 11.8% → 11.1% and 8.2% → 7.6%,
+# on spontaneous speech played through a far room (VietMed) 23.0% → 22.1%, on read speech 4.9% → 4.7%. It costs about
+# 45% more time in the recogniser (some 15% of a whole run), a 190 MB larger file and about 200 MB more memory per
+# process.
+ASR_FILES = {part: f"gipformer/{part}.onnx" for part in ("encoder", "decoder", "joiner")}
 # Longest piece handed to the recogniser at once; the VAD cuts speech at this length, and a
 # longer turn is split again. The transducer degrades and memory grows on very long inputs.
 MAX_CHUNK_S = 25.0
@@ -118,6 +124,16 @@ MIN_REGION_S = 0.5
 # A cluster with less speech than this is not a person but noise, laughter or a cough; its windows
 # join the nearest real speaker. Skipped when the caller states the number of speakers.
 MIN_SPEAKER_S = 2.0
+# ...nor is a cluster with less than this share of the recording's speech (ADR-0085). On a long room recording the
+# clustering leaves a tail of small clusters beside the real people: windows where two people talk at once (half one
+# person, half the other), a laugh, the far end of a laptop speaker. A real meeting of 24/11/2026 (62 minutes, 6–7
+# people) came out as 20–25 voices, only about 7 with more than a minute. On synthetic far-field meetings with exact
+# truth (eval/far_meeting.py: 30–52 minutes, 6–7 people) those clusters held 3–124 s each, mostly half one person and
+# half another (two people at once), and 2% of the speech (about a minute in an hour) folded them: 42 voices for 21
+# people → 18, and 26 for 12 → 10, DER 16.2% → 13.3% and 18.1% → 16.5% (README, "Hiệu chỉnh"). A short meeting is
+# untouched: 2% of three minutes is under MIN_SPEAKER_S. The price is that a person who says less than that share is
+# written under the nearest voice, as one who said a single word already was.
+MIN_SPEAKER_SHARE = 0.02
 # Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"; ADR-0074). 0.5
 # was tuned on synthetic clips (17 of 20 right) and on real rooms split 4 people into 41 voices (team
 # test 21/11/2026, 15 minutes) and 3 people plus a laptop speaker into 15. On those two recordings 0.72
@@ -276,7 +292,7 @@ def model_ids(hashes: dict[str, str]) -> dict[str, str]:
         return hashes[path][:12]
 
     return {
-        "asr": f"gipformer-1.5-68m-int8@{short('gipformer/encoder.int8.onnx')}",
+        "asr": f"gipformer-1.5-68m-fp32@{short(ASR_FILES['encoder'])}",
         "embedding": f"eres2net-base-200k@{short('eres2net_base.onnx')}",
         "vad": f"silero-vad@{short('silero_vad.onnx')}",
         "punctuation": f"vibert-capu-int8@{short(punctuation.MODEL_FILE)}",
@@ -481,6 +497,12 @@ def nearest(vector: np.ndarray, by_label: dict[int, np.ndarray]) -> int:
     return max(by_label, key=lambda label: float(vector @ by_label[label]))
 
 
+def least_windows(count: int) -> int:
+    """Windows a cluster needs to be a speaker of its own, out of `count` windows of speech: MIN_SPEAKER_S, or
+    MIN_SPEAKER_SHARE of the recording's speech when that is more. Windows overlap by half, so each stands for HOP_S."""
+    return math.ceil(max(MIN_SPEAKER_S, MIN_SPEAKER_SHARE * count * HOP_S) / HOP_S - 1e-9)
+
+
 def fold_small_clusters(vectors: np.ndarray, labels: np.ndarray, min_count: int) -> np.ndarray:
     """Move the windows of every cluster smaller than `min_count` to the nearest large cluster."""
     counts = {int(label): int(count) for label, count in zip(*np.unique(labels, return_counts=True))}
@@ -579,9 +601,9 @@ class Engine:
         # SPEECH_HOTWORDS_FILE=0 turns it off, to compare with and without.
         self._hotwords = hotwords.prepare(root, hotwords.settings())
         self._recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
-            encoder=str(root / "gipformer/encoder.int8.onnx"),
-            decoder=str(root / "gipformer/decoder.int8.onnx"),
-            joiner=str(root / "gipformer/joiner.int8.onnx"),
+            encoder=str(root / ASR_FILES["encoder"]),
+            decoder=str(root / ASR_FILES["decoder"]),
+            joiner=str(root / ASR_FILES["joiner"]),
             tokens=str(root / "gipformer/tokens.txt"),
             num_threads=threads,
             sample_rate=SAMPLE_RATE,
@@ -793,7 +815,7 @@ class Engine:
         )
         labels = np.asarray(clustering(vectors), dtype=np.int64)
         if not speakers:
-            labels = fold_small_clusters(vectors, labels, math.ceil(MIN_SPEAKER_S / HOP_S))
+            labels = fold_small_clusters(vectors, labels, least_windows(len(spans)))
         labels = smooth(labels, [span[0] for span in spans])
         turns = spans_to_turns(spans, labels)
 

@@ -92,5 +92,14 @@ class ClosestPairTests(unittest.TestCase):
         self.assertIsNone(pipeline.closest_pair({0: unit(1, 0)}))
 
 
+class LeastWindowsTests(unittest.TestCase):
+    def test_a_short_meeting_keeps_the_two_second_floor(self):
+        self.assertEqual(pipeline.least_windows(40), 2)  # 60 s of speech: 2% is 1.2 s, under the 2 s floor
+
+    def test_grows_with_the_recording(self):
+        self.assertEqual(pipeline.least_windows(120), 3)  # three minutes → 3.6 s
+        self.assertEqual(pipeline.least_windows(2000), 40)  # 50 minutes → 60 s
+
+
 if __name__ == "__main__":
     unittest.main()
