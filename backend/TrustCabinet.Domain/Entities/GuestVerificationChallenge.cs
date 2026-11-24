@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Entities.Common;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// A one-time code sent to a guest invitation's email (UC-04, BR-153). Only an HMAC of the code is
+/// A one-time code sent to a guest invitation's email (UC-04, BR-053, BR-054). Only an HMAC of the code is
 /// stored. The newest challenge of an invitation is the only one that can verify, so sending a new
 /// code retires the previous one without updating it.
 /// </summary>

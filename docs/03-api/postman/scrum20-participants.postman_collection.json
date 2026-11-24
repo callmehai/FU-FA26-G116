@@ -305,7 +305,7 @@
       }
     },
     {
-      "name": "UC-73 — smoke tuần tự",
+      "name": "UC-34 — smoke tuần tự",
       "description": "Chỉ chạy folder này trên DB riêng: token=Chair, memberToken=Member đầu tiên được chọn. Dùng fixture có đúng một Member hợp lệ, revision ban đầu bất kỳ. Không export environment có token. Chạy thành công sẽ đổi Chair.",
       "item": [
         {

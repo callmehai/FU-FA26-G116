@@ -24,7 +24,7 @@ public sealed class RetentionOptions
     public int NotificationDays { get; set; } = 180;
 
     /// <summary>A guest's verification code is deleted this many days after it expired; by then it no longer counts
-    /// towards the daily limit either (BR-153).</summary>
+    /// towards the daily limit either (BR-053, BR-054).</summary>
     public int GuestChallengeDays { get; set; } = 1;
 
     /// <summary>The body, HTML and calendar attachment of an email sent or given up on are cleared after this many days.</summary>

@@ -47,7 +47,7 @@ public static class UserEndpoints
         users.MapGet("/{id:guid}", GetAsync);
         users.MapPost("/", CreateAsync);
         users.MapPut("/{id:guid}", UpdateAsync);
-        // Status and the profile are separate resources: UC-06b and UC-06c are separate use cases
+        // Status and the profile are separate resources: UC-06b, UC-06c are separate use cases
         // with different rules, and a single PUT would make it possible to deactivate someone as a
         // side effect of renaming them.
         users.MapPut("/{id:guid}/status", ChangeStatusAsync);

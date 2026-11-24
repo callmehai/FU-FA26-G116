@@ -10,7 +10,7 @@ import { Icon } from '../../../components/Icon'
 const REASON_MAX = 1000
 
 /**
- * UC-19 Reject: the approver says why, so the organizer knows what to change. What was typed stays
+ * UC-18 Reject: the approver says why, so the organizer knows what to change. What was typed stays
  * in the dialog when the request fails — a lost reason would have to be written again.
  */
 export function RejectMeetingDialog({

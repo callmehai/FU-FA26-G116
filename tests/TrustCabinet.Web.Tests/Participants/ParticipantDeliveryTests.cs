@@ -88,7 +88,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             invitationId = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).Select(d => d.Id).SingleAsync();
         Assert.Equal(1, await Process(invitationId));
 
-        // What MeetingService does on Cancel from Published, inside its transaction (BR-300).
+        // What MeetingService does on Cancel from Published, inside its transaction (UC-22).
         var historyId = Guid.CreateVersion7();
         await using (var db = f.Db())
         {

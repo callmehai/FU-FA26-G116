@@ -1,12 +1,12 @@
-// FE-10 — Gỡ băng, nhận diện người nói và tóm tắt (QA subtask SCRUM-197): UC-45a view a transcript, UC-45b export it,
-// UC-45c transcribe (automatic after an upload, rerun), UC-46a edit a sentence, UC-46b name a voice and change the
-// speaker of one sentence ("chỉ câu này", MSG407), UC-46c exclude / restore a per-mic sentence (MSG351–354), UC-81a–f
-// the person's own Voice ID (consent, samples, withdrawal), UC-86a–d the Secretary collecting samples on someone's behalf
-// (ADR-0060, MSG473–477), and of UC-47–49 only what FE-10 feeds: the draft card's count of unnamed voices (read-only —
+// FE-10 — Gỡ băng, nhận diện người nói và tóm tắt (QA subtask SCRUM-197): UC-54a view a transcript, UC-54b export it,
+// UC-54c transcribe (automatic after an upload, rerun), UC-55a edit a sentence, UC-55b name a voice and change the
+// speaker of one sentence ("chỉ câu này", MSG407), UC-55c exclude / restore a per-mic sentence (MSG351–354), UC-56a–f
+// the person's own Voice ID (consent, samples, withdrawal), UC-57a–d the Secretary collecting samples on someone's behalf
+// (ADR-0060, MSG473–477), and of UC-58–UC-60 only what FE-10 feeds: the draft card's count of unnamed voices (read-only —
 // this plan never asks for an AI draft; the draft itself is FE-12).
 //
-// Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md (BR-341, BR-350–BR-368,
-// BR-372, BR-395, BR-448–BR-454), docs/03-api/12-ban-ghi-cuoc-hop.md, 13-nhan-dien-giong-noi.md, 17-du-thao-bien-ban.md,
+// Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md (BR-108, BR-111–BR-113, BR-109, UC-53, UC-45a, UC-51a, BR-114, BR-115, UC-54b, UC-54c, BR-116, BR-124, BR-118, BR-119, BR-117, BR-120, BR-123, NFR,
+// BR-117, UC-55b, BR-118, BR-119, BR-124, UC-57a, UC-57b, BR-009–BR-011), docs/03-api/12-ban-ghi-cuoc-hop.md, 13-nhan-dien-giong-noi.md, 17-du-thao-bien-ban.md,
 // ADR-0026/0027/0060, the message catalogue, and the Jira comments of SCRUM-31, SCRUM-35 and SCRUM-152 (one Voice ID
 // consent, notice 1.3, covers both sample sets; the speaker of one sentence moves to the chosen person's voice; the
 // machine names a voice itself at ≥ 0.75; guests have no Voice ID, PO 14/11/2026).
@@ -538,7 +538,7 @@ export default {
   title: 'FE-10 Gỡ băng, nhận diện người nói (Voice ID, thu hộ) và phần tóm tắt FE-10 cung cấp',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-45a View
+    // ------------------------------------------------------------------------------------------- UC-54a View
     {
       id: 'AC1',
       role: 'secretary',
@@ -575,7 +575,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-45c Transcribe
+    // ------------------------------------------------------------------------------------------- UC-54c Transcribe
     {
       id: 'AC2',
       role: 'secretary',
@@ -586,7 +586,7 @@ export default {
         'Chờ chuyển chữ xong',
       ],
       expected:
-        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-45c AF-1, UC-45a AF-1, UC-45b EX-3)',
+        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-54c AF-1, UC-54a AF-1, UC-54b EX-3)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const c = checker(qa)
@@ -632,7 +632,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-45a as Member
+    // ------------------------------------------------------------------------------------------- UC-54a as Member
     {
       id: 'AC3',
       role: 'member',
@@ -643,7 +643,7 @@ export default {
         'API (thanhvien@): GET transcript, GET transcript.txt, PUT sửa câu, PUT gán tên, PUT đổi người nói một câu, POST transcribe',
       ],
       expected:
-        'Lời thoại và tên người nói hiện như chữ thường (không ô chọn), không nút "Sửa nội dung", "Tải bản gỡ băng (.txt)", "Chuyển thành chữ lại", "Tải tệp lên"; API: canEdit/canExport false, people [], suggested* null (BR-366); .txt 403 MSG355; sửa / gán / đổi 403 MSG295; transcribe 403',
+        'Lời thoại và tên người nói hiện như chữ thường (không ô chọn), không nút "Sửa nội dung", "Tải bản gỡ băng (.txt)", "Chuyển thành chữ lại", "Tải tệp lên"; API: canEdit/canExport false, people [], suggested* null (BR-120, BR-123); .txt 403 MSG355; sửa / gán / đổi 403 MSG295; transcribe 403',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const c = checker(qa)
@@ -681,7 +681,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-46a Edit text
+    // ------------------------------------------------------------------------------------------- UC-55a Edit text
     {
       id: 'AC4',
       role: 'secretary',
@@ -741,7 +741,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-46b Name a voice
+    // ------------------------------------------------------------------------------------------- UC-55b Name a voice
     {
       id: 'AC5',
       role: 'secretary',
@@ -752,7 +752,7 @@ export default {
         'API: gán quantri@ (không có trong cuộc họp); gửi cả userId và guestId; gán Khách mời của cuộc họp; Chủ toạ gán; nhãn SPEAKER_99; bỏ gán',
       ],
       expected:
-        'Toast "Đã gán người nói."; ô và tiêu đề các câu của giọng đó hiện tên mới; Thành viên thấy tên (UC-45a POST-2) mà không thấy gợi ý; quantri@ 400 MSG317; cả hai 400 MSG317; Khách 200 MSG316 (Khách có trong danh sách chọn, nhãn "Khách"); Chủ toạ 403 MSG295; nhãn lạ 404; bỏ gán 200 MSG316',
+        'Toast "Đã gán người nói."; ô và tiêu đề các câu của giọng đó hiện tên mới; Thành viên thấy tên (UC-54a POST-2) mà không thấy gợi ý; quantri@ 400 MSG317; cả hai 400 MSG317; Khách 200 MSG316 (Khách có trong danh sách chọn, nhãn "Khách"); Chủ toạ 403 MSG295; nhãn lạ 404; bỏ gán 200 MSG316',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -809,7 +809,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-46b AF-2 one line
+    // ------------------------------------------------------------------------------------------- UC-55b AF-2 one line
     {
       id: 'AC6',
       role: 'secretary',
@@ -819,7 +819,7 @@ export default {
         'API: chuyển câu về nhãn cũ; gửi {} ; gửi cả userId và label; nhãn SPEAKER_77; quantri@; Chủ toạ; Thành viên',
       ],
       expected:
-        'Toast "Đã đổi người nói của câu này."; chỉ câu đó mang tên "[QA] FE-10 Người nói B", câu "Kính thưa…" của cùng giọng cũ giữ nguyên; API: câu có nhãn mới (giọng mới gán người B), thời lượng chuyển theo câu (BR-395); trả về nhãn cũ 200 MSG407 và giọng mới không còn trong speakers; {} và hai trường 400 MSG317; nhãn lạ 404; quantri@ 400 MSG317; Chủ toạ, Thành viên 403 MSG295',
+        'Toast "Đã đổi người nói của câu này."; chỉ câu đó mang tên "[QA] FE-10 Người nói B", câu "Kính thưa…" của cùng giọng cũ giữ nguyên; API: câu có nhãn mới (giọng mới gán người B), thời lượng chuyển theo câu (UC-55b); trả về nhãn cũ 200 MSG407 và giọng mới không còn trong speakers; {} và hai trường 400 MSG317; nhãn lạ 404; quantri@ 400 MSG317; Chủ toạ, Thành viên 403 MSG295',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -877,7 +877,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-45b Export
+    // ------------------------------------------------------------------------------------------- UC-54b Export
     {
       id: 'AC7',
       role: 'chair',
@@ -954,12 +954,12 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-46c Exclude
+    // ------------------------------------------------------------------------------------------- UC-55c Exclude
     {
       id: 'AC9',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Chủ toạ bỏ một câu theo micro khỏi biên bản (MSG351) rồi khôi phục (MSG352); tệp .txt không có câu đã bỏ (BR-358)',
+      title: 'Chủ toạ bỏ một câu theo micro khỏi biên bản (MSG351) rồi khôi phục (MSG352); tệp.txt không có câu đã bỏ (UC-54b)',
       steps: [
         'Đăng nhập chutoa@, mở tab "Bản ghi" của "[QA] FE-10 Họp trực tuyến theo micro"',
         'Ở câu "Tôi đề nghị…" của "[QA] FE-10 Người nói A", bấm "Bỏ khỏi biên bản"; API tải speech-clips.txt',
@@ -1024,9 +1024,9 @@ export default {
     {
       id: 'AC10',
       role: 'chair',
-      title: 'Bỏ câu khỏi biên bản: hệ thống hỏi lý do "Lọt tiếng" hoặc "Khác" trước khi bỏ (UC-46c bước 2–3)',
+      title: 'Bỏ câu khỏi biên bản: hệ thống hỏi lý do "Lọt tiếng" hoặc "Khác" trước khi bỏ (UC-55c bước 2–3)',
       steps: ['Chủ toạ bấm "Bỏ khỏi biên bản" ở một câu theo micro'],
-      expected: 'Hiện lựa chọn lý do (Lọt tiếng / Khác) để chọn và xác nhận, rồi mới bỏ câu (UC-46c Normal Flow bước 2–3)',
+      expected: 'Hiện lựa chọn lý do (Lọt tiếng / Khác) để chọn và xác nhận, rồi mới bỏ câu (UC-55c Normal Flow bước 2–3)',
       async run(qa) {
         const cm = await meeting(qa, 'C')
         const u = await users(qa)
@@ -1050,7 +1050,7 @@ export default {
           const after = (await clips(qa, 'chair', cm.id)).items.find((x) => x.id === target.id)
           qa.expect(
             asked,
-            `Không hỏi lý do: câu bị bỏ ngay (excluded=${after.excluded}, lý do tự chọn "${after.exclusionReason}") — UC-46c bước 2 yêu cầu hỏi "Lọt tiếng" hoặc "Khác"`,
+            `Không hỏi lý do: câu bị bỏ ngay (excluded=${after.excluded}, lý do tự chọn "${after.exclusionReason}") — UC-55c bước 2 yêu cầu hỏi "Lọt tiếng" hoặc "Khác"`,
           ).toBe(true)
         } finally {
           const now = (await clips(qa, 'chair', cm.id)).items.find((x) => x.id === target.id)
@@ -1103,7 +1103,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-81b Consent
+    // ------------------------------------------------------------------------------------------- UC-56b Consent
     {
       id: 'AC12',
       role: 'admin',
@@ -1160,7 +1160,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-81c/d Samples
+    // ------------------------------------------------------------------------------------------- UC-56c/d Samples
     {
       id: 'AC13',
       role: 'admin',
@@ -1199,8 +1199,8 @@ export default {
           await dialog.getByRole('button', { name: 'Lưu giọng mẫu' }).click()
           const res = await answer
           if (res.status() === 201) {
-            qa.note('Micro giả (tiếng bíp) được nhận là giọng mẫu hợp lệ: cổng chất lượng BR-363 không chặn âm không phải tiếng người.')
-            c.fact('a beep is not a voice sample (BR-363)', false)
+            qa.note('Micro giả (tiếng bíp) được nhận là giọng mẫu hợp lệ: cổng chất lượng BR-118, BR-119 không chặn âm không phải tiếng người.')
+            c.fact('a beep is not a voice sample (BR-118, BR-119)', false)
           } else {
             const body = await res.json()
             c.fact('refused as MSG309', res.status() === 422 && body.code === 'MSG309', `${res.status()} ${JSON.stringify(body)}`)
@@ -1249,12 +1249,12 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-81e Delete
+    // ------------------------------------------------------------------------------------------- UC-56e Delete
     {
       id: 'AC14',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Xoá một giọng mẫu của mình (tự thu và Thư ký thu hộ): hệ thống hỏi xác nhận trước (UC-81e bước 2), rồi xoá (MSG311)',
+      title: 'Xoá một giọng mẫu của mình (tự thu và Thư ký thu hộ): hệ thống hỏi xác nhận trước (UC-56e bước 2), rồi xoá (MSG311)',
       steps: [
         'qa-fe10-a@ có 1 mẫu tự thu và 1 mẫu Thư ký thu ở "[QA] FE-10 Họp thu giọng mẫu"',
         'Ở tab "Thư ký thu hộ", xem tên cuộc họp và người thu, bấm xoá mẫu thu hộ',
@@ -1299,7 +1299,7 @@ export default {
           await qa.expect(qa.page.locator('li.voice-sample')).toHaveCount(0)
           const v = await voice(qa, 'a')
           c.fact('both samples gone', v.samples.length === 0 && v.proxy.samples.length === 0)
-          c.fact('asked before each delete (UC-81e step 2)', asked.every((x) => x.endsWith('có hỏi')), asked.join('; '))
+          c.fact('asked before each delete (UC-56e step 2)', asked.every((x) => x.endsWith('có hỏi')), asked.join('; '))
           c.done()
         } finally {
           await clearCollected(qa, b.id, u.a.id)
@@ -1308,7 +1308,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-86a–d Collect
+    // ------------------------------------------------------------------------------------------- UC-57a–d Collect
     {
       id: 'AC15',
       role: 'secretary',
@@ -1473,7 +1473,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-81f Withdraw
+    // ------------------------------------------------------------------------------------------- UC-56f Withdraw
     {
       id: 'AC17',
       role: 'admin',
@@ -1532,7 +1532,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-45c + Voice ID
+    // ------------------------------------------------------------------------------------------- UC-54c + Voice ID
     {
       id: 'AC18',
       role: 'secretary',
@@ -1544,7 +1544,7 @@ export default {
         'qa-fe10-b@ rút đồng ý; Thư ký đọc lại bản gỡ băng',
       ],
       expected:
-        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; khi xong giọng của "Tôi đề nghị…" có gợi ý là B (và được tự gán B, autoAssigned=true, vì từ 22/11 mọi gợi ý đều được tự gán); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-365)',
+        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; khi xong giọng của "Tôi đề nghị…" có gợi ý là B (và được tự gán B, autoAssigned=true, vì từ 22/11 mọi gợi ý đều được tự gán); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-117)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -1606,7 +1606,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-48 readiness
+    // ------------------------------------------------------------------------------------------- UC-59 readiness
     {
       id: 'AC19',
       role: 'chair',

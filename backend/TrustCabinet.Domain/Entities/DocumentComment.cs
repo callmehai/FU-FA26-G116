@@ -5,7 +5,7 @@ namespace TrustCabinet.Domain.Entities;
 /// <summary>
 /// A remark left on a meeting document, so the sitting does not have to be spent reading
 /// (SCRUM-23). It belongs to the meeting's copy, not the library row, so it stays in that
-/// meeting's context. Replies are one level deep (BR-317).
+/// meeting's context. Replies are one level deep (UC-38).
 /// </summary>
 public class DocumentComment : Entity
 {

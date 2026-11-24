@@ -13,7 +13,7 @@ import {
 
 /**
  * The meeting list's criteria live in the URL, so a filtered page survives a reload, can be shared as
- * a link, and Back returns to it (BR-32: criteria are kept across pages).
+ * a link, and Back returns to it (criteria are kept across pages).
  *
  * Whatever is in the URL is read defensively: an unknown value is dropped rather than sent, so a
  * hand-edited or outdated link falls back to the default instead of failing with a 400.

@@ -1,6 +1,6 @@
 namespace TrustCabinet.Domain.CalendarSharing;
 
-/// <summary>A meeting-time search as sent (UC-85a step 1); every field is optional and checked by <see cref="MeetingSlotRules"/>.</summary>
+/// <summary>A meeting-time search as sent (UC-81a step 1); every field is optional and checked by <see cref="MeetingSlotRules"/>.</summary>
 public sealed record SlotSearchInput(
     IReadOnlyList<Guid>? UserIds,
     bool? IncludeMe,
@@ -17,7 +17,7 @@ public sealed record SlotSearchInput(
     int? StepMinutes);
 
 /// <summary>
-/// A search after defaults and checks (BR-421, BR-422). Times are Vietnam wall-clock; a null lunch means no lunch break.
+/// A search after defaults and checks (UC-81a). Times are Vietnam wall-clock; a null lunch means no lunch break.
 /// </summary>
 public sealed record SlotSearch(
     IReadOnlyList<Guid> UserIds,
@@ -33,7 +33,7 @@ public sealed record SlotSearch(
     int BufferMinutes,
     int StepMinutes);
 
-/// <summary>The days a person's calendar is known on, both ends included (BR-415).</summary>
+/// <summary>The days a person's calendar is known on, both ends included (BR-144, BR-145).</summary>
 public readonly record struct KnownDays(DateOnly Start, DateOnly End)
 {
     public bool Contains(DateOnly date) => Start <= date && date <= End;
@@ -41,7 +41,7 @@ public readonly record struct KnownDays(DateOnly Start, DateOnly End)
 
 /// <summary>
 /// One person whose calendar is counted: their busy periods and the days known. A null <see cref="Window"/> is the finder's
-/// own calendar, known on every day (BR-418).
+/// own calendar, known on every day (BR-144, BR-145).
 /// </summary>
 public sealed record SlotPerson(Guid Id, KnownDays? Window, IReadOnlyList<BusyInterval> Busy);
 
@@ -65,7 +65,7 @@ public enum SlotResultKind
 
 public sealed record SlotFinding(SlotResultKind Kind, IReadOnlyList<FoundSlot> Slots, bool Truncated);
 
-/// <summary>How a person of the search is counted: the finder's own calendar, a shared one, or none (BR-416).</summary>
+/// <summary>How a person of the search is counted: the finder's own calendar, a shared one, or none (BR-144, BR-145).</summary>
 public static class SlotPersonStatus
 {
     public const string Own = "Own";

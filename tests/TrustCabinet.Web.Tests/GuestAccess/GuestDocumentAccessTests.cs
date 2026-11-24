@@ -16,7 +16,7 @@ using static TrustCabinet.Web.Tests.GuestAccess.GuestAccessFixture;
 namespace TrustCabinet.Web.Tests.GuestAccess;
 
 /// <summary>
-/// SCRUM-123: a guest with a current UC-04 session reads the meeting's documents (UC-32a, UC-32c) — every
+/// SCRUM-123: a guest with a current UC-04 session reads the meeting's documents (UC-35a, UC-35b) — every
 /// document, view and download — and nothing else of them; sessions come from the real UC-04 flow.
 /// </summary>
 public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixture<GuestAccessFixture>
@@ -76,7 +76,7 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, general) + "?download=true")).StatusCode);
         await Expect(await guest.GetAsync(Content(s.MeetingId, removed)), 404, "MSG156");
 
-        // A Secret meeting: still viewable, every view audited, never downloadable (BR-318, BR-188).
+        // A Secret meeting: still viewable, every view audited, never downloadable (BR-011, BR-081).
         await SetMeeting(s, sensitivity: Sensitivity.Secret);
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, linked))).StatusCode);
         await Expect(await guest.GetAsync(Content(s.MeetingId, general) + "?download=true"), 403, "MSG159");
@@ -254,10 +254,10 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         await Expect(await guest.PostAsJsonAsync($"{votes}/{vote}/ballots", new { optionId = option }), 409, "MSG252");
 
         var list = await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200);
-        // Linked to no agenda item, it is the vote's alone, not general too (BR-280, option B).
+        // Linked to no agenda item, it is the vote's alone, not general too (UC-36b, UC-36d, option B).
         Assert.Empty(list.GetProperty("general").EnumerateArray());
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, document))).StatusCode);
-        // The vote group (UC-32a AF-1) shows the guest's own confirmation, unread until they tick it (UC-74).
+        // The vote group (UC-35a AF-1) shows the guest's own confirmation, unread until they tick it (UC-42).
         var group = Assert.Single(list.GetProperty("votes").EnumerateArray());
         Assert.Equal(vote, group.GetProperty("id").GetGuid());
         Assert.Equal(JsonValueKind.Null, Assert.Single(group.GetProperty("documents").EnumerateArray()).GetProperty("readConfirmedAt").ValueKind);
@@ -291,7 +291,7 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         var root = posted.GetProperty("id").GetGuid();
         var reply = (await Expect(await secretary.PostAsJsonAsync(Comments(s.MeetingId, document),
             new { body = "Thư ký trả lời", parentCommentId = root }), 201, "MSG199")).GetProperty("comment").GetProperty("id").GetGuid();
-        // A guest replying to a reply joins the same thread (BR-317).
+        // A guest replying to a reply joins the same thread (UC-38).
         await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document),
             new { body = "Khách trả lời tiếp", parentCommentId = reply }), 201, "MSG199");
 
@@ -345,7 +345,7 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         await Expect(await guest.PostAsJsonAsync(Comments(other.MeetingId, foreign), new { body = "Lạc cuộc họp" }), 404, "MSG156");
         await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, foreign), new { body = "Lạc tài liệu" }), 404, "MSG156");
 
-        // An ended meeting is closed to a guest altogether (BR-181): MSG156, not the members' read-only MSG251.
+        // An ended meeting is closed to a guest altogether (BR-055): MSG156, not the members' read-only MSG251.
         await SetMeeting(s, MeetingStatus.Ended);
         await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document), new { body = "Sau khi kết thúc" }), 404, "MSG156");
         await Expect(await guest.GetAsync(Comments(s.MeetingId, document)), 404, "MSG156");

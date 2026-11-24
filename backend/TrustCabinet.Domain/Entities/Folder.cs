@@ -18,7 +18,7 @@ public class Folder : Entity
     /// <summary>
     /// Set on the folder created the first time its owner uploads straight into a meeting. Later
     /// uploads find it by this, not by name, so renaming or moving it does not split the files
-    /// (BR-227).
+    /// (UC-36a).
     /// </summary>
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }

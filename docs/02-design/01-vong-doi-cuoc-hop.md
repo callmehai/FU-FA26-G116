@@ -26,9 +26,9 @@ Draft, WaitingApproval, Rejected, Approved, Published ──huỷ (Organizer) / 
 ```
 
 Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026); `Cancelled` là điểm cuối thứ hai, chỉ tới được trước khi
-bắt đầu (UC-75, SCRUM-99). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
+bắt đầu (UC-22, SCRUM-99). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
 (`Draft → WaitingApproval → Rejected → Issued`, và `Superseded` cho bản cũ khi bản đính chính mới được ban hành —
-UC-83), không phải trạng thái cuộc họp. Biên bản không có vòng ký: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành
+UC-75), không phải trạng thái cuộc họp. Biên bản không có vòng ký: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành
 (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng). **Không có Meeting Session**:
 một cuộc họp là một buổi họp, tự mang `PlannedStartTime` / `PlannedEndTime` / `ActualStartedAt` / `ActualEndedAt`
 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
@@ -37,15 +37,15 @@ Code đã khớp: enum `MeetingStatus` (backend và [types/meeting.ts](../../fro
 trạng thái trên. Migration `MeetingOwnsScheduleDropSessions` chuyển dữ liệu `MinutesIssued` / `Archived` cũ thành `Ended`
 và drop bảng `meeting_sessions`. Dời lịch sau công bố ghi history `Reschedule` (`Published → Published`).
 
-Khi gửi duyệt theo UC-18, người tổ chức chọn một tài khoản đang hoạt động có capability
+Khi gửi duyệt theo UC-17, người tổ chức chọn một tài khoản đang hoạt động có capability
 `MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới bước này.
 
 ## Vì sao cần ghi lại
 
 - **Phân quyền bám theo trạng thái.** Sửa thông tin chung chỉ được phép ở `Draft` và `Rejected`;
-  ở `Published` chỉ dời lịch (BR-27, BR-158). Agenda
-  sửa được tới hết `InProgress` (BR-74). Biểu quyết chỉ tạo và mở khi `InProgress` (BR-160). Biên bản chỉ sinh được
-  sau `Ended`. Kết thúc cuộc họp không bị chặn bởi Vote Open hoặc điểm danh thiếu (BR-159); Ended ngừng nhận phiếu, Chair có thể đóng/kiểm phiếu cũ sau họp.
+  ở `Published` chỉ dời lịch (BR-014, BR-015). Agenda
+  sửa được tới hết `InProgress` (BR-058, BR-059). Biểu quyết chỉ tạo và mở khi `InProgress` (BR-090). Biên bản chỉ sinh được
+  sau `Ended`. Kết thúc cuộc họp không bị chặn bởi Vote Open hoặc điểm danh thiếu (BR-026); Ended ngừng nhận phiếu, Chair có thể đóng/kiểm phiếu cũ sau họp.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.
 - **Nhãn trong timeline khác nhãn trạng thái.** Timeline ghi *việc đã xảy ra* ("Đã gửi duyệt"),

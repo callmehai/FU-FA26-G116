@@ -6,7 +6,7 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { saveBlob } from './documentFile'
 
 /**
- * UC-32c AF-1: download the original file through the API (the token is in JS, so never by URL).
+ * UC-35b AF-1: download the original file through the API (the token is in JS, so never by URL).
  * `onStale` re-reads what the screen shows when the answer says it is out of date: MSG159 means the
  * meeting has just become Secret, MSG156 that the document is gone or no longer readable.
  */

@@ -16,7 +16,7 @@ public sealed class FakeCallRepository : ICallRepository
     /// <summary>The active meeting-room sessions the reconciliation job lists.</summary>
     public List<ActiveRoomSession> Sessions { get; } = [];
 
-    /// <summary>How many raised hands a leave or the end of the session closes (BR-337).</summary>
+    /// <summary>How many raised hands a leave or the end of the session closes (BR-104–BR-106).</summary>
     public int ClosedHands { get; set; }
 
     public List<string> Calls { get; } = [];

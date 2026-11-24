@@ -5,7 +5,7 @@ namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
 /// One question put to a vote during a meeting (FE-11). A vote belongs to the meeting, never to an
-/// agenda item (BR-285, ADR-0014): it is prepared as a draft before or during the sitting, opened
+/// agenda item (BR-086, BR-087, ADR-0014): it is prepared as a draft before or during the sitting, opened
 /// and cast only while the meeting is InProgress, and may still be closed and concluded after it
 /// ends (ADR-0017, ADR-0019).
 /// </summary>
@@ -19,16 +19,16 @@ public class VotingSession : Entity
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Secret ballot when true, public when false (BR-272). In a secret vote no row ever links a
+    /// Secret ballot when true, public when false (BR-089). In a secret vote no row ever links a
     /// voter to what they chose — see <see cref="VoteChoice"/>. This is enforced in the data, not by
-    /// hiding names in the UI (BR-259).
+    /// hiding names in the UI (BR-096, BR-097).
     /// </summary>
     public bool IsAnonymous { get; set; }
 
     public VotingStatus Status { get; set; } = VotingStatus.Draft;
 
     /// <summary>
-    /// The meeting roles the Chair lets vote; all four by default (BR-257). Turned into the fixed
+    /// The meeting roles the Chair lets vote; all four by default (UC-63). Turned into the fixed
     /// <see cref="EligibleVoters"/> list when the vote opens.
     /// </summary>
     public List<MeetingRole> EligibleRoles { get; set; } =
@@ -39,7 +39,7 @@ public class VotingSession : Entity
     public DateTimeOffset? ClosedAt { get; set; }
 
     /// <summary>
-    /// How many people were entitled to vote, frozen when the vote opened (BR-190). Stored because the
+    /// How many people were entitled to vote, frozen when the vote opened (BR-091). Stored because the
     /// participant list can change afterwards and the recorded result must stay reproducible.
     /// </summary>
     public int EligibleCount { get; set; }
@@ -49,7 +49,7 @@ public class VotingSession : Entity
 
     /// <summary>
     /// What the Chair concluded from the closed tally; null until recorded, and never changed once it
-    /// is (BR-262). The system never infers it from the counts (BR-263).
+    /// is (BR-099). The system never infers it from the counts (BR-099).
     /// </summary>
     public VoteConclusion? Conclusion { get; set; }
 

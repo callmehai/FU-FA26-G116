@@ -1,6 +1,6 @@
 # 03 · Xác thực — đăng nhập và đăng xuất
 
-Hiện thực **UC-01, UC-02 và UC-03 (SCRUM-11)**: đăng nhập bằng email + mật khẩu, đăng nhập bằng
+Hiện thực **UC-01, UC-02, UC-03 (SCRUM-11)**: đăng nhập bằng email + mật khẩu, đăng nhập bằng
 Google, và đăng xuất. Chỉ hai phương thức đăng nhập này, không dựng IdP riêng — xem
 [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md).
 

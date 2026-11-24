@@ -26,7 +26,7 @@ const ordered = (shares: Share[]) => [...shares.filter((s) => !isClosed(s)), ...
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
 /**
- * SCRUM-142 — Chia sẻ lịch (UC-84a → UC-84f) and the week of busy hours shared with the caller (UC-85c), on one page so
+ * SCRUM-142 — Chia sẻ lịch (UC-80a → UC-80f) and the week of busy hours shared with the caller (UC-81c), on one page so
  * managing a share and seeing its hours are a tab apart, not two menus (AI-eCabinet splits them).
  *
  * Everyone may open it from the account menu: a share of one's own calendar is answered, changed or ended here

@@ -8,10 +8,10 @@ using static TrustCabinet.Web.Tests.CalendarSharing.CalendarSharingFixture;
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
 /// <summary>
-/// UC-85a — POST /api/calendar/slots against a real PostgreSQL: only calendars shared with the finder count, each at its
-/// level (BR-414, BR-417); the finder's own calendar only when ticked and then at every level (BR-416, BR-418); only
-/// meetings and assignments that count (BR-419, BR-420); unknown days and people without a share are never free (BR-415,
-/// BR-416); the most people free when nothing fits everyone (AF-1, MSG445); nothing about any meeting (BR-427).
+/// UC-81a — POST /api/calendar/slots against a real PostgreSQL: only calendars shared with the finder count, each at its
+/// level (BR-140, BR-141, BR-144, BR-145); the finder's own calendar only when ticked and then at every level (BR-144, BR-145); only
+/// meetings and assignments that count (BR-146, BR-147); unknown days and people without a share are never free (BR-144, BR-145,
+/// BR-144, BR-145); the most people free when nothing fits everyone (AF-1, MSG445); nothing about any meeting (BR-140, BR-141).
 /// </summary>
 public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassFixture<CalendarSharingFixture>
 {
@@ -51,7 +51,7 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
         var raw = await response.Content.ReadAsStringAsync();
         Assert.True(response.IsSuccessStatusCode, raw);
         Assert.Equal("no-store", response.Headers.CacheControl?.ToString());
-        // BR-427: no title, place or level of any meeting, ever.
+        // BR-140, BR-141: no title, place or level of any meeting, ever.
         Assert.DoesNotContain(Title, raw);
         Assert.DoesNotContain(Place, raw);
         Assert.DoesNotContain("sensitivity", raw, StringComparison.OrdinalIgnoreCase);
@@ -80,7 +80,7 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
     {
         var p = await f.Seed();
         using var member = f.Client(p.Owner);
-        // MSG448 comes before any parameter check (sequence UC-85a), so even an empty body gets it.
+        // MSG448 comes before any parameter check (sequence UC-81a), so even an empty body gets it.
         await AssertCode(await member.PostAsJsonAsync("/api/calendar/slots", new { }), 403, "MSG448");
     }
 
@@ -181,7 +181,7 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
         Assert.Equal("NotShared", owner2.GetProperty("status").GetString());
         Assert.Equal(JsonValueKind.Null, owner2.GetProperty("level").ValueKind);
         Assert.Equal("NotShared", result.GetProperty("people")[2].GetProperty("status").GetString());
-        // Owner2's busy morning does not show: they are simply not counted (BR-416).
+        // Owner2's busy morning does not show: they are simply not counted (BR-144, BR-145).
         Assert.True(result.GetProperty("allFree").GetBoolean());
         Assert.All(Slots(result), s => Assert.Equal(1, s.GetProperty("countedCount").GetInt32()));
 
@@ -271,7 +271,7 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
     public async Task A_gap_past_midnight_never_reads_a_day_outside_the_share()
     {
         var p = await f.Seed();
-        // Shared from Monday on; a meeting on Sunday evening, outside the share (BR-415, review of PR #319).
+        // Shared from Monday on; a meeting on Sunday evening, outside the share (BR-144, BR-145, review of PR #319).
         await f.AddShare(p.Owner, p.Organizer, start: Monday, end: Monday.AddDays(4));
         await Meeting(p.Admin, p.Owner, Monday.AddDays(-1), (22, 0), (23, 0));
         using var organizer = f.Client(p.Organizer);

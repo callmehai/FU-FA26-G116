@@ -33,20 +33,20 @@ public static class AuditActions
     public const string UserObjectType = "User";
 
     /// <summary>
-    /// UC-11 — an administrator changed what a role may do (SCRUM-60). <c>AuditLogEntry</c> names
+    /// UC-10 — an administrator changed what a role may do (SCRUM-60). <c>AuditLogEntry</c> names
     /// "changing a person's rights" as something that has to be recorded, and this changes it for
     /// everyone holding the role at once.
     /// </summary>
     public const string RolePermissionsUpdated = "role.permissions.updated";
 
-    /// <summary>UC-12a — an administrator created a role (SCRUM-63).</summary>
+    /// <summary>UC-11a — an administrator created a role (SCRUM-63).</summary>
     public const string RoleCreated = "role.created";
 
-    /// <summary>UC-12b — an administrator renamed a role or changed its description.</summary>
+    /// <summary>UC-11b — an administrator renamed a role or changed its description.</summary>
     public const string RoleUpdated = "role.updated";
 
     /// <summary>
-    /// UC-12c — an administrator deleted a role. Its name and capabilities travel in the details,
+    /// UC-11c — an administrator deleted a role. Its name and capabilities travel in the details,
     /// because the cascade has removed both from the database by the time anyone reads this row.
     /// </summary>
     public const string RoleDeleted = "role.deleted";
@@ -87,7 +87,7 @@ public static class AuditActions
 
     public const string NotificationObjectType = "Notification";
 
-    /// <summary>ADR-0067 — the retention job deleted guests' one-time codes a day past their expiry (BR-153).</summary>
+    /// <summary>ADR-0067 — the retention job deleted guests' one-time codes a day past their expiry (BR-053, BR-054).</summary>
     public const string GuestCodesPurged = "guest.codes_purged";
 
     public const string GuestVerificationCodeObjectType = "GuestVerificationChallenge";
@@ -101,13 +101,13 @@ public static class AuditActions
     public const string EmailObjectType = "EmailMessage";
 
     /// <summary>
-    /// SCRUM-109, BR-347 — the recording retention job deleted per-mic sentences past the retention period, with their
+    /// SCRUM-109, BR-110 — the recording retention job deleted per-mic sentences past the retention period, with their
     /// audio. A recording past it is recorded one by one as <see cref="RecordingErased"/>; sentences are many and short.
     /// </summary>
     public const string SpeechClipsExpired = "speech_clip.expired_erased";
 
     /// <summary>
-    /// BR-213 — the orphan purge deleted the stored bytes of document files no library or meeting document points at any
+    /// BR-077 — the orphan purge deleted the stored bytes of document files no library or meeting document points at any
     /// more. The <c>stored_files</c> rows stay, stamped <c>PurgedAt</c>.
     /// </summary>
     public const string DocumentOrphanFilesPurged = "document.orphan_files_purged";
@@ -190,7 +190,7 @@ public static class AuditActions
     public const string VoteDraftDeletedOnMeetingEnd = "vote.draft_deleted_on_meeting_end";
 
     /// <summary>
-    /// ADR-0067 — the same for a meeting that was cancelled (by its organizer or by the system, BR-301): a draft of a
+    /// ADR-0067 — the same for a meeting that was cancelled (by its organizer or by the system, BR-029): a draft of a
     /// meeting that will never start can never be opened. The details carry <c>cancelledById</c> instead of
     /// <c>endedById</c>.
     /// </summary>
@@ -200,8 +200,8 @@ public static class AuditActions
     public const string VoteObjectType = "VotingSession";
 
     /// <summary>
-    /// UC-32c — a document of a Secret meeting was opened in the viewer (BR-318). There is no "downloaded" twin: a
-    /// Secret meeting's documents cannot be downloaded (BR-188), and the other levels are not audited (ADR-0057).
+    /// UC-35b — a document of a Secret meeting was opened in the viewer (BR-009–BR-011). There is no "downloaded" twin: a
+    /// Secret meeting's documents cannot be downloaded (BR-081), and the other levels are not audited (ADR-0057).
     /// </summary>
     public const string DocumentViewed = "document.viewed";
 
@@ -227,28 +227,28 @@ public static class AuditActions
     public const string GuestSessionObjectType = "GuestSession";
 
     /// <summary>
-    /// BR-444 — a password or Google sign-in succeeded. The actor and the object are the account; the details carry the
+    /// BR-009–BR-011 — a password or Google sign-in succeeded. The actor and the object are the account; the details carry the
     /// method, never the password or a token.
     /// </summary>
     public const string SignedIn = "auth.signed_in";
 
     /// <summary>
-    /// BR-444 — a sign-in to an existing account was refused: wrong password, or the account is deactivated. The actor
+    /// BR-009–BR-011 — a sign-in to an existing account was refused: wrong password, or the account is deactivated. The actor
     /// is the account the attempt was made in the name of, so filtering by that account shows its failed attempts too;
     /// whoever typed the password is not known. An email matching no account is not recorded — it may be a password
     /// typed into the wrong box.
     /// </summary>
     public const string SignInFailed = "auth.sign_in_failed";
 
-    /// <summary>BR-444 — a Guest typed the right one-time code (UC-04). No actor; the invitation is in the details.</summary>
+    /// <summary>BR-009–BR-011 — a Guest typed the right one-time code (UC-04). No actor; the invitation is in the details.</summary>
     public const string GuestVerified = "guest.verified";
 
-    /// <summary>BR-446 — the Chair approved minutes, which issues them (BR-408); a correction is issued the same way.</summary>
+    /// <summary>BR-009–BR-011 — the Chair approved minutes, which issues them (BR-137, BR-138); a correction is issued the same way.</summary>
     public const string MinutesIssued = "minutes.issued";
 
     public const string MinutesObjectType = "MeetingMinutes";
 
-    /// <summary>The Secretary saved attendance (UC-38); every changed entry, before and after, is in the details.</summary>
+    /// <summary>The Secretary saved attendance (UC-44); every changed entry, before and after, is in the details.</summary>
     public const string MeetingAttendanceRecorded = "meeting.attendance.recorded";
 
     /// <summary>
@@ -258,7 +258,7 @@ public static class AuditActions
     public static string MeetingParticipants(ParticipantOperation operation) => "meeting.participants." + operation;
 
     /// <summary>
-    /// BR-445 — the code of the audit row written with each <c>MeetingStatusHistory</c> row, one per lifecycle action.
+    /// BR-022, BR-023 — the code of the audit row written with each <c>MeetingStatusHistory</c> row, one per lifecycle action.
     /// </summary>
     public static string MeetingHistory(MeetingHistoryAction action) => action switch
     {
@@ -279,7 +279,7 @@ public static class AuditActions
     };
 
     /// <summary>
-    /// SCRUM-142 — every step of a calendar share (BR-426). The <c>ObjectId</c> is the share; the details name both people,
+    /// SCRUM-142 — every step of a calendar share (BR-009–BR-011). The <c>ObjectId</c> is the share; the details name both people,
     /// the level and the range, before and after for a change, and the reason for a stop. A system close has no actor.
     /// </summary>
     public const string CalendarShareRequested = "calendar_share.requested";
@@ -294,12 +294,12 @@ public static class AuditActions
     public const string CalendarShareChangeWithdrawn = "calendar_share.change_withdrawn";
     public const string CalendarShareEnded = "calendar_share.ended";
     public const string CalendarShareStopped = "calendar_share.stopped";
-    /// <summary>A share past its end date (BR-425) closed when a new share of the same pair was sent. No notification.</summary>
+    /// <summary>A share past its end date (BR-142, BR-143) closed when a new share of the same pair was sent. No notification.</summary>
     public const string CalendarShareClosedAfterEndDate = "calendar_share.closed_after_end_date";
     public const string CalendarShareObjectType = "CalendarShare";
 
     /// <summary>
-    /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
+    /// SCRUM-38, UC-79b — a user exported the meeting report to Excel (BR-009–BR-011). No object id: the report is not a row.
     /// The details carry the period; viewing the report on screen is not recorded.
     /// </summary>
     public const string ReportExported = "report.exported";

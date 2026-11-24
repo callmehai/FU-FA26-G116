@@ -4,7 +4,7 @@ using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
-/// <summary>BR-419/BR-420 — who and which meetings make someone busy, and the busy periods a viewer may see.</summary>
+/// <summary>BR-146, BR-147 — who and which meetings make someone busy, and the busy periods a viewer may see.</summary>
 public sealed class CalendarBusyRulesTests
 {
     private static readonly DateTimeOffset Nine = new(2026, 11, 9, 2, 0, 0, TimeSpan.Zero);

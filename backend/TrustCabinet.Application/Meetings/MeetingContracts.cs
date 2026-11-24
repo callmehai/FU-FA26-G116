@@ -22,7 +22,7 @@ public sealed record MeetingApproverListResult(
         => new(MeetingOutcome.ReadFailed);
 }
 
-/// <summary>Who cancelled a meeting, when and why (BR-298). A null <paramref name="CancelledById"/> is the system.</summary>
+/// <summary>Who cancelled a meeting, when and why (UC-22). A null <paramref name="CancelledById"/> is the system.</summary>
 public sealed record MeetingCancellation(
     DateTimeOffset CancelledAt, Guid? CancelledById, string CancelledByName, string Reason);
 

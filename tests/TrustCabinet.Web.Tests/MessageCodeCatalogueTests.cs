@@ -143,17 +143,17 @@ public sealed partial class MessageCodeCatalogueTests
 
     [Theory]
     [InlineData("MSG48", "UC-26 cũ")]
-    [InlineData("MSG49", "UC-27 cũ")]
-    [InlineData("MSG50", "UC-28 cũ")]
-    [InlineData("MSG51", "UC-29 cũ")]
-    [InlineData("MSG52", "UC-30 cũ")]
-    [InlineData("MSG53", "UC-26 / UC-27 cũ")]
+    [InlineData("MSG49", "UC-29 cũ")]
+    [InlineData("MSG50", "UC-30 cũ")]
+    [InlineData("MSG51", "UC-31 cũ")]
+    [InlineData("MSG52", "UC-32 cũ")]
+    [InlineData("MSG53", "UC-26 / UC-29 cũ")]
     [InlineData("MSG54", "UC-26 cũ")]
-    [InlineData("MSG55", "UC-27 cũ")]
-    [InlineData("MSG56", "UC-28 cũ")]
-    [InlineData("MSG57", "UC-29 cũ")]
-    [InlineData("MSG58", "UC-29 cũ")]
-    [InlineData("MSG59", "UC-30 cũ")]
+    [InlineData("MSG55", "UC-29 cũ")]
+    [InlineData("MSG56", "UC-30 cũ")]
+    [InlineData("MSG57", "UC-31 cũ")]
+    [InlineData("MSG58", "UC-31 cũ")]
+    [InlineData("MSG59", "UC-32 cũ")]
     [InlineData("MSG60", "UC-23a")]
     [InlineData("MSG61", "UC-23b")]
     [InlineData("MSG62", "UC-23c")]
@@ -171,7 +171,7 @@ public sealed partial class MessageCodeCatalogueTests
     [InlineData("MSG74", "UC-25")]
     [InlineData("MSG75", "UC-24")]
     [InlineData("MSG76", "UC-25")]
-    [InlineData("MSG77", "UC-28 cũ")]
+    [InlineData("MSG77", "UC-30 cũ")]
     public void Meeting_workflow_preserves_main_code_reservations(string code, string source)
     {
         var endpoint = File.ReadAllText(Path.Combine(
@@ -185,10 +185,10 @@ public sealed partial class MessageCodeCatalogueTests
     }
 
     [Theory]
-    [InlineData("MSG238", "UC-33b / Normal Flow")]
-    [InlineData("MSG239", "UC-33d / Normal Flow")]
-    [InlineData("MSG252", "UC-55 / EX-8")]
-    [InlineData("MSG253", "UC-74 / Main Flow")]
+    [InlineData("MSG238", "UC-36b / Normal Flow")]
+    [InlineData("MSG239", "UC-36d / Normal Flow")]
+    [InlineData("MSG252", "UC-65 / EX-8")]
+    [InlineData("MSG253", "UC-42 / Main Flow")]
     public void Participants_preserve_main_code_reservations(string code, string source)
     {
         var endpoint = File.ReadAllText(Path.Combine(

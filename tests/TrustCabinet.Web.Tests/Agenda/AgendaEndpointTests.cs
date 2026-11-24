@@ -300,7 +300,7 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
             var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
             return snapshot.GetProperty("items")[0].GetProperty("actions").GetProperty("canLinkDocuments").GetBoolean();
         }
-        // Linking documents (UC-33b) follows the document rules, not the planning states.
+        // Linking documents (UC-36b) follows the document rules, not the planning states.
         Assert.Equal(open, await CanLink(s.Chair));
         Assert.Equal(open, await CanLink(s.Secretary));
         Assert.False(await CanLink(s.Member));

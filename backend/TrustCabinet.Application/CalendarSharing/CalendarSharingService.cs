@@ -10,7 +10,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// SCRUM-142 — UC-84a → UC-84f: request, share directly, answer, change, withdraw, end and list calendar shares. Each write
+/// SCRUM-142 — UC-80a → UC-80f: request, share directly, answer, change, withdraw, end and list calendar shares. Each write
 /// follows its sequence diagram: check, then save the share with its audit row, then notify the other side — all in one
 /// transaction, so a save that fails tells nobody (EX "cannot be saved").
 /// </summary>
@@ -26,9 +26,9 @@ public sealed class CalendarSharingService(
     private DateOnly Today => VietnamTime.Today(clock.GetUtcNow());
 
     /// <summary>
-    /// UC-84f: both directions, each row with what the caller may do. Shares past their end date are left out (BR-425).
-    /// The "shared with me" half is for Meeting Organizers only (BR-430); the caller's own shares are listed to anyone,
-    /// because any active account may own a calendar and has to answer, change or end its shares (UC-84b → UC-84e).
+    /// UC-80f: both directions, each row with what the caller may do. Shares past their end date are left out (BR-142, BR-143).
+    /// The "shared with me" half is for Meeting Organizers only (BR-140, BR-141); the caller's own shares are listed to anyone,
+    /// because any active account may own a calendar and has to answer, change or end its shares (UC-80b → UC-80e).
     /// </summary>
     public async Task<CalendarShareRead<ShareLists>> ListAsync(Guid actorId, CancellationToken ct = default)
     {
@@ -40,7 +40,7 @@ public sealed class CalendarSharingService(
                 var organizer = await calendarShares.IsOrganizerAsync(actorId, token);
                 var shares = await calendarShares.FindListedAsync(actorId, organizer, today, token);
                 // Whose viewer still holds MeetingCreator, for the Pending rows only: a request whose viewer lost it can only be
-                // declined (BR-430), so its row offers no Accept.
+                // declined (BR-140, BR-141), so its row offers no Accept.
                 var pendingViewers = shares.Where(s => s.Status == CalendarShareStatus.Pending).Select(s => s.ViewerId).Distinct()
                     .ToArray();
                 var organizers = (await calendarShares.FindMeetingCreatorIdsAsync(pendingViewers, token)).ToHashSet();
@@ -58,7 +58,7 @@ public sealed class CalendarSharingService(
         }
     }
 
-    /// <summary>UC-84a/UC-84b step 1: the people to choose from, filtered and paged on the server.</summary>
+    /// <summary>UC-80a, UC-80b step 1: the people to choose from, filtered and paged on the server.</summary>
     public async Task<CalendarShareRead<ShareCandidatePage>> CandidatesAsync(Guid actorId, CandidateQuery query,
         CancellationToken ct = default)
     {
@@ -68,7 +68,7 @@ public sealed class CalendarSharingService(
             {
                 if (query.Purpose == CandidatePurpose.Request)
                 {
-                    // UC-84a: only a Meeting Organizer asks (BR-430); any active internal account owns a calendar.
+                    // UC-80a: only a Meeting Organizer asks (BR-140, BR-141); any active internal account owns a calendar.
                     if (!await calendarShares.IsOrganizerAsync(actorId, token)) return new(null, CalendarShareFailure.NotOrganizer);
                 }
 
@@ -81,7 +81,7 @@ public sealed class CalendarSharingService(
             return new(null, CalendarShareFailure.CandidatesReadFailed);
         }
     }
-    /// <summary>UC-84a, checked in the order of its step 2: the right (EX-1), the owner (EX-4), the pair (EX-2), the range (EX-3).</summary>
+    /// <summary>UC-80a, checked in the order of its step 2: the right (EX-1), the owner (EX-4), the pair (EX-2), the range (EX-3).</summary>
     public Task<CalendarShareOutcome> RequestAsync(Guid actorId, Guid? ownerId, ShareValues values,
         CancellationToken ct = default)
         => WriteAsync(async token =>
@@ -114,7 +114,7 @@ public sealed class CalendarSharingService(
             return Done(CalendarShareSuccess.Requested, share, owner, viewer, actorId, today);
         }, ct);
 
-    /// <summary>UC-84b: always Level 1; the recipient asks for Level 2 through UC-84d once it is Effective.</summary>
+    /// <summary>UC-80b: always Level 1; the recipient asks for Level 2 through UC-80d once it is Effective.</summary>
     public Task<CalendarShareOutcome> ShareDirectlyAsync(Guid actorId, Guid? viewerId, DateOnly? startDate,
         DateOnly? endDate, CancellationToken ct = default)
         => WriteAsync(async token =>
@@ -145,7 +145,7 @@ public sealed class CalendarSharingService(
             return Done(CalendarShareSuccess.Shared, share, owner, viewer, actorId, today);
         }, ct);
 
-    /// <summary>UC-84c: accept a Pending share (Normal Flow) or a pending change (AF-1).</summary>
+    /// <summary>UC-80c: accept a Pending share (Normal Flow) or a pending change (AF-1).</summary>
     public Task<CalendarShareOutcome> AcceptAsync(Guid actorId, Guid shareId, ShareValues values,
         CancellationToken ct = default)
         => ActOnAsync(actorId, shareId, async (share, people, today, now, token) =>
@@ -160,7 +160,7 @@ public sealed class CalendarSharingService(
                 level = parsed;
             }
 
-            // Accepting turns a Pending share Effective, and the stop of BR-424 only looks at Effective shares. Hold both
+            // Accepting turns a Pending share Effective, and the stop of BR-142, BR-143 only looks at Effective shares. Hold both
             // accounts until this commits and read them again, so a deactivation or role change running at the same time
             // either waits for this share and stops it, or is seen here and refuses it.
             if (share.Status == CalendarShareStatus.Pending)
@@ -169,14 +169,14 @@ public sealed class CalendarSharingService(
             var viewer = people[share.ViewerId];
             if (share.Status == CalendarShareStatus.Pending)
             {
-                // UC-84c EX-5 (PO 09/11/2026, Q-C): an invitation whose sender was deactivated stays, but only to decline.
+                // UC-80c EX-5 (PO 09/11/2026, Q-C): an invitation whose sender was deactivated stays, but only to decline.
                 if (!people[CalendarShareRules.Sender(share)].IsActive) return new(CalendarShareFailure.SenderDeactivated);
-                // A request whose viewer lost the Meeting Organizer right cannot become Effective either (BR-430).
+                // A request whose viewer lost the Meeting Organizer right cannot become Effective either (BR-140, BR-141).
                 if (!viewer.IsOrganizer) return new(CalendarShareFailure.NotAllowed);
                 var requested = CalendarShareAudit.Snapshot(share);
                 if (share.InitiatedBy == CalendarShareInitiator.Viewer)
                 {
-                    // The owner may lower the level or shorten the range, within what was asked (BR-414, BR-431).
+                    // The owner may lower the level or shorten the range, within what was asked (BR-140, BR-141, UC-80a).
                     var newLevel = level ?? share.Level;
                     var start = values.StartDate ?? share.StartDate;
                     var end = values.EndDate ?? share.EndDate;
@@ -189,7 +189,7 @@ public sealed class CalendarSharingService(
                 else if (Differs(level, share.Level) || Differs(values.StartDate, share.StartDate)
                     || Differs(values.EndDate, share.EndDate))
                 {
-                    // A direct share is accepted as offered; the viewer asks for more through UC-84d afterwards.
+                    // A direct share is accepted as offered; the viewer asks for more through UC-80d afterwards.
                     return new(CalendarShareFailure.InvalidValues);
                 }
 
@@ -206,7 +206,7 @@ public sealed class CalendarSharingService(
                 return Done(CalendarShareSuccess.Accepted, share, owner, viewer, actorId, today);
             }
 
-            // AF-1: approve the viewer's change exactly as asked, checked again now (BR-431).
+            // AF-1: approve the viewer's change exactly as asked, checked again now (UC-80a).
             if (Differs(level, share.PendingLevel!.Value) || Differs(values.EndDate, share.PendingEndDate!.Value)
                 || Differs(values.StartDate, share.StartDate))
                 return new(CalendarShareFailure.InvalidValues);
@@ -225,7 +225,7 @@ public sealed class CalendarSharingService(
             return Done(CalendarShareSuccess.Updated, share, owner, viewer, actorId, today);
         }, ct);
 
-    /// <summary>UC-84c: decline a Pending share (Normal Flow step 4) or a pending change (AF-1 step 3).</summary>
+    /// <summary>UC-80c: decline a Pending share (Normal Flow step 4) or a pending change (AF-1 step 3).</summary>
     public Task<CalendarShareOutcome> DeclineAsync(Guid actorId, Guid shareId, CancellationToken ct = default)
         => ActOnAsync(actorId, shareId, async (share, people, today, now, token) =>
         {
@@ -254,14 +254,14 @@ public sealed class CalendarSharingService(
             return Done(CalendarShareSuccess.ChangeDeclined, share, owner, viewer, actorId, today);
         }, ct);
 
-    /// <summary>UC-84d: the viewer asks for a change (Normal Flow); the owner applies one at once (AF-1).</summary>
+    /// <summary>UC-80d: the viewer asks for a change (Normal Flow); the owner applies one at once (AF-1).</summary>
     public Task<CalendarShareOutcome> ChangeAsync(Guid actorId, Guid shareId, ShareValues values,
         CancellationToken ct = default)
         => ActOnAsync(actorId, shareId, async (share, people, today, now, token) =>
         {
             if (share.Status != CalendarShareStatus.Effective) return new(CalendarShareFailure.NotAllowed);
             var isViewer = share.ViewerId == actorId;
-            // EX-2: one pending change at a time. The owner may still change the share meanwhile (UC-84d AF-1).
+            // EX-2: one pending change at a time. The owner may still change the share meanwhile (UC-80d AF-1).
             if (isViewer && share.HasPendingChange) return new(CalendarShareFailure.NotAllowed);
             CalendarShareLevel? level = null;
             if (values.Level is not null)
@@ -310,7 +310,7 @@ public sealed class CalendarSharingService(
             return Done(CalendarShareSuccess.Updated, share, owner, viewer, actorId, today);
         }, ct);
 
-    /// <summary>UC-84e Normal Flow: the sender withdraws a Pending share, or the viewer a pending change.</summary>
+    /// <summary>UC-80e Normal Flow: the sender withdraws a Pending share, or the viewer a pending change.</summary>
     public Task<CalendarShareOutcome> WithdrawAsync(Guid actorId, Guid shareId, CancellationToken ct = default)
         => ActOnAsync(actorId, shareId, async (share, people, today, now, token) =>
         {
@@ -340,7 +340,7 @@ public sealed class CalendarSharingService(
             return new(CalendarShareFailure.NotAllowed);
         }, ct);
 
-    /// <summary>UC-84e AF-1: either side ends an Effective share ("Ngừng chia sẻ" / "Thôi xem lịch").</summary>
+    /// <summary>UC-80e AF-1: either side ends an Effective share ("Ngừng chia sẻ" / "Thôi xem lịch").</summary>
     public Task<CalendarShareOutcome> EndAsync(Guid actorId, Guid shareId, CancellationToken ct = default)
         => ActOnAsync(actorId, shareId, async (share, people, today, now, token) =>
         {
@@ -358,7 +358,7 @@ public sealed class CalendarSharingService(
 
     /// <summary>
     /// Locks the share, answers 404 to anyone who is not one of its two people, and refuses (MSG450) a share past its end
-    /// date (BR-425). An Effective share that died without a hook (BR-424) is stopped first — the stop is kept.
+    /// date (BR-142, BR-143). An Effective share that died without a hook (BR-142, BR-143) is stopped first — the stop is kept.
     /// </summary>
     private Task<CalendarShareOutcome> ActOnAsync(Guid actorId, Guid shareId, ShareAction action, CancellationToken ct)
         => WriteAsync(async token =>
@@ -368,12 +368,12 @@ public sealed class CalendarSharingService(
             var people = await calendarShares.LoadPeopleAsync([share.OwnerId, share.ViewerId], token);
             var today = Today;
             var now = clock.GetUtcNow();
-            // BR-425: past its end date the share — and anything waiting on it — has ended; nothing is written.
+            // BR-142, BR-143: past its end date the share — and anything waiting on it — has ended; nothing is written.
             if (CalendarShareRules.IsLapsed(share, today)) return new(CalendarShareFailure.NotAllowed);
 
             if (share.Status == CalendarShareStatus.Effective && !CalendarSharePeople.IsLive(share, people))
             {
-                // A way of losing the right that has no hook yet: stop it now rather than let it run on (BR-424).
+                // A way of losing the right that has no hook yet: stop it now rather than let it run on (BR-142, BR-143).
                 await closer.StopAsync(share, CalendarSharePeople.NameOf(people, share.OwnerId),
                     CalendarSharePeople.NameOf(people, share.ViewerId), null, CalendarSharePeople.ReasonFor(share, people),
                     now, token);
@@ -384,8 +384,8 @@ public sealed class CalendarSharingService(
         }, ct);
 
     /// <summary>
-    /// An open share of the pair past its end date has ended already (BR-425) but still holds the pair's one open place
-    /// in the unique index (BR-423): close it, silently, so the new share can take the place.
+    /// An open share of the pair past its end date has ended already (BR-142, BR-143) but still holds the pair's one open place
+    /// in the unique index (BR-142, BR-143): close it, silently, so the new share can take the place.
     /// </summary>
     private async Task CloseAfterEndDateForPairAsync(Guid ownerId, Guid viewerId, DateOnly today, DateTimeOffset now,
         CancellationToken ct)
@@ -403,7 +403,7 @@ public sealed class CalendarSharingService(
         }
         catch (UniqueConflictException error) when (error.Conflict == UniqueConflict.CalendarShareOpenPair)
         {
-            // Two requests for the same pair at once: the index lets one through (BR-423, EX-2).
+            // Two requests for the same pair at once: the index lets one through (BR-142, BR-143, EX-2).
             unitOfWork.DiscardChanges();
             logger.LogInformation(error.InnerException ?? error, "A calendar share of the same pair was saved first");
             return new(CalendarShareFailure.AlreadyShared);
@@ -425,7 +425,7 @@ public sealed class CalendarSharingService(
         => new(Success: success, Share: CalendarShareViews.From(share, owner.View, viewer.View, actorId, today,
             SenderDeactivated(share, owner.IsActive, viewer.IsActive), viewer.IsOrganizer));
 
-    /// <summary>UC-84c EX-5: a Pending invitation whose sender's account was deactivated.</summary>
+    /// <summary>UC-80c EX-5: a Pending invitation whose sender's account was deactivated.</summary>
     private static bool SenderDeactivated(CalendarShare share, bool ownerActive, bool viewerActive)
         => share.Status == CalendarShareStatus.Pending
             && !(share.InitiatedBy == CalendarShareInitiator.Viewer ? viewerActive : ownerActive);

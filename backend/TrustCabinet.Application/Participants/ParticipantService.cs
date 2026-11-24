@@ -476,7 +476,7 @@ public sealed partial class ParticipantService(
                     }
                     if (affected.Count > 0)
                         agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
-                    // Someone no longer in the meeting is not waiting to speak (BR-337). A member who keeps another
+                    // Someone no longer in the meeting is not waiting to speak (BR-104–BR-106). A member who keeps another
                     // assignment keeps the raised hand. Readers refetch the queue on participantsChanged.
                     if (userId is null || !snapshot.Meeting.Participants.Any(p => p.UserId == userId && p.Id != targetId
                             && ParticipantRules.Current(p)))
@@ -750,7 +750,7 @@ public sealed partial class ParticipantService(
         };
         guest.InitialInvitationDeliveryKey = $"guest:{guest.Id}:invited";
         repository.Add(guest);
-        // The voter list was fixed when the vote opened, for Guests as for everyone (BR-190; PO 08/11/2026 withdrew the
+        // The voter list was fixed when the vote opened, for Guests as for everyone (BR-091; PO 08/11/2026 withdrew the
         // Guest exception of 30/10/2026): a new invitation never joins it. The meeting lock held here serializes with
         // opening and closing, so the vote cannot change state under this write.
         var openVote = await repository.FindOpenVoteAsync(s.Meeting.Id, ct);
@@ -768,7 +768,7 @@ public sealed partial class ParticipantService(
     /// removed and invited again under the same email, keeps that place under the new invitation id (SCRUM-133). The
     /// list is matched by email across this meeting's invitations (only revoked ones can match: the caller has already
     /// refused an email that is still invited). One who already voted keeps nothing to move. Nobody is added and the
-    /// eligible count never changes (BR-190).
+    /// eligible count never changes (BR-091).
     /// </summary>
     private async Task KeepOpenVotePlaceAsync(
         VotingSession vote,

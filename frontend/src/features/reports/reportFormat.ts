@@ -1,12 +1,12 @@
 import type { SelectOption } from '../../components/Select'
 
-/** UC-70a EX-1: the server's MSG463, shown before asking when the page can already tell (BR-433). */
+/** UC-79a EX-1: the server's MSG463, shown before asking when the page can already tell (UC-79a). */
 export const MSG463_INVALID_PERIOD =
   'Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.'
-/** UC-70a AF-2: the FE's own MSG466, when the viewer may read no meeting of the period. */
+/** UC-79a AF-2: the FE's own MSG466, when the viewer may read no meeting of the period. */
 export const MSG466_NOTHING_READABLE = 'Không có cuộc họp nào bạn xem được trong khoảng này.'
 
-/** BR-433: at most 24 months; 12 by default, ending with the current month. */
+/** UC-79a: at most 24 months; 12 by default, ending with the current month. */
 export const MAX_MONTHS = 24
 const DEFAULT_MONTHS = 12
 /** How far back the month pickers reach, besides any month already in the URL. */
@@ -17,7 +17,7 @@ const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/
 const index = (month: string) => Number(month.slice(0, 4)) * 12 + Number(month.slice(5, 7)) - 1
 const fromIndex = (i: number) => `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`
 
-/** Years the server takes (BR-433, review #310): past 9998 the month after the period would overflow its dates. */
+/** Years the server takes (UC-79a, review #310): past 9998 the month after the period would overflow its dates. */
 const FIRST_YEAR = 2000
 const LAST_YEAR = 9998
 
@@ -43,14 +43,14 @@ export function defaultPeriod(current: string) {
   return { from: fromIndex(index(current) - (DEFAULT_MONTHS - 1)), to: current }
 }
 
-/** BR-433, as the server checks it. */
+/** UC-79a, as the server checks it. */
 export function periodValid(from: string, to: string) {
   const months = index(to) - index(from) + 1
   return months >= 1 && months <= MAX_MONTHS
 }
 
 /**
- * The period after the viewer picks one end: the other end moves only as far as BR-433 needs — up to the picked
+ * The period after the viewer picks one end: the other end moves only as far as UC-79a needs — up to the picked
  * month when the ends cross, and to 24 months away when the period grows past that.
  */
 export function followPeriod(

@@ -9,9 +9,9 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// SCRUM-137 — UC-85a (find meeting time slots) and UC-85b (create a draft meeting from one). Only calendars shared with
-/// the caller are read, each at its shared level (BR-414, BR-417), plus the caller's own when ticked (BR-416, BR-418).
-/// Nothing about a meeting leaves this class but when it keeps someone busy (BR-427).
+/// SCRUM-137 — UC-81a (find meeting time slots) and UC-81b (create a draft meeting from one). Only calendars shared with
+/// the caller are read, each at its shared level (BR-140, BR-141, BR-144, BR-145), plus the caller's own when ticked (BR-144, BR-145).
+/// Nothing about a meeting leaves this class but when it keeps someone busy (BR-140, BR-141).
 /// </summary>
 public sealed class MeetingSlotService(
     ICalendarShareRepository calendarShares,
@@ -86,7 +86,7 @@ public sealed class MeetingSlotService(
                     slotErrors["acceptedBusyUserIds"] = MeetingSlotRules.AcceptedBusyError;
                 if (slotErrors.Count > 0) return new(MeetingSlotFailure.InvalidSlot, Errors: slotErrors);
 
-                // BR-428: recheck against the same shared data as the search — never against undisclosed meetings — and
+                // BR-148: recheck against the same shared data as the search — never against undisclosed meetings — and
                 // refuse only when someone free then is busy or unknown now.
                 var buffer = TimeSpan.FromMinutes(bufferMinutes);
                 var today = VietnamTime.Today(now);
@@ -103,7 +103,7 @@ public sealed class MeetingSlotService(
             return new(MeetingSlotFailure.ReadFailed);
         }
 
-        // BR-429: the first invitee chairs, the rest are Members, the finder is the Secretary. UC-14 steps 5–6 check the
+        // UC-81b: the first invitee chairs, the rest are Members, the finder is the Secretary. UC-13 steps 5–6 check the
         // values (MSG31), the roster (MSG277) and save the Draft (MSG35).
         var seeds = new List<ParticipantSeed>(userIds.Length + 1)
         {
@@ -120,7 +120,7 @@ public sealed class MeetingSlotService(
     }
 
     /// <summary>
-    /// UC-14 names roster errors after the roster this service built (<c>participants[i].userId</c>); the caller sent
+    /// UC-13 names roster errors after the roster this service built (<c>participants[i].userId</c>); the caller sent
     /// <c>userIds</c>, and the roster lists them first, in the same order, then the finder. Rename the keys so the page can
     /// highlight the person it sent.
     /// </summary>
@@ -142,7 +142,7 @@ public sealed class MeetingSlotService(
 
     /// <summary>
     /// The people whose calendars count (§2.2 of the plan): each invitee with an Effective share to the caller, not past its
-    /// end date and with an active owner (BR-423, BR-424, BR-425), and the caller when ticked (BR-416, BR-418). The
+    /// end date and with an active owner (BR-142, BR-143), and the caller when ticked (BR-144, BR-145). The
     /// finder comes first, then the invitees in the order sent.
     /// </summary>
     private async Task<(Dictionary<Guid, CalendarShare> Shares, IReadOnlyList<SlotPerson> Persons)> CountedPeopleAsync(

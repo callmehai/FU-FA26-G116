@@ -175,7 +175,7 @@ public sealed class MeetingLifecycleService(
         // Readers refetch the queue on "MeetingEnded", so no speaking event of its own is needed.
         await speakingEnd.PrepareAsync(meeting.Id, now, token);
         meeting.ActualEndedAt = now;
-        // A draft can only be opened while InProgress (BR-160), so none survives the end (PO 08/11/2026).
+        // A draft can only be opened while InProgress (BR-090), so none survives the end (PO 08/11/2026).
         var deletedDrafts = await voteEnd.DeleteDraftsAsync(meeting.Id, actorId, now, token);
         return new(change, deletedDrafts, meeting.Mode is MeetingMode.Online or MeetingMode.Hybrid);
     }
@@ -184,7 +184,7 @@ public sealed class MeetingLifecycleService(
     {
         await AfterCommitAsync("agenda event", meetingId, historyId, EffectBudget,
             token => publisher.PublishAsync(end.Change, token));
-        // Drafts were seen by the Chair and Secretary only (BR-253), so only they are told.
+        // Drafts were seen by the Chair and Secretary only (BR-086, BR-087), so only they are told.
         foreach (var deleted in end.DeletedDrafts)
             await AfterCommitAsync("vote draft deletion", meetingId, historyId, EffectBudget,
                 token => votePublisher.PublishAsync(deleted, managersOnly: true, token));

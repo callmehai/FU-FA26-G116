@@ -86,7 +86,7 @@ function tabLock(id: TabId, meeting: Meeting): string | null {
 
 /**
  * The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's alone, and exist only once the sitting starts.
- * Hiding the card is presentation; the server answers 404 to anyone else (BR-395). They are not one of the page's main
+ * Hiding the card is presentation; the server answers 404 to anyone else (UC-55b). They are not one of the page's main
  * sections, so they open in a dialog from a card under the status history rather than from a tab of their own.
  */
 const showsNotes = (meeting: { myMeetingRole: string | null; status: string }) =>
@@ -106,7 +106,7 @@ const MEETING_CHANGED = ['meetingEnded', 'meetingChanged'] as const
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
 
 /**
- * UC-16 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
+ * UC-15 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
  * workflow and the lifecycle history of SCRUM-19. A meeting the caller has no relationship with
  * answers 404 exactly like an unknown id, and renders the same NotFound.
  */
@@ -231,7 +231,7 @@ function MeetingDetail({
     void recheckRoom?.()
   }, [recheckRoom, openTake])
   const history = useMeetingHistory(meeting.id)
-  // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
+  // UC-14 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
@@ -250,12 +250,12 @@ function MeetingDetail({
   // Hidden, not disabled, when it does not apply: a greyed-out button for something the user can
   // never do here is noise. The backend re-checks ownership and status on save regardless.
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
-  // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
+  // UC-14 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
   const roomOpen = call.open
   // SCRUM-69: the Chair starts a published meeting and ends a running one.
   const canRun = lifecycleAction(meeting) !== null
-  // UC-75: the organizer calls it off any time before it starts.
+  // UC-22: the organizer calls it off any time before it starts.
   const canCancel = isOrganizer && CANCELLABLE_STATUSES.includes(meeting.status)
   const [cancelling, setCancelling] = useState(false)
 
@@ -541,7 +541,7 @@ function MeetingDetail({
   )
 }
 
-/** Who called the meeting off, when and why (BR-298), in place of the workflow bar it no longer has. */
+/** Who called the meeting off, when and why (UC-22), in place of the workflow bar it no longer has. */
 function CancellationBar({ meeting, userId }: { meeting: Meeting; userId: string | undefined }) {
   const cancellation = meeting.cancellation!
   const when = formatDateTime(cancellation.cancelledAt)

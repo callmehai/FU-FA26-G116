@@ -2,7 +2,7 @@ import type { AttendanceEntry, AttendancePage, AttendanceSaved } from '../types/
 import { api } from './client'
 
 /**
- * Attendance (SCRUM-26, UC-31). Contract in docs/03-api/10-diem-danh.md.
+ * Attendance (SCRUM-26, UC-33). Contract in docs/03-api/10-diem-danh.md.
  *
  * Every entry carries the `rowVersion` it was decided on. One stale entry answers 409 MSG151 and
  * saves nothing in the batch; 409 MSG149 means the meeting is no longer in progress; 503 MSG150

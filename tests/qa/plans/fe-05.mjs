@@ -1,11 +1,11 @@
 // FE-05 — Quản lý chương trình nghị sự (QA subtask SCRUM-192): UC-23a create, UC-23b update, UC-23c delete, UC-23d
-// reorder, UC-24 set current, UC-25 complete, UC-26 view, UC-77 item conclusion, and the rules they cite (BR-64–BR-74,
-// BR-237–BR-239, BR-306, BR-307, BR-309–BR-311, BR-159 for End Meeting).
+// reorder, UC-24 set current, UC-25 complete, UC-26 view, UC-27 item conclusion, and the rules they cite (BR-058, BR-059, UC-23a, UC-23b, BR-060–BR-062,
+// BR-063, UC-23d, UC-23c, BR-064, BR-065, UC-23a, UC-23b, BR-066, BR-067, UC-27, BR-026 for End Meeting).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/08-chuong-trinh-nghi-su.md, the message catalogue, and the SCRUM-25 comments: since 04/11/2026 (PO
 // 02/11, PR #256) the current Chair plans the agenda exactly as the Secretary does (create, edit, delete, reorder,
-// editor-options); only the Chair starts and completes items (BR-69). Attaching documents to an item is UC-33b (FE-07)
+// editor-options); only the Chair starts and completes items (BR-060–BR-062). Attaching documents to an item is UC-36b (FE-07)
 // and is not tested here; neither is a Guest presenter or Guest reader (needs an OTP by email, UC-04).
 //
 // Safe on a shared local dev database: every meeting is created here through the API, titled "[QA] FE-05 …", five
@@ -344,7 +344,7 @@ export default {
     {
       id: 'AC3',
       role: 'secretary',
-      title: 'API tạo mục: kiểm tra dữ liệu (MSG66) và người trình bày phải là thành phần của cuộc họp (BR-306); hợp lệ 201 MSG60',
+      title: 'API tạo mục: kiểm tra dữ liệu (MSG66) và người trình bày phải là thành phần của cuộc họp (BR-064, BR-065); hợp lệ 201 MSG60',
       steps: [
         'POST agenda: tên trống; tên 301 ký tự; ghi chú 4001 ký tự; người trình bày không thuộc cuộc họp (quantri@); cả hai loại người trình bày; trường cũ plannedDurationMinutes',
         'POST hợp lệ, người trình bày chutoa@',
@@ -440,7 +440,7 @@ export default {
       title: 'Thư ký xoá một mục chưa bắt đầu sau khi xác nhận; các mục còn lại giữ vị trí',
       steps: ['Mở tab Nội dung cuộc họp (Nháp) có ba mục', 'Bấm thùng rác "Xoá: <tên>" ở mục giữa', 'Bấm "Xoá" trong hộp thoại xác nhận'],
       expected:
-        'Hộp thoại "Xoá nội dung" nêu tên mục; toast "Xoá mục nghị sự thành công." (MSG62); dòng biến mất; API: hai mục còn lại giữ nguyên position (BR-239)',
+        'Hộp thoại "Xoá nội dung" nêu tên mục; toast "Xoá mục nghị sự thành công." (MSG62); dòng biến mất; API: hai mục còn lại giữ nguyên position (UC-23c)',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const ids = [
@@ -548,7 +548,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- BR-65/74 states and roles
+    // ----------------------------------------------------------------------------------------------- BR-058, BR-059 states and roles
     {
       id: 'AC8',
       role: 'secretary',
@@ -611,7 +611,7 @@ export default {
       id: 'AC9',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Chủ toạ thêm mục trên màn hình ở cuộc họp Đã công bố và giao người trình bày; người được giao nhận thông báo, tự giao mình thì không (BR-307)',
+      title: 'Chủ toạ thêm mục trên màn hình ở cuộc họp Đã công bố và giao người trình bày; người được giao nhận thông báo, tự giao mình thì không (UC-23a, UC-23b)',
       steps: [
         'Đăng nhập chutoa@, mở tab Nội dung cuộc họp của cuộc họp Đã công bố',
         'Thêm mục, người trình bày là chính mình (Chủ toạ), Lưu',
@@ -886,7 +886,7 @@ export default {
       },
     },
 
-    // ----------------------------------------------------------------------------------------------- UC-77 Conclusion
+    // ----------------------------------------------------------------------------------------------- UC-27 Conclusion
     {
       id: 'AC15',
       role: 'secretary',
@@ -995,7 +995,7 @@ export default {
         'chutoa@ mở tab Nội dung cuộc họp',
       ],
       expected:
-        'API: mục đang bàn Done có actualEndedAt, mục chờ vẫn Pending (BR-159); màn hình: không còn "Thêm nội dung", bút chì, thùng rác, tay nắm kéo, "Bắt đầu"/"Xong"; mục đã xong vẫn ghi được kết luận (chưa có biên bản)',
+        'API: mục đang bàn Done có actualEndedAt, mục chờ vẫn Pending (BR-026); màn hình: không còn "Thêm nội dung", bút chì, thùng rác, tay nắm kéo, "Bắt đầu"/"Xong"; mục đã xong vẫn ghi được kết luận (chưa có biên bản)',
       async run(qa) {
         const m = await freshMeeting(qa, 'InProgress', `kết thúc ${qa.device}`)
         const live = await addItem(qa, 'secretary', m.id, 'Mục đang bàn lúc kết thúc')
@@ -1060,7 +1060,7 @@ export default {
     {
       id: 'AC19',
       role: 'member',
-      title: 'Đang mở chương trình nghị sự thì tự cập nhật khi Thư ký thêm, sửa, xoá mục, không cần tải lại trang (BR-73)',
+      title: 'Đang mở chương trình nghị sự thì tự cập nhật khi Thư ký thêm, sửa, xoá mục, không cần tải lại trang',
       steps: ['thanhvien@ mở tab Nội dung cuộc họp của cuộc họp Đã công bố', 'thuky@ (API) thêm một mục, đổi tên mục đó, rồi xoá'],
       expected: 'Mục mới hiện ra, tên mới thay tên cũ, rồi mục biến mất — trên trang của thanhvien@ mà không tải lại',
       async run(qa) {

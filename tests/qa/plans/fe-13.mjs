@@ -1,14 +1,14 @@
-// FE-13 — Email & Thông báo trong ứng dụng (QA subtask SCRUM-200): UC-66 view notifications, UC-67a mark one read,
-// UC-67b mark all read, UC-68 open the target, and the rules they cite (BR-46 – BR-53); which events notify whom, as the
-// UCs and BRs of the producing features say (UC-18/19 POST-5/6, BR-39 publish, BR-76 reschedule, BR-90/92/93/95 roster,
-// BR-164 start, BR-300 cancel, BR-303 reminder, BR-307 presenter, BR-322 not about your own action, BR-411 minutes,
-// BR-426 calendar sharing); and which events send email (BR-39, BR-300, BR-307, BR-322).
+// FE-13 — Email & Thông báo trong ứng dụng (QA subtask SCRUM-200): UC-76 view notifications, UC-77a mark one read,
+// UC-77b mark all read, UC-78 open the target, and the rules they cite (UC-76, BR-033, BR-034, UC-78, UC-77b); which events notify whom, as the
+// UCs and BRs of the producing features say (UC-17, UC-18 POST-5/6, BR-031, BR-032 publish, UC-14 reschedule, BR-031, BR-032, UC-30b, UC-30c roster,
+// UC-20 start, UC-22 cancel, UC-76 reminder, UC-23a, UC-23b presenter, BR-035 not about your own action, UC-72, UC-73, UC-74 minutes,
+// BR-009–BR-011 calendar sharing); and which events send email (BR-031, BR-032, UC-22, UC-23a, UC-23b, BR-035).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md (FE-13), 06-business-rules.md,
 // docs/03-api/06-thong-bao-trong-ung-dung.md, 07-gui-email-thu-moi.md, 23-chia-se-lich.md and the message catalogue.
 //
 // Safe on a shared local dev database:
-// - the seed accounts' notifications are only read here (opening the panel does not mark anything read, BR-49); every
+// - the seed accounts' notifications are only read here (opening the panel does not mark anything read, UC-76); every
 //   read-state change happens on three throwaway accounts this plan creates, role Thành viên, on @trustcabinet.local:
 //   qa-fe13-a@ (receives the meeting notifications), qa-fe13-b@ (mark all read), qa-fe13-empty@ (never notified);
 // - every meeting is "[QA] FE-13 …", ten weeks ahead, organised by thuky@ with chutoa@ as Chair and approver. Two are
@@ -251,7 +251,7 @@ const mainMeeting = (qa) => reused(qa, 'Đã công bố', { withA: true })
 /** "[QA] FE-13 dùng lại thành phần": qa-fe13-a@ joins and leaves it in each run. */
 const rosterMeeting = (qa) => reused(qa, 'thành phần', { withA: false })
 
-/** thuky@ moves the meeting to another slot ten weeks ahead (UC-15 AF-1): every other invitee gets MeetingRescheduled. */
+/** thuky@ moves the meeting to another slot ten weeks ahead (UC-14 AF-1): every other invitee gets MeetingRescheduled. */
 async function reschedule(qa, m) {
   const current = ok(qa, await get('secretary', `/api/meetings/${m.id}`), 200)
   let next = slot()
@@ -310,7 +310,7 @@ async function inviteThenRemove(qa) {
   return { m, invited, removed }
 }
 
-// Calendar sharing (BR-426): thuky@ asks to see an account's calendar.
+// Calendar sharing (BR-009–BR-011): thuky@ asks to see an account's calendar.
 const todayVn = (plus = 0) => new Date(Date.now() + 7 * 3_600_000 + plus * DAY).toISOString().slice(0, 10)
 async function requestShare(qa, ownerWho) {
   const ownerId = await idOf(ownerWho)
@@ -397,7 +397,7 @@ export default {
         'Đọc lại số chưa đọc qua API',
       ],
       expected:
-        'Badge chuông = số chưa đọc của API (99+ khi > 99), nhãn "Thông báo, N chưa đọc"; panel "Thông báo" có chip "N mới", dòng đầu là "Cuộc họp đã dời lịch" của cuộc họp đó, tô chưa đọc; mở panel không đổi số chưa đọc và dòng đó vẫn chưa đọc (UC-66, BR-48, BR-49); điện thoại: panel nằm gọn màn hình, không cuộn ngang',
+        'Badge chuông = số chưa đọc của API (99+ khi > 99), nhãn "Thông báo, N chưa đọc"; panel "Thông báo" có chip "N mới", dòng đầu là "Cuộc họp đã dời lịch" của cuộc họp đó, tô chưa đọc; mở panel không đổi số chưa đọc và dòng đó vẫn chưa đọc (UC-76); điện thoại: panel nằm gọn màn hình, không cuộn ngang',
       async run(qa) {
         const { m, n } = await freshForA(qa)
         const before = await unread('a')
@@ -414,9 +414,9 @@ export default {
         await panelFits(qa)
         await noSidewaysScroll(qa)
         await qa.shot('panel-dong-dau-chua-doc')
-        qa.expect(await unread('a'), 'opening the list changed the unread count (BR-49)').toBe(before)
+        qa.expect(await unread('a'), 'opening the list changed the unread count (UC-76)').toBe(before)
         const again = (await latest('a', 20)).find((x) => x.id === n.id)
-        qa.expect(again?.isRead, 'opening the list marked the notification read (BR-49)').toBe(false)
+        qa.expect(again?.isRead, 'opening the list marked the notification read (UC-76)').toBe(false)
       },
     },
     {
@@ -430,7 +430,7 @@ export default {
         'Gọi lại POST /api/notifications/{id}/read',
       ],
       expected:
-        'Dòng hết tô chưa đọc và mất nút ✓; chip "N mới" và nhãn chuông giảm đúng 1; API: isRead = true, readAt có; gọi lại giữ readAt cũ và số chưa đọc không giảm thêm (UC-67a, BR-50); điện thoại: nút ✓ luôn hiện, không cần rê chuột',
+        'Dòng hết tô chưa đọc và mất nút ✓; chip "N mới" và nhãn chuông giảm đúng 1; API: isRead = true, readAt có; gọi lại giữ readAt cũ và số chưa đọc không giảm thêm (UC-77a, UC-78); điện thoại: nút ✓ luôn hiện, không cần rê chuột',
       async run(qa) {
         const { m, n } = await freshForA(qa)
         const before = await unread('a')
@@ -455,8 +455,8 @@ export default {
         qa.expect(await unread('a')).toBe(before - 1)
         const again = await post('a', `/api/notifications/${n.id}/read`)
         ok(qa, again, 200, 'read again')
-        qa.expect(again.body.readAt, 'readAt changed on a repeated read (BR-50)').toBe(read.readAt)
-        qa.expect(await unread('a'), 'a repeated read lowered the count (BR-50)').toBe(before - 1)
+        qa.expect(again.body.readAt, 'readAt changed on a repeated read (UC-78)').toBe(read.readAt)
+        qa.expect(await unread('a'), 'a repeated read lowered the count (UC-78)').toBe(before - 1)
       },
     },
     {
@@ -471,7 +471,7 @@ export default {
         'Đọc trang 2 qua API; gọi lại POST /api/notifications/read-all',
       ],
       expected:
-        'Mọi dòng hết tô, chip "mới" và badge chuông biến mất, nút tắt; API: unreadCount 0 và cả dòng ở trang 2 đã đọc (BR-51); gọi lại → 200 markedCount 0, unreadCount 0 (UC-67b AF-1); điện thoại: nút chỉ còn icon nhưng vẫn có tên',
+        'Mọi dòng hết tô, chip "mới" và badge chuông biến mất, nút tắt; API: unreadCount 0 và cả dòng ở trang 2 đã đọc (UC-77b); gọi lại → 200 markedCount 0, unreadCount 0 (UC-77b AF-1); điện thoại: nút chỉ còn icon nhưng vẫn có tên',
       async run(qa) {
         let count = await unread('b')
         for (let i = 0; count < 22 && i < 15; i += 1) {
@@ -499,7 +499,7 @@ export default {
         qa.expect(await unread('b')).toBe(0)
         const page2 = await get('b', '/api/notifications?page=2&pageSize=20')
         qa.expect(page2.body.items.length, 'page 2 is empty').toBeGreaterThan(0)
-        qa.expect(page2.body.items.filter((x) => !x.isRead).length, 'unread rows left on page 2 (BR-51)').toBe(0)
+        qa.expect(page2.body.items.filter((x) => !x.isRead).length, 'unread rows left on page 2 (UC-77b)').toBe(0)
         const again = ok(qa, await post('b', '/api/notifications/read-all'), 200, 'read-all again')
         qa.expect(again).toEqual({ markedCount: 0, unreadCount: 0 })
       },
@@ -538,7 +538,7 @@ export default {
         'Mở chuông lại, bấm lại chính dòng đó (đã đọc)',
       ],
       expected:
-        'Chuyển tới /mgmt/meetings/{id}, tiêu đề cuộc họp hiện; panel đóng; thông báo đã đọc, số chưa đọc giảm 1 (UC-68, BR-52, BR-53); lần hai vẫn mở đúng trang, số chưa đọc giữ nguyên (AF-1, BR-50)',
+        'Chuyển tới /mgmt/meetings/{id}, tiêu đề cuộc họp hiện; panel đóng; thông báo đã đọc, số chưa đọc giảm 1 (UC-78, BR-033, BR-034); lần hai vẫn mở đúng trang, số chưa đọc giữ nguyên (AF-1, UC-78)',
       async run(qa) {
         const { m, n } = await freshForA(qa)
         const before = await unread('a')
@@ -563,7 +563,7 @@ export default {
         await qa.expect(panel(qa)).toHaveCount(0)
         await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`))
         await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
-        qa.expect(await unread('a'), 'opening a read notification changed the count (BR-50)').toBe(before - 1)
+        qa.expect(await unread('a'), 'opening a read notification changed the count (UC-78)').toBe(before - 1)
       },
     },
     {
@@ -578,12 +578,12 @@ export default {
         'Mở thẳng /mgmt/meetings/{id}',
       ],
       expected:
-        'Lời mời: toast "Thông báo này không còn khả dụng.", ở nguyên trang, không thấy cuộc họp (BR-52; API target 404); thu hồi: không có link (targetType null, body không có đường dẫn — BR-95), bấm chỉ đánh dấu đã đọc, ở nguyên trang; mở thẳng URL không thấy tiêu đề cuộc họp',
+        'Lời mời: toast "Thông báo này không còn khả dụng.", ở nguyên trang, không thấy cuộc họp (BR-033, BR-034; API target 404); thu hồi: không có link (targetType null, body không có đường dẫn — UC-30c), bấm chỉ đánh dấu đã đọc, ở nguyên trang; mở thẳng URL không thấy tiêu đề cuộc họp',
       async run(qa) {
         const { m, invited, removed } = await inviteThenRemove(qa)
-        qa.expect(invited.length, 'qa-fe13-a@ got one invitation when added (BR-90)').toBe(1)
-        qa.expect(removed.length, 'qa-fe13-a@ got one withdrawal when removed (BR-93)').toBe(1)
-        qa.expect(removed[0].targetType, 'the withdrawal links to the meeting (BR-95)').toBeNull()
+        qa.expect(invited.length, 'qa-fe13-a@ got one invitation when added (BR-031, BR-032)').toBe(1)
+        qa.expect(removed.length, 'qa-fe13-a@ got one withdrawal when removed (BR-031, BR-032)').toBe(1)
+        qa.expect(removed[0].targetType, 'the withdrawal links to the meeting (UC-30c)').toBeNull
         qa.expect(removed[0].body).not.toMatch(/\/mgmt\/|https?:/)
         ok(qa, await get('a', `/api/notifications/${invited[0].id}/target`), 404, 'target of the old invitation')
         await home(qa)
@@ -618,7 +618,7 @@ export default {
         'qa-fe13-a@ gọi GET /api/notifications?pageSize=0 và ?page=0',
       ],
       expected:
-        '404 cho thông báo của người khác, thông báo đó vẫn chưa đọc (BR-47); 401 khi chưa đăng nhập; 400 MSG39 "Trang thông báo được yêu cầu không khả dụng." (UC-66 EX-2)',
+        '404 cho thông báo của người khác, thông báo đó vẫn chưa đọc (BR-033, BR-034); 401 khi chưa đăng nhập; 400 MSG39 "Trang thông báo được yêu cầu không khả dụng." (UC-76 EX-2)',
       async run(qa) {
         const c = checker(qa)
         const { n } = await freshForA(qa)
@@ -648,7 +648,7 @@ export default {
         'qa-fe13-a@ mở chuông; thuky@ dời lịch lần nữa',
       ],
       expected:
-        'Toast "Cuộc họp đã dời lịch — Cuộc họp “…” …" và nhãn chuông +1, trang không tải lại (BR-46); panel mở: thêm đúng một dòng ở đầu, chip "mới" +1',
+        'Toast "Cuộc họp đã dời lịch — Cuộc họp “…” …" và nhãn chuông +1, trang không tải lại (UC-76); panel mở: thêm đúng một dòng ở đầu, chip "mới" +1',
       async run(qa) {
         const m = await mainMeeting(qa)
         const hub = qa.page.waitForEvent('websocket', { predicate: (ws) => ws.url().includes('/hubs/notifications'), timeout: 20_000 })
@@ -688,7 +688,7 @@ export default {
         'thuky@ mở chuông (chỉ xem)',
       ],
       expected:
-        'chutoa@ nhận 2 "Cuộc họp cần được duyệt" (UC-18 POST-5); thuky@ nhận "Cuộc họp bị từ chối" có lý do và "Cuộc họp đã được duyệt" (UC-19 POST-6); thuky@ không nhận báo gửi duyệt, chutoa@ không nhận báo duyệt/từ chối (BR-322); qa-fe13-a@ chưa nhận gì vì chưa công bố',
+        'chutoa@ nhận 2 "Cuộc họp cần được duyệt" (UC-17 POST-5); thuky@ nhận "Cuộc họp bị từ chối" có lý do và "Cuộc họp đã được duyệt" (UC-18 POST-6); thuky@ không nhận báo gửi duyệt, chutoa@ không nhận báo duyệt/từ chối (BR-035); qa-fe13-a@ chưa nhận gì vì chưa công bố',
       async run(qa) {
         const c = checker(qa)
         const m = await createAt(qa, 'Draft', 'Luồng duyệt')
@@ -720,7 +720,7 @@ export default {
       title: 'Công bố: mọi người dự họp nhận lời mời trong ứng dụng, trừ người bấm Công bố; lời mời mở được trang cuộc họp',
       steps: ['Cuộc họp đã duyệt "[QA] FE-13 Công bố …" (chutoa@ Chủ toạ, thuky@ Thư ký, qa-fe13-a@ Thành viên)', 'thuky@ bấm Công bố'],
       expected:
-        'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã được công bố" — "Bạn được mời tham dự cuộc họp “…”"; thuky@ không nhận (BR-39, BR-322); GET target của qa-fe13-a@ → url /mgmt/meetings/{id} (BR-42)',
+        'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã được công bố" — "Bạn được mời tham dự cuộc họp “…”"; thuky@ không nhận (BR-031, BR-032, BR-035); GET target của qa-fe13-a@ → url /mgmt/meetings/{id} (UC-19)',
       async run(qa) {
         const c = checker(qa)
         const m = await createAt(qa, 'Approved', 'Công bố')
@@ -745,7 +745,7 @@ export default {
       role: 'secretary',
       title: 'Dời lịch cuộc họp đã công bố: người được mời nhận thông báo, trừ người dời lịch',
       steps: ['thuky@ dời giờ "[QA] FE-13 dùng lại Đã công bố"'],
-      expected: 'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã dời lịch" trỏ tới cuộc họp; thuky@ không nhận (BR-76, BR-322)',
+      expected: 'qa-fe13-a@ và chutoa@ mỗi người một "Cuộc họp đã dời lịch" trỏ tới cuộc họp; thuky@ không nhận (UC-14, BR-035)',
       async run(qa) {
         const c = checker(qa)
         const m = await mainMeeting(qa)
@@ -770,7 +770,7 @@ export default {
         'thuky@ huỷ "[QA] FE-13 Huỷ chờ duyệt …" (đang chờ chutoa@ duyệt)',
       ],
       expected:
-        'Đã công bố: qa-fe13-a@ và chutoa@ nhận "Cuộc họp đã bị huỷ" có lý do, thuky@ không (BR-300, BR-322); chờ duyệt: chutoa@ nhận "Cuộc họp đã bị huỷ" có lý do, qa-fe13-a@ không nhận gì (UC-75)',
+        'Đã công bố: qa-fe13-a@ và chutoa@ nhận "Cuộc họp đã bị huỷ" có lý do, thuky@ không (UC-22, BR-035); chờ duyệt: chutoa@ nhận "Cuộc họp đã bị huỷ" có lý do, qa-fe13-a@ không nhận gì (UC-22)',
       async run(qa) {
         const c = checker(qa)
         const reason = `QA FE-13: lãnh đạo đi công tác ${rand()}.`
@@ -798,7 +798,7 @@ export default {
       role: 'chair',
       title: 'Bắt đầu họp: người dự họp nhận "Cuộc họp đã bắt đầu", trừ Chủ toạ bấm Bắt đầu',
       steps: ['chutoa@ bắt đầu "[QA] FE-13 Bắt đầu …" (đã công bố), rồi kết thúc'],
-      expected: 'qa-fe13-a@ và thuky@ mỗi người một MeetingStarted "Cuộc họp “…” đã bắt đầu."; chutoa@ không nhận (BR-164, BR-322)',
+      expected: 'qa-fe13-a@ và thuky@ mỗi người một MeetingStarted "Cuộc họp “…” đã bắt đầu."; chutoa@ không nhận (UC-20, BR-035)',
       async run(qa) {
         const c = checker(qa)
         const m = await createAt(qa, 'Published', 'Bắt đầu')
@@ -824,7 +824,7 @@ export default {
         'thuky@ gỡ qa-fe13-a@',
       ],
       expected:
-        'qa-fe13-a@ nhận lần lượt "Lời mời tham dự cuộc họp" (BR-90), "Vai trò cuộc họp đã thay đổi" — "…bạn đã được giao làm Thư ký." (BR-92), "Lời mời tham dự đã được thu hồi" không có targetType/đường dẫn (BR-93, BR-95); thuky@ không nhận gì (BR-322); target của lời mời cũ → 404 (BR-52)',
+        'qa-fe13-a@ nhận lần lượt "Lời mời tham dự cuộc họp" (BR-031, BR-032), "Vai trò cuộc họp đã thay đổi" — "…bạn đã được giao làm Thư ký." (UC-30b), "Lời mời tham dự đã được thu hồi" không có targetType/đường dẫn (BR-031, BR-032, UC-30c); thuky@ không nhận gì (BR-035); target của lời mời cũ → 404 (BR-033, BR-034)',
       async run(qa) {
         const c = checker(qa)
         const m = await rosterMeeting(qa)
@@ -863,7 +863,7 @@ export default {
         'thuky@ thêm mục khác, người trình bày là chính mình',
         'Xoá hai mục',
       ],
-      expected: 'qa-fe13-a@ nhận một AgendaPresenterAssigned nêu tên mục (BR-307); thuky@ không nhận cho mục tự giao (BR-322)',
+      expected: 'qa-fe13-a@ nhận một AgendaPresenterAssigned nêu tên mục (UC-23a, UC-23b); thuky@ không nhận cho mục tự giao (BR-035)',
       async run(qa) {
         const c = checker(qa)
         const m = await mainMeeting(qa)
@@ -894,7 +894,7 @@ export default {
         'chutoa@ trả lại có lý do; thuky@ gửi lại; chutoa@ duyệt (ban hành)',
       ],
       expected:
-        'chutoa@ nhận 2 MinutesWaitingApproval; thuky@ nhận MinutesReturned và MinutesIssued; qa-fe13-a@ nhận MinutesIssued; chutoa@ không nhận MinutesIssued (BR-411, BR-322)',
+        'chutoa@ nhận 2 MinutesWaitingApproval; thuky@ nhận MinutesReturned và MinutesIssued; qa-fe13-a@ nhận MinutesIssued; chutoa@ không nhận MinutesIssued (UC-72, UC-73, UC-74, BR-035)',
       async run(qa) {
         const c = checker(qa)
         const m = await createAt(qa, 'Ended', 'Biên bản')
@@ -918,8 +918,8 @@ export default {
         c.fact('chutoa@: 2 MinutesWaitingApproval, không MinutesIssued', chair.join(',') === 'MinutesWaitingApproval,MinutesWaitingApproval', chair.join(','))
         c.fact('thuky@: MinutesIssued + MinutesReturned', sec.map((n) => n.type).sort().join(',') === 'MinutesIssued,MinutesReturned', sec.map((n) => n.type).join(','))
         const returned = sec.find((n) => n.type === 'MinutesReturned')
-        // UC-65 POST-4 / BR-411 ask only that the Secretary is notified; the reason lives on the minutes tab.
-        if (returned && !returned.body.includes(reason)) qa.note(`MinutesReturned không kèm lý do: "${returned.body}" (UC-65 không đòi)`)
+        // UC-74 POST-4 / UC-74 ask only that the Secretary is notified; the reason lives on the minutes tab.
+        if (returned && !returned.body.includes(reason)) qa.note(`MinutesReturned không kèm lý do: "${returned.body}" (UC-74 không đòi)`)
         c.fact('qa-fe13-a@: MinutesIssued', a.join(',') === 'MinutesIssued', a.join(','))
         c.done()
       },
@@ -934,7 +934,7 @@ export default {
         'qa-fe13-a@ từ chối',
       ],
       expected:
-        'qa-fe13-a@ nhận CalendarShareRequested trỏ tới chia sẻ (không phải cuộc họp); bấm → /calendar/sharing?share={id}, dòng chia sẻ của thuky@ hiện; từ chối → thuky@ nhận CalendarShareDeclined của đúng chia sẻ đó (BR-426)',
+        'qa-fe13-a@ nhận CalendarShareRequested trỏ tới chia sẻ (không phải cuộc họp); bấm → /calendar/sharing?share={id}, dòng chia sẻ của thuky@ hiện; từ chối → thuky@ nhận CalendarShareDeclined của đúng chia sẻ đó (BR-009–BR-011)',
       async run(qa) {
         const c = checker(qa)
         const before = await seen('a')
@@ -963,7 +963,7 @@ export default {
       role: 'secretary',
       title: 'Nhắc họp sắp bắt đầu (15 phút trước giờ họp)',
       steps: ['Cần một cuộc họp Đã công bố bắt đầu trong vòng 15 phút'],
-      expected: 'Mỗi người được mời nội bộ đang hoạt động nhận một "sắp bắt đầu"; dời lịch thì được nhắc lại theo giờ mới (BR-303)',
+      expected: 'Mỗi người được mời nội bộ đang hoạt động nhận một "sắp bắt đầu"; dời lịch thì được nhắc lại theo giờ mới (UC-76)',
       async run(qa) {
         qa.inconclusive(
           'Kế hoạch chỉ đặt lịch 10 tuần tới. Kiểm tay: công bố một cuộc họp bắt đầu sau 10 phút (thuky@ tổ chức, thanhvien@ dự), chờ ≤ 5 giây — thanhvien@ và chutoa@ nhận "Cuộc họp sắp bắt đầu" một lần; dời lịch sang 12 phút sau → nhận lại một lần; rồi huỷ cuộc họp.',
@@ -976,7 +976,7 @@ export default {
       title: 'Email: công bố gửi thư mời cho mọi người dự họp (kể cả người công bố); huỷ cuộc họp đã công bố gửi thư huỷ; người trình bày là Khách nhận thư',
       steps: ['AC10, AC12 đã tạo các sự kiện', 'Tìm hàng đợi thư qua API'],
       expected:
-        'Mỗi người dự họp nội bộ có một thư mời (cả thuky@), thư huỷ kèm lý do cho người đã nhận thư mời (BR-39, BR-300, BR-322); thư tới hộp mail thật',
+        'Mỗi người dự họp nội bộ có một thư mời (cả thuky@), thư huỷ kèm lý do cho người đã nhận thư mời (BR-031, BR-032, UC-22, BR-035); thư tới hộp mail thật',
       async run(qa) {
         qa.inconclusive(
           'Không có endpoint nào đọc hàng đợi thư (email_messages, meeting_invitation_dispatches) và tài khoản QA dùng @trustcabinet.local nên không có hộp mail. Kiểm tay (chỉ đọc): select to_address, subject, status, delivery_state, created_at from email_messages where subject like \'%[QA] FE-13%\' order by created_at desc — mong đợi: mỗi "[QA] FE-13 Công bố …" có thư cho chutoa@, thuky@, qa-fe13-a@; mỗi "[QA] FE-13 Huỷ đã công bố …" có thư huỷ cho cùng ba người; "[QA] FE-13 Huỷ chờ duyệt …" không có thư. Gửi thật: công bố một cuộc họp có một người dùng email thật, xem hộp thư (có .ics, link /mgmt/meetings/{id}).',

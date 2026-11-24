@@ -18,7 +18,7 @@ public class StoredFile : Entity
     public required string OriginalFileName { get; set; }
 
     /// <summary>Determined by inspecting the bytes, never from the extension or the request's
-    /// Content-Type (BR-215).</summary>
+    /// Content-Type (UC-36a, UC-39).</summary>
     public required string ContentType { get; set; }
 
     public long ByteSize { get; set; }
@@ -34,7 +34,7 @@ public class StoredFile : Entity
 
     public DateTimeOffset UploadedAt { get; set; }
 
-    /// <summary>Set by the orphan purge once the object is deleted (BR-213). The row stays so a
+    /// <summary>Set by the orphan purge once the object is deleted (BR-077). The row stays so a
     /// removed meeting document and the audit log can still refer to it.</summary>
     public DateTimeOffset? PurgedAt { get; set; }
 }

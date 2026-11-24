@@ -9,7 +9,7 @@ import { JUST_SIGNED_IN, routes } from '../lib/routes'
  * Right after sign-in it sends the user to the calendar, the home page, instead: the page they were returned to
  * came from whoever was signed in before (SCRUM-66). Every cause — unknown URL, missing capability,
  * unreadable meeting — is treated alike, so the redirect reveals no more than the 404 does.
- * On a guest page (UC-04) the way back is the guest's own meeting: a guest has no internal screen (BR-156).
+ * On a guest page (UC-04) the way back is the guest's own meeting: a guest has no internal screen (BR-052).
  */
 export function NotFound() {
   const location = useLocation()

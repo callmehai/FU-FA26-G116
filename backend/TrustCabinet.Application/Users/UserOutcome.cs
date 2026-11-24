@@ -6,7 +6,7 @@ namespace TrustCabinet.Application.Users;
 /// service only decides which one happened.
 ///
 /// One enum for the three use cases because they share their branches: all three can fail
-/// validation, and all three answer "that account does not exist" the same way. UC-01 and UC-02
+/// validation, and all three answer "that account does not exist" the same way. UC-01, UC-02
 /// each got their own enum only because their specifications number the same situations
 /// differently; here they do not.
 /// </summary>

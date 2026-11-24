@@ -14,11 +14,11 @@ namespace TrustCabinet.Domain.Documents;
 public static class DocumentFileRules
 {
     // Meeting decision 19/11/2026 (Khánh): 10 MB a file, 10 files and 100 MB an upload; before, 50 MB and 200 MB.
-    public const long MaxFileBytes = 10L * 1024 * 1024;   // BR-214
-    public const int MaxFiles = 10;                       // BR-319
-    public const long MaxTotalBytes = 100L * 1024 * 1024; // BR-319
+    public const long MaxFileBytes = 10L * 1024 * 1024;   // UC-36a, UC-39
+    public const int MaxFiles = 10;                       // UC-36a, UC-36b, UC-39
+    public const long MaxTotalBytes = 100L * 1024 * 1024; // UC-36a, UC-36b, UC-39
     public const int MaxFileNameLength = 255;
-    public const int MaxFolderDepth = 5;                         // BR-191
+    public const int MaxFolderDepth = 5;                         // UC-37
     public const int MaxFolderNameLength = 400;                  // the column
     public const int MaxCommentLength = 4000;                    // the column
 
@@ -61,15 +61,15 @@ public static class DocumentFileRules
     public static string StorageKey(Guid storedFileId) => $"stored-files/{storedFileId:D}";
 
     /// <summary>
-    /// <c>&lt;title&gt; – dd/mm/yyyy</c> from the planned start in Vietnam time (BR-192, ADR-0020 §7).
+    /// <c>&lt;title&gt; – dd/mm/yyyy</c> from the planned start in Vietnam time (UC-36a, ADR-0020 §7).
     /// Vietnam has no daylight saving, so a fixed +07:00 is exact.
     /// </summary>
     public static string UploadFolderName(Meeting meeting)
         => $"{meeting.Title} – {meeting.PlannedStartTime.ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)}";
 
     /// <summary>
-    /// Who may upload right now: the meeting's current Chair or Secretary, until it ends (BR-184, BR-195) or is
-    /// cancelled (BR-299).
+    /// Who may upload right now: the meeting's current Chair or Secretary, until it ends (BR-070, BR-071) or is
+    /// cancelled (BR-028).
     /// </summary>
     public static DocumentUploadFailure UploadAccess(Meeting? meeting, Guid actorId, bool actorActive)
     {
@@ -85,8 +85,8 @@ public static class DocumentFileRules
     }
 
     /// <summary>
-    /// Checks the submission limits, then every file by its actual bytes (BR-187, BR-214, BR-215,
-    /// BR-319), and hashes what passes. Reports every bad file, not just the first. Streams must
+    /// Checks the submission limits, then every file by its actual bytes (BR-069, UC-36a, UC-39,
+    /// UC-36a, UC-36b, UC-39), and hashes what passes. Reports every bad file, not just the first. Streams must
     /// be seekable — ASP.NET Core buffers form files to disk, so they are. <paramref name="countPdfPages"/> parses a
     /// PDF. It has no default on purpose: the web app must pass one that runs <see cref="CountPdfPagesAsync"/> in a
     /// child process (ADR-0044), since a hostile PDF parsed in the server's own process can end it.
@@ -223,7 +223,7 @@ public static class DocumentFileRules
     }
 
     /// <summary>Whether a name keeps the extension of the bytes it stands for: a rename must not turn
-    /// a PDF into "x.html", since the file is downloaded under that name (UC-71b).</summary>
+    /// a PDF into "x.html", since the file is downloaded under that name (UC-40b).</summary>
     public static bool MatchesContentType(string fileName, string contentType) => ExpectedContentType(fileName) == contentType;
 
     private static string? ExpectedContentType(string fileName)

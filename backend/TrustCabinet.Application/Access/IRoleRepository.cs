@@ -5,7 +5,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Access;
 
 /// <summary>
-/// The <c>:Role Repository</c> participant of UC-12a … UC-12c — the only way
+/// The <c>:Role Repository</c> participant of UC-11a … UC-11c — the only way
 /// <see cref="IRoleService"/> reaches <c>roles</c>. Queries and writes only; every rule lives in
 /// the service.
 /// </summary>

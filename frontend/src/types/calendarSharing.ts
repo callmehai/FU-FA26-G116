@@ -1,9 +1,9 @@
 /**
- * SCRUM-142 — calendar sharing (UC-84a → UC-84f, UC-85c), as `docs/03-api/23-chia-se-lich.md` §3–§4 sends it.
- * Busy/free only: no field ever names a meeting (BR-427). Dates are `YYYY-MM-DD` in Vietnam time.
+ * SCRUM-142 — calendar sharing (UC-80a → UC-80f, UC-81c), as `docs/03-api/23-chia-se-lich.md` §3–§4 sends it.
+ * Busy/free only: no field ever names a meeting (BR-140, BR-141). Dates are `YYYY-MM-DD` in Vietnam time.
  */
 
-/** `Level1`: ordinary meetings; `Level2`: ordinary and internal. Secret meetings are never shared (BR-414). */
+/** `Level1`: ordinary meetings; `Level2`: ordinary and internal. Secret meetings are never shared (BR-140, BR-141). */
 export type ShareLevel = 'Level1' | 'Level2'
 
 export type ShareStatus = 'Pending' | 'Effective' | 'Declined' | 'Withdrawn' | 'Ended' | 'Stopped'
@@ -19,7 +19,7 @@ export interface SharePerson {
 
 export interface Share {
   id: string
-  /** `Viewer`: asked for by the viewer (UC-84a); `Owner`: shared by the owner (UC-84b). */
+  /** `Viewer`: asked for by the viewer (UC-80a); `Owner`: shared by the owner (UC-80b). */
   initiatedBy: 'Viewer' | 'Owner'
   level: ShareLevel
   owner: SharePerson
@@ -27,12 +27,12 @@ export interface Share {
   startDate: string
   endDate: string
   status: ShareStatus
-  /** The viewer's request to raise the level or extend the range, waiting for the owner (UC-84d). */
+  /** The viewer's request to raise the level or extend the range, waiting for the owner (UC-80d). */
   pendingChange: { level: ShareLevel; endDate: string; requestedAt: string } | null
   createdAt: string
   decidedAt: string | null
   closedAt: string | null
-  /** The sender of a Pending share was deactivated: it can only be declined (UC-84c EX-5, MSG468). */
+  /** The sender of a Pending share was deactivated: it can only be declined (UC-80c EX-5, MSG468). */
   senderDeactivated: boolean
   actions: ShareAction[]
 }
@@ -71,7 +71,7 @@ export interface ShareValues {
 
 export interface SharedWeekDay {
   date: string
-  /** False outside the share's dates: unknown, never drawn as free (BR-415). */
+  /** False outside the share's dates: unknown, never drawn as free (BR-144, BR-145). */
   known: boolean
   busy: { start: string; end: string }[]
 }

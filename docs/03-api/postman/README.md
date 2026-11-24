@@ -2,11 +2,11 @@
 
 | Collection | Phạm vi |
 |---|---|
-| [`SCRUM-69-Meeting-Lifecycle.postman_collection.json`](SCRUM-69-Meeting-Lifecycle.postman_collection.json) | UC-21/22; 11 request tuần tự trên Meeting Published riêng, xem [bàn giao](../10-scrum69-ban-giao.md) |
-| [`SCRUM-26-Attendance.postman_collection.json`](SCRUM-26-Attendance.postman_collection.json) | UC-31; GET rồi chọn entry và POST. Điền biến trong môi trường local; không dùng flow UC-07/08 bên dưới. [Contract](../10-diem-danh.md) |
-| [`scrum20-participants.postman_collection.json`](scrum20-participants.postman_collection.json) | Participants; folder `UC-73 — smoke tuần tự` gồm 9 request trên DB riêng, kiểm GET/POST/context/retry/stale/search. Đặt `token` là Chair, `memberToken` là Member duy nhất trong meeting Published/InProgress; không export token. Các request còn lại chạy thủ công theo [bàn giao](../09-thanh-phan-tham-du-ban-giao.md). |
-| [`SCRUM-25-Agenda.postman_collection.json`](SCRUM-25-Agenda.postman_collection.json) | UC-23a–d/24/25/26; chạy thủ công theo [hướng dẫn Agenda](../08-chuong-trinh-nghi-su-ban-giao.md), không áp dụng quy trình UC-07/08 bên dưới |
-| [`SCRUM-27-Speaking.postman_collection.json`](SCRUM-27-Speaking.postman_collection.json) | UC-79 đăng ký phát biểu; 26 request tuần tự, 41 assertion trên cuộc họp seed `[SCRUM-25] Điều hành chương trình` (InProgress): giơ/hạ tay, hàng đợi, đổi thứ tự, mời, bắt đầu/kết thúc lượt, `MSG457`–`MSG460`, 404/401. Chạy trước [`scrum27-room-setup.sql`](scrum27-room-setup.sql) — đặt Chủ toạ, Thư ký, Thành viên vào phòng như webhook LiveKit và dọn tay giơ của lần trước: `docker exec -i trustcabinet-postgres psql -U trustcabinet -d trustcabinet -v ON_ERROR_STOP=1 < docs/03-api/postman/scrum27-room-setup.sql`, rồi `postman collection run docs/03-api/postman/SCRUM-27-Speaking.postman_collection.json` (hoặc `npx newman run …`). [Contract](../20-dang-ky-phat-bieu.md) |
+| [`SCRUM-69-Meeting-Lifecycle.postman_collection.json`](SCRUM-69-Meeting-Lifecycle.postman_collection.json) | UC-20, UC-21; 11 request tuần tự trên Meeting Published riêng, xem [bàn giao](../10-scrum69-ban-giao.md) |
+| [`SCRUM-26-Attendance.postman_collection.json`](SCRUM-26-Attendance.postman_collection.json) | UC-33; GET rồi chọn entry và POST. Điền biến trong môi trường local; không dùng flow UC-07, UC-08 bên dưới. [Contract](../10-diem-danh.md) |
+| [`scrum20-participants.postman_collection.json`](scrum20-participants.postman_collection.json) | Participants; folder `UC-34 — smoke tuần tự` gồm 9 request trên DB riêng, kiểm GET/POST/context/retry/stale/search. Đặt `token` là Chair, `memberToken` là Member duy nhất trong meeting Published/InProgress; không export token. Các request còn lại chạy thủ công theo [bàn giao](../09-thanh-phan-tham-du-ban-giao.md). |
+| [`SCRUM-25-Agenda.postman_collection.json`](SCRUM-25-Agenda.postman_collection.json) | UC-23a–d/24/25/26; chạy thủ công theo [hướng dẫn Agenda](../08-chuong-trinh-nghi-su-ban-giao.md), không áp dụng quy trình UC-07, UC-08 bên dưới |
+| [`SCRUM-27-Speaking.postman_collection.json`](SCRUM-27-Speaking.postman_collection.json) | UC-50 đăng ký phát biểu; 26 request tuần tự, 41 assertion trên cuộc họp seed `[SCRUM-25] Điều hành chương trình` (InProgress): giơ/hạ tay, hàng đợi, đổi thứ tự, mời, bắt đầu/kết thúc lượt, `MSG457`–`MSG460`, 404/401. Chạy trước [`scrum27-room-setup.sql`](scrum27-room-setup.sql) — đặt Chủ toạ, Thư ký, Thành viên vào phòng như webhook LiveKit và dọn tay giơ của lần trước: `docker exec -i trustcabinet-postgres psql -U trustcabinet -d trustcabinet -v ON_ERROR_STOP=1 < docs/03-api/postman/scrum27-room-setup.sql`, rồi `postman collection run docs/03-api/postman/SCRUM-27-Speaking.postman_collection.json` (hoặc `npx newman run …`). [Contract](../20-dang-ky-phat-bieu.md) |
 | [`uc07-uc08-quan-ly-nguoi-dung.postman_collection.json`](uc07-uc08-quan-ly-nguoi-dung.postman_collection.json) | UC-07 đặt lại mật khẩu (cả hai nửa) và UC-08 gán vai trò — 35 bước (51 request kể cả request phụ trong script), 73 assertion |
 
 Collection chạy **theo thứ tự** trên backend local, trên **một tài khoản thử cố định**
@@ -61,11 +61,11 @@ Biến của collection (`baseUrl`, `mailpitUrl`, email và mật khẩu demo) s
 - `MSG15` (không gửi được email) không nằm trong collection: muốn thử thì `docker stop tc-mailpit`
   rồi gọi lại `POST /api/users/{id}/password-reset` — nhận `503 MSG15` sau vài giây.
 
-Collection `SCRUM-25-Agenda.postman_collection.json` giữ tên file để không gãy link, nội dung đã nâng contract SCRUM-98 và thêm UC-77. Chạy thủ công trên DB test riêng theo [bàn giao SCRUM-98](../08-scrum98-ban-giao.md); request cũ duration được giữ duy nhất như ca negative. Không export token.
+Collection `SCRUM-25-Agenda.postman_collection.json` giữ tên file để không gãy link, nội dung đã nâng contract SCRUM-98 và thêm UC-27. Chạy thủ công trên DB test riêng theo [bàn giao SCRUM-98](../08-scrum98-ban-giao.md); request cũ duration được giữ duy nhất như ca negative. Không export token.
 
 ## SCRUM-69 — Start/End và smoke LiveKit
 
-Collection SCRUM-69 độc lập với quy trình UC-07/08 trên. Điền `baseUrl`, `meetingId`, `chairToken`,
+Collection SCRUM-69 độc lập với quy trình UC-07, UC-08 trên. Điền `baseUrl`, `meetingId`, `chairToken`,
 `memberToken`. Meeting phải Published, có active current Chair/Secretary; memberToken là participant
 được đọc nhưng không là Chair. Chạy đủ 11 request theo thứ tự; Meeting sẽ Ended. Để chạy lại cần
 Meeting test Published mới. Không dùng tài khoản hoặc dữ liệu production.

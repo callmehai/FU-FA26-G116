@@ -31,7 +31,7 @@ public class AuthenticationServiceTests
         _users, new TranslatingUnitOfWork(), _passwordHasher, _tokenIssuer, _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
 
-    // ------------------------------------------------------------------- BR-444, audit log
+    // ------------------------------------------------------------------- BR-009, audit log
 
     [Fact]
     public async Task A_successful_sign_in_is_recorded_with_its_method_and_never_the_password()

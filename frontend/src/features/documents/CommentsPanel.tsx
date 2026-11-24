@@ -16,9 +16,9 @@ const MAX_LENGTH = 4000
 const COMMENTS_CHANGED = ['commentsChanged'] as const
 
 /**
- * UC-35 Comment on Meeting Document (SCRUM-23), beside the viewer. Anyone who can read the meeting reads and
- * writes here (BR-249, BR-275); once the meeting has ended or was cancelled the list stays and the box goes
- * (BR-282). Replies are one level (BR-317). A PDF comment may carry the page being read (AF-1, BR-248).
+ * UC-38 Comment on Meeting Document (SCRUM-23), beside the viewer. Anyone who can read the meeting reads and
+ * writes here (BR-082, BR-079, BR-080); once the meeting has ended or was cancelled the list stays and the box goes
+ * (BR-079, BR-080). Replies are one level (UC-38). A PDF comment may carry the page being read (AF-1, UC-38).
  *
  * The list is read again after each comment the reader posts, and whenever the hub says someone else posted one on
  * any of the meeting's documents (`commentsChanged`), or the connection comes back after a gap. That made the old
@@ -221,7 +221,7 @@ function Composer({
   const [withPage, setWithPage] = useState(true)
   const [pending, setPending] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
-  // A reply carries no page of its own; a DOCX has none (BR-248).
+  // A reply carries no page of its own; a DOCX has none (UC-38).
   const page = pdf && !replyTo && currentPage !== null ? currentPage : null
   const blank = body.trim() === ''
 
@@ -236,7 +236,7 @@ function Composer({
         parentCommentId: replyTo?.id ?? null,
       })
       setBody('')
-      // MSG199 "Đã gửi góp ý." (UC-35 step 6).
+      // MSG199 "Đã gửi góp ý." (UC-38 step 6).
       toast.show(saved.message)
       onPosted(saved.comment.id)
     } catch (err) {

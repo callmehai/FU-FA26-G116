@@ -5,8 +5,8 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
-/// The in-app notification of each calendar-share step (BR-426). Only names, the level and the dates — never anything
-/// about a meeting (BR-427). Saved in the step's transaction; <c>NotificationWorker</c> pushes it once committed.
+/// The in-app notification of each calendar-share step (BR-010). Only names, the level and the dates — never anything
+/// about a meeting (BR-140, BR-141). Saved in the step's transaction; <c>NotificationWorker</c> pushes it once committed.
 /// </summary>
 internal static class CalendarShareNotifications
 {
@@ -57,7 +57,7 @@ internal static class CalendarShareNotifications
         => Create(recipientId, share, NotificationType.CalendarShareEnded, "Chia sẻ lịch đã ngừng",
             $"{actorName} đã ngừng chia sẻ lịch.", now);
 
-    /// <summary>BR-424/BR-426: a stop tells both sides, once per share.</summary>
+    /// <summary>BR-142, BR-143, BR-010: a stop tells both sides, once per share.</summary>
     internal static IEnumerable<Notification> Stopped(CalendarShare share, string ownerName, string viewerName,
         DateTimeOffset now)
         => new[] { share.OwnerId, share.ViewerId }.Select(userId => Create(userId, share, NotificationType.CalendarShareStopped,

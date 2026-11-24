@@ -8,7 +8,7 @@ import type { AgendaItem, AgendaMutationResponse } from '../../types/agenda'
 const CONCLUSION_MAX = 2000
 
 /**
- * UC-77: an item's conclusion, written in place by the Chair or a Secretary while the item is under
+ * UC-27: an item's conclusion, written in place by the Chair or a Secretary while the item is under
  * way or done and no minutes exist yet. It cannot be emptied once written, and the last save wins:
  * the server stamps who saved it and when.
  */

@@ -8,10 +8,10 @@ import { errorMessage } from '../../lib/errors'
 export type ReadProgress = 'reading' | 'reached' | 'unreadable'
 
 /**
- * UC-74 in the document viewer, for a vote document opened from a vote the caller has still to cast
- * (`?read=1`). It stays locked until the reader reaches the last page (BR-290) — the label says so,
+ * UC-42 in the document viewer, for a vote document opened from a vote the caller has still to cast
+ * (`?read=1`). It stays locked until the reader reaches the last page (UC-42) — the label says so,
  * since a touch screen shows no tooltip — then records the confirmation once. A file the viewer cannot
- * draw can never be read to its end, and the vote's documents no longer change once it is open (BR-288),
+ * draw can never be read to its end, and the vote's documents no longer change once it is open (BR-094, BR-095),
  * so the label says whom to tell instead of leaving the reader at a locked button. The viewer's MSG383
  * offers no retry (the file itself is at fault), so the label does not either. The vote's panel sees
  * a confirmation when its window regains focus.

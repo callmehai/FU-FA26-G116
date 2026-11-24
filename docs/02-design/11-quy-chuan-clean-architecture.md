@@ -93,7 +93,7 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
 - Kiểu nào bị một entity, enum, rule hay policy ở Domain tham chiếu thì **ở lại Domain** (tách khỏi file
   `*Contracts.cs` nếu cần), vì Domain không được tham chiếu Application. Danh sách đã biết ở CA-02. CA-20 tách
   `RolePermissionMatrix.cs`: `PermissionDescriptor` ở lại Domain (`PermissionCatalog` dùng), `RolePermissionMatrix` và
-  `RolePermissions` (kết quả đọc của UC-10, Domain không dùng) sang `Application/Access/`.
+  `RolePermissions` (kết quả đọc của UC-09, Domain không dùng) sang `Application/Access/`.
 - Không viết lại entity thành aggregate DDD, không thêm value object mới.
 
 ### R4. Service ở Application
@@ -324,7 +324,7 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
    nó thì service đã chuyển trả 500.
 5. Còn lại → `null`: không phải lỗi lưu trữ.
 
-Bảng index có một dòng từ CA-06: `ux_calendar_shares_open_pair` → `UniqueConflict.CalendarShareOpenPair` (BR-423,
+Bảng index có một dòng từ CA-06: `ux_calendar_shares_open_pair` → `UniqueConflict.CalendarShareOpenPair` (BR-142, BR-143,
 `MSG449`). CA-12 thêm năm dòng của Votes: `ix_voting_sessions_meeting_id` → `OpenVoteInMeeting`; hai index của
 `vote_receipts` (người dùng, khách mời) → `BallotAlreadyCast`; hai index của `document_read_confirmations` →
 `DocumentAlreadyConfirmed` (tên index khách mời bị PostgreSQL cắt ở 63 byte). CA-13 thêm ba dòng của Speaking:

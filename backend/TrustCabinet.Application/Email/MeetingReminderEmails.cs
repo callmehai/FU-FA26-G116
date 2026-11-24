@@ -8,7 +8,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Email;
 
 /// <summary>
-/// Queues the reminder email for meetings starting within 15 minutes, beside the in-app reminder (BR-303). Unlike the
+/// Queues the reminder email for meetings starting within 15 minutes, beside the in-app reminder (UC-76). Unlike the
 /// bell it also reaches Guests, who have no inbox in the app. The key holds the planned start, so a rescheduled meeting
 /// is reminded again, and the unique key makes a second worker or a retry harmless.
 /// </summary>

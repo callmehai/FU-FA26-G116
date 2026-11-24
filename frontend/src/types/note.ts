@@ -17,7 +17,7 @@ export type NotesState = {
   currentAgendaItemId: string | null
   /** The caller is the current Secretary and the meeting still takes notes. The Chair reads with false. */
   canWrite: boolean
-  /** A Secret meeting: unsent text is kept only until the page is closed, never in localStorage (BR-403). */
+  /** A Secret meeting: unsent text is kept only until the page is closed, never in localStorage (UC-28). */
   secret: boolean
 }
 

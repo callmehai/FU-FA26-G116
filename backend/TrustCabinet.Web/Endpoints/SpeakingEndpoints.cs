@@ -4,7 +4,7 @@ using TrustCabinet.Application.Speaking;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// Register to Speak (SCRUM-27, UC-79): raising and lowering a hand in the online room, and the Chair's queue.
+/// Register to Speak (SCRUM-27, UC-50): raising and lowering a hand in the online room, and the Chair's queue.
 /// Contract in docs/03-api/20-dang-ky-phat-bieu.md. No body on any route: every action is named by its path.
 /// </summary>
 public static class SpeakingEndpoints

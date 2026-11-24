@@ -17,7 +17,7 @@ namespace TrustCabinet.Web.Tests.Speaking;
 /// <summary>
 /// SCRUM-27 review: the gaps the first test file leaves open — races with leaving the room, a guest revoked
 /// mid-queue, the room closing through the LiveKit webhook, the Chair acting from outside the room, the ends of the
-/// queue, and the authentication answers (UC-79, BR-337 → BR-339).
+/// queue, and the authentication answers (UC-50, BR-104–BR-106).
 /// </summary>
 public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture<ParticipantFixture>
 {
@@ -120,7 +120,7 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
         Assert.True(leaveWaited, "The leave did not wait for the meeting row held by the raise.");
         await leave!.WaitAsync(TimeSpan.FromSeconds(10));
 
-        // No hand left raised by someone who is gone (BR-337, UC-79 EX-3).
+        // No hand left raised by someone who is gone (BR-104–BR-106, UC-50 EX-3).
         Assert.Equal(SpeakingRequestStatus.Cancelled, await StatusOf(id));
         Assert.Empty(Ids(await Json(await chair.GetAsync(Queue(s)), HttpStatusCode.OK)));
         await Code(await member.PostAsync(Queue(s), null), 409, "MSG458");
@@ -143,7 +143,7 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
         Assert.Equal(SpeakingRequestStatus.Cancelled, await StatusOf(guestRequest));
         Assert.Equal(SpeakingRequestStatus.Queued, await StatusOf(memberRequest));
         Assert.Equal([memberRequest], Ids(await Json(await chair.GetAsync(Queue(s)), HttpStatusCode.OK)));
-        // BR-338: the revoked guest no longer holds the floor, so the next person can be invited.
+        // BR-104–BR-106: the revoked guest no longer holds the floor, so the next person can be invited.
         await Json(await chair.PostAsync($"{Queue(s)}/{memberRequest}/invite", null), HttpStatusCode.OK);
 
         // The revoked guest learns nothing more about the meeting.
@@ -171,7 +171,7 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
         await chairHub.StartAsync();
         await chairHub.InvokeAsync("JoinMeeting", s.MeetingId);
 
-        // participant_left: only the person who left (UC-79 EX-3).
+        // participant_left: only the person who left (UC-50 EX-3).
         await Webhook(s, "participant_left", s.Secretary.ToString("D"));
         Assert.Equal(SpeakingRequestStatus.Cancelled, await StatusOf(secretaryRequest));
         Assert.Equal(SpeakingRequestStatus.Speaking, await StatusOf(speaking));
@@ -318,7 +318,7 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
         var id = Mine(await Json(await laptop.PostAsync(Queue(s), null), HttpStatusCode.Created));
         await Leave(s, CallMember.Guest(phoneSession));
 
-        // The guest is still in the room on the laptop (UC-79 EX-3 is about the person leaving).
+        // The guest is still in the room on the laptop (UC-50 EX-3 is about the person leaving).
         Assert.Equal(SpeakingRequestStatus.Queued, await StatusOf(id));
         Assert.Equal([id], Ids(await Json(await chair.GetAsync(Queue(s)), HttpStatusCode.OK)));
     }

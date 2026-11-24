@@ -4,8 +4,8 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// Someone raising their hand during the sitting, and how the chair handled it (SCRUM-27, UC-79).
-/// Kept after the meeting because the minutes report who spoke, on what, and for how long (BR-339).
+/// Someone raising their hand during the sitting, and how the chair handled it (SCRUM-27, UC-50).
+/// Kept after the meeting because the minutes report who spoke, on what, and for how long (BR-104–BR-106).
 /// The person is a member (<see cref="UserId"/>) or a guest invitation (<see cref="GuestInvitationId"/>), never both.
 /// </summary>
 public class SpeakingRequest : Entity
@@ -35,7 +35,7 @@ public class SpeakingRequest : Entity
 
     public SpeakingRequestStatus Status { get; set; } = SpeakingRequestStatus.Queued;
 
-    /// <summary>When the Chair invited the person (UC-79 step 5).</summary>
+    /// <summary>When the Chair invited the person (UC-50 step 5).</summary>
     public DateTimeOffset? InvitedAt { get; set; }
 
     public DateTimeOffset? StartedAt { get; set; }

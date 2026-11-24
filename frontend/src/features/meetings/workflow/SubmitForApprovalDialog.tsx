@@ -11,9 +11,9 @@ import { workflowFailure } from './workflowOutcome'
 import { Icon } from '../../../components/Icon'
 
 /**
- * UC-18 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
+ * UC-17 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
  * here, not on the form — a draft has none (SCRUM-19). A rejected meeting goes through the same
- * dialog (UC-18 AF-1) and may pick a different approver; the previous one comes picked, while still
+ * dialog (UC-17 AF-1) and may pick a different approver; the previous one comes picked, while still
  * eligible (SCRUM-150). The picker searches by name and email, and shows the email under each name so
  * two people of one name differ. The server re-checks readiness and the approver's eligibility in the
  * same transaction, so both can still fail after the list was read.

@@ -260,7 +260,7 @@ public sealed class CombinedRecordingTests(RecordingFixture fixture) : IClassFix
             await db.Recordings.Where(r => r.Id == room).ExecuteUpdateAsync(u => u.SetProperty(r => r.RetainUntil, roomUntil));
         await BuildAll();
 
-        // BR-347: counted from the room's first take, so the mix goes with the room recording, never after it.
+        // BR-110: counted from the room's first take, so the mix goes with the room recording, never after it.
         Assert.Equal(roomUntil, (await Combined(s.MeetingId))!.RetainUntil);
     }
 

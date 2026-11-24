@@ -80,9 +80,9 @@ public sealed class PersonalLibraryRepository(TrustCabinetDbContext db) : IPerso
         return await query.OrderBy(d => d.FileName).ThenBy(d => d.Id)
             .Select(d => new LibraryDocument(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
                 d.StoredFile.PageCount, d.FolderId, d.CreatedAt,
-                // "Used in n meetings", counting only meetings the reader may view (BR-251).
+                // "Used in n meetings", counting only meetings the reader may view (UC-37).
                 readable.Count(m => m.Documents.Any(md => md.DocumentId == d.Id && md.RemovedAt == null)),
-                // The same file test that answers MSG165 (BR-193), and only for a meeting the reader may view, so the
+                // The same file test that answers MSG165 (BR-072, BR-073), and only for a meeting the reader may view, so the
                 // flag says nothing about a meeting they cannot see.
                 meetingId != null && readable.Any(m => m.Id == meetingId
                     && m.Documents.Any(md => md.StoredFileId == d.StoredFileId && md.RemovedAt == null))))

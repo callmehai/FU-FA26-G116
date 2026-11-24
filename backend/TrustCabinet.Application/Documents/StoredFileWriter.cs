@@ -9,7 +9,7 @@ namespace TrustCabinet.Application.Documents;
 /// <summary>
 /// The write order every upload shares (ADR-0024 §4): the <see cref="StoredFile"/> rows on their own, then the
 /// bytes, then the rows that point at them in one transaction. Any failure deletes the objects of this
-/// submission (BR-286): UC-33a AF-1, UC-33b AF-1 and UC-36.
+/// submission (UC-36a, UC-36b, UC-39): UC-36a AF-1, UC-36b AF-1 and UC-39.
 ///
 /// The rows also reserve their room in the system's storage limit (ADR-0034): written under one lock for the
 /// whole system, only while the files still fit, and released again when the upload fails.

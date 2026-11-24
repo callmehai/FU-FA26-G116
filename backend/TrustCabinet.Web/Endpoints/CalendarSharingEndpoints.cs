@@ -3,7 +3,7 @@ using TrustCabinet.Application.CalendarSharing;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// SCRUM-142 — calendar sharing (UC-84a → UC-84f) and the shared week (UC-85c). Every route needs an active account;
+/// SCRUM-142 — calendar sharing (UC-80a → UC-80f) and the shared week (UC-81c). Every route needs an active account;
 /// the Meeting Organizer right is checked in the service, so a caller without it gets MSG448 rather than a bare 403.
 /// A share the caller is not one of the two people of answers 404 without a body (POST-3: nothing disclosed).
 /// </summary>
@@ -47,7 +47,7 @@ public static class CalendarSharingEndpoints
                 CancellationToken ct)
             => Read(await service.ReadWeekAsync(Caller(context), week, ct), context));
 
-        // UC-84a/UC-84b step 1. Its own group: a failure re-reading the caller's account is the list's failure (MSG467).
+        // UC-80a, UC-80b step 1. Its own group: a failure re-reading the caller's account is the list's failure (MSG467).
         app.MapGroup("/api/calendar").WithTags("CalendarSharing")
             .RequireActiveUser(Error(500, Msg467CandidatesReadFailed, "Không tải được danh sách người."))
             .MapGet("/share-candidates", async (HttpContext context, ICalendarSharingService service, CancellationToken ct) =>

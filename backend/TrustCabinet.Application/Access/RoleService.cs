@@ -11,7 +11,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Access;
 
 /// <summary>
-/// UC-12a … UC-12c's <c>:Role Service</c> (SCRUM-63). Every rule about creating, renaming and
+/// UC-11a … UC-11c's <c>:Role Service</c> (SCRUM-63). Every rule about creating, renaming and
 /// deleting a role lives here.
 ///
 /// The order inside each write is the order the diagrams give: check, then persist, then audit.
@@ -291,7 +291,7 @@ public sealed partial class RoleService(
     }
 
     /// <summary>
-    /// The rules UC-12a and UC-12b share. Returns field name → Vietnamese message, empty when
+    /// The rules UC-11a, UC-11b share. Returns field name → Vietnamese message, empty when
     /// acceptable. Takes the values already normalised.
     /// </summary>
     private static Dictionary<string, string> Validate(string name, string? description)

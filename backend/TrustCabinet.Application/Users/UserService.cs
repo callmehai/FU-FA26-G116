@@ -242,7 +242,7 @@ public sealed partial class UserService(
 
         logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
 
-        // UC-08 POST-5 (BR-424): a new role without MeetingCreator stops every share this person views, at once and for
+        // UC-08 POST-5 (BR-142, BR-143): a new role without MeetingCreator stops every share this person views, at once and for
         // good, in this transaction. The stopper reads the role just saved, so a role that keeps the right stops nothing.
         if (before.RoleId != user.RoleId)
         {
@@ -347,7 +347,7 @@ public sealed partial class UserService(
             logger.LogInformation("Voice ID of deactivated account {UserId} was ended.", user.Id);
         }
 
-        // UC-06c step 10 (BR-424): every share where this account is the owner or the viewer stops in this transaction,
+        // UC-06c step 10 (BR-142, BR-143): every share where this account is the owner or the viewer stops in this transaction,
         // and both sides are told. Reactivating restarts none of them.
         if (!isActive)
         {
@@ -722,7 +722,7 @@ public sealed partial class UserService(
     }
 
     /// <summary>
-    /// The fields UC-06a and UC-06b share. Returns field name → Vietnamese message, empty when
+    /// The fields UC-06a, UC-06b share. Returns field name → Vietnamese message, empty when
     /// everything is acceptable.
     /// </summary>
     private static Dictionary<string, string> Validate(string fullName, string email)

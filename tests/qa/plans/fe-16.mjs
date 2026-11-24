@@ -1,6 +1,6 @@
-// FE-16 — Lịch làm việc & tìm giờ họp (QA subtask SCRUM-203): the working calendar (UC-17 AF-4, Report 3 §4.1–4.2),
-// calendar sharing (UC-84a → UC-84f), the shared week (UC-85c) and finding a time (UC-85a, UC-85b). Criteria come from
-// docs/01-requirements/05-use-case-specifications.md, BR-414 → BR-431, docs/03-api/23-chia-se-lich.md and
+// FE-16 — Lịch làm việc & tìm giờ họp (QA subtask SCRUM-203): the working calendar (UC-16 AF-4, Report 3 §4.1–4.2),
+// calendar sharing (UC-80a → UC-80f), the shared week (UC-81c) and finding a time (UC-81a, UC-81b). Criteria come from
+// docs/01-requirements/05-use-case-specifications.md, BR-140, BR-141, BR-144–BR-147, UC-81a, BR-142, BR-143, BR-009–BR-011, BR-148, UC-81b, UC-80a, docs/03-api/23-chia-se-lich.md and
 // docs/03-api/24-tim-gio-hop.md; ADR-0058.
 //
 // The criteria are stateful and run in order (the share flow is one story told by two people). Each one reads the state
@@ -9,11 +9,11 @@
 // Data the plan creates, all its own:
 // - four "[QA] FE-16 …" meetings next Tuesday, created by the secretary seed (thuky@) with quantri@ as Chair and
 //   thanhvien@ as Member: Normal 09:00–10:00, Draft 10:30–11:30, Internal 13:30–14:30, Secret 15:30–16:30; the three
-//   non-draft ones are submitted for approval (WaitingApproval counts as busy, BR-420);
-// - one draft meeting created from a slot by chutoa@ (UC-85b);
+//   non-draft ones are submitted for approval (WaitingApproval counts as busy, BR-146, BR-147);
+// - one draft meeting created from a slot by chutoa@ (UC-81b);
 // - calendar shares thanhvien@ → chutoa@ and quantri@ → chutoa@ (no such pair is open before the plan runs);
 // - one account "[QA] FE-16 người xem tạm" (qa-fe16-viewer@trustcabinet.local, role Thư ký) to see a share stop when an
-//   account is deactivated (BR-424). Accounts are never deleted; the plan leaves it deactivated and re-uses it.
+//   account is deactivated (BR-142, BR-143). Accounts are never deleted; the plan leaves it deactivated and re-uses it.
 // CLEANUP cancels every meeting and ends or withdraws every share the plan opened.
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
@@ -88,7 +88,7 @@ async function noRawCodes(qa) {
   qa.expect(text, 'a raw MSG code is shown to the user').not.toMatch(/MSG\d+/)
 }
 
-/** The page shows none of the owner's meeting titles: a shared view is busy/free only (BR-427). */
+/** The page shows none of the owner's meeting titles: a shared view is busy/free only (BR-140, BR-141). */
 async function noMeetingContent(qa) {
   const text = await qa.page.locator('main').innerText()
   for (const m of MEETINGS) qa.expect(text, `meeting title "${m.title}" leaked`).not.toContain(m.title)
@@ -195,7 +195,7 @@ async function slots(qa, body) {
 }
 const startsOn = (res, day) => (res.body.days.find((d) => d.date === day)?.slots ?? []).map((s) => s.start.slice(11, 16))
 
-/** The keys of every object in a JSON tree: a shared view must carry no meeting field (BR-427). */
+/** The keys of every object in a JSON tree: a shared view must carry no meeting field (BR-140, BR-141). */
 function allKeys(value, out = new Set()) {
   if (Array.isArray(value)) value.forEach((v) => allKeys(v, out))
   else if (value && typeof value === 'object')
@@ -207,7 +207,7 @@ function allKeys(value, out = new Set()) {
 }
 const MEETING_FIELDS = ['title', 'location', 'sensitivity', 'meetingId', 'participants', 'attendees', 'description', 'onlineLink']
 
-/** Opens the "Chia sẻ lịch" page from the account menu at the foot of the sidebar (UC-84f step 1). */
+/** Opens the "Chia sẻ lịch" page from the account menu at the foot of the sidebar (UC-80f step 1). */
 async function openSharingFromMenu(qa, fullName) {
   await qa.goto('/calendar')
   if (qa.device === 'phone') {
@@ -228,7 +228,7 @@ export default {
   title: 'FE-16 Lịch làm việc & tìm giờ họp: lịch tuần, chia sẻ lịch theo mốc, lịch được chia sẻ, tìm giờ họp',
   devices: ['desktop'],
   criteria: [
-    // ------------------------------------------------------------------ UC-84f, the page for everyone
+    // ------------------------------------------------------------------ UC-80f, the page for everyone
     {
       id: 'AC1',
       role: 'member',
@@ -236,7 +236,7 @@ export default {
       title: 'Thành viên (không có quyền tạo cuộc họp) mở Chia sẻ lịch từ menu tài khoản: chỉ có danh sách người xem lịch của mình',
       steps: ['Đăng nhập thanhvien@', 'Menu tài khoản → Chia sẻ lịch'],
       expected:
-        'Trang "Chia sẻ lịch" có thẻ "Người xem được lịch của tôi" và nút "Chia sẻ lịch"; không có thẻ "Lịch được chia sẻ với tôi", không có nút "Xin xem lịch", không có tab "Lịch được chia sẻ" (UC-84f AF-2, BR-430); không cuộn ngang',
+        'Trang "Chia sẻ lịch" có thẻ "Người xem được lịch của tôi" và nút "Chia sẻ lịch"; không có thẻ "Lịch được chia sẻ với tôi", không có nút "Xin xem lịch", không có tab "Lịch được chia sẻ" (UC-80f AF-2, BR-140, BR-141); không cuộn ngang',
       async run(qa) {
         const caps = await qa.capabilities()
         if (caps.capabilities.includes('MeetingCreator'))
@@ -254,7 +254,7 @@ export default {
         await noRawCodes(qa)
       },
     },
-    // ------------------------------------------------------------------ UC-84b
+    // ------------------------------------------------------------------ UC-80b
     {
       id: 'AC2',
       role: 'member',
@@ -278,7 +278,7 @@ export default {
         await qa.expect(dialog).toBeVisible()
         await qa.expect(dialog.getByRole('group', { name: 'Mức xem' })).toHaveCount(0)
         await qa.expect(dialog.getByText('Mức xem', { exact: true })).toHaveCount(0)
-        // A person with an open share to them is listed but cannot be picked (BR-423).
+        // A person with an open share to them is listed but cannot be picked (BR-142, BR-143).
         await dialog.getByRole('searchbox').fill('thuky')
         const thuky = dialog.locator('label.pick-row').filter({ hasText: EMAIL.secretary })
         await qa.expect(thuky).toBeVisible()
@@ -307,14 +307,14 @@ export default {
         qa.expect(s?.actions).toEqual(['withdraw'])
       },
     },
-    // ------------------------------------------------------------------ UC-84c
+    // ------------------------------------------------------------------ UC-80c
     {
       id: 'AC3',
       role: 'chair',
       title: 'Người tổ chức nhận chia sẻ: thấy "Chờ bạn trả lời", Đồng ý → Đang chia sẻ; người gửi được báo',
       steps: ['Đăng nhập chutoa@, mở Chia sẻ lịch', 'Thẻ "Lịch được chia sẻ với tôi": dòng Lê An → Đồng ý → Đồng ý'],
       expected:
-        'Dòng "Chờ bạn trả lời" có Từ chối / Đồng ý; hộp thoại "Nhận chia sẻ lịch" chỉ hiện Mức xem và Thời gian; toast MSG436 "Đã chấp nhận chia sẻ lịch."; dòng chuyển "Đang chia sẻ"; thanhvien@ có thông báo CalendarShareAccepted (BR-426)',
+        'Dòng "Chờ bạn trả lời" có Từ chối / Đồng ý; hộp thoại "Nhận chia sẻ lịch" chỉ hiện Mức xem và Thời gian; toast MSG436 "Đã chấp nhận chia sẻ lịch."; dòng chuyển "Đang chia sẻ"; thanhvien@ có thông báo CalendarShareAccepted (BR-009–BR-011)',
       async run(qa) {
         let s = await pairShare(qa, 'chair', EMAIL.member, EMAIL.chair, { open: true })
         if (!s) {
@@ -352,7 +352,7 @@ export default {
         qa.expect(hit, 'thanhvien@ got no CalendarShareAccepted notification for this share').toBeTruthy()
       },
     },
-    // ------------------------------------------------------------------ UC-84d AF-1, validation, duplicates
+    // ------------------------------------------------------------------ UC-80d AF-1, validation, duplicates
     {
       id: 'AC4',
       role: 'member',
@@ -387,7 +387,7 @@ export default {
         check('direct trùng', await owner.post('/api/calendar/shares/direct', { viewerId: chair.id, ...ok }), 409, 'MSG449')
         const admin = await qa.api('admin')
         const adminMe = await me(qa, 'admin')
-        // admin → member: the member has no MeetingCreator, cannot receive a share (UC-84b EX-1).
+        // admin → member: the member has no MeetingCreator, cannot receive a share (UC-80b EX-1).
         check('direct cho Thành viên', await admin.post('/api/calendar/shares/direct', { viewerId: secretaryOfNothing.id, ...ok }), 400, 'MSG455')
         check('direct cho chính mình', await admin.post('/api/calendar/shares/direct', { viewerId: adminMe.id, ...ok }), 400, 'MSG455')
         check(
@@ -441,7 +441,7 @@ export default {
         qa.expect(wrong, wrong.join('\n')).toEqual([])
       },
     },
-    // ------------------------------------------------------------------ UC-85c at Mốc 1
+    // ------------------------------------------------------------------ UC-81c at Mốc 1
     {
       id: 'AC6',
       role: 'chair',
@@ -452,7 +452,7 @@ export default {
         `Chia sẻ Mốc 1 đến ${dm(WED)}`,
         `chutoa@ mở Chia sẻ lịch → tab "Lịch được chia sẻ", tuần ${dm(MON)} – ${dm(SUN)} (đủ 7 ngày)`,
       ],
-      expected: `Chip "Lê An · Họp Thường · đến ${dm(WED)}"; T3 ${dm(TUE)} chỉ có khối "bận 09:00–10:00"; không có khối 10:30, 13:30, 15:30; T5 ${dm(THU)}, T6 ${dm(FRI)} ghi "Chưa biết"; không có tên, địa điểm cuộc họp (BR-414, BR-415, BR-417, BR-420, BR-427); API không có trường cuộc họp; không cuộn ngang`,
+      expected: `Chip "Lê An · Họp Thường · đến ${dm(WED)}"; T3 ${dm(TUE)} chỉ có khối "bận 09:00–10:00"; không có khối 10:30, 13:30, 15:30; T5 ${dm(THU)}, T6 ${dm(FRI)} ghi "Chưa biết"; không có tên, địa điểm cuộc họp (BR-140, BR-141, BR-144–BR-147); API không có trường cuộc họp; không cuộn ngang`,
       async run(qa) {
         await ensureMeetings(qa)
         const s = await ensureMemberShare(qa, 'Level1')
@@ -495,14 +495,14 @@ export default {
         await qa.shot('ngay-ngoai-khoang-chua-biet', { fullPage: true })
       },
     },
-    // ------------------------------------------------------------------ UC-85a in the UI
+    // ------------------------------------------------------------------ UC-81a in the UI
     {
       id: 'AC7',
       role: 'chair',
       devices: ['desktop', 'phone'],
       title: 'Tìm giờ họp: chọn người đã chia sẻ, Tìm giờ → khung theo ngày; giờ bận họp Thường bị tránh, ngày "Chưa biết" không được đề xuất',
       steps: ['chutoa@ mở Tìm giờ họp (/calendar/find)', 'Chọn nhanh "Lê An" (Người đã chia sẻ lịch với bạn)', `Khoảng ngày ${dm(MON)} – ${dm(FRI)}, còn lại mặc định (2 giờ, đệm 30 phút)`, 'Bấm Tìm giờ'],
-      expected: `Dòng Lê An "Xem được: Họp Thường"; ${dm(TUE)} có giờ bắt đầu 15:00 (trùng họp Mật không được tiết lộ, BR-414) và không có 08:00, 08:30, 09:00, 09:30, 10:00; không có ngày ${dm(THU)}, ${dm(FRI)} (ngoài khoảng chia sẻ, BR-415); không lộ tên cuộc họp; không cuộn ngang`,
+      expected: `Dòng Lê An "Xem được: Họp Thường"; ${dm(TUE)} có giờ bắt đầu 15:00 (trùng họp Mật không được tiết lộ, BR-140, BR-141) và không có 08:00, 08:30, 09:00, 09:30, 10:00; không có ngày ${dm(THU)}, ${dm(FRI)} (ngoài khoảng chia sẻ, BR-144, BR-145); không lộ tên cuộc họp; không cuộn ngang`,
       async run(qa) {
         await ensureMeetings(qa)
         const s = await ensureMemberShare(qa, 'Level1')
@@ -534,7 +534,7 @@ export default {
         await noRawCodes(qa)
       },
     },
-    // ------------------------------------------------------------------ UC-85a rules on the API
+    // ------------------------------------------------------------------ UC-81a rules on the API
     {
       id: 'AC8',
       role: 'chair',
@@ -545,7 +545,7 @@ export default {
         `Tìm ${THU}–${FRI} (ngoài khoảng chia sẻ)`,
       ],
       expected:
-        'Có 10:30 (Nháp, BR-420), 13:30 (Nội bộ ở Mốc 1, BR-417), 15:30 (Mật, BR-414); không có 08:00–10:00 (họp 09:00–10:00 + đệm, BR-422); allFree; quantri@ status NotShared; ngoài khoảng → days rỗng; không trường cuộc họp nào',
+        'Có 10:30 (Nháp, BR-146, BR-147), 13:30 (Nội bộ ở Mốc 1, BR-144, BR-145), 15:30 (Mật, BR-140, BR-141); không có 08:00–10:00 (họp 09:00–10:00 + đệm, UC-81a); allFree; quantri@ status NotShared; ngoài khoảng → days rỗng; không trường cuộc họp nào',
       async run(qa) {
         await ensureMeetings(qa)
         const s = await ensureMemberShare(qa, 'Level1')
@@ -569,14 +569,14 @@ export default {
         qa.expect(out.body.days).toEqual([])
       },
     },
-    // ------------------------------------------------------------------ UC-85b
+    // ------------------------------------------------------------------ UC-81b
     {
       id: 'AC9',
       role: 'chair',
       title: 'Tạo nháp từ khung giờ (trùng họp Mật không được tiết lộ): cuộc họp Nháp, người đầu làm Chủ toạ, người tìm làm Thư ký',
       steps: ['Tìm giờ họp với Lê An', `Chọn ${dm(TUE)} 15:00 → Tạo nháp`, `Tên "${'[QA] FE-16 nháp từ khung giờ'}" → Tạo nháp`],
       expected:
-        'Hộp thoại "Tạo cuộc họp nháp" điền sẵn ngày giờ, Lê An "Chủ toạ", tôi "Thư ký"; không có cảnh báo nào về họp Mật; toast MSG29 "Tạo cuộc họp thành công." và mở trang cuộc họp; API: trạng thái Draft, thanhvien Chair, chutoa Secretary (BR-428, BR-429)',
+        'Hộp thoại "Tạo cuộc họp nháp" điền sẵn ngày giờ, Lê An "Chủ toạ", tôi "Thư ký"; không có cảnh báo nào về họp Mật; toast MSG29 "Tạo cuộc họp thành công." và mở trang cuộc họp; API: trạng thái Draft, thanhvien Chair, chutoa Secretary (BR-148, UC-81b)',
       async run(qa) {
         await ensureMeetings(qa)
         const s = await ensureMemberShare(qa, 'Level1')
@@ -634,7 +634,7 @@ export default {
         qa.expect(rows.find((r) => r.uid === chairMe.id)?.role, text.slice(0, 300)).toBe('Secretary')
       },
     },
-    // ------------------------------------------------------------------ UC-85b EX-1, UC-85a EX-1
+    // ------------------------------------------------------------------ UC-81b EX-1, UC-81a EX-1
     {
       id: 'AC10',
       role: 'chair',
@@ -689,7 +689,7 @@ export default {
         qa.expect(wrong, wrong.join('\n')).toEqual([])
       },
     },
-    // ------------------------------------------------------------------ UC-84d
+    // ------------------------------------------------------------------ UC-80d
     {
       id: 'AC11',
       role: 'chair',
@@ -719,7 +719,7 @@ export default {
         qa.expect(after.pendingChange?.level).toBe('Level2')
       },
     },
-    // ------------------------------------------------------------------ UC-84c AF-1
+    // ------------------------------------------------------------------ UC-80c AF-1
     {
       id: 'AC12',
       role: 'member',
@@ -764,7 +764,7 @@ export default {
       role: 'chair',
       title: 'Mốc 2 (Thường và Nội bộ): thấy thêm giờ bận họp Nội bộ, họp Mật vẫn không bao giờ hiện, kể cả khi tìm giờ',
       steps: [`chutoa@ mở tab Lịch được chia sẻ tuần ${dm(MON)}`, `POST /api/calendar/slots ${TUE}, 60 phút`],
-      expected: `T3 ${dm(TUE)}: bận 09:00–10:00 và 13:30–14:30; không có 15:30–16:30 (Mật) hay 10:30–11:30 (Nháp); tìm giờ: không có 13:30, vẫn có 15:30 (BR-414, BR-417)`,
+      expected: `T3 ${dm(TUE)}: bận 09:00–10:00 và 13:30–14:30; không có 15:30–16:30 (Mật) hay 10:30–11:30 (Nháp); tìm giờ: không có 13:30, vẫn có 15:30 (BR-140, BR-141, BR-144, BR-145)`,
       async run(qa) {
         await ensureMeetings(qa)
         const s = await ensureMemberShare(qa, 'Level2')
@@ -787,7 +787,7 @@ export default {
         qa.expect(starts, 'a Secret meeting is never shared').toContain('15:30')
       },
     },
-    // ------------------------------------------------------------------ UC-84a
+    // ------------------------------------------------------------------ UC-80a
     {
       id: 'AC14',
       role: 'chair',
@@ -840,7 +840,7 @@ export default {
         qa.expect(await pairShare(qa, 'chair', EMAIL.secretary, EMAIL.chair, { open: true })).toBeUndefined()
       },
     },
-    // ------------------------------------------------------------------ UC-84c decline
+    // ------------------------------------------------------------------ UC-80c decline
     {
       id: 'AC15',
       role: 'admin',
@@ -873,7 +873,7 @@ export default {
         qa.expect(after).toMatchObject({ status: 'Declined', actions: [] })
       },
     },
-    // ------------------------------------------------------------------ UC-84e withdraw
+    // ------------------------------------------------------------------ UC-80e withdraw
     {
       id: 'AC16',
       role: 'chair',
@@ -906,7 +906,7 @@ export default {
         qa.expect(late.body.code).toBe('MSG450')
       },
     },
-    // ------------------------------------------------------------------ UC-84c narrowing, UC-84e AF-1 on the API
+    // ------------------------------------------------------------------ UC-80c narrowing, UC-80e AF-1 on the API
     {
       id: 'AC17',
       role: 'admin',
@@ -941,7 +941,7 @@ export default {
         qa.expect(again.body.code).toBe('MSG450')
       },
     },
-    // ------------------------------------------------------------------ UC-84e AF-1 from the viewer, in the UI
+    // ------------------------------------------------------------------ UC-80e AF-1 from the viewer, in the UI
     {
       id: 'AC18',
       role: 'chair',
@@ -984,7 +984,7 @@ export default {
         qa.expect(patch.body.code).toBe('MSG450')
       },
     },
-    // ------------------------------------------------------------------ BR-424 stop
+    // ------------------------------------------------------------------ BR-142, BR-143 stop
     {
       id: 'AC19',
       role: 'member',
@@ -1043,7 +1043,7 @@ export default {
         await noSidewaysScroll(qa)
       },
     },
-    // ------------------------------------------------------------------ BR-430 on the API
+    // ------------------------------------------------------------------ BR-140, BR-141 on the API
     {
       id: 'AC20',
       role: 'member',
@@ -1093,7 +1093,7 @@ export default {
         qa.expect(wrong, wrong.join('\n')).toEqual([])
       },
     },
-    // ------------------------------------------------------------------ BR-430 in the UI
+    // ------------------------------------------------------------------ BR-140, BR-141 in the UI
     {
       id: 'AC21',
       role: 'member',
@@ -1138,7 +1138,7 @@ export default {
           qa.expectStatus(res, 401)
       },
     },
-    // ------------------------------------------------------------------ the working calendar (UC-17 AF-4)
+    // ------------------------------------------------------------------ the working calendar (UC-16 AF-4)
     {
       id: 'AC23',
       role: 'secretary',
@@ -1186,7 +1186,7 @@ export default {
       role: 'member',
       title: 'Lịch làm việc chỉ hiện cuộc họp người xem được: Thành viên không thấy cuộc họp chưa công bố mà mình có tên; không có nút Tạo cuộc họp',
       steps: [`thanhvien@ mở /calendar?week=${TUE}&status=all`, 'Đổi sang Danh sách'],
-      expected: 'Không có "[QA] FE-16 họp …" (Thành viên chỉ thấy từ khi Đã công bố, BR-29 / UC-17); không có nút "Tạo cuộc họp"',
+      expected: 'Không có "[QA] FE-16 họp …" (Thành viên chỉ thấy từ khi Đã công bố, BR-016, BR-017 / UC-16); không có nút "Tạo cuộc họp"',
       async run(qa) {
         await ensureMeetings(qa)
         await qa.goto(`/calendar?week=${TUE}&status=all`)

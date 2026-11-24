@@ -1,6 +1,6 @@
 # Backend chương trình nghị sự — SCRUM-98
 
-Contract thay thế SCRUM-25 ngày 24/10/2026, theo SCRUM-98 và comment 18/10/2026, Report 3 FE-05, UC-77, UC-28c, BR-306–312 và tám sequence Agenda. Xem [bàn giao](08-scrum98-ban-giao.md) và [kết quả kiểm thử](08-scrum98-ket-qua-kiem-thu.md). Các báo cáo SCRUM-25 giữ nguyên như bằng chứng lịch sử.
+Contract thay thế SCRUM-25 ngày 24/10/2026, theo SCRUM-98 và comment 18/10/2026, Report 3 FE-05, UC-27, UC-30c, BR-064, BR-065, UC-23a, UC-23b, BR-066, BR-067, UC-70 và tám sequence Agenda. Xem [bàn giao](08-scrum98-ban-giao.md) và [kết quả kiểm thử](08-scrum98-ket-qua-kiem-thu.md). Các báo cáo SCRUM-25 giữ nguyên như bằng chứng lịch sử.
 
 ## Endpoint và quyền
 
@@ -18,7 +18,7 @@ Prefix `/api/meetings/{meetingId}/agenda`. JWT và user active; backend kiểm l
 | POST /{itemId}/complete | Chair | Meeting InProgress, item InProgress | 200/MSG65 |
 | PUT /{itemId}/conclusion | Chair hoặc Secretary | Meeting InProgress/Ended, item InProgress/Done, chưa có bất kỳ MeetingMinutes | 200/MSG271 |
 
-Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InProgress. Từ 04/11/2026 (SCRUM-25, PO chốt 02/11) Chair hiện hành soạn, sửa, xoá, sắp xếp mục như Secretary, theo AI-eCabinet; bắt đầu/hoàn thành mục vẫn chỉ Chair (BR-69), không thêm mã thông báo. Ended chỉ cho ghi kết luận khi đủ điều kiện. Không có gate Vote/attendance; hoàn thành item không bắt đầu item tiếp theo hoặc kết thúc Meeting. Kết luận không phải điều kiện complete/end.
+Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InProgress. Từ 04/11/2026 (SCRUM-25, PO chốt 02/11) Chair hiện hành soạn, sửa, xoá, sắp xếp mục như Secretary, theo AI-eCabinet; bắt đầu/hoàn thành mục vẫn chỉ Chair (BR-060–BR-062), không thêm mã thông báo. Ended chỉ cho ghi kết luận khi đủ điều kiện. Không có gate Vote/attendance; hoàn thành item không bắt đầu item tiếp theo hoặc kết thúc Meeting. Kết luận không phải điều kiện complete/end.
 
 ## Tạo và sửa
 
@@ -26,7 +26,7 @@ Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InP
 {"title":"Báo cáo tiến độ","description":"Nội dung","presenterId":null,"presenterGuestInvitationId":null,"documentIds":[]}
 ```
 
-Title trim 1–300; description mặc định rỗng, tối đa 4000. PUT thay toàn bộ trường chỉnh sửa; field tùy chọn thiếu trở về null/rỗng — trừ `documentIds`: thiếu (hoặc null) thì giữ nguyên tài liệu đang gắn với item, `[]` mới gỡ hết; POST thiếu `documentIds` tạo item chưa có tài liệu. Từ 30/10/2026 FE không gửi `documentIds` nữa: dialog Sửa nội dung không chọn tài liệu, việc gắn tài liệu đi qua nút ghim trên từng dòng (UC-33b, [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md)). Internal presenter dùng User ID của participant current và active; Guest dùng invitation ID thuộc Meeting, chưa revoked, không cần OTP/session và không loại Declined. Hai ID không đồng thời có giá trị, không nhận Guid.Empty. Cả hai null nghĩa là bỏ presenter. Không dùng tên/email để gán.
+Title trim 1–300; description mặc định rỗng, tối đa 4000. PUT thay toàn bộ trường chỉnh sửa; field tùy chọn thiếu trở về null/rỗng — trừ `documentIds`: thiếu (hoặc null) thì giữ nguyên tài liệu đang gắn với item, `[]` mới gỡ hết; POST thiếu `documentIds` tạo item chưa có tài liệu. Từ 30/10/2026 FE không gửi `documentIds` nữa: dialog Sửa nội dung không chọn tài liệu, việc gắn tài liệu đi qua nút ghim trên từng dòng (UC-36b, [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md)). Internal presenter dùng User ID của participant current và active; Guest dùng invitation ID thuộc Meeting, chưa revoked, không cần OTP/session và không loại Declined. Hai ID không đồng thời có giá trị, không nhận Guid.Empty. Cả hai null nghĩa là bỏ presenter. Không dùng tên/email để gán.
 
 Document IDs là MeetingDocument ID, không rỗng/trùng, cùng Meeting, chưa removed. Một tài liệu gắn nhiều item; PUT chỉ sửa link của item hiện tại. Xóa item không xóa tài liệu/StoredFile hoặc link khác. Mọi reader có quyền Meeting đọc metadata theo ADR-0020; download vẫn kiểm quyền riêng.
 
@@ -48,7 +48,7 @@ Mỗi item gồm `id, position, title, description, presenterId, presenterGuestI
 
 Không còn plannedDurationMinutes/actualDurationSeconds. Chỉ trả timestamp thực tế, không tính elapsed duration. Presenter name resolve từ User.FullName/Guest.InvitedName khi assignment hiện tại hợp lệ; ID/name hiện tại null nếu không hợp lệ. Tên tự nhập cũ hoặc tên internal không còn hợp lệ hiển thị ở legacyPresenterName, không là assignment và không gửi thông báo. PUT thành công thay assignment và xóa legacy name. Conclusion cùng ba metadata null khi chưa ghi.
 
-Actions: `canEdit`, `canEditPlanningFields` (alias của canEdit), `canDelete`, `canSetCurrent`, `canComplete`, `canRecordConclusion`, `canLinkDocuments`. `canLinkDocuments` theo quyền UC-33b chứ không theo planning: Chair hoặc Secretary hiện hành, cuộc họp chưa Ended/Cancelled (cùng điều kiện `DocumentFileRules.UploadAccess` mà các endpoint `…/agenda/{itemId}/documents` kiểm lại). CanReorder cần ít nhất hai item. CanSetCurrent áp dụng mọi Pending khi Chair và không current khác. FE dùng flags; không suy quyền từ vai trò hệ thống.
+Actions: `canEdit`, `canEditPlanningFields` (alias của canEdit), `canDelete`, `canSetCurrent`, `canComplete`, `canRecordConclusion`, `canLinkDocuments`. `canLinkDocuments` theo quyền UC-36b chứ không theo planning: Chair hoặc Secretary hiện hành, cuộc họp chưa Ended/Cancelled (cùng điều kiện `DocumentFileRules.UploadAccess` mà các endpoint `…/agenda/{itemId}/documents` kiểm lại). CanReorder cần ít nhất hai item. CanSetCurrent áp dụng mọi Pending khi Chair và không current khác. FE dùng flags; không suy quyền từ vai trò hệ thống.
 
 ```json
 {"presenters":[{"id":"user-id","kind":"Internal","fullName":"Nguyễn Văn A"},{"id":"invitation-id","kind":"Guest","fullName":"Trần Văn B"}],"documents":[{"id":"document-id","title":"Báo cáo.pdf","agendaItemIds":["item-1","item-3"]}]}
@@ -56,7 +56,7 @@ Actions: `canEdit`, `canEditPlanningFields` (alias của canEdit), `canDelete`, 
 
 DTO không trả email/token/storage key. Snapshot rỗng trả items:[]; lỗi đọc 500/MSG128.
 
-## Kết luận UC-77
+## Kết luận UC-27
 
 ```json
 {"conclusion":"Thống nhất phương án triển khai."}
@@ -87,10 +87,10 @@ Chỉ gán/đổi presenter ở Published/InProgress mới enqueue sau commit, v
 
 Hub `/hubs/meetings`: JoinMeeting/LeaveMeeting; event `agendaChanged` gồm eventId,meetingId,changeType,agendaItemId?,title?,occurredAt. Types: Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded/ConclusionUpdated/PresenterCleared. Không chứa conclusion/email. Publisher kiểm lại từng recipient, không broadcast dữ liệu cho cả Meeting. Sau commit mới gửi, yêu cầu hủy sau 2 giây và chờ scoped task kết thúc. FE refetch sau mutation/event; reconnect phải join lại và GET. Không bảo đảm durable realtime.
 
-Guest adapter mặc định vẫn từ chối; [UC-04 contract](08-agenda-contract-tich-hop-guest-uc04.md) là phụ thuộc riêng. UC-59 writer phải dùng cùng meeting lock, đọc conclusions/presenter và tạo MeetingMinutes trong một transaction. Có bất kỳ biên bản, bất kể status/content, khóa conclusion; không tạo/xóa nháp tạm gây mở khóa. SCRUM-98 không thực hiện Guest login hoặc sinh nháp AI.
+Guest adapter mặc định vẫn từ chối; [UC-04 contract](08-agenda-contract-tich-hop-guest-uc04.md) là phụ thuộc riêng. UC-70 writer phải dùng cùng meeting lock, đọc conclusions/presenter và tạo MeetingMinutes trong một transaction. Có bất kỳ biên bản, bất kể status/content, khóa conclusion; không tạo/xóa nháp tạm gây mở khóa. SCRUM-98 không thực hiện Guest login hoặc sinh nháp AI.
 
 Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.
 
 ## Tích hợp End Meeting — SCRUM-69
 
-Lifecycle End gọi IAgendaMeetingEnd trong cùng transaction và khóa Meeting. Current item thành Done với mốc End; Pending/Done khác giữ nguyên. Không có current item vẫn End được. Sau commit luôn phát agendaChanged/MeetingEnded, kể cả agendaItemId/title null; FE GET lại Meeting và Agenda để làm mới status/quyền. Lỗi publish không rollback End. [Bàn giao UC-21/22](10-scrum69-ban-giao.md).
+Lifecycle End gọi IAgendaMeetingEnd trong cùng transaction và khóa Meeting. Current item thành Done với mốc End; Pending/Done khác giữ nguyên. Không có current item vẫn End được. Sau commit luôn phát agendaChanged/MeetingEnded, kể cả agendaItemId/title null; FE GET lại Meeting và Agenda để làm mới status/quyền. Lỗi publish không rollback End. [Bàn giao UC-20, UC-21](10-scrum69-ban-giao.md).

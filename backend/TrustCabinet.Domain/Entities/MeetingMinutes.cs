@@ -35,7 +35,7 @@ public class MeetingMinutes : Entity
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
-    /// <summary>The Secretary who last sent this revision to the Chair (UC-61).</summary>
+    /// <summary>The Secretary who last sent this revision to the Chair (UC-72).</summary>
     public Guid? SubmittedById { get; set; }
     public User? SubmittedBy { get; set; }
 
@@ -49,7 +49,7 @@ public class MeetingMinutes : Entity
     /// <summary>Why it was sent back, shown to the secretary so they know what to fix.</summary>
     public string RejectionReason { get; set; } = string.Empty;
 
-    /// <summary>The Chair who last returned this revision, and when (UC-65).</summary>
+    /// <summary>The Chair who last returned this revision, and when (UC-74).</summary>
     public Guid? ReturnedById { get; set; }
     public User? ReturnedBy { get; set; }
 

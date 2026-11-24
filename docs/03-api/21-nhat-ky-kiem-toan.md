@@ -1,12 +1,12 @@
-# Nhật ký hệ thống — SCRUM-16 (UC-13)
+# Nhật ký hệ thống — SCRUM-16 (UC-12)
 
-**Trạng thái:** BE và FE đã triển khai 10/11/2026 · Đặc tả: [UC-13](../01-requirements/05-use-case-specifications.md),
-BR-440 → BR-446, [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md),
+**Trạng thái:** BE và FE đã triển khai 10/11/2026 · Đặc tả: [UC-12](../01-requirements/05-use-case-specifications.md),
+BR-012, UC-12, BR-009–BR-011, BR-022, BR-023, [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md),
 [sequence](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt).
 
 Quản trị xem lại các việc quan trọng đã được ghi: ai làm, việc gì, trên đối tượng nào, lúc nào, từ IP nào. Nhật ký **chỉ
 đọc**: không endpoint nào sửa hay xoá một dòng, và `TrustCabinetDbContext` từ chối mọi lần lưu sửa/xoá `audit_log`
-(BR-440). Xem nhật ký không tự ghi thêm dòng nào.
+(BR-012). Xem nhật ký không tự ghi thêm dòng nào.
 
 ## Quyền
 
@@ -28,7 +28,7 @@ Cả hai endpoint nằm sau `RequireAdminUsers()` — dùng lại quyền *Quả
 | `q` | 1–100 ký tự | Tìm không phân biệt hoa thường **và dấu** (`unaccent`: `hop thuong` khớp `Họp thường`, `d` khớp `đ`) trong mã đối tượng, **tên** đối tượng — đúng `objectName` (xem dưới; tên của đối tượng thuộc cuộc họp Mật không bao giờ khớp, mã thì vẫn khớp) — và các **giá trị** trong `details` (với dòng Mật: trừ các khoá tên đã bỏ) (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó. Không khớp tên người thực hiện |
 | `page`, `pageSize` | số nguyên | Mặc định `1`, `20`; `pageSize` tối đa `100` |
 
-Mọi tiêu chí phải cùng khớp (BR-31). Thứ tự: `occurredAt` giảm dần, rồi `id` giảm dần. Trang vượt quá số trang trả
+Mọi tiêu chí phải cùng khớp. Thứ tự: `occurredAt` giảm dần, rồi `id` giảm dần. Trang vượt quá số trang trả
 `items` rỗng.
 
 **Lỗi**
@@ -38,8 +38,7 @@ Mọi tiêu chí phải cùng khớp (BR-31). Thứ tự: `occurredAt` giảm d�
 | `MSG469` | 400 | Thời điểm sai định dạng hoặc thiếu múi giờ, `from` sau `to`, `actor`/`action` không hợp lệ, `q` quá 100 ký tự, `page`/`pageSize` ngoài khoảng, tham số lạ, tham số gửi hai lần. `errors` theo tên tham số |
 | `MSG470` | 500 | Không đọc được database |
 
-Không có dòng nào khớp (AF-3) là `200` với `items: []`, `totalCount: 0`, `totalPages: 0` — màn hình tự hiện câu theo
-BR-12.
+Không có dòng nào khớp (AF-3) là `200` với `items: []`, `totalCount: 0`, `totalPages: 0` — màn hình tự hiện câu.
 
 **Response `200`**
 
@@ -67,11 +66,11 @@ BR-12.
 }
 ```
 
-- `actor.kind`: `user`, `guest` hoặc `system` (BR-441). Với `guest`, `id` là mã **lời mời** và `name`/`email` là tên,
+- `actor.kind`: `user`, `guest` hoặc `system` (UC-12). Với `guest`, `id` là mã **lời mời** và `name`/`email` là tên,
   email được mời (không phải tên Khách tự khai). Với `system`, `id`, `name`, `email` đều `null`.
 - `objectId` có thể `null`: sự kiện không gắn với một đối tượng (đổi quyền của nhiều vai trò một lúc).
 - `objectName` là tên đối tượng như người dùng biết nó (PO 19/11/2026, thay câu "không tra tiêu đề cuộc họp" cũ của
-  BR-443): `User` họ tên · `Role` tên vai trò · `Meeting` tiêu đề · `MeetingDocument` tên tệp · `VotingSession` tiêu đề
+  UC-12): `User` họ tên · `Role` tên vai trò · `Meeting` tiêu đề · `MeetingDocument` tên tệp · `VotingSession` tiêu đề
   biểu quyết · `MeetingMinutes`, `Recording`, `SpeechClip`, `TranscriptSpeaker` tiêu đề cuộc họp chứa nó ·
   `VoiceConsent`, `VoiceSample` họ tên chủ giọng · `CalendarShare` "chủ lịch → người xem" · `GuestSession` tên được
   mời. Đọc dòng còn sống trước (đổi tên thì hiện tên mới); dòng đã xoá thì lấy tên ghi trong `details` (`name`, `title`,
@@ -132,17 +131,17 @@ khoá nào là hệ thống. Chỗ ghi mới dùng `guestInvitationId`.
 
 | Mã | Luật | Người thực hiện / đối tượng | `details` |
 |---|---|---|---|
-| `auth.signed_in` | BR-444 | Tài khoản / `User` | `method`: `password` hoặc `google` |
-| `auth.sign_in_failed` | BR-444 | Tài khoản bị thử / `User` | `method`, `reason`: `invalid_password` hoặc `account_deactivated` |
-| `guest.verified` | BR-444 | Khách / `GuestSession` | `meetingId`, `guestInvitationId` |
-| `meeting.<thao tác>` | BR-445 | Người chuyển trạng thái, hệ thống khi tự huỷ / `Meeting` | `historyId`, `fromStatus`, `toStatus`, `reason`, người duyệt / người tổ chức cũ và mới nếu có |
-| `minutes.issued` | BR-446 | Chủ toạ / `MeetingMinutes` | `meetingId`, `revisionNumber`, `supersedesId` (bản đính chính) |
+| `auth.signed_in` | BR-009–BR-011 | Tài khoản / `User` | `method`: `password` hoặc `google` |
+| `auth.sign_in_failed` | BR-009–BR-011 | Tài khoản bị thử / `User` | `method`, `reason`: `invalid_password` hoặc `account_deactivated` |
+| `guest.verified` | BR-009–BR-011 | Khách / `GuestSession` | `meetingId`, `guestInvitationId` |
+| `meeting.<thao tác>` | BR-022, BR-023 | Người chuyển trạng thái, hệ thống khi tự huỷ / `Meeting` | `historyId`, `fromStatus`, `toStatus`, `reason`, người duyệt / người tổ chức cũ và mới nếu có |
+| `minutes.issued` | BR-009–BR-011 | Chủ toạ / `MeetingMinutes` | `meetingId`, `revisionNumber`, `supersedesId` (bản đính chính) |
 
 Ghi từ trước SCRUM-16 và cũng hiện trong màn nhật ký (`AuditEventCatalog`):
 
 | Mã | Tên trên màn | Người thực hiện / đối tượng | `details` |
 |---|---|---|---|
-| `call.guest_admitted` | Khách vào phòng họp | Khách / `GuestSession` (SCRUM-59, UC-37 bước 5) | `meetingId`, `invitationId`, `displayName`, `recordingNoticeAcknowledged` (luôn `true`); IP của request ở cột riêng |
+| `call.guest_admitted` | Khách vào phòng họp | Khách / `GuestSession` (SCRUM-59, UC-43 bước 5) | `meetingId`, `invitationId`, `displayName`, `recordingNoticeAcknowledged` (luôn `true`); IP của request ở cột riêng |
 
 Ghi bởi việc dọn dữ liệu định kỳ ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)):
 
@@ -154,8 +153,8 @@ Ghi bởi việc dọn dữ liệu định kỳ ([ADR-0067](../05-decisions/0067
 | `notification.purged` | Hệ thống xoá thông báo cũ | Hệ thống / `Notification`, không có `objectId` | `rows`, `readCutoff` (đã đọc, tạo trước mốc này), `cutoff` (mọi thông báo tạo trước mốc này) |
 | `guest.codes_purged` | Hệ thống xoá mã xác minh Khách hết hạn | Hệ thống / `GuestVerificationChallenge`, không có `objectId` | `rows`, `cutoff` (hết hạn trước mốc này) |
 | `email.bodies_cleared` | Hệ thống xoá nội dung email cũ | Hệ thống / `EmailMessage`, không có `objectId` | `rows`, `cutoff` (tạo trước mốc này) |
-| `speech_clip.expired_erased` | Hệ thống xoá câu nói quá hạn lưu | Hệ thống / `SpeechClip`, không có `objectId` | `rows`, `files` (tệp âm thanh), `retentionDays`, `cutoff`; job `RecordingRetentionWorker` (BR-347) |
-| `document.orphan_files_purged` | Hệ thống xoá tệp tài liệu không còn dùng | Hệ thống / `StoredFile`, không có `objectId` | `files`, `bytes`, `cutoff`; job `OrphanFilePurgeWorker` (BR-213), dòng `stored_files` vẫn giữ |
+| `speech_clip.expired_erased` | Hệ thống xoá câu nói quá hạn lưu | Hệ thống / `SpeechClip`, không có `objectId` | `rows`, `files` (tệp âm thanh), `retentionDays`, `cutoff`; job `RecordingRetentionWorker` (BR-110) |
+| `document.orphan_files_purged` | Hệ thống xoá tệp tài liệu không còn dùng | Hệ thống / `StoredFile`, không có `objectId` | `files`, `bytes`, `cutoff`; job `OrphanFilePurgeWorker` (BR-077), dòng `stored_files` vẫn giữ |
 
 **Mọi job dọn dữ liệu đều để lại dấu vết** (PO 19/11/2026): mỗi lần chạy, mỗi loại dữ liệu **một** dòng tóm tắt, chỉ khi
 lần đó thật sự xoá được gì — lần chạy không xoá gì không ghi, để nhật ký không đầy dòng rỗng mỗi giờ. Người thực hiện là
@@ -177,10 +176,10 @@ thêm một lần ghi; đã chấp nhận ngày 10/11/2026.
 
 ## Chỗ lệch khỏi đặc tả — đã đưa vào Report 3 ngày 10/11/2026
 
-BR-444 và BR-445 trong Report 3 đã sửa theo hai dòng dưới (UC-14, UC-15 thêm vào *Applies to* của BR-445), kèm một dòng
+BR-009–BR-011, BR-022, BR-023 trong Report 3 đã sửa theo hai dòng dưới (UC-13, UC-14 thêm vào *Applies to* của BR-022, BR-023), kèm một dòng
 Change Log. Chú thích `AuditLogEntry.ActorId` trong code đã sửa theo D8.
 
 | # | Đặc tả | Code | Lý do |
 |---|---|---|---|
-| D8 | `AuditLogEntry.ActorId`: "null cho lần đăng nhập thất bại" | `auth.sign_in_failed` ghi người thực hiện là tài khoản bị thử | Không có người thực hiện thì dòng hiện là "Hệ thống" (sai BR-441); lọc theo một tài khoản thấy được cả các lần bị thử sai |
-| D9 | BR-445: "mỗi lần đổi trạng thái" | Ghi cả dòng lịch sử không đổi trạng thái: tạo cuộc họp, đổi lịch, chuyển người tổ chức | Cùng nằm trong `meeting_status_history`; Quản trị không mở được cuộc họp để xem lịch sử đó |
+| D8 | `AuditLogEntry.ActorId`: "null cho lần đăng nhập thất bại" | `auth.sign_in_failed` ghi người thực hiện là tài khoản bị thử | Không có người thực hiện thì dòng hiện là "Hệ thống" (sai UC-12); lọc theo một tài khoản thấy được cả các lần bị thử sai |
+| D9 | BR-022, BR-023: "mỗi lần đổi trạng thái" | Ghi cả dòng lịch sử không đổi trạng thái: tạo cuộc họp, đổi lịch, chuyển người tổ chức | Cùng nằm trong `meeting_status_history`; Quản trị không mở được cuộc họp để xem lịch sử đó |

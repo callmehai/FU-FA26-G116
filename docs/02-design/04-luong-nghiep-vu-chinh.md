@@ -6,7 +6,7 @@
 > [Master UC Inventory](../01-requirements/00-master-use-case-inventory.md) · [Đặc tả Use Case](../01-requirements/05-use-case-specifications.md) ·
 > [Business Rules](../01-requirements/06-business-rules.md).
 > **Nguyên tắc:** chỉ giữ mốc nghiệp vụ, điểm chuyển giao giữa actor, thay đổi trạng thái và điểm quyết định quan trọng;
-> không biến mọi Use Case thành một ô. Số UC theo baseline 10/10/2026 (UC-01 → UC-70).
+> không biến mọi Use Case thành một ô. Số UC theo đợt đánh số lại 24/11/2026 (UC-01 → UC-81, [bảng 10](../01-requirements/10-bang-anh-xa-uc-dot-1.md)).
 
 ---
 
@@ -41,22 +41,22 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08) |
+| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-11), cấu hình quyền (UC-10), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08) |
 | User | Mở TrustCabinet, chọn đăng nhập Google hoặc email + mật khẩu, dùng các chức năng được phép |
-| TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; quá số lần cho phép trong một phút thì báo lỗi MSG414 |
+| TrustCabinet | Lưu thay đổi và ghi audit log (BR-009–BR-011); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; quá số lần cho phép trong một phút thì báo lỗi MSG414 |
 | OAuth Provider | Xác minh tài khoản Google và trả danh tính (UC-02) |
 
 **Luồng:**
 
 1. System Admin chuẩn bị vai trò, quyền và tài khoản; mỗi thay đổi được lưu và ghi audit log.
 2. Người dùng mở TrustCabinet và chọn cách đăng nhập.
-   - **Email + mật khẩu (UC-01):** sai thông tin → báo lỗi (MSG01, không lộ email có tồn tại hay không — BR-02); sai quá
+   - **Email + mật khẩu (UC-01):** sai thông tin → báo lỗi (MSG01, không lộ email có tồn tại hay không — BR-004); sai quá
      số lần cho phép trong một phút → hệ thống báo lỗi MSG414, thử lại sau ít phút.
-   - **Google (UC-02):** Google xác minh tài khoản; hệ thống kiểm tra email đã liên kết tài khoản nội bộ (BR-06, không tự
-     tạo tài khoản — BR-07).
-3. Tài khoản bị vô hiệu hoá → báo lỗi (BR-03). Hợp lệ → đăng nhập và nạp quyền theo vai trò (BR-08).
-4. Đặt lại mật khẩu (UC-07): Admin gửi link một lần, hiệu lực có hạn (BR-20); vô hiệu hoá tài khoản (UC-06c) chấm dứt mọi
-   phiên đăng nhập đang có (BR-18).
+   - **Google (UC-02):** Google xác minh tài khoản; hệ thống kiểm tra email đã liên kết tài khoản nội bộ (BR-003, không tự
+     tạo tài khoản — BR-003).
+3. Tài khoản bị vô hiệu hoá → báo lỗi (BR-001). Hợp lệ → đăng nhập và nạp quyền theo vai trò (BR-002).
+4. Đặt lại mật khẩu (UC-07): Admin gửi link một lần, hiệu lực có hạn (UC-07); vô hiệu hoá tài khoản (UC-06c) chấm dứt mọi
+   phiên đăng nhập đang có (BR-001).
 
 ---
 
@@ -76,30 +76,30 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 **Luồng:**
 
-1. **Tạo (UC-14):** Organizer nhập tiêu đề, lịch (`PlannedStartTime` ở tương lai, `PlannedEndTime` sau giờ bắt đầu),
-   hình thức, địa điểm, link tuỳ chọn, độ mật (BR-24, BR-62, BR-162, BR-163). Hệ thống lưu `Draft` (BR-26).
-2. **Gán Thư ký đầu tiên (UC-28a):** khi cuộc họp chưa có Thư ký, chỉ Organizer được thêm người đầu tiên và người đó phải là
-   Secretary (BR-78). Từ đó Thư ký quản lý danh sách (BR-79).
-3. **Thư ký chuẩn bị:** thêm thành viên nội bộ và mời Guest theo tên + email (UC-28a, BR-81 → BR-88, BR-148 → BR-151),
-   gán vai trò Chair / Member (UC-28b, tối đa một Chair — BR-123; Thư ký chỉ thay Chair trước khi công bố — BR-294),
-   soạn agenda (UC-23, BR-64 → BR-68, BR-306), thêm tài liệu (UC-33), chuẩn bị nháp biểu quyết và tài liệu của nó
-   khi cuộc họp `Approved` / `Published` (UC-53, UC-76, BR-252).
-4. **Gửi duyệt (UC-18):** Organizer chọn người duyệt và gửi; cuộc họp chuyển `WaitingApproval`, người duyệt được báo
-   (BR-33 → BR-35). Thông tin chung bị khoá; danh sách thành phần chỉ đọc; agenda vẫn sửa được (BR-34, BR-74).
-5. **Duyệt (UC-19):** người duyệt được phân công xem cuộc họp.
-   - **Từ chối:** bắt buộc lý do → `Rejected`, báo Organizer (BR-36). Organizer sửa (UC-15) và gửi lại từ bước 4.
+1. **Tạo (UC-13):** Organizer nhập tiêu đề, lịch (`PlannedStartTime` ở tương lai, `PlannedEndTime` sau giờ bắt đầu),
+   hình thức, địa điểm, link tuỳ chọn, độ mật (BR-013, UC-13). Hệ thống lưu `Draft` (BR-013).
+2. **Gán Thư ký đầu tiên (UC-30a):** khi cuộc họp chưa có Thư ký, chỉ Organizer được thêm người đầu tiên và người đó phải là
+   Secretary. Từ đó Thư ký quản lý danh sách (BR-036, BR-037).
+3. **Thư ký chuẩn bị:** thêm thành viên nội bộ và mời Guest theo tên + email (UC-30a, BR-038, BR-049–BR-051, BR-039),
+   gán vai trò Chair / Member (UC-30b, tối đa một Chair — BR-040; Thư ký chỉ thay Chair trước khi công bố — BR-041, BR-042),
+   soạn agenda (UC-23, BR-058, BR-059, UC-23a, UC-23b, BR-064, BR-065), thêm tài liệu (UC-36), chuẩn bị nháp biểu quyết và tài liệu của nó
+   khi cuộc họp `Approved` / `Published` (UC-63, UC-68, BR-086, BR-087).
+4. **Gửi duyệt (UC-17):** Organizer chọn người duyệt và gửi; cuộc họp chuyển `WaitingApproval`, người duyệt được báo
+   (UC-17, BR-018, BR-019). Thông tin chung bị khoá; danh sách thành phần chỉ đọc; agenda vẫn sửa được (BR-018, BR-058, BR-059).
+5. **Duyệt (UC-18):** người duyệt được phân công xem cuộc họp.
+   - **Từ chối:** bắt buộc lý do → `Rejected`, báo Organizer (BR-020). Organizer sửa (UC-14) và gửi lại từ bước 4.
    - **Duyệt:** → `Approved`, báo Organizer.
-6. **Công bố (UC-20):** hệ thống kiểm tra đủ đúng một Chair và ít nhất một Secretary đang hoạt động (BR-124, BR-125).
+6. **Công bố (UC-19):** hệ thống kiểm tra đủ đúng một Chair và ít nhất một Secretary đang hoạt động (BR-021).
    Thiếu → Thư ký bổ sung vai trò còn thiếu rồi công bố lại. Đủ → `Published`, tạo lời mời cho thành viên và Guest;
-   email gửi bất đồng bộ, lỗi gửi không làm mất trạng thái `Published` (BR-37, BR-39 → BR-43).
-7. **Phản hồi lời mời (UC-29):** thành viên nội bộ mở lời mời và chọn *Accepted* / *Declined* (BR-104 → BR-106, không có
-   uỷ quyền). Guest mở link, xác minh email bằng mã một lần (UC-04, BR-152 → BR-156) rồi phản hồi. Phản hồi đổi được tới khi
+   email gửi bất đồng bộ, lỗi gửi không làm mất trạng thái `Published` (BR-021, BR-031, BR-032, UC-19).
+7. **Phản hồi lời mời (UC-31):** thành viên nội bộ mở lời mời và chọn *Accepted* / *Declined* (BR-046, không có
+   uỷ quyền). Guest mở link, xác minh email bằng mã một lần (UC-04, BR-052–BR-054) rồi phản hồi. Phản hồi đổi được tới khi
    cuộc họp kết thúc.
-8. **Dời lịch sau công bố (UC-15 — *Reschedule*):** Organizer chỉ đổi giờ, địa điểm, link (BR-158), giờ bắt đầu mới phải
-   ở tương lai (BR-75). Hệ thống lưu lịch mới và báo lại toàn bộ người được mời; lỗi gửi không huỷ thay đổi (BR-76).
-9. **Huỷ cuộc họp (UC-75):** bất cứ lúc nào trước khi bắt đầu (`Draft` → `Published`), Organizer huỷ với lý do bắt buộc;
-   cuộc họp thành `Cancelled`, chỉ đọc. Nếu đã công bố, người được mời được báo kèm lý do (BR-297 → BR-300). Cuộc họp
-   `Published` chưa bắt đầu 24 giờ sau giờ kết thúc dự kiến thì hệ thống tự huỷ (BR-301).
+8. **Dời lịch sau công bố (UC-14 — *Reschedule*):** Organizer chỉ đổi giờ, địa điểm, link (BR-015), giờ bắt đầu mới phải
+   ở tương lai (BR-015). Hệ thống lưu lịch mới và báo lại toàn bộ người được mời; lỗi gửi không huỷ thay đổi (UC-14).
+9. **Huỷ cuộc họp (UC-22):** bất cứ lúc nào trước khi bắt đầu (`Draft` → `Published`), Organizer huỷ với lý do bắt buộc;
+   cuộc họp thành `Cancelled`, chỉ đọc. Nếu đã công bố, người được mời được báo kèm lý do (BR-028, UC-22). Cuộc họp
+   `Published` chưa bắt đầu 24 giờ sau giờ kết thúc dự kiến thì hệ thống tự huỷ (BR-029).
 
 ---
 
@@ -117,25 +117,25 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 **Luồng:**
 
-1. **Bắt đầu (UC-21):** Chair bắt đầu; hệ thống kiểm tra đủ Chair và Secretary đang hoạt động (BR-127, BR-130, BR-131),
-   chuyển `InProgress`, ghi giờ bắt đầu thực tế, báo thông báo trong ứng dụng cho người được mời (BR-164).
-2. **Vào phòng họp (UC-37 → UC-42)** nếu cuộc họp Online / Hybrid. Guest vào qua guest session của UC-04. Phòng họp không
+1. **Bắt đầu (UC-20):** Chair bắt đầu; hệ thống kiểm tra đủ Chair và Secretary đang hoạt động (BR-024),
+   chuyển `InProgress`, ghi giờ bắt đầu thực tế, báo thông báo trong ứng dụng cho người được mời (UC-20).
+2. **Vào phòng họp (UC-43 → UC-48)** nếu cuộc họp Online / Hybrid. Guest vào qua guest session của UC-04. Phòng họp không
    đổi vòng đời cuộc họp.
-3. **Điểm danh (UC-31):** Trong lúc cuộc họp `InProgress`, Thư ký lưu *Present / Absent* cho một/nhiều người được chọn trong roster nội bộ và Guest; người không gửi giữ nguyên giá trị đã lưu hoặc Chưa điểm danh. Một submission lưu nguyên khối; không bắt đủ roster. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-116, BR-170–BR-172, BR-178).
+3. **Điểm danh (UC-33):** Trong lúc cuộc họp `InProgress`, Thư ký lưu *Present / Absent* cho một/nhiều người được chọn trong roster nội bộ và Guest; người không gửi giữ nguyên giá trị đã lưu hoặc Chưa điểm danh. Một submission lưu nguyên khối; không bắt đủ roster. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-043, BR-056, BR-057, UC-33).
 4. **Vòng agenda** — lặp cho từng mục:
    1. Chair bắt đầu một mục `Pending` **bất kỳ**, không cần theo thứ tự (UC-24): mục → `InProgress`, ghi giờ bắt đầu;
-      tối đa một mục đang chạy (BR-69 → BR-71).
+      tối đa một mục đang chạy (BR-060–BR-062).
    2. Thảo luận với tài liệu, chat, chia sẻ màn hình.
-   3. **Cần biểu quyết?** Có → Chair mở biểu quyết từ nháp Chair hoặc Thư ký đã chuẩn bị (UC-53, UC-54; danh sách tài liệu
-      chốt khi mở — BR-288) → người được bỏ phiếu xác nhận đã đọc từng tài liệu của biểu quyết (UC-74) rồi bỏ phiếu (UC-55;
-      Guest đã xác minh được bỏ phiếu như Member) → Chair đóng (UC-56) → hệ thống kiểm phiếu và hiện kết quả (UC-52b) → Chair ghi kết luận
-      *Passed / NotPassed / Deferred* (UC-57). Áp dụng BR-160, BR-161, BR-165.
-   4. Chair hoặc Thư ký ghi kết luận của mục (UC-77, BR-309 → BR-311); sửa được tới khi sinh nháp biên bản.
-   5. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc (BR-70, BR-72).
+   3. **Cần biểu quyết?** Có → Chair mở biểu quyết từ nháp Chair hoặc Thư ký đã chuẩn bị (UC-63, UC-64; danh sách tài liệu
+      chốt khi mở — BR-094, BR-095) → người được bỏ phiếu xác nhận đã đọc từng tài liệu của biểu quyết (UC-42) rồi bỏ phiếu (UC-65;
+      Guest đã xác minh được bỏ phiếu như Member) → Chair đóng (UC-66) → hệ thống kiểm phiếu và hiện kết quả (UC-62b) → Chair ghi kết luận
+      *Passed / NotPassed / Deferred* (UC-67). Áp dụng BR-090, BR-099, BR-092, BR-093.
+   4. Chair hoặc Thư ký ghi kết luận của mục (UC-27, BR-066, BR-067); sửa được tới khi sinh nháp biên bản.
+   5. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc (BR-060–BR-062).
    6. Còn mục → quay lại 4.1.
-   - Bất cứ lúc nào khi `Published` / `InProgress`, Chair có thể giao chủ toạ cho thành phần tham dự nội bộ khác (UC-73);
-     Chair cũ thành Member (BR-295, BR-296).
-5. **Kết thúc (UC-22):** Chair kết thúc bất cứ lúc nào khi InProgress, không kiểm tra Vote Open hay điểm danh đủ/thiếu (BR-159). Vote giữ trạng thái và phiếu đã lưu; Meeting Ended ngừng nhận phiếu. Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-143, BR-159).
+   - Bất cứ lúc nào khi `Published` / `InProgress`, Chair có thể giao chủ toạ cho thành phần tham dự nội bộ khác (UC-34);
+     Chair cũ thành Member (BR-041, BR-042).
+5. **Kết thúc (UC-21):** Chair kết thúc bất cứ lúc nào khi InProgress, không kiểm tra Vote Open hay điểm danh đủ/thiếu (BR-026). Vote giữ trạng thái và phiếu đã lưu; Meeting Ended ngừng nhận phiếu. Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-025, BR-026).
 
 ---
 
@@ -154,21 +154,21 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 **Luồng:**
 
-1. **Upload audio (UC-44):** hệ thống nhắc Thư ký; Thư ký upload file (MP3 / M4A / WAV) và xác nhận đã có đồng ý ghi âm.
-   File không hợp lệ → báo lỗi. Hợp lệ → lưu vào thư viện media (UC-43) và xếp hàng xử lý.
+1. **Upload audio (UC-52):** hệ thống nhắc Thư ký; Thư ký upload file (MP3 / M4A / WAV) và xác nhận đã có đồng ý ghi âm.
+   File không hợp lệ → báo lỗi. Hợp lệ → lưu vào thư viện media (UC-51) và xếp hàng xử lý.
    *Dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP:* lưu căn cứ đồng ý, mục đích và hạn lưu (`Recording.ConsentObtainedAt`,
    `ConsentPurpose`, `RetainUntil`); xoá theo hạn lưu.
 2. **Chép lời:** hệ thống chép lời từ audio. Lỗi → báo lỗi và cho thử lại.
-3. **Rà transcript (UC-45, UC-46):** Thư ký sửa transcript.
-4. **Tóm tắt (UC-47 → UC-49):** Thư ký yêu cầu sinh tóm tắt; AI sinh; Thư ký rà và sửa. Không có bước duyệt hay công
+3. **Rà transcript (UC-54, UC-55):** Thư ký sửa transcript.
+4. **Tóm tắt (UC-58 → UC-60):** Thư ký yêu cầu sinh tóm tắt; AI sinh; Thư ký rà và sửa. Không có bước duyệt hay công
    bố tóm tắt riêng — tóm tắt đi thẳng vào biên bản.
-5. **Biên bản (UC-59, UC-60):** Thư ký yêu cầu sinh biên bản; AI sinh bản nháp từ thông tin cuộc họp, tóm tắt và kết quả
+5. **Biên bản (UC-70, UC-71):** Thư ký yêu cầu sinh biên bản; AI sinh bản nháp từ thông tin cuộc họp, tóm tắt và kết quả
    biểu quyết. Thư ký rà và sửa.
-6. **Duyệt và ban hành (UC-61 → UC-64, UC-65):** Thư ký gửi duyệt. Chủ tọa duyệt là ban hành luôn
-(BR-446); không duyệt thì trả lại kèm lý do cho Thư ký sửa rồi gửi lại. Không có bước ký hay niêm phong
+6. **Duyệt và ban hành (UC-72, UC-62 cũ, UC-63 cũ, UC-73, UC-74):** Thư ký gửi duyệt. Chủ tọa duyệt là ban hành luôn
+(BR-009–BR-011); không duyệt thì trả lại kèm lý do cho Thư ký sửa rồi gửi lại. Không có bước ký hay niêm phong
 (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng).
-7. **Đính chính (UC-83):** sửa sau ban hành thì tạo bản đính chính mới đi lại UC-61 → UC-64; bản cũ thành `Superseded`.
-8. **Tra cứu (UC-58, UC-70):** người có quyền xem hồ sơ cuộc họp, báo cáo thống kê.
+7. **Đính chính (UC-75):** sửa sau ban hành thì tạo bản đính chính mới đi lại UC-72, UC-62 cũ, UC-63 cũ, UC-73; bản cũ thành `Superseded`.
+8. **Tra cứu (UC-69, UC-79):** người có quyền xem hồ sơ cuộc họp, báo cáo thống kê.
 
 ---
 

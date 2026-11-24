@@ -12,9 +12,9 @@ const STATE: Record<'free' | 'busy' | 'unknown', { label: string; tone: BadgeTon
 }
 
 /**
- * UC-85a step 4 / AF-1 — the slots by day as start-time chips, AI-eCabinet's layout. Choosing a chip opens, under its day,
- * who among the people counted is free, busy or unknown, and the one "Tạo nháp" (UC-85b). Nothing about a meeting is
- * ever shown (BR-427); "Chưa biết" is never free (BR-415).
+ * UC-81a step 4 / AF-1 — the slots by day as start-time chips, AI-eCabinet's layout. Choosing a chip opens, under its day,
+ * who among the people counted is free, busy or unknown, and the one "Tạo nháp" (UC-81b). Nothing about a meeting is
+ * ever shown (BR-140, BR-141); "Chưa biết" is never free (BR-144, BR-145).
  */
 export function SlotResults({
   result,

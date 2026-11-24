@@ -1,4 +1,4 @@
-# SCRUM-20 / UC-73 — kết quả kiểm thử Backend
+# SCRUM-20 / UC-34 — kết quả kiểm thử Backend
 
 ## Trả lời lời mời theo AI-eCabinet + tích hợp FE (21/10/2026)
 
@@ -53,7 +53,7 @@ Suite dùng PostgreSQL 17 và Redis 8 riêng tại localhost 5439/6389; không d
 
 - Tạo meeting cùng roster trong transaction: đúng một Chair, user active/không trùng, role hợp lệ, revision 0; lỗi không lưu dữ liệu dở dang.
 - Chair/Secretary quản lý roster; Chair đọc từ Draft; người đọc không có vai trò quản lý nhận 403/MSG85 khi mutation.
-- Không gỡ Chair; thay Chair atomic có confirmation; UC-73 bàn giao từ Published, chặn Secretary thay Chair active; ngoại lệ Chair inactive; người nhận không phải Secretary/inactive/removed.
+- Không gỡ Chair; thay Chair atomic có confirmation; UC-34 bàn giao từ Published, chặn Secretary thay Chair active; ngoại lệ Chair inactive; người nhận không phải Secretary/inactive/removed.
 - Response thuộc chính người mời, không đổi attendance; totals toàn roster độc lập search/paging; strict JSON từ chối additionalPermissions; endpoint đã bỏ không còn dùng.
 - Concurrency/revision/rollback, audit chỉ ghi dòng thay đổi, durable dispatch publication/reschedule/role change và deduplication.
 - SignalR thực qua long polling: người đọc trước/sau mutation cùng nhận participantsChanged, kể cả người bị gỡ; rollback không phát event; publisher lỗi không rollback dữ liệu đã commit.
@@ -62,7 +62,7 @@ Suite dùng PostgreSQL 17 và Redis 8 riêng tại localhost 5439/6389; không d
 
 ## Bàn giao và giới hạn
 
-API dùng MSG275/MSG276; lỗi roster khi tạo dùng MSG277. UC-73 dùng MSG256/MSG257/MSG259; MSG152/MSG153 ngừng dùng. Đã bỏ grants, Secretary recovery và đường invitation queue cũ.
+API dùng MSG275/MSG276; lỗi roster khi tạo dùng MSG277. UC-34 dùng MSG256/MSG257/MSG259; MSG152/MSG153 ngừng dùng. Đã bỏ grants, Secretary recovery và đường invitation queue cũ.
 
 Cách test thủ công gồm 15 kịch bản trong [bàn giao FE/Tester](09-thanh-phan-tham-du-ban-giao.md); request mẫu ở [Postman](postman/scrum20-participants.postman_collection.json). Frontend cần cập nhật payload tạo meeting, context/roster và xử lý participantsChanged trước nghiệm thu tích hợp.
 

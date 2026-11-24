@@ -41,7 +41,7 @@ const TYPE_OPTIONS = [
   { value: 'docx', label: 'DOCX' },
 ] satisfies { value: TypeFilter; label: string }[]
 
-/** BR-191: a folder at the fifth level holds no further folder. */
+/** UC-37: a folder at the fifth level holds no further folder. */
 const MAX_DEPTH = 5
 const COLUMN_COUNT = 5
 
@@ -58,9 +58,9 @@ type Dialog =
 const extensionOf = (name: string) => /\.(pdf|docx)$/i.exec(name)?.[0] ?? ''
 
 /**
- * Each user's own document library (SCRUM-110, SCRUM-111; UC-34, UC-36, UC-71a–c, UC-72a–d), laid out as
+ * Each user's own document library (SCRUM-110, SCRUM-111; UC-37, UC-39, UC-40a–c, UC-41a–d), laid out as
  * AI-eCabinet's "Tài liệu của tôi": one folder at a time, its place in the URL, its sub-folders and documents in
- * one table. Search and the type filter look at the open folder only (UC-34 AF-1) and are done by the server for
+ * one table. Search and the type filter look at the open folder only (UC-37 AF-1) and are done by the server for
  * documents; sub-folder names are matched here, since the server lists every folder anyway.
  */
 export function DocumentsPage() {
@@ -131,7 +131,7 @@ export function DocumentsPage() {
     toast.show(message)
     reload()
   }
-  // A queued file ended, from this page or a meeting's (which also lands in the library, BR-192): the place
+  // A queued file ended, from this page or a meeting's (which also lands in the library, UC-36a): the place
   // and the space used are read again.
   useUploadsSettled('*', reload)
   // A change from another tab or device shows on coming back to this one; never under an open dialog.

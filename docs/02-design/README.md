@@ -7,7 +7,7 @@
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
 - [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 luồng nghiệp vụ chính BF-01 → BF-04 (bản PO duyệt 09/10/2026)
 - [`08-ke-hoach-phong-hop-truc-tuyen.md`](08-ke-hoach-phong-hop-truc-tuyen.md) — thiết kế giải pháp phòng họp trực tuyến (LiveKit / WebRTC)
-- [`10-scrum97-ke-hoach-backend.md`](10-scrum97-ke-hoach-backend.md) — kế hoạch thực thi UC-73, nguồn yêu cầu, thứ tự validation và ma trận kiểm thử Backend.
+- [`10-scrum97-ke-hoach-backend.md`](10-scrum97-ke-hoach-backend.md) — kế hoạch thực thi UC-34, nguồn yêu cầu, thứ tự validation và ma trận kiểm thử Backend.
 - [`11-quy-chuan-clean-architecture.md`](11-quy-chuan-clean-architecture.md) — quy chuẩn thường trực của backend bốn project (SCRUM-143, [ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md)): bất biến, luật R1–R15 và các luật A1–A7 của `ArchitectureTests`; quy trình nhánh của đợt refactor giữ làm lịch sử. Đọc trước khi sửa `backend/`.
 
 Dự kiến có thêm:

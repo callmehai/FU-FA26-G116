@@ -95,7 +95,7 @@ function emptyKind(s: ListState) {
 }
 
 /**
- * UC-17 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
+ * UC-16 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
  * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
  * The criteria live in the URL (see listParams.ts).
  */

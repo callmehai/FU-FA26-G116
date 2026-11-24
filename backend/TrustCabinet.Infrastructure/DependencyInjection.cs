@@ -53,7 +53,7 @@ public static class DependencyInjection
         services.AddTrustCabinetReports();
         // SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters.
         services.AddTrustCabinetGuestAccess(configuration);
-        // SCRUM-27: raised hands and the Chair's queue of speakers (UC-79).
+        // SCRUM-27: raised hands and the Chair's queue of speakers (UC-50).
         services.AddTrustCabinetSpeaking();
         // SCRUM-30: the Secretary's running notes.
         services.AddTrustCabinetMeetingNotes();
@@ -69,7 +69,7 @@ public static class DependencyInjection
         services.AddTrustCabinetRecordings(configuration, contentRootPath);
         // ADR-0067: orphaned audio, drafts of cancelled meetings, old notifications, guest codes and email bodies.
         services.AddTrustCabinetRetention(configuration);
-        // SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c).
+        // SCRUM-142: calendar sharing (UC-80a → UC-80f, UC-81c).
         services.AddTrustCabinetCalendarSharing();
         // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
         services.AddTrustCabinetTranscription(configuration);

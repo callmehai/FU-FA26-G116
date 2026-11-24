@@ -41,7 +41,7 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
 
     /// <param name="Changed">The last change to any source. The combined row's UpdatedAt holds the one it was built from,
     /// not when it was built: a source that changes while it is being mixed is then still newer, and gets its rebuild.</param>
-    /// <param name="RetainUntil">When its earliest source goes (BR-347: the room's, counted from its first take; or a
+    /// <param name="RetainUntil">When its earliest source goes (BR-110: the room's, counted from its first take; or a
     /// sentence's, if one came first), so the mix never keeps a voice longer than the source it was taken from.</param>
     /// <param name="Owner">Consent and owner, taken from the room recording; for an online meeting, the call room's
     /// recording notice every attendee confirmed before their mic was heard.</param>

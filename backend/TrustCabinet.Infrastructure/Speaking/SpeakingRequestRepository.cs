@@ -6,7 +6,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Infrastructure.Speaking;
 
-/// <summary>The speaking queue's rows (SCRUM-27, UC-79), and closing the open ones (BR-337).</summary>
+/// <summary>The speaking queue's rows (SCRUM-27, UC-50), and closing the open ones (BR-104–BR-106).</summary>
 public sealed class SpeakingRequestRepository(TrustCabinetDbContext db) : ISpeakingRequestRepository
 {
     public Task<bool> IsActiveUserAsync(Guid userId, CancellationToken ct)
@@ -70,7 +70,7 @@ public sealed class SpeakingRequestRepository(TrustCabinetDbContext db) : ISpeak
 
     /// <summary>
     /// Closes the open requests of people who are no longer there: the meeting ended, they left the room, or they
-    /// were removed from the meeting (BR-337). Runs inside the caller's transaction; the caller saves.
+    /// were removed from the meeting (BR-104–BR-106). Runs inside the caller's transaction; the caller saves.
     /// </summary>
     public async Task<int> CloseOpenAsync(Guid meetingId, Guid? userId, IReadOnlyCollection<Guid>? guestInvitationIds,
         DateTimeOffset endedAt, DateTimeOffset now, CancellationToken ct)

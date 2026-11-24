@@ -4,7 +4,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Web.Tests.CalendarSharing;
 
-/// <summary>SCRUM-142 rules that need no database: BR-414/417 levels, BR-431 ranges, BR-425 end date, who may do what.</summary>
+/// <summary>SCRUM-142 rules that need no database: BR-140, BR-141, BR-144, BR-145 levels, UC-80a ranges, BR-142, BR-143 end date, who may do what.</summary>
 public sealed class CalendarShareRulesTests
 {
     private static readonly DateOnly Today = new(2026, 11, 8);
@@ -116,7 +116,7 @@ public sealed class CalendarShareRulesTests
         share.PendingEndDate = Today.AddDays(-1);
         Assert.False(CalendarShareRules.ValidPendingApproval(share, Today));
 
-        // The owner moved the share after the end the viewer asked for (UC-84d AF-1): it fits no more and can only be
+        // The owner moved the share after the end the viewer asked for (UC-80d AF-1): it fits no more and can only be
         // declined — the table's range check would refuse it.
         var moved = Share(startOffset: 70, endOffset: 80, pendingChange: true); // pending end is day 60
         Assert.False(CalendarShareRules.ValidPendingApproval(moved, Today));
@@ -127,7 +127,7 @@ public sealed class CalendarShareRulesTests
     [Fact]
     public void A_share_past_its_end_date_has_ended_with_nothing_left_to_do()
     {
-        // BR-425 (PO 09/11/2026, Q-B): no Expired state — the end date alone decides, and only after the last day.
+        // BR-142, BR-143 (PO 09/11/2026, Q-B): no Expired state — the end date alone decides, and only after the last day.
         var share = Share(endOffset: -1);
         Assert.True(CalendarShareRules.IsLapsed(share, Today));
         Assert.Equal(CalendarShareStatus.Effective, share.Status);
@@ -145,7 +145,7 @@ public sealed class CalendarShareRulesTests
         var request = Share(CalendarShareStatus.Pending);
         Assert.Equal(["accept", "decline"], Of(request, OwnerId));
         Assert.Equal(["withdraw"], Of(request, ViewerId));
-        // UC-84c EX-5 / BR-430: the sender was deactivated or the viewer lost the right, so it can only be declined.
+        // UC-80c EX-5 / BR-140, BR-141: the sender was deactivated or the viewer lost the right, so it can only be declined.
         Assert.Equal(["decline"], Of(request, OwnerId, acceptBlocked: true));
 
         var direct = Share(CalendarShareStatus.Pending, initiatedBy: CalendarShareInitiator.Owner);

@@ -10,10 +10,10 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Access;
 
 /// <summary>
-/// UC-10 and UC-11's <c>:Role Permission Service</c> (SCRUM-60). Every rule about the matrix lives
+/// UC-09, UC-10's <c>:Role Permission Service</c> (SCRUM-60). Every rule about the matrix lives
 /// here: what a valid configuration is, and what the audit log records.
 ///
-/// The order inside the write is the order UC-11's diagram gives: validate, then persist, then
+/// The order inside the write is the order UC-10's diagram gives: validate, then persist, then
 /// audit. Auditing before the write would record changes that did not happen.
 /// </summary>
 public sealed class RolePermissionService(
@@ -176,7 +176,7 @@ public sealed class RolePermissionService(
         // Collected here, pushed by the caller once the transaction has committed.
         var affected = await roles.FindActiveUserIdsInRoleAsync(roleId, ct);
 
-        // UC-11 POST-4 (BR-424): taking MeetingCreator away from the role stops every share its holders view, in this
+        // UC-10 POST-4 (BR-142, BR-143): taking MeetingCreator away from the role stops every share its holders view, in this
         // transaction. Granting it back later restarts none of them.
         if (before.Contains(Capability.MeetingCreator) && !requested.Contains(Capability.MeetingCreator))
         {
@@ -198,7 +198,7 @@ public sealed class RolePermissionService(
     }
 
     /// <summary>
-    /// The rules UC-11 enforces. Returns field name → Vietnamese message, empty when the
+    /// The rules UC-10 enforces. Returns field name → Vietnamese message, empty when the
     /// configuration is acceptable.
     /// </summary>
     private async Task<Dictionary<string, string>> ValidateAsync(
@@ -271,7 +271,7 @@ public sealed class RolePermissionService(
     }
 
     /// <summary>
-    /// Turns the stored pairs into what UC-10 shows: every role listed, even one with nothing
+    /// Turns the stored pairs into what UC-09 shows: every role listed, even one with nothing
     /// granted, alongside the catalogue that gives the grid its columns.
     /// </summary>
     private static RolePermissionMatrix Build(

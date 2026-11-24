@@ -109,7 +109,7 @@ public static class EmailTemplates
 
     private static string Ask(MeetingPeople people) => $"Cần trao đổi thêm, liên hệ người tổ chức: {people.Contact}.";
 
-    /// <summary>UC-04: the one-time code a Guest types to enter the meeting (BR-153).</summary>
+    /// <summary>UC-04: the one-time code a Guest types to enter the meeting (BR-053, BR-054).</summary>
     public static string GuestCode(string name, string meetingTitle, string code, int minutes)
         => EmailLayout.Render(new EmailContent(
             Preheader: $"Mã có hiệu lực trong {minutes} phút.",
@@ -133,7 +133,7 @@ public static class EmailTemplates
             After: ["Mật khẩu hiện tại vẫn dùng được cho tới khi bạn đặt mật khẩu mới. Nếu bạn không chờ thư này, "
                 + "hãy bỏ qua nó và báo cho quản trị viên."]));
 
-    /// <summary>BR-307: a Guest assigned to present an agenda item, with the same way in as their invitation.</summary>
+    /// <summary>UC-23a, UC-23b: a Guest assigned to present an agenda item, with the same way in as their invitation.</summary>
     /// <param name="link">The Guest's verification link; null only when it cannot be issued right now.</param>
     internal static string GuestPresenter(string name, string itemTitle, string meetingTitle, DateTimeOffset startsAt,
         DateTimeOffset endsAt, string mode, string? link, string organizer)
@@ -182,7 +182,7 @@ public static class EmailTemplates
             After: [Ask(people)]));
     }
 
-    /// <summary>BR-411's bell as an email (PO 15/11/2026): the minutes, or a correction of them, were approved and issued.</summary>
+    /// <summary>UC-72, UC-73, UC-74's bell as an email (PO 15/11/2026): the minutes, or a correction of them, were approved and issued.</summary>
     internal static string MinutesIssued(string name, string meetingTitle, DateTimeOffset startsAt, DateTimeOffset endsAt,
         DateTimeOffset issuedAt, string approvedBy, int? correction, string link, MeetingPeople people, bool downloadable)
     {

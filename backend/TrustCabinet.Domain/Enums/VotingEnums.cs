@@ -7,7 +7,7 @@ public enum VotingStatus
     Closed,
 }
 
-/// <summary>The business outcome the Chair records for a closed vote (UC-57, BR-263).</summary>
+/// <summary>The business outcome the Chair records for a closed vote (UC-67, BR-099).</summary>
 public enum VoteConclusion
 {
     Passed,

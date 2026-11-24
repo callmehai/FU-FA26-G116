@@ -16,7 +16,7 @@ using TrustCabinet.Web.Tests.Agenda;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
-/// <summary>SCRUM-110 folders (UC-72a–d) and SCRUM-111 documents (UC-34, UC-36, UC-71a–c) of the personal library.</summary>
+/// <summary>SCRUM-110 folders (UC-41a–d) and SCRUM-111 documents (UC-37, UC-39, UC-40a–c) of the personal library.</summary>
 [Collection("Documents")]
 public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAsyncLifetime
 {
@@ -128,7 +128,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
 
     private static Task<HttpResponseMessage> Put(HttpClient client, string url, object body) => client.PutAsJsonAsync(url, body);
 
-    // ---- UC-72a–d: folders ----
+    // ---- UC-41a–d: folders ----
 
     [Fact]
     public async Task Owner_creates_nested_folders_with_duplicate_names_and_sees_them_in_the_library()
@@ -140,7 +140,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((201, "MSG187"), (status, code));
         var parent = body.GetProperty("folder").GetProperty("id").GetGuid();
         Assert.Equal("Báo cáo", body.GetProperty("folder").GetProperty("name").GetString());
-        // Not unique (BR-221).
+        // Not unique (UC-41a, UC-41b).
         var (childStatus, _, child) = await Read(await client.PostAsJsonAsync("/api/folders", new { name = "Báo cáo", parentId = parent }));
         Assert.Equal(201, childStatus);
         Assert.Equal(parent, child.GetProperty("folder").GetProperty("parentId").GetGuid());
@@ -187,7 +187,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         using var client = fixture.Client(owner);
 
         Assert.Equal((409, "MSG189"), Pick(await Read(await client.PostAsJsonAsync("/api/folders", new { name = "Cấp 6", parentId = chain[4] }))));
-        // Into level 4 the folder would be level 5, but its child level 6 (BR-191).
+        // Into level 4 the folder would be level 5, but its child level 6 (UC-37).
         Assert.Equal((409, "MSG189"), Pick(await Read(await Put(client, $"/api/folders/{twoLevels}/parent", new { parentId = chain[3] }))));
         var (status, code, body) = await Read(await Put(client, $"/api/folders/{twoLevels}/parent", new { parentId = chain[2] }));
         Assert.Equal((200, "MSG194"), (status, code));
@@ -279,7 +279,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((500, "MSG176"), Pick(await Read(await client.GetAsync("/api/documents"))));
     }
 
-    // ---- UC-34, UC-36, UC-71a–c: documents ----
+    // ---- UC-37, UC-39, UC-40a–c: documents ----
 
     [Fact]
     public async Task A_pdf_built_to_overflow_the_parsers_stack_is_refused_and_the_server_keeps_running()
@@ -322,7 +322,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         // The system's whole storage: at least these two, whatever other tests stored.
         Assert.True(view.GetProperty("storageUsedBytes").GetInt64() >= pdf.Length + docx.Length);
         await using var db = fixture.Db();
-        // No meeting involved: a library row only, pointing at an immutable stored file (BR-183).
+        // No meeting involved: a library row only, pointing at an immutable stored file (BR-068).
         var stored = await db.Documents.Where(d => d.OwnerId == owner).Select(d => d.StoredFile.StorageKey).ToListAsync();
         Assert.All(stored, key => Assert.True(fixture.Storage.Objects.ContainsKey(key)));
         Assert.False(await db.MeetingDocuments.AnyAsync(d => d.AddedById == owner));
@@ -342,7 +342,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((400, "MSG164"), (status, code));
         Assert.True(body.GetProperty("errors").TryGetProperty("files[0]", out _));
         Assert.Equal("Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.", body.GetProperty("message").GetString());
-        // BR-214: 10 MB a file.
+        // UC-36a, UC-39: 10 MB a file.
         var big = new byte[DocumentFileRules.MaxFileBytes + 1];
         SampleFiles.Pdf().CopyTo(big, 0);
         Assert.Equal((400, "MSG164"), Pick(await Read(await client.PostAsync("/api/documents/upload",
@@ -541,7 +541,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.All(await Marks($"?meetingId={Guid.NewGuid()}"), m => Assert.False(m.Value));
 
         // A Member who views the meeting and owns a file in it still learns nothing: only who may add is told
-        // (a document on a draft vote is hidden from Members, BR-253).
+        // (a document on a draft vote is hidden from Members, BR-086, BR-087).
         var member = await NewUser(fixture);
         var own = await AddDocument(fixture, member, "Của thành viên.pdf");
         await using (var db = fixture.Db())
@@ -576,7 +576,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "  " }))));
         Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = ".pdf" }))));
         await using var db = fixture.Db();
-        // BR-276: the meeting keeps the name it was added with.
+        // UC-36a, UC-40b: the meeting keeps the name it was added with.
         Assert.Equal("Cũ.pdf", await db.MeetingDocuments.Where(d => d.DocumentId == document).Select(d => d.FileName).SingleAsync());
     }
 
@@ -621,7 +621,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
 
         Assert.Equal((200, "MSG180"), Pick(await Read(await client.DeleteAsync($"/api/documents/{document}"))));
 
-        // BR-186: still there for the meeting, even once the owner is deactivated.
+        // BR-074–BR-076: still there for the meeting, even once the owner is deactivated.
         await using (var db = fixture.Db())
         {
             Assert.Null(await db.MeetingDocuments.Where(d => d.Id == meetingDocument).Select(d => d.DocumentId).SingleAsync());
@@ -740,7 +740,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library?folderId={sub}"))));
         Assert.Equal(200, (int)(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{loose}/content")).StatusCode);
         if (!member) return;
-        // A Member reads it through the meeting, under its rules: Secret documents are not downloaded (BR-188).
+        // A Member reads it through the meeting, under its rules: Secret documents are not downloaded (BR-081).
         Guid meetingDocument;
         await using (var db = fixture.Db())
             meetingDocument = await db.MeetingDocuments.Where(d => d.MeetingId == s.MeetingId).Select(d => d.Id).SingleAsync();

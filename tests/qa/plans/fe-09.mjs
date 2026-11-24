@@ -1,17 +1,17 @@
-// FE-09 — Ghi âm cuộc họp (QA subtask SCRUM-196): UC-43a view, UC-43b play, UC-43c download, UC-44a start a room take,
-// UC-44b stop and save it, UC-44c upload an audio file, UC-44d delete a take, UC-44e erase a recording, UC-80 my recorded
-// speech, and the rules they cite (BR-340–BR-357, BR-370, BR-455–BR-458).
+// FE-09 — Ghi âm cuộc họp (QA subtask SCRUM-196): UC-51a view, UC-51b play, UC-51c download, UC-52a start a room take,
+// UC-52b stop and save it, UC-52c upload an audio file, UC-52d delete a take, UC-52e erase a recording, UC-53 my recorded
+// speech, and the rules they cite (BR-107–BR-109, UC-52a, UC-52b, BR-110, UC-52d, BR-111–BR-113, UC-53, UC-51a, BR-114, BR-115, UC-52c, BR-122).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
 // docs/03-api/12-ban-ghi-cuoc-hop.md, the message catalogue, ADR-0040, ADR-0041, ADR-0061 and the comments of SCRUM-29,
 // SCRUM-109 and SCRUM-153. Deviations recorded there and taken as the requirement:
 // - ADR-0041 (PR #191): the room mic is ONE switch. "Tạm dừng / Ghi tiếp / Dừng và lưu" of ADR-0040 became off (saves the
 //   take) and on again (a new take appended to the same recording, no second consent). "Pause and resume" is tested as that.
-// - PR #193: an erased recording leaves the Bản ghi tab (UC-43a step 4 / UC-44e POST-2 still say it shows as Erased).
+// - PR #193: an erased recording leaves the Bản ghi tab (UC-51a step 4 / UC-52e POST-2 still say it shows as Erased).
 // - SCRUM-153 (PO 13/11): a Hybrid meeting takes no uploaded file (MSG478); after it ends the server builds a Combined
 //   recording, listen/download only (MSG479 on transcribe).
 // Not tested here: a Guest's own sentences (needs an OTP by email, UC-04), the 12-hour idle take and the 180-day expiry
-// (time), a real 300 MB take, the Secretary closing the tab mid-take (AF-1 of UC-44a, needs IndexedDB across sessions).
+// (time), a real 300 MB take, the Secretary closing the tab mid-take (AF-1 of UC-52a, needs IndexedDB across sessions).
 //
 // Safe on a shared local dev database: every meeting is created here through the API, titled "[QA] FE-09 …", 13 weeks
 // ahead, chutoa@ Chair and approver, thuky@ Secretary, thanhvien@ Member. The main in-person meeting is organised by
@@ -404,7 +404,7 @@ export default {
   devices: ['desktop'],
   allowHosts: [],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-44a / UC-44b
+    // ------------------------------------------------------------------------------------------- UC-52a / UC-52b
     {
       id: 'AC1',
       role: 'secretary',
@@ -593,7 +593,7 @@ export default {
     {
       id: 'AC5',
       role: 'secretary',
-      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Lưu lượt đó" để lưu hộ (UC-44b AF-3)',
+      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Lưu lượt đó" để lưu hộ (UC-52b AF-3)',
       steps: ['Một lượt mic phòng được mở từ "máy khác" (API, thuky@) và đã có tiếng', 'thuky@ mở trang cuộc họp trên trình duyệt này', 'Bấm "Lưu lượt đó"'],
       expected: 'Thẻ hiện "Đang ghi ở nơi khác · <tên Thư ký>" và nút "Lưu lượt đó"; bấm thì toast "Đã lưu lượt ghi.", bản ghi thành Available',
       run: wrap(async (qa) => {
@@ -678,7 +678,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- UC-44c
+    // ------------------------------------------------------------------------------------------- UC-52c
     {
       id: 'AC7',
       role: 'secretary',
@@ -866,7 +866,7 @@ export default {
       id: 'AC12',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Màn chờ phòng họp trực tuyến báo trước: "Cuộc họp được ghi âm để lập biên bản · tự xoá sau 180 ngày" (BR-353)',
+      title: 'Màn chờ phòng họp trực tuyến báo trước: "Cuộc họp được ghi âm để lập biên bản · tự xoá sau 180 ngày" (BR-109)',
       steps: ['thanhvien@ mở trang phòng họp của cuộc họp trực tuyến Đang diễn ra (màn chờ, chưa bấm Vào phòng)'],
       expected: 'Màn chờ "Sẵn sàng tham gia?" có dòng "Cuộc họp được ghi âm để lập biên bản · tự xoá sau 180 ngày"; không cuộn ngang',
       run: wrap(async (qa) => {
@@ -880,7 +880,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- UC-44d
+    // ------------------------------------------------------------------------------------------- UC-52d
     {
       id: 'AC13',
       role: 'secretary',
@@ -938,7 +938,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- Roles (BR-341, BR-350, BR-351)
+    // ------------------------------------------------------------------------------------------- Roles (BR-108, BR-111, BR-112)
     {
       id: 'AC14',
       role: 'secretary',
@@ -1093,7 +1093,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- UC-44e
+    // ------------------------------------------------------------------------------------------- UC-52e
     {
       id: 'AC18',
       role: 'secretary',
@@ -1172,7 +1172,7 @@ export default {
       title: 'Họp trực tiếp chưa bắt đầu: tab Bản ghi không có "Tải tệp lên", không có thẻ mic phòng; đã kết thúc: có "Tải tệp lên", không có thẻ mic phòng',
       steps: ['thuky@ mở tab Bản ghi của họp trực tiếp Đã công bố (chưa bắt đầu)', 'thuky@ mở tab Bản ghi của họp trực tiếp Đã kết thúc'],
       expected:
-        'Chưa bắt đầu: "Chưa có bản ghi.", không nút tải lên, không thẻ mic; Đã kết thúc: có nút "Tải tệp lên" (UC-44c cho phép sau khi kết thúc), gợi ý chỉ "Tải tệp ghi sẵn lên." (không nhắc mic phòng), không thẻ mic; trên điện thoại tab "Bản ghi" nằm trong thanh tab khi mở thẳng bằng ?tab=recordings',
+        'Chưa bắt đầu: "Chưa có bản ghi.", không nút tải lên, không thẻ mic; Đã kết thúc: có nút "Tải tệp lên" (UC-52c cho phép sau khi kết thúc), gợi ý chỉ "Tải tệp ghi sẵn lên." (không nhắc mic phòng), không thẻ mic; trên điện thoại tab "Bản ghi" nằm trong thanh tab khi mở thẳng bằng ?tab=recordings',
       run: wrap(async (qa) => {
         const pub = await meeting(qa, 'ipPub')
         const end = await meeting(qa, 'ipEnd')
@@ -1195,7 +1195,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- UC-80, UC-43a AF-2
+    // ------------------------------------------------------------------------------------------- UC-53, UC-51a AF-2
     {
       id: 'AC21',
       role: 'member',
@@ -1273,7 +1273,7 @@ export default {
       }),
     },
 
-    // ------------------------------------------------------------------------------------------- UC-43a AF-3 (ADR-0061 §5)
+    // ------------------------------------------------------------------------------------------- UC-51a AF-3 (ADR-0061 §5)
     {
       id: 'AC23',
       role: 'chair',

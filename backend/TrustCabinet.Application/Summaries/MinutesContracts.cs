@@ -26,17 +26,17 @@ public sealed record MinutesView(Guid Id, int RevisionNumber, string Status, str
     MinutesPerson? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, DateTimeOffset? IssuedAt = null,
     MinutesPerson? ReturnedBy = null, DateTimeOffset? ReturnedAt = null, string? RejectionReason = null);
 
-/// <summary>One line of the minutes' history (UC-58): every revision for the Chair and the Secretary, only the Issued and
-/// Superseded ones for anyone else (BR-412).</summary>
+/// <summary>One line of the minutes' history (UC-69): every revision for the Chair and the Secretary, only the Issued and
+/// Superseded ones for anyone else (BR-139).</summary>
 public sealed record MinutesRevision(Guid Id, int RevisionNumber, string Status, DateTimeOffset? IssuedAt);
 
 /// <summary>
 /// What the caller sees. The Chair and the Secretary get the latest revision whatever its state; everyone else who may
-/// read the meeting gets the latest issued revision, or null while none is (BR-386, BR-412). <see cref="DraftChangedAt"/>
+/// read the meeting gets the latest issued revision, or null while none is (BR-131, BR-139). <see cref="DraftChangedAt"/>
 /// is when the AI draft that fills sections I–III last changed (written or edited), null when the meeting has none, and
 /// for anyone but the Chair and the Secretary. <see cref="History"/> is newest first, filtered the same way.
 /// <see cref="CanSubmit"/> and <see cref="CanApprove"/> say which of the two officers the caller is — the current Secretary
-/// sends the minutes for approval (BR-404), the current Chair approves or returns them (BR-406) — so the screen offers the
+/// sends the minutes for approval (BR-135, BR-136), the current Chair approves or returns them (BR-135, BR-136) — so the screen offers the
 /// right buttons; the state of the minutes and the meeting still decides whether the action goes through.
 /// </summary>
 public sealed record MinutesState(MinutesView? Minutes, bool CanManage, DateTimeOffset? DraftChangedAt,
@@ -57,25 +57,25 @@ public enum MinutesFailure
     /// <summary>Someone saved the minutes after the caller loaded them.</summary>
     Stale,
     Invalid,
-    /// <summary>A Secret meeting's minutes are read on screen only (BR-188), as its documents and transcripts are.</summary>
+    /// <summary>A Secret meeting's minutes are read on screen only (BR-081), as its documents and transcripts are.</summary>
     SecretMeeting,
     ReadFailed,
     SaveFailed,
-    /// <summary>The Chair asked to submit: only the Secretary sends the minutes for approval (BR-404).</summary>
+    /// <summary>The Chair asked to submit: only the Secretary sends the minutes for approval (BR-135, BR-136).</summary>
     NotSecretary,
-    /// <summary>The minutes are sent for approval only after the meeting has ended (BR-405).</summary>
+    /// <summary>The minutes are sent for approval only after the meeting has ended (BR-135, BR-136).</summary>
     MeetingNotEnded,
-    /// <summary>The Secretary asked to approve or return: only the Chair does (BR-406).</summary>
+    /// <summary>The Secretary asked to approve or return: only the Chair does (BR-135, BR-136).</summary>
     NotChair,
     /// <summary>Approve or return on a revision that is not waiting for approval.</summary>
     NotWaiting,
-    /// <summary>The return reason is empty or longer than <see cref="MinutesLimits.ReturnReason"/> (BR-407).</summary>
+    /// <summary>The return reason is empty or longer than <see cref="MinutesLimits.ReturnReason"/> (BR-135, BR-136).</summary>
     ReasonInvalid,
     /// <summary>A correction asked of a revision that is not the issued one.</summary>
     NotIssued,
-    /// <summary>The issued revision already has a correction that is not issued yet (BR-410).</summary>
+    /// <summary>The issued revision already has a correction that is not issued yet (BR-137, BR-138).</summary>
     CorrectionInProgress,
-    /// <summary>A correction is rebuilt from the template: it starts from the issued text and is corrected by hand (BR-413).</summary>
+    /// <summary>A correction is rebuilt from the template: it starts from the issued text and is corrected by hand (BR-137, BR-138).</summary>
     CorrectionRebuild,
 }
 
@@ -93,16 +93,16 @@ public interface IMinutesService
     Task<MinutesOutcome> SaveAsync(Guid minutesId, Guid actorId, string? content, DateTimeOffset? loadedAt, CancellationToken ct = default);
     /// <summary>The draft as a Word or a PDF file, drawn from the same HTML the page shows.</summary>
     Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, MinutesExportFormat format, CancellationToken ct = default);
-    /// <summary>One revision, for opening a superseded one from the history (UC-58).</summary>
+    /// <summary>One revision, for opening a superseded one from the history (UC-69).</summary>
     Task<MinutesOutcome> GetRevisionAsync(Guid minutesId, Guid actorId, CancellationToken ct = default);
-    /// <summary>UC-61: the Secretary sends a Draft or Rejected revision to the Chair once the meeting has ended.</summary>
+    /// <summary>UC-72: the Secretary sends a Draft or Rejected revision to the Chair once the meeting has ended.</summary>
     Task<MinutesOutcome> SubmitAsync(Guid minutesId, Guid actorId, DateTimeOffset? loadedAt, CancellationToken ct = default);
-    /// <summary>UC-64: the Chair approves the revision waiting for approval, which issues it at once.</summary>
+    /// <summary>UC-73: the Chair approves the revision waiting for approval, which issues it at once.</summary>
     Task<MinutesOutcome> ApproveAsync(Guid minutesId, Guid actorId, DateTimeOffset? loadedAt, CancellationToken ct = default);
-    /// <summary>UC-65: the Chair sends the revision waiting for approval back to the Secretary with a reason.</summary>
+    /// <summary>UC-74: the Chair sends the revision waiting for approval back to the Secretary with a reason.</summary>
     Task<MinutesOutcome> ReturnAsync(Guid minutesId, Guid actorId, string? reason, DateTimeOffset? loadedAt,
         CancellationToken ct = default);
-    /// <summary>UC-83: a new Draft revision that starts from the issued text of <paramref name="minutesId"/>.</summary>
+    /// <summary>UC-75: a new Draft revision that starts from the issued text of <paramref name="minutesId"/>.</summary>
     Task<MinutesOutcome> CorrectAsync(Guid minutesId, Guid actorId, CancellationToken ct = default);
 }
 
@@ -144,7 +144,7 @@ public interface IMeetingMinutesRepository
 
     /// <summary>
     /// The meeting's revisions, newest first, untracked: all of them for one of the two officers
-    /// (<paramref name="manages"/>), only the Issued and Superseded ones for anyone else (BR-412).
+    /// (<paramref name="manages"/>), only the Issued and Superseded ones for anyone else (BR-139).
     /// </summary>
     Task<IReadOnlyList<MinutesRevisionRow>> ListRevisionsAsync(Guid meetingId, bool manages, CancellationToken ct);
 

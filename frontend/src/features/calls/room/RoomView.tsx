@@ -143,7 +143,7 @@ export function RoomView({
   lobbyMic?: LobbyMic
   onLeave: () => Promise<void>
 }) {
-  // The role the room was joined with holds only until the roster says otherwise (BR-328).
+  // The role the room was joined with holds only until the roster says otherwise (UC-43).
   const roleOf = useRoomRoles(meeting.id)
   const currentRole = roleOf(room.localParticipant) ?? myRole
   // Register to Speak (SCRUM-27): the raise-hand button, the "Đến lượt bạn" banner, the Chair's alerts, the panel and
@@ -1104,7 +1104,7 @@ function StartAudioBanner() {
 }
 
 /**
- * Raise or lower one's hand from the call controls, as in Meet (SCRUM-27, UC-79 step 1, AF-1). During one's own turn
+ * Raise or lower one's hand from the call controls, as in Meet (SCRUM-27, UC-50 step 1, AF-1). During one's own turn
  * the same button closes it (step 7). It waits for the first read of the queue: the server records someone as in the
  * room only once LiveKit reports them joined, so a click in the first seconds can still answer MSG458, said in a toast.
  */
@@ -1133,8 +1133,8 @@ function HandButton({ meetingId, speaking }: { meetingId: string; speaking: Spea
 }
 
 /**
- * "Đến lượt bạn" (UC-79 step 5): stays under the title bar while the Chair's invitation waits on the caller. Being
- * invited never turns the microphone on (BR-338), so the banner offers that first, then the start of the turn.
+ * "Đến lượt bạn" (UC-50 step 5): stays under the title bar while the Chair's invitation waits on the caller. Being
+ * invited never turns the microphone on (BR-104–BR-106), so the banner offers that first, then the start of the turn.
  */
 function TurnBanner({
   meetingId,

@@ -12,7 +12,7 @@ import { api } from './client'
 import { filesForm, type Upload, type UploadOptions } from './documents'
 
 /**
- * Votes during a meeting (SCRUM-28, UC-52a–UC-57). Contract in docs/03-api/15-bieu-quyet.md.
+ * Votes during a meeting (SCRUM-28, UC-62a–UC-67). Contract in docs/03-api/15-bieu-quyet.md.
  *
  * Every write answers only a code and a message: re-read the list (or wait for `voteChanged`) to see
  * the new state. A vote the caller may not see answers 404 MSG205, the same as one that does not exist.
@@ -38,14 +38,14 @@ export const deleteVote = (meetingId: string, voteId: string) =>
 export const openVote = (meetingId: string, voteId: string) =>
   api.post<VoteMutationResponse>(`${base(meetingId)}/${voteId}/open`)
 
-/** One ballot, never changed or withdrawn (BR-265). */
+/** One ballot, never changed or withdrawn (BR-092, BR-093). */
 export const castBallot = (meetingId: string, voteId: string, optionId: string) =>
   api.post<VoteMutationResponse>(`${base(meetingId)}/${voteId}/ballots`, { optionId })
 
 export const closeVote = (meetingId: string, voteId: string) =>
   api.post<VoteClosedResponse>(`${base(meetingId)}/${voteId}/close`)
 
-/** Recorded once, never edited (BR-262); the system never derives it from the tally (BR-263). */
+/** Recorded once, never edited (BR-099); the system never derives it from the tally (BR-099). */
 export const recordVoteConclusion = (
   meetingId: string,
   voteId: string,
@@ -54,30 +54,30 @@ export const recordVoteConclusion = (
 ) => api.post<VoteMutationResponse>(`${base(meetingId)}/${voteId}/conclusion`, { conclusion, note })
 
 /**
- * UC-76a (SCRUM-96): documents of a Draft vote, Chair or Secretary only (409 MSG213 otherwise), all or none
- * (BR-304). From the meeting's documents: 404 MSG170, 409 MSG266 already attached, 503 MSG267.
+ * UC-68a (SCRUM-96): documents of a Draft vote, Chair or Secretary only (409 MSG213 otherwise), all or none
+ * (UC-36b). From the meeting's documents: 404 MSG170, 409 MSG266 already attached, 503 MSG267.
  */
 export const attachVoteDocuments = (meetingId: string, voteId: string, meetingDocumentIds: string[]) =>
   api.post<VoteDocumentsAttached>(`${base(meetingId)}/${voteId}/documents`, { meetingDocumentIds })
 
 /**
- * UC-76a AF-2: library documents, added to the meeting and attached in one save; one already in the meeting is attached
+ * UC-68a AF-2: library documents, added to the meeting and attached in one save; one already in the meeting is attached
  * as it is. 400 MSG249, 409 MSG266 already attached, 503 MSG166.
  */
 export const attachVoteFromLibrary = (meetingId: string, voteId: string, documentIds: string[]) =>
   api.post<VoteDocumentsAttached>(`${base(meetingId)}/${voteId}/documents/from-library`, { documentIds })
 
-/** UC-76a AF-1: files from the computer, as the meeting upload (MSG164, MSG288, MSG346, MSG166). */
+/** UC-68a AF-1: files from the computer, as the meeting upload (MSG164, MSG288, MSG346, MSG166). */
 export const uploadVoteDocuments = (meetingId: string, voteId: string, files: Upload, options: UploadOptions = {}) =>
   api.upload<VoteDocumentsAttached>(`${base(meetingId)}/${voteId}/documents/upload`, filesForm(files), options)
 
-/** UC-76b: only the link goes; the document stays in the meeting (BR-305). 404 MSG269, 503 MSG270. */
+/** UC-68b: only the link goes; the document stays in the meeting (UC-68b). 404 MSG269, 503 MSG270. */
 export const detachVoteDocument = (meetingId: string, voteId: string, meetingDocumentId: string) =>
   api.delete<VoteMutationResponse>(`${base(meetingId)}/${voteId}/documents/${meetingDocumentId}`)
 
 /**
- * UC-74: the caller read a vote document to its last page — sent only once the viewer has been
- * scrolled there (BR-290). One confirmation counts for every vote that links the document (BR-291);
+ * UC-42: the caller read a vote document to its last page — sent only once the viewer has been
+ * scrolled there (UC-42). One confirmation counts for every vote that links the document (UC-42);
  * a second one answers 200 with `alreadyConfirmed`.
  */
 export const confirmDocumentRead = (meetingId: string, meetingDocumentId: string) =>

@@ -30,15 +30,15 @@ type Content =
   | { kind: 'gone' }
 
 /**
- * UC-32c Preview Meeting Document (SCRUM-21, wireframe 7.5 / 7.5b), full screen. The server sends
- * the original bytes (BR-183, BR-216) and the browser draws them: a PDF page by page with pdf.js, a
+ * UC-35b Preview Meeting Document (SCRUM-21, wireframe 7.5 / 7.5b), full screen. The server sends
+ * the original bytes (BR-068) and the browser draws them: a PDF page by page with pdf.js, a
  * DOCX as one flowing text with docx-preview. Every open of a Secret meeting's
- * document is audited by the server (BR-318).
+ * document is audited by the server (BR-011).
  *
  * A click in the app opens it over the page instead (`MeetingDocumentViewer` in DocumentOverlay, Hải 19/11/2026), so
  * the call room keeps its call; this route is what a link opened in a new tab lands on, and "‹ Tài liệu" closes a tab
- * the call room opened. Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them — for a verified guest too
- * (BR-181), whose session ends with the meeting, so a guest never sees the read-only list.
+ * the call room opened. Comments (UC-38, SCRUM-23) sit beside the document; "Góp ý" shows or hides them — for a verified guest too
+ * (BR-055), whose session ends with the meeting, so a guest never sees the read-only list.
  */
 export function DocumentViewerPage() {
   const { meetingId = '', documentId = '' } = useParams()
@@ -108,7 +108,7 @@ export function DocumentViewer({
   meetingId: string
   documentId: string
   meeting: ViewerMeetingSource
-  /** Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached. */
+  /** Opened from a vote still waiting on this reader (UC-42): confirm once the last page is reached. */
   reading?: boolean
   /** Shown over a page: a close button instead of the way back to the meeting's tab. */
   onClose?: () => void
@@ -340,7 +340,7 @@ export function ViewerGone({
 }
 
 /**
- * `reached` once the reader has scrolled to the end of what is drawn (BR-290) — the last PDF page or the
+ * `reached` once the reader has scrolled to the end of what is drawn (UC-42) — the last PDF page or the
  * end of a DOCX — or the whole document fits on screen. Nothing drawn yet is never the end. `unreadable`
  * when the renderer could not draw the file, so the reader is told instead of waiting on a locked button.
  * Either one stays. Checked on scroll and every second, since pages keep drawing after the file loads.
