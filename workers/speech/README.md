@@ -19,7 +19,7 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 
 | Vai trò | Model | License | Nguồn |
 |---|---|---|---|
-| Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, fp32 (bản gốc; bản int8 dùng tới 24/11/2026, xem [ADR-0085](../../docs/05-decisions/0085-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md)) | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
+| Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, fp32 (bản gốc; bản int8 dùng tới 24/11/2026, xem [ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md)) | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
 | Vector giọng (512 chiều) — dùng cho cả tách người nói lẫn Voice ID | 3D-Speaker ERes2Net base, huấn luyện trên 200k người nói | Apache-2.0 | bản ONNX của k2-fsa |
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
 | Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
@@ -203,7 +203,7 @@ Các bước xử lý một bản ghi:
    - Nhóm nào có dưới 2 giây tiếng (ho, cười, tiếng ồn), hay dưới 2% tổng thời lượng lời của bản ghi nếu con số đó lớn
      hơn (khoảng một phút với buổi họp một giờ), được nhập vào người gần nhất. Trên bản ghi phòng dài, các nhóm nhỏ đó
      phần lớn là chỗ hai người nói chồng nhau, nên không phải một người
-     ([ADR-0085](../../docs/05-decisions/0085-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md), xem
+     ([ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md), xem
      [Hiệu chỉnh](#cuộc-họp-dài-mic-xa-25112026)).
    - Một khung lẻ khác nhãn với cả hai khung bên cạnh thì lấy theo nhãn của chúng.
    - Các khung liền nhau cùng nhãn ghép thành một lượt nói.
@@ -514,7 +514,7 @@ Mic phòng buổi họp 24/11/2026 (62 phút, laptop trên bàn, −40 dBFS, nó
 đáp án chính xác: câu đọc VIVOS đặt vào một phòng xa (`eval/far_meeting.py`: mỗi người một khoảng cách và độ vang, một
 người qua loa laptop, ồn, rì rầm, 15–25% lượt nói chồng, người chỉ nói vài giây) và các cuộc họp ngắn của
 `vivos_dataset.py`; đo bằng chính code worker (`eval/meeting_bench.py`, [eval/](eval/README.md#6-cuộc-họp-dài-mic-xa-tách-người-nói-và-chuyển-chữ-cả-buổi)).
-Quyết định và các phương án đã thử: [ADR-0085](../../docs/05-decisions/0085-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md).
+Quyết định và các phương án đã thử: [ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md).
 
 Trên cuộc họp dài, gom nhóm để lại một đuôi nhóm nhỏ 3–124 giây bên cạnh người thật, phần lớn có độ thuần chỉ khoảng 0,5:
 khung hai người nói chồng nhau, giọng nửa người này nửa người kia, không đủ giống ai để gộp lần hai (0,8) nhận. Hai thay

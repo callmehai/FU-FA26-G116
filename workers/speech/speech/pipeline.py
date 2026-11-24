@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 SAMPLE_RATE = 16000
 
 # --- Transcription ----------------------------------------------------------------------------
-# The recogniser's files (models.manifest): Gipformer as published, in fp32, not its int8 copy (ADR-0085). The int8
+# The recogniser's files (models.manifest): Gipformer as published, in fp32, not its int8 copy (ADR-0086). The int8
 # copy loses words where the speech is far and noisy: on synthetic far-field meetings WER 11.8% → 11.1% and 8.2% → 7.6%,
 # on spontaneous speech played through a far room (VietMed) 23.0% → 22.1%, on read speech 4.9% → 4.7%. It costs about
 # 45% more time in the recogniser (a whole run on a Mac M1: RTF 0.133 → 0.137 on 50 minutes, 0.139 → 0.153 on 8), a
@@ -124,7 +124,7 @@ MIN_REGION_S = 0.5
 # A cluster with less speech than this is not a person but noise, laughter or a cough; its windows
 # join the nearest real speaker. Skipped when the caller states the number of speakers.
 MIN_SPEAKER_S = 2.0
-# ...nor is a cluster with less than this share of the recording's speech (ADR-0085). On a long room recording the
+# ...nor is a cluster with less than this share of the recording's speech (ADR-0086). On a long room recording the
 # clustering leaves a tail of small clusters beside the real people: windows where two people talk at once (half one
 # person, half the other), a laugh, the far end of a laptop speaker. A real meeting of 24/11/2026 (62 minutes, 6–7
 # people) came out as 20–25 voices, only about 7 with more than a minute. On synthetic far-field meetings with exact

@@ -3,7 +3,7 @@
 # fetch_models.py downloads and verifies these; the server verifies them again at boot.
 
 # Gipformer 1.5 — 68M RNN-T Zipformer, Vietnamese ASR, fp32 as published (its int8 copy lost words on
-# far-field speech, ADR-0085) — MIT — g-group-ai-lab; pinned to the repository commit of the files
+# far-field speech, ADR-0086) — MIT — g-group-ai-lab; pinned to the repository commit of the files
 gipformer/encoder.onnx 96b3c83c9c39afc4421f8fd2914d26b53ae837e56788a7bd5aece61580937c36 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/encoder.onnx
 gipformer/decoder.onnx ea584ee86d6f74191f934f8b950013adcb2c33483785aa8b1b44fff3a7b30069 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/decoder.onnx
 gipformer/joiner.onnx d146a1cff4a0060d7031e5eb91295773661bc52c356c952dd1e2759e60ffa94d https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/joiner.onnx

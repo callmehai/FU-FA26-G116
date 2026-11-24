@@ -1,4 +1,4 @@
-# ADR-0085: Tách người nói và chuyển chữ bản ghi mic phòng dài
+# ADR-0086: Tách người nói và chuyển chữ bản ghi mic phòng dài
 
 - **Trạng thái:** Đề xuất — PO (Hải) 24/11/2026 ("làm cho ASR ngon nhất")
 - **Ngày:** 2026-11-25
