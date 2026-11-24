@@ -109,7 +109,7 @@
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Resend Email" vertex="1">
           <mxGeometry height="62" width="30" x="575" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="908" y="1086" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=14;" target="google-idp" value="">
@@ -331,7 +331,7 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="733" y="43" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="15" y="925" as="geometry" />
         </mxCell>
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Resend Email" vertex="1">
@@ -540,7 +540,7 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="718" y="42" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="530" y="986" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="google-idp" value="">
@@ -802,7 +802,7 @@
         <mxCell id="lMDspKOW9tZkqD3S5ANH-2" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-94">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="530" y="1682" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=15;" target="google-idp" value="">
@@ -1146,7 +1146,7 @@
         <mxCell id="QZBPk-3CErwZJUTzZ7o0-3" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-94">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="530" y="1798" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=15;" target="google-idp" value="">
@@ -1436,7 +1436,7 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="791" y="29" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="Cloudflare R2" vertex="1">
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
           <mxGeometry height="62" width="30" x="593" y="1215" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=15;" target="google-idp" value="">
