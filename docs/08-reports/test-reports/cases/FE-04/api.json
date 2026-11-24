@@ -1054,7 +1054,7 @@
           ],
           "expected": [
             "HTTP 200 OK. Body: { \"code\": \"MSG45\", \"message\": \"Đã công bố cuộc họp.\", \"meeting\": { ... \"status\": \"Published\" }, \"history\": { ... } }.",
-            "Every active, non-delegated roster member except the Organizer has a \"MeetingPublished\" notification.",
+            "Every active current roster member except the Organizer has a \"MeetingPublished\" notification.",
             "With SMTP enabled an email job with an .ics file is queued per roster member; the 200 does not promise delivery."
           ],
           "preconditions": [
@@ -1062,7 +1062,7 @@
             "Approved meeting created by the Organizer with exactly one Chair and at least one Secretary on the roster.",
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
-          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_without_a_meeting_session_returns_MSG45_and_commits)",
+          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_current_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_without_a_meeting_session_returns_MSG45_and_commits)",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

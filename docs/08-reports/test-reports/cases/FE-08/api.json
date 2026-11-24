@@ -178,21 +178,20 @@
         },
         {
           "id": "ROOM_API_IT09",
-          "description": "Verify a member who delegated attendance cannot read the room.",
+          "description": "Verify a deactivated member cannot read the room.",
           "procedure": [
-            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/{M1}/call."
+            "Deactivate the Member of the meeting (the access token stays valid).",
+            "Send GET /api/meetings/{M1}/call with the Member token."
           ],
           "expected": [
-            "HTTP 404 Not Found: only a current, non-delegated assignment opens the room."
+            "HTTP 403 Forbidden with an empty body: a valid token of a deactivated account opens nothing."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "LiveKit configured on the test build (the online room works in a browser).",
-            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
-            "The Member has delegated attendance to another user (response Delegated)."
+            "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster.",
+            "The Member account is deactivated."
           ],
-          "note": "UC-37 PRE-3 | BR-323 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Delegated_member_reads_no_room)",
+          "note": "UC-37 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_reads_nothing) · Rewritten after app PR #535 removed attendance delegation (InvitationResponse.Delegated gone): the old delegation case is replaced by the deactivated-member refusal, which the code answers with 403.",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

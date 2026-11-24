@@ -752,7 +752,7 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
             "Approved meeting with one Chair, a Secretary and a Member on the roster."
           ],
-          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner) · Evidence(AC13): tests/qa/out/FE-04/20261121-164619-eb5a3255/21-secretary-AC13-desktop-da-duyet-cho-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/22-secretary-AC13-desktop-xac-nhan-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/23-secretary-AC13-desktop-da-cong-bo.png",
+          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_current_participants_and_passes_meeting_id_to_the_email_owner) · Evidence(AC13): tests/qa/out/FE-04/20261121-164619-eb5a3255/21-secretary-AC13-desktop-da-duyet-cho-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/22-secretary-AC13-desktop-xac-nhan-cong-bo.png; tests/qa/out/FE-04/20261121-164619-eb5a3255/23-secretary-AC13-desktop-da-cong-bo.png",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"

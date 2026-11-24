@@ -260,25 +260,6 @@ public sealed class SpeakingNotesRound1Tests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
-    public async Task Delegated_member_reads_no_room()
-    {
-        // A member who delegated attendance gave their seat away (UC-37 PRE-3, BR-323).
-        var s = await f.Seed(MeetingStatus.InProgress);
-        await using (var db = f.Db())
-        {
-            var meeting = await db.Meetings.SingleAsync(m => m.Id == s.MeetingId);
-            meeting.Mode = MeetingMode.Online;
-            var participant = await db.MeetingParticipants
-                .SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Member);
-            participant.Response = InvitationResponse.Delegated;
-            await db.SaveChangesAsync();
-        }
-
-        using var member = f.Client(s.Member);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/meetings/{s.MeetingId}/call")).StatusCode);
-    }
-
-    [Fact]
     public async Task Organizer_outside_the_roster_still_reads_the_queue()
     {
         // Any reader of the meeting sees the queue, but only the Chair manages it.
