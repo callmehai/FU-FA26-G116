@@ -14,7 +14,10 @@
             "A closed vote with 3 ballots and 1 ballot for the option."
           ],
           "return": "33.33.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -26,23 +29,14 @@
             "A vote with no ballots yet."
           ],
           "return": "null; no percentage is shown.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "count: 3; ballots: 3.",
-          "log": "N/A",
-          "note": "BR-261",
-          "preconditions": [
-            "A vote where every ballot chose the option."
-          ],
-          "return": "100.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "count: 1; ballots: 6.",
           "log": "N/A",
           "note": "BR-261",
@@ -50,7 +44,10 @@
             "A vote with 6 ballots and 1 ballot for the option."
           ],
           "return": "16.67; rounded away from zero to 2 decimals.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",

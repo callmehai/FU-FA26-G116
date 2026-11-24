@@ -21,82 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-60 · BR-264"
+          "note": "UC-59 · UC-60 · BR-264",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Start 2026-11-10T18:00Z, which is 01:00 on 2026-11-11 in Hanoi."
-          ],
-          "inputs": "records.StartedAt: 2026-11-10T18:00Z; zone: Hanoi.",
-          "return": "\"**Thời gian bắt đầu:** 01 giờ 00 phút, ngày 11/11/2026.\"; the date follows Vietnam time, not UTC.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Place is blank or only spaces."
-          ],
-          "inputs": "records.Place: \"   \".",
-          "return": "\"**Địa điểm:** …….\" - the blank mark \"……\" followed by a full stop.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Exactly one person present."
-          ],
-          "inputs": "records.People: one line, Away false.",
-          "return": "\"**Thành phần tham dự:** 01 người có mặt, gồm:\" and a single line ending with a full stop (not a semicolon).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Ten people present."
-          ],
-          "inputs": "records.People: 10 lines, Away false.",
-          "return": "\"10 người có mặt\"; the first nine lines end with \";\" and the last with \".\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Everyone is marked absent or excused."
-          ],
-          "inputs": "records.People: 2 lines, both Away true.",
-          "return": "\"**Thành phần tham dự:** …… người có mặt, gồm:\" followed by \"- …….\"; absentees are not listed.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "No Chair and no Secretary are known."
-          ],
-          "inputs": "records.Chair: null; records.Secretary: null.",
-          "return": "Both lines show \"……\"; the signature row shows \"Họ và tên\" in each cell.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC008",
           "preconditions": [
             "Secretary name contains a vertical bar."
           ],
@@ -105,70 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59"
+          "note": "UC-59",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Title and names contain marks the template reserves."
-          ],
-          "inputs": "records.Title: \"**Họp** #1\"; person name \"__An__\".",
-          "return": "Marks \"**\" and \"__\" are stripped (\"Họp #1\", \"An\"); text typed by people never becomes bold, a heading or a signature block.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-59 · BR-385"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Meeting ended at 2026-11-10T04:30Z."
-          ],
-          "inputs": "records.EndedAt: 2026-11-10T04:30Z.",
-          "return": "Closing line \"Cuộc họp kết thúc vào 11 giờ 30 phút, ngày 10 tháng 11 năm 2026./.\"",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Meeting has no recorded end."
-          ],
-          "inputs": "records.EndedAt: null.",
-          "return": "Closing line \"Cuộc họp kết thúc vào …… giờ …… phút, ngày …… tháng …… năm ……./.\"",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "No draft; agenda has item 1 \"Báo cáo\" presented by \"Phạm Dũng\" and item 2 \"Khác\" with no presenter; no notes."
-          ],
-          "inputs": "draft: null; records.Agenda: 2 items.",
-          "return": "Section II lists \"### 1. Báo cáo\" with \"Phạm Dũng trình bày. ……\", then \"### 2. Khác\" with \"……\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "No draft, no agenda and no notes."
-          ],
-          "inputs": "draft: null; records.Agenda: []; records.Notes: null.",
-          "return": "Section II holds just \"……\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC014",
+          "id": "UTC003",
           "preconditions": [
             "No draft; agenda items with recorded conclusions \"Duyệt ngân sách\" (item \"Ngân sách\") and none for the other item; two vote result lines."
           ],
@@ -177,22 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · BR-264 · BR-392"
+          "note": "UC-59 · BR-264 · BR-392",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC015",
-          "preconditions": [
-            "No draft; no conclusions, no votes, no notes."
-          ],
-          "inputs": "draft: null; records.Votes: [].",
-          "return": "Section III under \"1. Kết luận của chủ trì\" holds \"……\"; the \"Kết quả biểu quyết:\" line is absent; tasks show \"……\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · BR-392"
-        },
-        {
-          "id": "UTC016",
+          "id": "UTC004",
           "preconditions": [
             "No draft; the Secretary's notes: an unmarked note on item 1 and a note \"Kết luận: Duyệt\" and \"Nhiệm vụ: Gửi báo cáo\" on the same item."
           ],
@@ -201,34 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82 · BR-392"
+          "note": "UC-59 · UC-82 · BR-392",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC017",
-          "preconditions": [
-            "A reviewed or unreviewed draft with Objectives, Discussion and Conclusions text."
-          ],
-          "inputs": "draft: Objectives \"Mục tiêu A\"; Discussion \"1. Báo cáo\\nNội dung thảo luận\"; Conclusions \"1. Kết luận của chủ trì\\nDuyệt\".",
-          "return": "Section I shows \"Mục tiêu A\"; in section II \"1. Báo cáo\" becomes \"### 1. Báo cáo\" followed by the plain line; in section III the sub-heading becomes \"### 1. Kết luận của chủ trì\"; agenda, notes and conclusions of the records are not used.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-59 · UC-49"
-        },
-        {
-          "id": "UTC018",
-          "preconditions": [
-            "Draft with empty sections."
-          ],
-          "inputs": "draft: Objectives \"\"; Discussion \"  \"; Conclusions null.",
-          "return": "Each of the three sections shows \"……\".",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59"
-        },
-        {
-          "id": "UTC019",
+          "id": "UTC005",
           "preconditions": [
             "Draft whose text imitates the template's marks."
           ],
@@ -237,10 +81,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · BR-385"
+          "note": "UC-59 · BR-385",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC020",
+          "id": "UTC006",
           "preconditions": [
             "Draft discussion with a numbered line of 152 characters after \"1. \" (too long to be a title)."
           ],
@@ -249,7 +96,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-59"
+          "note": "UC-59",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Application"

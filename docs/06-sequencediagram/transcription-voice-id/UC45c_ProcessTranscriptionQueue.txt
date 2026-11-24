@@ -48,8 +48,7 @@ else A transcript was claimed
     deactivate RecordingRepository
 
     alt Recording was erased, or a take was appended while running
-        TranscriptionService->TranscriptionService: Discard the result: an erased recording keeps no transcript,\nan extended one is already queued again (BR-345, BR-348)
-    else Transcription failed - EX-3
+    else Transcription failed - EX-2
         TranscriptionService->TranscriptRepository: Mark the transcript Failed with the reason for the Secretary
         activate TranscriptRepository
         TranscriptRepository->Database: Update transcript
@@ -83,8 +82,7 @@ else A transcript was claimed
         activate SpeakerMatcher
         SpeakerMatcher-->TranscriptionService: Best person per voice, with its score
         deactivate SpeakerMatcher
-        TranscriptionService->TranscriptionService: Fill in the name by itself when the match is clear\nand the person accepted notice 1.2 (BR-362, BR-366)
-        TranscriptionService->TranscriptRepository: Replace segments and voices with the new ones, the names filled\nin and the suggestions; mark the transcript Completed (BR-360, BR-366)
+        TranscriptionService->TranscriptRepository: Replace segments and voices with the new ones, the names filled\nin and the suggestions; carry the names, edited text and moved sentences\nthe Secretary set by hand onto the matching new voices and sentences\nand mark the transcript Completed (BR-360, BR-366, BR-467)
         activate TranscriptRepository
         TranscriptRepository->Database: Replace segments and speakers, update transcript
         activate Database
@@ -92,7 +90,6 @@ else A transcript was claimed
         deactivate Database
         TranscriptRepository-->TranscriptionService: Transcript saved
         deactivate TranscriptRepository
-        TranscriptionService->TranscriptionService: Drop the voice profiles of the Meeting, they are never stored
     end
 
     opt Transcript was saved Failed or Completed

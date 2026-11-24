@@ -106,7 +106,7 @@ trong 30 giây.
 
 ### 5. Kho tệp tài liệu
 
-Tài liệu cuộc họp lưu trên kho đối tượng có API S3: Cloudflare R2 ở server test, SeaweedFS ở máy dev
+Tài liệu cuộc họp lưu trên kho đối tượng có API S3: SeaweedFS tự host ở server `app` (chỉ nằm trong mạng Docker, không mở cổng ra ngoài), Cloudflare R2 ở server demo `main` đã đóng băng, SeaweedFS ở máy dev
 ([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)). Không làm phần tài liệu thì bỏ qua:
 backend vẫn chạy, tải tài liệu trả `503/MSG166`.
 

@@ -15,23 +15,14 @@
             "Session lifetime is 12 hours."
           ],
           "return": "GuestAccessResult success with GuestVerified { accessToken, expiresAt = now + 12 hours, meetingId, profileCompleted: false }; K1 is marked consumed and one guest session row is created.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
-          "log": "Audit row GuestVerified; session row added.",
-          "note": "UC-04 · BR-153 · BR-180",
-          "preconditions": [
-            "As above, and the invitation already carries a self-declared display name."
-          ],
-          "return": "GuestAccessResult success with profileCompleted: true.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\"; code: \"123456\".",
           "log": "N/A",
           "note": "UC-04 · BR-152 · MSG371",
@@ -39,23 +30,14 @@
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no challenge is read.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
-          "log": "N/A",
-          "note": "UC-04 · BR-157 · MSG371",
-          "preconditions": [
-            "Invitation I1 is revoked, or its meeting is Ended."
-          ],
-          "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
           "log": "N/A",
           "note": "UC-04 · BR-153 · MSG126",
@@ -63,23 +45,14 @@
             "No challenge was ever created for I1."
           ],
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126) without remainingAttempts.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
-          "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "The latest challenge of I1 was already consumed by an earlier verification."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126); no new session.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
+          "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: <correct code>.",
           "log": "N/A",
           "note": "UC-04 · BR-153 · MSG126",
@@ -87,23 +60,14 @@
             "The latest challenge expires at exactly the current time (15 minutes after creation)."
           ],
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126): a code whose expiry is not later than now is refused.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: <correct code>.",
-          "log": "Audit row GuestVerified; session row added.",
-          "note": "UC-04 · BR-153 · BR-444",
-          "preconditions": [
-            "The latest challenge expires in 1 second."
-          ],
-          "return": "GuestAccessResult success: the code is still valid.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
+          "id": "UTC005",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: <even the correct code>.",
           "log": "N/A",
           "note": "UC-04 · BR-153 · MSG372",
@@ -111,103 +75,10 @@
             "The latest challenge already has 5 failed attempts."
           ],
           "return": "GuestAccessResult Failure(CodeLocked) (MSG372); no session.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"12345\" (5 digits).",
-          "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Latest challenge has 0 failed attempts."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts 5; the failed-attempt counter is not increased.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"12a456\" (contains a letter).",
-          "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Latest challenge has 2 failed attempts."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts 3; counter unchanged.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: null.",
-          "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Latest challenge is live."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts 5.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"654321\".",
-          "log": "Failed attempt count saved.",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Latest challenge code is \"123456\" with 0 failed attempts."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts 4; the failed-attempt counter becomes 1.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: <wrong 6-digit code>.",
-          "log": "Failed attempt count saved.",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Latest challenge has 3 failed attempts."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts 1; counter becomes 4.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: <wrong 6-digit code>.",
-          "log": "Failed attempt count saved.",
-          "note": "UC-04 · BR-153 · MSG372",
-          "preconditions": [
-            "Latest challenge has 4 failed attempts (one try left)."
-          ],
-          "return": "GuestAccessResult Failure(CodeLocked) (MSG372): the 5th wrong entry locks the code; counter becomes 5.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"111111\" (the replaced code, typed before the new email arrived).",
-          "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
-          "preconditions": [
-            "Guest requested a second code: challenge K2 (newest, code \"222222\") replaced K1 (code \"111111\")."
-          ],
-          "return": "GuestAccessResult Failure(InvalidCode) (MSG126) with remainingAttempts = 5 - K2 failed attempts; K2 counter is not increased.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC017",
-          "inputs": "invitationId: I1; linkToken: <valid link token>; code: <correct code>.",
-          "log": "Error log \"Could not verify a code for guest invitation {InvitationId}.\"",
-          "note": "UC-04 · MSG374",
-          "preconditions": [
-            "Saving the session fails with a persistence error."
-          ],
-          "return": "GuestAccessResult Failure(Unavailable) (MSG374); no session is created.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",

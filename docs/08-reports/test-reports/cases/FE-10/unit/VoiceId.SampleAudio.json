@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-81d · BR-364"
+          "note": "UC-81d · BR-364",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,7 +36,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81d · BR-364"
+          "note": "UC-81d · BR-364",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -45,19 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81d · BR-362 · BR-364"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "User owns a sample whose audio no longer decrypts after a key change."
-          ],
-          "inputs": "actorId: the sample owner; sampleId: a sample with an unreadable recording.",
-          "return": "Null; the person is simply not heard back.",
-          "exception": "N/A",
-          "log": "Warning logged with the sample id.",
-          "type": "Abnormal",
-          "note": "UC-81d · BR-364"
+          "note": "UC-81d · BR-362 · BR-364",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

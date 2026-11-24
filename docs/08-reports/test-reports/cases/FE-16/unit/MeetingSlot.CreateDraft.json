@@ -23,24 +23,13 @@
           "exception": "N/A",
           "log": "Draft meeting, its status history row and staged invitations saved; no duplicate-time check is made.",
           "type": "Normal",
-          "note": "UC-85b · UC-14 · BR-429 · MSG29"
+          "note": "UC-85b · UC-14 · BR-429 · MSG29",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh and Cuong are active users with Effective shares to An covering 2026-11-24.",
-            "Cuong is busy on 2026-11-24 from 09:00 to 10:00 and is named in acceptedBusyUserIds."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with userIds [Binh, Cuong], buffer 30, accepted [Cuong].",
-          "return": "Meeting Success: Draft meeting saved with roster Binh Chair, Cuong Member, An Secretary; the endpoint answers 201 MSG29.",
-          "exception": "N/A",
-          "log": "Draft meeting, its status history row and staged invitations saved.",
-          "type": "Normal",
-          "note": "UC-85b · BR-428 · MSG29"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active user without the Meeting Organizer right."
@@ -50,10 +39,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-430 · MSG448"
+          "note": "UC-85b · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active Meeting Organizer."
@@ -63,10 +55,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG277"
+          "note": "UC-85b · MSG277",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam.",
             "An is an active Meeting Organizer."
@@ -76,62 +71,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31"
+          "note": "UC-85b · MSG31",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with planned 2026-11-10T09:00:00+07:00 to 2026-11-10T10:00:00+07:00 (in the past).",
-          "return": "Failure InvalidSlot; errors.plannedStartTime is \"Thời gian bắt đầu phải sau thời điểm hiện tại.\"; the endpoint answers 400 MSG31.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · MSG31"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with planned end 2026-11-24T09:00:00+07:00 (equal to the start).",
-          "return": "Failure InvalidSlot; errors.plannedEndTime is \"Thời gian kết thúc phải sau thời gian bắt đầu, dài tối đa 8 giờ.\"; the endpoint answers 400 MSG31.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · MSG31"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer; Dung is an active user outside this slot."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with acceptedBusyUserIds [Dung].",
-          "return": "Failure InvalidSlot; errors.acceptedBusyUserIds is \"Danh sách người bận chỉ gồm người trong khung đã chọn.\"; the endpoint answers 400 MSG31.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · MSG31"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with bufferMinutes 245.",
-          "return": "Failure InvalidSlot; errors.bufferMinutes is \"Cách cuộc họp khác từ 0 đến 4 giờ, bội số của 5 phút.\"; the endpoint answers 400 MSG31.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · BR-422 · MSG31"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC005",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
             "An is an active Meeting Organizer; Binh and Cuong are active users with Effective shares to An covering 2026-11-24.",
@@ -142,66 +88,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-428 · MSG446"
+          "note": "UC-85b · BR-428 · MSG446",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh and Cuong are active users.",
-            "Cuong is free at the slot but Binh's share ended 2026-11-20, so 2026-11-24 is unknown for Binh and not accepted."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with userIds [Binh, Cuong], buffer 30, accepted [].",
-          "return": "Failure SlotTaken; the endpoint answers 409 MSG446 with the same message whether a hidden meeting or an ended share blocks the slot; no meeting is created.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · BR-415 · BR-428 · MSG446"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh is active and free at the slot.",
-            "Cuong was deactivated after the slot was found."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with userIds [Binh, Cuong], buffer 30, accepted [Cuong].",
-          "return": "Meeting InvalidParticipants; errors are keyed userIds[1] (\"Người dùng không tồn tại hoặc đã ngừng hoạt động.\"), never participants[1]; the endpoint answers 400 MSG277; no meeting is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85b · UC-14 · MSG277"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh and Cuong are active, shared and free at the slot.",
-            "The database fails while saving the meeting."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with userIds [Binh, Cuong], buffer 30, accepted [].",
-          "return": "Meeting SaveFailed; the endpoint answers 500 MSG35 (\"Không thể tạo cuộc họp. Vui lòng thử lại.\"); no meeting is kept.",
-          "exception": "N/A",
-          "log": "Error logged with the actor id.",
-          "type": "Abnormal",
-          "note": "UC-85b · MSG35"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer.",
-            "The database fails while rechecking the slot."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with userIds [Binh, Cuong], buffer 30, accepted [].",
-          "return": "Failure ReadFailed; the endpoint answers 500 MSG453 (\"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\"); no meeting is created.",
-          "exception": "N/A",
-          "log": "Error logged with the actor id.",
-          "type": "Abnormal",
-          "note": "UC-85b · MSG453"
-        },
-        {
-          "id": "UTC015",
+          "id": "UTC006",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
             "An is an active Meeting Organizer; 10 active users share Effective calendars with An and are free on 2026-11-24 from 07:00 to 17:00."
@@ -211,20 +104,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85b · BR-421"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is exactly 2026-11-18 10:00.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; input: the UTC015 meeting with planned start 2026-11-18T10:00:00+07:00 (exactly now).",
-          "return": "Failure InvalidSlot; errors.plannedStartTime is \"Thời gian bắt đầu phải sau thời điểm hiện tại.\"; the endpoint answers 400 MSG31.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-85b · MSG31"
+          "note": "UC-85b · BR-421",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -1,0 +1,61 @@
+# Hotwords for Gipformer (speech/hotwords.py): project words a TrustCabinet meeting says in English, which the model
+# tends to write as Vietnamese syllables ("COMM", "REPOT", "DEPROID", "LÔ GỒ" for commit, report, deploy, local).
+# One phrase per line, as the model spells it: it writes English loanwords in English letters ("REPORT", "TEST", "DATA"
+# come out as such). A line may end in " :<score>" to boost that phrase more or less than SPEECH_HOTWORDS_SCORE.
+#
+# Keep it short: each phrase also pulls look-alike speech towards it. Common Vietnamese meeting words (biên bản, dự thảo,
+# biểu quyết, tài liệu, cuộc họp…) are not listed: the model already gets them right, and on the room recording of
+# 23/11/2026 boosting them only added stray "chủ", "họp", "tài liệu" (README, "Từ khoá ưu tiên"). Add a word only
+# after hearing the model miss it, and re-run eval/hotwords_wer.py on a room recording and on VIVOS.
+#
+# "voice" and "bug" stay listed for whoever says them the English way, but said the Vietnamese way they sound like
+# "voi" and "bấc"/"bức", and the model writes those syllables whatever the boost.
+
+# Software project vocabulary, said in English
+report
+use case
+business rule
+sequence diagram
+review
+deploy
+server
+database
+sprint
+ticket
+test case
+merge
+commit
+branch
+bug
+fix
+frontend
+backend
+model
+demo
+slide
+deadline
+capstone
+transcript
+voice
+voice id
+mic
+data
+local
+template
+feature
+code
+
+# Acronyms, said letter by letter
+br
+uc
+pr
+api
+ai
+ui
+erd
+
+# Products and tools
+trustcabinet
+livekit
+jira
+claude

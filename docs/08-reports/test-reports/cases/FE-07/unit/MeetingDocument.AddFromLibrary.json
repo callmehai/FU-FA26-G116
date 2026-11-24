@@ -21,58 +21,13 @@
           "exception": "N/A",
           "log": "Two MeetingDocument rows added pointing at the same stored files (no bytes copied); one save.",
           "type": "Normal",
-          "note": "UC-33a · BR-209 · MSG161"
+          "note": "UC-33a · BR-209 · MSG161",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Same meeting."
-          ],
-          "inputs": "documentIds: [D1, D1].",
-          "return": "No failure; one document added; duplicate IDs are collapsed.",
-          "exception": "N/A",
-          "log": "One MeetingDocument row.",
-          "type": "Boundary",
-          "note": "UC-33a · BR-209"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Same meeting."
-          ],
-          "inputs": "documentIds: [] (nothing chosen).",
-          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG249"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "D2 belongs to another user."
-          ],
-          "inputs": "documentIds: [D1, D2].",
-          "return": "Failure LibraryUnavailable (HTTP 400, MSG249); D1 is not added either.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · BR-209 · MSG249"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "D1 was deleted from the library."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · BR-209 · MSG249"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "The meeting already holds the file of D1 as a general document."
           ],
@@ -81,22 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-193 · MSG165"
+          "note": "UC-33a · BR-193 · MSG165",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
-          "preconditions": [
-            "Chair earlier removed the file of D1 from the meeting."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "No failure; a new MeetingDocument row is created and the old comments do not come back.",
-          "exception": "N/A",
-          "log": "New MeetingDocument row (old removed row kept as history).",
-          "type": "Boundary",
-          "note": "UC-33a · BR-212 · BR-284"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC003",
           "preconditions": [
             "Actor is a Member of the meeting."
           ],
@@ -105,10 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-184 · MSG162"
+          "note": "UC-33a · BR-184 · MSG162",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC004",
           "preconditions": [
             "Meeting Ended."
           ],
@@ -117,55 +66,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-195 · MSG172"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Meeting Cancelled."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "Failure Cancelled (HTTP 409, MSG349).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · BR-299 · MSG349"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Meeting not found or not readable by the actor."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "Failure NotFound (HTTP 404, MSG174).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG174"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Actor deactivated."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "Failure Inactive; the endpoint answers 403 with no message code.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33a"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Database error on save."
-          ],
-          "inputs": "documentIds: [D1].",
-          "return": "Failure StoreFailed (HTTP 503, MSG166).",
-          "exception": "N/A",
-          "log": "Error log \"Failed to add library documents to meeting\".",
-          "type": "Abnormal",
-          "note": "UC-33a · MSG166"
+          "note": "UC-33a · BR-195 · MSG172",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

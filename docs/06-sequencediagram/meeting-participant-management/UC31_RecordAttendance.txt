@@ -1,90 +1,60 @@
 title UC-31 - Record Attendance
 
-actor "Secretary" as User
-boundary "Meeting Management Page" as MeetingPage
-control ":Meeting Participant Controller" as ParticipantController
-control ":Meeting Participant Service" as ParticipantService
-participant ":Meeting Participant Repository" as ParticipantRepository
+actor "Secretary" as Secretary
+boundary "Attendance Page" as AttendancePage
+control ":Attendance Controller" as AttendanceController
+control ":Attendance Service" as AttendanceService
+participant ":Attendance Repository" as AttendanceRepository
 database ":Database" as Database
 
-User->MeetingPage: Open the attendance of the Meeting (InProgress or Ended)
-activate MeetingPage
-MeetingPage->ParticipantController: Request the current attendance of the Meeting
-activate ParticipantController
-ParticipantController->ParticipantService: getMeetingAttendance(meeting, actor)
-activate ParticipantService
-ParticipantService->ParticipantRepository: Read current roster and attendance values with attendance versions
-activate ParticipantRepository
-ParticipantRepository->Database: Retrieve current roster and attendance information
-activate Database
-Database-->ParticipantRepository: Attendance information / Read failure
-deactivate Database
-ParticipantRepository-->ParticipantService: Attendance information / Read failure
-deactivate ParticipantRepository
-alt Attendance cannot be loaded - EX-6
-ParticipantService-->ParticipantController: MSG289 - Unable to load attendance data.
-ParticipantController-->MeetingPage: MSG289 - Unable to load attendance data.
-MeetingPage-->User: MSG289 - Unable to load attendance data.
-else Attendance loaded
-ParticipantService-->ParticipantController: Attendance values with attendance versions
-ParticipantController-->MeetingPage: Attendance values with attendance versions
-MeetingPage-->User: Display the attendance of each participant and Guest
-end
-deactivate ParticipantService
-deactivate ParticipantController
-deactivate MeetingPage
+Secretary->AttendancePage: Record attendance
+activate AttendancePage
 
-User->MeetingPage: Submit Present/Absent changes for selected internal participants or Guests
-activate MeetingPage
-MeetingPage->ParticipantController: Submit Present/Absent changes for selected internal participants or Guests
-activate ParticipantController
-ParticipantController->ParticipantService: recordMeetingAttendance(meeting, secretary, submittedEntries, attendanceChanges)
-activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles
-activate ParticipantRepository
-ParticipantRepository->Database: Retrieve current Meeting and roster information
+AttendancePage->AttendanceController: Save attendance (meetingId, entries)
+activate AttendanceController
+
+AttendanceController->AttendanceService: recordAttendance(meetingId, entries, secretary)
+activate AttendanceService
+
+AttendanceService->AttendanceRepository: Find meeting and verify secretary
+activate AttendanceRepository
+AttendanceRepository->Database: Retrieve meeting and roster
 activate Database
-Database-->ParticipantRepository: Current information / Read failure
+Database-->AttendanceRepository: Meeting and roster
 deactivate Database
-ParticipantRepository-->ParticipantService: Current information / Read failure
-deactivate ParticipantRepository
-ParticipantService->ParticipantService: Require active assigned Secretary and InProgress Meeting (BR-170)
-ParticipantService->ParticipantService: Validate official Present/Absent choices and attendance versions for submitted current entries only; omitted entries retain saved/unmarked state;\nnever infer attendance from invitation responses or room connections (BR-116, BR-171, BR-172)
-alt Secretary is no longer authorized - EX-3
-ParticipantService-->ParticipantController: Request denied; previous attendance unchanged
-ParticipantController-->MeetingPage: Request denied; previous attendance unchanged
-MeetingPage-->User: Request denied; previous attendance unchanged
-else Meeting is no longer InProgress - EX-2
-ParticipantService-->ParticipantController: MSG149 - Attendance can only be recorded while the meeting is in progress.
-ParticipantController-->MeetingPage: MSG149 - Attendance can only be recorded while the meeting is in progress.
-MeetingPage-->User: MSG149 - Attendance can only be recorded while the meeting is in progress.
-else A submitted entry is no longer current or its attendance version is stale - EX-4
-ParticipantService-->ParticipantController: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
-ParticipantController-->MeetingPage: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
-MeetingPage-->User: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
-else At least one submitted entry lacks a valid Present/Absent choice - EX-1
-ParticipantService-->ParticipantController: MSG148 - Select Present or Absent for each submitted participant or Guest.
-ParticipantController-->MeetingPage: MSG148 - Select Present or Absent for each submitted participant or Guest.
-MeetingPage-->User: MSG148 - Select Present or Absent for each submitted participant or Guest.
-else Submitted entries are valid; unrelated roster additions do not invalidate the request
-ParticipantService->ParticipantRepository: Save or revise only submitted internal and Guest attendance values together (AF-1 for revision),\nrecording the Secretary and save time; no partial changes (BR-172, BR-178)
-activate ParticipantRepository
-ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and submitted entries before saving
-activate Database
-Database-->ParticipantRepository: Complete save / No changes saved
-deactivate Database
-ParticipantRepository-->ParticipantService: Complete save / No changes saved
-deactivate ParticipantRepository
-alt Any attendance save fails - EX-5
-ParticipantService-->ParticipantController: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
-ParticipantController-->MeetingPage: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
-MeetingPage-->User: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
-else Submitted changes saved
-ParticipantService-->ParticipantController: MSG147 - Meeting attendance saved successfully.
-ParticipantController-->MeetingPage: MSG147 - Meeting attendance saved successfully.
-MeetingPage-->User: MSG147 - Meeting attendance saved successfully.
+AttendanceRepository-->AttendanceService: Meeting and roster
+deactivate AttendanceRepository
+
+alt Submitted attendance value is invalid - EX-1
+    AttendanceService-->AttendanceController: MSG148 - Select Present or Absent for each submitted participant or Guest.
+    AttendanceController-->AttendancePage: Return validation error
+    AttendancePage-->Secretary: MSG148 - Select Present or Absent for each submitted participant or Guest.
+
+else Meeting is no longer in progress - EX-2
+    AttendanceService-->AttendanceController: MSG149 - Attendance can only be recorded while the meeting is in progress.
+    AttendanceController-->AttendancePage: Return status error
+    AttendancePage-->Secretary: MSG149 - Attendance can only be recorded while the meeting is in progress.
+
+else Secretary is no longer authorized - EX-3
+    AttendanceService-->AttendanceController: Not authorized
+    AttendanceController-->AttendancePage: Return permission error
+    AttendancePage-->Secretary: Attendance not authorized
+
+else Valid submission
+    AttendanceService->AttendanceRepository: Save attendance together (BR-170-BR-172)
+    activate AttendanceRepository
+    AttendanceRepository->Database: Update attendance
+    activate Database
+    Database-->AttendanceRepository: Saved
+    deactivate Database
+    AttendanceRepository-->AttendanceService: Saved
+    deactivate AttendanceRepository
+
+    AttendanceService-->AttendanceController: Attendance saved
+    AttendanceController-->AttendancePage: MSG147 - Meeting attendance saved successfully.
+    AttendancePage-->Secretary: MSG147 - Meeting attendance saved successfully.
 end
-end
-deactivate ParticipantService
-deactivate ParticipantController
-deactivate MeetingPage
+
+deactivate AttendanceService
+deactivate AttendanceController
+deactivate AttendancePage

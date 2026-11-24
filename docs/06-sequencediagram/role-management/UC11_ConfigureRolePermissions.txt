@@ -14,92 +14,122 @@ database ":Database" as Database
 
 Admin->RolePage: Configure permissions for role
 activate RolePage
+
 RolePage->RoleController: Submit updated role permissions
 activate RoleController
+
 RoleController->RoleService: Update role permissions
 activate RoleService
-RoleService->RoleService: Validate permission configuration
-alt Invalid permission configuration
+
+
+alt Invalid permission configuration - EX-1
     RoleService-->RoleController: Invalid permission configuration
     RoleController-->RolePage: MSG17 - Invalid permission configuration
     RolePage-->Admin: Show validation error
+
 else Valid permission configuration
     RoleService->RoleRepository: Save updated role permissions
     activate RoleRepository
+
     RoleRepository->Database: Update role permission configuration
     activate Database
-    alt Permission configuration cannot be saved
-        Database-->RoleRepository: Update failed
-        RoleRepository-->RoleService: Save failed
-        RoleService-->RoleController: Unable to update role permissions
-        RoleController-->RolePage: MSG18 - Unable to update role permissions
-        RolePage-->Admin: Show update error
-    else Permission configuration saved
-        Database-->RoleRepository: Update successful
-        RoleRepository-->RoleService: Role permissions updated
-        RoleService->AuditService: Record role permission change
-        activate AuditService
-        AuditService->AuditLogRepository: add(audit entry)
-        AuditLogRepository->Database: Save audit log
-        Database-->AuditLogRepository: Audit log saved
-        AuditLogRepository-->AuditService: Audit log saved
-        AuditService-->RoleService: Audit recorded
-        RoleService->RoleService: Notify users currently holding the role so their sessions\napply the updated permissions without signing in again (BR-313)
 
-        opt The change removes the meeting-creation right from the role
-            RoleService->RoleRepository: Find accounts currently holding the role
-            activate RoleRepository
-            RoleRepository->Database: Retrieve role holders
-            activate Database
-            Database-->RoleRepository: Role holders
-            deactivate Database
-            RoleRepository-->RoleService: Role holders
-            deactivate RoleRepository
-
-            RoleService->ShareRepository: Stop every Effective share those accounts are viewing (BR-424)
-            activate ShareRepository
-            ShareRepository->Database: Set those shares to Stopped
-            activate Database
-            Database-->ShareRepository: Stopped shares
-            deactivate Database
-            ShareRepository-->RoleService: Stopped shares
-            deactivate ShareRepository
-
-            opt At least one share was stopped
-                RoleService->AuditService: Record each stopped share (BR-426)
-                activate AuditService
-                AuditService->AuditLogRepository: add(audit entries)
-                AuditLogRepository->Database: Store audit records
-                activate Database
-                Database-->AuditLogRepository: Audit records created
-                deactivate Database
-                AuditLogRepository-->AuditService: Audit records created
-                AuditService-->RoleService: Stops recorded
-                deactivate AuditService
-
-                RoleService->NotificationService: Notify both sides of each stopped share (BR-426)
-                activate NotificationService
-                NotificationService->NotificationRepository: add(notifications)
-                NotificationRepository->Database: Record notifications
-                activate Database
-                Database-->NotificationRepository: Notifications recorded
-                deactivate Database
-                NotificationRepository-->NotificationService: Notifications recorded
-                NotificationService-->RoleService: Notifications sent
-                deactivate NotificationService
-            end
-        end
-
-        note right of RoleService: Regaining the meeting-creation right does not restart stopped shares (BR-424).\nLosing the right keeps the "I share to" list but empties "Shared with me" (UC-84f, BR-430, PO 10/11/2026).
-
-        RoleService-->RoleController: Role permissions updated successfully
-        RoleController-->RolePage: MSG16 - Role permissions updated successfully
-        RolePage-->Admin: Show success message
-        deactivate AuditService
-    end
+    Database-->RoleRepository: Update successful
     deactivate Database
+
+    RoleRepository-->RoleService: Role permissions updated
     deactivate RoleRepository
+
+    RoleService->AuditService: Record role permission change
+    activate AuditService
+
+    AuditService->AuditLogRepository: add(audit entry)
+    activate AuditLogRepository
+
+    AuditLogRepository->Database: Save audit log
+    activate Database
+
+    Database-->AuditLogRepository: Audit log saved
+    deactivate Database
+
+    AuditLogRepository-->AuditService: Audit log saved
+    deactivate AuditLogRepository
+
+    AuditService-->RoleService: Audit recorded
+    deactivate AuditService
+
+
+    opt The change removes the meeting-creation right from the role
+        RoleService->RoleRepository: Find accounts currently holding the role
+        activate RoleRepository
+
+        RoleRepository->Database: Retrieve role holders
+        activate Database
+
+        Database-->RoleRepository: Role holders
+        deactivate Database
+
+        RoleRepository-->RoleService: Role holders
+        deactivate RoleRepository
+
+        RoleService->ShareRepository: Stop every Effective share those accounts are viewing (BR-424)
+        activate ShareRepository
+
+        ShareRepository->Database: Set those shares to Stopped
+        activate Database
+
+        Database-->ShareRepository: Stopped shares
+        deactivate Database
+
+        ShareRepository-->RoleService: Stopped shares
+        deactivate ShareRepository
+
+        opt At least one share was stopped
+            RoleService->AuditService: Record each stopped share (BR-426)
+            activate AuditService
+
+            AuditService->AuditLogRepository: add(audit entries)
+            activate AuditLogRepository
+
+            AuditLogRepository->Database: Store audit records
+            activate Database
+
+            Database-->AuditLogRepository: Audit records created
+            deactivate Database
+
+            AuditLogRepository-->AuditService: Audit records created
+            deactivate AuditLogRepository
+
+            AuditService-->RoleService: Stops recorded
+            deactivate AuditService
+
+            RoleService->NotificationService: Notify both sides of each stopped share (BR-426)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: add(notifications)
+            activate NotificationRepository
+
+            NotificationRepository->Database: Record notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications recorded
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications recorded
+            deactivate NotificationRepository
+
+            NotificationService-->RoleService: Notifications sent
+            deactivate NotificationService
+        end
+    end
+
+    note right of RoleService: Regaining the meeting-creation right does not restart stopped shares (BR-424). Losing the right keeps the "I share to" list but empties "Shared with me" (UC-84f, BR-430, PO 10/11/2026).
+
+    RoleService-->RoleController: Role permissions updated successfully
+    RoleController-->RolePage: MSG16 - Role permissions updated successfully
+    RolePage-->Admin: Show success message
 end
+
 deactivate RoleService
 deactivate RoleController
 deactivate RolePage

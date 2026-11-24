@@ -33,7 +33,7 @@ UserRepository-->UserService: Current account status
 deactivate Database
 deactivate UserRepository
 
-alt Status change is not allowed
+alt Status change is not allowed - EX-1
     UserService-->UserController: Status change not allowed
     UserController-->UserPage: Display reason for rejected status change
     UserPage-->Admin: Show status change error
@@ -120,7 +120,7 @@ else Status change is allowed
             deactivate NotificationService
         end
 
-        note right of UserService: Pending invitations are kept. The recipient sees "Tài khoản người gửi đã bị vô hiệu hoá"\nand can only decline; the server blocks Accept (UC-84c EX-5, MSG468). (BR-424)
+        note right of UserService: Pending invitations are kept. The recipient sees "Tài khoản người gửi đã bị vô hiệu hoá"\nand can only decline; the server blocks Accept (UC-84c, MSG468). (BR-424)
 
         UserService-->UserController: Account deactivated successfully
         UserController-->UserPage: MSG11 - User account status changed successfully

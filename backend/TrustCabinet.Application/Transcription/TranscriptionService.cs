@@ -56,13 +56,14 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                     [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                         s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName,
-                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null),
+                        WordTimings.ForLine(s.Text, s.WordStartsMs, s.EditedAt is not null, s.StartMs, s.EndMs),
                         WordScores.ForLine(s.Text, s.WordConfidence, s.EditedAt is not null)))],
                     [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                         canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                         canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
                         s.AssignedGuestId, AutoAssigned(s)))],
-                    people, canExport && transcript.Status == TranscriptStatus.Completed));
+                    people, canExport && transcript.Status == TranscriptStatus.Completed, transcript.ProgressPercent,
+                    transcript.ProcessingStartedAt));
             }, ct);
         }
         catch (PersistenceException ex)
@@ -89,13 +90,15 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     transcripts.Add(new Transcript { RecordingId = recordingId, CreatedAt = now, UpdatedAt = now });
                 else if (transcript.Status is TranscriptStatus.Failed or TranscriptStatus.Completed)
                 {
-                    // Redoing a finished transcript replaces its segments, corrections and names when it completes.
+                    // Redoing a finished transcript replaces its segments when it completes; what the Secretary corrected
+                    // by hand is carried onto the new ones (ADR-0077).
                     if (transcript.Status == TranscriptStatus.Completed)
                         await audit.RecordAsync(AuditActions.TranscriptRerun, AuditActions.RecordingObjectType, recordingId,
                             actorId, new { recording.MeetingId, previousProvider = transcript.Provider }, token);
                     transcript.Status = TranscriptStatus.Pending;
                     transcript.ErrorMessage = "";
                     transcript.ProgressPercent = 0;
+                    transcript.ProcessingStartedAt = null;
                     transcript.UpdatedAt = now;
                 }
                 else return new(TranscriptFailure.NotRetryable);
@@ -128,7 +131,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 var names = transcript.Speakers.ToDictionary(s => s.Label, AssignedName);
                 var now = clock.GetUtcNow();
                 var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
-                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
+                    now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(
+                        TranscriptText.LineTime(s.StartMs, recording.Takes),
                         names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
                 await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
                     new { recording.MeetingId, segments = transcript.Segments.Count }, token);
@@ -306,6 +310,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 // A change that changes nothing writes nothing.
                 if (target == from) return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = false });
                 segment.SpeakerLabel = target;
+                // Marked as the Secretary's, so the next run of the recording moves it again (ADR-0077).
+                (segment.SpeakerAssignedById, segment.SpeakerAssignedAt) = (actorId, now);
                 segment.UpdatedAt = now;
                 // The line's length moves with it. Not summed again from the lines: the diarizer measured each voice's
                 // speech its own way, and a voice taking a line must never read as having spoken less. Moving the line
@@ -402,12 +408,14 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         // is claimed next instead of waiting behind minutes of work whose result would be thrown away.
         using var stale = CancellationTokenSource.CreateLinkedTokenSource(ct);
         using var stopWatching = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var watch = WatchAsync(transcriptId, stale, stopWatching.Token);
+        // A new id each run: a run made stale may still be winding down in the worker under the old one.
+        var run = Guid.CreateVersion7();
+        var watch = WatchAsync(transcriptId, run, stale, stopWatching.Token);
         try
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
             await using var audio = storage.OpenRead(recording.StoragePath);
-            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token);
+            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, stale.Token, run: run);
         }
         catch (Exception ex) when (ex is OperationCanceledException && stale.IsCancellationRequested && !ct.IsCancellationRequested)
         {
@@ -433,18 +441,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     /// <summary>How often a running transcript checks that it is still the version to make.</summary>
     internal TimeSpan StaleCheckEvery { get; init; } = TimeSpan.FromSeconds(5);
 
+    /// <summary>The highest progress written before the result: 100 means written, and only the result writes it.</summary>
+    internal const int MaxRunningPercent = 99;
+
     /// <summary>
     /// Cancels <paramref name="stale"/> once the transcript is no longer Processing: whatever moved it (a new take, an
-    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away.
+    /// erasure, a retry) has made this run's result one that <see cref="FinishAsync"/> would throw away. While it is
+    /// still current, each look also asks the worker how far <paramref name="run"/> has got and writes it down, so the
+    /// Bản ghi tab shows a bar that moves (PO 23/11/2026) instead of a spinner for the half hour a long meeting takes.
     /// </summary>
-    private async Task WatchAsync(Guid transcriptId, CancellationTokenSource stale, CancellationToken ct)
+    private async Task WatchAsync(Guid transcriptId, Guid run, CancellationTokenSource stale, CancellationToken ct)
     {
+        var written = 0;
         try
         {
             while (true)
             {
                 await Task.Delay(StaleCheckEvery, clock, ct);
-                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct)) continue;
+                if (await ReadAsync(token => transcripts.IsProcessingAsync(transcriptId, token), ct))
+                {
+                    written = await ReportProgressAsync(transcriptId, run, written, ct);
+                    continue;
+                }
                 await stale.CancelAsync();
                 return;
             }
@@ -456,6 +474,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             // Not being able to look is no reason to stop: the result is checked again before it is written.
             logger.LogWarning(ex.InnerException ?? ex, "Could not check whether transcript {TranscriptId} is stale", transcriptId);
+        }
+    }
+
+    /// <summary>
+    /// Writes how far the worker says <paramref name="run"/> got, when that is past <paramref name="written"/>; returns
+    /// what is written now. A worker that cannot say, or a write that fails, leaves the bar where it was: progress is
+    /// something to look at, never a reason to stop or fail the run.
+    /// </summary>
+    private async Task<int> ReportProgressAsync(Guid transcriptId, Guid run, int written, CancellationToken ct)
+    {
+        if (await engine.ProgressAsync(run, ct) is not { State: SpeechRunState.Running } progress) return written;
+        var percent = Math.Clamp(progress.Percent, 0, MaxRunningPercent);
+        if (percent <= written) return written;
+        try
+        {
+            await ReadAsync(token => transcripts.SetProgressAsync(transcriptId, percent, token), ct);
+            return percent;
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogWarning(ex.InnerException ?? ex, "Could not write the progress of transcript {TranscriptId}", transcriptId);
+            return written;
         }
     }
 
@@ -495,24 +535,42 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 // Matched before anything is deleted: it locks the consents it reads, and a withdrawal holding one of
                 // them may be waiting on the speaker rows deleted below.
                 var (suggestions, nameable) = await SuggestSpeakersAsync(recording.MeetingId, result, token);
-                // A short line no enrolled voice matched, or one of interjections only, is left out (team test
-                // 21/11/2026), and a voice left with no line goes with it: the rest are numbered again without gaps.
-                var lines = result.Segments.Where(s => s.Text.Length > 0 && ShortLineRules.KeepsRoomLine(s.Text,
-                    s.EndMs - s.StartMs, s.Speaker is not null && suggestions.ContainsKey(s.Speaker))).ToList();
-                var labels = ShortLineRules.Renumber(lines.Select(s => s.Speaker));
-                await transcripts.DeleteSegmentsAsync(transcriptId, token);
-                transcripts.AddSegments(lines.Select((s, i) =>
+                // What the Secretary corrected by hand, read before it is deleted, to be carried into the new lines (ADR-0077).
+                var before = await transcripts.ReadCorrectionsAsync(transcriptId, token);
+                var heard = result.Segments.Where(s => s.Text.Length > 0).Select(s =>
                 {
                     var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs, s.EndMs, recording.Takes);
+                    return (Segment: s, StartMs: startMs, EndMs: endMs);
+                }).ToList();
+                var corrected = before.Lines.Where(l => l.EditedAt is not null || l.SpeakerAssignedAt is not null).ToList();
+                var matched = TranscriptCarry.Lines([.. corrected.Select(l => new TranscriptCarry.Span(l.StartMs, l.EndMs, null))],
+                    [.. heard.Select(h => new TranscriptCarry.Span(h.StartMs, h.EndMs, null))], recording.Takes);
+                var carriedTo = matched.ToDictionary(m => m.Value, m => corrected[m.Key]);
+                // A short line no enrolled voice matched, or one of interjections only, is left out (team test
+                // 21/11/2026), and a voice left with no line goes with it: the rest are numbered again without gaps. A
+                // line the Secretary corrected is kept whatever it says: someone read it and found it worth correcting.
+                var lines = heard.Select((h, i) => (h.Segment, h.StartMs, h.EndMs, Before: carriedTo.GetValueOrDefault(i)))
+                    .Where(h => h.Before is not null || ShortLineRules.KeepsRoomLine(h.Segment.Text, h.Segment.EndMs - h.Segment.StartMs,
+                        h.Segment.Speaker is not null && suggestions.ContainsKey(h.Segment.Speaker))).ToList();
+                var labels = ShortLineRules.Renumber(lines.Select(s => s.Segment.Speaker));
+                await transcripts.DeleteSegmentsAsync(transcriptId, token);
+                var segments = lines.Select((s, i) =>
+                {
+                    var text = s.Segment.Text;
+                    var edited = s.Before is { EditedAt: not null, Text: not null };
                     return new TranscriptSegment
                     {
-                        TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
-                        Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
-                        WordStartsMs = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Of(s.Text, s.WordStartsMs),
-                        WordConfidence = s.Text.Length > TranscriptRules.MaxSegmentText ? null : WordScores.Of(s.Text, s.WordConfidence),
-                        SpeakerLabel = s.Speaker is null ? "" : labels[s.Speaker], CreatedAt = now, UpdatedAt = now,
+                        TranscriptId = transcriptId, Position = i + 1, StartMs = s.StartMs, EndMs = s.EndMs,
+                        Text = edited ? s.Before!.Text!
+                            : text.Length > TranscriptRules.MaxSegmentText ? text[..TranscriptRules.MaxSegmentText] : text,
+                        // The machine's word times belonged to the words it wrote, not to the Secretary's.
+                        WordStartsMs = edited || text.Length > TranscriptRules.MaxSegmentText ? null : WordTimings.Within(WordTimings.Of(text, s.Segment.WordStartsMs), s.StartMs, s.EndMs),
+                        WordConfidence = edited || text.Length > TranscriptRules.MaxSegmentText ? null : WordScores.Of(text, s.Segment.WordConfidence),
+                        EditedById = edited ? s.Before!.EditedById : null, EditedAt = edited ? s.Before!.EditedAt : null,
+                        SpeakerLabel = s.Segment.Speaker is null ? "" : labels[s.Segment.Speaker], CreatedAt = now, UpdatedAt = now,
                     };
-                }));
+                }).ToList();
+                transcripts.AddSegments(segments);
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
                 // A match names the voice at once (PO 01/11/2026; every suggestion by default since 22/11, ADR-0074): no
                 // assigner marks the machine's name, which the Secretary may still change, and which goes when that
@@ -531,11 +589,17 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         CreatedAt = now, UpdatedAt = now,
                     };
                 }).ToList();
+                var carried = Carry(before, [.. lines.Select(l => l.Before)], segments, speakers,
+                    [.. corrected.Where((_, i) => !matched.ContainsKey(i))], transcriptId, now);
                 transcripts.AddSpeakers(speakers);
-                foreach (var named in speakers.Where(s => s.AssignedUserId is not null))
+                foreach (var named in speakers.Where(s => s.AssignedUserId is not null && s.AssignedById is null))
                     await audit.RecordAsync(AuditActions.TranscriptSpeakerAssigned, AuditActions.TranscriptSpeakerObjectType,
                         named.Id, null, new { recordingId = recording.Id, label = named.Label, userId = named.AssignedUserId,
                             automatic = true, score = named.SuggestionScore }, token);
+                if (carried is not null)
+                    await audit.RecordAsync(AuditActions.TranscriptCorrectionsCarried, AuditActions.RecordingObjectType, recording.Id,
+                        null, new { recording.MeetingId, carried.Names, carried.Edits, carried.Moves, carried.UnplacedEdits,
+                            carried.UnplacedMoves }, token);
                 current.Status = TranscriptStatus.Completed;
                 current.Provider = TranscriptRules.Provider(result.AsrModel);
                 current.Language = result.Language;
@@ -560,6 +624,106 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             logger.LogWarning(ex, "Could not publish the finished transcript of {MeetingId}", id);
         }
+    }
+
+    private sealed record CarriedName(string Label, string FromLabel, Guid? UserId, Guid? GuestId);
+    private sealed record UnplacedLine(long StartMs, long EndMs, Guid? ById, DateTimeOffset? At);
+    private sealed record Carried(IReadOnlyList<CarriedName> Names, int Edits, int Moves, IReadOnlyList<UnplacedLine> UnplacedEdits,
+        IReadOnlyList<UnplacedLine> UnplacedMoves);
+
+    /// <summary>
+    /// ADR-0077 — puts the Secretary's hand corrections of the transcript being replaced onto the new run's voices.
+    /// <paramref name="segments"/> come with the old line each was matched to (<paramref name="from"/>, same order; its
+    /// edited text is already in place) and are changed in place, as are <paramref name="speakers"/>; a voice is added
+    /// for a person a moved line names and no new voice is. Returns what was carried and what could not be placed, for
+    /// the audit log; null when there was neither.
+    /// <para>
+    /// Only a name the Secretary gave (an assigner set, including a name they cleared) is carried, and it beats the
+    /// machine's for that voice. A name the machine gave is made again from the voices, so one of a person whose Voice ID
+    /// consent ended is not: the invariant of <c>ClearSuggestionsAsync</c>, which clears the machine's names only, holds.
+    /// </para>
+    /// </summary>
+    private static Carried? Carry(TranscriptCorrections before, IReadOnlyList<PreviousLine?> from, List<TranscriptSegment> segments,
+        List<TranscriptSpeaker> speakers, IReadOnlyList<PreviousLine> unplaced, Guid transcriptId, DateTimeOffset now)
+    {
+        var handNamed = before.Voices.Where(v => v.AssignedById is not null).ToDictionary(v => v.Label);
+        if (handNamed.Count == 0 && unplaced.Count == 0 && from.All(l => l is null)) return null;
+        // Which old voice each new one is, by the time they share; a moved line is the Secretary's word, not the diarizer's.
+        var sameVoice = TranscriptCarry.Voices(
+            [.. before.Lines.Select(l => new TranscriptCarry.Span(l.StartMs, l.EndMs, l.SpeakerAssignedAt is null ? l.SpeakerLabel : null))],
+            [.. segments.Select(s => new TranscriptCarry.Span(s.StartMs, s.EndMs, s.SpeakerLabel))]);
+        var names = new List<CarriedName>();
+        foreach (var speaker in speakers)
+        {
+            if (!sameVoice.TryGetValue(speaker.Label, out var old) || !handNamed.TryGetValue(old, out var voice)) continue;
+            (speaker.AssignedUserId, speaker.AssignedGuestId) = (voice.AssignedUserId, voice.AssignedGuestId);
+            (speaker.AssignedById, speaker.AssignedAt) = (voice.AssignedById, voice.AssignedAt);
+            names.Add(new(speaker.Label, old, voice.AssignedUserId, voice.AssignedGuestId));
+        }
+
+        var moves = 0;
+        var unplacedMoves = unplaced.Where(l => l.SpeakerAssignedAt is not null).Select(Unplaced).ToList();
+        for (var i = 0; i < segments.Count; i++)
+        {
+            if (from[i] is not { SpeakerAssignedAt: not null } line) continue;
+            var segment = segments[i];
+            var target = MovedTo(line, before, sameVoice, segment, speakers, segments, transcriptId, now);
+            if (target is null)
+            {
+                unplacedMoves.Add(Unplaced(line));
+                continue;
+            }
+            // The line's length moves with it, as when the Secretary moved it.
+            var length = Math.Max(0, segment.EndMs - segment.StartMs);
+            if (target != segment.SpeakerLabel)
+                foreach (var voice in speakers.Where(s => s.Label == segment.SpeakerLabel || s.Label == target))
+                    voice.SpeechMs = voice.Label == target ? voice.SpeechMs + length : Math.Max(0, voice.SpeechMs - length);
+            segment.SpeakerLabel = target;
+            (segment.SpeakerAssignedById, segment.SpeakerAssignedAt) = (line.SpeakerAssignedById, line.SpeakerAssignedAt);
+            moves++;
+        }
+        var edits = from.Count(l => l is { EditedAt: not null });
+        UnplacedLine[] unplacedEdits =
+            [.. unplaced.Where(l => l.EditedAt is not null).Select(l => new UnplacedLine(l.StartMs, l.EndMs, l.EditedById, l.EditedAt))];
+        // Nothing carried and nothing lost: no line in the audit log.
+        return names.Count + edits + moves + unplacedEdits.Length + unplacedMoves.Count == 0 ? null
+            : new(names, edits, moves, unplacedEdits, unplacedMoves);
+
+        static UnplacedLine Unplaced(PreviousLine l) => new(l.StartMs, l.EndMs, l.SpeakerAssignedById, l.SpeakerAssignedAt);
+    }
+
+    /// <summary>
+    /// The voice of the new run a line the Secretary moved goes to: when they moved it to a person they named, that person's voice
+    /// (the line's own when already theirs, else the first named as them, else a new one carrying their name, as
+    /// <see cref="AssignSegmentSpeakerAsync"/> does); when they moved it to a voice with no name, the new voice that is
+    /// that old one. Null when there is none, or no free label is left.
+    /// </summary>
+    private static string? MovedTo(PreviousLine line, TranscriptCorrections before, IReadOnlyDictionary<string, string> sameVoice,
+        TranscriptSegment segment, List<TranscriptSpeaker> speakers, List<TranscriptSegment> segments, Guid transcriptId, DateTimeOffset now)
+    {
+        var voice = before.Voices.FirstOrDefault(v => v.Label == line.SpeakerLabel);
+        var same = sameVoice.Where(p => p.Value == line.SpeakerLabel).Select(p => p.Key).Order(StringComparer.Ordinal).FirstOrDefault();
+        if (voice is not { } named || (named.AssignedUserId is null && named.AssignedGuestId is null)) return same;
+        // A name the machine gave is not the Secretary's to carry: the line follows that voice, or the voice the machine
+        // names as the same person this time — none when their Voice ID consent has ended meanwhile.
+        if (named.AssignedById is null)
+            return same ?? speakers.Where(s => s.AssignedById is null && s.AssignedUserId == named.AssignedUserId)
+                .Select(s => s.Label).Order(StringComparer.Ordinal).FirstOrDefault();
+        bool Theirs(TranscriptSpeaker s) => named.AssignedUserId is not null
+            ? s.AssignedUserId == named.AssignedUserId : s.AssignedGuestId == named.AssignedGuestId;
+        var theirs = speakers.FirstOrDefault(s => s.Label == segment.SpeakerLabel && Theirs(s))
+            ?? speakers.Where(Theirs).OrderBy(s => s.Label, StringComparer.Ordinal).FirstOrDefault();
+        if (theirs is not null) return theirs.Label;
+        var taken = segments.Select(s => s.SpeakerLabel).Concat(speakers.Select(s => s.Label)).ToHashSet();
+        var free = Enumerable.Range(0, 100).Select(i => $"SPEAKER_{i:00}").FirstOrDefault(l => !taken.Contains(l));
+        if (free is null) return null;
+        speakers.Add(new TranscriptSpeaker
+        {
+            TranscriptId = transcriptId, Label = free, AssignedUserId = named.AssignedUserId, AssignedGuestId = named.AssignedGuestId,
+            AssignedById = named.AssignedById, AssignedAt = named.AssignedAt,
+            CreatedAt = now, UpdatedAt = now,
+        });
+        return free;
     }
 
     /// <summary>
@@ -596,8 +760,28 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
         }
         var options = voiceOptions.Value;
-        return (SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold), nameable);
+        var suggestions = SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold,
+            options.SuggestMargin, options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold);
+        LogScores(meetingId, result.Speakers, candidates, suggestions);
+        return (suggestions, nameable);
+    }
+
+    /// <summary>
+    /// The two best scores of every voice, named or not, so a voice left "Người nói N" shows whether it fell short of
+    /// <see cref="VoiceIdOptions.SuggestThreshold"/> or tied within <see cref="VoiceIdOptions.SuggestMargin"/> (Hải,
+    /// 23/11/2026). Only labels, user ids and numbers are logged: never an embedding, a name or audio.
+    /// </summary>
+    private void LogScores(Guid meetingId, IReadOnlyList<SpeechSpeaker> speakers,
+        IReadOnlyList<SpeakerMatcher.Candidate> candidates, IReadOnlyDictionary<string, SpeakerMatcher.Suggestion> suggestions)
+    {
+        if (candidates.Count == 0 || !logger.IsEnabled(LogLevel.Information)) return;
+        foreach (var (label, ranked) in SpeakerMatcher.Scores(speakers, candidates).OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var top = string.Join(", ", ranked.Take(2).Select(x => $"{x.UserId}={x.Score:0.000}"));
+            var named = suggestions.TryGetValue(label, out var suggestion) ? suggestion.UserId.ToString() : "none";
+            logger.LogInformation("Voice scores in meeting {MeetingId}: {Label} best {Top}; suggested {Suggested}",
+                meetingId, label, top, named);
+        }
     }
 
     /// <summary>

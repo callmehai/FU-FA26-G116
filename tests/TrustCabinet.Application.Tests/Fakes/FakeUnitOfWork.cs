@@ -85,5 +85,12 @@ public sealed class FakeUnitOfWork : IUnitOfWork
         return Task.CompletedTask;
     }
 
-    public void DiscardChanges() => Discards++;
+    /// <summary>Run by <see cref="DiscardChanges"/>: what the real context does to the entities it tracked.</summary>
+    public Action? OnDiscard { get; set; }
+
+    public void DiscardChanges()
+    {
+        Discards++;
+        OnDiscard?.Invoke();
+    }
 }

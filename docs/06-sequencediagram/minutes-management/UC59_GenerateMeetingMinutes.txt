@@ -1,92 +1,61 @@
 title UC-59 - Generate Meeting Minutes
 
-actor "Chair / Secretary" as Actor
-boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Endpoints" as MinutesEndpoints
+actor "Chair or Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
-participant ":Minutes Template" as MinutesTemplate
-participant ":Summary Service" as SummaryService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Minutes Repository" as MinutesRepository
-participant ":Minutes Source Query" as MinutesSourceQuery
 database ":Database" as Database
 
-Actor->MinutesCard: Select Create minutes, or Fill from meeting data
-activate MinutesCard
-MinutesCard->MinutesEndpoints: create(meetingId, rebuild)
-activate MinutesEndpoints
-MinutesEndpoints->MinutesService: createAsync(meetingId, actorId, rebuild)
+Actor->MeetingPage: Select Create draft or Rebuild
+activate MeetingPage
+
+MeetingPage->MinutesController: Generate meeting minutes
+activate MinutesController
+MinutesController->MinutesService: generateMinutes(meetingId, actorId)
 activate MinutesService
-MinutesService->MeetingRepository: Get the Meeting, locking its row for the transaction
-activate MeetingRepository
-MeetingRepository->Database: Lock and retrieve the Meeting (FOR UPDATE)
+
+MinutesService->MeetingAccessPolicy: Check actor can access the Meeting
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check Meeting relationship
 activate Database
-Database-->MeetingRepository: Meeting / Not found
+Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting has Ended (BR-387), the latest revision is absent,\na draft or returned (BR-388, BR-407), that rebuild was asked when one exists,\nand that it is not a correction (BR-413)
+MeetingAccessPolicy-->MinutesService: Access / No access
+deactivate MeetingAccessPolicy
 
 alt Actor is not the current Chair or Secretary - EX-1
-    MinutesService-->MinutesEndpoints: MSG397 - Only the Chair or Secretary may write the minutes.
-    MinutesEndpoints-->MinutesCard: MSG397 - Only the Chair or Secretary may write the minutes.
-    MinutesCard-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
-else The Meeting has not ended - EX-2
-    MinutesService-->MinutesEndpoints: MSG398 - The minutes can be written only after the meeting has ended.
-    MinutesEndpoints-->MinutesCard: MSG398 - The minutes can be written only after the meeting has ended.
-    MinutesCard-->Actor: MSG398 - The minutes can be written only after the meeting has ended.
-else The minutes can no longer be changed - EX-4
-    MinutesService-->MinutesEndpoints: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-    MinutesEndpoints-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-    MinutesCard-->Actor: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-else A draft already exists and rebuild is false - EX-3
-    MinutesService-->MinutesEndpoints: MSG399 - This meeting already has a minutes draft.
-    MinutesEndpoints-->MinutesCard: MSG399 - This meeting already has a minutes draft.
-    MinutesCard-->Actor: MSG399 - This meeting already has a minutes draft.
-else The latest revision is a correction and rebuild is true - EX-7
-    MinutesService-->MinutesEndpoints: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
-    MinutesEndpoints-->MinutesCard: 409 MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
-    MinutesCard-->Actor: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
-else Actor may build
-    opt A draft or a returned revision already exists - AF-2
-        MinutesCard-->Actor: Warn that every correction will be replaced (BR-388)
-        Actor->MinutesCard: Confirm
-    end
-    MinutesService->MinutesSourceQuery: listAttendees(meetingId), listGuests(meetingId), agenda and closed votes
-    MinutesSourceQuery->Database: Retrieve participants, guests, attendance, agenda and closed votes
-    activate Database
-    Database-->MinutesSourceQuery: Meeting records
-    deactivate Database
-    MinutesSourceQuery-->MinutesService: Meeting records
-    MinutesService->SummaryService: Read the current AI draft (reviewed or not)
-    activate SummaryService
-    SummaryService-->MinutesService: Sections I-III / None
-    deactivate SummaryService
-    MinutesService->MinutesTemplate: Build the fixed template (Mẫu 1.4 Nghị định 30) (BR-383, BR-384)
-    activate MinutesTemplate
-    alt An AI draft exists
-        MinutesTemplate-->MinutesService: Minutes with sections I-III from the draft, marked reviewed or not
-    else No AI draft - AF-3
-        MinutesTemplate-->MinutesService: Minutes with the agenda and the Chair's conclusions, and "......" to fill (BR-382)
-    end
-    deactivate MinutesTemplate
-    MinutesService->MinutesRepository: add(revision)
-    MinutesRepository->Database: Save the revision with its revision number, in the same save\nas the locked Meeting row
-    activate Database
-    Database-->MinutesRepository: Saved / Failed
-    deactivate Database
-    MinutesRepository-->MinutesService: Saved / Failed
+    MinutesService-->MinutesController: MSG397 - Only the Chair or Secretary may write the minutes.
+    MinutesController-->MeetingPage: MSG397 - Only the Chair or Secretary may write the minutes.
+    MeetingPage-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
+else Actor is Chair or Secretary
+    alt Meeting has not ended - EX-2
+        MinutesService-->MinutesController: MSG398 - The minutes can be written only after the meeting has ended.
+        MinutesController-->MeetingPage: MSG398 - The minutes can be written only after the meeting has ended.
+        MeetingPage-->Actor: MSG398 - The minutes can be written only after the meeting has ended.
+    else Meeting has ended
+        alt A draft already exists - EX-3
+            MinutesService-->MinutesController: MSG399 - This meeting already has a minutes draft.
+            MinutesController-->MeetingPage: MSG399 - This meeting already has a minutes draft.
+            MeetingPage-->Actor: MSG399 - This meeting already has a minutes draft.
+        else No draft exists
+            MinutesService->MinutesRepository: Save draft minutes
+            activate MinutesRepository
+            MinutesRepository->Database: Insert minutes draft
+            activate Database
+            Database-->MinutesRepository: Saved
+            deactivate Database
+            MinutesRepository-->MinutesService: Saved draft
+            deactivate MinutesRepository
 
-    alt Saved - AF-1 when this is the first draft
-        MinutesService-->MinutesEndpoints: State
-        MinutesEndpoints-->MinutesCard: 201 MSG395 - Minutes draft created.
-        MinutesCard-->Actor: MSG395 - Minutes draft created.
-    else The draft cannot be saved - EX-5
-        MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
-        MinutesEndpoints-->MinutesCard: MSG404 - Unable to save the minutes. Please try again.
-        MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
+            MinutesService-->MinutesController: MSG395 - Minutes draft created.
+            MinutesController-->MeetingPage: MSG395 - Minutes draft created.
+            MeetingPage-->Actor: MSG395 - Minutes draft created.
+        end
     end
 end
+
 deactivate MinutesService
-deactivate MinutesEndpoints
-deactivate MinutesCard
+deactivate MinutesController
+deactivate MeetingPage

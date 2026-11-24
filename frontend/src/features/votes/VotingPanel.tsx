@@ -1,5 +1,6 @@
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { castBallot, closeVote, deleteVote, detachVoteDocument, openVote, recordVoteConclusion } from '../../api/votes'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
@@ -22,7 +23,7 @@ import { DocumentLink } from '../documents/DocumentLink'
 import { isPdf } from '../documents/documentFile'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { everyDocument, useMeetingDocuments } from '../documents/useMeetingDocuments'
-import { useVoteDetail, useVotes } from './useVotes'
+import { useVoteDetail, useVoteDetails, useVotes, type VoteDetailEntry } from './useVotes'
 import { VoteDialog } from './VoteDialog'
 
 const NOTE_MAX = 2000
@@ -68,6 +69,19 @@ export function VotingPanel({
   )
   const stale = useCallback(() => void reload(), [reload])
 
+  // A vote that waits on the caller — open, or closed without the Chair's conclusion — starts opened, also
+  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so until
+  // the vote moves on (opened, closed), when it starts over: a ballot cast keeps the vote open only while it runs.
+  const waitsOnMe = (vote: VoteSummary) => vote.status === 'Open' || vote.actions.canRecordConclusion
+  const toggleKey = (vote: Pick<VoteSummary, 'id' | 'status'>) => `${vote.id}:${vote.status}`
+  const isOpen = (vote: VoteSummary) => toggled.get(toggleKey(vote)) ?? waitsOnMe(vote)
+  const list = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
+  const details = useVoteDetails(
+    meetingId,
+    list?.serverTime ?? null,
+    (list?.votes ?? []).filter(isOpen).map((v) => v.id),
+  )
+
   const room = variant === 'room'
   const wrap = (body: ReactNode) =>
     room ? (
@@ -101,7 +115,7 @@ export function VotingPanel({
         <VoteSkeleton />
       ) : (
         // Shaped like the loaded tab: the same white card around the bars, so nothing jumps into a frame.
-        <section className="list-panel vote-panel">
+        <section className="card agenda-sheet vote-panel vote-sheet">
           <VoteSkeleton />
         </section>
       ),
@@ -112,12 +126,6 @@ export function VotingPanel({
   // The open vote first, so the one to cast is not below the results of the closed ones (a 360px room panel
   // scrolled past them all); the rest keep the server's order.
   const votes = [...data.votes].sort((a, b) => Number(b.status === 'Open') - Number(a.status === 'Open'))
-  // A vote that waits on the caller — open, or closed without the Chair's conclusion — starts opened, also
-  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so until
-  // the vote moves on (opened, closed), when it starts over: a ballot cast keeps the vote open only while it runs.
-  const waitsOnMe = (vote: VoteSummary) => vote.status === 'Open' || vote.actions.canRecordConclusion
-  const toggleKey = (vote: Pick<VoteSummary, 'id' | 'status'>) => `${vote.id}:${vote.status}`
-  const isOpen = (vote: VoteSummary) => toggled.get(toggleKey(vote)) ?? waitsOnMe(vote)
   const toggle = (vote: VoteSummary) => setToggled((map) => new Map(map).set(toggleKey(vote), !isOpen(vote)))
   // What the caller just did stays in view, though the vote no longer waits on them.
   const keepOpen = (vote: Pick<VoteSummary, 'id' | 'status'>) => setToggled((map) => new Map(map).set(toggleKey(vote), true))
@@ -137,8 +145,29 @@ export function VotingPanel({
     </div>
   )
 
+  // On the page the votes are drawn as the Nội dung tab's items (Khánh 22/11/2026): one card of grey bars, one line
+  // each, the facts in fixed cells. Every row keeps room for what only some rows have (the turnout, the outcome, the
+  // actions), so the cells line up down the card as the agenda's presenters and counts do. The actions share one
+  // right-aligned group as wide as the widest row's: a draft's Mở and icons, or the open vote's Đóng phiếu.
+  const hasStep = (v: VoteSummary) => v.actions.canOpen || v.actions.canClose
+  const hasTools = (v: VoteSummary) =>
+    v.actions.canEdit || v.actions.canDelete || (!!meeting && v.actions.canAttachDocuments)
+  const anySteps = votes.some(hasStep)
+  const anyTools = votes.some(hasTools)
+  const sheetClass = [
+    'card agenda-sheet vote-panel vote-sheet',
+    anySteps && 'vote-sheet-steps',
+    anyTools && 'vote-sheet-tools',
+    votes.some((v) => hasStep(v) && hasTools(v)) && 'vote-sheet-both',
+    votes.some((v) => v.status !== 'Draft') && 'vote-sheet-turnout',
+    votes.some((v) => v.documentCount > 0) && 'vote-sheet-docs',
+    votes.some((v) => v.conclusion || (v.hasVoted && v.status === 'Open')) && 'vote-sheet-outcome',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   const panel = (
-    <section className={room ? 'vote-panel vote-panel-room' : 'list-panel vote-panel'} aria-label="Biểu quyết">
+    <section className={room ? 'vote-panel vote-panel-room' : sheetClass} aria-label="Biểu quyết">
       {room && toolbar}
 
       {state.kind === 'error' && (
@@ -159,14 +188,18 @@ export function VotingPanel({
           {permissions.canManageDraft && <small>Tạo biểu quyết để chuẩn bị trước, mở khi đang họp.</small>}
         </div>
       ) : (
-        <ol className="vote-list">
+        <ol className="agenda-list vote-list">
           {votes.map((vote) => (
             <VoteCard
               key={vote.id}
               meetingId={meetingId}
+              room={room}
+              holdActions={!room && (anySteps || anyTools)}
               vote={vote}
-              stamp={data.serverTime}
+              detail={details.entries.get(vote.id)}
               expanded={isOpen(vote)}
+              onPrefetch={() => details.prefetch(vote.id)}
+              onReload={() => details.reload(vote.id)}
               onToggle={() => toggle(vote)}
               onEdit={() => setOpen({ kind: 'edit', voteId: vote.id })}
               onDelete={() => setOpen({ kind: 'delete', vote })}
@@ -324,9 +357,13 @@ export function VotingPanel({
 
 function VoteCard({
   meetingId,
+  room,
+  holdActions,
   vote,
-  stamp,
+  detail,
   expanded,
+  onPrefetch,
+  onReload,
   onToggle,
   onEdit,
   onDelete,
@@ -338,10 +375,17 @@ function VoteCard({
   onDetach,
 }: {
   meetingId: string
+  /** The call room's narrow panel: the documents as a paperclip count, no empty slots. */
+  room: boolean
+  /** The page's sheet has a step or icons on some row: this one keeps the actions' width, even with none of its own. */
+  holdActions: boolean
   vote: VoteSummary
-  /** The list's `serverTime`: the detail re-reads whenever the list did. */
-  stamp: string
+  /** The detail the panel holds for this vote, if it has read it. */
+  detail: VoteDetailEntry | undefined
   expanded: boolean
+  /** Reads the detail ahead, when the pointer or the keyboard reaches the title. */
+  onPrefetch: () => void
+  onReload: () => void
   onToggle: () => void
   onEdit: () => void
   onDelete: () => void
@@ -356,23 +400,51 @@ function VoteCard({
 }) {
   const { actions } = vote
   const bodyId = `vote-body-${vote.id}`
-  const classes = ['vote-item']
+  // The body unfolds once, whole: while the detail is on its way the card stays shut (its chevron already turned) and
+  // opens when it lands. Only a read slower than 300 ms shows the loading bar first (Hải 23/11/2026).
+  const ready = detailFor(vote, detail) !== null || detail?.kind === 'gone' || detail?.kind === 'error'
+  const [late, setLate] = useState(false)
+  useEffect(() => {
+    if (!expanded || ready) return
+    const timer = window.setTimeout(() => setLate(true), 300)
+    return () => window.clearTimeout(timer)
+  }, [expanded, ready])
+  const unfolded = expanded && (ready || late)
+  // Drawn with the agenda item's classes, so a vote row is an agenda row: the same bar, title, cells and actions at
+  // every width (Khánh 22/11/2026). `agenda-item-open` is the agenda's "unfolded"; `vote-item-open` is a vote that
+  // takes ballots.
+  const classes = ['agenda-item', 'vote-item']
   if (vote.status === 'Open') classes.push('vote-item-open')
   if (vote.status === 'Draft') classes.push('vote-item-draft')
+  if (unfolded) classes.push('agenda-item-open')
+  const hasActions = actions.canOpen || actions.canEdit || actions.canDelete || actions.canClose || !!onAttach
 
   return (
     <li className={classes.join(' ')}>
-      <div className="vote-head">
-        <button type="button" className="vote-title" aria-expanded={expanded} aria-controls={bodyId} onClick={onToggle}>
+      <div className="agenda-head vote-head">
+        <button
+          type="button"
+          className="agenda-title vote-title"
+          aria-expanded={expanded}
+          aria-controls={bodyId}
+          aria-busy={expanded && !unfolded}
+          onPointerEnter={onPrefetch}
+          onFocus={onPrefetch}
+          onClick={() => {
+            if (expanded) setLate(false)
+            else onPrefetch()
+            onToggle()
+          }}
+        >
           <Icon name={expanded ? 'chevronDown' : 'chevronRight'} size={16} />
           <span>{vote.title}</span>
         </button>
 
-        {(actions.canOpen || actions.canEdit || actions.canDelete || actions.canClose || onAttach) && (
-          <div className="row-actions vote-actions">
-            {/* As on an agenda item: the icons stay in the card's top-right corner, the step goes under the title
-                with the facts on a narrow panel (Khánh 19/11/2026). */}
-            <span className="vote-steps">
+        {(hasActions || holdActions) && (
+          <div className="row-actions agenda-actions vote-actions">
+            {/* As on an agenda item: one group on a wide panel; on a narrow one the icons stay in the card's top-right
+                corner and the step goes under the title with the facts (Khánh 19/11/2026). */}
+            <span className="agenda-steps vote-steps">
               {actions.canOpen && (
                 <button type="button" className="btn btn-primary btn-sm" onClick={onOpen}>
                   <Icon name="play" size={16} />
@@ -386,7 +458,7 @@ function VoteCard({
                 </button>
               )}
             </span>
-            <span className="vote-tools">
+            <span className="agenda-tools vote-tools">
               {onAttach && <AttachMenu title={vote.title} onPick={onAttach} />}
               {actions.canEdit && (
                 <button
@@ -414,33 +486,60 @@ function VoteCard({
           </div>
         )}
 
-        <span className="vote-break" aria-hidden="true" />
-        <div className="vote-meta">
-          <VoteStatusChip vote={vote} />
-          <span className="vote-fact">
-            <Icon name={vote.isAnonymous ? 'lock' : 'globe'} size={14} />
-            {vote.isAnonymous ? 'Kín' : 'Công khai'}
-            <InfoTip
-              text={vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'}
-            />
+        {/* The facts go on a second line under the title, unless the panel is wide enough for one. */}
+        <span className="agenda-break vote-break" aria-hidden="true" />
+        <div className="agenda-meta vote-meta">
+          <span className="agenda-cell agenda-cell-status">
+            <VoteStatusChip vote={vote} />
           </span>
-          {vote.status !== 'Draft' && (
-            <span className="vote-fact vote-turnout-text" tabIndex={0} data-tooltip="Đã bỏ phiếu / người đủ điều kiện">
-              <Icon name="users" size={14} />
-              {vote.receiptCount}/{vote.eligibleCount}
+          <span className="agenda-cell vote-cell-mode">
+            <span className="vote-fact vote-mode">
+              <Icon name={vote.isAnonymous ? 'lock' : 'globe'} size={14} />
+              {vote.isAnonymous ? 'Kín' : 'Công khai'}
+              <InfoTip
+                text={
+                  vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'
+                }
+              />
             </span>
-          )}
-          {vote.hasVoted && vote.status === 'Open' && (
-            <span className="vote-fact vote-voted">
-              <Icon name="check" size={14} />
-              Đã bỏ phiếu
-            </span>
-          )}
-          {vote.conclusion && <ConclusionChip value={vote.conclusion.value} />}
-          {vote.documentCount > 0 && (
-            <span className="vote-fact" tabIndex={0} data-tooltip="Tài liệu của biểu quyết">
-              <Icon name="paperclip" size={14} />
-              {vote.documentCount}
+          </span>
+          <span className="agenda-cell vote-cell-turnout">
+            {vote.status !== 'Draft' && (
+              <span
+                className="vote-fact vote-turnout-text"
+                tabIndex={0}
+                data-tooltip="Đã bỏ phiếu / người đủ điều kiện"
+              >
+                <Icon name="users" size={14} />
+                {vote.receiptCount}/{vote.eligibleCount}
+              </span>
+            )}
+          </span>
+          <span className="agenda-cell vote-cell-outcome">
+            {vote.hasVoted && vote.status === 'Open' && (
+              <span className="vote-fact vote-voted">
+                <Icon name="check" size={14} />
+                Đã bỏ phiếu
+              </span>
+            )}
+            {vote.conclusion && <ConclusionChip value={vote.conclusion.value} />}
+          </span>
+          {room ? (
+            vote.documentCount > 0 && (
+              <span className="vote-fact" tabIndex={0} data-tooltip="Tài liệu của biểu quyết">
+                <Icon name="paperclip" size={14} />
+                {vote.documentCount}
+              </span>
+            )
+          ) : (
+            // The page counts documents in the Nội dung tab's outlined chip, only when there are some (Hải 23/11/2026):
+            // "0 tài liệu" took the width a long title needs. Its cell stays, empty, so the columns still line up.
+            <span className="agenda-cell vote-cell-docs">
+              {vote.documentCount > 0 && (
+                <span className="agenda-docs-count">
+                  <Badge tone="outline">{vote.documentCount} tài liệu</Badge>
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -450,12 +549,13 @@ function VoteCard({
         <Turnout cast={vote.receiptCount} eligible={vote.eligibleCount} label={`Đã bỏ phiếu: ${vote.title}`} />
       )}
 
-      {expanded && (
+      {unfolded && (
         <VoteBody
           id={bodyId}
           meetingId={meetingId}
           vote={vote}
-          stamp={stamp}
+          entry={detail}
+          onReload={onReload}
           onCast={onCast}
           onConclude={onConclude}
           onDetach={onDetach}
@@ -463,6 +563,15 @@ function VoteCard({
       )}
     </li>
   )
+}
+
+/**
+ * The held detail when it still describes the vote the list shows: one read before the vote was opened or closed would
+ * draw the wrong body (a ballot for a closed vote) until the new read lands.
+ */
+function detailFor(vote: VoteSummary, entry: VoteDetailEntry | undefined): VoteDetail | null {
+  if (!entry || entry.kind === 'gone' || !entry.data) return null
+  return entry.data.status === vote.status ? entry.data : null
 }
 
 function CloseQuestion({ vote }: { vote: VoteSummary }) {
@@ -486,7 +595,8 @@ function VoteBody({
   id,
   meetingId,
   vote,
-  stamp,
+  entry,
+  onReload,
   onCast,
   onConclude,
   onDetach,
@@ -494,28 +604,27 @@ function VoteBody({
   id: string
   meetingId: string
   vote: VoteSummary
-  stamp: string
+  entry: VoteDetailEntry | undefined
+  onReload: () => void
   onCast: (optionId: string) => Promise<boolean>
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
   onDetach?: (doc: VoteDocument) => void
 }) {
-  const { state, reload } = useVoteDetail(meetingId, vote.id, stamp, true)
-
-  if (state.kind === 'gone') {
+  if (entry?.kind === 'gone') {
     return (
       <div className="vote-body" id={id}>
         <p className="value-empty">Biểu quyết này không còn xem được.</p>
       </div>
     )
   }
-  const detail = state.kind === 'loading' ? null : state.data
+  const detail = detailFor(vote, entry)
   if (!detail) {
     return (
-      <div className="vote-body" id={id} aria-busy={state.kind === 'loading'}>
-        {state.kind === 'error' ? (
+      <div className="vote-body" id={id} aria-busy={entry?.kind !== 'error'}>
+        {entry?.kind === 'error' ? (
           <div className="alert alert-error" role="alert">
-            <p>{state.message}</p>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => void reload()}>
+            <p>{entry.message}</p>
+            <button type="button" className="btn btn-outline btn-sm" onClick={onReload}>
               <Icon name="refresh" size={16} />
               Thử lại
             </button>
@@ -833,24 +942,23 @@ function ConclusionForm({
 }: {
   onConclude: (value: VoteConclusionValue, note: string) => Promise<boolean>
 }) {
-  const [value, setValue] = useState<VoteConclusionValue | ''>('')
+  // Starts on "Thông qua": a control with nothing picked showed three plain words and read as text, not as
+  // something to press (Hải 23/11/2026). The Chair still picks and records it; the tally never sets it (BR-263).
+  const [value, setValue] = useState<VoteConclusionValue>('Passed')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
-  // The button stays live and says what is missing, rather than greying out with no reason given.
-  const [missing, setMissing] = useState(false)
   return (
     <form
       className="vote-box vote-conclusion-form"
       onSubmit={async (event) => {
         event.preventDefault()
-        if (!value) return setMissing(true)
         setSaving(true)
         await onConclude(value, note.trim())
         setSaving(false)
       }}
     >
       <h4 className="field-required">Kết luận</h4>
-      <SegmentedControl<VoteConclusionValue | ''>
+      <SegmentedControl<VoteConclusionValue>
         label="Kết luận"
         value={value}
         options={[
@@ -858,13 +966,9 @@ function ConclusionForm({
           { value: 'NotPassed', label: 'Không thông qua', short: 'Không qua' },
           { value: 'Deferred', label: 'Hoãn' },
         ]}
-        onChange={(next) => {
-          setValue(next)
-          setMissing(false)
-        }}
+        onChange={setValue}
         disabled={saving}
       />
-      {missing && <small className="field-error">Chọn kết luận.</small>}
       <label className="field">
         <span>Ghi chú</span>
         <textarea
@@ -913,10 +1017,10 @@ export function VoteStatusChip({ vote }: { vote: Pick<VoteSummary, 'status'> }) 
 /** Shaped like the loaded list, so nothing jumps when it arrives. */
 function VoteSkeleton() {
   return (
-    <ol className="vote-list" aria-busy="true" aria-label="Đang tải biểu quyết">
+    <ol className="agenda-list vote-list" aria-busy="true" aria-label="Đang tải biểu quyết">
       {Array.from({ length: 2 }, (_, i) => (
-        <li key={i} className="vote-item">
-          <div className="vote-head">
+        <li key={i} className="agenda-item vote-item">
+          <div className="agenda-head vote-head">
             <span className="skeleton vote-skeleton" />
           </div>
         </li>

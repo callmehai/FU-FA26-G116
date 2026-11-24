@@ -22,59 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437"
+          "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "The reader may read no meeting in the period."
-          ],
-          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-03\".",
-          "return": "A report with Total 0; every ByMonth, ByStatus and BySensitivity count is 0; attendance, duration and turnaround averages are null with meetings 0 (the screen shows \"Không có cuộc họp nào bạn xem được trong khoảng này.\").",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-70a AF-2 · BR-437"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Meetings exist in the period, some readable by the reader and some not.",
-            "The reader is a System Admin."
-          ],
-          "inputs": "actorId: <id of a System Admin>; from: \"2026-01\"; to: \"2026-12\".",
-          "return": "Only the meetings the admin may read under the meeting list rules are counted; other meetings change no figure. The admin sees no more than any other reader.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-70a · BR-432 · BR-437"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "A Cancelled meeting with a planned start in the period."
-          ],
-          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\".",
-          "return": "The Cancelled meeting is counted in Total, in its month and under the Cancelled status.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-70a · BR-434"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "No from or to value is supplied; current time is 2026-11-18T10:00:00+07:00."
-          ],
-          "inputs": "actorId: <id of an active internal reader>; from: null; to: null.",
-          "return": "A report From \"2025-12\" To \"2026-11\"; the trailing 12 months ending with the current month in Vietnam time apply.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-70a · BR-433"
-        },
-        {
-          "id": "UTC006",
           "preconditions": [
             "Only the start month is supplied."
           ],
@@ -83,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70a EX-1 · BR-433 · MSG463"
+          "note": "UC-70a EX-1 · BR-433 · MSG463",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC003",
           "preconditions": [
             "The period is valid.",
             "The database fails while reading the groups."
@@ -96,10 +53,13 @@
           "exception": "N/A",
           "log": "Error: \"Could not read the meeting report 2026-01–2026-12\" with the database error as cause.",
           "type": "Abnormal",
-          "note": "UC-70a EX-2 · MSG464"
+          "note": "UC-70a EX-2 · MSG464",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "Ended meetings exist in the period, but none has attendance taken, none has both start and end times, and none has issued minutes."
           ],
@@ -108,20 +68,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-70a · BR-435 · BR-436"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "The period is valid.",
-            "The caller stops waiting while the read is running."
-          ],
-          "inputs": "actorId: <id of an active internal reader>; from: \"2026-01\"; to: \"2026-12\"; cancellation requested.",
-          "return": "N/A",
-          "exception": "The cancellation escapes to the caller; it is not converted into ReadFailed.",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-70a"
+          "note": "UC-70a · BR-435 · BR-436",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

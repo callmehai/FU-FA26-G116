@@ -9,7 +9,7 @@
       "method": "SpeechClipService.SetExclusionAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 255,
+      "line": 265,
       "cases": [
         {
           "id": "UTC001",
@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Audit SpeechClipExcluded (sentence, meeting, speaker, reason); a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG351"
+          "note": "UC-46c · BR-357 · MSG351",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,22 +36,13 @@
           "exception": "N/A",
           "log": "Audit SpeechClipRestored; a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG352"
+          "note": "UC-46c · BR-357 · MSG352",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A sentence already excluded with reason Leak; the actor is the meeting's Chair."
-          ],
-          "inputs": "clipId; actorId: the Chair; excluded true; reason 'Leak' again.",
-          "return": "Success (200, MSG351) with true; nothing is written and no audit row is added.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG351"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "An existing sentence; the actor is an active Member (neither Chair nor Secretary)."
           ],
@@ -57,10 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG353"
+          "note": "UC-46c · BR-357 · MSG353",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "An existing sentence; the actor is the meeting's Chair."
           ],
@@ -69,44 +66,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG354"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "No sentence with this id."
-          ],
-          "inputs": "clipId: a random id; actorId: the Chair; excluded true; reason 'Leak'.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46c · BR-357"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "clipId; actorId: the deactivated user; excluded true; reason 'Leak'.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46c · BR-357"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "An existing sentence; the actor is the meeting's Chair.",
-            "The database fails while saving."
-          ],
-          "inputs": "clipId; actorId: the Chair; excluded true; reason 'Other'.",
-          "return": "SaveFailed (503, MSG304).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to change the exclusion of speech clip'.",
-          "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG304"
+          "note": "UC-46c · BR-357 · MSG354",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -31,7 +31,7 @@ bất cứ lúc nào ([ADR-0027](docs/05-decisions/0027-voice-id-co-dong-y.md)).
 
 ## Dùng thử
 
-Bản chạy sẵn của nhánh `main`: <https://trustcabinet.workspace-hub.space>. Mật khẩu chung
+Bản chạy sẵn của nhánh `app`: <https://app.trustcabinet.workspace-hub.space>. Mật khẩu chung
 `TrustCabinet@2026`:
 
 | Email | Vai trò |
@@ -95,7 +95,7 @@ cd frontend && npm run build                 # tsc -b + vite build
 
 CI chạy năm bước này trên mọi pull request, nhưng chỉ phần bị đổi: PR chỉ sửa frontend thì backend
 chỉ chạy các test đọc mã nguồn FE và docs, PR chỉ sửa README hay `deploy/` thì bỏ qua cả hai
-([.github/workflows/ci.yml](.github/workflows/ci.yml)). Merge vào `main` xong thì server test tự cập
+([.github/workflows/ci.yml](.github/workflows/ci.yml)). Merge vào `app` xong thì server test tự cập
 nhật, và chỉ build lại image nào có code đổi.
 
 > **Không commit chuỗi kết nối, API key hay mật khẩu.** Repo để public. Dùng `dotnet user-secrets`
@@ -140,7 +140,7 @@ AGENTS.md                        # hướng dẫn cho AI coding agent (CLAUDE.md
 | Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10, code-first — [ERD](docs/02-design/02-erd.md) |
 | Realtime | SignalR |
 | Thoại/video | WebRTC qua LiveKit SFU tự host — [ADR-0010](docs/05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) |
-| Lưu tệp | SeaweedFS khi dev, Cloudflare R2 trên server test — [ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md) |
+| Lưu tệp | SeaweedFS khi dev, SeaweedFS tự host trên server `app` (R2 chỉ dùng ở server demo cũ đã gỡ) — [ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md) |
 | Nhận dạng giọng nói | sherpa-onnx, tự chạy — [ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md) |
 | Email | Resend — [ADR-0031](docs/05-decisions/0031-gui-email-qua-resend.md) |
 

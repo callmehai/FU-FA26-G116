@@ -21,206 +21,14 @@
             "Actor is S."
           ],
           "return": "Result Saved: changedCount 1; one entry for A with attendance \"Present\", a new version token, recorder S and recorded time; 200 / MSG147.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "entries: [{Internal, A, Absent, current token}, {Guest, G, Present, current token}].",
-          "log": "A and G both get version 1 and recorder S. One audit row with two entries. One change event published.",
-          "note": "UC-31 · BR-170 · BR-172 · BR-178 · MSG147",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is S."
-          ],
-          "return": "Result Saved: changedCount 2; A is Absent, G is Present; 200 / MSG147.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "entries: [{Internal, A, Present, token of version 1}].",
-          "log": "No audit row, no save, no change event.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG147",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "A is already Present at version 1."
-          ],
-          "return": "Result Saved: changedCount 0; the entry for A with unchanged version token; 200 / MSG147 (valid no-op).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "entries: [{Internal, A, Absent, token of version 1}] (revision of a recorded value).",
-          "log": "Audit before: Present, version 1; after: Absent, version 2.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG147",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "A is Present at version 1."
-          ],
-          "return": "Result Saved: changedCount 1; A is now Absent at version 2.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "entries: [{Internal, A, Present, token}] (G not included).",
-          "log": "Only A is written.",
-          "note": "UC-31 · BR-170 · BR-172 · BR-171 · MSG147",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Only one of the two people is submitted."
-          ],
-          "return": "Result Saved: changedCount 1; G stays unmarked; partial roster is allowed.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "entries: [{Guest, G, Present, token}] where G was revoked.",
-          "log": "Nothing saved.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG151",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Request ends up with a Guest id that is not a current invitation (revoked)."
-          ],
-          "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "Nothing saved.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG151",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "A was removed from the roster (AssignmentStatus Removed) after the client loaded."
-          ],
-          "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "entries: [{Internal, A, Present, token of version 0}].",
-          "log": "Nothing saved; no entry is partially applied even when other entries in the request are valid.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG151",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Another save has already moved A to version 1."
-          ],
-          "return": "Failure Stale; 409 / MSG151; the client must reload.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "entries: [{Internal, a random GUID, Present, valid-format token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG151",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Entry id does not exist in this meeting."
-          ],
-          "return": "Failure Stale; 409 / MSG151.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "entries: [] (empty list).",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG148",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is S."
-          ],
-          "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "entries: [{Internal, A, \"Excused\", token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · BR-171 · MSG148",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is S."
-          ],
-          "return": "Failure Invalid; 400 / MSG148 (only Present or Absent may be saved).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "entries: [{Internal, A, Present, token}, {Internal, A, Absent, token}] (same person twice).",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG148",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is S."
-          ],
-          "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "entries: [{Internal, A, Present, expectedVersion: \"abc\"}] (not a 64-character hex token).",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG148",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is S."
-          ],
-          "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "input.ParseFailure: UnsupportedMedia.",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG34",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Request body was not application/json."
-          ],
-          "return": "Failure UnsupportedMedia; 415 / MSG34.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "input.ParseFailure: TooLarge.",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG87",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Request body exceeded 64 KiB."
-          ],
-          "return": "Failure TooLarge; 413 / MSG87.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC016",
-          "inputs": "input.ParseFailure: Invalid.",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG148",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Request body was not valid JSON for the attendance form."
-          ],
-          "return": "Failure Invalid; 400 / MSG148.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC017",
           "inputs": "entries: [{Internal, A, Present, token}].",
           "log": "Nothing saved.",
           "note": "UC-31 · BR-170 · BR-172 · MSG149",
@@ -229,138 +37,30 @@
             "Actor is its active Secretary."
           ],
           "return": "Failure Locked; 409 / MSG149.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC018",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-172 · MSG149",
-          "preconditions": [
-            "Meeting in status Ended; actor is its active Secretary."
-          ],
-          "return": "Failure Locked; 409 / MSG149.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC019",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "Nothing saved.",
-          "note": "UC-31 · BR-170",
+          "id": "UTC003",
+          "inputs": "entries: [{Internal, A, Present, token of version 0}].",
+          "log": "Nothing saved; no entry is partially applied even when other entries in the request are valid.",
+          "note": "UC-31 · BR-170 · BR-172 · MSG151",
           "preconditions": [
             "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is the Chair (not Secretary)."
+            "Another save has already moved A to version 1."
           ],
-          "return": "Failure Forbidden; 403, empty body.",
-          "type": "Abnormal"
+          "return": "Failure Stale; 409 / MSG151; the client must reload.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC020",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is a plain Member who can read the running meeting."
-          ],
-          "return": "Failure Forbidden; 403.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC021",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170 · BR-79",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is the meeting organizer who has no roster seat."
-          ],
-          "return": "Failure Forbidden; 403.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC022",
-          "inputs": "actor: S (inactive); entries: [...].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor's account is deactivated."
-          ],
-          "return": "Failure Forbidden; 403.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC023",
-          "inputs": "actor: guest session G (UserId null); entries: [{Guest, G, Present, token}].",
-          "log": "N/A",
-          "note": "UC-31 · BR-170",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Actor is a verified Guest session of this meeting."
-          ],
-          "return": "Failure Forbidden; 403; a Guest cannot record attendance.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC024",
-          "inputs": "actor: guest session of a different meeting.",
-          "log": "N/A",
-          "note": "UC-31 · BR-170",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "Guest session belongs to another meeting."
-          ],
-          "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC025",
-          "inputs": "actor: unrelated active user; entries: [...].",
-          "log": "N/A",
-          "note": "UC-31 · BR-29",
-          "preconditions": [
-            "Meeting is not visible to the actor (user is neither organizer, approver nor on the roster)."
-          ],
-          "return": "Failure NotFound; 404, empty body.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC026",
-          "inputs": "meetingId: unknown GUID; actor: any active user.",
-          "log": "N/A",
-          "note": "UC-31 · BR-29",
-          "preconditions": [
-            "Meeting id does not exist."
-          ],
-          "return": "Failure NotFound; 404.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC027",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "Pending changes discarded; error logged; no change event.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG150",
-          "preconditions": [
-            "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "The database fails while committing the save."
-          ],
-          "return": "Failure SaveFailed; 503 / MSG150; the client must reload before retrying.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC028",
+          "id": "UTC004",
           "inputs": "entries: [{Internal, A, Present, token of that version}].",
           "log": "Pending changes discarded; error logged.",
           "note": "UC-31 · BR-170 · BR-172 · MSG150",
@@ -369,20 +69,26 @@
             "A's attendance version is already at the maximum value of 64-bit integers."
           ],
           "return": "Failure SaveFailed; 503 / MSG150 (the version increment overflows).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC029",
-          "inputs": "entries: [{Internal, A, Present, token}].",
-          "log": "Attendance and audit row are committed; a warning is logged for the failed event.",
-          "note": "UC-31 · BR-170 · BR-172 · MSG147",
+          "id": "UTC005",
+          "inputs": "input.ParseFailure: TooLarge.",
+          "log": "N/A",
+          "note": "UC-31 · BR-170 · BR-172 · MSG87",
           "preconditions": [
             "Meeting in status InProgress with an active Secretary S, a current Member A (attendance Unknown, version 0) and a current Guest invitation G (attendance Unknown, version 0).",
-            "The realtime publisher throws after the commit."
+            "Request body exceeded 64 KiB."
           ],
-          "return": "Result Saved: changedCount 1; 200 / MSG147; the failed push does not turn the save into an error.",
-          "type": "Boundary"
+          "return": "Failure TooLarge; 413 / MSG87.",
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Application"

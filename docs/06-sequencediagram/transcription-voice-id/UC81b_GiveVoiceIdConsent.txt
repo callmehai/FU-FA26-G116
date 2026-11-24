@@ -1,4 +1,4 @@
-title UC-81b - Give Voice ID Consent
+﻿title UC-81b - Give Voice ID Consent
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage
@@ -14,7 +14,6 @@ VoicePage->VoiceController: Give consent to the notice version read
 activate VoiceController
 VoiceController->VoiceService: grant(actorId, noticeVersion)
 activate VoiceService
-VoiceService->VoiceService: Check the version read is the current notice version (BR-362)
 
 alt Notice version read is not the current one - EX-1
     VoiceService-->VoiceController: MSG313 - Invalid submission data.
@@ -35,9 +34,9 @@ else Notice version is current
         activate VoiceRepository
         VoiceRepository->Database: Update consent
         activate Database
-        Database-->VoiceRepository: Saved / Save failed
+        Database-->VoiceRepository: Saved
         deactivate Database
-        VoiceRepository-->VoiceService: Saved / Save failed
+        VoiceRepository-->VoiceService: Saved
         deactivate VoiceRepository
         VoiceService->AuditService: Record the renewal with the previous and current notice versions
         activate AuditService
@@ -48,24 +47,18 @@ else Notice version is current
         activate VoiceRepository
         VoiceRepository->Database: Insert consent
         activate Database
-        Database-->VoiceRepository: Saved / Save failed
+        Database-->VoiceRepository: Saved
         deactivate Database
-        VoiceRepository-->VoiceService: Saved / Save failed
+        VoiceRepository-->VoiceService: Saved
         deactivate VoiceRepository
         VoiceService->AuditService: Record the consent with its notice version and purpose
         activate AuditService
         AuditService-->VoiceService: Entry saved
         deactivate AuditService
     else Consent to the current notice already given
-        VoiceService->VoiceService: Keep the consent unchanged
     end
 
-    alt Consent cannot be saved - EX-2
-        VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
-        VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
-        VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
-    else Consent saved
-        VoiceService-->VoiceController: MSG305 - Voice identification enabled for your account.
+            VoiceService-->VoiceController: MSG305 - Voice identification enabled for your account.
         VoiceController-->VoicePage: MSG305 - Voice identification enabled for your account.
         VoicePage-->Actor: MSG305 - Voice identification enabled for your account.
     end
@@ -74,3 +67,4 @@ end
 deactivate VoiceService
 deactivate VoiceController
 deactivate VoicePage
+

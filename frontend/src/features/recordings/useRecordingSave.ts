@@ -4,6 +4,7 @@ import { isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
 import type { RecordingSource } from '../../types/recording'
 import { useUploads } from '../uploads/uploadsContext'
+import { explainUploadFailure, isTooLarge, tooLargeMessage } from './uploadLimit'
 
 export const DEFAULT_PURPOSE = 'Lập biên bản cuộc họp'
 
@@ -34,9 +35,10 @@ export const recordingsTarget = (meetingId: string) => `recordings:${meetingId}`
 /**
  * Saving goes through the upload queue: it goes on with the panel closed or the page left, a network hiccup is tried
  * again, and a file that still fails stays in the tray with "Lưu về máy", so it is never lost. The room mic streams
- * its takes instead (ADR-0041).
+ * its takes instead (ADR-0041). `maxBytes` is the server's size limit (`maxUploadBytes` of the list): a bigger file is
+ * refused here with MSG293's words, as a dropped connection while sending one is (the server cuts it off mid-way).
  */
-export function useRecordingSave(meetingId: string) {
+export function useRecordingSave(meetingId: string, maxBytes?: number) {
   const uploads = useUploads()
   return useCallback(
     (upload: PendingUpload) =>
@@ -49,20 +51,26 @@ export function useRecordingSave(meetingId: string) {
           target: recordingsTarget(meetingId),
           isExpected,
           keep: () => saveToComputer(upload),
-          send: (options) =>
-            uploadRecording(
-              meetingId,
-              {
-                file: upload.blob,
-                fileName: upload.fileName,
-                source: upload.source,
-                consentPurpose: upload.purpose,
-                durationMs: upload.durationMs,
-              },
-              options,
-            ),
+          send: async (options) => {
+            if (isTooLarge(upload.blob.size, maxBytes)) throw new Error(tooLargeMessage(maxBytes!))
+            try {
+              return await uploadRecording(
+                meetingId,
+                {
+                  file: upload.blob,
+                  fileName: upload.fileName,
+                  source: upload.source,
+                  consentPurpose: upload.purpose,
+                  durationMs: upload.durationMs,
+                },
+                options,
+              )
+            } catch (error) {
+              throw explainUploadFailure(error, upload.blob.size, maxBytes)
+            }
+          },
         },
       ]),
-    [meetingId, uploads],
+    [meetingId, uploads, maxBytes],
   )
 }

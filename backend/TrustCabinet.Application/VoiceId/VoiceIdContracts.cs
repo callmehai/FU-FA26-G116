@@ -141,7 +141,8 @@ public interface IVoiceEmbedder
 /// <summary>
 /// Who each diarized voice probably is. Only people offered as candidates — the meeting's own participants who
 /// consented — can be suggested, and only when the best match is both close enough and clearly ahead of the
-/// runner-up for that voice. Anything less stays "Người nói N".
+/// runner-up for that voice. Anything less stays "Người nói N". A runner-up already suggested, more surely, for another
+/// voice that sounds different is not a runner-up: one person is not two voices that differ.
 /// <para>
 /// One person may be suggested for several voices, as in AI-eCabinet: diarization splits a person in two, and the
 /// Secretary then sees both as that person, the weaker marked "the same voice as" the stronger
@@ -175,15 +176,22 @@ public static class SpeakerMatcher
         return na == 0 || nb == 0 ? 0 : dot / Math.Sqrt(na * nb);
     }
 
+    /// <summary>
+    /// Each voice's score against every candidate, best first. A person's score for a voice is their best sample against
+    /// it: samples differ by mood, mic and room.
+    /// </summary>
+    public static Dictionary<string, (Guid UserId, double Score)[]> Scores(IReadOnlyList<SpeechSpeaker> speakers,
+        IReadOnlyList<Candidate> candidates)
+        => speakers.ToDictionary(s => s.Label, s => candidates.GroupBy(c => c.UserId)
+            .Select(g => (UserId: g.Key, Score: g.Max(c => Cosine(s.Embedding, c.Embedding))))
+            .OrderByDescending(x => x.Score).ToArray());
+
     public static IReadOnlyDictionary<string, Suggestion> Suggest(IReadOnlyList<SpeechSpeaker> speakers,
         IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice,
         double inherit)
     {
         var voices = speakers.ToDictionary(s => s.Label, s => s.Embedding);
-        // A person's score for a voice is their best sample against it: samples differ by mood, mic and room.
-        var scores = speakers.ToDictionary(s => s.Label, s => candidates.GroupBy(c => c.UserId)
-            .Select(g => (UserId: g.Key, Score: g.Max(c => Cosine(s.Embedding, c.Embedding))))
-            .OrderByDescending(x => x.Score).ToArray());
+        var scores = Scores(speakers, candidates);
         var result = new Dictionary<string, Suggestion>();
         // The voice each person was first suggested for: the surest, as pairs come best first.
         var first = new Dictionary<Guid, string>();
@@ -192,7 +200,14 @@ public static class SpeakerMatcher
                      .OrderByDescending(x => x.Score))
         {
             if (result.ContainsKey(label) || score < threshold) continue;
-            var runnerUp = scores[label].Where(x => x.UserId != userId).Select(x => x.Score).DefaultIfEmpty(0).Max();
+            // A runner-up already suggested, more surely, for another voice that does not sound like this one is not
+            // in the running: one person is not two voices that differ. Two people's samples cut from one room
+            // recording sound alike (Hải 0.670 against Khánh 0.635 for Hải's voice, 23/11/2026, Khánh already 0.735
+            // as his own), and the margin alone left Hải unnamed.
+            var runnerUp = scores[label]
+                .Where(x => x.UserId != userId
+                    && !(first.TryGetValue(x.UserId, out var own) && Cosine(voices[label], voices[own]) < sameVoice))
+                .Select(x => x.Score).DefaultIfEmpty(0).Max();
             if (score - runnerUp < margin) continue;
             if (first.TryGetValue(userId, out var lead) && (Cosine(voices[label], voices[lead]) < sameVoice || score < secondVoice))
                 continue;

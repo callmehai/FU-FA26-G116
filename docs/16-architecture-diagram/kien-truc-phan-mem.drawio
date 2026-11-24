@@ -158,11 +158,11 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="x-caddy-livekit" value="/rtc · signalling" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="p-caddy" target="e-livekit">
+        <mxCell id="x-caddy-livekit" value="/rtc · signalling" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.173;entryDx=0;entryDy=0;" edge="1" parent="1" source="p-caddy" target="e-livekit">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1325" y="298" />
-              <mxPoint x="1325" y="488" />
+              <mxPoint x="1270" y="298" />
+              <mxPoint x="1270" y="478" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -204,9 +204,9 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="x-ad-google" value="verify ID token" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ad-google" target="e-google">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry x="0.4" relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="x-ad-livekit" value="rooms · access tokens" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ad-livekit" target="e-livekit">
+        <mxCell id="x-ad-livekit" value="rooms · access tokens" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.7654;entryDx=0;entryDy=0;" edge="1" parent="1" source="ad-livekit" target="e-livekit">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="x-ad-speech" value="audio → text · voice vectors" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;endFill=1;endSize=7;strokeColor=#333333;strokeWidth=1.3;fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;fontFamily=Helvetica;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ad-speech" target="e-speech">

@@ -11,20 +11,19 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu
 > cá nhân 91/2025/QH15).
 
-**Hai server, hai nhánh** ([ADR-0065](../docs/05-decisions/0065-hai-nhanh-hai-server.md), [ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)):
+**Một server, nhánh `app`** ([ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md), [ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)):
 
 | Nhánh | Server Lightsail | URL | Bản |
 |---|---|---|---|
-| `main` | `trustcabinet-4gb` | https://trustcabinet.workspace-hub.space | Bản demo cũ, backend ba project — đóng băng từ 20/11 |
-| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
+| `app` | `trustcabinet-app` (compute-optimized 4 vCPU, 8 GB, từ 24/11) | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
 
-Hai server dựng giống nhau theo file này, mỗi máy một database, một bộ secret và một kho tệp riêng. Server `app`
-không dùng R2 mà dùng kho tệp tự host (§9, cách B). Từ 20/11 mọi việc làm trên `app` (nhánh mặc định của repo);
-`main` không nhận thay đổi mới và không còn merge sang `app` ([ADR-0068](../docs/05-decisions/0068-app-la-nhanh-chinh.md)).
+Server `app` dùng kho tệp tự host (§9, cách B), không dùng R2. Server demo của nhánh `main` (`trustcabinet-4gb`,
+https://trustcabinet.workspace-hub.space) đã xoá ngày 24/11 cùng bản ghi DNS; nhánh `main` vẫn giữ trên GitHub ở
+commit đóng băng nhưng không còn được deploy ([ADR-0082](../docs/05-decisions/0082-go-server-demo-main.md)).
 
 ## Dành cho người test
 
-Mở <https://trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
+Mở <https://app.trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
 
 | Email | Vai trò |
 |---|---|
@@ -98,10 +97,10 @@ sang commit mới, đổi Caddyfile thì khởi động lại Caddy) nhưng khô
 - Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
   server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
   chủ repo ghi lần deploy gần nhất, kèm link mở server.
-- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `main` hoặc `app`.
+- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `app`.
 - CI đỏ thì không deploy; server giữ bản cũ. Trên pull request, check deploy hiện là *Skipped*.
 
-**Chỉ `main` và `app` được deploy**, mỗi nhánh lên server của nó. Chọn nhánh khác ở *Run workflow* thì workflow đỏ
+**Chỉ `app` được deploy.** Chọn nhánh khác ở *Run workflow* thì workflow đỏ
 ngay bước đầu: deploy một nhánh có migration chưa merge rồi quay về sẽ để lại schema mà nhánh đó không biết.
 
 **Không lùi.** Hai PR merge sát nhau, CI của commit trước có thể xong sau commit sau. Commit cần deploy cũ hơn
@@ -110,10 +109,9 @@ commit server đang chạy thì workflow bỏ qua, vẫn xanh, kèm thông báo 
 
 ### Thiết lập một lần
 
-Workflow cần ba secret cho mỗi server, đặt trong **environment** của server đó: `server-test` cho `main`,
-`server-app` cho `app` (**GitHub → repo → Settings → Environments → chọn environment → Add environment secret**).
-Job chọn environment theo nhánh nên cùng tên secret trỏ tới đúng máy. Server test có ba secret ở mức repo từ
-trước, vẫn dùng được: secret của environment chỉ đè lên khi có. Làm trong terminal của server (Lightsail → máy →
+Workflow cần ba secret, đặt trong **environment** `server-app` (**GitHub → repo → Settings → Environments →
+server-app → Add environment secret**). Environment `server-test` và ba secret cấp repo của server `main` đã xoá
+ngày 24/11. Làm trong terminal của server (Lightsail → máy →
 **Connect using SSH**):
 
 1. Tạo SSH key riêng cho GitHub Actions và cho phép nó đăng nhập server:
@@ -428,8 +426,8 @@ docker run --rm --network trustcabinet-test_default curlimages/curl:8.11.1 -s -X
 Chuyển bản ghi thành chữ, Voice ID và ghi theo micro từng người đều cần worker nhận dạng giọng nói
 ([`workers/speech`](../workers/speech/README.md), [ADR-0026](../docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
 Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy
-nổi**: bật trên máy 1 GB thì server hết RAM. Có hai cách, chỉ khác nhau ở `deploy/.env`. Server test chạy
-**cách A** từ 01/11/2026.
+nổi**: bật trên máy 1 GB thì server hết RAM. Có ba cách, chỉ khác nhau ở `deploy/.env`. Server test chạy
+**cách A** từ 01/11/2026; **cách C** (Mac chạy trước, server dự phòng) là A cộng B.
 
 Dù chọn cách nào, đặt khoá mã hoá giọng mẫu **một lần** rồi giữ nguyên (đổi khoá là mất mọi giọng mẫu đã lưu):
 
@@ -502,6 +500,75 @@ các chức năng giọng nói báo `MSG312` như chưa bật.
 
 Muốn quay về cách A thì đổi `SPEECH_URL` thành `http://speech:8090` và thêm `COMPOSE_PROFILES=speech`.
 
+#### Cách C: Mac chạy trước, worker trên server dự phòng
+
+Mac M1 chạy thẳng bằng venv nhanh hơn server 2 vCPU 5–10 lần (RTF 0,07–0,10 so với 0,2–0,26), nhưng không bật suốt.
+Cách C để Mac làm máy chính và worker của cách A làm dự phòng ([ADR-0081](../docs/05-decisions/0081-chuyen-chu-chay-may-mac-truoc-server-du-phong.md)):
+
+- Mac không nhận kết nối trong 5 giây (tắt, ngủ, rời Tailscale), hoặc kết nối đứt khi đang chạy, thì app gửi lại cả
+  tệp âm thanh sang worker trên server, và **2 phút** sau mới hỏi lại Mac. Trong 2 phút đó mọi việc đi thẳng sang
+  server, câu nói theo micro không phải chờ 5 giây nữa.
+- Mac đã trả lời thì không chuyển, kể cả khi đó là lỗi (`401` sai khoá, `400` tệp hỏng, `500`): lỗi đó cần sửa, không
+  che đi. Sai khoá ở Mac thì mọi việc báo lỗi cho tới khi sửa khoá, không tự về server.
+- Thanh tiến độ hỏi đúng máy đang chạy bản ghi. Mỗi lần chuyển, log app có một dòng
+  `Speech primary unreachable ..., using backup`.
+- Voice ID không đổi: hai máy chạy cùng model đã ghim mã băm, nên mẫu giọng thu lúc Mac bật vẫn so được với bản ghi chuyển
+  chữ trên server và ngược lại. Mac phải chạy **đúng bản `workers/speech` của nhánh `app`**; lệch model thì mẫu giọng chỉ
+  không được so, không so nhầm.
+
+Âm thanh mọi cuộc họp, kể cả Mật, và mẫu giọng đi sang Mac khi Mac bật (qua Tailscale, mã hoá; worker không lưu gì).
+Giữ Mac như giữ server: có mật khẩu, worker chỉ nghe trên IP Tailscale, có khoá.
+
+1. **Server**: làm xong cách A (máy 4 GB, `COMPOSE_PROFILES=speech`) và bước 1–2 của cách B (Tailscale ở cả hai máy).
+2. **Mac, một lần**: cài và tải model (Python 3.12 qua [uv](https://docs.astral.sh/uv/), `ffmpeg` để đọc webm, m4a, mp3):
+
+   ```bash
+   brew install uv ffmpeg
+   git switch app && git pull                 # trong thư mục repo trên Mac
+   cd workers/speech
+   uv venv -p 3.12 .venv && uv pip install -p .venv -r requirements.txt
+   .venv/bin/python fetch_models.py      # ~230 MB vào ~/.cache/trustcabinet-speech/models, kiểm tra mã băm
+   ```
+
+   Mỗi lần `workers/speech` trên `app` đổi (nhất là `models.manifest` hay `requirements.txt`): `git pull`, chạy lại hai
+   lệnh `uv pip install` và `fetch_models.py`, rồi khởi động lại worker.
+3. **Mac, mỗi lần chạy**: worker nghe trên **IP Tailscale** của Mac, không phải `0.0.0.0`: ở wifi quán cà phê,
+   `0.0.0.0` mở worker cho mọi máy cùng mạng. `caffeinate -i` giữ máy không ngủ khi đang chạy:
+
+   ```bash
+   cd workers/speech                          # trong thư mục repo trên Mac
+   SPEECH_HOST=$(tailscale ip -4) SPEECH_PORT=8090 SPEECH_API_KEY=<khoá> caffeinate -i .venv/bin/python -m speech
+   ```
+
+   `SPEECH_THREADS` để mặc định (4 luồng trên M1). Log in `listening on 100.x.y.z:8090, bearer auth on` là đúng.
+
+   Muốn worker tự chạy khi đăng nhập thì tạo một LaunchAgent trong `~/Library/LaunchAgents/` (không có sẵn trong repo):
+   `ProgramArguments` là `caffeinate -i <đường dẫn>/.venv/bin/python -m speech`, `WorkingDirectory` là thư mục
+   `workers/speech`, `EnvironmentVariables` đặt `SPEECH_HOST` (ghi thẳng IP `100.x.y.z`, launchd không chạy được
+   `$(…)`), `SPEECH_API_KEY` và `PATH` có `/opt/homebrew/bin` (để thấy `ffmpeg`), `KeepAlive` bật để launchd chạy lại
+   khi worker thoát (lúc Tailscale chưa lên, worker không nghe được trên IP đó và thoát ngay). Nạp bằng
+   `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<tên>.plist`.
+4. **Server**: thêm vào `deploy/.env` (giữ `COMPOSE_PROFILES=speech`), rồi khởi động lại app:
+
+   ```bash
+   SPEECH_URL=http://100.x.y.z:8090
+   SPEECH_BACKUP_URL=http://speech:8090
+   SPEECH_API_KEY=<cùng khoá ở bước 3>
+   ```
+
+   ```bash
+   curl -s http://100.x.y.z:8090/health && cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
+   ```
+
+   Worker trong Docker không đặt khoá nên nhận request mang khoá của Mac. Hai máy phải báo cùng mã `embedding` trong
+   `/health`; so với worker trên server:
+
+   ```bash
+   docker compose -f deploy/docker-compose.yml exec speech python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8090/health').read().decode())"
+   ```
+
+Bỏ cách C thì xoá `SPEECH_BACKUP_URL` và đổi `SPEECH_URL` về `http://speech:8090` (cách A).
+
 ### 11. Máy AI viết dự thảo biên bản (tuỳ chọn)
 
 Nút "Tạo dự thảo" ở tab Biên bản cần một máy chạy model ngôn ngữ ([ADR-0054](../docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)).
@@ -539,7 +606,7 @@ Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy
 
 ## Sau khi bảo vệ xong
 
-Xoá cả hai máy (`trustcabinet-4gb`, `trustcabinet-refactor`) **và** hai IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
+Xoá máy `trustcabinet-app` **và** IP tĩnh `trustcabinet-refactor-ip` trên Lightsail, các snapshot còn lại, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
 plan: hết credit là AWS trừ tiền thẻ.
 
 ## Lỗi thường gặp

@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "M1 stamped RemovedAt 2026-11-18T03:00Z, RemovedById Chair, UpdatedAt set; its agenda-item links deleted; the row and its comments kept as history.",
           "type": "Normal",
-          "note": "UC-33c · BR-197 · BR-281 · MSG167"
+          "note": "UC-33c · BR-197 · BR-281 · MSG167",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,22 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-211 · MSG170"
+          "note": "UC-33c · BR-211 · MSG170",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "M9 belongs to another meeting."
-          ],
-          "inputs": "meetingDocumentId: M9.",
-          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33c · BR-211 · MSG170"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Actor is a Member."
           ],
@@ -58,10 +52,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-184 · MSG169"
+          "note": "UC-33c · BR-184 · MSG169",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Meeting Ended."
           ],
@@ -70,55 +67,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33c · BR-195 · MSG248"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting Cancelled."
-          ],
-          "inputs": "meetingDocumentId: M1.",
-          "return": "Failure Cancelled (HTTP 409, MSG349).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33c · BR-299 · MSG349"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Meeting not readable by the actor."
-          ],
-          "inputs": "meetingDocumentId: M1.",
-          "return": "Failure NotFound (HTTP 404, MSG174).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-33c · MSG174"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Database error on save."
-          ],
-          "inputs": "meetingDocumentId: M1.",
-          "return": "Failure StoreFailed (HTTP 503, MSG171); the document stays in the meeting.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to remove a document from meeting\".",
-          "type": "Abnormal",
-          "note": "UC-33c · MSG171"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "M1 is a document with no agenda-item link."
-          ],
-          "inputs": "meetingDocumentId: M1.",
-          "return": "No failure; removed with no link rows to delete.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-33c · BR-197 · MSG167"
+          "note": "UC-33c · BR-195 · MSG248",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

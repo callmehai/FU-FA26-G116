@@ -62,7 +62,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
 | Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` (enum lưu chuỗi) có thêm `Combined` (bản tổng hợp họp kết hợp, ADR-0061, SCRUM-153; họp trực tuyến từ ADR-0069); giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
-| TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. `WordStartsMs` (`bigint[]`, có thể null): mốc bắt đầu của từng từ do worker đo, để bản gỡ băng tô theo từng từ khi phát; xoá khi Thư ký sửa chữ. `WordConfidence` (`integer[]`, có thể null): độ chắc của máy nhận dạng với từng từ (0–100, lấy token kém chắc nhất của từ), để FE tô vàng nhạt từ máy không chắc; cùng quy tắc null như `WordStartsMs` (họp thử 21/11/2026). |
+| TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. `SpeakerAssignedById`/`SpeakerAssignedAt` (có thể null): Thư ký chuyển câu sang giọng khác, để chuyển chữ lại chuyển câu thêm lần nữa ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). `WordStartsMs` (`bigint[]`, có thể null): mốc bắt đầu của từng từ do worker đo, để bản gỡ băng tô theo từng từ khi phát; xoá khi Thư ký sửa chữ. `WordConfidence` (`integer[]`, có thể null): độ chắc của máy nhận dạng với từng từ (0–100, lấy token kém chắc nhất của từ), để FE tô vàng nhạt từ máy không chắc; cùng quy tắc null như `WordStartsMs` (họp thử 21/11/2026). |
 | TranscriptSpeaker | Một giọng trong bản gỡ băng và người được gán tên (SCRUM-35) | IMPLEMENTED (migration `TranscriptSpeakerGuest`) | `TranscriptId`, `Label` (SPEAKER_00…), `SpeechMs`; máy gợi ý `SuggestedUserId` + `SuggestionScore`, và từ 03/11/2026 (ADR-0045) tự **điền** `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2; Thư ký gán hoặc đổi sang `AssignedUserId` **hoặc** `AssignedGuestId` (Khách còn lời mời). `AssignedById` rỗng nghĩa là máy điền, có người là Thư ký điền; cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Không lưu vector giọng. |
 | MeetingMinutes | Phiên bản biên bản | IMPLEMENTED (migration `MinutesApproval`) | Trạng thái `Draft`/`WaitingApproval`/`Rejected`/`Issued`/`Superseded` theo luồng SCRUM-33 đã chốt: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành, trả lại kèm lý do (`RejectionReason`, tối đa 2.000 ký tự); `SubmittedById`, `ReturnedById`, `ReturnedAt` ghi ai gửi, ai trả lại. Không ghi đè bản đã ban hành: đính chính là revision mới trỏ `SupersedesId` về bản cũ, bản cũ thành `Superseded` khi bản mới ban hành. Không ký số theo PO 14/11/2026 (SCRUM-37 đóng); bảng `minutes_signatures` đã xoá (migration `DropMinutesSignature`). |
 | MeetingSummary | Dự thảo AI hiện hành của cuộc họp (SCRUM-36, [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)) | IMPLEMENTED (migration `AiMeetingSummaryJob`) | Tối đa một mỗi Meeting. `Content` là JSON 3 mục I–III và khoảng giờ lời thoại của từng phần. `Status` Queued/Running/Ready/Failed là hàng chờ của máy AI (`RequestedById`, `RequestedAt`, `ErrorMessage`). Duyệt = `ReviewedById`/`ReviewedAt`: trước đó chỉ Chủ toạ, Thư ký thấy; sửa (`EditedById`, `EditedAt`) thì bỏ duyệt. Duyệt và công bố gộp làm một bước, khác dự kiến cũ (Draft/Approved/Published). |
@@ -74,7 +74,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | GuestSession | Phiên Khách đã xác minh email; hạn 12 giờ, thu hồi khi Khách tự thoát hoặc lời mời bị thu hồi | IMPLEMENTED (SCRUM-116, bảng `guest_sessions`) | `InvitationId` → `MeetingGuestInvitation`; một lời mời có nhiều phiên (mỗi thiết bị một phiên); `ExpiresAt`, `RevokedAt`; xoá theo lời mời. Lượt vào/ra phòng họp trỏ tới phiên qua `CallParticipant.GuestSessionId`. |
 | SpeechClip | Một câu nói thu từ chính micro của người dự họp, kèm âm thanh để nghe lại từng câu | IMPLEMENTED (SCRUM-109, bảng `speech_clips`; Khách từ SCRUM-129) | `MeetingId`; người nói là **đúng một** trong `SpeakerId` (thành viên) và `GuestInvitationId` (Khách — gắn với **lời mời**, không với phiên; ADR-0051), ràng buộc `ck_speech_clips_one_speaker`; `ClientClipId` chống gửi trùng khi mất mạng; `StartedAt`, `DurationMs`, `Text`, `EditedById/EditedAt` (Thư ký sửa chữ), `ExcludedAt/ExcludedById/ExclusionReason` (loại khỏi bản ghi, không xoá), `Segments` (jsonb, số đo tiếng lọt giữa các micro — ADR-0038, kèm `WordStartsMs` mốc từng từ và `WordConfidence` độ chắc từng từ), `AudioPath`/`AudioContentType`, `Peaks` (dạng sóng). Là dữ liệu cá nhân: xoá cùng hạn với bản ghi (`Recordings:RetentionDays`, ADR-0040). |
 | VoiceConsent | Sự đồng ý Voice ID của một người, tách hẳn khỏi đồng ý ghi âm | IMPLEMENTED (SCRUM-35, bảng `voice_consents`, ADR-0027, ADR-0060) | `UserId` (mỗi người tối đa một dòng đang hiệu lực, cho cả mẫu tự thu lẫn mẫu thu hộ — ADR-0060), `GrantedAt`, `NoticeVersion` (bản câu thông báo đã đọc), `Purpose`, `WithdrawnAt` (một lần, **không hồi**); rút đồng ý là xoá mọi giọng mẫu và lần đồng ý lại tạo dòng mới. Giọng dùng để nhận người là **dữ liệu cá nhân nhạy cảm** theo Luật 91/2025/QH15. |
-| VoiceSample | Một mẫu giọng đã mã hoá, dùng để gợi ý tên người nói | IMPLEMENTED (SCRUM-35, bảng `voice_samples`, ADR-0027) | `UserId`, `ConsentId`; `Ciphertext` (AES-256-GCM: nonce + ciphertext + tag, gắn người/mẫu/model), `EmbeddingModel` (`eres2net-base-200k@<sha12>`), `SpeechMs`, `AudioCiphertext` + `AudioContentType` (bản ghi gốc, cũng mã hoá, để chủ nhân nghe lại), `CollectedById` + `MeetingId` (ai thu hộ, ở cuộc họp nào — ADR-0060; cả hai rỗng với mẫu tự thu; mẫu thu ngoài cuộc họp chỉ có `CollectedById` — ADR-0071; check constraint: có `MeetingId` thì phải có `CollectedById`). Không lưu vector giọng ở bất kỳ bảng nào khác — `DatabaseModelTests` chặn. |
+| VoiceSample | Một mẫu giọng đã mã hoá, dùng để gợi ý tên người nói | IMPLEMENTED (SCRUM-35, bảng `voice_samples`, ADR-0027) | `UserId`, `ConsentId`; `Ciphertext` (AES-256-GCM: nonce + ciphertext + tag, gắn người/mẫu/model), `EmbeddingModel` (`eres2net-base-200k@<sha12>`), `SpeechMs`, `AudioCiphertext` + `AudioContentType` (bản ghi gốc, cũng mã hoá, để chủ nhân nghe lại), `CollectedById` (người có quyền thu hộ đã thu mẫu này — ADR-0073, ADR-0075) + `MeetingId` (chỉ còn với mẫu thu hộ trong cuộc họp trước ADR-0075; hỏi BE có bỏ cột này không — note 58; cả hai rỗng với mẫu tự thu; mẫu thu ngoài cuộc họp chỉ có `CollectedById` — ADR-0071; check constraint: có `MeetingId` thì phải có `CollectedById`). Không lưu vector giọng ở bất kỳ bảng nào khác — `DatabaseModelTests` chặn. |
 
 `MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
 
@@ -451,7 +451,8 @@ erDiagram
         string Status "Pending|Processing|Completed|Failed"
         string Provider "ghi rõ nếu là dịch vụ ngoài"
         string Language
-        int ProgressPercent
+        int ProgressPercent "0–99 khi đang chạy, theo worker; 100 khi xong"
+        timestamptz ProcessingStartedAt "lượt chạy bắt đầu; null khi chờ"
         string ErrorMessage
     }
     TranscriptSegment {
@@ -465,6 +466,8 @@ erDiagram
         int[] WordConfidence "độ chắc từng từ 0–100, null như WordStartsMs"
         string SpeakerLabel "Người nói 1, 2, 3…; thư ký chuyển câu sang giọng khác"
         uuid EditedById FK
+        uuid SpeakerAssignedById FK "nullable, thư ký chuyển câu sang giọng khác"
+        timestamptz SpeakerAssignedAt "nullable"
     }
     TranscriptSpeaker {
         uuid Id PK
@@ -514,8 +517,8 @@ erDiagram
         bigint SpeechMs
         bytea AudioCiphertext "nullable; bản ghi gốc, mã hoá"
         string AudioContentType "nullable"
-        uuid CollectedById FK "nullable; người thu hộ (ADR-0060, ADR-0075)"
-        uuid MeetingId FK "nullable; cuộc họp nơi thu hộ, rỗng nếu thu ngoài cuộc họp (ADR-0071)"
+        uuid CollectedById FK "nullable; người có quyền Thu giọng mẫu hộ đã thu mẫu này (ADR-0073, ADR-0075)"
+        uuid MeetingId FK "nullable; chỉ còn với mẫu thu hộ trong cuộc họp trước ADR-0075, rỗng với mọi mẫu mới (hỏi BE: có bỏ cột này không — note 58)"
     }
     MeetingMinutes {
         uuid Id PK

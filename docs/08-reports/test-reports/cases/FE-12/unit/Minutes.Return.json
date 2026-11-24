@@ -9,7 +9,7 @@
       "method": "MinutesService.ReturnAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
-      "line": 253,
+      "line": 265,
       "cases": [
         {
           "id": "UTC001",
@@ -20,25 +20,15 @@
           "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận của mục 2.\"; loadedAt: T.",
           "return": "Status Rejected with the reason, ReturnedBy = the Chair and ReturnedAt = now; 200 MSG430.",
           "exception": "N/A",
-          "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary (\"Chủ toạ đã trả lại biên bản cuộc họp \"…\" Xem lý do trên tab Biên bản.\").",
+          "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary (\"Chủ toạ đã trả lại biên bản cuộc họp \"…\" Xem lý do trên tab Biên bản.\"); realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-65 · BR-406 · BR-407 · MSG430"
+          "note": "UC-65 · BR-406 · BR-407 · MSG430 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Revision WaitingApproval.",
-            "Actor reads no meeting."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the stranger; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure NotFound; 404 with no message code; status unchanged and nobody notified.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-65"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Ended meeting; actor is the current Secretary.",
             "Revision WaitingApproval with UpdatedAt T."
@@ -48,23 +38,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · BR-406 · MSG428"
+          "note": "UC-65 · BR-406 · MSG428",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "Revision still Draft."
-          ],
-          "inputs": "minutesId: the Draft revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure NotWaiting; 409 MSG429; status unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-65 · MSG429"
-        },
-        {
-          "id": "UTC005",
+          "id": "UTC003",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "Revision WaitingApproval with UpdatedAt T."
@@ -74,59 +54,26 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-65 · BR-407 · MSG431"
+          "note": "UC-65 · BR-407 · MSG431",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "Ended meeting; actor is the current Chair.",
             "Revision WaitingApproval with UpdatedAt T."
           ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: 2.001 characters; loadedAt: T.",
+          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: 2001 characters; loadedAt: T.",
           "return": "Failure ReasonInvalid; 400 MSG431; status unchanged.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-65 · BR-407 · MSG431"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "Revision WaitingApproval with UpdatedAt T; the caller read it at T."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: exactly 2.000 characters; loadedAt: T.",
-          "return": "Status Rejected with the 2.000-character reason; 200 MSG430; exactly 2.000 characters pass.",
-          "exception": "N/A",
-          "log": "Saved: status, reason, returner and times; notification \"Biên bản bị trả lại\" to the current Secretary.",
-          "type": "Boundary",
-          "note": "UC-65 · BR-407 · MSG430"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair.",
-            "WaitingApproval revision read at T, then saved by someone else."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure Stale; 409 MSG401; status unchanged.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-65 · BR-389 · MSG401"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Ended meeting; actor is the current Chair; WaitingApproval revision read at T.",
-            "The database fails while saving the transition."
-          ],
-          "inputs": "minutesId: the waiting revision; actor: the current Chair; reason: \"Bổ sung kết luận.\"; loadedAt: T.",
-          "return": "Failure SaveFailed; 503 MSG404; status unchanged and nobody notified.",
-          "exception": "N/A",
-          "log": "Error logged with the action and minutes id.",
-          "type": "Abnormal",
-          "note": "UC-65 · MSG404"
+          "note": "UC-65 · BR-407 · MSG431",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

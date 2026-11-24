@@ -16,7 +16,7 @@ activate FolderController
 FolderController->FolderService: deleteFolder(ownerId, folderId)
 activate FolderService
 
-FolderService->FolderRepository: Get the selected folder owned by the user,\nwith its document and subfolder counts (BR-219, BR-223, BR-242)
+FolderService->FolderRepository: Get the selected folder owned by the user,\nwith its document and subfolder counts
 activate FolderRepository
 FolderRepository->Database: Retrieve the folder and count its documents and subfolders
 activate Database
@@ -31,8 +31,6 @@ alt Folder is missing or not owned by the user - EX-1
     LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
 
 else Folder is available
-    FolderService->FolderService: Check the folder contains no document and no subfolder (BR-223)
-
     alt Folder contains a document or subfolder - EX-2
         FolderService-->FolderController: MSG196 - Only an empty folder can be deleted.
         FolderController-->LibraryScreen: MSG196 - Only an empty folder can be deleted.
@@ -43,22 +41,14 @@ else Folder is available
         activate FolderRepository
         FolderRepository->Database: Delete folder
         activate Database
-        Database-->FolderRepository: Deleted / Failed
+        Database-->FolderRepository: Deleted
         deactivate Database
-        FolderRepository-->FolderService: Folder deleted / Failed
+        FolderRepository-->FolderService: Folder deleted
         deactivate FolderRepository
 
-        alt Folder cannot be deleted - EX-3
-            FolderService-->FolderController: MSG198 - Unable to delete the folder. The folder remains unchanged.
-            FolderController-->LibraryScreen: MSG198 - Unable to delete the folder. The folder remains unchanged.
-            LibraryScreen-->Actor: MSG198 - Unable to delete the folder. The folder remains unchanged.
-
-        else Folder is deleted
-            FolderService-->FolderController: Folder deleted
-            FolderController-->LibraryScreen: Folder deleted
-            LibraryScreen->LibraryScreen: Refresh the folder tree
-            LibraryScreen-->Actor: MSG197 - Folder deleted successfully.
-        end
+        FolderService-->FolderController: Folder deleted
+        FolderController-->LibraryScreen: Folder deleted
+        LibraryScreen-->Actor: MSG197 - Folder deleted successfully.
     end
 end
 

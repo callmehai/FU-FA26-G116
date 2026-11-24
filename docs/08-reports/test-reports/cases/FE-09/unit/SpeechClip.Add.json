@@ -22,47 +22,13 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-39a · BR-352 · MSG318"
+          "note": "UC-39a · BR-352 · MSG318",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "The same sentence was already stored (its response was lost on the way back)."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: the same clientClipId again with new audio bytes.",
-          "return": "Success (200, MSG318) with the already stored sentence; nothing is transcribed or stored again.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The worker hears only silence (a cough, a door)."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid audio that transcribes to no words.",
-          "return": "Success with no data (204); nothing is stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-39a"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Online meeting in status InProgress."
-          ],
-          "inputs": "upload: clientClipId empty.",
-          "return": "Invalid (400, MSG319) with an error on clipId: “Thiếu mã câu nói.”; nothing is stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG319"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "Online meeting in status InProgress."
           ],
@@ -71,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-39a · MSG319"
+          "note": "UC-39a · MSG319",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Online meeting in status InProgress; the actor is an active participant.",
             "The speech worker is configured and free."
@@ -84,184 +53,25 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Boundary",
-          "note": "UC-39a · MSG318"
+          "note": "UC-39a · MSG318",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
-            "Online meeting in status InProgress."
+            "Online meeting ended 8 days ago, past the 7-day late-upload window."
           ],
-          "inputs": "upload: durationMs 60,001.",
-          "return": "Invalid (400, MSG319) with an error on durationMs: “Một câu dài từ 1 ms đến 60 giây.”; nothing is stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-39a · MSG319"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Online meeting in status InProgress."
-          ],
-          "inputs": "upload: audio of 0 bytes.",
-          "return": "Invalid (400, MSG319) with an error on audio: “Câu nói không có âm thanh.”; nothing is stored.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-39a · MSG319"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "The meeting ends after the capture check, before the sentence is stored."
-          ],
-          "inputs": "meetingId of an Online meeting that just ended 8 days after its end; actorId: the participant; upload: valid.",
-          "return": "NotCapturing (409, MSG320); the audio file written for the sentence is deleted.",
+          "inputs": "meetingId of an Online meeting ended 8 days ago; actorId: the participant; upload: valid.",
+          "return": "NotCapturing (409, MSG320); nothing is transcribed or stored.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · BR-354 · MSG320"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The speech worker is not configured."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "EngineUnavailable (503, MSG312); nothing is stored and no audio file is written.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG312"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The speech worker's slots are all busy for 30 seconds."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "EngineUnavailable (503, MSG312); the browser keeps the sentence and sends it again later.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG312"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The speech worker fails on this sentence."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "EngineUnavailable (503, MSG312); nothing is stored.",
-          "exception": "SpeechEngineException caught; logged.",
-          "log": "Warning log 'The speech worker could not transcribe a clip'.",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG312"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The disk is full, so the audio cannot be kept."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid audio/wav audio.",
-          "return": "Success (200, MSG318) with the sentence stored without audio (peaks null); the words are kept because the minutes are written from them.",
-          "exception": "N/A",
-          "log": "Error log 'Could not store the audio of a speech clip'.",
-          "type": "Normal",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The speech worker is configured and free."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid audio/webm audio.",
-          "return": "Success (200, MSG318); the audio is stored as .webm with no waveform peaks (only WAV draws a waveform).",
-          "exception": "N/A",
-          "log": "A ClipAdded change is published to the meeting.",
-          "type": "Normal",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The worker returns a text longer than 8,000 characters."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "Success (200, MSG318); the stored text is cut to 8,000 characters.",
-          "exception": "N/A",
-          "log": "A ClipAdded change is published to the meeting.",
-          "type": "Boundary",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The browser clock is 10 minutes ahead of the server."
-          ],
-          "inputs": "upload: startedAt 10 minutes in the future.",
-          "return": "Success (200, MSG318); StartedAt falls back to the server time (browser clocks further than 2 minutes off are not trusted).",
-          "exception": "N/A",
-          "log": "A ClipAdded change is published to the meeting.",
-          "type": "Boundary",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Online meeting that ended 3 days ago, with ActualEndedAt set.",
-            "The sentence was said during the meeting and kept on the device."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: startedAt during the meeting, valid.",
-          "return": "Success (200, MSG318); the sentence is accepted and its StartedAt is kept (no later than when the meeting ended).",
-          "exception": "N/A",
-          "log": "A ClipAdded change is published to the meeting.",
-          "type": "Normal",
-          "note": "UC-39a · BR-354 · MSG318"
-        },
-        {
-          "id": "UTC018",
-          "preconditions": [
-            "The same sentence is sent twice at once; the other request stores it first."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: the same clientClipId in two concurrent requests.",
-          "return": "Success (200, MSG318) with the other request's stored sentence; only one row is kept.",
-          "exception": "UniqueConflictException caught; the staged change is discarded.",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG318"
-        },
-        {
-          "id": "UTC019",
-          "preconditions": [
-            "Online meeting in status InProgress; the actor is an active participant.",
-            "The database fails while storing the sentence."
-          ],
-          "inputs": "meetingId; actorId: the participant; upload: valid.",
-          "return": "SaveFailed (503, MSG304); the audio file written for the sentence is deleted.",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to store a speech clip'.",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG304"
-        },
-        {
-          "id": "UTC020",
-          "preconditions": [
-            "The database fails while checking the capture permission."
-          ],
-          "inputs": "meetingId; actorId: a participant; upload: valid.",
-          "return": "SaveFailed (503, MSG304); nothing is transcribed.",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to check speech capture for {MeetingId}'.",
-          "type": "Abnormal",
-          "note": "UC-39a · MSG304"
+          "note": "UC-39a · BR-354 · MSG320 · Deviation: check() refuses before any audio is written, so no file is deleted",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

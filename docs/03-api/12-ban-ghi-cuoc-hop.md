@@ -64,6 +64,7 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
   "meetingId": "…",
   "canUpload": true,
   "canRecord": true,
+  "maxUploadBytes": 314572800,
   "items": [
     {
       "id": "…", "fileName": "ghi-am-phong-29-10-2026-0900.wav", "contentType": "audio/wav",
@@ -84,6 +85,9 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
 được, không xoá được (`409 MSG364`). `source`: `Upload` | `BrowserCapture` (mic phòng). Mới nhất lên đầu.
 `takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. `canRecord`: người gọi bật được mic phòng ngay lúc
 này (Thư ký, cuộc họp `InProgress`, có phòng). `canClose`: Thư ký lưu hộ được lượt đang mở.
+`maxUploadBytes`: tệp lớn nhất `POST …/recordings` nhận (`Recordings:MaxUploadMegabytes` tính ra byte). Trình duyệt kiểm
+trước khi gửi và báo `MSG293` ngay: quá giới hạn thì server trả `413` khi tệp còn đang lên rồi cắt kết nối, nên trình
+duyệt thường chỉ thấy lỗi mạng (QA round 1, REC_FT27). Kết nối đứt khi đang gửi tệp quá giới hạn cũng được báo là `MSG293`.
 `durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật. Bản ghi mic phòng tính độ
 dài từ số byte. Không trả đường dẫn lưu trữ.
 
@@ -160,7 +164,8 @@ Thư ký xoá lượt thứ `take` (đếm từ 1) của một bản ghi phòng 
   lượt sau dời lên đúng độ dài của nó.
 - Bản gỡ băng đã xong: câu bắt đầu trong lượt bị bỏ, câu sau dời giờ lên. Chữ đã sửa và tên đã gán của các lượt khác
   giữ nguyên. Giọng chỉ có trong lượt đó bị bỏ cùng. Không chuyển chữ lại.
-- Bản gỡ băng còn chờ hoặc đang chạy: chạy lại từ tệp ngắn hơn.
+- Bản gỡ băng còn chờ hoặc đang chạy: chạy lại từ tệp ngắn hơn. Câu của lần chạy xong trước đó vẫn bị cắt và dời như
+  trên, để lần chạy sau tìm thấy phần sửa tay đúng chỗ ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)).
 - Nhật ký kiểm toán ghi `recording.take_deleted` kèm lượt, độ dài và số câu đã bỏ.
 
 `200 MSG366` `{ code, message, recordingId }`. Bản ghi chỉ còn một lượt: `409 MSG367`, xoá cả bản ghi thay vào.
@@ -272,7 +277,33 @@ là tiếng đệm ("Ừ.", "À. Ừ.", "Ờm"). Câu dài luôn giữ nguyên. 
 "Người nói N", và các nhãn còn lại được đánh số lại theo thứ tự lên tiếng (`SPEAKER_00`, `SPEAKER_01`…), không
 nhảy số.
 
-Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
+Danh sách bản ghi trả thêm cho mỗi dòng: `transcriptStatus`, `transcriptProgressPercent` (0–99 khi `Processing`, 100
+khi `Completed`), `transcriptProcessingStartedAt` (lúc lượt chạy hiện tại hay lượt cuối bắt đầu; `null` khi đang chờ,
+hay với bản gỡ băng làm trước 23/11/2026) và `transcriptCompletedAt`.
+
+**Tiến độ và thời gian xử lý** (PO 23/11/2026: "hiện được process bar ko ? và hiện thời gian xử lí được ko"). Mỗi lượt
+chạy, `TranscriptionService` gửi worker một mã lượt (`run`, một GUID mới) cùng tệp âm thanh. Vòng kiểm tra cũ của lượt
+chạy (5 giây một lần, xem bản ghi còn `Processing` không) nay hỏi thêm worker `GET /v1/progress?run=…`
+([workers/speech/README.md](../../workers/speech/README.md#get-v1progressrun)) và ghi `progress_percent` khi số tăng:
+chỉ tăng, dừng ở 99 tới khi ghi kết quả (100). Worker không trả lời được trong 3 giây, hay trả lỗi, thì bỏ qua lần đó;
+tiến độ không bao giờ làm lượt chạy dừng hay lỗi. `processing_started_at` được đặt khi một lượt nhận bản ghi ra khỏi hàng
+chờ và xoá khi bản ghi quay lại `Pending` (chạy lại, thêm hay xoá lượt ghi, app khởi động lại giữa chừng). FE vẽ thanh
+tiến độ, đồng hồ chạy theo giây từ `processingStartedAt`, và thời gian còn lại ≈ đã chạy × (100 − p) / p khi p ≥ 5% và
+đã chạy ≥ 30 giây; bản đã xong hiện "chuyển chữ N phút" (`completedAt − processingStartedAt`).
+
+**Chuyển chữ lại giữ phần sửa tay** ([ADR-0077](../05-decisions/0077-giu-phan-sua-tay-khi-go-bang-lai.md)). Bản ghi mic
+phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 phút một lần, [ADR-0080](../05-decisions/0080-mic-phong-luot-30-phut.md)), và máy đánh số giọng lại từ đầu. Trước khi thay bản cũ,
+`TranscriptionService` đặt phần Thư ký sửa tay lên kết quả mới, chỉ dựa vào thời gian (`TranscriptCarry`):
+
+- **Tên Thư ký gán cho giọng** (có `AssignedById`, kể cả bỏ gán) đi sang giọng mới trùng giọng cũ ≥ 60% lời trong phần
+  âm thanh lần trước đã nghe, và ≥ 2 giây. Tên đó thắng tên máy tự gán; gợi ý của máy vẫn tính lại. Tên máy gán thì tính
+  lại từ giọng, không mang sang, nên người đã rút đồng ý Voice ID không được gán lại.
+- **Câu sửa chữ và câu chuyển người** đi sang câu mới cùng lượt ghi, hai đầu lệch ≤ 500 ms hoặc trùng ≥ 80% câu dài hơn,
+  ghép một-một. Câu sửa nhận lại chữ, người sửa, giờ sửa (mốc từ và độ chắc là `null`). Câu chuyển người vào lại giọng
+  của người đó (tạo giọng mới nếu chưa có), hoặc vào giọng mới là giọng cũ chưa có tên. Câu đã sửa hay đã chuyển luôn
+  giữ, kể cả khi ngắn.
+- Mỗi lần chạy có mang được gì, nhật ký ghi `transcript.corrections_carried` (hệ thống): tên đã mang, số câu sửa, số câu
+  chuyển, và giờ của các câu sửa hay chuyển **không khớp** câu nào (không ghi chữ).
 
 ### `GET /api/recordings/{recordingId}/transcript`
 
@@ -281,6 +312,7 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "recordingId": "…", "status": "Completed",
   "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "progressPercent": 100, "processingStartedAt": "…",
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null,
@@ -292,7 +324,9 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 `wordStartsMs`: mốc bắt đầu (ms tính từ đầu bản ghi) của từng từ trong `text`, mỗi từ một mốc, do worker đo từ
 mốc của từng token của model nhận dạng; FE tô đậm từ đang phát. `null` khi đoạn được chuyển chữ trước khi worker
 trả mốc từ, khi số mốc không khớp số từ, và khi Thư ký đã sửa chữ của đoạn (mốc thuộc về chữ máy viết). Không bao
-giờ chia đều thời lượng cho các từ để giả mốc.
+giờ chia đều thời lượng cho các từ để giả mốc. Mốc luôn nằm trong `[startMs, endMs]` của đoạn, không giảm dần: đoạn của
+bản ghi mic phòng bị cắt theo lượt ghi chứa phần lớn của nó (hoặc theo chỗ một lượt bị xoá), còn worker đo mốc trên cả
+quãng nó nghe, nên từ nói vắt qua chỗ cắt được đặt ở mép đoạn thay vì nằm ngoài đoạn (buổi họp 22/11/2026, 6/664 đoạn).
 
 Số trong `text` viết bằng chữ số (`2026`, `5,5`, `15%`, `ngày 22 tháng 11`) từ 22/11/2026
 ([ADR-0076](../05-decisions/0076-viet-so-bang-chu-so-trong-ban-go-bang.md)): worker gộp các từ của một con số thành một
@@ -317,20 +351,24 @@ lượt trước.
 
 Thư ký chạy lần đầu cho bản ghi `None`, chạy lại khi lần trước lỗi, hoặc **làm lại bản đã xong** (model
 mới, có người vừa đăng ký giọng). `202 MSG300`; đang chờ hoặc đang chạy: `409 MSG301`. Làm lại bản đã xong
-thay toàn bộ đoạn, chữ đã sửa và tên đã gán khi chạy xong (nhãn người nói của lần chạy mới không khớp lần
-cũ), nên FE hỏi lại trước; ghi nhật ký `transcript.rerun`.
+thay toàn bộ đoạn khi chạy xong; chữ đã sửa, câu đã chuyển người và tên Thư ký đã gán được giữ ở những câu, giọng còn
+khớp (xem *Chuyển chữ lại giữ phần sửa tay* ở trên). FE vẫn hỏi lại trước; ghi nhật ký `transcript.rerun`.
 
 ### `GET /api/recordings/{recordingId}/transcript.txt`
 
 Chủ toạ hoặc Thư ký lưu bản gỡ băng đã xong thành tệp `.txt` (UTF-8): đầu tệp ghi tên cuộc họp, nguồn, giờ
-bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, giờ tính từ đầu
-bản ghi, tên là tên Thư ký đã gán hoặc *Người nói N*. Chưa xong: `409 MSG357`. Response `transcript` có
+bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, tên là tên Thư ký đã
+gán hoặc *Người nói N*. Giờ của bản ghi mic phòng là giờ thật (giờ Việt Nam) lúc câu được nói: giờ bắt đầu của lượt
+ghi chứa đoạn cộng với vị trí của đoạn trong lượt đó, như tệp câu micro riêng; trước 22/11/2026 là vị trí trong âm
+thanh ghép, lệch khỏi giờ thật thêm mỗi quãng nghỉ giữa hai lượt ghi. Tệp tải lên không biết giờ thật nên vẫn ghi vị
+trí tính từ đầu tệp. Chưa xong: `409 MSG357`. Response `transcript` có
 `canExport`.
 
 ### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
 
 Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–8000 ký tự (`400 MSG303`). Lưu `EditedBy`,
-`EditedAt` để phân biệt chữ người sửa với chữ máy, và ghi nhật ký `transcript.segment_edited` (không ghi chữ). `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
+`EditedAt` để phân biệt chữ người sửa với chữ máy, và ghi nhật ký `transcript.segment_edited` (không ghi chữ). Chữ sửa
+còn lại sau khi chuyển chữ lại nếu câu mới khớp câu này (ADR-0077). `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
 
 ### Cấu hình (`Speech:*`)
 

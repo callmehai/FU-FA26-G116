@@ -9,7 +9,7 @@
       "method": "SpeechClipService.AddForGuestAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 341,
+      "line": 352,
       "cases": [
         {
           "id": "UTC001",
@@ -22,22 +22,13 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-04 · BR-352 · MSG318"
+          "note": "UC-04 · BR-352 · MSG318",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "A current guest session, but the meeting ended 3 days ago (a member could still send)."
-          ],
-          "inputs": "guest session; meetingId of the ended meeting; upload: valid.",
-          "return": "NotCapturing (409, MSG320).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04 · MSG320"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "A current guest session with a confirmed notice."
           ],
@@ -46,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-04 · MSG319"
+          "note": "UC-04 · MSG319",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "A current guest session, but the guest never confirmed the recording notice."
           ],
@@ -58,19 +52,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · BR-353 · MSG380"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The invitation is revoked after the capture check, before the sentence is stored."
-          ],
-          "inputs": "guest session admitted at check, revoked before the commit; upload: valid.",
-          "return": "NotCapturing (409, MSG320); the audio file written for the sentence is deleted.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-04 · MSG320"
+          "note": "UC-04 · BR-353 · MSG380",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

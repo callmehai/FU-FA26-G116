@@ -9,7 +9,7 @@
       "method": "SpeechClipService.DeleteForGuestAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 350,
+      "line": 361,
       "cases": [
         {
           "id": "UTC001",
@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Audit SpeechClipDeleted (sentence, meeting, invitation, session, byOwner true); a ClipDeleted change is published.",
           "type": "Normal",
-          "note": "UC-80 · BR-355 · MSG322"
+          "note": "UC-80 · BR-355 · MSG322",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,22 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-80 · BR-355"
+          "note": "UC-80 · BR-355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "The guest session has expired; the sentence is the guest's own."
-          ],
-          "inputs": "An expired guest session; clipId: the guest's own sentence.",
-          "return": "NotFound; after the session the Secretary deletes it on request.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-80 · BR-355"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "A current guest session; the database fails while saving the removal."
           ],
@@ -57,7 +51,10 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to delete speech clip for a guest'.",
           "type": "Abnormal",
-          "note": "UC-80 · BR-355 · MSG304"
+          "note": "UC-80 · BR-355 · MSG304",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

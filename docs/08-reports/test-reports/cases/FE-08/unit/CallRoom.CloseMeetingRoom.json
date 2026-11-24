@@ -18,11 +18,14 @@
             "LiveKit is configured."
           ],
           "inputs": "meetingId: the meeting.",
-          "return": "The provider room \"meeting-{id}\" is deleted; the open session is ended at the time the provider confirms closure (never earlier than any recorded join or leave). Open visits are closed with it.",
+          "return": "The provider room \"meeting-{id}\" is deleted; the open session is ended at the time the provider confirms closure (never earlier than any recorded join or leave). Open visits are closed with it, and open speaking requests are closed too (a Left change is published when hands were up).",
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37 · Deviation: at 7286680a the session ended without touching the speaking queue; the current code closes open speaking requests via SpeakingLeftAsync — SCRUM-213",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -35,19 +38,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Online meeting just ended; the provider room exists but the database never heard anyone in (no active session)."
-          ],
-          "inputs": "meetingId: the meeting.",
-          "return": "The provider room \"meeting-{id}\" is still deleted; with no session there is nothing to end and no session is created.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

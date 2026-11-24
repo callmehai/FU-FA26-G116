@@ -9,7 +9,7 @@
       "method": "TranscriptionService.ProcessNextAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-      "line": 334,
+      "line": 374,
       "cases": [
         {
           "id": "UTC001",
@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "Saved: segments and voices replaced; audit rows for machine-named voices; listeners notified of the finished transcript.",
           "type": "Normal",
-          "note": "UC-45c · BR-366 · BR-369 · Pending: needs the live speech worker; transcript content comes from the worker."
+          "note": "UC-45c · BR-366 · BR-369",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,7 +37,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-45c"
+          "note": "UC-45c",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -46,7 +52,10 @@
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c · Deviation: defensive path only; recording erasure deletes the transcript in the same transaction, so production never reaches this state"
+          "note": "UC-45c · Deviation: defensive path only; recording erasure deletes the transcript in the same transaction, so production never reaches this state",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -58,43 +67,10 @@
           "exception": "N/A",
           "log": "Warning logged with the recording id and the reason.",
           "type": "Abnormal",
-          "note": "UC-45c"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A Pending transcript; writing the result fails unexpectedly."
-          ],
-          "inputs": "No arguments; the store fails while writing the finished transcript.",
-          "return": "true; transcript is Failed with \"Không chuyển được bản ghi thành chữ do hệ thống. Hãy chạy lại.\"; the staged write is discarded so a restart can requeue it.",
-          "exception": "N/A",
-          "log": "Error logged with the transcript id; staged changes discarded.",
-          "type": "Abnormal",
-          "note": "UC-45c · Pending: needs the live speech worker plus a real store failure while writing the result."
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A Pending transcript; the worker answers with no usable lines."
-          ],
-          "inputs": "No arguments; every returned line is empty.",
-          "return": "true; transcript is Completed with no segments; provider and progress are still stored.",
-          "exception": "N/A",
-          "log": "Saved: empty segments and voices; listeners notified of the finished transcript.",
-          "type": "Boundary",
-          "note": "UC-45c · BR-369 · Pending: needs the live speech worker; the empty output comes from the worker."
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "A Pending transcript; the store fails while claiming it."
-          ],
-          "inputs": "No arguments; the claim itself fails.",
-          "return": "No value; no transcript is claimed.",
-          "exception": "The storage failure is not caught here; the caller answers it.",
-          "log": "No log line here; the failure reaches the caller as is.",
-          "type": "Abnormal",
-          "note": "UC-45c"
+          "note": "UC-45c",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

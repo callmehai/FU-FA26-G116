@@ -5,6 +5,7 @@
     {
       "cases": [
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "email: \"organizer@example.com\"; password: \"<correct password>\".",
@@ -15,9 +16,12 @@
             "Password hasher verifies the stored hash for the supplied password."
           ],
           "return": "SignInResult Success with the user, capabilities [MeetingCreator], an access token, a refresh token (stored for the user) and access-token expiry = now + configured lifetime.",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
           "type": "Normal"
         },
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "email: \"nobody@example.com\"; password: \"<any password>\".",
@@ -27,23 +31,14 @@
             "No account exists for nobody@example.com."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the password is still verified against a dummy hash so timing does not reveal the missing account.",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
           "type": "Abnormal"
         },
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\".",
-          "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (actor = the user, details { method: \"password\", reason: \"invalid_password\" }).",
-          "note": "UC-01 · BR-02 · BR-444 · MSG01",
-          "preconditions": [
-            "Active account organizer@example.com exists."
-          ],
-          "return": "SignInResult Failure(InvalidCredentials) (MSG01); no token issued.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "email: \"former@example.com\"; password: \"<correct password>\".",
           "log": "Sign-in rejected: account {UserId} is deactivated.; audit row SignInFailed (details { method: \"password\", reason: \"account_deactivated\" }).",
           "note": "UC-01 · BR-03 · BR-444 · MSG02",
@@ -51,23 +46,14 @@
             "Account former@example.com exists and is deactivated."
           ],
           "return": "SignInResult Failure(AccountDeactivated) (MSG02); no token issued.",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
           "type": "Abnormal"
         },
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "email: \"former@example.com\"; password: \"<wrong password>\".",
-          "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed with reason \"invalid_password\".",
-          "note": "UC-01 · BR-02 · BR-444 · MSG01",
-          "preconditions": [
-            "Account former@example.com exists and is deactivated."
-          ],
-          "return": "SignInResult Failure(InvalidCredentials) (MSG01): the password is checked before the account status, so the caller cannot learn the account is deactivated.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC004",
           "inputs": "email: \"\"; password: \"<any password>\".",
           "log": "N/A",
           "note": "UC-01 · MSG01",
@@ -75,43 +61,39 @@
             "No repository access is needed for a blank email."
           ],
           "return": "SignInResult Failure(InvalidCredentials) (MSG01); the account store is not read and nothing is recorded.",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
           "type": "Boundary"
         },
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "email: \"organizer@example.com\"; password: \"   \" (whitespace only).",
-          "log": "N/A",
-          "note": "UC-01 · MSG01",
+          "id": "UTC005",
+          "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\".",
+          "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
+          "note": "UC-01 · BR-02 · BR-444 · MSG01",
           "preconditions": [
-            "No repository access is needed for a blank password."
+            "Active account exists for organizer@example.com."
           ],
-          "return": "SignInResult Failure(InvalidCredentials) (MSG01); the account store is not read and nothing is recorded.",
-          "type": "Boundary"
+          "return": "SignInResult Failure(InvalidCredentials) (MSG01); no token issued.",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
+          "type": "Abnormal"
         },
         {
+          "date1": "2026-11-23",
           "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "email: \"  organizer@example.com  \" (surrounding spaces); password: \"<correct password>\".",
-          "log": "Sign-in succeeded for account {UserId}.; audit row SignedIn (method \"password\").",
-          "note": "UC-01",
+          "id": "UTC006",
+          "inputs": "email: \"former@example.com\"; password: \"<wrong password>\".",
+          "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
+          "note": "UC-01 · BR-03 · BR-444 · MSG01",
           "preconditions": [
-            "Active account organizer@example.com exists."
+            "Account former@example.com exists and is deactivated."
           ],
-          "return": "SignInResult Success: the email is trimmed before the lookup, so the account is found.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "email: \"viewer@example.com\"; password: \"<correct password>\".",
-          "log": "Sign-in succeeded for account {UserId}.; audit row SignedIn (method \"password\").",
-          "note": "UC-01 · BR-04",
-          "preconditions": [
-            "Active account exists whose role holds no capabilities (BR-04)."
-          ],
-          "return": "SignInResult Success with an empty capability list and a token pair; a role without capabilities is not refused.",
-          "type": "Boundary"
+          "return": "SignInResult Failure(InvalidCredentials) (MSG01); the caller cannot tell the account is deactivated (not MSG02).",
+          "round1": "Passed",
+          "tester1": "Phạm Gia Khánh",
+          "type": "Abnormal"
         }
       ],
       "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",

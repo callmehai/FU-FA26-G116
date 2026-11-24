@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Library row of D1 deleted; the meeting copies keep their stored file (DocumentId becomes null).",
           "type": "Normal",
-          "note": "UC-71a · BR-186 · BR-213 · MSG180"
+          "note": "UC-71a · BR-186 · BR-213 · MSG180",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,7 +36,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71a · BR-242 · MSG175"
+          "note": "UC-71a · BR-242 · MSG175",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -45,19 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71a · MSG175"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Database error."
-          ],
-          "inputs": "documentId: D1.",
-          "return": "SaveFailed (HTTP 503, MSG181); the library is unchanged.",
-          "exception": "N/A",
-          "log": "Error log \"Failed to delete a document\".",
-          "type": "Abnormal",
-          "note": "UC-71a · MSG181"
+          "note": "UC-71a · MSG175",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

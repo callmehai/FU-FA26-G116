@@ -17,52 +17,37 @@ activate DocumentController
 DocumentController->DocumentService: getMeetingDocuments(meetingId, actor)
 activate DocumentService
 
-DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting: an internal user,\nor a Guest whose verified session is current while the Meeting is Published or InProgress (BR-181, BR-275)
+DocumentService->MeetingAccessPolicy: Check the actor can view the Meeting
 activate MeetingAccessPolicy
-MeetingAccessPolicy->Database: Check the actor's current Meeting relationship or Guest session
+MeetingAccessPolicy->Database: Check Meeting relationship or Guest session
 activate Database
 Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
 MeetingAccessPolicy-->DocumentService: Access / No access
 deactivate MeetingAccessPolicy
 
-alt Meeting documents are not accessible - EX-1
+alt Actor cannot view the Meeting - EX-1
     DocumentService-->DocumentController: MSG156 - Meeting documents are not accessible.
     DocumentController-->DocumentsTab: MSG156 - Meeting documents are not accessible.
     DocumentsTab-->User: MSG156 - Meeting documents are not accessible.
 
 else Actor can view the Meeting
-    DocumentService->MeetingDocumentRepository: Get the current Meeting documents with their Agenda Item links,\npage count, adder, addition time and comment count, together with every Agenda Item\nincluding those that have no document, and the Votes the actor may see that have documents:\nDraft Votes only for the current Chair or Secretary (BR-211, BR-253, BR-277)
+    DocumentService->MeetingDocumentRepository: Get the Meeting documents, agenda and Votes with documents
     activate MeetingDocumentRepository
-    MeetingDocumentRepository->Database: Retrieve documents not removed from the Meeting, the Meeting agenda with the current Agenda Item,\nand each visible Vote's documents with the actor's own read confirmation and whether the actor\nis a voter of that Vote
+    MeetingDocumentRepository->Database: Retrieve documents, agenda and Votes
     activate Database
-    Database-->MeetingDocumentRepository: Meeting documents and agenda / Load failed
+    Database-->MeetingDocumentRepository: Documents, agenda and Votes
     deactivate Database
-    MeetingDocumentRepository-->DocumentService: Meeting documents and agenda / Load failed
+    MeetingDocumentRepository-->DocumentService: Documents, agenda and Votes
     deactivate MeetingDocumentRepository
 
-    alt Document list cannot be loaded - EX-2
-        DocumentService-->DocumentController: MSG157 - Unable to load the document list. Please try again.
-        DocumentController-->DocumentsTab: MSG157 - Unable to load the document list. Please try again.
-        DocumentsTab-->User: MSG157 - Unable to load the document list. Please try again.
+    DocumentService-->DocumentController: Documents grouped by Agenda Item, Vote and general
+    DocumentController-->DocumentsTab: Documents grouped by Agenda Item, Vote and general
 
-    else Documents loaded
-        DocumentService->DocumentService: Group by Agenda Item in agenda order and put documents\nwith no Item link in the general group (BR-277, BR-280); a Vote's document with no Item link\nstays general as well. Mark a Vote's documents as still to confirm only for a voter of an Open Vote\nwhile the Meeting is InProgress (UC-74, BR-291)
-
-        DocumentService-->DocumentController: Grouped Meeting documents, Vote groups and the current Agenda Item
-        DocumentController-->DocumentsTab: Grouped Meeting documents, Vote groups and the current Agenda Item
-
-        opt Opened from the online meeting room - AF-3
-            DocumentsTab->DocumentsTab: Place the current Agenda Item first, keep the server order of the other Items\nand offer reading only (BR-316)
-        end
-
-        alt No documents in the current grouping - AF-2
-            DocumentsTab-->User: Show that no documents are available for the current grouping
-        else Documents available
-            DocumentsTab-->User: Show documents grouped by Agenda Item (including items without documents),\nby Vote with Read / Not read (AF-1), or the general group
-        end
-
-        DocumentsTab->DocumentsTab: Hide adding and linking once the Meeting has ended (BR-282)
+    alt No documents - AF-2
+        DocumentsTab-->User: Show that no documents are available
+    else Documents available
+        DocumentsTab-->User: Show documents by Agenda Item, Vote or general
     end
 end
 

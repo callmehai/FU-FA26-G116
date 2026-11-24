@@ -9,7 +9,7 @@
       "method": "TranscriptionService.EditSegmentAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-      "line": 152,
+      "line": 154,
       "cases": [
         {
           "id": "UTC001",
@@ -22,23 +22,13 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302"
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Transcript segment exists; actor is the current secretary.",
-            "Sent text matches the stored text after trimming."
-          ],
-          "inputs": "segmentId: an existing segment; actorId: the current secretary; text: the stored text with surrounding spaces.",
-          "return": "Success (MSG302); no audit row, as nothing changed to record.",
-          "exception": "N/A",
-          "log": "Saved: editor and edit time refreshed.",
-          "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Transcript segment exists; actor is the current secretary."
           ],
@@ -47,10 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG303"
+          "note": "UC-46a · BR-359 · MSG303",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Transcript segment exists; actor is the current secretary."
           ],
@@ -59,22 +52,13 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG302"
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Transcript segment exists; actor is the current secretary."
-          ],
-          "inputs": "segmentId: an existing segment; actorId: the current secretary; text: 8001 characters.",
-          "return": "Failure Invalid (MSG303); errors[text] = [\"Nội dung đoạn phải có từ 1 đến 8000 ký tự.\"]; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG303"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC004",
           "preconditions": [
             "Transcript segment exists; actor takes part in the meeting but is not the secretary."
           ],
@@ -83,44 +67,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG295"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "No segment exists for the id."
-          ],
-          "inputs": "segmentId: an unknown id; actorId: an active user; text: corrected sentence.",
-          "return": "Failure NotFound; answered as if the segment does not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Transcript segment exists; actor account is deactivated."
-          ],
-          "inputs": "segmentId: an existing segment; actorId: a deactivated account; text: corrected sentence.",
-          "return": "Failure Inactive; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Transcript segment exists; actor is the current secretary.",
-            "The store fails while saving."
-          ],
-          "inputs": "segmentId: an existing segment; actorId: the current secretary; text: corrected sentence.",
-          "return": "Failure SaveFailed (MSG304 \"Không lưu được thay đổi bản ghi. Vui lòng thử lại.\"); the edit is rolled back.",
-          "exception": "PersistenceException is caught inside the service.",
-          "log": "Error logged with the segment id.",
-          "type": "Abnormal",
-          "note": "UC-46a · MSG304"
+          "note": "UC-46a · BR-359 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

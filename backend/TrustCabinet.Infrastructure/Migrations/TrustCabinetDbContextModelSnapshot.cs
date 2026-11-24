@@ -2390,6 +2390,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("language");
 
+                    b.Property<DateTimeOffset?>("ProcessingStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_started_at");
+
                     b.Property<int>("ProgressPercent")
                         .HasColumnType("integer")
                         .HasColumnName("progress_percent");
@@ -2451,6 +2455,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("position");
 
+                    b.Property<DateTimeOffset?>("SpeakerAssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("speaker_assigned_at");
+
+                    b.Property<Guid?>("SpeakerAssignedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("speaker_assigned_by_id");
+
                     b.Property<string>("SpeakerLabel")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2488,6 +2500,9 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("EditedById")
                         .HasDatabaseName("ix_transcript_segments_edited_by_id");
+
+                    b.HasIndex("SpeakerAssignedById")
+                        .HasDatabaseName("ix_transcript_segments_speaker_assigned_by_id");
 
                     b.HasIndex("TranscriptId", "Position")
                         .IsUnique()
@@ -3916,6 +3931,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_transcript_segments_users_edited_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "SpeakerAssignedBy")
+                        .WithMany()
+                        .HasForeignKey("SpeakerAssignedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_segments_users_speaker_assigned_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Transcript", "Transcript")
                         .WithMany("Segments")
                         .HasForeignKey("TranscriptId")
@@ -3924,6 +3945,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_transcript_segments_transcripts_transcript_id");
 
                     b.Navigation("EditedBy");
+
+                    b.Navigation("SpeakerAssignedBy");
 
                     b.Navigation("Transcript");
                 });

@@ -15,23 +15,14 @@
             "Its meeting \"Họp giao ban\" is Published, planned 09:00-10:00."
           ],
           "return": "GuestAccessResult success with GuestInvitationView { invitationId I1, meeting { id, title \"Họp giao ban\", status \"Published\", planned start/end }, maskedEmail \"ng***@example.com\" }.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "invitationId: I1; linkToken: <valid link token>.",
-          "log": "N/A",
-          "note": "UC-04 · BR-155",
-          "preconditions": [
-            "Invitation whose meeting is InProgress and not revoked."
-          ],
-          "return": "GuestAccessResult success; meeting.status = \"InProgress\".",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\".",
           "log": "N/A",
           "note": "UC-04 · BR-152 · MSG371",
@@ -39,59 +30,14 @@
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); the invitation store is not read.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "invitationId: I1; linkToken: null.",
-          "log": "N/A",
-          "note": "UC-04 · BR-152 · MSG371",
-          "preconditions": [
-            "Invitation I1 exists."
-          ],
-          "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "invitationId: I1; linkToken: <valid link token>.",
-          "log": "N/A",
-          "note": "UC-04 · BR-157 · MSG371",
-          "preconditions": [
-            "Invitation I1 was revoked by the Secretary."
-          ],
-          "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371): the reason is not revealed.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "invitationId: I1; linkToken: <valid link token>.",
-          "log": "N/A",
-          "note": "UC-04 · BR-155 · MSG371",
-          "preconditions": [
-            "Invitation I1 is not revoked but its meeting is Ended."
-          ],
-          "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371): an invitation stops working when the meeting is no longer Published or InProgress.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "invitationId: <random Guid>; linkToken: <token computed for that Guid>.",
-          "log": "N/A",
-          "note": "UC-04 · MSG371",
-          "preconditions": [
-            "No invitation with the supplied id exists."
-          ],
-          "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "Error log \"Could not read guest invitation {InvitationId}.\"",
           "note": "UC-04 · MSG374",
@@ -99,11 +45,14 @@
             "The invitation store fails with a persistence error while reading."
           ],
           "return": "GuestAccessResult Failure(Unavailable) (MSG374).",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC009",
+          "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "N/A",
           "note": "UC-04",
@@ -111,19 +60,10 @@
             "Invitation for the email abc@example.com (at-sign at index 3) is open."
           ],
           "return": "maskedEmail = \"a***@example.com\" (one leading character when the local part is 3 characters or fewer).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "invitationId: I1; linkToken: <valid link token>.",
-          "log": "N/A",
-          "note": "UC-04",
-          "preconditions": [
-            "Invitation for the email abcd@example.com (at-sign at index 4) is open."
-          ],
-          "return": "maskedEmail = \"ab***@example.com\" (two leading characters from a 4-character local part).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",

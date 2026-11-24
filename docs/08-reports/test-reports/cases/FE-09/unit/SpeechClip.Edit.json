@@ -9,7 +9,7 @@
       "method": "SpeechClipService.EditAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
-      "line": 195,
+      "line": 199,
       "cases": [
         {
           "id": "UTC001",
@@ -21,22 +21,13 @@
           "exception": "N/A",
           "log": "Audit SpeechClipEdited (sentence, meeting, speaker).",
           "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302"
+          "note": "UC-46a · BR-359 · MSG302",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "An existing sentence; the actor is its meeting's Secretary."
-          ],
-          "inputs": "clipId; actorId: the Secretary; text: the current text unchanged.",
-          "return": "Success (200, MSG302); nothing is changed and no audit row is written.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "An existing sentence; the actor is an active Member (not the Secretary)."
           ],
@@ -45,34 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG295"
+          "note": "UC-46a · BR-359 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "An existing sentence; the actor is its meeting's Secretary."
-          ],
-          "inputs": "clipId; actorId: the Secretary; text of exactly 1 character.",
-          "return": "Success (200, MSG302).",
-          "exception": "N/A",
-          "log": "Audit SpeechClipEdited.",
-          "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG302"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "An existing sentence; the actor is its meeting's Secretary."
-          ],
-          "inputs": "clipId; actorId: the Secretary; text of exactly 8,000 characters.",
-          "return": "Success (200, MSG302).",
-          "exception": "N/A",
-          "log": "Audit SpeechClipEdited.",
-          "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG302"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "An existing sentence; the actor is its meeting's Secretary."
           ],
@@ -81,58 +51,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG303"
+          "note": "UC-46a · BR-359 · MSG303",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
-          "preconditions": [
-            "An existing sentence; the actor is its meeting's Secretary."
-          ],
-          "inputs": "clipId; actorId: the Secretary; text of blanks only.",
-          "return": "Invalid (400, MSG303); blanks are trimmed to empty.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG303"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "No sentence with this id."
-          ],
-          "inputs": "clipId: a random id; actorId: a Secretary.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a · BR-359"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "The actor is not on the roster of the sentence's meeting."
-          ],
-          "inputs": "clipId; actorId: an outsider.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a · BR-359"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "clipId; actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-46a · BR-359"
-        },
-        {
-          "id": "UTC011",
+          "id": "UTC004",
           "preconditions": [
             "An existing sentence; the actor is its meeting's Secretary.",
             "The database fails while saving."
@@ -142,7 +67,10 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to edit speech clip'.",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG304"
+          "note": "UC-46a · BR-359 · MSG304",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

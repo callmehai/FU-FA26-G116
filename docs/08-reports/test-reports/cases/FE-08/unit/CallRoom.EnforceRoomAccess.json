@@ -9,7 +9,7 @@
       "method": "CallRoomService.EnforceRoomAccessAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
-      "line": 319,
+      "line": 320,
       "cases": [
         {
           "id": "UTC001",
@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -35,20 +38,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Meeting with an active room session.",
-            "LiveKit is not configured."
-          ],
-          "inputs": "meetingId: the meeting.",
-          "return": "Returns at once; the provider is never called.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-37"
+          "note": "UC-37",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

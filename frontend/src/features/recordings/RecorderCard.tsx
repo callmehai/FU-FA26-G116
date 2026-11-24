@@ -15,9 +15,10 @@ import { useFloatingBox, type Edge } from './useFloatingBox'
 /**
  * SCRUM-29, ADR-0041 — the Secretary's room mic, as AI-eCabinet's floating mic card: in the corner of every tab while
  * the meeting runs, so moving between tabs never stops it. It is dragged anywhere and widened from its sides, and
- * stays where it was left; nothing else in the corner pushes it, and the toasts start above it. One switch: on records the room, off saves the take into
- * the meeting's one recording and has it transcribed again. The participants are told before the first take only. The
- * card also carries on or saves a take this laptop kept from a session cut off, and saves one left open on another.
+ * stays where it was left; nothing else in the corner pushes it, and it pushes nothing: the toasts keep their corner,
+ * drawn over it (BA 23/11). One switch: on records the room, off saves the take into the meeting's one recording
+ * and has it transcribed again. The participants are told before the first take only. The card also carries on or
+ * saves a take this laptop kept from a session cut off, and saves one left open on another.
  */
 
 const MIN_KEY = 'trustcabinet.recorder.min'
@@ -37,21 +38,6 @@ function storedMin() {
   } catch {
     return phone
   }
-}
-
-/**
- * The toasts stack in the bottom-right corner, where the card starts, and a notification arriving while the room was
- * recorded hid the card's status and its switch (QA FE-09). So when the card sits in the toasts' column, in the lower half
- * of the window, the toasts start above it (`--mic-dock-lift`, read by `.toast-stack`); dragged up or aside, it leaves
- * them where they were. The column is read from the stack itself, which is always in the page, so it follows its CSS.
- */
-function liftToasts(card: HTMLElement) {
-  const column = document.querySelector('.toast-stack')?.getBoundingClientRect()
-  const box = card.getBoundingClientRect()
-  const shares = column !== undefined && box.left < column.right && box.right > column.left
-  const low = box.top + box.height / 2 > window.innerHeight / 2
-  const lift = shares && low ? Math.round(window.innerHeight - box.top + 8) : 0
-  document.documentElement.style.setProperty('--mic-dock-lift', `${lift}px`)
 }
 
 /** The level and what waits to be sent, read from the mic a few times a second while it is on. */
@@ -114,13 +100,8 @@ export function RecorderCard({
     return () => {
       observer.disconnect()
       root.style.removeProperty('--mic-dock-h')
-      root.style.removeProperty('--mic-dock-lift')
     }
   }, [dock, refit])
-  // Every move, resize and refit sets the box's place anew, so the toasts follow the card from here.
-  useLayoutEffect(() => {
-    if (dock.current) liftToasts(dock.current)
-  }, [dock, box.rect])
 
   const kept = !on && phase !== 'starting' && unfinished !== null
   // A take open that is not this laptop's: on another device, or this one's own that a closed tab left behind.
@@ -230,8 +211,9 @@ export function RecorderCard({
             {status}
           </span>
           {on && room.startedAt !== null && (
-            // The take is saved on its own every few minutes (ADR-0072): the clock counts from the switch.
-            <span className="mic-clock" data-tooltip={`Từ lúc bật mic · tự lưu mỗi ${TAKE_SPLIT_SECONDS / 60} phút`}>
+            // The take is saved on its own about every five minutes, at a pause (ADR-0072, ADR-0078): the clock counts
+            // from the switch.
+            <span className="mic-clock" data-tooltip={`Từ lúc bật mic · tự lưu khoảng ${TAKE_SPLIT_SECONDS / 60} phút một lần, ở chỗ ngừng nói`}>
               {/* The clock stands still while the mic is off: until its next tick it is behind the new start. */}
               {formatDuration(Math.max(0, now - room.startedAt))}
             </span>

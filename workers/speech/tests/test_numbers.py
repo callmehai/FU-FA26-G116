@@ -190,5 +190,79 @@ class LineWordsTests(unittest.TestCase):
         self.assertEqual(pipeline.line_words("Còn mười lăm phút.", [0, 200], None), ("Còn 15 phút.", None, None))
 
 
+class MeetingSentenceTests(unittest.TestCase):
+    """Edge cases from the room recording of the meeting of 22/11/2026."""
+
+    def test_a_mark_the_tagger_put_after_phay_does_not_cut_the_decimal(self):
+        self.assertEqual(digits("giống nhau từ không phẩy. bảy hai lên trở lên"), "giống nhau từ 0,72 lên trở lên")
+        self.assertEqual(digits("giống nhau chia không phẩy. bảy hai."), "giống nhau chia 0,72.")
+        # The tagger started a sentence after the number: its mark moves there.
+        self.assertEqual(digits("để cả hai còn không phẩy? bảy Ý em nghĩ"), "để cả hai còn 0,7? Ý em nghĩ")
+
+    def test_a_mark_between_an_hour_and_its_minutes_goes(self):
+        self.assertEqual(digits("Bây giờ là mười bốn giờ. hai mươi lăm này"), "Bây giờ là 14 giờ 25 này")
+        self.assertEqual(digits("cho đến mười ba giờ. Mười lẻ hai giây,"), "cho đến 13 giờ 10 lẻ 2 giây,")
+        self.assertEqual(digits("mười giờ. Không năm phút"), "10 giờ 05 phút")
+
+    def test_a_unit_left_alone_after_a_mark_belongs_to_the_number(self):
+        self.assertEqual(digits("không được phép vượt quá một trăm năm mươi. Trang"),
+                         "không được phép vượt quá 150 trang.")
+        self.assertEqual(digits("vượt quá một trăm năm mươi. Trang."), "vượt quá 150 trang.")
+
+    def test_a_mark_stays_where_the_words_may_be_two_sentences(self):
+        # A count of people, not minutes; "phẩy" after no number; a name starting a sentence; 100 then 50 pages,
+        # where the tagger may be right; nothing a decimal could end with.
+        self.assertEqual(digits("ba giờ. Hai mươi người đến"), "3 giờ. 20 người đến")
+        self.assertEqual(digits("dấu phẩy. Bảy người"), "dấu phẩy. Bảy người")
+        self.assertEqual(digits("một trăm năm mươi. Trang nói"), "150. Trang nói")
+        self.assertEqual(digits("không được quá một trăm. năm mươi trang là tương đối"),
+                         "không được quá 100. 50 trang là tương đối")
+        self.assertEqual(digits("ba phẩy. Không phải"), "ba phẩy. Không phải")
+
+    def test_two_digit_pairs_in_a_range_from_to(self):
+        self.assertEqual(digits("khoảng ngày từ hai hai đến hai bảy Này thì"), "khoảng ngày từ 22 đến 27 Này thì")
+        self.assertEqual(digits("từ hai ba tới hai tám người"), "từ 23 tới 28 người")
+        self.assertEqual(digits("từ mười hai đến hai bảy"), "từ 12 đến 27")
+        self.assertEqual(digits("từ hai mươi đến hai bảy"), "từ 20 đến 27")
+        # Without "từ … đến" two digit words stay a range of single digits.
+        self.assertEqual(digits("hai ba người đến"), "hai ba người đến")
+        self.assertEqual(digits("từ hai ba người"), "từ hai ba người")
+        self.assertEqual(digits("từ năm hai đến năm ba"), "từ năm hai đến năm ba")
+
+    def test_cham_between_two_single_digits_is_a_version(self):
+        self.assertEqual(digits("lúc đấy opus bốn chấm năm mới thay đổi"), "lúc đấy opus 4.5 mới thay đổi")
+        self.assertEqual(digits("chương hai chấm ba"), "chương 2.3")
+        self.assertEqual(digits("Bốn chấm năm á? Bốn chấm năm là nhiều"), "4.5 á? 4.5 là nhiều")
+        self.assertEqual(digits("em nhớ bốn chấm một hay gì bốn chấm không?"), "em nhớ 4.1 hay gì bốn chấm không?")
+        self.assertEqual(digits("bản bốn chấm không mới ra"), "bản 4.0 mới ra")
+        self.assertEqual(digits("ba chấm năm nay"), "ba chấm năm nay")
+        self.assertEqual(digits("bốn chấm"), "bốn chấm")
+        self.assertEqual(digits("hai chấm điểm"), "hai chấm điểm")
+
+    def test_the_converter_never_adds_a_hundred(self):
+        # "400 năm" in the meeting came from the recogniser's "bốn trăm năm"; "chấm" is never read as "trăm".
+        self.assertEqual(digits("opus bốn trăm năm ra"), "opus 400 năm ra")
+        self.assertEqual(digits("opus bốn chấm năm ra"), "opus 4.5 ra")
+
+    def test_minutes_said_as_one_word_after_an_hour_in_digits(self):
+        self.assertEqual(digits("từ chín giờ mười đến mười hai giờ hai mươi"), "từ 9 giờ 10 đến 12 giờ 20")
+        self.assertEqual(digits("mười ba giờ không năm lẻ hai giây"), "13 giờ 05 lẻ 2 giây")
+        self.assertEqual(digits("hai giờ mười người"), "2 giờ mười người")
+        self.assertEqual(digits("bây giờ mười người"), "bây giờ mười người")
+
+    def test_a_word_said_twice_before_the_hour_stays(self):
+        # "lúc mười… mười sáu giờ": the speaker started again, the first "mười" is not part of the hour.
+        self.assertEqual(digits("lúc mười mười sáu giờ, mười bảy giờ rồi"), "lúc mười 16 giờ, 17 giờ rồi")
+
+    def test_times_and_scores_stay_one_per_word_across_a_mended_mark(self):
+        text, times, scores = numbers.normalise_line(
+            "còn không phẩy? bảy Ý em", [0, 10, 20, 30, 40, 50], [90, 80, 70, 60, 50, 40])
+        self.assertEqual(text, "còn 0,7? Ý em")
+        self.assertEqual(times, [0, 10, 40, 50])
+        self.assertEqual(scores, [90, 60, 50, 40])
+        text, times, _ = numbers.normalise_line("quá một trăm năm mươi. Trang", [0, 1, 2, 3, 4, 5], None)
+        self.assertEqual((text, times), ("quá 150 trang.", [0, 1, 5]))
+
+
 if __name__ == "__main__":
     unittest.main()

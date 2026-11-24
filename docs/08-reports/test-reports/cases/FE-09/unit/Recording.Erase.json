@@ -9,7 +9,7 @@
       "method": "RecordingService.EraseAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-      "line": 160,
+      "line": 165,
       "cases": [
         {
           "id": "UTC001",
@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Audit RecordingErased (meeting, file name, reason 'request', actor = the Secretary); the audio file is deleted after the commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44e · BR-348 · BR-341 · MSG296"
+          "note": "UC-44e · BR-348 · BR-341 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,22 +36,13 @@
           "exception": "N/A",
           "log": "No new audit row, no file deletion, no event.",
           "type": "Boundary",
-          "note": "UC-44e · BR-348 · MSG296"
+          "note": "UC-44e · BR-348 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Recording in an Ended meeting."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "Success; erasing is allowed at any meeting status.",
-          "exception": "N/A",
-          "log": "Audit RecordingErased; file deleted.",
-          "type": "Boundary",
-          "note": "UC-44e · BR-348 · MSG296"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Combined recording of a hybrid meeting, Available."
           ],
@@ -57,46 +51,13 @@
           "exception": "N/A",
           "log": "Audit RecordingErased.",
           "type": "Normal",
-          "note": "UC-44e · BR-348 · BR-457 · MSG296"
+          "note": "UC-44e · BR-348 · BR-457 · MSG296",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "No recording with this id."
-          ],
-          "inputs": "recordingId: a random id.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44e · BR-348"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44e · BR-348"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "The actor is not on the roster."
-          ],
-          "inputs": "actorId: the creator, not a participant.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-44e · BR-348 · BR-350"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "The actor is the Chair, not the Secretary."
           ],
@@ -105,10 +66,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44e · BR-348 · BR-341 · MSG295"
+          "note": "UC-44e · BR-348 · BR-341 · MSG295",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
+          "id": "UTC005",
           "preconditions": [
             "A room-mic take still streaming: status Pending."
           ],
@@ -117,31 +81,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44e · BR-348 · MSG364"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Recording whose file cannot be deleted from the disk (access denied)."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "Success (200, MSG296); the row stays Deleted.",
-          "exception": "N/A",
-          "log": "Error log 'Could not delete recording file'; audit RecordingErased written.",
-          "type": "Boundary",
-          "note": "UC-44e · BR-348 · MSG296"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "The database fails while saving."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "SaveFailed (503, MSG298); the file is not deleted.",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to erase recording'.",
-          "type": "Abnormal",
-          "note": "UC-44e · BR-348 · MSG298"
+          "note": "UC-44e · BR-348 · MSG364",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

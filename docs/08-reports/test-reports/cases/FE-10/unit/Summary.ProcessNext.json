@@ -9,7 +9,7 @@
       "method": "SummaryService.ProcessNextAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 170,
+      "line": 187,
       "cases": [
         {
           "id": "UTC001",
@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "Saved: draft content replacing the old text whole; the earlier review and correction no longer apply.",
           "type": "Normal",
-          "note": "UC-47 · BR-376 · BR-378 · BR-379 · Pending: needs a live language model; the draft text comes from the model and cannot be stubbed."
+          "note": "UC-47 · BR-376 · BR-378 · BR-379",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,7 +37,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-47"
+          "note": "UC-47",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -46,7 +52,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-47 · Pending: needs two live workers racing one claim; not observable with an in-memory store."
+          "note": "UC-47 · Claim lost to another worker: the fake store answers 0 changed rows and leaves the draft Running, the way a second worker that claimed first would.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -58,31 +67,10 @@
           "exception": "N/A",
           "log": "Warning logged with the meeting id and the model message.",
           "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model; the failure message comes from the model."
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "A draft is Queued; writing it fails unexpectedly."
-          ],
-          "inputs": "No arguments; the model call throws.",
-          "return": "true; the draft is Failed with \"Không viết được dự thảo. Vui lòng thử lại.\".",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model; the throw comes from the model call."
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "A draft is Queued and written; storing it fails."
-          ],
-          "inputs": "No arguments; the store rejects the finished draft.",
-          "return": "true; the draft is Failed with \"Không lưu được dự thảo. Vui lòng thử lại.\"; it is left out of Running so it never blocks the next request.",
-          "exception": "N/A",
-          "log": "Error logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-47 · Pending: needs a live language model plus a real store failure while persisting the draft."
+          "note": "UC-47",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

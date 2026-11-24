@@ -1,76 +1,40 @@
-title UC-86a - View Voice Collection
+﻿title UC-86a - View Voice Collection
 
-actor "Secretary" as Secretary
-boundary "Meeting Detail Page" as MeetingPage
+actor "VoiceCollector" as Collector
+boundary "Users Page" as UsersPage
 control ":Voice Collection Controller" as CollectionController
 control ":Voice Collection Service" as CollectionService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Voice ID Repository" as VoiceRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Open the Recordings tab to view voice collection
-activate MeetingPage
+Collector->UsersPage: Open voice collection for a person
+activate UsersPage
 
-MeetingPage->CollectionController: Get the voice collection of the Meeting
+UsersPage->CollectionController: Get the voice collection of the person
 activate CollectionController
 
-CollectionController->CollectionService: list(meetingId, actorId)
+CollectionController->CollectionService: list(userId, actorId)
 activate CollectionService
 
-CollectionService->MeetingRepository: Get the Meeting with its current Secretary and active roster (BR-450, BR-451)
-activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting with participants
-activate Database
-Database-->MeetingRepository: Meeting with participants / Not found
-deactivate Database
-MeetingRepository-->CollectionService: Meeting with participants / Not found
-deactivate MeetingRepository
-
-alt No access - EX-1
-    CollectionService-->CollectionController: Forbidden / Not found
-    deactivate CollectionService
-
-    CollectionController-->MeetingPage: Return failure
-    deactivate CollectionController
-
-    alt Caller lacks the Collect voice samples permission
-        MeetingPage-->Secretary: 403 Forbidden (BR-450)
-    else Caller is not the current Secretary, or the Meeting is not In-person or Hybrid,\nis Secret or is Cancelled
-        MeetingPage-->Secretary: Show the Meeting as not found (BR-450, BR-451)
-    end
-
+alt No access: no Voice sample collection permission - EX-1
+    CollectionService-->CollectionController: Not found
+    CollectionController-->UsersPage: Return failure
+    UsersPage-->Collector: Show the person as not found (BR-450)
 else Access granted
-    CollectionService->VoiceRepository: Get consents to notice 1.3 or later and Secretary-recorded samples of the roster
+    CollectionService->VoiceRepository: Get the standing consent and collected samples of the person
     activate VoiceRepository
-    VoiceRepository->Database: Retrieve standing consents and proxy samples
+    VoiceRepository->Database: Retrieve standing consent and collected samples
     activate Database
-    Database-->VoiceRepository: Consents and samples / Load failed
+    Database-->VoiceRepository: Consent and samples
     deactivate Database
-    VoiceRepository-->CollectionService: Consents and samples / Load failed
+    VoiceRepository-->CollectionService: Consent and samples
     deactivate VoiceRepository
 
-    alt Voice collection cannot be loaded - EX-2
-        CollectionService-->CollectionController: Read failed
-        deactivate CollectionService
-
-        CollectionController-->MeetingPage: Return failure
-        deactivate CollectionController
-
-        MeetingPage-->Secretary: Show the voice collection as unavailable
-
-    else Voice collection loaded
-        CollectionService-->CollectionController: Each internal person on the current roster, Guests not listed,\nwith consent state, proxy sample count out of 5 and samples taken at this Meeting (BR-448, BR-449)
-        deactivate CollectionService
-
-        CollectionController-->MeetingPage: Voice collection
-        deactivate CollectionController
-
-        alt Meeting is not Published or In Progress - AF-1
-            MeetingPage-->Secretary: Show the roster without Record; samples can be recorded\nonly while the Meeting is Published or In Progress (BR-451)
-        else Meeting can be recorded now
-            MeetingPage-->Secretary: Show the roster with Record while fewer than 5 proxy samples (BR-448, BR-451)
-        end
-    end
+    CollectionService-->CollectionController: Consent state and collected samples out of 50 (BR-448, BR-449)
+    CollectionController-->UsersPage: Voice collection
+    UsersPage-->Collector: Show the consent state with Record while fewer than 50 collected samples (BR-448)
 end
 
-deactivate MeetingPage
+deactivate CollectionService
+deactivate CollectionController
+deactivate UsersPage

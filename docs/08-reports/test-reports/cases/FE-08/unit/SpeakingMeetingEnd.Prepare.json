@@ -22,7 +22,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-79 · BR-337"
+          "note": "UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -35,20 +38,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-79 · BR-337"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Meeting with an open request raised under a guest invitation.",
-            "Caller holds the meeting transaction and lock."
-          ],
-          "inputs": "meetingId: the meeting; endedAt: 2026-11-10T09:00:00Z.",
-          "return": "The guest request is closed like any member request (Cancelled while Queued or Invited, Finished while Speaking).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-79 · BR-337"
+          "note": "UC-79 · BR-337",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

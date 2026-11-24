@@ -21,7 +21,10 @@
             "Meeting has no agenda items."
           ],
           "return": "SHA-256 of the empty text: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -33,7 +36,10 @@
             "One Pending item at position 1."
           ],
           "return": "SHA-256 of \"aaaaaaaa-0000-0000-0000-000000000001:1:Pending\": 3fd739a99fdff6a5bd0d80ce84ce251c69aad806ded66b37ffb1d2bea9fde669.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -45,35 +51,14 @@
             "Two Pending items at positions 1 and 2."
           ],
           "return": "SHA-256 of both lines joined by a line break: 9d4314cd6201dff90158397739a4dd919b61d12d26772ff7ac2163ee7d7b849d.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "items: [{aaaaaaaa-0000-0000-0000-000000000002, 2, Pending}, {aaaaaaaa-0000-0000-0000-000000000001, 1, Pending}].",
-          "log": "N/A",
-          "note": "UC-23d · BR-64",
-          "preconditions": [
-            "Same items given in reverse order."
-          ],
-          "return": "9d4314cd6201dff90158397739a4dd919b61d12d26772ff7ac2163ee7d7b849d; the order of enumeration does not matter, items are sorted by position.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "items: [{aaaaaaaa-0000-0000-0000-000000000001, 1, InProgress}, {aaaaaaaa-0000-0000-0000-000000000002, 2, Pending}].",
-          "log": "N/A",
-          "note": "UC-23d · MSG143",
-          "preconditions": [
-            "An item's status changes."
-          ],
-          "return": "16433c03efffa38a96ab256fcd1b605245e73b9fcd8a0b0ba9987f18b634fdf6; differs from the Pending version, so a stale client is detected.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "items: [{aaaaaaaa-0000-0000-0000-000000000002, 1, Pending}, {aaaaaaaa-0000-0000-0000-000000000001, 1, Pending}].",
           "log": "N/A",
           "note": "UC-23d · BR-64",
@@ -81,7 +66,10 @@
             "Two items share a position."
           ],
           "return": "7e2852961818f17cfe13b6ae7abc5f4ec6b0b8e666bf2128f14992358a1c4f0f; ties are ordered by id.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

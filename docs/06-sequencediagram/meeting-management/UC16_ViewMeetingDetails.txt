@@ -1,59 +1,41 @@
 title UC-16 - View Meeting Details
 
-actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
-boundary "Meeting Management Page" as MeetingPage
+actor "User" as User
+boundary "Meeting Details Page" as DetailsPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-User->MeetingPage: Request meeting details
-activate MeetingPage
-MeetingPage->MeetingController: View meeting details
+User->DetailsPage: Open meeting details
+activate DetailsPage
+
+DetailsPage->MeetingController: Get meeting details (meetingId)
 activate MeetingController
-MeetingController->MeetingService: getMeetingDetails(meetingId, userId)
+
+MeetingController->MeetingService: getMeetingDetails(meetingId, actor)
 activate MeetingService
-MeetingService->MeetingRepository: Get accessible meeting (BR-29)
+
+MeetingService->MeetingRepository: Find meeting and check access
 activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting and verify authorized relationship
+MeetingRepository->Database: Retrieve meeting and access
 activate Database
-Database-->MeetingRepository: Accessible meeting / Not found
+Database-->MeetingRepository: Meeting / not found
 deactivate Database
-MeetingRepository-->MeetingService: Accessible meeting / Not found
+MeetingRepository-->MeetingService: Meeting / not found
 deactivate MeetingRepository
 
 alt Meeting does not exist or is not accessible - EX-1
-    MeetingService-->MeetingController: Not found (same result for both cases)
-    deactivate MeetingService
-    MeetingController-->MeetingPage: Not found
-    deactivate MeetingController
-    MeetingPage-->User: Meeting not found or unavailable
-else Meeting is accessible
-    activate MeetingController
-    activate MeetingService
-    MeetingService->MeetingRepository: Get meeting-level details
-    activate MeetingRepository
-    MeetingRepository->Database: Retrieve meeting-level fields, Planned Start/End Time, Actual Start/End Time\nwhen available and, for a Cancelled Meeting, its cancellation history entry
-    activate Database
-    Database-->MeetingRepository: Meeting details / Retrieval failed
-    deactivate Database
-    MeetingRepository-->MeetingService: Meeting details / Retrieval failed
-    deactivate MeetingRepository
-    alt Meeting details cannot be retrieved - EX-2
-        MeetingService-->MeetingController: MSG37 - Unable to load meeting details. Please try again.
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Return loading failure
-        deactivate MeetingController
-        MeetingPage-->User: MSG37 - Unable to load meeting details. Please try again.
-    else Meeting details retrieved successfully
-        activate MeetingController
-        activate MeetingService
-        MeetingService-->MeetingController: Meeting Name, Planned Start/End Time, Actual Start/End Time\nwhen available, Mode, Location, Confidentiality Level, Description, Status;\nif Cancelled: cancellation reason, who cancelled it and when (BR-298)
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Return meeting information with planned and available actual times
-        deactivate MeetingController
-        MeetingPage-->User: Display meeting-level details and planned/actual times read-only;\nfor a Cancelled Meeting also show reason, actor and time
-    end
+    MeetingService-->MeetingController: MSG37 - Meeting details are not accessible
+    MeetingController-->DetailsPage: Return not found
+    DetailsPage-->User: MSG37 - Meeting details are not accessible
+
+else Meeting accessible
+    MeetingService-->MeetingController: Meeting details
+    MeetingController-->DetailsPage: Meeting details
+    DetailsPage-->User: Show meeting details (BR-298)
 end
 
-deactivate MeetingPage
+deactivate MeetingService
+deactivate MeetingController
+deactivate DetailsPage

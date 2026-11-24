@@ -85,21 +85,6 @@ export function monthOptions(current: string, extra: string[]): SelectOption<str
 }
 
 const percent = new Intl.NumberFormat('vi-VN', { style: 'percent', maximumFractionDigits: 1 })
-const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 
 /** 0.8725 → "87,3 %" (the server sends a fraction). */
 export const formatRate = (rate: number) => percent.format(rate)
-
-/** 95 → "1 giờ 35 phút", 45 → "45 phút". */
-export function formatMinutes(minutes: number) {
-  const total = Math.round(minutes)
-  const hours = Math.floor(total / 60)
-  const rest = total % 60
-  if (hours === 0) return `${rest} phút`
-  return rest === 0 ? `${hours} giờ` : `${hours} giờ ${rest} phút`
-}
-
-/** 30.5 → "30,5 giờ"; past two days, in days: 60 → "2,5 ngày". */
-export function formatHours(hours: number) {
-  return hours < 48 ? `${decimal.format(hours)} giờ` : `${decimal.format(hours / 24)} ngày`
-}

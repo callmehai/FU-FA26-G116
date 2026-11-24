@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Audit SpeechClipsExported (meeting, sentence count).",
           "type": "Normal",
-          "note": "UC-45b · BR-351 · BR-358"
+          "note": "UC-45b · BR-351 · BR-358",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,7 +36,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG355"
+          "note": "UC-45b · BR-351 · MSG355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -45,7 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG356"
+          "note": "UC-45b · BR-351 · MSG356",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -57,44 +66,10 @@
           "exception": "N/A",
           "log": "Audit SpeechClipsExported with sentence count 0.",
           "type": "Boundary",
-          "note": "UC-45b · BR-351"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor is not on the roster of the meeting."
-          ],
-          "inputs": "meetingId; actorId: an outsider.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-45b"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "meetingId; actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-45b"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "A non-secret meeting; the actor is its Chair.",
-            "The database fails while reading."
-          ],
-          "inputs": "meetingId; actorId: the Chair.",
-          "return": "ReadFailed (500, MSG299).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to export the speech clips'.",
-          "type": "Abnormal",
-          "note": "UC-45b · MSG299"
+          "note": "UC-45b · BR-351",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

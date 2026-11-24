@@ -37,6 +37,14 @@ const MinutesEditor = lazy(() => import('./MinutesEditor').then((m) => ({ defaul
 
 /** The hub event of the AI draft and the minutes changing, from either officer's window or the AI worker. */
 const MINUTES_CHANGED = ['minutesChanged'] as const
+/** A recording's transcript finishing, which is what a draft asked for while one is transcribing waits on. */
+const RECORDINGS_CHANGED = ['recordingsChanged'] as const
+
+/**
+ * Why no draft can be asked for while a recording of the meeting is still being transcribed: it would leave that
+ * recording out (Hải 23/11/2026). The server does not refuse it; the screen just makes the officer wait.
+ */
+const WAIT_FOR_TRANSCRIPT = 'Đợi chuyển chữ xong'
 
 type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: T }
 
@@ -102,6 +110,16 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
     MINUTES_CHANGED,
   )
 
+  // A recording being transcribed holds the draft back: read the readiness again when its transcript is done.
+  const transcribing = summary.kind === 'ready' && (summary.data.readiness?.transcribing ?? 0) > 0
+  useMeetingEvents(
+    meeting.id,
+    () => {
+      if (transcribing) void loadSummary()
+    },
+    RECORDINGS_CHANGED,
+  )
+
   // Poll while the AI writes, as eCab's pipeline chip does (every 5 s until the job is done).
   const waiting = summary.kind === 'ready' && ['Queued', 'Running'].includes(summary.data.summary?.status ?? '')
   useEffect(() => {
@@ -125,6 +143,7 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
         source={draftSource(summary)}
         // Nothing said in the meeting: no AI draft can be made, so the minutes card does not point at one.
         nothingSaid={summary.kind === 'ready' && summary.data.readiness?.sentences === 0}
+        askBlocked={transcribing ? WAIT_FOR_TRANSCRIPT : undefined}
         onChanged={(next) => {
           // Every change answers with the state the server picks, so the card leaves an opened revision with it.
           setSelected(null)
@@ -189,11 +208,14 @@ function SummaryCard({
   // (Khánh 19/11/2026); the server refuses otherwise (MSG386, MSG481).
   const canAsk = canManage && meeting.status === 'Ended'
   const notYet = readiness?.sentences === 0 ? 'Chưa có lời thoại nào để AI tóm tắt' : undefined
+  const transcribing = (readiness?.transcribing ?? 0) > 0
   // The Dự thảo is a snapshot of the transcript: a line corrected, left out or named since leaves it behind (eCab).
   const changedAt = readiness?.transcriptChangedAt
   const stale =
     !!draft && !running && !!changedAt && !!summary?.generatedAt && Date.parse(changedAt) > Date.parse(summary.generatedAt)
-  const askBlocked = notYet ?? (!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined)
+  const askBlocked = transcribing
+    ? WAIT_FOR_TRANSCRIPT
+    : notYet ?? (!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined)
 
   const ask = async () => {
     setBusy(true)
@@ -306,7 +328,8 @@ function SummaryCard({
         </p>
       )}
 
-      {!draft && !running && summary?.status !== 'Failed' && (
+      {/* While a recording is transcribing, its one warning line already says what to do. */}
+      {!draft && !running && summary?.status !== 'Failed' && !transcribing && (
         <p className="field-hint minutes-empty">
           {notYet
             ? 'Chưa có lời thoại nào để AI tóm tắt, nên chưa tạo được dự thảo.'
@@ -400,8 +423,17 @@ function ReadinessNote({
   drafted: boolean
   onNameVoices?: () => void
 }) {
+  // A recording still being transcribed blocks the draft altogether: that is the one thing to say until it is done.
+  if (readiness.transcribing > 0)
+    return (
+      <div className="minutes-readiness" role="status">
+        <p className="minutes-readiness-line">
+          <Icon name="warning" size={16} />
+          <span>{readiness.transcribing} bản ghi đang chuyển chữ, xong mới tạo được dự thảo.</span>
+        </p>
+      </div>
+    )
   const gaps: string[] = []
-  if (readiness.transcribing > 0) gaps.push(`${readiness.transcribing} bản ghi đang chuyển chữ, chưa được tính.`)
   if (readiness.failedTranscripts > 0) gaps.push(`${readiness.failedTranscripts} bản ghi chuyển chữ lỗi, không được tính.`)
   if (!drafted && readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
     gaps.push('Có nội dung chưa được bắt đầu: lời thoại không chia được theo từng nội dung.')
@@ -492,6 +524,7 @@ function MinutesCard({
   state,
   source,
   nothingSaid,
+  askBlocked,
   onChanged,
   onSelect,
   onRetry,
@@ -500,6 +533,8 @@ function MinutesCard({
   state: Load<MinutesState>
   source: DraftSource
   nothingSaid: boolean
+  /** Why no draft can be asked for now, as the Dự thảo card's own button says; empty when one can. */
+  askBlocked?: string
   onChanged: (state: Load<MinutesState>) => void
   onSelect: (minutesId: string | null) => void
   onRetry: () => void
@@ -646,7 +681,8 @@ function MinutesCard({
                 ]}
               />
             )}
-            {minutes && canBuild && (
+            {/* With no AI draft a rebuild would only bring back the same empty sections I–III (Hải 23/11/2026). */}
+            {minutes && canBuild && source !== 'none' && (
               <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setDialog('rebuild')}>
                 <Icon name="refresh" size={16} />
                 Tạo lại
@@ -731,10 +767,10 @@ function MinutesCard({
         <div className="alert alert-info minutes-notice" role="status">
           <span>Chưa có dự thảo AI nên mục I–III để trống.</span>
           {!nothingSaid && (
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => notify(goTo('summary-ask'))}>
+            <BlockedButton className="btn btn-outline btn-sm" blocked={askBlocked} onClick={() => notify(goTo('summary-ask'))}>
               <Icon name="sparkles" size={16} />
               Tạo dự thảo
-            </button>
+            </BlockedButton>
           )}
         </div>
       )}

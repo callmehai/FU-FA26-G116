@@ -21,35 +21,14 @@
             "Meeting in Draft created by the user."
           ],
           "return": "true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "userId: assigned approver.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Meeting in WaitingApproval with an assigned approver."
-          ],
-          "return": "true.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "userId: that approver.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Meeting in Draft with an assigned approver left from an earlier cycle."
-          ],
-          "return": "false; the approver reads only once the meeting is past Draft.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "userId: Chair.",
           "log": "N/A",
           "note": "UC-16 · BR-29 · BR-118 · BR-119",
@@ -57,35 +36,14 @@
             "Draft meeting; user is the current Chair."
           ],
           "return": "true; a Chair reads at any status.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "userId: Secretary.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Approved meeting; user is the current Secretary."
-          ],
-          "return": "true.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "userId: Member.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Approved meeting; user is only a Member."
-          ],
-          "return": "false; a Member reads only from Published.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
+          "id": "UTC003",
           "inputs": "userId: Member.",
           "log": "N/A",
           "note": "UC-16 · BR-29 · BR-118 · BR-119",
@@ -93,35 +51,29 @@
             "Published meeting; user is a Member."
           ],
           "return": "true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC004",
           "inputs": "userId: Member.",
           "log": "N/A",
           "note": "UC-16 · BR-29 · BR-118 · BR-119",
           "preconditions": [
-            "InProgress meeting; user is a Member."
+            "Approved meeting; user is only a Member."
           ],
-          "return": "true.",
-          "type": "Boundary"
+          "return": "false; a Member reads only from Published.",
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "userId: Member.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Ended meeting; user is a Member."
-          ],
-          "return": "true.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
+          "id": "UTC005",
           "inputs": "userId: Member; CancelledFromStatus: Published.",
           "log": "N/A",
           "note": "UC-16 · BR-29 · BR-300",
@@ -129,67 +81,10 @@
             "Cancelled meeting that was Published before it was cancelled; user is a Member."
           ],
           "return": "true.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
-          "inputs": "userId: Member; CancelledFromStatus: Approved.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-300",
-          "preconditions": [
-            "Cancelled meeting that was Approved before it was cancelled; user is a Member."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "userId: the delegating Member.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Published meeting; the Member answered Delegated and was handed over to another user."
-          ],
-          "return": "false; a delegated row is not a current participant.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC013",
-          "inputs": "userId: guest row user.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Published meeting; the user holds an external Guest role row."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC014",
-          "inputs": "userId: replaced Member.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Published meeting; the Member row was replaced (assignment status not Current)."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC015",
-          "inputs": "userId: stranger.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
-          "preconditions": [
-            "Published meeting; user has no relationship to it."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

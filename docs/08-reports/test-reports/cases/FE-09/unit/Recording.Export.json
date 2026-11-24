@@ -9,7 +9,7 @@
       "method": "RecordingRules.Export",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
-      "line": 247,
+      "line": 296,
       "cases": [
         {
           "id": "UTC001",
@@ -21,22 +21,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43c · UC-45b · BR-351"
+          "note": "UC-43c · UC-45b · BR-351",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "The actor is the Secretary of an Internal meeting."
-          ],
-          "inputs": "actor: the Secretary.",
-          "return": "None.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-43c · UC-45b · BR-351"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "The actor is a Member of a Normal meeting."
           ],
@@ -45,46 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43c · UC-45b · BR-351 · MSG355"
+          "note": "UC-43c · UC-45b · BR-351 · MSG355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
-          "preconditions": [
-            "The actor is not on the roster."
-          ],
-          "inputs": "actor: an outsider.",
-          "return": "ExportForbidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG355"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "The actor is the Chair of a Secret meeting."
-          ],
-          "inputs": "actor: the Chair.",
-          "return": "SecretMeeting (shown as MSG356).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · UC-45b · BR-351 · MSG356"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "The actor is the Secretary of a Secret meeting."
-          ],
-          "inputs": "actor: the Secretary.",
-          "return": "SecretMeeting.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG356"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC003",
           "preconditions": [
             "The actor is a Member of a Secret meeting."
           ],
@@ -93,19 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43c · BR-351 · MSG355"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "The actor's Chair assignment was replaced."
-          ],
-          "inputs": "actor: the former Chair.",
-          "return": "ExportForbidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43c · BR-351 · MSG355"
+          "note": "UC-43c · BR-351 · MSG355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

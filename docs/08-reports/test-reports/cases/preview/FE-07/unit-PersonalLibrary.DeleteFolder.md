@@ -13,6 +13,4 @@ Layer: Application · `backend/TrustCabinet.Application/Documents/PersonalLibrar
 | UTC001 | Folder F1 is empty (no subfolder, no document). | folderId: F1. | Return: None; endpoint answers MSG197.<br>Exception: N/A<br>Log Message: Folder row deleted. | Normal | UC-72d · BR-223 · MSG197 |
 | UTC002 | F9 missing or another user's. | folderId: F9. | Return: NotFound (HTTP 404, MSG175).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-72d · BR-242 · MSG175 |
 | UTC003 | F1 has a subfolder. | folderId: F1. | Return: NotEmpty (HTTP 409, MSG196); nothing deleted.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-72d · BR-223 · MSG196 |
-| UTC004 | F1 holds one document. | folderId: F1. | Return: NotEmpty (HTTP 409, MSG196).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-72d · BR-223 · MSG196 |
-| UTC005 | F2 is the upload folder of a meeting and is empty. | folderId: F2. | Return: None; the next upload to that meeting creates a new upload folder.<br>Exception: N/A<br>Log Message: Folder row deleted. | Boundary | UC-72d · BR-228 · MSG197 |
-| UTC006 | Database error (for example a foreign-key restriction). | folderId: F1. | Return: SaveFailed (HTTP 503, MSG198); the folder stays.<br>Exception: N/A<br>Log Message: Error log "Failed to delete a folder". | Abnormal | UC-72d · MSG198 |
+| UTC004 | F2 is the upload folder of a meeting and is empty. | folderId: F2. | Return: None; the next upload to that meeting creates a new upload folder.<br>Exception: N/A<br>Log Message: Folder row deleted. | Boundary | UC-72d · BR-228 · MSG197 |

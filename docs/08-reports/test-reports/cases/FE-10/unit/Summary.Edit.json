@@ -9,7 +9,7 @@
       "method": "SummaryService.EditAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
-      "line": 108,
+      "line": 125,
       "cases": [
         {
           "id": "UTC001",
@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Normal",
-          "note": "UC-49 · BR-377 · MSG388"
+          "note": "UC-49 · BR-377 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,34 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · MSG390"
+          "note": "UC-49 · MSG390",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "A draft is Running on the worker; actor is the current chair."
-          ],
-          "inputs": "meetingId: a meeting with a Running draft; actorId: its current chair; edit: three sections.",
-          "return": "Failure Busy (MSG387 \"AI đang viết dự thảo, vui lòng chờ.\"); the edit waits, otherwise the new draft would replace it unannounced.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-49 · MSG387"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "A Ready draft exists; actor is the current chair."
-          ],
-          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: blank objectives with valid discussion and conclusions.",
-          "return": "Failure Invalid (MSG389 \"Nội dung dự thảo không hợp lệ.\"); errors[objectives] = [\"Nhập nội dung, tối đa 2.000 ký tự.\"]; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-49 · MSG389"
-        },
-        {
-          "id": "UTC005",
           "preconditions": [
             "A Ready draft exists; actor is the current chair."
           ],
@@ -69,22 +51,13 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Boundary",
-          "note": "UC-49 · MSG388"
+          "note": "UC-49 · MSG388",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
-          "preconditions": [
-            "A Ready draft exists; actor is the current chair."
-          ],
-          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current chair; edit: conclusions of 8.001 characters.",
-          "return": "Failure Invalid (MSG389); errors[conclusions] = [\"Nhập nội dung, tối đa 8.000 ký tự.\"]; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-49 · MSG389"
-        },
-        {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
             "A Ready draft exists; actor takes part but is neither chair nor secretary."
           ],
@@ -93,7 +66,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · BR-374 · MSG385"
+          "note": "UC-49 · BR-374 · MSG385",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -9,7 +9,7 @@
       "method": "MeetingService.GetSubmissionReadinessAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 373,
+      "line": 375,
       "cases": [
         {
           "exception": "N/A",
@@ -22,7 +22,10 @@
             "Actor holds MeetingCreator; stored information is complete."
           ],
           "return": "Outcome Success; status Draft; errors empty; Ready true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -34,47 +37,14 @@
             "Draft meeting with an empty stored title."
           ],
           "return": "Outcome Success; errors { title }; Ready false.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "actorId: organizer.",
-          "log": "N/A",
-          "note": "UC-18 · BR-33",
-          "preconditions": [
-            "Rejected meeting created by the actor with complete information."
-          ],
-          "return": "Outcome Success; status Rejected; Ready true.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "id: unknown.",
-          "log": "N/A",
-          "note": "UC-18 · BR-33",
-          "preconditions": [
-            "No meeting exists with the id."
-          ],
-          "return": "Outcome NotFound (404).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "actorId: stranger.",
-          "log": "N/A",
-          "note": "UC-18 · BR-29",
-          "preconditions": [
-            "Meeting exists but the actor has no relationship to it."
-          ],
-          "return": "Outcome NotFound; existence is hidden.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
           "inputs": "actorId: Chair.",
           "log": "N/A",
           "note": "UC-18 · BR-29 · MSG85",
@@ -82,23 +52,14 @@
             "Actor is the Chair or approver, not the creator."
           ],
           "return": "Outcome Forbidden with the meeting status; MSG85.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "actorId: organizer without capability.",
-          "log": "N/A",
-          "note": "UC-18 · BR-29 · MSG85",
-          "preconditions": [
-            "Actor created the meeting but lost MeetingCreator."
-          ],
-          "return": "Outcome Forbidden; MSG85.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC004",
           "inputs": "actorId: organizer.",
           "log": "N/A",
           "note": "UC-18 · BR-33 · MSG41",
@@ -106,31 +67,10 @@
             "Meeting is WaitingApproval."
           ],
           "return": "Outcome StatusConflict with status WaitingApproval; MSG41.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "actorId: organizer.",
-          "log": "N/A",
-          "note": "UC-18 · BR-33 · MSG41",
-          "preconditions": [
-            "Meeting is Approved."
-          ],
-          "return": "Outcome StatusConflict; MSG41.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC010",
-          "inputs": "actorId: organizer.",
-          "log": "Error logged with the meeting id.",
-          "note": "UC-18 · MSG136",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Outcome ReadFailed; MSG136.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

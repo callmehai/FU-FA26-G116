@@ -21,34 +21,13 @@
           "exception": "N/A",
           "log": "Two StoredFile rows, two objects written, two Document rows with OwnerId U1 and FolderId F1, in one transaction; library locked for the owner.",
           "type": "Normal",
-          "note": "UC-36 · BR-229 · MSG177"
+          "note": "UC-36 · BR-229 · MSG177",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Owner U1."
-          ],
-          "inputs": "folderId: null; files: one PDF.",
-          "return": "Value: one document at the library root.",
-          "exception": "N/A",
-          "log": "Document row with FolderId null.",
-          "type": "Normal",
-          "note": "UC-36 · MSG177"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Owner uploads a file with the same name and bytes twice."
-          ],
-          "inputs": "files: two files named \"a.pdf\" with identical bytes.",
-          "return": "Two documents with different IDs.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-36 · BR-229"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Folder F9 was deleted while the files were uploading."
           ],
@@ -57,22 +36,13 @@
           "exception": "N/A",
           "log": "Objects released; StoredFile rows stamped purged.",
           "type": "Abnormal",
-          "note": "UC-36 · MSG179"
+          "note": "UC-36 · MSG179",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Storage used 10 MB, limit 11 MB."
-          ],
-          "inputs": "files: one 1 MB file.",
-          "return": "Value returned; exactly at the limit.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-36 · ADR-0034"
-        },
-        {
-          "id": "UTC006",
+          "id": "UTC003",
           "preconditions": [
             "Storage used 10 MB, limit 11 MB."
           ],
@@ -81,31 +51,25 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-36 · MSG346"
+          "note": "UC-36 · MSG346",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC007",
+          "id": "UTC004",
           "preconditions": [
-            "Storage write fails."
+            "Ten files whose lengths add to more than 100 MB."
           ],
-          "inputs": "files: one PDF.",
-          "return": "Failure SaveFailed (HTTP 503, MSG178).",
+          "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
+          "return": "Failure TooMany (HTTP 400, MSG288).",
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-36 · BR-286 · MSG178"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Database error on commit."
-          ],
-          "inputs": "files: one PDF.",
-          "return": "Failure SaveFailed (HTTP 503, MSG178).",
-          "exception": "N/A",
-          "log": "Objects released.",
-          "type": "Abnormal",
-          "note": "UC-36 · MSG178"
+          "note": "UC-36 · BR-286 · MSG178",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

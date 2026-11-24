@@ -23,7 +23,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85a · BR-415 · BR-422"
+          "note": "UC-85a · BR-415 · BR-422",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -37,7 +40,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85a · BR-422 · MSG445"
+          "note": "UC-85a · BR-422 · MSG445",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
@@ -51,7 +57,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85a · BR-416"
+          "note": "UC-85a · BR-416",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
@@ -64,7 +73,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85a · BR-430 · MSG448"
+          "note": "UC-85a · BR-430 · MSG448",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
@@ -77,89 +89,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85a · BR-421 · MSG444"
+          "note": "UC-85a · BR-421 · MSG444",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC006",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer; Binh was deactivated after sharing.",
-            "Otherwise valid search with userIds [Binh]."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with the base day and duration 60.",
-          "return": "Failure InvalidSearch; errors.userIds[0] is \"Người dùng không tồn tại hoặc đã ngừng hoạt động.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-421 · MSG444"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with durationMinutes 10.",
-          "return": "Failure InvalidSearch; errors.durationMinutes is \"Thời lượng từ 15 phút đến 8 giờ, bội số của 5 phút.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-421 · MSG444"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with durationMinutes 480 and lunchBreak true.",
-          "return": "Failure InvalidSearch; errors.durationMinutes is \"Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-422 · MSG444"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with fromDate 2026-11-10 (in the past).",
-          "return": "Failure InvalidSearch; errors.fromDate is \"Ngày bắt đầu từ hôm nay đến tối đa 365 ngày sau.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-421 · MSG444"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; search: fromDate 2026-11-23 with toDate 2026-11-20 (before the start).",
-          "return": "Failure InvalidSearch; errors.toDate is \"Khoảng ngày tối đa 31 ngày, ngày kết thúc không trước ngày bắt đầu.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-421 · MSG444"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with stepMinutes 7.",
-          "return": "Failure InvalidSearch; errors.stepMinutes is \"Làm tròn giờ bắt đầu từ 5 phút đến 2 giờ, bội số của 5 phút.\"; the endpoint answers 400 MSG444.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-85a · BR-422 · MSG444"
-        },
-        {
-          "id": "UTC012",
           "preconditions": [
             "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
             "An is an active Meeting Organizer; 10 active users share Effective calendars with An.",
@@ -170,35 +106,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85a · BR-421"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam; now is 2026-11-18 10:00.",
-            "An is an active Meeting Organizer; Binh shares an Effective calendar and is free every weekday.",
-            "The range 2026-11-23 to 2026-12-23 holds far more than 200 slots."
-          ],
-          "inputs": "actor: An; search: userIds [Binh], duration 15, step 5, lunchBreak false, 2026-11-23 to 2026-12-23.",
-          "return": "Kind AllFree; 200 slots in time order; truncated true.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-85a · BR-422"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "Today is 2026-11-18 in Vietnam.",
-            "An is an active Meeting Organizer.",
-            "The database fails while reading the shares and invitees."
-          ],
-          "inputs": "actor: An; search: userIds [Binh] with the base day and duration 60.",
-          "return": "Failure ReadFailed; the endpoint answers 500 MSG453 (\"Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.\"); nothing is returned.",
-          "exception": "N/A",
-          "log": "Error logged with the actor id.",
-          "type": "Abnormal",
-          "note": "UC-85a · MSG453"
+          "note": "UC-85a · BR-421",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

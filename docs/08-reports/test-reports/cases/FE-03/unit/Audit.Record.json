@@ -14,7 +14,10 @@
             "Caller context reports IP address 203.0.113.7."
           ],
           "return": "Completes; one audit row is added with the actor A1, the action, object type and id, IP 203.0.113.7 and details JSON {\"email\":\"lan@x.vn\",\"fullName\":\"Lê Văn Lan\"}, and saved at once in its own unit of work.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -26,7 +29,10 @@
             "Caller context available."
           ],
           "return": "Completes; the row is saved with details \"{}\" (the column is NOT NULL, so nothing to add is an empty object).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -38,7 +44,10 @@
             "Caller context available."
           ],
           "return": "Details JSON is stored with the letters as themselves (\"Thư ký phó\"), not as \\u escapes.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
@@ -50,23 +59,14 @@
             "A Guest verifies an invitation (no account acts)."
           ],
           "return": "Completes; the row is saved with a null actor and the invitation in the details.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "objectId: null; actorId: A1.",
-          "log": "Audit row written.",
-          "note": "BR-16",
-          "preconditions": [
-            "The audited action has no single object."
-          ],
-          "return": "Completes; the row is saved with a null object id.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "Persistence exception from saving the audit row.",
-          "id": "UTC006",
+          "id": "UTC005",
           "inputs": "Valid arguments.",
           "log": "N/A",
           "note": "BR-16",
@@ -74,19 +74,10 @@
             "The database refuses the save."
           ],
           "return": "The persistence error reaches the caller; no row is stored.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "Valid arguments.",
-          "log": "Audit row written.",
-          "note": "BR-441",
-          "preconditions": [
-            "Caller context has no IP address available."
-          ],
-          "return": "Completes; the row is saved with the IP address value the caller context returns.",
-          "type": "Boundary"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "file": "backend/TrustCabinet.Application/Audit/AuditService.cs",

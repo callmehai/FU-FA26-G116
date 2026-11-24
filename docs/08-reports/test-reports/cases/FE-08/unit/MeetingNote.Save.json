@@ -22,23 +22,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-82 · MSG415"
+          "note": "UC-82 · MSG415",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The actor saved a note here before and read it back; nothing landed after that read."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: the item; body: \"Nội dung mới\"; loadedAt: the updatedAt the actor read.",
-          "return": "Success with the updated note (MSG415); the 1 ms window absorbs the precision the database drops.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-82 · BR-399 · MSG415"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Meeting InProgress; actor is the current Secretary.",
             "The actor never saved a note at this place."
@@ -48,10 +38,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-82 · BR-400 · MSG415"
+          "note": "UC-82 · BR-400 · MSG415",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Meeting InProgress; actor is the current Chair (a reader of the meeting, not its Secretary)."
           ],
@@ -60,47 +53,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-82 · BR-395 · MSG416"
+          "note": "UC-82 · BR-395 · MSG416",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
-          "preconditions": [
-            "Meeting InProgress; actor was the Secretary but has just been replaced.",
-            "The actor types a note while the replacement is already current."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the former Secretary; agendaItemId: null; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "Forbidden (MSG416); only the current Secretary writes.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-395 · MSG416"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Actor's account is deactivated."
-          ],
-          "inputs": "meetingId: any meeting; actorId: the deactivated account; body: \"Ghi chú\".",
-          "return": "Inactive; 403 with no message code; nothing is saved.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Actor cannot read the meeting (stranger, or meeting does not exist)."
-          ],
-          "inputs": "meetingId: that meeting; actorId: the stranger; body: \"Ghi chú\".",
-          "return": "NotFound; existence stays hidden.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82"
-        },
-        {
-          "id": "UTC008",
+          "id": "UTC004",
           "preconditions": [
             "Meeting Published (not started yet); actor is the current Secretary."
           ],
@@ -109,22 +68,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-82 · BR-396 · MSG417"
+          "note": "UC-82 · BR-396 · MSG417",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC009",
-          "preconditions": [
-            "Meeting Ended and its minutes draft already exists; actor is the current Secretary."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: null; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "Closed (MSG417); the draft takes over and the notes close.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-396 · MSG417"
-        },
-        {
-          "id": "UTC010",
+          "id": "UTC005",
           "preconditions": [
             "Meeting InProgress; actor is the current Secretary."
           ],
@@ -133,98 +83,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-82 · BR-400 · MSG419"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The agenda item is not (or no longer) part of the meeting."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: that item; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "ItemGone; 409 \"Mục nghị sự này không còn trong cuộc họp.\" (MSG420).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · MSG420"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The note was saved from another window after the actor read it."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: the item; body: \"Ghi chú mới\"; loadedAt: the older updatedAt.",
-          "return": "Stale; 409 \"Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.\" (MSG418); nothing is overwritten.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-399 · MSG418"
-        },
-        {
-          "id": "UTC013",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "A note already exists at this place but the actor never read it (nothing was loaded)."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: the item; body: \"Ghi chú mới\"; loadedAt: null.",
-          "return": "Stale (MSG418); without a read time the existing note is never overwritten.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-399 · MSG418"
-        },
-        {
-          "id": "UTC014",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "No note exists at this place but the actor sends a read time (the note there is gone)."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: the item; body: \"Ghi chú mới\"; loadedAt: some past time.",
-          "return": "Stale (MSG418); a note the caller claims to have seen no longer exists.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-82 · BR-399 · MSG418"
-        },
-        {
-          "id": "UTC015",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The agenda item is deleted after the checks but before the write lands."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: that item; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "ItemGone (MSG420).",
-          "exception": "N/A",
-          "log": "Agenda item {ItemId} went away while its note was saved.",
-          "type": "Abnormal",
-          "note": "UC-82 · MSG420"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The write fails in storage."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: null; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "SaveFailed; 503 \"Không lưu được ghi chú. Nội dung vẫn giữ trên máy này và sẽ gửi lại.\" (MSG422); the text stays on the device and is sent again.",
-          "exception": "N/A",
-          "log": "Could not save a note in meeting {MeetingId}.",
-          "type": "Abnormal",
-          "note": "UC-82 · MSG422"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Meeting InProgress; actor is the current Secretary.",
-            "The note is committed, but the change notice cannot be published."
-          ],
-          "inputs": "meetingId: the meeting; actorId: the Secretary; agendaItemId: null; body: \"Ghi chú\"; loadedAt: null.",
-          "return": "Success with the saved note; a committed write stays successful even when the notice fails — the other window finds out on its next save.",
-          "exception": "N/A",
-          "log": "Could not publish the note change in meeting {MeetingId}.",
-          "type": "Normal",
-          "note": "UC-82 · MSG415"
+          "note": "UC-82 · BR-400 · MSG419",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

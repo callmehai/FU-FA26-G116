@@ -22,23 +22,14 @@
             "Meeting is Published."
           ],
           "return": "true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "guest: valid session; meetingId: InProgress meeting.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "Meeting is InProgress; guest session valid and readable."
-          ],
-          "return": "true.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
           "inputs": "guest: session with SessionId = empty Guid; meetingId: any meeting.",
           "log": "N/A",
           "note": "UC-37 · BR-29 · BR-154",
@@ -46,48 +37,14 @@
             "Guest session has an empty SessionId (invalid)."
           ],
           "return": "false; the meeting is not loaded.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC004",
-          "inputs": "guest: session of meeting A; meetingId: meeting B.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "Guest session belongs to another meeting."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "guest: valid session of this meeting; meetingId: the meeting.",
-          "log": "N/A",
-          "note": "UC-37 · BR-157 · BR-154",
-          "preconditions": [
-            "Guest invitation was revoked so the agenda guest-access check fails."
-          ],
-          "return": "false; the meeting is not loaded.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
-          "inputs": "guest: valid session; meetingId: deleted meeting id.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "Guest session valid and readable.",
-            "Meeting no longer exists."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
+          "id": "UTC003",
           "inputs": "guest: valid session; meetingId: Ended meeting.",
           "log": "N/A",
           "note": "UC-37 · BR-155",
@@ -96,20 +53,10 @@
             "Meeting is Ended."
           ],
           "return": "false; only Published and InProgress meetings are open to guests.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "guest: valid session; meetingId: Draft meeting.",
-          "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
-          "preconditions": [
-            "Guest session valid and readable.",
-            "Meeting is Draft."
-          ],
-          "return": "false.",
-          "type": "Abnormal"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

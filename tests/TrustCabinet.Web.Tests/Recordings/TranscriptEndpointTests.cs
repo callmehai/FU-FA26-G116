@@ -259,6 +259,39 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
+    public async Task What_the_secretary_corrected_by_hand_survives_transcribing_the_recording_again()
+    {
+        // ADR-0077: a room recording is transcribed again after every take; names, edits and moves must not vanish.
+        var s = await fixture.Seed();
+        fixture.Speech.Failure = null;
+        var id = await Upload(s);
+        await ProcessAll();
+        using var secretary = fixture.Client(s.Secretary);
+        var lines = (await Transcript(secretary, id)).GetProperty("segments").EnumerateArray()
+            .Select(x => x.GetProperty("id").GetGuid()).ToArray();
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_00", new { userId = s.Member }), 200, "MSG316");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[1]}", new { text = "Tôi đề nghị bổ sung kinh phí đào tạo." }),
+            200, "MSG302");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[1]}/speaker", new { userId = s.Secretary }), 200, "MSG407");
+
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
+        await ProcessAll();
+
+        var again = await Transcript(secretary, id);
+        Assert.Equal("Completed", again.GetProperty("status").GetString());
+        var voices = again.GetProperty("speakers").EnumerateArray()
+            .ToDictionary(v => v.GetProperty("label").GetString()!, v => v.GetProperty("assignedUserId"));
+        Assert.Equal(s.Member, voices["SPEAKER_00"].GetGuid());
+        var line = again.GetProperty("segments")[1];
+        Assert.NotEqual(lines[1], line.GetProperty("id").GetGuid());
+        Assert.Equal("Tôi đề nghị bổ sung kinh phí đào tạo.", line.GetProperty("text").GetString());
+        Assert.Equal("Recording test 0", line.GetProperty("editedByName").GetString());
+        Assert.Equal(s.Secretary, voices[line.GetProperty("speakerLabel").GetString()!].GetGuid());
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "transcript.corrections_carried"));
+    }
+
+    [Fact]
     public async Task A_recording_erased_while_the_worker_runs_gets_no_transcript_back()
     {
         var s = await fixture.Seed();
@@ -274,6 +307,62 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
         await using var db = fixture.Db();
         Assert.False(await db.Transcripts.AnyAsync(t => t.RecordingId == id));
         Assert.Equal(RecordingStatus.Deleted, (await db.Recordings.SingleAsync(r => r.Id == id)).Status);
+    }
+
+    [Fact]
+    public async Task A_run_shows_when_it_started_how_far_it_got_and_how_long_it_took()
+    {
+        var s = await fixture.Seed();
+        await ProcessAll();
+        fixture.Speech.Failure = null;
+        var id = await Upload(s);
+        using var member = fixture.Client(s.Member);
+        var queued = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        Assert.Equal(JsonValueKind.Null, queued.GetProperty("transcriptProcessingStartedAt").ValueKind);
+        Assert.Equal(0, queued.GetProperty("transcriptProgressPercent").GetInt32());
+
+        JsonElement running = default, listed = default;
+        int[] written = [];
+        fixture.Speech.During = async () =>
+        {
+            running = await Transcript(member, id);
+            using var scope = fixture.Host.Services.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<ITranscriptRepository>();
+            var transcriptId = (await repository.FindByRecordingAsync(id, false, CancellationToken.None))!.Id;
+            // Only ever up: a lower count from a late answer leaves the bar where it is.
+            written = [await repository.SetProgressAsync(transcriptId, 42, CancellationToken.None),
+                await repository.SetProgressAsync(transcriptId, 30, CancellationToken.None)];
+            listed = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        };
+        try { await ProcessAll(); }
+        finally { fixture.Speech.During = null; }
+
+        Assert.NotNull(fixture.Speech.LastRun);
+        Assert.Equal("Processing", running.GetProperty("status").GetString());
+        var started = running.GetProperty("processingStartedAt").GetDateTimeOffset();
+        Assert.Equal([1, 0], written);
+        Assert.Equal(42, listed.GetProperty("transcriptProgressPercent").GetInt32());
+        Assert.Equal(started, listed.GetProperty("transcriptProcessingStartedAt").GetDateTimeOffset());
+
+        var done = await Transcript(member, id);
+        Assert.Equal(100, done.GetProperty("progressPercent").GetInt32());
+        Assert.Equal(started, done.GetProperty("processingStartedAt").GetDateTimeOffset());
+        Assert.True(done.GetProperty("completedAt").GetDateTimeOffset() >= started);
+        var row = (await member.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
+        Assert.Equal(done.GetProperty("completedAt").GetDateTimeOffset(), row.GetProperty("transcriptCompletedAt").GetDateTimeOffset());
+
+        // Done, nothing moves it any more; queued again, it waits with no start of its own.
+        await using var db = fixture.Db();
+        var transcript = await db.Transcripts.AsNoTracking().SingleAsync(t => t.RecordingId == id);
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<ITranscriptRepository>()
+                .SetProgressAsync(transcript.Id, 99, CancellationToken.None));
+        using var secretary = fixture.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
+        var again = await Transcript(secretary, id);
+        Assert.Equal("Pending", again.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, again.GetProperty("processingStartedAt").ValueKind);
+        Assert.Equal(0, again.GetProperty("progressPercent").GetInt32());
     }
 
     [Fact]

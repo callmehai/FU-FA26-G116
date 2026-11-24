@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82"
+          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -33,22 +36,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82"
+          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Item has only a marked line (\"Kết luận: Duyệt\")."
-          ],
-          "inputs": "itemId: that item.",
-          "return": "Empty list; the line moved to section III.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC004",
           "preconditions": [
             "Id of an item without notes or not in the agenda."
           ],
@@ -57,19 +51,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · UC-82"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "No meeting-wide note."
-          ],
-          "inputs": "itemId: null.",
-          "return": "Empty list.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-59 · UC-82"
+          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -9,47 +9,26 @@
       "method": "MeetingOverdueService.CancelOverdueAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
-      "line": 60,
+      "line": 63,
       "cases": [
         {
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "AutoCancelAfterHours: 24.",
-          "log": "N/A",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "No meeting is overdue."
-          ],
-          "return": "Returns 0.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC002",
-          "inputs": "AutoCancelAfterHours: 24.",
-          "log": "Saved: history row AutoCancel with no actor; one notification \"Cuộc họp đã tự huỷ\" for the organizer only.",
+          "log": "Saved: history row AutoCancel with no actor; vote drafts deleted in the same transaction (ADR-0067); one notification \"Cuộc họp đã tự huỷ\" for the organizer only.",
           "note": "UC-75 · BR-301",
           "preconditions": [
             "A Draft meeting whose planned start was 30 hours ago."
           ],
           "return": "Returns 1; status Cancelled, CancelledById null, CancelledAt = now, CancelledFromStatus Draft; reason \"Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.\"",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "AutoCancelAfterHours: 24.",
-          "log": "Saved: AutoCancel history row; only the organizer is notified (no invitee notice).",
-          "note": "UC-75 · BR-300 · BR-301",
-          "preconditions": [
-            "A Published meeting planned to start 25 hours ago."
-          ],
-          "return": "Returns 1; CancelledFromStatus Published.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
+          "id": "UTC002",
           "inputs": "PlannedStartTime = now-24h.",
           "log": "N/A",
           "note": "UC-75 · BR-301",
@@ -57,11 +36,14 @@
             "Planned start exactly 24 hours ago."
           ],
           "return": "Returns 1 (start is not later than now minus the delay).",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
+          "id": "UTC003",
           "inputs": "PlannedStartTime = now-23h59m.",
           "log": "N/A",
           "note": "UC-75 · BR-301",
@@ -69,11 +51,14 @@
             "Planned start 23 hours 59 minutes ago."
           ],
           "return": "Returns 0; the meeting is not touched.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC004",
           "inputs": "status InProgress on the re-check.",
           "log": "N/A",
           "note": "UC-75 · BR-297",
@@ -81,59 +66,14 @@
             "Meeting has moved to InProgress between the listing and the locked re-check."
           ],
           "return": "Not cancelled; not counted.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "PlannedStartTime later than now-24h on re-check.",
-          "log": "N/A",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Organizer rescheduled the meeting to a later start between the listing and the re-check."
-          ],
-          "return": "Not cancelled; not counted.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "meeting missing.",
-          "log": "N/A",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Meeting no longer exists on the re-check."
-          ],
-          "return": "Not counted.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "three meetings.",
-          "log": "N/A",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Statuses WaitingApproval, Rejected and Approved, each 30 hours past planned start."
-          ],
-          "return": "Returns 3; each records its own previous status as CancelledFromStatus.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "two overdue meetings; first save fails.",
-          "log": "Error logged for the failed meeting; pending changes discarded.",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Saving one of two overdue meetings fails."
-          ],
-          "return": "Returns 1; the failed meeting is left for the next sweep and the tracker is discarded.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
+          "id": "UTC005",
           "inputs": "60 overdue meetings.",
           "log": "N/A",
           "note": "UC-75 · BR-301",
@@ -141,19 +81,10 @@
             "More than 50 overdue meetings."
           ],
           "return": "At most 50 per sweep.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC012",
-          "inputs": "AutoCancelAfterHours: 12.",
-          "log": "N/A",
-          "note": "UC-75 · BR-301",
-          "preconditions": [
-            "Configured AutoCancelAfterHours is 12."
-          ],
-          "return": "Cutoff now-12h and reason text says 12 giờ.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

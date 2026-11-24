@@ -2,126 +2,77 @@
   "feature": "FE-10",
   "module": "TRANS",
   "sheet": "VoiceCollection.Add",
-  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
-  "precondition": "Meeting with participants and consent.",
+  "description": "Collecting voice samples for a person: who may collect, add, hear and delete (ADR-0071, ADR-0075).",
+  "precondition": "Active person with Voice ID consent; collector holds the Thu giọng mẫu hộ capability.",
   "methods": [
     {
-      "method": "VoiceCollectionService.AddAsync",
+      "method": "VoiceCollectionService.AddForPersonAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
-      "line": 74,
+      "line": 68,
       "cases": [
         {
           "id": "UTC001",
           "preconditions": [
-            "In-person Published meeting; actor is its current secretary.",
-            "Person is an active participant consented to notice \"1.3\" with 2 collected samples.",
+            "Collector holds the Thu giọng mẫu hộ capability.",
+            "Person is active and consented to notice \"1.4\" or later, with 2 collected samples.",
             "Audio holds 20 seconds of one clear voice."
           ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a consented participant; audio: a clear voice recording; contentType: audio/mpeg.",
-          "return": "Success with the collected sample (MSG473 \"Đã lưu giọng mẫu thu hộ.\"); the sample belongs to the person recorded, with the meeting and the secretary on it.",
+          "inputs": "actorId: the collector; userId: the person recorded; audio: a clear voice recording; contentType: audio/mpeg; personAgreed: true.",
+          "return": "Success with the collected sample (MSG473 \"Đã lưu giọng mẫu thu hộ.\"); the sample belongs to the person recorded, with the collector on it and no meeting.",
           "exception": "N/A",
-          "log": "Saved: encrypted sample always with its recording; notification \"Thư ký đã thu giọng mẫu của bạn\" to the person; audit row records the collection with the meeting scope.",
+          "log": "Saved: encrypted sample with its recording; notification to the person; audit row records the collection with the proxy scope.",
           "type": "Normal",
-          "note": "UC-86b · BR-452 · BR-453 · MSG473 · Pending: needs the live speech worker to embed a clear voice sample."
+          "note": "UC-86b · BR-452 · BR-453 · MSG473 · Deviation: no meeting scope since ADR-0075",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
           "preconditions": [
-            "Meeting exists; actor takes part in it but is not the current secretary."
+            "The person has no active consent, or consented only to a notice before 1.4."
           ],
-          "inputs": "meetingId: a Published meeting; actorId: a member who is not the secretary; userId: a participant; audio: a voice recording; contentType: audio/mpeg.",
-          "return": "Failure NotFound; without the secretary role the request is answered as if the meeting does not exist.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · BR-450"
-        },
-        {
-          "id": "UTC003",
-          "preconditions": [
-            "Actor is the current secretary; the person never consented."
-          ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a participant without consent; audio: a voice recording; contentType: audio/mpeg.",
+          "inputs": "actorId: the collector; userId: the person recorded; audio: a voice recording; contentType: audio/mpeg; personAgreed: true.",
           "return": "Failure NoConsent (MSG475 \"Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi.\"); the audio never goes to the worker.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-449 · MSG475"
+          "note": "UC-86b · BR-449 · MSG475",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The person already has 50 proxy samples."
+          ],
+          "inputs": "actorId: the collector; userId: the person recorded; audio: a voice recording; contentType: audio/mpeg; personAgreed: true.",
+          "return": "Failure LimitReached (MSG476 \"Đã đủ 50 giọng mẫu thu hộ cho người này. Xoá bớt rồi thu lại.\"); nothing is kept.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86b · BR-448 · MSG476 · Deviation: limit is 50 per person, 5 per collector is gone (ADR-0075)",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
           "preconditions": [
-            "Actor is the current secretary; the person consented to notice \"1.2\"."
-          ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a participant consented to \"1.2\"; audio: a voice recording; contentType: audio/mpeg.",
-          "return": "Failure NoConsent (MSG475); only a consent to notice 1.3 or later names this collection.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · BR-449 · MSG475"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Actor is the current secretary; the person already has 5 collected samples."
-          ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a participant with 5 collected samples; audio: a voice recording; contentType: audio/mpeg.",
-          "return": "Failure LimitReached (MSG476 \"Người này đã đủ 5 giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại.\"); nothing is kept.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · BR-448 · MSG476"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Meeting status is Ended; actor is its secretary."
-          ],
-          "inputs": "meetingId: an Ended meeting; actorId: its secretary; userId: a consented participant; audio: a voice recording; contentType: audio/mpeg.",
-          "return": "Failure NotCollectable (MSG477 \"Chỉ thu giọng mẫu hộ khi cuộc họp đã công bố hoặc đang họp.\").",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · BR-451 · MSG477"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Actor is the current secretary; the target is a guest without an account."
-          ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a guest; audio: a voice recording; contentType: audio/mpeg.",
-          "return": "Failure NotFound; a guest has no Voice ID to keep a sample under.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-86b · BR-452"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Actor is the current secretary; the person consented to notice \"1.3\".",
+            "The person consented to notice \"1.4\" or later.",
             "Audio holds 3 seconds of speech."
           ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a consented participant; audio: a 3-second recording; contentType: audio/mpeg.",
+          "inputs": "actorId: the collector; userId: the person recorded; audio: a 3-second recording; contentType: audio/mpeg; personAgreed: true.",
           "return": "Failure Rejected (MSG309); errors[file] = [\"Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.\"]; nothing is kept.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-363 · MSG309 · Pending: needs the live speech worker to judge speech length."
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Actor is the current secretary; the person consented to notice \"1.3\".",
-            "The speech worker is down."
-          ],
-          "inputs": "meetingId: a Published meeting; actorId: its current secretary; userId: a consented participant; audio: a clear voice recording; contentType: audio/mpeg.",
-          "return": "Failure EngineUnavailable (MSG312 \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\"); nothing is kept.",
-          "exception": "N/A",
-          "log": "Warning logged with the meeting id.",
-          "type": "Abnormal",
-          "note": "UC-86b · MSG312 · Pending: needs a live speech worker in a down state."
+          "note": "UC-86b · BR-363 · MSG309",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

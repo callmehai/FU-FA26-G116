@@ -61,6 +61,10 @@ export interface Transcript {
   people: TranscriptPerson[]
   /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
   canExport: boolean
+  /** How far a Processing run has got, 0–99, as the speech worker counts it; 100 once Completed. */
+  progressPercent: number
+  /** When the current or last run started; null while it waits. With `completedAt`: how long the run took. */
+  processingStartedAt: string | null
 }
 
 export interface TranscriptMessage {

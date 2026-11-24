@@ -1,4 +1,4 @@
-title UC-45c - Transcribe Meeting Recording
+﻿title UC-45c - Transcribe Meeting Recording
 
 actor "Secretary" as Actor
 boundary "Transcript View" as TranscriptView
@@ -33,7 +33,6 @@ Database-->MeetingRepository: Meeting and roster
 deactivate Database
 MeetingRepository-->TranscriptionService: Meeting and roster
 deactivate MeetingRepository
-TranscriptionService->TranscriptionService: Check the recording is Available and the actor is the current Secretary (BR-341, BR-350)
 
 alt Recording not Available or actor not on the roster
     TranscriptionService-->TranscriptController: Recording not found
@@ -43,7 +42,7 @@ else Actor is not the current Secretary
     TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
     TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
     TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
-else Recording is the combined recording of a Hybrid Meeting - EX-4
+else Recording is the combined recording of a Hybrid Meeting - EX-3
     TranscriptionService-->TranscriptController: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
     TranscriptController-->TranscriptView: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
     TranscriptView-->Actor: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
@@ -67,14 +66,13 @@ else Secretary may queue the recording
             activate TranscriptRepository
             TranscriptRepository->Database: Insert transcript
             activate Database
-            Database-->TranscriptRepository: Saved / Save failed
+            Database-->TranscriptRepository: Saved
             deactivate Database
-            TranscriptRepository-->TranscriptionService: Saved / Save failed
+            TranscriptRepository-->TranscriptionService: Saved
             deactivate TranscriptRepository
         else Transcript is Failed - AF-2, or Completed - AF-3
             opt Transcript is Completed
-                TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names
-will be replaced when it completes (BR-360)
+                TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names\nwill be replaced, keeping what the Secretary set by hand (BR-360, BR-467)
                 activate AuditService
                 AuditService-->TranscriptionService: Entry saved
                 deactivate AuditService
@@ -83,22 +81,15 @@ will be replaced when it completes (BR-360)
             activate TranscriptRepository
             TranscriptRepository->Database: Update transcript
             activate Database
-            Database-->TranscriptRepository: Saved / Save failed
+            Database-->TranscriptRepository: Saved
             deactivate Database
-            TranscriptRepository-->TranscriptionService: Saved / Save failed
+            TranscriptRepository-->TranscriptionService: Saved
             deactivate TranscriptRepository
         end
-
-        alt Recording cannot be queued - EX-2
-            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
-            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
-        else Recording queued
-            TranscriptionService->TranscriptionService: ref UC-45c Process Transcription Queue - processed in the background
-            TranscriptionService-->TranscriptController: MSG300 - Recording queued for transcription.
-            TranscriptController-->TranscriptView: MSG300 - Recording queued for transcription.
-            TranscriptView-->Actor: MSG300 - Recording queued for transcription.
-        end
+        TranscriptionService->TranscriptionService: ref UC-45c Process Transcription Queue - processed in the background
+        TranscriptionService-->TranscriptController: MSG300 - Recording queued for transcription.
+        TranscriptController-->TranscriptView: MSG300 - Recording queued for transcription.
+        TranscriptView-->Actor: MSG300 - Recording queued for transcription.
     end
 end
 

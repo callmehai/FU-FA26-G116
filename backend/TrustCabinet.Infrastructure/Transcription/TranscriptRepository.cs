@@ -29,7 +29,8 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     {
         // SKIP LOCKED: two app instances never take the same recording, and neither waits on the other.
         var claimed = await db.Database.SqlQuery<Guid>($"""
-            UPDATE transcripts SET status = 'Processing', progress_percent = 0, error_message = '', updated_at = {now}
+            UPDATE transcripts SET status = 'Processing', progress_percent = 0, processing_started_at = {now},
+                error_message = '', updated_at = {now}
             WHERE id = (SELECT id FROM transcripts WHERE status = 'Pending' ORDER BY created_at, id LIMIT 1 FOR UPDATE SKIP LOCKED)
             RETURNING id AS "Value"
             """).ToListAsync(ct);
@@ -38,7 +39,12 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
 
     public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct)
         => db.Transcripts.Where(t => t.Status == TranscriptStatus.Processing)
-            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, TranscriptStatus.Pending).SetProperty(t => t.UpdatedAt, now), ct);
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, TranscriptStatus.Pending).SetProperty(t => t.ProgressPercent, 0)
+                .SetProperty(t => t.ProcessingStartedAt, (DateTimeOffset?)null).SetProperty(t => t.UpdatedAt, now), ct);
+
+    public Task<int> SetProgressAsync(Guid transcriptId, int percent, CancellationToken ct)
+        => db.Transcripts.Where(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing && t.ProgressPercent < percent)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.ProgressPercent, percent), ct);
 
     public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct)
         => db.Transcripts.Include(t => t.Recording).SingleOrDefaultAsync(t => t.Id == transcriptId, ct);
@@ -47,6 +53,18 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         => db.Transcripts.AsNoTracking().AnyAsync(t => t.Id == transcriptId && t.Status == TranscriptStatus.Processing, ct);
 
     public Task ReloadAsync(Transcript transcript, CancellationToken ct) => db.Entry(transcript).ReloadAsync(ct);
+
+    public async Task<TranscriptCorrections> ReadCorrectionsAsync(Guid transcriptId, CancellationToken ct)
+    {
+        var lines = await db.TranscriptSegments.AsNoTracking().Where(s => s.TranscriptId == transcriptId).OrderBy(s => s.Position)
+            .Select(s => new PreviousLine(s.StartMs, s.EndMs, s.SpeakerLabel, s.EditedAt == null ? null : s.Text, s.EditedById,
+                s.EditedAt, s.SpeakerAssignedById, s.SpeakerAssignedAt))
+            .ToListAsync(ct);
+        var voices = await db.TranscriptSpeakers.AsNoTracking().Where(s => s.TranscriptId == transcriptId).OrderBy(s => s.Label)
+            .Select(s => new PreviousVoice(s.Label, s.AssignedUserId, s.AssignedGuestId, s.AssignedById, s.AssignedAt))
+            .ToListAsync(ct);
+        return new(lines, voices);
+    }
 
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);

@@ -9,7 +9,7 @@
       "method": "RecordingService.DownloadAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
-      "line": 131,
+      "line": 133,
       "cases": [
         {
           "id": "UTC001",
@@ -22,23 +22,13 @@
           "exception": "N/A",
           "log": "Audit row RecordingDownloaded for the recording with meetingId, file name and byte size, actor = the Chair.",
           "type": "Normal",
-          "note": "UC-43c · BR-351"
+          "note": "UC-43c · BR-351",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
-          "preconditions": [
-            "Available recording in an Internal meeting.",
-            "The actor is the current Secretary."
-          ],
-          "inputs": "recordingId; actorId: the Secretary.",
-          "return": "Success; a signed download URL.",
-          "exception": "N/A",
-          "log": "Audit row RecordingDownloaded written.",
-          "type": "Normal",
-          "note": "UC-43c · BR-351"
-        },
-        {
-          "id": "UTC003",
           "preconditions": [
             "Available recording; the actor is a Member."
           ],
@@ -47,10 +37,13 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG355"
+          "note": "UC-43c · BR-351 · MSG355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC004",
+          "id": "UTC003",
           "preconditions": [
             "Available recording in a Secret meeting; the actor is the Chair."
           ],
@@ -59,10 +52,13 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG356"
+          "note": "UC-43c · BR-351 · MSG356",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC005",
+          "id": "UTC004",
           "preconditions": [
             "Available recording in a Secret meeting; the actor is a Member."
           ],
@@ -71,91 +67,26 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43c · BR-351 · MSG355"
+          "note": "UC-43c · BR-351 · MSG355",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC006",
+          "id": "UTC005",
           "preconditions": [
-            "No recording with this id exists."
+            "Available WAV recording in a Normal meeting; the actor is its current Chair.",
+            "The server cannot convert audio to MP3 (no converter)."
           ],
-          "inputs": "recordingId: a random id.",
-          "return": "NotFound.",
+          "inputs": "recordingId: the WAV recording; actorId: the Chair.",
+          "return": "Mp3Unavailable (503, MSG482 \"Chưa chuyển được bản ghi sang MP3. Vui lòng thử lại sau.\"); no link is signed.",
           "exception": "N/A",
-          "log": "N/A",
+          "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "The actor's account is deactivated."
-          ],
-          "inputs": "actorId: the deactivated user.",
-          "return": "Inactive (403).",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "The actor is not on the roster."
-          ],
-          "inputs": "actorId: the meeting creator, not a participant.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · BR-350"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Recording is Deleted."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-43c · BR-348"
-        },
-        {
-          "id": "UTC010",
-          "preconditions": [
-            "Recording is Pending (take streaming)."
-          ],
-          "inputs": "actorId: the Secretary.",
-          "return": "NotFound.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-43c"
-        },
-        {
-          "id": "UTC011",
-          "preconditions": [
-            "The combined recording of a hybrid meeting, Available; the actor is the Secretary."
-          ],
-          "inputs": "recordingId: the combined recording.",
-          "return": "Success; a signed download URL; the combined recording can be downloaded.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-43c · BR-458"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "The database fails while reading."
-          ],
-          "inputs": "actorId: the Chair.",
-          "return": "ReadFailed (500, MSG297).",
-          "exception": "PersistenceException caught; logged.",
-          "log": "Error log 'Failed to sign a download'.",
-          "type": "Abnormal",
-          "note": "UC-43c · MSG297"
+          "note": "UC-43c · BR-351 · MSG482 · Deviation: downloads leave as MP3 since ADR-0069 (ea9b880a), after these UTCs were written",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

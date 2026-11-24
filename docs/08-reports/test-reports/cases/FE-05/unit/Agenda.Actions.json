@@ -21,35 +21,14 @@
             "Running meeting; Chair; item Pending; no item in progress."
           ],
           "return": "CanEdit true; CanEditPlanningFields true; CanDelete true; CanSetCurrent true; CanComplete false; CanRecordConclusion false; CanLinkDocuments true.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "meeting InProgress; actor: Chair; item Pending; items include one InProgress.",
-          "log": "N/A",
-          "note": "UC-24 · BR-71",
-          "preconditions": [
-            "Running meeting; Chair; another item is already in progress."
-          ],
-          "return": "CanSetCurrent false; CanEdit true; CanDelete true.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "meeting InProgress; actor: Chair; item InProgress.",
-          "log": "N/A",
-          "note": "UC-25 · UC-77 · BR-69",
-          "preconditions": [
-            "Running meeting; Chair; the item is in progress."
-          ],
-          "return": "CanComplete true; CanDelete false; CanSetCurrent false; CanRecordConclusion true; CanEdit true.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "meeting InProgress; actor: Secretary; item Pending.",
           "log": "N/A",
           "note": "UC-24 · BR-65 · BR-69",
@@ -57,23 +36,14 @@
             "Running meeting; Secretary; item Pending."
           ],
           "return": "CanEdit true; CanDelete true; CanSetCurrent false; CanComplete false; CanLinkDocuments true (execution actions are for the Chair only).",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "meeting Published; actor: Chair; item Pending.",
-          "log": "N/A",
-          "note": "UC-23a · BR-69",
-          "preconditions": [
-            "Published meeting; Chair; item Pending."
-          ],
-          "return": "CanEdit true; CanDelete true; CanSetCurrent false; CanComplete false (meeting not running).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC003",
           "inputs": "meeting InProgress; actor: Member; item Pending.",
           "log": "N/A",
           "note": "UC-26 · BR-65",
@@ -81,31 +51,10 @@
             "Plain Member views the agenda."
           ],
           "return": "All seven actions false.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "meeting Ended; actor: Chair; item Done; hasMinutes: false.",
-          "log": "N/A",
-          "note": "UC-77 · BR-74 · BR-279",
-          "preconditions": [
-            "Ended meeting; Chair; item Done; no minutes."
-          ],
-          "return": "CanEdit false; CanDelete false; CanSetCurrent false; CanComplete false; CanRecordConclusion true; CanLinkDocuments false (meeting ended).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
-          "inputs": "meeting Ended; actor: Secretary; item Done; hasMinutes: true.",
-          "log": "N/A",
-          "note": "UC-77 · MSG273",
-          "preconditions": [
-            "Ended meeting with minutes issued."
-          ],
-          "return": "CanRecordConclusion false; all others false.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

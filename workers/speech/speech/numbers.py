@@ -20,7 +20,13 @@ The rule is conservative: a wrong digit misleads the reader more than a number l
 * After "thứ" a single word is a day of the week or an ordinal and stays: "thứ hai", "thứ năm".
 * "năm" is a number only where the grammar needs it ("năm mươi", "năm trăm", "năm triệu"); after
   "mươi" and "mười" a 5 is said "lăm", so "hai mươi năm" is "20 năm" (twenty years).
-* A punctuation mark the tagger put between two words ends a number there.
+* A punctuation mark the tagger put between two words ends a number there, except where the words around it can
+  only be one number (`_mends`): after "phẩy" ("không phẩy. bảy hai" → 0,72), between an hour and its minutes ("14
+  giờ. hai mươi lăm" → "14 giờ 25"), and before a unit left alone as the last word ("một trăm năm mươi. Trang" →
+  "150 trang").
+* "từ hai hai đến hai bảy" is a range of two-digit numbers, "từ 22 đến 27", not of single digits.
+* "chấm" between two single digits is a version or a section: "bốn chấm năm" → 4.5.
+* After an hour in digits, "mười" and "không năm" are its minutes: "9 giờ mười" → "9 giờ 10", "13 giờ 05".
 
 Numbers from ten thousand up are grouped with dots ("15.000"), four-digit ones are not (a year), decimals
 take a comma (Vietnamese usage). A round number of millions or billions keeps the word ("200 triệu",
@@ -55,6 +61,16 @@ LINH = {"linh", "lẻ"}
 COLLOQUIAL = {"mốt": 1, "hai": 2, "ba": 3, "bốn": 4, "tư": 4, "sáu": 6, "bảy": 7, "bẩy": 7, "tám": 8, "chín": 9}
 SCALES = {"nghìn": 1000, "ngàn": 1000, "triệu": 10**6, "tỷ": 10**9, "tỉ": 10**9}
 TIME_UNITS = {"giờ", "phút", "giây"}
+# Words a number can end with: a whole number, or the last digit of a decimal.
+NUMBER_WORDS = set(DIGITS) | set(AFTER_MUOI) | {"mười", "mươi", "trăm", "linh", "lẻ"} | set(SCALES)
+# What a number counts or measures. A one-word "sentence" made of one of these after a number belongs to it ("150.
+# Trang" is 150 pages); after "giờ" they mean the number is not the minutes ("3 giờ. Hai mươi người").
+MEASURES = {"trang", "người", "đồng", "phút", "giây", "giờ", "lần", "ngày", "tuần", "tháng", "năm"}
+SENTENCE_MARKS = ".?!…"
+# A word after which a number goes on ("hai mươi", "ba trăm", "năm nghìn"): a number cut before it is not whole.
+GOES_ON = set(DIGITS) | {"mười", "mươi", "trăm"} | set(SCALES)
+# "ba chấm năm nay" is three marks this year, not 3.5.
+YEAR_WORDS = {"nay", "ngoái", "sau", "trước", "học"}
 # Read one by one ("hai không hai sáu"): from this many digit words on, it is a code or a year.
 MIN_DIGIT_RUN = 4
 
@@ -230,8 +246,22 @@ def _write(number: Number, start: int, words: Sequence[Word]) -> list[Span]:
 
 
 def rewrite(text: str) -> list[Span]:
-    """The words of `text` with its numbers written in digits, each with the input words it replaces."""
+    """The words of `text` with its numbers written in digits, each with the input words it replaces.
+
+    A mark the tagger put inside a number is taken off only when the number then converts across it; otherwise the
+    line is read as the tagger wrote it.
+    """
     words = [split_word(token) for token in text.split()]
+    for mend in _mends(words):
+        trial = _apply(words, mend)
+        spans = _rewrite(trial)
+        after = not mend.both_sides or _is_converted(spans, trial, mend.at + 1)
+        if _is_converted(spans, trial, mend.at - 1) and after:
+            words = trial
+    return _rewrite(words)
+
+
+def _rewrite(words: Sequence[Word]) -> list[Span]:
     parser = _Parser(words)
     out: list[Span] = []
     i = 0
@@ -275,6 +305,33 @@ def _number_at(parser: _Parser, words: Sequence[Word], i: int, out: list[Span]) 
             if not month.single or dated or year_follows:
                 return [(str(month.value), i, month.end)]
 
+    # A version or a section, "chấm" between two single digits: "opus bốn chấm năm" → 4.5.
+    if key(i) in DIGITS and before not in NUMBER_WORDS and parser.next_key(i) == "chấm" \
+            and parser.next_key(i + 1) in DIGITS:
+        after = parser.next_key(i + 2)
+        # "bốn chấm không?" ends on the question word "không", not on a 0.
+        question = key(i + 2) == "không" and after is None
+        if after not in NUMBER_WORDS and after != "chấm" and not question \
+                and not (key(i + 2) == "năm" and after in YEAR_WORDS):
+            return [(f"{DIGITS[key(i)]}.{DIGITS[key(i + 2)]}", i, i + 3)]
+
+    # Minutes after an hour in digits: "9 giờ mười" → 9 giờ 10, "13 giờ không năm" → 13 giờ 05.
+    if before == "giờ" and _hour_before(parser, out, i):
+        after = parser.next_key(i)
+        if key(i) == "mười" and after not in AFTER_MUOI_10 and after not in MEASURES - {"phút"}:
+            return [("10", i, i + 1)]
+        if key(i) == "không" and after in DIGITS and after != "không" and parser.next_key(i + 1) not in GOES_ON:
+            return [(f"0{DIGITS[after]}", i, i + 2)]
+
+    # A range of two-digit numbers: "từ hai hai đến hai bảy" → từ 22 đến 27, where single digits make no sense.
+    pair = _pair(parser, i)
+    if pair is not None:
+        if before == "từ" and parser.open[pair[1] - 1] and key(pair[1]) in RANGE_TO and parser.open[pair[1]]:
+            if _pair(parser, pair[1] + 1) is not None or _several_words(parser, pair[1] + 1):
+                return [(str(pair[0]), i, pair[1])]
+        if before in RANGE_TO and _range_from(out, words, i):
+            return [(str(pair[0]), i, pair[1])]
+
     number = parser.number(i)
     run = parser.digit_run(i, MIN_DIGIT_RUN)
     if run and (number is None or run[1] > number.end):
@@ -316,6 +373,100 @@ def _number_at(parser: _Parser, words: Sequence[Word], i: int, out: list[Span]) 
     if before == "thứ" and end - i == 1:
         return None
     return _write(number, i, words)
+
+
+RANGE_TO = {"đến", "tới"}
+
+
+def _pair(parser: _Parser, i: int) -> tuple[int, int] | None:
+    """Two digit words read as one number ("hai bảy" → 27), with no number word after them; (value, end) or None."""
+    tens = parser.tens(i, inside=True)
+    if tens is None or tens[1] - i != 2 or parser.key(i + 1) == "mươi":
+        return None
+    after = parser.next_key(tens[1] - 1)
+    return None if after in NUMBER_WORDS else tens
+
+
+def _several_words(parser: _Parser, i: int) -> bool:
+    number = parser.number(i)
+    return number is not None and not number.single
+
+
+def _range_from(out: list[Span], words: Sequence[Word], i: int) -> bool:
+    """Whether "đến" at i - 1 closes "từ <number in digits>", so what follows is the other end of the range."""
+    if len(out) < 3 or out[-1][1] != i - 1 or words[i - 2].mark:
+        return False
+    written, start, end = out[-2]
+    return end == i - 1 and written[:1].isdigit() and start > 0 and words[start - 1].key == "từ" \
+        and not words[start - 1].mark
+
+
+def _hour_before(parser: _Parser, out: list[Span], i: int) -> bool:
+    """Whether "giờ" at i - 1 follows an hour written in digits (0–24)."""
+    if len(out) < 2 or out[-1][1] != i - 1 or not parser.open[i - 2]:
+        return False
+    written = out[-2][0]
+    return written.isdigit() and int(written) <= 24
+
+
+@dataclass(frozen=True)
+class _Mend:
+    """A mark the tagger put inside a number: taken off word `at`, and moved to word `to` (or dropped when None)."""
+
+    at: int
+    to: int | None
+    lower: int | None = None  # a unit the tagger capitalised as if it started a sentence
+    both_sides: bool = True  # the words on both sides of the mark must end up in digits
+
+
+def _mends(words: Sequence[Word]) -> list[_Mend]:
+    """Marks the tagger put between the words of one number, by the patterns that can only be one number."""
+    parser = _Parser(words)
+    key = parser.key
+    found = []
+    for i, word in enumerate(words[:-1]):
+        if not word.mark or i == 0 or not parser.open[i - 1]:
+            continue
+        end = None
+        # "không phẩy. bảy hai": a decimal comma, then its digits.
+        if word.key == "phẩy" and key(i - 1) in NUMBER_WORDS:
+            fraction = parser.fraction(i + 1)
+            # A lone "không" after the mark is "no" ("ba phẩy. Không phải"), not a digit.
+            if fraction and not (key(i + 1) == "không" and fraction[1] == i + 2):
+                end = fraction[1]
+        # "mười bốn giờ. hai mươi lăm": the minutes of an hour.
+        elif word.key == "giờ" and word.mark in SENTENCE_MARKS and key(i - 1) in NUMBER_WORDS:
+            minutes = parser.number(i + 1)
+            if key(i + 1) == "không" and key(i + 2) in DIGITS and parser.open[i + 1] \
+                    and parser.next_key(i + 2) not in GOES_ON:
+                end = i + 3
+            elif minutes and (not minutes.single or key(i + 1) == "mười") and 1 <= minutes.value <= 59:
+                after = key(minutes.end) if parser.open[minutes.end - 1] else None
+                if after not in MEASURES - {"phút"} and after not in GOES_ON:
+                    end = minutes.end + 1 if after == "phút" else minutes.end
+        # "một trăm năm mươi. Trang": a unit alone as the last word, or as a sentence of its own.
+        elif word.mark in SENTENCE_MARKS and key(i - 1) in NUMBER_WORDS and key(i) in NUMBER_WORDS \
+                and key(i + 1) in MEASURES and (i + 2 == len(words) or words[i + 1].mark):
+            found.append(_Mend(i, None if words[i + 1].mark else i + 1, lower=i + 1, both_sides=False))
+            continue
+        if end is None:
+            continue
+        # The tagger ended a sentence here: the mark goes after the number when the next word starts one.
+        moved = end - 1 if not words[end - 1].mark and (end == len(words) or words[end].text[:1].isupper()) else None
+        found.append(_Mend(i, moved))
+    return found
+
+
+def _apply(words: Sequence[Word], mend: _Mend) -> list[Word]:
+    out = list(words)
+    mark = out[mend.at].mark
+    out[mend.at] = Word(out[mend.at].text[:-len(mark)], out[mend.at].key, "")
+    if mend.lower is not None:
+        out[mend.lower] = Word(out[mend.lower].text.lower(), out[mend.lower].key, out[mend.lower].mark)
+    if mend.to is not None:
+        target = out[mend.to]
+        out[mend.to] = Word(target.text + mark, target.key, mark)
+    return out
 
 
 def carry(spans: Sequence[Span], values: Sequence | None, words: int,

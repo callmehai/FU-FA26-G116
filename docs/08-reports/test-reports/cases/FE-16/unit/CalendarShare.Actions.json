@@ -21,7 +21,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-84c"
+          "note": "UC-84c",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC002",
@@ -34,101 +37,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-84c · BR-424 · BR-430"
+          "note": "UC-84c · BR-424 · BR-430",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Pending share started by Binh."
-          ],
-          "inputs": "actor: Binh (sender); acceptBlocked: false.",
-          "return": "[withdraw].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC004",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Pending share started by Binh."
-          ],
-          "inputs": "actor: Binh; acceptBlocked: true.",
-          "return": "[withdraw]; acceptBlocked only affects the asked side.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC005",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Pending share started by An (direct share)."
-          ],
-          "inputs": "actor: Binh (asked side); acceptBlocked: false.",
-          "return": "[accept, decline].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84c"
-        },
-        {
-          "id": "UTC006",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Pending share started by An."
-          ],
-          "inputs": "actor: An (sender); acceptBlocked: false.",
-          "return": "[withdraw].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC007",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Effective share, nothing pending."
-          ],
-          "inputs": "actor: An (owner).",
-          "return": "[update, end].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84d · UC-84e"
-        },
-        {
-          "id": "UTC008",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Effective share, nothing pending."
-          ],
-          "inputs": "actor: Binh (viewer).",
-          "return": "[requestChange, end].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84d · UC-84e"
-        },
-        {
-          "id": "UTC009",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Effective share; Binh asked for Level2 until 2026-12-30."
-          ],
-          "inputs": "actor: An (owner).",
-          "return": "[accept, decline, update, end].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84c · UC-84d"
-        },
-        {
-          "id": "UTC010",
           "preconditions": [
             "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
             "Effective share; pending end 2026-11-17 is before today (no longer valid)."
@@ -138,36 +53,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-84c · BR-431"
+          "note": "UC-84c · BR-431",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC011",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Effective share; Binh asked for a change."
-          ],
-          "inputs": "actor: Binh (viewer).",
-          "return": "[withdraw, end].",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Normal",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC012",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Effective share, nothing pending."
-          ],
-          "inputs": "actor: An (owner); acceptBlocked: true.",
-          "return": "[update, end]; acceptBlocked is ignored for an Effective share.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-84d"
-        },
-        {
-          "id": "UTC013",
+          "id": "UTC004",
           "preconditions": [
             "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18."
           ],
@@ -176,10 +68,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c"
+          "note": "UC-84c",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC014",
+          "id": "UTC005",
           "preconditions": [
             "Share end date 2026-11-17, today is 2026-11-18 (lapsed); share status Effective."
           ],
@@ -188,10 +83,13 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-84c · BR-425"
+          "note": "UC-84c · BR-425",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "UTC015",
+          "id": "UTC006",
           "preconditions": [
             "Share end date 2026-11-18, today is 2026-11-18; share status Effective."
           ],
@@ -200,59 +98,10 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-84d · BR-425"
-        },
-        {
-          "id": "UTC016",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Share status Declined."
-          ],
-          "inputs": "actor: An.",
-          "return": "[] empty.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84c"
-        },
-        {
-          "id": "UTC017",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Share status Stopped."
-          ],
-          "inputs": "actor: Binh.",
-          "return": "[] empty.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e · BR-424"
-        },
-        {
-          "id": "UTC018",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Share status Ended."
-          ],
-          "inputs": "actor: An.",
-          "return": "[] empty.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e"
-        },
-        {
-          "id": "UTC019",
-          "preconditions": [
-            "Today is 2026-11-18; share between owner An and viewer Binh, range 2026-11-18 to 2026-12-18.",
-            "Share status Withdrawn."
-          ],
-          "inputs": "actor: Binh.",
-          "return": "[] empty.",
-          "exception": "N/A",
-          "log": "N/A",
-          "type": "Abnormal",
-          "note": "UC-84e"
+          "note": "UC-84d · BR-425",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ],
       "layer": "Domain"

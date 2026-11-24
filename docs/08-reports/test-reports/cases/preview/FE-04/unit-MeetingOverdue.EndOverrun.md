@@ -6,7 +6,7 @@ Precondition: InProgress meetings past the cutoff.
 
 ## MeetingOverdueService.EndOverrunAsync
 
-Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs:48`
+Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs:51`
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
@@ -14,4 +14,3 @@ Layer: Application · `backend/TrustCabinet.Application/Meetings/MeetingOverdueS
 | UTC002 | Three overrun meetings; each end succeeds. | AutoEndAfterHours: 24. | Return: Returns 3.<br>Exception: N/A<br>Log Message: N/A | Normal | UC-22 · BR-460 |
 | UTC003 | Three overrun meetings; one has been ended by the Chair before the sweep reaches it. | AutoEndAfterHours: 24. | Return: Returns 2 (the skipped one is not counted).<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-22 · BR-460 |
 | UTC004 | Configured AutoEndAfterHours is 48. | AutoEndAfterHours: 48. | Return: Cutoff is now-48h and the reason text says 48 giờ.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-22 · BR-460 |
-| UTC005 | More than 50 meetings are overrun. | 60 overrun meetings. | Return: Only the first 50 (by planned end) are handled in one sweep; returns at most 50.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-22 · BR-460 |

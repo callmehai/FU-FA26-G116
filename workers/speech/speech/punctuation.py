@@ -3,7 +3,8 @@
 Gipformer emits UPPERCASE words with no punctuation at all. viBERT-capu (viBERT by FPT AI, fine-tuned
 by dragonSwing on Vietnamese web text; int8 ONNX export by welcomyou; CC BY-SA 4.0) reads lower-cased
 words and tags each one with an edit: keep it, capitalise it, or append ``,`` ``.`` ``:`` ``?``. The
-tags are applied, and the text read again, up to three times, since one edit can change the next.
+marks are applied, and the text read again, up to three times, since one mark can change the next. The text is always
+read in lower case: the capitals are kept aside and put on at the end, with one at the start of every sentence.
 
 The tagger only ever edits a word in place. It never adds, drops or merges words, so the number of
 words stays the same and the time of every segment still holds after the text is restored.
@@ -85,6 +86,30 @@ def apply_tags(words: Sequence[str], tags: Sequence[str]) -> list[str]:
     return out
 
 
+CASE_TAGS = ("$TRANSFORM_CASE_CAPITAL", "$TRANSFORM_CASE_UPPER", "$TRANSFORM_CASE_LOWER")
+
+
+def apply_case(word: str, tag: str | None) -> str:
+    if tag == "$TRANSFORM_CASE_CAPITAL":
+        return word[:1].upper() + word[1:]
+    if tag == "$TRANSFORM_CASE_UPPER":
+        return word.upper()
+    return word
+
+
+def sentence_starts(words: Sequence[str]) -> list[str]:
+    """Every word after a full stop, question or exclamation mark starts with a capital.
+
+    The tagger capitalises a sentence's first word in the same pass that closes the one before only now and then; a
+    later pass, which ends a sentence, reads lower case and does not always see the new start.
+    """
+    out = list(words)
+    for index in range(1, len(out)):
+        if out[index - 1][-1:] in SENTENCE_END:
+            out[index] = out[index][:1].upper() + out[index][1:]
+    return out
+
+
 class Session(Protocol):
     def run(self, output_names: object, feeds: dict[str, np.ndarray]) -> list[np.ndarray]: ...
 
@@ -120,16 +145,24 @@ class Punctuator:
         at = 0
         while at < len(words):
             chunk = words[at : at + self._chunk]
+            cases: list[str | None] = [None] * len(chunk)
             for _ in range(PASSES):
-                edited = apply_tags(chunk, self._tags(chunk))
+                tags = self._tags(chunk)
+                for index, tag in enumerate(tags[1 : len(chunk) + 1]):
+                    if tag in CASE_TAGS:
+                        cases[index] = tag
+                # The tagger reads lower case, as it was trained to: the capitals it gives are kept aside, not read
+                # again. Read back, one capital made it capitalise the word after it, and three passes turned a line
+                # into Title Case ("Nhà Nhà Ở Đâu? Hay Là Ở Trên…", meeting of 22/11/2026).
+                edited = [word.lower() for word in apply_tags(chunk, tags)]
                 if edited == chunk:
                     break
                 chunk = edited
             last = at + self._chunk >= len(words)
             keep = len(chunk) if last else self._chunk - self._context
-            out.extend(chunk[:keep])
+            out.extend(apply_case(word, case) for word, case in zip(chunk[:keep], cases[:keep]))
             at += keep
-        return " ".join(out)
+        return " ".join(sentence_starts(out))
 
     def _tags(self, words: Sequence[str]) -> list[str]:
         ids: list[int] = []

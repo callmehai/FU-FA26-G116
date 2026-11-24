@@ -155,8 +155,9 @@ cd frontend && npm run dev                      # :5173 — UI with hot reload
 
 Uploading meeting documents also needs the SeaweedFS container that `docker compose up -d` starts and
 the `FileStorage:*` user-secrets ([03-co-so-du-lieu.md §5](docs/02-design/03-co-so-du-lieu.md#5-kho-tệp-tài-liệu));
-without them the app still runs and uploads answer `503/MSG166`. The test server stores the bytes on
-Cloudflare R2 ([ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
+without them the app still runs and uploads answer `503/MSG166`. The app server stores the bytes in its own
+SeaweedFS container, reachable only on the Docker network ([deploy/README.md §9](deploy/README.md), option B); the
+frozen `main` demo server uses Cloudflare R2 ([ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
 
 Open **http://localhost:5173** (not 5225). Vite proxies `/api` and `/hubs` to the backend — see
 [frontend/vite.config.ts](frontend/vite.config.ts).
@@ -336,8 +337,7 @@ When a change affects the API contract, a technical decision or the scope, updat
 
 - Significant technical decision → write a new ADR in [docs/05-decisions/](docs/05-decisions/);
   never edit an accepted one.
-- Scope change → update `docs/01-requirements/` **and**
-  [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
+- Scope change → update `docs/01-requirements/`.
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
 
 **Reports — hard rule (agents keep getting this wrong).** The Markdown under `docs/08-reports/`

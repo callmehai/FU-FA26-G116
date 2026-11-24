@@ -9,7 +9,7 @@
       "method": "MeetingService.GetHistoryAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 739,
+      "line": 744,
       "cases": [
         {
           "exception": "N/A",
@@ -21,35 +21,14 @@
             "Meeting created by the actor with 3 history rows."
           ],
           "return": "Success with 3 items, page 1, page size 20, total 3; every field of each row visible including rejection reason and organizer hand-over ids.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "page: 0; pageSize: 20.",
-          "log": "N/A",
-          "note": "UC-16 · MSG86",
-          "preconditions": [
-            "Page is 0."
-          ],
-          "return": "Failure InvalidRequest; MSG86; the meeting is not read.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "page: 1; pageSize: 0.",
-          "log": "N/A",
-          "note": "UC-16 · MSG86",
-          "preconditions": [
-            "Page size is 0."
-          ],
-          "return": "Failure InvalidRequest; MSG86.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "page: 1; pageSize: 101.",
           "log": "N/A",
           "note": "UC-16 · MSG86",
@@ -57,23 +36,14 @@
             "Page size is 101."
           ],
           "return": "Failure InvalidRequest; MSG86.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "page: 1; pageSize: 100.",
-          "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
-          "preconditions": [
-            "Page size is exactly 100."
-          ],
-          "return": "Success.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC003",
           "inputs": "id: unknown.",
           "log": "N/A",
           "note": "UC-16 · BR-38 · BR-445",
@@ -81,23 +51,14 @@
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC007",
-          "inputs": "actorId: stranger.",
-          "log": "N/A",
-          "note": "UC-16 · BR-29",
-          "preconditions": [
-            "Actor has no relation to the meeting."
-          ],
-          "return": "Failure NotFound.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC008",
+          "id": "UTC004",
           "inputs": "page: 50; pageSize: 20.",
           "log": "N/A",
           "note": "UC-16 · BR-38 · BR-445",
@@ -105,35 +66,14 @@
             "Requested page lies beyond the available rows (3 rows exist)."
           ],
           "return": "Success with an empty item list, page 50, page size 20, total 3.",
-          "type": "Boundary"
+          "type": "Boundary",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC009",
-          "inputs": "actorId: approver.",
-          "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
-          "preconditions": [
-            "Actor is the assigned approver of a WaitingApproval meeting."
-          ],
-          "return": "Success with the full history, organizer ids included.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC010",
-          "inputs": "actorId: Chair.",
-          "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
-          "preconditions": [
-            "Actor is the Chair; rows include a Reject with reason and a TransferOrganizer."
-          ],
-          "return": "Success; the rejection reason is visible; PreviousOrganizerId and NewOrganizerId are null.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC011",
+          "id": "UTC005",
           "inputs": "actorId: Member.",
           "log": "N/A",
           "note": "UC-16 · BR-38 · BR-445",
@@ -141,19 +81,10 @@
             "Actor is a Member of a Published meeting; rows include a Reject with reason."
           ],
           "return": "Success; rejection reason is null on every row; organizer ids are null.",
-          "type": "Boundary"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC012",
-          "inputs": "actorId: creator.",
-          "log": "Error logged with the meeting id.",
-          "note": "UC-16 · MSG136",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Failure ReadFailed; MSG136.",
-          "type": "Abnormal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

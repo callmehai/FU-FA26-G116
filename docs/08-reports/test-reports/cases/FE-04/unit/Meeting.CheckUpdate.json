@@ -9,7 +9,7 @@
       "method": "MeetingService.CheckUpdateAsync",
       "layer": "Application",
       "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
-      "line": 180,
+      "line": 182,
       "cases": [
         {
           "exception": "N/A",
@@ -21,35 +21,14 @@
             "Meeting is Draft and owned by the actor."
           ],
           "return": "Success with the meeting details.",
-          "type": "Normal"
+          "type": "Normal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC002",
-          "inputs": "status: Rejected.",
-          "log": "N/A",
-          "note": "UC-15 · BR-27 · BR-28",
-          "preconditions": [
-            "Meeting is Rejected."
-          ],
-          "return": "Success.",
-          "type": "Normal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC003",
-          "inputs": "status: Published.",
-          "log": "N/A",
-          "note": "UC-15 · BR-158",
-          "preconditions": [
-            "Meeting is Published."
-          ],
-          "return": "Success (it may be rescheduled).",
-          "type": "Boundary"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC004",
           "inputs": "status: WaitingApproval.",
           "log": "N/A",
           "note": "UC-15 · BR-34 · MSG33",
@@ -57,23 +36,14 @@
             "Meeting is WaitingApproval."
           ],
           "return": "Failure NotEditable; MSG33.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
-          "id": "UTC005",
-          "inputs": "each status.",
-          "log": "N/A",
-          "note": "UC-15 · BR-299 · MSG33",
-          "preconditions": [
-            "Meeting is Approved, InProgress, Ended or Cancelled."
-          ],
-          "return": "Failure NotEditable; MSG33.",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "N/A",
-          "id": "UTC006",
+          "id": "UTC003",
           "inputs": "actorId: not the creator.",
           "log": "N/A",
           "note": "UC-15 · BR-29",
@@ -81,19 +51,10 @@
             "Meeting is owned by someone else or does not exist."
           ],
           "return": "Failure NotFound (404).",
-          "type": "Abnormal"
-        },
-        {
-          "exception": "PersistenceException is caught inside the service.",
-          "id": "UTC007",
-          "inputs": "actorId: organizer.",
-          "log": "Error logged with the meeting and actor ids.",
-          "note": "UC-15 · MSG37",
-          "preconditions": [
-            "The store fails while reading."
-          ],
-          "return": "Failure ReadFailed; MSG37.",
-          "type": "Abnormal"
+          "type": "Abnormal",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
