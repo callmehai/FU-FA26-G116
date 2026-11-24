@@ -37,6 +37,7 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   `BR-001` → `BR-153`, bảng 2 cột `ID | Rule` (từ 24/11/2026, ADR-0079).
 - [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Kế hoạch gộp BR từ 406 về 153 (đánh số lại BR-001…BR-153 theo ADR-0079, mỗi BR một ý) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review. Đã áp vào DOCX Report 3 ngày 24/11/2026; câu Rule trong DOCX là bản tiếng Anh của cột "Nội dung".
 - [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md) — Bảng cố định mã BR cũ → mã mới của đợt đánh số lại đầu tiên (ADR-0079); chỉ thêm dòng, không sửa dòng đã có. Code, test, kế hoạch QA và sequence diagram còn mã cũ cho tới khi đổi theo bảng này.
+- [10-bang-anh-xa-uc-dot-1.md](10-bang-anh-xa-uc-dot-1.md) — Bảng cố định mã UC cũ → mã mới của đợt đánh số lại UC đầu tiên (ADR-0079, 24/11/2026): UC-01 → UC-81 theo thứ tự mục II của Report 3, UC con đánh lại chữ liền nhau, UC-51 đã bỏ. Mã cũ và mới cùng dạng 2 chữ số: inventory, sequence diagram, API docs, code, test và kế hoạch QA còn mã cũ cho tới khi đổi theo bảng này. Chỉ thêm dòng, không sửa dòng đã có.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
