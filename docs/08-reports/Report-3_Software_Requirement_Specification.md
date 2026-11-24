@@ -4299,7 +4299,7 @@ Runs inside the backend only when SMTP is enabled. It queues the invitation emai
 
 | URL | SeaweedFS over an S3-compatible API, through the configured service address and bucket, reachable only on the app server's Docker network (a local SeaweedFS container in development; ADR-0084). |
 | --- | --- |
-| Purpose | Keeps the bytes of every uploaded document, so the application server does not store files itself. Files are served only through the application, which checks the permission of the caller on every request. |
+| Purpose | Keeps the bytes of every uploaded document in the team's self-hosted S3 store (SeaweedFS) on the app server's own disk, separate from the application process (ADR-0084). Files are served only through the application, which checks the permission of the caller on every request. |
 | Caller | TrustCabinet backend (document upload, view and download) → File Storage (SeaweedFS). |
 | Auth | Access key and secret key kept in user-secrets/environment variables, never in the code base; the bucket is private and has no public address. |
 | Request / Response | Input: the file bytes with their stored name. Output: the stored bytes when the file is read; the system never gives the browser a direct address of the bucket. |

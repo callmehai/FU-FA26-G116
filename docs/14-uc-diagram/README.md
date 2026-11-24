@@ -90,9 +90,8 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 
 Chỗ hình khác chữ trong inventory, để BA chốt:
 
-- **UC-42 → UC-65:** inventory chỉ ghi "được gọi trước UC-65". Hình vẽ `Cast Vote` `<<include>>` `Confirm Document
-  Read` vì BR-094, BR-095 và UC-65 bắt buộc xác nhận đọc trước khi gửi phiếu (khi phiếu có tài liệu). Inventory §1 lại dặn không
-  dùng `include` cho UC "tạo dữ liệu cho UC sau"; nếu BA muốn chặt hơn thì đổi quan hệ này.
+- **UC-42 → UC-65 (đã xong 25/11/2026):** trước vẽ `Cast Vote` `<<include>>` `Confirm Document Read`, sau đổi thành
+  `extend`; nay UC-42 nối thẳng actor và UC-65 giữ điều kiện ở PRE-5 (xem mục *Theo UML chặt* ở trên).
 - **UC-54 → UC-51a:** inventory ghi UC-54 `<<extend>>` UC-51a. Cạnh có sẵn trên trang Secretary từng nối UC-54 với
   UC-15; đã nối lại sang *View & Play Meeting Recordings*, các trang Chair và Participant vẽ theo cách đó.
 - **Thư ký ↔ *Create / Configure Vote* (UC-63):** hình nối Secretary với UC-63 vì code cho Chair **và** Secretary
