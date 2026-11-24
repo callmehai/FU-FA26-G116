@@ -118,10 +118,9 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
             Email = $"{Guid.NewGuid():N}@candidate.test", PasswordHash = "test-only", IsActive = i != 2 }).ToArray();
         db.Users.AddRange(users);
         var rows = users.Select((u, i) => new MeetingParticipant { MeetingId = s.MeetingId, UserId = u.Id,
-            AssignmentStatus = i == 3 ? AssignmentStatus.Removed : AssignmentStatus.Current,
-            RemovedAt = i == 3 ? f.Clock.Now : null, RemovedById = i == 3 ? s.Secretary : null,
-            Response = i == 4 ? InvitationResponse.Delegated : InvitationResponse.Declined,
-            DelegatedToUserId = i == 5 ? s.Outsider : null }).ToArray();
+            AssignmentStatus = i >= 3 ? AssignmentStatus.Removed : AssignmentStatus.Current,
+            RemovedAt = i >= 3 ? f.Clock.Now : null, RemovedById = i >= 3 ? s.Secretary : null,
+            Response = InvitationResponse.Declined }).ToArray();
         db.MeetingParticipants.AddRange(rows); await db.SaveChangesAsync();
         using var chair = f.Client(s.Chair);
         f.Guests.FailProfiles = true;
@@ -212,7 +211,7 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
     [InlineData("missing")]
     [InlineData("guest")]
     [InlineData("other")]
-    [InlineData("delegated")]
+    [InlineData("guestRole")]
     public async Task Invalid_recipient_precedes_stale_revision(string kind)
     {
         var s = await f.Seed(); await using var db = f.Db();
@@ -226,7 +225,7 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
             case "inactive": await db.Users.Where(u => u.Id == s.Member).ExecuteUpdateAsync(set => set.SetProperty(u => u.IsActive, false)); break;
             case "removed": await db.MeetingParticipants.Where(p => p.Id == id).ExecuteUpdateAsync(set => set.SetProperty(p => p.AssignmentStatus, AssignmentStatus.Removed)
                 .SetProperty(p => p.RemovedAt, f.Clock.Now).SetProperty(p => p.RemovedById, s.Secretary)); break;
-            case "delegated": await db.MeetingParticipants.Where(p => p.Id == id).ExecuteUpdateAsync(set => set.SetProperty(p => p.Response, InvitationResponse.Delegated)); break;
+            case "guestRole": await db.MeetingParticipants.Where(p => p.Id == id).ExecuteUpdateAsync(set => set.SetProperty(p => p.Role, MeetingRole.Guest)); break;
             case "guest":
                 var guest = new MeetingGuestInvitation { MeetingId = s.MeetingId, Email = "guest@recipient.test", InvitedName = "Guest", InvitedById = s.Secretary };
                 db.Add(guest); await db.SaveChangesAsync(); id = guest.Id; break;

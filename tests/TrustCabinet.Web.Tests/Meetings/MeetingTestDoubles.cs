@@ -381,7 +381,6 @@ internal sealed class FakeMeetingRepository : IMeetingRepository, IMeetingInvita
                 UserId = participant.UserId,
                 Role = participant.Role,
                 Response = participant.Response,
-                DelegatedToUserId = participant.DelegatedToUserId,
                 User = participant.User,
             }).ToList(),
             StatusHistory = [.. meeting.StatusHistory],

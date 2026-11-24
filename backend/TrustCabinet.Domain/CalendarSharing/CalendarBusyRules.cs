@@ -26,11 +26,9 @@ public static class CalendarBusyRules
     /// Guest, never someone who declined. The Chair is never asked, so an answer left from before they took the chair
     /// does not count — as in the meeting list.
     /// </summary>
-    public static bool IsBusyAssignment(AssignmentStatus assignment, MeetingRole role, InvitationResponse response,
-        Guid? delegatedTo)
+    public static bool IsBusyAssignment(AssignmentStatus assignment, MeetingRole role, InvitationResponse response)
         => assignment == AssignmentStatus.Current
             && role is MeetingRole.Chair or MeetingRole.Secretary or MeetingRole.Member
-            && response != InvitationResponse.Delegated && delegatedTo is null
             && (role == MeetingRole.Chair || response != InvitationResponse.Declined);
 
     /// <summary>

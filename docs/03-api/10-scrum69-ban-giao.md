@@ -48,7 +48,7 @@ Checklist FE:
 
 ## Side effect và giới hạn nhất quán
 
-Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, trừ Chủ toạ vừa bấm Start (không ai nhận thông báo về thao tác của chính mình, như Publish), vẫn gồm Declined; loại Guest/Removed/Delegated/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
+Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, trừ Chủ toạ vừa bấm Start (không ai nhận thông báo về thao tác của chính mình, như Publish), vẫn gồm Declined; loại Guest/Removed/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
 
 End hoàn tất current agenda trong cùng transaction; không có current item vẫn thành công. Pending/Done khác và Vote/ballot/attendance/response giữ nguyên. Timestamp agenda không hợp lệ làm rollback toàn bộ với MSG116, không sửa hộ dữ liệu.
 

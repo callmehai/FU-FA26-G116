@@ -7,6 +7,7 @@ using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Application.Tests.Unit.Round1;
 
@@ -439,10 +440,10 @@ public sealed class NotiUnitRound1Wave2Tests
         Assert.Empty(setup.Notes.Added);
     }
 
-    [Fact(DisplayName = "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC002: duplicate and delegated seat invite once")]
+    [Fact(DisplayName = "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC002: duplicate and removed seat invite once")]
     [Trait("UTC", "MeetingInvitationEvents.StagePublicationInvitationsAsync/UTC002")]
     [Trait("Trait", "UTC")]
-    public async Task Publish_DuplicateAndDelegated_InvitesTheUserOnce()
+    public async Task Publish_DuplicateAndRemoved_InvitesTheUserOnce()
     {
         var setup = new StageSetup(new(), new());
         var meeting = NewStageMeeting();
@@ -451,16 +452,15 @@ public sealed class NotiUnitRound1Wave2Tests
         var second = AddRoster(meeting, MeetingRole.Secretary, "Bình");
         second.UserId = userId;
         first.UserId = userId;
-        var delegated = AddRoster(meeting, MeetingRole.Member, "Ủy quyền");
-        delegated.Response = InvitationResponse.Delegated;
-        delegated.DelegatedToUserId = Guid.CreateVersion7();
+        var removed = AddRoster(meeting, MeetingRole.Member, "Đã rút");
+        removed.AssignmentStatus = AssignmentStatus.Removed;
 
         await new MeetingInvitationEvents(setup.Dispatches, setup.Notes)
             .StagePublicationInvitationsAsync(meeting, Now);
 
         Assert.Single(setup.Dispatches.Added);
         Assert.Equal(first.Id, setup.Dispatches.Added[0].ParticipantId);
-        Assert.DoesNotContain(setup.Dispatches.Added, d => d.ParticipantId == delegated.Id);
+        Assert.DoesNotContain(setup.Dispatches.Added, d => d.ParticipantId == removed.Id);
     }
 
     // ---- MeetingInvitationEvents.StageRescheduleInvitationsAsync ----

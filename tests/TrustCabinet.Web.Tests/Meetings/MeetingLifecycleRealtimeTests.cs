@@ -123,17 +123,18 @@ public sealed partial class MeetingLifecycleTests
     [Theory]
     [InlineData("inactive")]
     [InlineData("removed")]
-    [InlineData("delegated")]
+    [InlineData("otherMeeting")]
     [InlineData("guest")]
     public async Task Start_recipient_snapshot_excludes_ineligible_assignments(string reason)
     {
         var s = await fixture.Seed();
+        var otherMeetingId = reason == "otherMeeting" ? (await fixture.Seed()).MeetingId : (Guid?)null;
         await using (var db = fixture.Db())
         {
             var member = await db.MeetingParticipants.Include(p => p.User).SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Member);
             if (reason == "inactive") member.User.IsActive = false;
             if (reason == "removed") { member.AssignmentStatus = AssignmentStatus.Removed; member.RemovedAt = fixture.Clock.Now; member.RemovedById = s.Chair; }
-            if (reason == "delegated") { member.Response = InvitationResponse.Delegated; member.DelegatedToUserId = s.Secretary; }
+            if (reason == "otherMeeting") member.MeetingId = otherMeetingId!.Value;
             if (reason == "guest") member.Role = MeetingRole.Guest;
             await db.SaveChangesAsync();
         }

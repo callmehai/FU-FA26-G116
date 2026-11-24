@@ -39,8 +39,7 @@ public sealed class SharedCalendarServiceTests
     {
         _shares.Share(_owner, _viewer, CalendarShareStatus.Effective, Today, Today.AddDays(10));
         var start = new DateTimeOffset(2026, 11, 17, 9, 0, 0, Vietnam);
-        _busy.Rows.Add(new BusyAssignment(_owner, AssignmentStatus.Current, MeetingRole.Member, InvitationResponse.Accepted,
-            null, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null, null));
+        _busy.Rows.Add(new BusyAssignment(_owner, AssignmentStatus.Current, MeetingRole.Member, InvitationResponse.Accepted, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null, null));
 
         var week = (await Service().ReadWeekAsync(_viewer, null)).Value!;
 

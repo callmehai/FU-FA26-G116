@@ -25,6 +25,7 @@ using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Tests.Access;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -615,9 +616,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         });
 
         var inactive = NewUser("Inactive recipient", _approverRoleId, isActive: false);
-        var delegated = NewUser("Delegated recipient", _approverRoleId);
+        var removed = NewUser("Removed recipient", _approverRoleId);
         var member = NewUser("Member recipient", _approverRoleId);
-        _db.Users.AddRange(inactive, delegated, member);
+        _db.Users.AddRange(inactive, removed, member);
         await _db.SaveChangesAsync();
         _db.MeetingParticipants.AddRange(
             new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
@@ -625,10 +626,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             new MeetingParticipant
             {
                 MeetingId = meetingId,
-                UserId = delegated.Id,
+                UserId = removed.Id,
                 Role = MeetingRole.Member,
-                Response = InvitationResponse.Delegated,
-                DelegatedToUserId = member.Id,
+                Response = InvitationResponse.Accepted,
+                AssignmentStatus = AssignmentStatus.Removed,
+                RemovedAt = DateTimeOffset.UtcNow,
+                RemovedById = _creatorId,
             });
         await _db.SaveChangesAsync();
 
@@ -686,7 +689,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         await MaterializeInvitations(meetingId, smtpEnabled);
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
-        // Email reaches active non-delegated participants, including the publishing creator.
+        // Email reaches active current participants, including the publishing creator.
         Assert.Equal(smtpEnabled ? 2 : 0, invitations.Count);
         Assert.Equal(
             (smtpEnabled
@@ -705,7 +708,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var publishNotifications = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
             .ToListAsync();
-        // In-app skips the publisher (the creator here) and the delegated participant.
+        // In-app skips the publisher (the creator here) and the removed participant.
         Assert.Equal(member.Id, Assert.Single(publishNotifications).UserId);
         var organizerNotices = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.UserId == _creatorId)
@@ -825,7 +828,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await _db.Users.Where(user => recipientIds.Contains(user.Id)).ExecuteUpdateAsync(setters =>
             setters.SetProperty(user => user.IsActive, false));
         await _db.MeetingParticipants.Where(participant => participant.MeetingId == meetingId)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(participant => participant.Response, InvitationResponse.Delegated));
+            .ExecuteUpdateAsync(setters => setters.SetProperty(participant => participant.Response, InvitationResponse.Declined));
 
         await using var workerDb = NewContext();
         var sender = new RecordingInvitationSender();
@@ -1087,8 +1090,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
     [Theory]
     [InlineData("member")]
-    [InlineData("delegated")]
-    [InlineData("delegationTarget")]
+    [InlineData("removed")]
+    [InlineData("guestRole")]
     public async Task Secretary_history_uses_current_persisted_assignment_and_preserves_detail_privacy(string invalidated)
     {
         var secretary = NewUser("Assigned Secretary", _approverRoleId);
@@ -1150,8 +1153,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         switch (invalidated)
         {
             case "member": assignment.Role = MeetingRole.Member; break;
-            case "delegated": assignment.Response = InvitationResponse.Delegated; break;
-            case "delegationTarget": assignment.DelegatedToUserId = _creatorId; break;
+            case "removed": assignment.AssignmentStatus = AssignmentStatus.Removed; assignment.RemovedAt = DateTimeOffset.UtcNow; assignment.RemovedById = _creatorId; break;
+            case "guestRole": assignment.Role = MeetingRole.Guest; break;
         }
         await _db.SaveChangesAsync();
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);

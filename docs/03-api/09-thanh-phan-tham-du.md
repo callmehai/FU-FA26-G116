@@ -204,7 +204,7 @@ GET áp dụng bước1–3 trước query validation. Mã409/MSG260 chỉ áp d
 |---|---|
 | 200/MSG258 | Toàn meeting không có candidate; không phải API error |
 | 400/MSG101 | JSON sai/null, key thừa/trùng/sai hoa thường, GUID thiếu/sai/rỗng, confirmed thiếu hoặc khác true |
-| 400/MSG259 | Recipient chính mình, Secretary, Guest, inactive, Removed/delegated, không tồn tại hoặc assignment meeting khác |
+| 400/MSG259 | Recipient chính mình, Secretary, Guest, inactive, Removed, không tồn tại hoặc assignment meeting khác |
 | 400/MSG276 | Query sai, POST có query, If-Match thiếu/sai |
 | 403/MSG85 | Guest đọc hợp lệ gọi UC-34 |
 | 409/MSG260 | Internal reader không phải current Chair hoặc status không cho bàn giao |

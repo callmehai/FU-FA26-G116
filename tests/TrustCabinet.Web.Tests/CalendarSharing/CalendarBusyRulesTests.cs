@@ -27,16 +27,15 @@ public sealed class CalendarBusyRulesTests
     [InlineData(MeetingRole.Secretary, InvitationResponse.Accepted, true)]
     [InlineData(MeetingRole.Member, InvitationResponse.Pending, true)]
     [InlineData(MeetingRole.Member, InvitationResponse.Declined, false)]
-    [InlineData(MeetingRole.Member, InvitationResponse.Delegated, false)]
     [InlineData(MeetingRole.Guest, InvitationResponse.Accepted, false)]
     public void Only_a_current_chair_secretary_or_member_who_did_not_decline_is_busy(MeetingRole role,
         InvitationResponse response, bool busy)
-        => Assert.Equal(busy, CalendarBusyRules.IsBusyAssignment(AssignmentStatus.Current, role, response, null));
+        => Assert.Equal(busy, CalendarBusyRules.IsBusyAssignment(AssignmentStatus.Current, role, response));
 
     [Fact]
     public void A_removed_assignment_is_not_busy()
         => Assert.False(CalendarBusyRules.IsBusyAssignment(AssignmentStatus.Removed, MeetingRole.Member,
-            InvitationResponse.Accepted, null));
+            InvitationResponse.Accepted));
 
     [Fact]
     public void The_busy_period_follows_what_actually_happened()

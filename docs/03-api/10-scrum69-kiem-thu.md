@@ -61,7 +61,7 @@ Source test: `MeetingLifecycleTests.cs`, `MeetingLifecycleConcurrencyTests.cs`,
 
 - Start/End theo cả ba mode; timestamp/history/recipient/target/deduplication key đúng; gọi lặp không thêm history/notification/side effect.
 - Chỉ active current Chair; không cần MeetingCreator. Secretary/Member/Organizer bị từ chối; missing/inaccessible cùng 404 body rỗng. Auth, inactive-user gate, lỗi gate, parser strict, property giả, Content-Type và giới hạn body giữ contract.
-- Start yêu cầu active current Secretary nhưng không yêu cầu Accepted/Present; End vẫn được khi Secretary inactive/removed/delegated. Guest/Removed/Delegated/inactive không nhận Start notification; Declined vẫn nhận.
+- Start yêu cầu active current Secretary nhưng không yêu cầu Accepted/Present; End vẫn được khi Secretary inactive/removed. Guest/Removed/inactive không nhận Start notification; Declined vẫn nhận.
 - End có/không có current item; current thành Done, Pending/Done khác giữ nguyên. Vote Open, receipt/choice, response/attendance không thay đổi; interceptor xác nhận End không query bảng voting.
 - Lỗi save và lỗi sau SaveChanges/trước commit rollback Meeting/Agenda/History; không event/room/notification sau rollback. Timestamp agenda nằm sau mốc End trả MSG116 và rollback.
 - Notification save lỗi sau commit không rollback Start; request Start lặp không tự replay notification. Lỗi publisher không ngăn đóng room; lỗi provider/bookkeeping vẫn MSG111 và lượt reconciliation tiếp theo khôi phục. Có cả room không có active CallSession.

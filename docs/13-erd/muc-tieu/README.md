@@ -4,7 +4,7 @@
 - [trustcabinet-erd-muc-tieu.drawio.png](trustcabinet-erd-muc-tieu.drawio.png) — ảnh xuất (có nhúng XML,
   mở lại được bằng draw.io).
 
-Hình **theo code** đến migration `SystemRolesWithoutChairSecretary` (22/11/2026), trên bố cục sắp xếp tay của PR #272
+Hình **theo code** đến migration `RemoveDelegationLeftovers` (24/11/2026), trên bố cục sắp xếp tay của PR #272
 (06/11/2026; khôi phục 22/11/2026 sau khi lần sinh lại ngày 15/11 ghi đè nó). Kiểu vẽ: bảng trắng viền đen, crow's foot,
 chỗ giao nhau vẽ cầu vượt. Hình có đủ 42 bảng trong `TrustCabinetDbContextModelSnapshot.cs` (thêm `AiProviderSetting`
 06/11/2026, `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026;

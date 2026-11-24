@@ -100,6 +100,4 @@ public enum InvitationResponse
     Pending,
     Accepted,
     Declined,
-    /// <summary>Answered by nominating someone else to attend instead.</summary>
-    Delegated,
 }
