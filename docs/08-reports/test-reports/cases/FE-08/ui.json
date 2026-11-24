@@ -301,7 +301,11 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A verified Guest of M1 (UC-04) with a display name; the invitation goes to a real mailbox."
           ],
-          "note": "UC-37 | MSG380 | Manual only"
+          "note": "UC-37 | MSG380 · Evidence(AC31): tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/01-anon-AC31-desktop-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/02-anon-AC31-desktop-khach-da-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/03-anon-AC31-phone-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/04-anon-AC31-phone-khach-da-vao-phong.png (OTP qua Mailpit tới example.test)",
+          "id": "ROOM_FT14",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT15",
@@ -317,7 +321,11 @@
             "An Ended Online meeting M1 with a verified Guest session.",
             "A real mailbox for the Guest invitation."
           ],
-          "note": "UC-37, UC-04 | MSG331 | Manual only"
+          "note": "UC-37, UC-04 | MSG331 · Evidence(AC32): tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/01-anon-AC32-desktop-khach-phong-da-dong.png; tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/02-anon-AC32-phone-khach-phong-da-dong.png (OTP qua Mailpit tới example.test; màn này thoáng qua trong app thật — cổng Khách hỏi lại phiên mỗi ~20 giây rồi thay bằng 'Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi', AC giữ yên lệnh hỏi phiên để chụp ảnh)",
+          "id": "ROOM_FT15",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -553,7 +561,11 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair, Secretary and Member accounts of M1; three browsers."
           ],
-          "note": "UC-40 | Manual only"
+          "note": "UC-40 | Manual only · Evidence(AC30): tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/01-member-AC30-desktop-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/02-member-AC30-desktop-cham-dang-noi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/03-member-AC30-phone-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/04-member-AC30-phone-cham-dang-noi.png (giọng Thư ký là máy đọc edge-tts vi-VN qua micro giả; người thật vẫn cần cho nhận dạng ai)",
+          "id": "ROOM_FT24",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT25",
@@ -571,7 +583,11 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A verified Guest of M1 and a Member in the room."
           ],
-          "note": "UC-40 | Manual only"
+          "note": "UC-40 · Evidence(AC33): tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/02-anon-AC33-desktop-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/04-anon-AC33-phone-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png (panel ở cửa sổ Thành viên: 'Người dự (2)', dòng Khách đúng tên đã khai, vai trò 'Khách', data-tooltip 'Tên tự khai', không email; OTP qua Mailpit tới example.test)",
+          "id": "ROOM_FT25",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT26",

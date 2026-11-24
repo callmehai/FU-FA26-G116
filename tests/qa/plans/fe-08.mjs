@@ -24,6 +24,7 @@
 import { readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { chromium } from 'playwright'
 import { DEVICES } from '../lib/qa.mjs'
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
@@ -346,6 +347,76 @@ function checker(qa) {
 
 const NOTICE_NORMAL = 'lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài'
 const NOTICE_RESTRICTED = 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Guest helpers (OTP mailbox: example.test lands in the local Mailpit, the pattern proven by FE-01/AC27).
+
+const rand = () => Math.random().toString(36).slice(2, 6)
+
+async function mailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+/** The six-digit code of the newest "Mã xác minh" email to an address. */
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await mailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
+}
+
+/** Invites a guest and returns the invitation link from the mailbox. */
+async function inviteGuest(qa, meetingId, name, email) {
+  const parts = await get('secretary', `/api/meetings/${meetingId}/participants?pageSize=100`)
+  const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+  const res = await post('secretary', `/api/meetings/${meetingId}/guest-invitations`, { invitedName: name, email }, { 'If-Match': etag })
+  if (res.status !== 201) throw new Error(`guest invitation: HTTP ${res.status} ${JSON.stringify(res.body).slice(0, 200)}`)
+  let link = null
+  await qa.expect
+    .poll(
+      async () => {
+        const box = await mailpit(email)
+        for (const m of box) {
+          const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+          const raw = full.Text ?? ''
+          const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+          const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+          if (found) {
+            link = found[0]
+            return link
+          }
+        }
+        return null
+      },
+      { timeout: 90_000 },
+    )
+    .not.toBeNull()
+  return link
+}
+
+/** Opens the invitation link, verifies the OTP and declares the display name; lands on the guest meeting page. */
+async function verifyGuest(qa, link, email, displayName) {
+  const u = new URL(link)
+  await qa.goto(u.pathname + u.hash)
+  await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+  const code = await guestCode(email)
+  qa.expect(code, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+  await qa.page.getByLabel('Chữ số 1').fill(code)
+  await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+  await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+  await qa.page.getByLabel(/Tên hiển thị/).fill(displayName)
+  await qa.page.getByRole('button', { name: 'Vào cuộc họp' }).click()
+  await qa.expect(qa.page.getByRole('link', { name: 'Vào phòng họp' })).toBeVisible({ timeout: 15_000 })
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -1715,6 +1786,220 @@ export default {
         await qa.shot('het-luot-ve-gio-tay')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
+      }),
+    },
+    {
+      // R1/FE-08 (24/11/2026): AC mới — ROOM_FT24 (panel Người dự với ba người: vai trò, (Bạn), micro, chấm đang nói).
+      id: 'AC30',
+      role: 'member',
+      devices: ['desktop', 'phone'],
+      title: 'Ba người trong phòng: panel "Người dự (3)" liệt kê đúng vai trò và "(Bạn)", icon micro đúng trạng thái, chấm "Đang nói" hiện khi có tiếng (ROOM_FT24)',
+      steps: [
+        'chutoa@ (cửa sổ thứ hai) và thuky@ (cửa sổ thứ ba) vào phòng với micro bật',
+        'thanhvien@ vào phòng, mở panel Người dự',
+        'Đọc tiêu đề, từng dòng (tên, vai trò, (Bạn)), icon micro và chấm đang nói',
+      ],
+      expected:
+        'Tiêu đề "Người dự (3)"; Chủ toạ đứng trước (Trần Chủ Toạ · Chủ toạ), rồi Thư ký, rồi "Lê Thành Viên (Bạn) · Thành viên"; mỗi dòng một icon micro "Micro bật"; khi có tiếng, dòng người nói có chấm "Đang nói" (UC-40, BR-330)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'InProgress', 'panel ba nguoi du')
+        const u = await users()
+        // Thư ký nói bằng giọng máy đọc câu họp (edge-tts vi-VN, fixture trong qa-fixtures/): Chromium phát file wav
+        // qua micro giả (--use-file-for-fake-audio-capture) để LiveKit nhận diện "đang nói". Giọng máy chỉ thay tiếng
+        // người ở chỗ cần "có tiếng", không thay con người ở chỗ cần nhận dạng ai (REC/TRANS vẫn cần giọng thật).
+        const speaker = await chromium.launch({
+          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-audio-capture=${join(here, '..', '..', '..', 'qa-fixtures', 'said.wav')}`],
+        })
+        try {
+          const sctx = await speaker.newContext({
+            ...DEVICES.desktop,
+            baseURL: qa.base,
+            locale: 'vi-VN',
+            timezoneId: 'Asia/Ho_Chi_Minh',
+            permissions: ['microphone', 'camera'],
+          })
+          const login = await sctx.request.post(`${qa.base}/api/auth/login`, { data: { email: SEED.secretary, password: PASSWORD } })
+          if (!login.ok()) throw new Error(`sign-in as secretary failed: HTTP ${login.status()}`)
+          await sctx.addInitScript(() => localStorage.setItem('trustcabinet.signedIn', '1'))
+          await setPrefs(sctx, { mic: true, cam: false })
+          const sec = await sctx.newPage()
+          const chair = await person(qa, 'chair', { mic: true })
+          await openLobby(qa, m, chair)
+          await joinRoom(qa, chair)
+          await openLobby(qa, m, sec)
+          await joinRoom(qa, sec)
+        await setPrefs(qa.context, { mic: true, cam: false })
+        await openLobby(qa, m)
+        await joinRoom(qa)
+        await press(qa, controls(qa.page).getByRole('button', { name: 'Người dự' }))
+        const panel = qa.page.getByRole('complementary', { name: 'Người dự' })
+        await qa.expect(panel.getByRole('heading', { name: 'Người dự (3)' })).toBeVisible({ timeout: 20_000 })
+        const rows = panel.locator('li.room-person')
+        await qa.expect(rows).toHaveCount(3, { timeout: 20_000 })
+        await qa.expect(rows.filter({ hasText: u.chair.name }).getByText('Chủ toạ', { exact: true })).toBeVisible()
+        await qa.expect(rows.filter({ hasText: u.secretary.name }).getByText('Thư ký', { exact: true })).toBeVisible()
+        await qa.expect(rows.filter({ hasText: `${u.member.name} (Bạn)` }).getByText('Thành viên', { exact: true })).toBeVisible()
+        const names = await rows.locator('strong').allInnerTexts()
+        qa.expect(names.indexOf(u.chair.name), 'the Chair is listed before the Secretary and the Member').toBeLessThan(
+          names.findIndex((n) => n.includes(u.secretary.name)),
+        )
+        await qa.expect(panel.getByTitle('Micro bật')).toHaveCount(3, { timeout: 20_000 })
+        await noSidewaysScroll(qa)
+        await qa.shot('panel nguoi du ba nguoi')
+        // Giọng máy đọc lặp lại file wav: chấm "Đang nói" phải hiện ở dòng Thư ký trong vòng một phút.
+        let spoke = ''
+        const until = Date.now() + 60_000
+        while (Date.now() < until) {
+          const dots = panel.locator('li.room-person:has([aria-label="Đang nói"])')
+          if ((await dots.count()) > 0) {
+            spoke = (await dots.locator('strong').allInnerTexts()).join(' + ')
+            break
+          }
+          await new Promise((r) => setTimeout(r, 1000))
+        }
+        qa.note(`Dòng đang nói trong 60 giây: ${spoke || '(không dòng nào hiện chấm)'}`)
+        qa.expect(spoke, 'no "Đang nói" dot appeared while the fixture voice played').not.toBe('')
+        qa.expect(spoke.includes(u.secretary.name), `the speaking row should be the Secretary, got: ${spoke}`).toBe(true)
+        await qa.shot('cham dang noi')
+        await noRawCodes(qa)
+        } finally {
+          await speaker.close().catch(() => undefined)
+        }
+      }),
+    },
+    {
+      // R1/FE-08 (24/11/2026): AC mới — ROOM_FT14 (Khách tick đồng ý ghi âm rồi vào phòng; không có lối tắt giọng mẫu).
+      id: 'AC31',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách vào phòng qua lời mời (OTP example.test): chưa tick thì "Vào phòng" khoá, không có lối tắt giọng mẫu; tick rồi vào được, ô hình hiện tên đã khai (ROOM_FT14)',
+      steps: [
+        'Thư ký mời Khách (email riêng cho lần chạy) vào cuộc họp Trực tuyến đã công bố, rồi Chủ toạ bắt đầu họp',
+        'Khách mở link, xác minh OTP, khai tên hiển thị, bấm "Vào phòng họp"',
+        'Ở màn chờ: đọc nút "Vào phòng" và lối tắt giọng mẫu; tick "Tôi biết cuộc họp được ghi âm…" rồi vào phòng',
+      ],
+      expected:
+        'Trước khi tick, nút "Vào phòng" bị khoá (disabled) và màn chờ không có lối tắt giọng mẫu; sau khi tick POST join trả 200 và Khách vào phòng, ô hình hiện tên đã khai (UC-37 AF-2, MSG380)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'Published', 'khach vao phong otp')
+        const email = `qa-khach-ft14-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách FT14 ${rand()}`
+        const link = await inviteGuest(qa, m.id, 'Khách FT14', email)
+        await transition(qa, 'chair', m.id, 'start')
+        await verifyGuest(qa, link, email, displayName)
+        // The "Vào phòng họp" link opens the room in a new tab; the criterion drives the room URL itself.
+        const inv = link.match(/\/guest\/([0-9a-f-]{36})/)?.[1]
+        qa.expect(inv, 'invitation id in the mail link').not.toBeNull()
+        await qa.goto(`/guest/${inv}/room`)
+        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
+        const joinBtn = qa.page.getByRole('button', { name: 'Vào phòng', exact: true })
+        await qa.expect(joinBtn).toBeDisabled({ timeout: 10_000 })
+        await qa.expect(qa.page.getByText(/giọng mẫu/i)).toHaveCount(0)
+        await qa.shot('khach chua tick khoa vao phong')
+        await qa.page.getByText(/Tôi biết cuộc họp được ghi âm/).click()
+        const joined = qa.page.waitForResponse((r) => r.url().includes('/join') && r.request().method() === 'POST')
+        await press(qa, joinBtn)
+        const res = await joined
+        qa.expect(res.status(), `guest join: ${res.url()}`).toBe(200)
+        await qa.expect(leaveButton(qa.page)).toBeVisible({ timeout: 20_000 })
+        await qa.expect(qa.page.getByText(displayName).first()).toBeVisible({ timeout: 15_000 })
+        await noSidewaysScroll(qa)
+        await qa.shot('khach da vao phong')
+        await noRawCodes(qa)
+      }),
+    },
+    {
+      // R1/FE-08 (24/11/2026): AC mới — ROOM_FT15 (link phòng của Khách khi cuộc họp đã kết thúc).
+      id: 'AC32',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách đang trong phòng thì cuộc họp kết thúc: báo "Cuộc họp đã kết thúc, phòng họp đã đóng.", không có nút Vào lại, không có lối về trang cuộc họp (ROOM_FT15)',
+      steps: [
+        'Thư ký mời Khách (email riêng cho lần chạy) vào cuộc họp Trực tuyến; Chủ toạ bắt đầu họp',
+        'Khách xác minh OTP, khai tên, tick đồng ý ghi âm rồi vào phòng',
+        'Chủ toạ kết thúc cuộc họp khi Khách còn trong phòng',
+      ],
+      expected:
+        'Phòng Khách báo "Cuộc họp đã kết thúc, phòng họp đã đóng." (MSG331), không có nút "Vào lại", không có link về trang cuộc họp (UC-37, UC-04)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'Published', 'khach phong da ket thuc')
+        const email = `qa-khach-ft15-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách FT15 ${rand()}`
+        const link = await inviteGuest(qa, m.id, 'Khách FT15', email)
+        await transition(qa, 'chair', m.id, 'start')
+        await verifyGuest(qa, link, email, displayName)
+        const inv = link.match(/\/guest\/([0-9a-f-]{36})/)?.[1]
+        qa.expect(inv, 'invitation id in the mail link').not.toBeNull()
+        await qa.goto(`/guest/${inv}/room`)
+        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
+        await qa.page.getByText(/Tôi biết cuộc họp được ghi âm/).click()
+        await press(qa, qa.page.getByRole('button', { name: 'Vào phòng', exact: true }))
+        await qa.expect(leaveButton(qa.page)).toBeVisible({ timeout: 20_000 })
+        // Màn "phòng đã đóng" của Khách chỉ thoáng qua trong app thật: cổng Khách hỏi lại phiên mỗi ~20 giây
+        // (GuestPage RECHECK_MS) rồi thay phòng bằng "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi". Giữ yên
+        // lệnh hỏi phiên để màn phòng đứng đủ lâu chụp ảnh; màn và câu chữ đều của app, không dựng.
+        await qa.page.route('**/api/guest-access/session', async (route) => {
+          await new Promise((r) => setTimeout(r, 45_000))
+          await route.continue()
+        })
+        try {
+          await transition(qa, 'chair', m.id, 'end')
+          await qa.expect(qa.page.getByText('Cuộc họp đã kết thúc, phòng họp đã đóng.')).toBeVisible({ timeout: 30_000 })
+          await qa.expect(qa.page.getByRole('button', { name: 'Vào lại' })).toHaveCount(0)
+          await qa.expect(qa.page.getByRole('link', { name: /Về trang cuộc họp|cuộc họp/ })).toHaveCount(0)
+          await noSidewaysScroll(qa)
+          await qa.shot('khach phong da dong')
+          await noRawCodes(qa)
+        } finally {
+          await qa.page.unroute('**/api/guest-access/session')
+        }
+      }),
+    },
+    {
+      // R1/FE-08 (24/11/2026): AC mới — ROOM_FT25 (dòng Khách trong panel Người dự).
+      id: 'AC33',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách trong phòng: dòng Khách hiện tên đã khai và vai trò "Khách" ("Tên tự khai"), không lộ email (ROOM_FT25)',
+      steps: [
+        'Thư ký mời Khách (email riêng cho lần chạy) vào cuộc họp Trực tuyến; Chủ toạ bắt đầu họp',
+        'Khách xác minh OTP, khai tên, tick đồng ý ghi âm rồi vào phòng',
+        'Thành viên (cửa sổ thứ hai) vào phòng, mở Người dự, đọc dòng của Khách',
+      ],
+      expected:
+        'Dòng Khách hiện đúng tên đã khai và vai trò "Khách" với gợi ý "Tên tự khai"; không hiện địa chỉ email (UC-40, SCRUM-59)',
+      run: guarded(async (qa) => {
+        const m = await fresh(qa, 'Published', 'dong khach trong panel')
+        const u = await users()
+        const member = await person(qa, 'member')
+        const email = `qa-khach-ft25-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách FT25 ${rand()}`
+        const link = await inviteGuest(qa, m.id, 'Khách FT25', email)
+        await transition(qa, 'chair', m.id, 'start')
+        await openLobby(qa, m, member)
+        await joinRoom(qa, member)
+        await verifyGuest(qa, link, email, displayName)
+        const inv = link.match(/\/guest\/([0-9a-f-]{36})/)?.[1]
+        await qa.goto(`/guest/${inv}/room`)
+        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
+        await qa.page.getByText(/Tôi biết cuộc họp được ghi âm/).click()
+        await press(qa, qa.page.getByRole('button', { name: 'Vào phòng', exact: true }))
+        await qa.expect(leaveButton(qa.page)).toBeVisible({ timeout: 20_000 })
+        // Đọc panel ở cửa sổ Thành viên: dòng Khách không gắn "(Bạn)".
+        const controls2 = member.locator('footer.room-controls')
+        await controls2.getByRole('button', { name: 'Người dự' }).click()
+        const panel = member.getByRole('complementary', { name: 'Người dự' })
+        await qa.expect(panel.getByRole('heading', { name: /^Người dự \(\d+\)$/ })).toBeVisible({ timeout: 20_000 })
+        const row = panel.locator('li.room-person').filter({ hasText: displayName })
+        await qa.expect(row).toBeVisible({ timeout: 20_000 })
+        await qa.expect(row.getByText('Khách', { exact: true })).toBeVisible()
+        await qa.expect(row.getByText('(Bạn)')).toHaveCount(0)
+        qa.expect(await row.getByText('Khách', { exact: true }).getAttribute('data-tooltip'), 'guest role hint').toBe('Tên tự khai')
+        const text = await row.innerText()
+        qa.expect(text, `guest email leaked into the row: ${text}`).not.toMatch(/@|\.test/)
+        await noSidewaysScroll(qa, member)
+        await qa.shot('dong khach')
+        await shotOf(qa, member, 'dong khach thanh vien nhin')
       }),
     },
   ],

@@ -30,7 +30,8 @@ import { request as playwrightRequest } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Audio fixtures.
@@ -449,6 +450,69 @@ async function openMicCard(qa) {
   const bubble = micCard(qa).getByRole('button', { name: /^Mở ô ghi âm/ })
   if (await bubble.isVisible().catch(() => false)) await press(qa, bubble)
   await qa.expect(micCard(qa).locator('.mic-card')).toBeVisible()
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Round 2: synthetic Vietnamese speech.
+//
+// qa-fixtures/said.wav is TTS Vietnamese ("Kính thưa các đồng chí. Hôm nay chúng ta họp để thông qua kế hoạch đào
+// tạo cán bộ năm, hai nghìn không trăm hai mươi bảy."): the local worker transcribes it to real text (verified
+// 24/11, profile clip → 2 segments). The headless browser's fake mic carries no speech (28 s in a room cuts no
+// sentence), so takes and sentences that must transcribe are seeded with it through the API; the UI half of each
+// case still runs in the browser. qa-fixtures/ is committed (regression needs said.wav).
+
+const PLANS_DIR = dirname(fileURLToPath(import.meta.url))
+const SAID_WAV = join(PLANS_DIR, '..', '..', '..', 'qa-fixtures', 'said.wav')
+const saidPcm = (qa) => {
+  if (!existsSync(SAID_WAV)) qa.inconclusive('Vietnamese speech fixture qa-fixtures/said.wav is missing.')
+  return readFileSync(SAID_WAV).subarray(44)
+}
+/** said.wav split at its ~2 s pause: two sentences for the per-mic clips. */
+function saidHalves(qa) {
+  const pcm = saidPcm(qa)
+  const cut = 32000 * 2
+  return [
+    { buf: wavOf(pcm.subarray(0, cut)), ms: 2000 },
+    { buf: wavOf(pcm.subarray(cut)), ms: Math.round(((pcm.length - cut) / 32000) * 1000) },
+  ]
+}
+/** said.wav as roomTake() input: one 7.6 s take transcribing to two Vietnamese sentences. */
+function saidTake(qa) {
+  audio(qa)
+  const f = join(AUDIO_DIR, 'said.pcm')
+  if (!existsSync(f)) writeFileSync(f, saidPcm(qa))
+  return ['said.pcm']
+}
+/** One Vietnamese sentence from the member's mic, as the app stores it (200 MSG318). */
+async function seedSentence(qa, meetingId, half = 0) {
+  const h = saidHalves(qa)[half]
+  const res = await (await raw(qa, 'member')).putClip(meetingId, crypto.randomUUID(), h.buf, h.ms)
+  qa.expectStatus(res, 200)
+  qa.expect(res.body?.code, `putClip: ${JSON.stringify(res.body)}`).toBe('MSG318')
+  return res.body.clip
+}
+/** Every per-mic sentence gone: a criterion starts with no sentences of anyone. */
+async function cleanClips(qa, meetingId) {
+  const sec = await client(qa, 'secretary')
+  const items = (await sec.get(`/api/meetings/${meetingId}/speech-clips`)).body.items ?? []
+  for (const i of items) await sec.delete(`/api/speech-clips/${i.id}`)
+}
+/** Into the call room: lobby "Sẵn sàng tham gia?" → "Vào phòng" → "Rời phòng" shows. */
+async function joinRoom(qa, m) {
+  await qa.goto(`/mgmt/meetings/${m.id}/room`)
+  await qa.expect(qa.page.getByRole('heading', { name: 'Sẵn sàng tham gia?' })).toBeVisible({ timeout: 15000 })
+  await qa.page.getByRole('button', { name: 'Vào phòng', exact: true }).click()
+  await qa.expect(qa.page.getByRole('button', { name: 'Rời phòng' })).toBeVisible({ timeout: 20000 })
+}
+/** The room header chip while the call mic captures ("Đang ghi lời bạn"), turning the mic on when needed. */
+async function expectCapturing(qa) {
+  const chip = qa.page.getByRole('button', { name: /Đang ghi lời bạn|Chưa gửi hết lời bạn/ })
+  if ((await chip.count()) === 0) {
+    const unmute = qa.page.locator('footer.room-controls').getByRole('button', { name: 'Bật micro' })
+    if ((await unmute.count()) > 0) await unmute.click()
+  }
+  await qa.expect(chip).toBeVisible({ timeout: 15000 })
+  return chip
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -1988,6 +2052,380 @@ export default {
         } finally {
           await clean(qa, m.id)
         }
+      }),
+    },
+    // ------------------------------------------------------------------------------------------- Round 2 (synthetic Vietnamese speech)
+    {
+      id: 'AC35',
+      role: 'secretary',
+      title: 'REC_FT20: Thư ký tắt mic phòng lưu lượt ghi (toast "Đã lưu lượt ghi.", dòng "Mic phòng"); lượt ghi âm tiếng Việt được chuyển chữ ("Có bản gỡ băng")',
+      steps: [
+        'Cuộc họp trực tiếp Đang diễn ra, chưa có bản ghi; thuky@ mở tab Bản ghi, bấm "Bật mic phòng" (tích xác nhận), ghi vài giây, bấm "Tắt mic, lưu lượt ghi"',
+        'Một lượt ghi âm tiếng Việt (said.wav) qua API vào cùng bản ghi; chờ gỡ băng xong, tải lại tab',
+      ],
+      expected:
+        'Toast "Đã lưu lượt ghi."; dòng bản ghi "Mic phòng"; API: BrowserCapture, Available, 2 lượt; gỡ băng Completed chữ tiếng Việt; tải lại: nhãn "Có bản gỡ băng" và câu chữ hiện trên dòng (micro giả của trình duyệt không có tiếng nên lượt bấm tay không chuyển chữ được — chuyển chữ kiểm bằng lượt tiếng Việt)',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'ipRun')
+        await clean(qa, m.id)
+        try {
+          await openTab(qa, m)
+          await openMicCard(qa)
+          const card = micCard(qa)
+          await press(qa, card.getByRole('button', { name: 'Bật mic phòng' }))
+          const dlg = qa.page.getByRole('dialog', { name: 'Bắt đầu ghi âm' })
+          await dlg.getByRole('checkbox').check()
+          await press(qa, dlg.getByRole('button', { name: 'Bắt đầu ghi' }))
+          await qa.expect(card.getByText('Đang ghi cả phòng')).toBeVisible({ timeout: 15000 })
+          await qa.page.waitForTimeout(8000)
+          await press(qa, card.getByRole('button', { name: 'Tắt mic, lưu lượt ghi' }))
+          await qa.expect(toast(qa, 'Đã lưu lượt ghi.')).toBeVisible({ timeout: 20000 })
+          const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 'Mic phòng' })
+          await qa.expect(row).toBeVisible({ timeout: 10000 })
+          await settled(qa)
+          await qa.shot('tat-mic-luu-luot')
+          // The headless fake mic carries no speech, so this take cannot transcribe. The transcription leg of
+          // the same recording is verified with TTS Vietnamese through the API (same take pipeline).
+          const second = await roomTake(qa, m.id, saidTake(qa), { consent: true })
+          qa.note(`Lượt 2: ${second.recordingId}`)
+          const t = await waitTranscript(qa, second.recordingId)
+          qa.expect(t?.status, `transcript: ${t?.status} ${t?.errorMessage ?? ''}`).toBe('Completed')
+          qa.note(`Gỡ băng: ${(t.segments ?? []).map((s) => s.text).join(' / ').slice(0, 200)}`)
+          await qa.page.reload()
+          const row2 = roomSection(qa).locator('li.recording-row').filter({ hasText: 'Mic phòng' })
+          await qa.expect(row2.getByText('Có bản gỡ băng')).toBeVisible({ timeout: 30000 })
+          await qa.expect(row2.getByText('Kính thưa các đồng chí', { exact: false })).toBeVisible()
+          await settled(qa)
+          await qa.shot('co-ban-go-bang')
+          await noRawCodes(qa)
+          const rec = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.id === second.recordingId)
+          qa.expect(rec?.source).toBe('BrowserCapture')
+          qa.expect(rec?.takes?.length).toBe(2)
+        } finally {
+          await clean(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC36',
+      role: 'secretary',
+      title: 'REC_FT24: Thư ký tải tệp ghi âm tiếng Việt lên họp trực tiếp đã kết thúc: hộp xác nhận, 201 MSG290, dòng "Tải lên", chuyển chữ xong "Có bản gỡ băng", tải lại vẫn còn',
+      steps: [
+        'Cuộc họp trực tiếp Đã kết thúc, chưa có bản ghi; thuky@ mở tab Bản ghi, bấm "Tải tệp lên", chọn said.wav (tiếng Việt)',
+        'Tích ô đã thông báo, bấm "Tải lên"; chờ gỡ băng xong, tải lại trang',
+      ],
+      expected:
+        'Hộp "Lưu tệp ghi âm" hiện tên và dung lượng tệp, cảnh báo micro phòng, nút "Tải lên" tắt tới khi tích; khay "Đã tải lên"; dòng "Tải lên"; gỡ băng Completed chữ tiếng Việt; tải lại vẫn dòng "Có bản gỡ băng"; API: Upload, Available, mục đích, consentObtainedAt có, retainUntil = createdAt + 180 ngày',
+      run: wrap(async (qa) => {
+        if (!existsSync(SAID_WAV)) qa.inconclusive('Vietnamese speech fixture qa-fixtures/said.wav is missing.')
+        const m = await meeting(qa, 'ipEnd')
+        await clean(qa, m.id)
+        try {
+          await openTab(qa, m)
+          const chooser = qa.page.waitForEvent('filechooser')
+          await press(qa, roomSection(qa).getByRole('button', { name: 'Tải tệp lên' }))
+          await (await chooser).setFiles(SAID_WAV)
+          const dlg = qa.page.getByRole('dialog', { name: 'Lưu tệp ghi âm' })
+          await qa.expect(dlg).toBeVisible()
+          await qa.expect(dlg.getByText('said.wav')).toBeVisible()
+          await qa.expect(dlg.getByText('Tệp phải ghi bằng đúng micro phòng họp đã dùng thu giọng mẫu', { exact: false })).toBeVisible()
+          await qa.expect(dlg.getByRole('button', { name: 'Tải lên' })).toBeDisabled()
+          await dlg.getByRole('checkbox').check()
+          await settled(qa)
+          await qa.shot('hop-luu-tep-tieng-viet')
+          await noSidewaysScroll(qa)
+          await press(qa, dlg.getByRole('button', { name: 'Tải lên' }))
+          await qa.expect(qa.page.getByRole('region', { name: 'Tải lên' }).getByText('Đã tải lên', { exact: true })).toBeVisible({ timeout: 30000 })
+          const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 'said.wav' })
+          await qa.expect(row).toBeVisible({ timeout: 15000 })
+          await qa.expect(row.getByText('Tải lên', { exact: true })).toBeVisible()
+          const rec0 = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.fileName === 'said.wav')
+          const t = await waitTranscript(qa, rec0.id)
+          qa.expect(t?.status, `transcript: ${t?.status} ${t?.errorMessage ?? ''}`).toBe('Completed')
+          await qa.page.reload()
+          const row2 = roomSection(qa).locator('li.recording-row').filter({ hasText: 'said.wav' })
+          await qa.expect(row2.getByText('Có bản gỡ băng')).toBeVisible({ timeout: 30000 })
+          await qa.expect(row2.getByText('Kính thưa các đồng chí', { exact: false })).toBeVisible()
+          await settled(qa)
+          await qa.shot('tai-len-co-ban-go-bang')
+          await noRawCodes(qa)
+          const rec = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.fileName === 'said.wav')
+          qa.expect(rec?.source).toBe('Upload')
+          qa.expect(rec?.consentPurpose, 'purpose kept').toBeTruthy()
+          qa.expect(rec?.consentObtainedAt, 'consent time kept').toBeTruthy()
+          qa.expect(daysBetween(rec.createdAt, rec.retainUntil)).toBe(180)
+        } finally {
+          await clean(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC37',
+      role: 'member',
+      title: 'REC_FT38: Thành viên vào phòng họp trực tuyến thấy "Đang ghi lời bạn"; hai câu tiếng Việt hiện trên "Bản ghi trực tiếp" dưới tên người nói mà không cần tải lại',
+      steps: [
+        'thanhvien@ vào phòng họp trực tuyến Đang diễn ra, bật micro khi cần',
+        'Hai câu tiếng Việt (said.wav cắt ở chỗ ngắt) gửi qua API micro của thành viên (200 MSG318 mỗi câu); tab Bản ghi của thành viên mở sẵn',
+      ],
+      expected:
+        'Đầu phòng họp "Đang ghi lời bạn"; mỗi câu API 200 MSG318; tab "Bản ghi trực tiếp" hiện hai câu dưới tên thành viên mà không tải lại (micro giả của trình duyệt không có tiếng nên câu nói kiểm bằng âm thanh tiếng Việt qua API — đường micro thật tới cùng endpoint)',
+      run: wrap(async (qa) => {
+        const u = await users(qa)
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          await joinRoom(qa, m)
+          await expectCapturing(qa)
+          await settled(qa)
+          await qa.shot('dang-ghi-loi-ban')
+          // The live list learns new sentences through the hub: the tab is already open when they arrive.
+          await openTab(qa, m)
+          await qa.expect(qa.page.getByRole('heading', { name: /Bản ghi trực tiếp/ })).toBeVisible()
+          const halves = saidHalves(qa)
+          const r = await raw(qa, 'member')
+          const clips = []
+          for (const h of halves) {
+            const res = await r.putClip(m.id, crypto.randomUUID(), h.buf, h.ms)
+            qa.expect(res.status, `putClip: ${JSON.stringify(res.body)}`).toBe(200)
+            qa.expect(res.body?.code).toBe('MSG318')
+            clips.push(res.body.clip)
+          }
+          qa.note(`Câu: ${clips.map((c) => `"${c.text}"`).join(' / ')}`)
+          for (const c of clips) await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toBeVisible({ timeout: 20000 })
+          await qa.expect(qa.page.getByText(u.member.name).first()).toBeVisible()
+          await settled(qa)
+          await qa.shot('hai-cau-duoi-ten-nguoi-noi')
+          await noSidewaysScroll(qa)
+        } finally {
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC38',
+      role: 'chair',
+      title: 'REC_FT39: Chủ toạ bỏ một câu khỏi biên bản rồi khôi phục (200 MSG351/MSG352); thành viên thấy câu trống, nghe 404; xong câu trở lại',
+      steps: [
+        'Một câu tiếng Việt của thành viên ở họp trực tuyến Đang diễn ra (API); chutoa@ mở tab Bản ghi',
+        'Bấm "Bỏ khỏi biên bản" trên câu (một câu duy nhất nên một đoạn, một thanh công cụ, không race); kiểm tra góc nhìn thành viên qua API; bấm "Khôi phục"',
+        'API: loại câu rồi khôi phục, kiểm mã MSG351/MSG352',
+      ],
+      expected:
+        'Bấm xong toast "Đã loại câu khỏi bản ghi.", câu gạch ngang kèm "Đã bỏ khỏi biên bản"; thành viên (API) thấy text "" và nghe 404; "Khôi phục" → toast "Đã đưa câu trở lại bản ghi.", chữ trở lại; API loại 200 MSG351, khôi phục 200 MSG352',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          const c = await seedSentence(qa, m.id, 0)
+          await openTab(qa, m)
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toBeVisible({ timeout: 15000 })
+          await press(qa, qa.page.getByRole('button', { name: /^Bỏ khỏi biên bản/ }))
+          await qa.expect(toast(qa, 'Đã loại câu khỏi bản ghi.')).toBeVisible({ timeout: 10000 })
+          await qa.expect(qa.page.getByText('Đã bỏ khỏi biên bản')).toBeVisible()
+          await settled(qa)
+          await qa.shot('cau-bi-loai')
+          const mem = await client(qa, 'member')
+          const asMember = (await mem.get(`/api/meetings/${m.id}/speech-clips`)).body.items.find((i) => i.id === c.id)
+          qa.expect(asMember?.excluded, JSON.stringify(asMember)).toBe(true)
+          qa.expect(asMember?.text).toBe('')
+          qa.expect((await mem.get(`/api/speech-clips/${c.id}/playback`)).status).toBe(404)
+          await press(qa, qa.page.getByRole('button', { name: /^Khôi phục/ }))
+          await qa.expect(toast(qa, 'Đã đưa câu trở lại bản ghi.')).toBeVisible({ timeout: 10000 })
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toContainText('Kính thưa các đồng chí', { timeout: 10000 })
+          await settled(qa)
+          await qa.shot('cau-duoc-khoi-phuc')
+          await noRawCodes(qa)
+          const chk = checker(qa)
+          const chair = await client(qa, 'chair')
+          chk.check('loại câu (API)', await chair.put(`/api/speech-clips/${c.id}/exclusion`, { excluded: true, reason: 'Other' }), 200, 'MSG351')
+          chk.check('khôi phục câu (API)', await chair.put(`/api/speech-clips/${c.id}/exclusion`, { excluded: false, reason: null }), 200, 'MSG352')
+          chk.done()
+        } finally {
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC39',
+      role: 'member',
+      title: 'REC_FT40: Thành viên không có nút "Bỏ khỏi biên bản" và "Sửa nội dung"; gọi API loại câu 403 MSG353',
+      steps: ['Một câu tiếng Việt của thành viên ở họp trực tuyến Đang diễn ra (API)', 'thanhvien@ mở tab Bản ghi', 'API: thanhvien@ PUT …/exclusion'],
+      expected: 'Câu hiện chữ nhưng không có nút "Bỏ khỏi biên bản" và "Sửa nội dung"; API loại câu 403 MSG353 "Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi."',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          const c = await seedSentence(qa, m.id, 0)
+          await openTab(qa, m)
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toBeVisible({ timeout: 15000 })
+          await qa.expect(qa.page.getByRole('button', { name: /^Bỏ khỏi biên bản/ })).toHaveCount(0)
+          await qa.expect(qa.page.getByRole('button', { name: /^Sửa nội dung/ })).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('thanh-vien-khong-nut-loai-sua')
+          await noSidewaysScroll(qa)
+          const res = await (await client(qa, 'member')).put(`/api/speech-clips/${c.id}/exclusion`, { excluded: true, reason: 'Other' })
+          qa.expect(res.status, `exclusion: ${JSON.stringify(res.body)}`).toBe(403)
+          qa.expect(res.body?.code).toBe('MSG353')
+        } finally {
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC40',
+      role: 'secretary',
+      title: 'REC_FT41: Thư ký sửa chữ một câu (toast MSG302), chữ mới hiện cho mọi người, "đã sửa", tải lại vẫn còn',
+      steps: ['Một câu tiếng Việt của thành viên ở họp trực tuyến Đang diễn ra (API)', 'thuky@ mở tab Bản ghi, bấm "Sửa nội dung" trên câu, sửa chữ, bấm "Lưu"', 'Tải lại trang; thành viên đọc danh sách qua API'],
+      expected: 'Toast "Đã lưu đoạn gỡ băng."; câu hiện chữ mới cho mọi người kèm "đã sửa"; tải lại vẫn chữ mới; API text đúng chữ mới',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          const c = await seedSentence(qa, m.id, 0)
+          await openTab(qa, m)
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toBeVisible({ timeout: 15000 })
+          await press(qa, qa.page.getByRole('button', { name: /^Sửa nội dung/ }))
+          const box = qa.page.getByLabel('Nội dung câu')
+          await qa.expect(box).toBeVisible()
+          const fixed = 'Kính thưa các đồng chí, hôm nay chúng ta họp đã sửa.'
+          await box.fill(fixed)
+          await press(qa, qa.page.getByRole('button', { name: 'Lưu', exact: true }))
+          await qa.expect(toast(qa, 'Đã lưu đoạn gỡ băng.')).toBeVisible({ timeout: 10000 })
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toContainText('đã sửa', { timeout: 10000 })
+          await settled(qa)
+          await qa.shot('cau-da-sua')
+          await qa.page.reload()
+          await qa.expect(qa.page.locator(`[data-clip="${c.id}"]`)).toContainText(fixed, { timeout: 15000 })
+          await noRawCodes(qa)
+          const asMember = (await (await client(qa, 'member')).get(`/api/meetings/${m.id}/speech-clips`)).body.items.find((i) => i.id === c.id)
+          qa.expect(asMember?.text).toBe(fixed)
+        } finally {
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC41',
+      role: 'member',
+      title: 'REC_FT42: "Ghi âm của tôi" liệt kê câu chờ gửi ("Chờ gửi lại") và câu đã lưu ("Đã chuyển chữ"), mới nhất trước, kèm giờ nói và độ dài',
+      steps: [
+        'Hai câu tiếng Việt của thanhvien@ đã lên hệ thống (API); một câu thứ ba nằm lại trên máy (IndexedDB) vì mạng gửi lên rớt (chặn PUT)',
+        'thanhvien@ mở tab Bản ghi, bấm "Ghi âm của tôi"',
+      ],
+      expected: 'Hộp "Mỗi câu bạn nói được lưu riêng rồi chuyển thành chữ."; mục "Chưa lên hệ thống · 1" chip "Chờ gửi lại" hoặc "Đang gửi"; mục "Đã lưu lên hệ thống · 2" chip "Đã chuyển chữ", câu mới nhất trước, mỗi câu có giờ nói và độ dài giây (câu chờ gửi là câu của máy này: trạng thái mạng làm ra, không phải giọng thật)',
+      run: wrap(async (qa) => {
+        const u = await users(qa)
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          const s0 = await seedSentence(qa, m.id, 0)
+          const s1 = await seedSentence(qa, m.id, 1)
+          await openTab(qa, m)
+          // A sentence left on this device: stored where the app keeps unsent clips, with its upload blocked.
+          const halves = saidHalves(qa)
+          await qa.page.evaluate(
+            async ({ meetingId, owner, audioB64, startedAt }) => {
+              const bin = Uint8Array.from(atob(audioB64), (ch) => ch.charCodeAt(0))
+              const blob = new Blob([bin.buffer], { type: 'audio/wav' })
+              await new Promise((resolve, reject) => {
+                const req = indexedDB.open('trustcabinet-speech', 1)
+                req.onupgradeneeded = () => req.result.createObjectStore('clips', { keyPath: 'id' })
+                req.onsuccess = () => {
+                  const tx = req.result.transaction('clips', 'readwrite')
+                  tx.objectStore('clips').put({ id: crypto.randomUUID(), meetingId, owner, startedAt, durationMs: 2000, audio: blob })
+                  tx.oncomplete = () => {
+                    req.result.close()
+                    resolve(0)
+                  }
+                  tx.onerror = () => reject(req.error)
+                }
+                req.onerror = () => reject(req.error)
+              })
+            },
+            { meetingId: m.id, owner: `user:${u.member.id}`, audioB64: Buffer.from(halves[0].buf).toString('base64'), startedAt: new Date().toISOString() },
+          )
+          await qa.page.route('**/api/meetings/*/speech-clips/*', (route) =>
+            route.request().method() === 'PUT' ? route.abort() : route.fallback(),
+          )
+          await qa.page.reload()
+          await press(qa, qa.page.getByRole('button', { name: /Ghi âm của tôi/ }))
+          const dlg = qa.page.getByRole('dialog', { name: 'Ghi âm của tôi' })
+          await qa.expect(dlg).toBeVisible({ timeout: 10000 })
+          await qa.expect(dlg.getByText('Chưa lên hệ thống · 1')).toBeVisible({ timeout: 20000 })
+          await qa.expect(dlg.getByText(/Chờ gửi lại|Đang gửi/)).toBeVisible()
+          await qa.expect(dlg.getByText('Đã lưu lên hệ thống · 2')).toBeVisible()
+          await qa.expect(dlg.getByText('Đã chuyển chữ').first()).toBeVisible()
+          const text = (await dlg.innerText()).replace(/\s+/g, ' ')
+          qa.note(`Hộp: ${text.slice(0, 300)}`)
+          // Each half backdates startedAt by its own length, so seed order is not time order: read it back.
+          const s1Newer = Date.parse(s1.startedAt) >= Date.parse(s0.startedAt)
+          const [older, newer] = s1Newer ? ['đồng chí', 'đào tạo'] : ['đào tạo', 'đồng chí']
+          qa.expect(text.indexOf(newer) < text.indexOf(older) && text.indexOf(newer) >= 0, 'newest first').toBe(true)
+          qa.expect(text, 'time and length').toMatch(/\d{2}:\d{2}:\d{2}.+giây/)
+          await settled(qa)
+          await qa.shot('ghi-am-cua-toi')
+          await noSidewaysScroll(qa)
+          await qa.page.keyboard.press('Escape')
+        } finally {
+          await qa.page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => undefined)
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC42',
+      role: 'member',
+      title: 'REC_FT43: Thành viên nghe lại câu của mình ("Nghe lại" → "Dừng nghe") qua link playback ký sẵn',
+      steps: ['Một câu tiếng Việt dài của thanhvien@ ở họp trực tuyến Đang diễn ra (API)', 'thanhvien@ mở "Ghi âm của tôi", bấm "Nghe lại", rồi bấm "Dừng nghe"', 'API: thanhvien@ GET …/playback'],
+      expected: 'Nút đổi "Nghe lại" → "Dừng nghe" (đang phát) → "Nghe lại" (đã dừng); không có toast lỗi; API playback 200 có link ký sẵn',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        try {
+          const c = await seedSentence(qa, m.id, 1)
+          const play = await (await client(qa, 'member')).get(`/api/speech-clips/${c.id}/playback`)
+          qa.expect(play.status, `playback: ${JSON.stringify(play.body)}`).toBe(200)
+          qa.expect(play.body?.url, 'signed link').toBeTruthy()
+          await openTab(qa, m)
+          await press(qa, qa.page.getByRole('button', { name: /Ghi âm của tôi/ }))
+          const dlg = qa.page.getByRole('dialog', { name: 'Ghi âm của tôi' })
+          await qa.expect(dlg).toBeVisible()
+          await press(qa, dlg.getByRole('button', { name: 'Nghe lại' }))
+          await qa.expect(dlg.getByRole('button', { name: 'Dừng nghe' })).toBeVisible({ timeout: 10000 })
+          await settled(qa)
+          await qa.shot('dang-nghe-lai')
+          await press(qa, dlg.getByRole('button', { name: 'Dừng nghe' }))
+          await qa.expect(dlg.getByRole('button', { name: 'Nghe lại' })).toBeVisible({ timeout: 10000 })
+          qa.expect(await qa.page.locator('.toast-stack .toast').count(), 'no error toast').toBe(0)
+        } finally {
+          await cleanClips(qa, m.id)
+        }
+      }),
+    },
+    {
+      id: 'AC43',
+      role: 'member',
+      title: 'REC_FT44: Chưa nói câu nào thì "Ghi âm của tôi" hiện trạng thái trống ("Chưa có câu nào")',
+      steps: ['Họp trực tuyến Đang diễn ra, thanhvien@ chưa nói câu nào', 'thanhvien@ vào phòng (micro bật, không nói), bấm "Đang ghi lời bạn"'],
+      expected: 'Hộp "Ghi âm của tôi" hiện "Chưa có câu nào" và "Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây."; API danh sách câu của thành viên trống',
+      run: wrap(async (qa) => {
+        const m = await meeting(qa, 'onRun')
+        await cleanClips(qa, m.id)
+        await joinRoom(qa, m)
+        const chip = await expectCapturing(qa)
+        await settled(qa)
+        await qa.shot('phong-hop-chua-noi')
+        await press(qa, chip)
+        const dlg = qa.page.getByRole('dialog', { name: 'Ghi âm của tôi' })
+        await qa.expect(dlg).toBeVisible()
+        await qa.expect(dlg.getByText('Chưa có câu nào')).toBeVisible()
+        await qa.expect(dlg.getByText('Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('chua-co-cau-nao')
+        const u43 = await users(qa)
+        const left = (await (await client(qa, 'member')).get(`/api/meetings/${m.id}/speech-clips`)).body.items.filter((i) => i.speakerId === u43.member.id)
+        qa.note(`Câu của thanhvien@ sau khi vào phòng không nói: ${left.length}`)
+        qa.expect(left.length).toBe(0)
       }),
     },
   ],

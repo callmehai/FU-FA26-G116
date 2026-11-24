@@ -155,6 +155,7 @@ async function reused(qa, key) {
     notStarted: ['Draft', 'Internal', 'dùng lại chưa họp (Nội bộ)'],
     secret: ['Ended', 'Secret', 'dùng lại họp Mật'],
     ai: ['Ended', 'Internal', 'dùng lại dự thảo AI (Nội bộ)'],
+    aiPhone: ['Ended', 'Internal', 'dùng lại dự thảo AI (Nội bộ) 2'],
   }[key]
   const [status, sensitivity, label] = spec
   const title = qa.name(`FE-12 ${label}`)
@@ -1503,6 +1504,77 @@ export default {
         } finally {
           await qa.page.unroute('**/api/minutes/*')
         }
+      },
+    },
+    {
+      // R1/FE-12 (24/11/2026): AC mới — MIN_FT02 (tạo bản nháp biên bản từ dự thảo AI chưa duyệt, UC-59 AF-4).
+      id: 'AC24',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Tạo bản nháp từ dự thảo chưa duyệt: báo "Dự thảo AI chưa duyệt…", "Duyệt dự thảo" cuộn tới nút Duyệt, bản nháp giữ mục I–III của AI (MIN_FT02)',
+      steps: [
+        'Cần dự thảo AI đã viết xong, chưa duyệt, chưa có biên bản trên "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" (chạy --only AC21 trước)',
+        'Mở tab Biên bản, đọc cảnh báo, bấm "Duyệt dự thảo"',
+        'Bấm "Tạo bản nháp", đọc bản nháp và thông báo',
+      ],
+      expected:
+        'Cảnh báo "Dự thảo AI chưa duyệt: biên bản sẽ dùng nội dung chưa rà soát." với nút "Duyệt dự thảo"; bấm thì trang cuộn tới nút "Duyệt" của thẻ "Dự thảo nội dung" và nhấp nháy; toast "Đã tạo bản nháp biên bản."; mục I–III giữ nội dung AI; thông báo "Biên bản đang dùng dự thảo AI chưa duyệt." (UC-59 AF-4, BR-382)',
+      async run(qa) {
+        const S = (id) => `/api/meetings/${id}/summary`
+        const sec = await client(qa, 'secretary')
+        // Mỗi màn hình một cuộc họp riêng: lượt desktop đã tạo biên bản thì lượt phone vẫn còn chỗ làm.
+        const ai = await reused(qa, qa.device === 'phone' ? 'aiPhone' : 'ai')
+        qa.expect(ai.sensitivity, 'never ask for a draft of a Normal meeting (it would call the paid API)').toBe('Internal')
+        let state = (await sec.get(S(ai.id))).body
+        if (state.summary?.status !== 'Ready' || !state.summary?.draft) {
+          await ensureSaid(qa, ai)
+          const asked = await sec.post(S(ai.id))
+          if (![200, 202].includes(asked.status) && asked.status !== 409)
+            qa.inconclusive(`Xin dự thảo trả ${asked.status} ${JSON.stringify(asked.body).slice(0, 200)}`)
+          if (asked.status !== 409) qa.note(`Xin dự thảo: ${asked.status} ${asked.body?.code}`)
+          const until = Date.now() + 8 * 60_000
+          while (Date.now() < until) {
+            state = (await sec.get(S(ai.id))).body
+            if (!['Queued', 'Running'].includes(state.summary?.status)) break
+            await new Promise((r) => setTimeout(r, 5000))
+          }
+        }
+        state = (await sec.get(S(ai.id))).body
+        if (state.summary?.status !== 'Ready' || !state.summary?.draft || state.summary?.reviewedAt)
+          qa.inconclusive(`Chưa có dự thảo AI viết xong và chưa duyệt (trạng thái ${state.summary?.status ?? 'chưa có'}): bật máy AI local, chờ dự thảo xong rồi chạy lại --only AC24`)
+        const draft = state.summary.draft
+        const minutes0 = (await minutesState(qa, 'secretary', ai.id)).minutes
+        if (minutes0) qa.inconclusive(`Cuộc họp dùng lại đã có biên bản (${minutes0.status}): AC24 cần cuộc họp chưa có biên bản`)
+        await openMinutes(qa, ai)
+        const warn = card(qa).getByText('Dự thảo AI chưa duyệt: biên bản sẽ dùng nội dung chưa rà soát.')
+        await qa.expect(warn).toBeVisible()
+        await qa.expect(card(qa).getByRole('button', { name: 'Duyệt dự thảo' })).toBeVisible()
+        await snap(qa, 'canh bao du thao chua duyet')
+        await press(qa, card(qa).getByRole('button', { name: 'Duyệt dự thảo' }))
+        // goTo() cuộn nút vào giữa màn hình, focus và gắn btn-ping trong 4 giây.
+        const reviewBtn = qa.page.locator('#summary-review')
+        await qa.expect(reviewBtn).toBeVisible({ timeout: 10_000 })
+        await qa.expect
+          .poll(async () => reviewBtn.evaluate((b) => b.classList.contains('btn-ping')).catch(() => false), { timeout: 10_000 })
+          .toBe(true)
+        await qa.expect(reviewBtn).toBeInViewport()
+        await qa.expect(draftCard(qa).getByText('Nội dung do AI tạo — cần rà soát')).toBeVisible()
+        await snap(qa, 'cuon toi nut duyet')
+        const built = qa.page.waitForResponse((r) => r.url().endsWith(`/api/meetings/${ai.id}/minutes`) && r.request().method() === 'POST')
+        await press(qa, btn(qa, 'Tạo bản nháp'))
+        const res = await built
+        qa.expect(res.status(), 'POST minutes').toBe(201)
+        const body = await res.json()
+        qa.expect(body.code, JSON.stringify(body)).toBe('MSG395')
+        await qa.expect(toast(qa, 'Đã tạo bản nháp biên bản.')).toBeVisible()
+        const paper = card(qa).getByText(draft.objectives.slice(0, 60))
+        await qa.expect(paper).toBeVisible({ timeout: 15_000 })
+        await qa.expect(card(qa).getByText('II. Nội dung thảo luận và đánh giá')).toBeVisible()
+        await qa.expect(card(qa).getByText('III. Kết luận và phân công thực hiện')).toBeVisible()
+        await qa.expect(card(qa).getByText('Biên bản đang dùng dự thảo AI chưa duyệt.')).toBeVisible()
+        await noSidewaysScroll(qa)
+        await snap(qa, 'bien ban dung du thao chua duyet')
+        await noRawCodes(qa)
       },
     },
   ],

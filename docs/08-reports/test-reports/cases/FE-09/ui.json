@@ -434,7 +434,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
           ],
-          "note": "UC-44b · Manual only"
+          "note": "UC-44b · Manual only · Re-run AC35 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/01-secretary-AC35-desktop-tat-mic-luu-luot.png; tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/02-secretary-AC35-desktop-co-ban-go-bang.png · Toast \"Đã lưu lượt ghi.\", dòng \"Mic phòng\"; lượt ghi âm tiếng Việt (said.wav qua API) được chuyển chữ (\"Có bản gỡ băng\"), tải lại tab vẫn còn; gỡ băng: \"Kính thưa các đồng chí. / Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT21",
@@ -522,7 +525,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
           ],
-          "note": "UC-44c · MSG290 · Manual only"
+          "note": "UC-44c · MSG290 · Manual only · Re-run AC36 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/01-secretary-AC36-desktop-hop-luu-tep-tieng-viet.png; tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/02-secretary-AC36-desktop-tai-len-co-ban-go-bang.png · Hộp xác nhận tải tệp, 201 MSG290; dòng \"Tải lên\" (said.wav, 00:08, 239 KB), chuyển chữ xong \"Có bản gỡ băng\" chữ tiếng Việt (\"Kính thưa các đồng chí. Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"), tải lại vẫn còn",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT25",
@@ -830,7 +836,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · MSG318 · Manual only"
+          "note": "UC-80 · MSG318 · Manual only · Re-run AC37 24/11: Passed: tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/01-member-AC37-desktop-dang-ghi-loi-ban.png; tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/02-member-AC37-desktop-hai-cau-duoi-ten-nguoi-noi.png · Thành viên vào phòng họp trực tuyến thấy chip \"Đang ghi lời bạn\"; hai câu tiếng Việt hiện trên \"Bản ghi trực tiếp\" dưới tên người nói (Lê Thành Viên) mà không cần tải lại: \"Kính thưa các đồng chí.\" / \"Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ. năm hai nghìn không trăm hai mươi bảy.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT39",
@@ -849,7 +858,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · UC-80 · Manual only"
+          "note": "UC-46c · UC-80 · Manual only · Re-run AC38 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/01-chair-AC38-desktop-cau-bi-loai.png; tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/02-chair-AC38-desktop-cau-duoc-khoi-phuc.png · Chủ toạ loại một câu duy nhất rồi khôi phục: toast \"Đã loại câu khỏi bản ghi.\" (MSG351 theo catalogue, plan cũ ghi nhầm \"biên bản\" đã sửa), câu gạch ngang kèm \"Đã bỏ khỏi biên bản\"; thành viên (API) thấy text \"\" và playback 404; \"Khôi phục\" → toast \"Đã đưa câu trở lại bản ghi.\" (MSG352), chữ trở lại; API loại 200 MSG351, khôi phục 200 MSG352",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT40",
@@ -865,7 +877,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · MSG353 · Manual only"
+          "note": "UC-46c · MSG353 · Manual only · Re-run AC39 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132734-ece83cb4/01-member-AC39-desktop-thanh-vien-khong-nut-loai-sua.png · Câu tiếng Việt hiện chữ nhưng Thành viên không có nút \"Bỏ khỏi biên bản\" và \"Sửa nội dung\" (đếm = 0); API loại câu 403 MSG353 \"Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi.\"",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT41",
@@ -883,7 +898,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-80 · MSG302 · Manual only"
+          "note": "UC-80 · MSG302 · Manual only · Re-run AC40 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132743-ece83cb4/01-secretary-AC40-desktop-cau-da-sua.png · Thư ký sửa chữ câu thành \"Kính thưa các đồng chí, hôm nay chúng ta họp đã sửa.\": toast \"Đã lưu đoạn gỡ băng.\" (MSG302), câu hiện chữ mới kèm \"đã sửa\", tải lại trang vẫn còn, thành viên đọc qua API đúng chữ mới",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -908,7 +926,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · Manual only"
+          "note": "UC-80 · Manual only · Re-run AC41 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132902-ece83cb4/01-member-AC41-desktop-ghi-am-cua-toi.png · Hộp \"Ghi âm của tôi\": \"Chưa lên hệ thống · 1\" chip \"Chờ gửi lại\" (\"Đã thử 1 lần. Hệ thống tự gửi lại.\"); \"Đã lưu lên hệ thống · 2\" chip \"Đã chuyển chữ\", mới nhất trước theo startedAt (02:00:45 \"Kính thưa các đồng chí.\" trước 02:00:44 \"Hôm nay chúng ta họp...\"), mỗi câu có giờ nói và độ dài giây",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT43",
@@ -925,7 +946,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · UC-43b · Manual only"
+          "note": "UC-80 · UC-43b · Manual only · Re-run AC42 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132919-ece83cb4/01-member-AC42-desktop-dang-nghe-lai.png · Thành viên bấm \"Nghe lại\" → nút đổi \"Dừng nghe\" (đang phát) → bấm dừng → \"Nghe lại\"; không có toast lỗi; API playback 200 có link ký sẵn",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "REC_FT44",
@@ -941,7 +965,10 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · Manual only"
+          "note": "UC-80 · Manual only · Re-run AC43 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/01-member-AC43-desktop-phong-hop-chua-noi.png; tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/02-member-AC43-desktop-chua-co-cau-nao.png · Chưa nói câu nào thì \"Ghi âm của tôi\" hiện \"Chưa có câu nào\" + \"Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.\"; API danh sách câu của thanhvien@ trống (0 câu sau khi vào phòng không nói)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

@@ -261,15 +261,17 @@ def bulleted(items):
     return '\n'.join(f'- {s}' for s in items)
 
 
-def height_for(values_and_widths, line_height=13.5):
+def height_for(values_and_widths, line_height=15):
     lines = 1
     for value, width in values_and_widths:
         if not value:
             continue
-        per_line = max(int(width * 1.15), 8)
+        # Conservative: Calibri 11 averages ~1 char per width unit, and the
+        # +2 lines cover rounding (Excel never breaks mid-word like ceil does).
+        per_line = max(int(width * 1.0), 8)
         n = sum(max(1, math.ceil(len(part) / per_line)) for part in str(value).split('\n'))
         lines = max(lines, n)
-    return min(409, lines * line_height + 4)
+    return min(409, lines * line_height + 6)
 
 
 def styles_of(ws, row, cols):
@@ -325,19 +327,30 @@ def harmonise(wb):
 
     # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
     # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
+    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
+    # cell falls back to the Normal style on reload. Build a real Font.
+    from openpyxl.styles import Font as _IFont
     for ws in wb.worksheets:
         if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
             continue
         for row in ws.iter_rows():
             for cell in row:
-                font = copy(cell.font)
-                if font.name != 'Calibri' or not font.sz:
-                    font.name = 'Calibri'
-                    font.sz = font.sz or 11
-                    cell.font = font
+                font = cell.font
+                if font.name != 'Calibri' or font.sz != 11:
+                    cell.font = _IFont(name='Calibri', size=11, bold=font.bold,
+                                       italic=font.italic, underline=font.underline,
+                                       strike=font.strike, color=font.color,
+                                       vertAlign=font.vertAlign)
     normal = wb._named_styles['Normal']
     normal.font = Font(name='Calibri', sz=11)
     wb._fonts[0] = Font(name='Calibri', sz=11)
+
+
+def case_values(c):
+    return [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
+            bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
+            c.get('round2'), c.get('date2'), c.get('tester2'),
+            c.get('round3'), c.get('date3'), c.get('tester3'), '', c['note']]
 
 
 def build_book(book, m):
@@ -372,17 +385,37 @@ def build_book(book, m):
     # Feature sheets, cloned from the prototype
     group_style = styles_of(proto, 11, 16)
     case_style = styles_of(proto, 12, 16)
-    widths = {k: v.width for k, v in proto.column_dimensions.items()}
-    widths['O'] = 32
-    widths['P'] = 32
+    # Auto-fit: each column is only as wide as its longest line (+2 padding),
+    # capped so long-text columns wrap instead of stretching. Uniform per book.
+    # A=id, B=description, C=procedure, D=expected, E=pre-conditions,
+    # F..N=rounds/dates/testers, O=empty spacer, P=hidden evidence/note.
+    CAPS = {'A': (14, 20), 'B': (23, 45), 'C': (22, 45), 'D': (18, 50),
+            'E': (16, 45), 'F': (9, 12), 'G': (11, 13), 'H': (8, 20),
+            'I': (9, 12), 'J': (11, 13), 'K': (8, 20), 'L': (9, 12),
+            'M': (11, 13), 'N': (8, 20), 'O': (10, 15)}
+    HEADERS = ['Test Case ID', 'Test Case Description', 'Test Case Procedure',
+               'Expected Results', 'Pre-conditions', 'Round 1', 'Test date',
+               'Tester', 'Round 2', 'Test date', 'Tester', 'Round 3',
+               'Test date', 'Tester', '']
+    docs = [(sheet, load(case_file(book, sheet))) for sheet in m['sheets']]
+    longest = {col: len(h) for col, h in zip('ABCDEFGHIJKLMNO', HEADERS)}
+    for _, doc in docs:
+        for g in doc['groups']:
+            for c in g['cases']:
+                for col, v in zip('ABCDEFGHIJKLMNO', case_values(c)):
+                    for part in str(v or '').split('\n'):
+                        longest[col] = max(longest[col], len(part))
+    widths = {col: min(cap, max(mn, longest[col] + 2))
+              for col, (mn, cap) in CAPS.items()}
+    widths['P'] = proto.column_dimensions['P'].width or 7.63
     built = []
-    for sheet in m['sheets']:
-        doc = load(case_file(book, sheet))
+    for sheet, doc in docs:
         ws = wb.copy_worksheet(proto)
         ws.title = sheet['sheet']
         clear_from(ws, 11)
         for k, w in widths.items():
             ws.column_dimensions[k].width = w
+        ws.row_dimensions[10].height = 18
         # Column O stays visible but empty for the council; the real evidence lives in
         # hidden column P so agents (openpyxl reads hidden cells normally) still fetch it.
         ws.column_dimensions['P'].hidden = True
@@ -396,17 +429,16 @@ def build_book(book, m):
             apply(ws, r, group_style)
             ws.cell(r, 1, g['title'])
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=15)
+            ws.row_dimensions[r].height = 24
             r += 1
             for c in g['cases']:
                 apply(ws, r, case_style)
-                values = [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
-                          bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
-                          c.get('round2'), c.get('date2'), c.get('tester2'),
-                          c.get('round3'), c.get('date3'), c.get('tester3'), '', c['note']]
+                values = case_values(c)
                 for col, v in enumerate(values, 1):
                     ws.cell(r, col, v)
                 ws.row_dimensions[r].height = height_for(
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[15], widths['P'])])
+                    # Hidden P (long evidence note) must not drive the height.
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)

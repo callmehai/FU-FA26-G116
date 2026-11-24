@@ -299,6 +299,82 @@ async function openVotesTab(qa, m) {
   await qa.expect(panel(qa)).toBeVisible()
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Guest voter (UC-04 OTP by email): the FE-01 pattern (example.test lands in local Mailpit). The browser stays
+// anonymous; every signed-in call goes through global fetch with a secretary login, like removeFromRoster above.
+
+async function guestMailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await guestMailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
+}
+
+async function guestInvite(qa, meetingId, name, email) {
+  const login = await fetch(`${qa.base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: ACCOUNTS.secretary, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' }),
+  })
+  const headers = { Authorization: `Bearer ${(await login.json()).accessToken}` }
+  const roster = await (await fetch(`${qa.base}/api/meetings/${meetingId}/participants?pageSize=100`, { headers })).json()
+  const res = await fetch(`${qa.base}/api/meetings/${meetingId}/guest-invitations`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json', 'If-Match': `"participants-${roster.revision}"` },
+    body: JSON.stringify({ invitedName: name, email }),
+  })
+  if (res.status !== 201) throw new Error(`guest invitation: HTTP ${res.status} ${await res.text()}`)
+  let link = null
+  await qa.expect
+    .poll(
+      async () => {
+        const box = await guestMailpit(email)
+        for (const m of box) {
+          const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+          const raw = full.Text ?? ''
+          const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+          const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+          if (found) {
+            link = found[0]
+            return link
+          }
+        }
+        return null
+      },
+      { timeout: 90_000 },
+    )
+    .not.toBeNull()
+  return link
+}
+
+/** Opens the invitation link, verifies the OTP and declares the display name; lands on the guest meeting page. */
+async function guestVerify(qa, link, email, displayName) {
+  const u = new URL(link)
+  await qa.goto(u.pathname + u.hash)
+  await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+  const code = await guestCode(email)
+  qa.expect(code, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+  await qa.page.getByLabel('Chữ số 1').fill(code)
+  await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+  await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+  await qa.page.getByLabel(/Tên hiển thị/).fill(displayName)
+  await qa.page.getByRole('button', { name: 'Vào cuộc họp' }).click()
+  await qa.expect(qa.page.getByRole('tab', { name: 'Biểu quyết' })).toBeVisible({ timeout: 15_000 })
+}
+
 /** A one-page PDF a strict reader accepts (correct xref offsets), with ASCII text. */
 function makePdf(text) {
   const stream = `BT /F1 20 Tf 72 760 Td (${text}) Tj ET`
@@ -1794,6 +1870,135 @@ export default {
           await card(qa, v).scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('thanh-vien-chua-co-ket-luan')
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-74 read gate
+    // R1/FE-11 (24/11/2026): AC mới — DOC_FT51 (nút xác nhận chỉ mở ở trang cuối, 200 MSG253).
+    {
+      id: 'AC32',
+      role: 'member',
+      devices: ['desktop', 'phone'],
+      title: 'Nút xác nhận chỉ mở ở trang cuối: "Đọc tới trang cuối" khoá, cuộn hết thì "Xác nhận đã đọc", bấm xong 200 MSG253 (DOC_FT51)',
+      steps: [
+        'chutoa@ thêm một PDF vào cuộc họp đang diễn ra, gắn vào biểu quyết đang mở; thanhvien@ mở tab, chọn phương án',
+        'thanhvien@ bấm tài liệu (trình xem phủ trên tab mở với ?read=1), đọc nút ở đầu trước khi cuộn',
+        'Cuộn xuống hết trang cuối, bấm "Xác nhận đã đọc", đóng trình xem, gửi phiếu',
+      ],
+      expected:
+        'Trước khi cuộn nút xanh "Đọc tới trang cuối" bị khoá; cuộn hết thì thành "Xác nhận đã đọc" và mở được (BR-290); bấm: backend 200 MSG253, toast "Đã xác nhận đọc tài liệu.", đầu trình xem "Đã xác nhận đọc"; về thẻ tài liệu "Đã đọc", "Gửi phiếu" mở được',
+      async run(qa) {
+        const c = checker(qa)
+        const m = await meeting(qa, 'live', 'InProgress')
+        // The upload runs with the page's own session: the Chair's, like AC17 (a Member may not add files, MSG162).
+        await qa.signIn('chair')
+        await openVotesTab(qa, m)
+        const fileName = `qa-fe11-doc51-${rand()}.pdf`
+        const up = await uploadMeetingPdf(qa, m, fileName)
+        if (up.status === 503) qa.inconclusive('Kho tệp local không chạy (503). Người kiểm: docker compose up -d (SeaweedFS) và FileStorage:* user-secrets, rồi chạy lại AC32.')
+        qa.expect(up.status, JSON.stringify(up.body)).toBe(201)
+        const docId = up.body.documents[0].id
+        const v = await draftVote(qa, m, 'Đọc trang cuối')
+        try {
+          const chair = await client(qa, 'chair')
+          qa.expectStatus(await chair.post(`${votePath(m, v)}/documents`, { meetingDocumentIds: [docId] }), 200)
+          await openVote(qa, m, v)
+
+          await qa.signIn('member')
+          await openVotesTab(qa, m)
+          const mrow = card(qa, v)
+          await qa.expect(mrow.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Chưa đọc')
+          await press(qa, mrow.getByRole('radio', { name: 'Đồng ý', exact: true }))
+          await qa.expect(mrow.getByRole('button', { name: 'Gửi phiếu' })).toBeDisabled()
+          await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).click()
+          // ADR-0066: the viewer is a layer over the tab (its link still carries ?read=1 for a new tab).
+          await qa.expect(qa.page.getByRole('dialog', { name: 'Xem tài liệu' })).toBeVisible({ timeout: 20_000 })
+          qa.expect(await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).getAttribute('href')).toContain('read=1')
+          // BR-290: locked until the reader reaches the end of the last page; the label says so (no tooltip on touch).
+          const locked = qa.page.getByRole('button', { name: 'Đọc tới trang cuối' })
+          await qa.expect(locked).toBeDisabled({ timeout: 20_000 })
+          await qa.page.locator('.viewer-scroll .pdf-page').first().waitFor()
+          await settled(qa)
+          await qa.shot('chua-cuoi-khoa-xac-nhan')
+          await qa.page.locator('.viewer-scroll').evaluate((el) => el.scrollTo(0, el.scrollHeight))
+          const confirm = qa.page.getByRole('button', { name: 'Xác nhận đã đọc' })
+          await qa.expect(confirm).toBeEnabled({ timeout: 20_000 })
+          await settled(qa)
+          await qa.shot('cuoi-trang-mo-xac-nhan')
+          const answered = qa.page.waitForResponse((r) => r.url().includes('/read-confirmation') && r.request().method() === 'POST')
+          await press(qa, confirm)
+          const res = await answered
+          qa.expect(res.status(), 'POST read-confirmation').toBe(200)
+          const body = await res.json()
+          qa.expect(body.code, JSON.stringify(body)).toBe('MSG253')
+          await qa.expect(toast(qa, 'Đã xác nhận đọc tài liệu.')).toBeVisible()
+          await qa.expect(qa.page.getByText('Đã xác nhận đọc', { exact: true })).toBeVisible()
+          await settled(qa)
+          await qa.shot('da-xac-nhan-doc')
+          const viewer = qa.page.getByRole('dialog', { name: 'Xem tài liệu' })
+          await viewer.getByRole('button', { name: 'Đóng', exact: true }).click()
+          await qa.expect(viewer).toHaveCount(0)
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+          const back = card(qa, v)
+          await qa.expect(back.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Đã đọc')
+          await back.getByRole('radio', { name: 'Đồng ý', exact: true }).check()
+          await qa.expect(back.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+          await back.getByRole('button', { name: 'Gửi phiếu' }).click()
+          await qa.expect(toast(qa, 'Đã ghi nhận phiếu của bạn.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('da-doc-da-gui')
+          c.done()
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    {
+      // R1/FE-11 (24/11/2026): AC mới — VOTE_FT15 (Khách bỏ phiếu kín qua OTP).
+      id: 'AC33',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách bỏ phiếu kín: hòm phiếu không tên người bỏ, bỏ xong báo "Bạn đã gửi phiếu.", lượt kín tăng một không gắn tên (VOTE_FT15)',
+      steps: [
+        'Thư ký mời Khách (email riêng cho lần chạy) vào cuộc họp đang diễn ra; Khách xác minh OTP, khai tên',
+        'Thư ký tạo biểu quyết kín cho vai trò Khách; Chủ toạ mở',
+        'Khách mở tab Biểu quyết, chọn phương án, gửi phiếu; Chủ toạ đọc lượt qua API',
+      ],
+      expected:
+        'Hòm phiếu của Khách không hiện tên người bỏ; gửi xong Khách thấy "Bạn đã gửi phiếu."; lượt kín tăng một, phiếu không gắn tên (UC-55)',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const email = `qa-khach-vote15-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách VOTE15 ${rand()}`
+        const link = await guestInvite(qa, m.id, 'Khách Bỏ phiếu', email)
+        const v = await draftVote(qa, m, 'Khach kin', { isAnonymous: true, eligibleRoles: ['Guest'] })
+        try {
+          await openVote(qa, m, v)
+          await guestVerify(qa, link, email, displayName)
+          await press(qa, qa.page.getByRole('tab', { name: 'Biểu quyết' }))
+          const box = card(qa, v)
+          await qa.expect(box).toBeVisible({ timeout: 15_000 })
+          const names = `${(await users(qa)).chair.name}|${(await users(qa)).secretary.name}|${(await users(qa)).member.name}|${displayName}`
+          qa.expect(await box.innerText(), 'voter names shown on the secret ballot box').not.toMatch(new RegExp(names))
+          await press(qa, box.getByRole('radio', { name: 'Đồng ý', exact: true }))
+          await qa.expect(box.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+          await box.getByRole('button', { name: 'Gửi phiếu' }).click()
+          await qa.expect(box.getByText('Bạn đã gửi phiếu.')).toBeVisible({ timeout: 15_000 })
+          await settled(qa)
+          await qa.shot('khach da gui phieu kin')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+          const chair = await client(qa, 'chair')
+          await closeVote(qa, m, v)
+          const detail = (await chair.get(votePath(m, v))).body
+          qa.expect(detail.result?.ballotCount, 'secret tally grew by one').toBe(1)
+          qa.expect(detail.result?.voters, 'anonymous tally carries no voter names').toBeNull()
+          const leaked = JSON.stringify(detail.result ?? {})
+          qa.expect(leaked, `voter identity leaked into the tally: ${leaked.slice(0, 200)}`).not.toMatch(/voterName|displayName|email|userId/i)
+          qa.note(`tally: ballotCount=${detail.result?.ballotCount}, voters=${detail.result?.voters}`)
         } finally {
           await closeOpenVotes(qa, m)
         }

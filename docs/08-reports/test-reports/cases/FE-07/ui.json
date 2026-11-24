@@ -590,7 +590,11 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A verified Guest invitation to a Published meeting with documents."
           ],
-          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting) · Chưa làm (đề nghị H): khách xem tài liệu cần OTP hộp thư thật, không làm tự động.",
+          "note": "UC-32a · Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs (Guest_lists_views_and_downloads_every_document_of_the_invited_meeting) · Evidence(AC35): tests/qa/out/SCRUM-194/20261124-110344-ece83cb4/01-anon-AC35-desktop-khach-danh-sach-tai-lieu.png; tests/qa/out/SCRUM-194/20261124-110344-ece83cb4/02-anon-AC35-desktop-khach-mo-tai-lieu.png; tests/qa/out/SCRUM-194/20261124-110344-ece83cb4/03-anon-AC35-phone-khach-danh-sach-tai-lieu.png; tests/qa/out/SCRUM-194/20261124-110344-ece83cb4/04-anon-AC35-phone-khach-mo-tai-lieu.png (OTP qua Mailpit tới example.test)",
+          "id": "DOC_FT27",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh",
           "id": "DOC_FT27"
         }
       ]
@@ -1085,8 +1089,11 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a voter of an Open vote linking a PDF of several pages."
           ],
-          "note": "UC-74 · BR-290 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: \"Xác nhận đã đọc\" ở trang cuối + 200 MSG253 — thuộc vùng vote FE-11, chưa có AC.",
-          "id": "DOC_FT51"
+          "note": "UC-74 · BR-290 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Evidence(AC32): tests/qa/out/SCRUM-198/20261124-052353-02ec608b/01-member-AC32-desktop-chua-cuoi-khoa-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/02-member-AC32-desktop-cuoi-trang-mo-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/03-member-AC32-desktop-da-xac-nhan-doc.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/05-member-AC32-phone-chua-cuoi-khoa-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/06-member-AC32-phone-cuoi-trang-mo-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/07-member-AC32-phone-da-xac-nhan-doc.png",
+          "id": "DOC_FT51",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

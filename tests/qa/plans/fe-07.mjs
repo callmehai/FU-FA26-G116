@@ -280,6 +280,78 @@ async function transition(qa, role, id, action) {
 }
 const actorOf = (step, organizer) => (['approve', 'start', 'end'].includes(step) ? 'chair' : organizer)
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Guest reader (UC-04, OTP by email): the FE-01 pattern (example.test lands in local Mailpit), adapted to this plan's
+// API client. The browser stays anonymous; every signed-in call goes through the API first.
+
+async function mailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await mailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
+}
+
+async function inviteGuest(qa, meetingId, name, email) {
+  const sec = await client(qa, 'secretary')
+  const parts = await sec.get(`/api/meetings/${meetingId}/participants?pageSize=100`)
+  qa.expectStatus(parts, 200)
+  const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+  const res = await qa.context.request.post(`/api/meetings/${meetingId}/guest-invitations`, {
+    headers: { Authorization: `Bearer ${await tokenOf(qa, 'secretary')}`, 'If-Match': etag },
+    data: { invitedName: name, email },
+  })
+  qa.expect(res.status(), `guest invitation: ${await res.text()}`).toBe(201)
+  let link = null
+  await qa.expect
+    .poll(
+      async () => {
+        const box = await mailpit(email)
+        for (const m of box) {
+          const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+          const raw = full.Text ?? ''
+          const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+          const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+          if (found) {
+            link = found[0]
+            return link
+          }
+        }
+        return null
+      },
+      { timeout: 90_000 },
+    )
+    .not.toBeNull()
+  return link
+}
+
+/** Opens the invitation link, verifies the OTP and declares the display name; lands on the guest meeting page. */
+async function verifyGuest(qa, link, email, displayName) {
+  const u = new URL(link)
+  await qa.goto(u.pathname + u.hash)
+  await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+  const code = await guestCode(email)
+  qa.expect(code, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+  await qa.page.getByLabel('Chữ số 1').fill(code)
+  await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+  await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+  await qa.page.getByLabel(/Tên hiển thị/).fill(displayName)
+  await qa.page.getByRole('button', { name: 'Vào cuộc họp' }).click()
+  await qa.expect(qa.page.getByRole('tab', { name: 'Tài liệu' })).toBeVisible({ timeout: 15_000 })
+}
+
 async function addItem(qa, meetingId, title) {
   const res = await (await client(qa, 'secretary')).post(`/api/meetings/${meetingId}/agenda`, {
     title,
@@ -2485,6 +2557,58 @@ export default {
           const p = await docsOf(qa, 'secretary', pub.id)
           for (const x of everyDoc(p).filter((x) => x.fileName.includes(t))) await sec.delete(`/api/meetings/${pub.id}/documents/${x.id}`)
           await sweepLibrary(qa, 'secretary')
+        }
+      },
+    },
+    {
+      // R1/FE-07 (24/11/2026): AC mới — DOC_FT27 (Khách đọc tài liệu cuộc họp qua OTP).
+      id: 'AC35',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách đọc tài liệu cuộc họp: danh sách đủ tài liệu đúng nhóm, không có nút thêm/gỡ/gắn; mở tài liệu theo /guest/{id}/documents/{docId} (DOC_FT27)',
+      steps: [
+        'Thư ký tạo cuộc họp Đã công bố, tải lên một PDF ở nhóm chung và mời Khách (email riêng cho lần chạy)',
+        'Khách mở link, xác minh OTP, khai tên, mở tab Tài liệu',
+        'Khách bấm mở tài liệu',
+      ],
+      expected:
+        'Tab Tài liệu của Khách liệt kê đủ tài liệu với đúng nhóm, không có nút "Thêm tài liệu", "Gỡ khỏi cuộc họp" hay gắn vào mục; bấm mở tài liệu đi tới /guest/{id}/documents/{docId} và hiện nội dung (UC-32a)',
+      async run(qa) {
+        const t = rand()
+        const sec = await client(qa, 'secretary')
+        const created = await sec.post('/api/meetings', await meetingBody(qa, qa.name(`FE-07 Khach doc ${t}`)))
+        qa.expectStatus(created, 201)
+        const meetingId = created.body.meeting.id
+        for (const step of ['submit', 'approve', 'publish']) await transition(qa, actorOf(step, 'secretary'), meetingId, step)
+        const [doc] = await meetingUpload(qa, 'secretary', meetingId, [pdfFile(qa.name(`FE-07 Khach xem ${t}.pdf`), 2)])
+        const email = `qa-khach-doc27-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách DOC27 ${t}`
+        const link = await inviteGuest(qa, meetingId, 'Khách Tài liệu', email)
+        try {
+          await verifyGuest(qa, link, email, displayName)
+          await press(qa, qa.page.getByRole('tab', { name: 'Tài liệu' }))
+          await qa.expect(qa.page.getByText(doc.fileName).first()).toBeVisible({ timeout: 15_000 })
+          await qa.expect(qa.page.getByRole('button', { name: /Thêm tài liệu/ })).toHaveCount(0)
+          await qa.expect(qa.page.getByRole('button', { name: /Gỡ khỏi/ })).toHaveCount(0)
+          await qa.expect(qa.page.locator('[data-tooltip="Thêm tài liệu"]')).toHaveCount(0)
+          await qa.expect(qa.page.locator('[data-tooltip="Gỡ khỏi cuộc họp"]')).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('khach danh sach tai lieu')
+          // The row opens the viewer as a layer over the tab (ADR-0066); the link itself carries the guest route.
+          const inv = link.match(/\/guest\/([0-9a-f-]{36})/)?.[1]
+          const docLink = qa.page.getByRole('link', { name: new RegExp(doc.fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).first()
+          await qa.expect(docLink).toBeVisible({ timeout: 15_000 })
+          const href = await docLink.getAttribute('href')
+          qa.expect(href, `guest document link: ${href}`).toContain(`/documents/${doc.id}`)
+          qa.expect(href, `guest document link: ${href}`).toMatch(new RegExp(`^/guest/${inv}/documents/`))
+          await qa.goto(href)
+          await qa.expect(qa.page.getByText(doc.fileName).first()).toBeVisible({ timeout: 20_000 })
+          await settled(qa)
+          await qa.shot('khach mo tai lieu')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+        } finally {
+          await sec.delete(`/api/meetings/${meetingId}/documents/${doc.id}`)
         }
       },
     },
