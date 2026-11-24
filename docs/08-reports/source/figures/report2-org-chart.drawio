@@ -1,0 +1,49 @@
+<mxfile host="drawio">
+  <diagram id="org" name="Project organisational chart">
+    <mxGraphModel dx="1000" dy="420" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="980" pageHeight="380" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sup" value="&lt;b&gt;Nguyen Quang Hung&lt;/b&gt;&lt;br&gt;Supervisor (academic guidance)" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="20" width="390" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="po" value="&lt;b&gt;Dinh Van Toi&lt;/b&gt;&lt;br&gt;Product Owner (TrustSoft)" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="530" y="20" width="390" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="lead" value="&lt;b&gt;Tran Viet Hai&lt;/b&gt;&lt;br&gt;Team Leader / Frontend Lead" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="285" y="152" width="410" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="ba" value="&lt;b&gt;Pham Gia Khanh&lt;/b&gt;&lt;br&gt;Business Analyst" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="10" y="290" width="225" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="be" value="&lt;b&gt;Hoang Duc Loc&lt;/b&gt;&lt;br&gt;Backend Lead" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="255" y="290" width="225" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="qa" value="&lt;b&gt;Nguyen Truong Huy&lt;/b&gt;&lt;br&gt;Test Lead" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="500" y="290" width="225" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="dev" value="&lt;b&gt;Nguyen Quang Huy&lt;/b&gt;&lt;br&gt;Architecture / Developer" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1f2937;strokeWidth=2;fontFamily=Arial;fontSize=17;fontColor=#111827;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="745" y="290" width="225" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="sup" target="lead">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="po" target="lead">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="lead" target="ba">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="lead" target="be">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="lead" target="qa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#1f2937;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="lead" target="dev">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
