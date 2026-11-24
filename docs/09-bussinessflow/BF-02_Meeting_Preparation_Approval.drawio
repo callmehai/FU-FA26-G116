@@ -13,7 +13,7 @@
         <mxCell id="o1" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Create Meeting (schedule, mode, location, sensitivity, participants)" vertex="1">
           <mxGeometry height="60" width="170" x="35" y="235" as="geometry" />
         </mxCell>
-        <mxCell id="o3" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Select Meeting Approver" vertex="1">
+        <mxCell id="o3" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Select Approver" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="865" as="geometry" />
         </mxCell>
         <mxCell id="o4" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Submit for Approval" vertex="1">

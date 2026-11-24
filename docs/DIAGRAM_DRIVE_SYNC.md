@@ -69,8 +69,8 @@ Tên local → tên Drive đang dùng (`file_map`, `dir_map`):
 | `06-sequencediagram/TrustCabinet_Sequence_Diagrams.drawio` | `drawio/TrustCabinet_Sequence_Diagrams.drawio` |
 | `14-uc-diagram/uc-chair.png` | `trustcabinet-use-cases-Chair.drawio.png` |
 | `14-uc-diagram/uc-guest.png` | `trustcabinet-use-cases-Guest.drawio.png` |
-| `14-uc-diagram/uc-meeting-approver.png` | `trustcabinet-use-cases-Meeting Approver.drawio.png` |
-| `14-uc-diagram/uc-meeting-organizer.png` | `trustcabinet-use-cases-Meeting Organizer.drawio.png` |
+| `14-uc-diagram/uc-approver.png` | `trustcabinet-use-cases-Meeting Approver.drawio.png` |
+| `14-uc-diagram/uc-member.png` | `trustcabinet-use-cases-Meeting Organizer.drawio.png` |
 | `14-uc-diagram/uc-participant.png` | `trustcabinet-use-cases-Participant.drawio.png` |
 | `14-uc-diagram/uc-secretary.png` | `trustcabinet-use-cases-Secretary.drawio.png` |
 | `14-uc-diagram/uc-system-admin.png` | `trustcabinet-use-cases-System Admin.drawio.png` |
