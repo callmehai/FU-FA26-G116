@@ -15,7 +15,7 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 | Nhánh | Server Lightsail | URL | Bản |
 |---|---|---|---|
-| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
+| `app` | `trustcabinet-app` (compute-optimized 4 vCPU, 8 GB, từ 24/11) | https://app.trustcabinet.workspace-hub.space | **Nhánh chính**, backend bốn project (Clean Architecture) |
 
 Server `app` dùng kho tệp tự host (§9, cách B), không dùng R2. Server demo của nhánh `main` (`trustcabinet-4gb`,
 https://trustcabinet.workspace-hub.space) đã xoá ngày 24/11 cùng bản ghi DNS; nhánh `main` vẫn giữ trên GitHub ở
@@ -606,7 +606,7 @@ Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy
 
 ## Sau khi bảo vệ xong
 
-Xoá máy `trustcabinet-refactor` **và** IP tĩnh `trustcabinet-refactor-ip` trên Lightsail, các snapshot còn lại, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
+Xoá máy `trustcabinet-app` **và** IP tĩnh `trustcabinet-refactor-ip` trên Lightsail, các snapshot còn lại, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
 plan: hết credit là AWS trừ tiền thẻ.
 
 ## Lỗi thường gặp

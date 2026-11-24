@@ -142,14 +142,15 @@ services:
     profiles: ["speech"]
     restart: unless-stopped
     environment:
-      # Máy test có 2 vCPU. Mỗi process con (bản ghi dài; câu mic cá nhân + mẫu giọng) dùng 2 luồng; process
-      # của bản ghi dài chạy nice +10 nên câu mic cá nhân được CPU trước (workers/speech/README.md).
-      SPEECH_THREADS: "2"
+      # Máy app có 4 vCPU riêng (Lightsail compute-optimized từ 24/11, ADR-0082). Mỗi process con (bản ghi dài;
+      # câu mic cá nhân + mẫu giọng) dùng 4 luồng; process của bản ghi dài chạy nice +10 nên câu mic cá nhân được
+      # CPU trước (workers/speech/README.md).
+      SPEECH_THREADS: "4"
     # Không mở cổng: chỉ app gọi vào, trong mạng Docker. Âm thanh không rời server.
     # Đo trong Docker 2 CPU (24/11/2026): rảnh ~700 MB (hai process con); bản ghi 83 phút kèm câu mic cá nhân
-    # và mẫu giọng bên cạnh vừa trong 2500m, không swap. Giới hạn để một bản ghi dài không đẩy PostgreSQL và
-    # LiveKit ra khỏi RAM của máy 4 GB.
-    mem_limit: 2500m
+    # và mẫu giọng bên cạnh vừa trong 2500m, không swap. Máy 8 GB từ 24/11: nới lên 4500m cho bốn luồng, vẫn
+    # chừa phần còn lại cho PostgreSQL, LiveKit và app.
+    mem_limit: 4500m
 
   files:
     # Kho tệp S3 tự host, cho server không dùng Cloudflare R2 (ADR-0065): chỉ chạy khi deploy/.env có
