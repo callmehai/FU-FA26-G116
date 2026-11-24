@@ -50,7 +50,7 @@ Meeting Documents*; *View Participant Response Status*
   trái và bên phải khung hệ thống (UML cho phép một actor xuất hiện nhiều lần; bản bên phải có id `<id>-2`). UC nối thẳng
   chia hai cột theo số UC — cột trái đọc từ trên xuống, cột phải đọc từ dưới lên, nên nhóm phòng họp và bản ghi nằm cạnh
   *Join Meeting Room* — mỗi cột nối với actor cùng bên. UC mở rộng ở cột giữa, gần UC nền. Actor ngoài (OAuth Provider,
-  Resend Email, File Storage) đặt ngoài khung, gần UC của nó. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor
+  Resend Email) đặt ngoài khung, gần UC của nó. Id ô giữ nguyên; cạnh `extend` bị bỏ thì xoá, cạnh nối actor
   thêm mới có id `assoc-<id actor>-<id UC>`, ví dụ `assoc-actor-uc-62`.
 - HuyNQ chỉnh tay bố cục trong draw.io (24/11/2026): chữ to hơn (14–16), dời ô cho thoáng, nối thẳng actor ngoài. Sửa tiếp
   bằng tay trong draw.io rồi xuất lại PNG theo lệnh ở cuối file và thay ảnh trong Report 3 §I.4.3.
@@ -84,7 +84,9 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 - **Actor còn thiếu trên trang:** UC-29, UC-32 (Chair, Participant, Guest), UC-65 (Chair, Secretary), UC-54
   (Chair, Participant).
 - **Hai actor ngoài mới:** *Resend Email* (UC-04, UC-07, UC-19, UC-72, UC-22) và *File Storage* (UC-39, và UC-36 trên
-  trang Chair, Secretary; trước 24/11/2026 tên *Cloudflare R2*, ADR-0084). Hai actor này luôn nằm ngoài khung hệ thống.
+  trang Chair, Secretary; trước 24/11/2026 tên *Cloudflare R2*). Hai actor này luôn nằm ngoài khung hệ thống. Ngày
+  25/11/2026 bỏ hẳn *File Storage* khỏi mọi trang: kho tệp SeaweedFS chạy trên chính server `app` (ADR-0084), là thành phần
+  của hệ thống chứ không phải hệ thống ngoài (inventory §2).
 - **Quan hệ mới:** UC-34 `<<extend>>` UC-29; UC-22 `<<extend>>` UC-15; UC-68 `<<extend>>` UC-63; UC-27 `<<extend>>`
   UC-26; UC-49, UC-50 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-43, UC-51a; UC-56, UC-37a độc lập.
 

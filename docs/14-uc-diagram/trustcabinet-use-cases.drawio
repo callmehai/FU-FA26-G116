@@ -109,16 +109,10 @@
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Resend Email" vertex="1">
           <mxGeometry height="62" width="30" x="575" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="908" y="1086" as="geometry" />
-        </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=14;" target="google-idp" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="assoc-resend-email-8" edge="1" parent="1" source="uc-8" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=14;" target="resend-email" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="uc-94" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=14;" target="cloudflare-r2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=14;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-56" value="«extend»">
@@ -331,9 +325,6 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="733" y="43" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="15" y="925" as="geometry" />
-        </mxCell>
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="Resend Email" vertex="1">
           <mxGeometry height="62" width="30" x="590" y="1160" as="geometry" />
         </mxCell>
@@ -344,9 +335,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="assoc-resend-email-cancel-meeting" edge="1" parent="1" source="uc-cancel-meeting" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=14;" target="resend-email" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="uc-94" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;fontSize=14;" target="cloudflare-r2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=14;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-56" value="«extend»">
@@ -540,13 +528,7 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="718" y="42" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=14;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="530" y="986" as="geometry" />
-        </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="google-idp" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="uc-94" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cloudflare-r2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=14;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-56" value="&amp;#171;extend&amp;#187;">
@@ -795,15 +777,6 @@
         </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="809" y="31" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-57" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-57">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-94">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="530" y="1856" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=15;" target="google-idp" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -1140,15 +1113,6 @@
         <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="Resend Email" vertex="1">
           <mxGeometry height="62" width="30" x="900" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="assoc-cloudflare-r2-57" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-57">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="cloudflare-r2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fontSize=15;" target="uc-94">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="530" y="1972" as="geometry" />
-        </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=15;" target="google-idp" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -1436,13 +1400,7 @@
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="30" x="791" y="29" as="geometry" />
         </mxCell>
-        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=15;" value="File Storage" vertex="1">
-          <mxGeometry height="62" width="30" x="593" y="1273" as="geometry" />
-        </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="uc-2" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=15;" target="google-idp" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="assoc-cloudflare-r2-94" edge="1" parent="1" source="uc-94" style="rounded=0;strokeColor=#666666;html=1;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=15;" target="cloudflare-r2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-floating-window-45-extend" edge="1" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=15;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-45" value="«extend»">

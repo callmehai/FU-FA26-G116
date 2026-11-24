@@ -92,17 +92,17 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 | **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, đọc và tải biên bản đã ban hành |
 | **Guest** | Khách ngoài, không có tài khoản; truy cập đúng một cuộc họp qua lời mời và mã xác minh email (UC-04) |
 | *OAuth Provider* | Actor hệ thống ngoài: xác thực tài khoản Google và trả danh tính đã xác minh (UC-02) |
-| *AI Drafting Service* | Actor hệ thống: máy AI của nhóm chạy trong hệ thống, viết dự thảo 3 mục của cuộc họp từ bản gỡ băng, chương trình và kết quả biểu quyết (UC-58, PR #260). Chỉ nhận chữ, không nhận âm thanh; lời thoại không ra khỏi hệ thống (ADR-0054, BR-129) |
+| *AI Drafting Service* | Actor hệ thống ngoài: viết dự thảo 3 mục của cuộc họp từ bản gỡ băng, chương trình và kết quả biểu quyết (UC-58). Quản trị chọn máy AI của nhóm hoặc API bên ngoài; chỉ cuộc họp Thường được gửi ra API (ADR-0054, ADR-0056). Chỉ nhận chữ, âm thanh không ra khỏi hệ thống (BR-121) |
 | *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, thông báo |
-| *File Storage* | Actor hệ thống ngoài: kho đối tượng S3 (SeaweedFS tự host) giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp |
 
-**Khoá actor (05/11/2026): 7 actor người và 3 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
+**Khoá actor (05/11/2026, sửa 25/11/2026): 7 actor người và 3 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
 Actor người: System Admin, Member, Approver, Chair, Secretary, Participant, Guest. Actor ngoài:
-OAuth Provider, Resend Email, File Storage. Quy tắc để một bên là actor ngoài: nó là hệ thống
+OAuth Provider, AI Drafting Service, Resend Email. Quy tắc để một bên là actor ngoài: nó là hệ thống
 bên ngoài ranh giới TrustCabinet mà backend gọi ra (hoặc nó gọi vào) trong luồng của một UC. Vì vậy **không phải
-actor**: gỡ băng, Voice ID và máy AI viết dự thảo (chạy trên máy của nhóm, trong mạng nội bộ, không gọi dịch vụ AI
-bên ngoài, ADR-0026/0036/0054), LiveKit (hạ tầng
-phòng họp), PostgreSQL, Redis và SMTP dự phòng của Resend Email. "Internal user" và "System" không có trong bảng
+actor**: gỡ băng và Voice ID (chạy trên máy của nhóm, ADR-0026/0036), LiveKit (hạ tầng
+phòng họp), PostgreSQL, Redis, SMTP dự phòng của Resend Email, và kho tệp SeaweedFS (container trên chính server `app`,
+ADR-0084). Ngày 25/11/2026 bỏ actor *File Storage* (trước là Cloudflare R2) vì kho tệp đã nằm trong hệ thống, và đưa
+*AI Drafting Service* vào danh sách khoá vì quản trị có thể chọn API bên ngoài (ADR-0056); chờ PO xác nhận. "Internal user" và "System" không có trong bảng
 actor của Report 3 §4.1; các UC còn ghi hai tên này sẽ được thay bằng danh sách vai trò khi BA rà tiếp.
 
 Chair, Secretary, Participant là **vai trò trong cuộc họp** (`MeetingParticipant.MeetingRole`), độc lập với vai trò hệ
