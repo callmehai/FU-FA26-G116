@@ -27,13 +27,15 @@ id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số 
 ## Theo UML chặt (24/11/2026)
 
 Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
-([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 8 quan hệ: *Keep Meeting in a
+([inventory §1](../01-requirements/00-master-use-case-inventory.md#1-quy-ước-quan-hệ-uml)). Còn 7 quan hệ: *Keep Meeting in a
 Floating Window*, *Register to Speak*, *Manage My Recorded Speech* `<<extend>>` *Join Meeting Room*;
 *Manage My Recorded Speech* `<<extend>>` *View & Play Meeting Recordings*; *Comment on Meeting Document* `<<extend>>` *View
 Meeting Documents*; *View Participant Response Status*
-`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*; *Confirm Document
-Read* `<<extend>>` *Cast Vote*.
+`<<extend>>` *View Meeting Participants*; *Mark Notifications as Read* `<<extend>>` *View Notifications*.
 
+- *Confirm Document Read* (UC-42) nối thẳng actor (25/11/2026, trước là `extend` *Cast Vote*): người bỏ phiếu xác nhận
+  đọc từ danh sách tài liệu, trước khi bỏ phiếu; UC-65 giữ điều kiện ở PRE-5. Trên trang Chair, Secretary, Participant,
+  Guest ô này chuyển vào cột phải, ngay dưới *Cast Vote*.
 - *Edit Transcript & Speaker Attribution* (UC-55) và *Manage Vote Documents* (UC-68) nối thẳng actor, cùng dạng với *Edit
   Meeting Summary* và *Edit Meeting Minutes* (sửa theo review PR #531); trên trang Chair và Secretary hai ô được chuyển vào
   cột phải, ngay dưới *View Meeting Transcript* và *Create / Configure Vote*.
@@ -42,7 +44,7 @@ Read* `<<extend>>` *Cast Vote*.
 - *Record Room Audio* nối thẳng Thư ký (trước là `extend` *View & Play Meeting Recordings*): họp trực tiếp ghi âm mà không
   vào phòng trực tuyến (UC-52a PRE-2, UC-52c), nên cũng không `extend` *Join Meeting Room* (sửa theo review PR #531). *Take
   Meeting Notes* nối thẳng Thư ký. *Cast Vote* `<<include>>` *Confirm Document Read* đổi thành
-  *Confirm Document Read* `<<extend>>` *Cast Vote*, vì chỉ cần khi phiếu có tài liệu (chờ PO/BA xác nhận, xem inventory §1). Hai mục "để BA chốt" về UC-42 → UC-65
+  *Confirm Document Read* `<<extend>>` *Cast Vote* (ngày 25/11/2026 đổi tiếp thành nối thẳng actor, xem trên). Hai mục "để BA chốt" về UC-42 → UC-65
   và UC-54 → UC-51a ở dưới vì vậy đã xong.
 - Bố cục mới, mọi trang giống nhau, để ảnh gần vuông và đọc được khi đưa vào Report: actor của trang vẽ **hai lần**, bên
   trái và bên phải khung hệ thống (UML cho phép một actor xuất hiện nhiều lần; bản bên phải có id `<id>-2`). UC nối thẳng

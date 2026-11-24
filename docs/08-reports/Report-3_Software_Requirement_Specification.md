@@ -82,6 +82,7 @@ Table of Contents
 | 24/11/2026 | M, A | HuyNQ | [decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12). |
 | 24/11/2026 | M | LocHD | [BF review] BF-02 to BF-04 aligned with the built system: BF-02 adds finding a common time (UC-81) and cancelling (UC-22); BF-03 adds room recording (UC-52); BF-04 adds summary approval (UC-61) and minutes from the fixed template (UC-70). |
 | 24/11/2026 | M | HuyNQ | [PR #531] UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage (ADR-0084); §1, §4.1 and §4.3 updated. |
+| 25/11/2026 | M | HuyNQ | [Docs] Cloudflare R2 → File Storage (SeaweedFS, ADR-0084) in §17.7 and API-07; Confirm Document Read (UC-42) now connects to the actor, UC-65 keeps it as PRE-5; 7 <<extend>> remain; §4.3 images updated. |
 
 *A - Added M - Modified D - Deleted
 
@@ -1056,7 +1057,7 @@ Notes:
 | 4 | LiveKit server – RoomService API & client signalling | TrustCabinet backend (room join) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: backend issues LiveKit access tokens after permission checks and calls RoomService (list/mute/remove participants, delete room); media and signalling flow browser ↔ LiveKit. |
 | 5 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound callback from LiveKit on participant_joined/left, room_finished and track_published, used to record call sessions/attendance and enforce the one-screen-share rule. |
 | 6 | Google AI Provider (planned) | Planned background processing of an uploaded recording → transcript → meeting summary | Converts uploaded meeting audio into a speaker-attributed (diarized) transcript and a draft meeting summary for the Secretary to review; the model runs in-house, and the provider name and model are stored per result. |
-| 7 | Cloudflare R2 – S3-compatible object storage | Document upload, view and download → TrustCabinet backend → Cloudflare R2 | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files that were never linked to a document. |
+| 7 | File Storage – SeaweedFS, S3-compatible object storage | Document upload, view and download → TrustCabinet backend → File Storage (SeaweedFS) | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files that were never linked to a document. |
 
 #### 5.3 Background Job Inventory
 
@@ -4294,12 +4295,12 @@ Runs inside the backend only when SMTP is enabled. It queues the invitation emai
 | Failure handling | Transcript has status Pending/Processing/Completed/Failed, ProgressPercent and ErrorMessage so a failure is shown and can be re-run; the AI never writes formal minutes and summaries stay marked unreviewed until the Secretary reviews them. |
 | Status | Planned (FE-10, UC-58). Only transcript text that the Secretary has reviewed is sent, never audio or voice data; the AI never writes formal minutes and the summary stays a draft until the Secretary approves it. |
 
-#### 17.7 Cloudflare R2 – file storage (API-07)
+#### 17.7 File Storage – SeaweedFS (API-07)
 
-| URL | Cloudflare R2 over an S3-compatible API, through the configured service address and bucket (a local S3-compatible store in development). |
+| URL | SeaweedFS over an S3-compatible API, through the configured service address and bucket, reachable only on the app server's Docker network (a local SeaweedFS container in development; ADR-0084). |
 | --- | --- |
 | Purpose | Keeps the bytes of every uploaded document, so the application server does not store files itself. Files are served only through the application, which checks the permission of the caller on every request. |
-| Caller | TrustCabinet backend (document upload, view and download) → Cloudflare R2. |
+| Caller | TrustCabinet backend (document upload, view and download) → File Storage (SeaweedFS). |
 | Auth | Access key and secret key kept in user-secrets/environment variables, never in the code base; the bucket is private and has no public address. |
 | Request / Response | Input: the file bytes with their stored name. Output: the stored bytes when the file is read; the system never gives the browser a direct address of the bucket. |
 | Failure handling | If the store cannot be reached, the upload or download is refused with a message and nothing is recorded as stored; files that were written but never linked to a document are removed by a periodic clean-up. |

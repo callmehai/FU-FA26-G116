@@ -57,23 +57,24 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 
 - **`<<extend>>` theo UML chặt** (từ 24/11/2026). Chỉ vẽ `extend` khi đủ ba điều: UC nền tự hoàn chỉnh khi không có UC
   mở rộng; UC mở rộng chèn hành vi vào lúc UC nền **đang chạy**, tại một điểm có điều kiện, xong quay lại UC nền; và UC mở
-  rộng không phải mục tiêu riêng của actor. Mũi tên đi **từ UC mở rộng → UC nền**. Còn đúng 8 quan hệ: UC-49, UC-50,
+  rộng không phải mục tiêu riêng của actor. Mũi tên đi **từ UC mở rộng → UC nền**. Còn đúng 7 quan hệ: UC-49, UC-50,
   UC-53 `<<extend>>` UC-43; UC-53 `<<extend>>` UC-51; UC-38 `<<extend>>` UC-35; UC-32 `<<extend>>` UC-29; UC-77
-  `<<extend>>` UC-76; UC-42 `<<extend>>` UC-65 (khi phiếu có tài liệu).
+  `<<extend>>` UC-76.
   - UC-52 (Record Room Audio) **không** extend UC-43: với họp trực tiếp Thư ký bật mic phòng từ thẻ ghi âm hoặc tab Bản ghi
     mà không vào phòng trực tuyến (UC-52a PRE-2), và tải tệp audio (UC-52c) khi họp đang diễn ra hoặc đã kết thúc. UC-52
     nối thẳng Thư ký.
   - UC-55 (sửa bản gỡ băng, gán người nói) và UC-68 (gắn, bỏ gắn tài liệu biểu quyết) nối thẳng actor, cùng dạng với UC-60
     và UC-71: actor chủ động chọn đoạn để sửa hoặc bấm kẹp giấy trên phiếu nháp, tức là mục tiêu riêng, không phải hành vi
     chèn vào lúc đang xem.
-  - UC-42 `<<extend>>` UC-65 chờ PO/BA xác nhận: điều kiện "phiếu có tài liệu" hợp với `extend`, nhưng khi phiếu có tài
-    liệu thì UC-65 không tự hoàn chỉnh nếu chưa xác nhận đọc (`MSG252` chặn gửi phiếu).
+  - UC-42 (Confirm Document Read) nối thẳng actor (25/11/2026): người bỏ phiếu xác nhận đọc từ danh sách tài liệu của phiếu
+    hoặc trình xem tài liệu (UC-35b), trước khi bỏ phiếu, chứ không chèn vào lúc UC-65 đang chạy. UC-65 giữ điều kiện ở
+    PRE-5 (đã xác nhận đọc mọi tài liệu của phiếu, qua UC-42; thiếu thì `MSG252`).
 - **Thao tác mở từ một màn hình không phải `extend`.** Sửa, gửi duyệt, công bố, quản lý, tạo… là mục tiêu riêng của actor,
   chỉ tình cờ bắt đầu bằng nút trên màn hình *View*; chuyển tab hay chuyển màn hình (danh sách → chi tiết, chi tiết → tab)
   cũng vậy. Các UC đó **nối thẳng với actor**. Trước 24/11/2026 inventory vẽ chúng là `extend` UC *View* nền; đã bỏ.
 - **`<<include>>`** — chỉ dùng khi UC **bắt buộc** chạy một hành vi dùng chung mỗi lần. Không dùng `include` chỉ vì cần
-  đăng nhập, vì UC trước tạo dữ liệu cho UC sau, hay vì hai UC là hai bước trong vòng đời. Xác nhận đã đọc tài liệu chỉ
-  cần khi phiếu có tài liệu, nên là `extend` UC-65, không phải `include`.
+  đăng nhập, vì UC trước tạo dữ liệu cho UC sau, hay vì hai UC là hai bước trong vòng đời. Xác nhận đã đọc tài liệu là
+  điều kiện của UC-65 (PRE-5), không phải `include`.
 - **Vòng đời không phải `include/extend`.** Chuỗi *Tạo → Gửi duyệt → Duyệt → Publish → Start → End* thể hiện bằng State /
   Activity / Sequence Diagram, không bằng quan hệ UC (xem [§6](#6-vòng-đời--phụ-thuộc)).
 - **Guest:** UC-31, UC-35, UC-43 có cả actor nội bộ lẫn Guest. Xác minh lời mời (UC-04) là điều kiện truy cập của Guest,
@@ -194,7 +195,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-39 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 100 MB mỗi lần, 10 MB mỗi tệp — họp 19/11/2026; tổng kho cả hệ thống 250 GB — ADR-0084), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
 | UC-40 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-40a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-40b Đổi tên, UC-40c Chuyển thư mục | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Nối thẳng actor |
 | UC-41 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-41a Tạo, UC-41b Đổi tên, UC-41c Chuyển, UC-41d Xoá thư mục rỗng; lồng tối đa 5 cấp | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Nối thẳng actor |
-| UC-42 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | `<<extend>>` UC-65 khi phiếu có tài liệu |
+| UC-42 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Nối thẳng actor; điều kiện của UC-65 (PRE-5) |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
 
@@ -238,7 +239,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-62 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-62a Xem danh sách, UC-62b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | Nối thẳng actor |
 | UC-63 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-64 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | Nối thẳng actor |
-| UC-65 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | Nối thẳng actor; nền của UC-42 |
+| UC-65 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | Nối thẳng actor |
 | UC-66 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-67 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | Nối thẳng actor |
 | UC-68 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-68a Gắn tài liệu vào Vote nháp, UC-68b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | Nối thẳng actor |
