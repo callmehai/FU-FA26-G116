@@ -5,7 +5,7 @@
 > `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
 > (hoặc `python scripts/sync_requirement_extracts.py`). Chi tiết: [08-reports/README.md](../08-reports/README.md).
 
-Có **153 BR**, đánh số `BR-001` → `BR-153` theo [ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)
+Có **154 BR**, đánh số `BR-001` → `BR-154` theo [ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)
 và [kế hoạch gộp BR](08-ke-hoach-gop-business-rules.md). Mỗi BR một câu, một quyết định nghiệp vụ; giao diện, kiểm tra
 dữ liệu nhập và giới hạn kỹ thuật nằm trong UC Specification hoặc mục IV (NFR) của Report 3. Mã `BR` độc lập với mã
 thông báo `MSG`.
@@ -145,7 +145,7 @@ thông báo `MSG`.
 | `BR-122` | The combined recording is only for listening and downloading, and is never transcribed. |
 | `BR-123` | The system fills in a name when a voice clearly matches a consenting person on the current list. |
 | `BR-124` | Only people who consented to notice version 1.2 or later have names filled in automatically, others are only suggested; collection on someone's behalf needs version 1.4. |
-| `BR-125` | When transcription runs again, hand-assigned names, corrected text and moved sentences carry over to the matching sentence or voice; unmatched ones leave only a trace in the log, without text. |
+| `BR-125` | When transcription runs again, hand-assigned names, corrected text and moved sentences carry over to the matching sentence or voice. |
 | `BR-126` | Only the Chair or the Secretary requests, edits and reviews the AI draft, only when the Meeting is Ended and has at least one recorded sentence. |
 | `BR-127` | Other people read the AI draft only after it has been reviewed. |
 | `BR-128` | The AI writes only from the meeting record; it does not write attendance, guess names or write vote results. |
@@ -171,6 +171,7 @@ thông báo `MSG`.
 | `BR-148` | A slot that touches a Secret Meeting can still create a Draft, without a special warning. |
 | `BR-149` | Internal users view and export reports; Guests do not. |
 | `BR-150` | A report counts only Meetings the user can read, by month of planned start, current status and current sensitivity. |
-| `BR-151` | Attendance rate, time to minutes and meeting duration follow their formulas; Meetings missing the data are left out of the averages. |
+| `BR-151` | Attendance rate, time to minutes, meeting duration and recorded hours follow their formulas; combined recordings add no hours; Meetings missing the data are left out of the averages. |
 | `BR-152` | Header figures show numbers only; query tables show a person's name or a Meeting's code and title, only for Meetings the viewer reads; a Guest shows only a name. |
-| `BR-153` | The report query counts only records the viewer can read: draft Votes and unissued minutes for the Chair and Secretary, recordings for participants; combined recordings add no hours. |
+| `BR-153` | The report query counts only records the viewer can read: draft Votes and unissued minutes for the Chair and Secretary, recordings for participants. |
+| `BR-154` | When transcription runs again, what cannot be matched leaves only a trace in the audit log, without the transcript text. |
