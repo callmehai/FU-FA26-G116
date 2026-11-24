@@ -61,6 +61,7 @@ import { useSpeaking, type Speaking } from '../../speaking/useSpeaking'
 import { VoteOpenedNotice } from '../../votes/VoteOpenedNotice'
 import { VotingPanel } from '../../votes/VotingPanel'
 import { ConsentDialog } from '../../recordings/ConsentDialog'
+import { roomMicStopsOnMute } from '../../recordings/hybridMic'
 import { useHeldRoomMic } from '../../recordings/roomMicContext'
 import { isFirstTake, useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { MyClips } from '../../speech/MyClips'
@@ -219,6 +220,10 @@ function RoomLayout({
   const roomMic = useRoomMicInCall(room, meeting, myRole, lobbyMic)
   // The one switch: the room mic for a hybrid meeting's Secretary, the call's own mic for everyone else.
   const micOn = roomMic ? roomMic.on : isMicrophoneEnabled
+  const roomMicRef = useRef(roomMic)
+  useEffect(() => {
+    roomMicRef.current = roomMic
+  })
 
   // Closing the tab while connected asks first; the browser shows its own wording. Once "Rời phòng" has hung up,
   // the tab closes itself without asking.
@@ -233,6 +238,9 @@ function RoomLayout({
     const onMuted = (publication: TrackPublication, participant: Participant) => {
       if (participant.isLocal && publication.source === Track.Source.Microphone && !selfMuting.current) {
         toast.show(roomMessage.mutedByChair, 'info')
+        // ADR-0085: a hybrid meeting's Secretary has one mic. Muted in the call is off: the room mic stops too, its take
+        // is saved, and the button says off rather than on over a muted call.
+        if (roomMicStopsOnMute(false)) roomMicRef.current?.stop()
       }
     }
     // Someone else started presenting while I am: step aside (SCRUM-43). The server mutes the
@@ -721,10 +729,11 @@ function useRoomMicInCall(
     if (!mic) return
     if (phase === 'on') mic.stop()
     else if (phase !== 'off') return
-    // A take this laptop kept from a tab cut off goes on, as the floating card's "Ghi tiếp".
-    else if (mic.unfinished) mic.resumeUnfinished(deviceId)
+    // A take this laptop kept from a tab cut off goes on, as the floating card's "Ghi tiếp". The call room takes the
+    // mic over from another tab of this browser that still holds it (ADR-0085).
+    else if (mic.unfinished) mic.resumeUnfinished(deviceId, true)
     else if (isFirstTake(recordings.list)) setAsking(true)
-    else mic.start(false, deviceId)
+    else mic.start(false, deviceId, true)
   }
 
   // Joined with the lobby's mic on: the room mic opens, once the recordings tell whether the notice is due.
@@ -784,8 +793,10 @@ function useRoomMicInCall(
     cancel: () => setAsking(false),
     confirm: () => {
       setAsking(false)
-      mic.start(true, deviceId)
+      mic.start(true, deviceId, true)
     },
+    /** Off without the switch: the chair muted the Secretary in the call (ADR-0085). */
+    stop: mic.stop,
     /** The mic picked in the call's audio settings: the room mic switches to it, and the take goes on. */
     pick: {
       activeId: deviceId,

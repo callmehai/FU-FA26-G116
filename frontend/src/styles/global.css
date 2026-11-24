@@ -3801,6 +3801,8 @@ body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-a
 .prejoin-message { flex: 1; display: grid; align-content: center; justify-items: center; gap: 0; padding: 24px 16px 64px; text-align: center; }
 .prejoin-message h1 { max-width: 640px; margin: 0; font-size: 28px; font-weight: 400; line-height: 36px; }
 .prejoin-message-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+/* ADR-0085 — out of the call with the room mic still on: one line in the page, with its switch, not a floating card. */
+.room-mic-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; margin: 16px 0 0; color: var(--ink-soft); font-size: 14px; line-height: 20px; }
 
 /* Too narrow for two columns: the picture on top, the column under it, as Meet stacks them. */
 @media (max-width: 999px) {
