@@ -2,10 +2,11 @@
 # A URL ending in "#<member>" names a file inside a .tar.bz2 archive.
 # fetch_models.py downloads and verifies these; the server verifies them again at boot.
 
-# Gipformer 1.5 — 68M RNN-T Zipformer, Vietnamese ASR, int8 — MIT — g-group-ai-lab
-gipformer/encoder.int8.onnx b528768939c7711a889be81a718ea7f2ee50d0d2d384d53f399e15b44bd9408c https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/encoder.int8.onnx
-gipformer/decoder.int8.onnx e0a156b5454722a524230f9e35d5d928cfcdd3723437b418e5bd5e04f1c3a101 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/decoder.int8.onnx
-gipformer/joiner.int8.onnx 12636559d135315f002a1e1b477077d415e888477378db0fd450aee5b21ac551 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/joiner.int8.onnx
+# Gipformer 1.5 — 68M RNN-T Zipformer, Vietnamese ASR, fp32 as published (its int8 copy lost words on
+# far-field speech, ADR-0086) — MIT — g-group-ai-lab; pinned to the repository commit of the files
+gipformer/encoder.onnx 96b3c83c9c39afc4421f8fd2914d26b53ae837e56788a7bd5aece61580937c36 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/encoder.onnx
+gipformer/decoder.onnx ea584ee86d6f74191f934f8b950013adcb2c33483785aa8b1b44fff3a7b30069 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/decoder.onnx
+gipformer/joiner.onnx d146a1cff4a0060d7031e5eb91295773661bc52c356c952dd1e2759e60ffa94d https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/joiner.onnx
 gipformer/tokens.txt f536d03c2e95ebd2930cf0abec88e823bd17d3c1933da7ae6a82db3b80605e15 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/tokens.txt
 # SentencePiece model of the same tokens: hotwords (speech/hotwords.py) cut each phrase into tokens with it.
 gipformer/bpe.model 289dbb44527c13c419ae3a4d8ce6a349f01a97f8777e69934a77e3692d2f10db https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/bpe.model
