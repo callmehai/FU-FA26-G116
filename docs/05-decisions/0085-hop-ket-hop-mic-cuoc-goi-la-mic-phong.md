@@ -1,6 +1,6 @@
 # ADR-0085: Họp kết hợp: mic của cuộc gọi là mic phòng, một trạng thái; phòng họp trực tuyến không có thẻ mic nổi
 
-- **Trạng thái:** Đề xuất — Khánh báo lỗi, Hải chốt 24/11/2026
+- **Trạng thái:** Chấp nhận — Khánh báo lỗi, Hải chốt 24/11/2026; Hải xác nhận 25/11/2026 giữ việc chủ toạ tắt mic Thư ký là dừng ghi cả phòng
 - **Ngày:** 2026-11-24
 - **Người quyết định:** Hải
 - **Bổ sung:** [ADR-0072](0072-hop-ket-hop-mot-cong-tac-mic-phong.md) (họp kết hợp: một công tắc mic phòng trong phòng họp
