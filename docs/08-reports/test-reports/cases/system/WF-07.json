@@ -1,0 +1,81 @@
+{
+  "workflow": "WF-07",
+  "groups": [
+    {
+      "title": "Reschedule Published Meeting",
+      "cases": [
+        {
+          "id": "SYS_WF07_TC01",
+          "description": "The Organizer reschedules a published meeting; the invitees are told on the bell and by email and the calendar shows the new time.",
+          "procedure": [
+            "As the Organizer open published meeting A, click \"Dời lịch\".",
+            "Change the time to 14:00–15:30 and the place to \"Phòng họp số 2 — Tầng 3\"; click \"Lưu và thông báo\".",
+            "As Member C open \"Lịch làm việc\" in list view; read the outbox (email) for each invitee."
+          ],
+          "expected": [
+            "The form locks title, description, form and sensitivity; toast \"Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.\"; status stays \"Đã công bố\" with the new place.",
+            "Members A, B and C have a \"Cuộc họp đã dời lịch\" notification; the Organizer does not.",
+            "The calendar row shows 14:00 15:30; each invitee gets an email \"Cuộc họp đã dời lịch: …\"."
+          ],
+          "preconditions": [
+            "Published meeting A with Chủ toạ Member A, Thư ký Member B, Member C; their invitation emails already sent."
+          ],
+          "aiNote": "BF-02 · UC-14 AF-1 · BR-015 · MSG138 · 5.2: MEET_FT15, NOTI_FT31 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Hand Over Chair",
+      "cases": [
+        {
+          "id": "SYS_WF07_TC02",
+          "description": "The Chair of the published meeting hands the chair over to a member.",
+          "procedure": [
+            "As Member A open tab \"Thành phần tham dự\", click \"Đổi vai trò của Đặng Quốc Bảo\", choose \"Chủ toạ\".",
+            "Click \"Giao Chủ toạ\" and confirm in \"Giao Chủ toạ cho Đặng Quốc Bảo?\".",
+            "As Member C open the meeting."
+          ],
+          "expected": [
+            "The dialog says \"Bạn sẽ thành Thành viên và không còn điều hành cuộc họp.\"; toast \"Giao vai trò Chủ toạ thành công.\"; Member C is Chủ toạ and Member A is Thành viên.",
+            "Member C has a \"Vai trò cuộc họp đã thay đổi\" notification and now sees \"Bắt đầu họp\"."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "aiNote": "BF-02 · UC-34 · BR-041, BR-042 · MSG257 · 5.2: PART_FT82 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Dialog text quoted verbatim per review PR 507.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Cancel Meeting",
+      "cases": [
+        {
+          "id": "SYS_WF07_TC03",
+          "description": "The Organizer cancels another published meeting with a reason; invitees are told and still see it as cancelled.",
+          "procedure": [
+            "As the Organizer open published meeting B, click \"Huỷ cuộc họp\"; click \"Huỷ cuộc họp\" with no reason, then type \"Lãnh đạo đi công tác đột xuất, sẽ xếp lịch sau.\" and click \"Huỷ cuộc họp\".",
+            "As Member C open the meeting; read the outbox for each invitee."
+          ],
+          "expected": [
+            "No reason: \"Cần nhập lý do huỷ cuộc họp.\"; with a reason: toast \"Đã huỷ cuộc họp.\", status \"Đã huỷ\", the bar shows the reason, no edit or reschedule left.",
+            "Members A, B and C have a \"Cuộc họp đã bị huỷ\" notification; Member C still opens the meeting and reads the reason.",
+            "Each invitee gets an email \"Cuộc họp đã bị huỷ: …\" with the reason."
+          ],
+          "preconditions": [
+            "Published meeting B with the same roster; invitation emails already sent."
+          ],
+          "aiNote": "BF-02 · UC-22 · BR-028 · MSG261, MSG262 · 5.2: MEET_FT68, NOTI_FT32 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    }
+  ]
+}

@@ -10,8 +10,8 @@ const jobs=[
  ['Report5.1_Unit_Test.xlsx',[['Cover','A1:F16','unit-cover'],['MethodList','A1:F12','unit-list'],['Statistics','A1:I19','unit-statistics']]],
  ['Report5.2_Integration_Test.xlsx',[['Cover','A1:F16','integration-cover'],['Test Statistics','B1:H22','integration-statistics']]],
  ['Report5.2.2_Integration_Test_API_Test.xlsx',[['Cover','A1:F16','api-cover'],['Test Statistics','B1:H22','api-statistics']]],
- ['Report5.3_System_Test.xlsx',[['Cover','A1:F16','system-cover'],['Test Statistics','B1:H23','system-statistics'],['WorkFlow1','A1:F13','system-case']]],
- ['Report5.4_Acceptance_Test.xlsx',[['Cover','A1:F16','uat-cover'],['Statistics','A1:E22','uat-statistics'],['Customers Feedbacks','A1:F4','uat-feedback']]],
+ ['Report5.3_System_Test_FRs.xlsx',[['Cover','A1:F16','system-cover'],['Test Statistics','B1:H23','system-statistics'],['WorkFlow1','A1:F13','system-case']]],
+ ['Report5.5_Acceptance_Test.xlsx',[['Cover','A1:F16','uat-cover'],['Statistics','A1:E22','uat-statistics'],['Customers Feedbacks','A1:F4','uat-feedback']]],
 ];
 if(jobIndex===undefined){
  for(let i=0;i<jobs.length;i++){

@@ -13,8 +13,9 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
 | `round1/` | Tài liệu làm việc Round 1 (checklist, bug, kế hoạch, prompt, ánh xạ AC, báo cáo agent); mục lục ở [round1/README.md](round1/README.md). Không phải nguồn của workbook |
 | `../../../scripts/test_reports/apply_trx.py` | Đọc file `.trx` của `dotnet test` và ghi `round1`/`date1`/`tester1` vào `cases/FE-xx/api.json` cho case có `Automated:`
-| `Report5.3_System_Test.xlsx` | Các workflow kiểm thử toàn hệ thống; bảng ba vòng theo mẫu |
-| `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
+| `Report5.3_System_Test_FRs.xlsx` | Mười workflow end-to-end (WorkFlow1 → WorkFlow10) theo BF-01 → BF-04; sinh từ `cases/system/` bằng `scripts/test_reports/system_cases.py` — xem [cases/system/README.md](cases/system/README.md) |
+| `Report5.4_System_Test_NFRs.xlsx` | Yêu cầu phi chức năng (Report 3 §IV.2): năm sheet Security, Performance, Usability, Reliability, Availability; sinh từ `cases/nfr/` bằng `scripts/test_reports/nfr_cases.py` — xem [cases/nfr/README.md](cases/nfr/README.md) |
+| `Report5.5_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
 **5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-16), test case nghiệp vụ.** Nguồn là JSON trong
 [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
@@ -49,7 +50,7 @@ Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; 
 | FE-16 | Calendar | 41 | 51 |
 | | **Tổng** | **563** | **825** |
 
-`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
+`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.5_Acceptance_Test.xlsx`. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
 Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
@@ -76,8 +77,8 @@ UTC được viết từ chính production function — chữ ký hàm, code t�
 Cột `Note` chỉ ghi truy xuất `UC-xx · BR-xx · MSGnn` (kèm `Deviation:` khi code lệch UC);
 tuyệt đối không ghi `Automated:`, đường dẫn file test hay tên test method vào bất kỳ trường nào.
 
-Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Di chuột hoặc mở
-Notes tại ô tiêu chí để xem precondition, procedure, expected result và source của từng kịch bản.
+Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Workbook không có Notes (ghi chú ô) và ô
+Notes để trống; precondition, procedure, expected result và source của từng kịch bản nằm trong `scripts/test_reports/manual_cases.py`.
 
 ## Sinh lại
 
@@ -101,7 +102,7 @@ Microsoft Word dùng để tự động xuất PDF, lấy số trang và cập n
 Các file mẫu gốc chỉ được đọc và không được đưa vào repository.
 
 Roslyn đọc cú pháp C# để lấy test method, dữ liệu Theory, fixture, assertion và vị trí source
-cho 5.0/5.3/5.4. Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC.
+cho 5.0/5.4. Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC.
 Workbook 5.1 mới không đếm định nghĩa test method và không suy số method thành code coverage:
 mỗi UTC là một hành vi của production function, gọi trực tiếp. Dữ liệu kiểm thử và đoạn code
 trích nguyên văn có thể chứa chuỗi tiếng Việt của sản phẩm; phần diễn giải báo cáo là tiếng Anh.

@@ -1,0 +1,222 @@
+{
+  "workflow": "WF-04",
+  "groups": [
+    {
+      "title": "Upload Audio and Transcribe",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC01",
+          "description": "The Secretary uploads the audio of the ended meeting and the system transcribes it with speakers and times.",
+          "procedure": [
+            "As Member B open tab \"Bản ghi\" of the meeting WF-03 ended, click \"Tải tệp lên\", choose the meeting audio, tick the consent confirmation and click \"Tải lên\".",
+            "Wait for the status to go from \"Đang chuyển chữ\" to done; open the transcript."
+          ],
+          "expected": [
+            "No toast: the upload tray shows \"Đang tải lên 1/1 tệp\" then \"Đã tải lên 1 tệp\"; the recording is listed with its size and \"Chờ chuyển chữ\" or \"Đang chuyển chữ\".",
+            "When done the badge is \"Có bản gỡ băng\"; the transcript lists each sentence with its time and a speaker label."
+          ],
+          "preconditions": [
+            "SYS_WF03_TC07 passed; an audio file of the meeting; the speech worker is running."
+          ],
+          "aiNote": "BF-04 · UC-52c, UC-54 · MSG290 · 5.2: REC_FT32, TRANS_FT01 · Expected corrected per review PR 507: an audio upload goes through the upload tray and shows no toast (UC-52c step 6, no MSG290 toast). · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 16:03 ICT (09:03Z, upload time on the recording row), server build 3b11d2c9 (deployed 08:56Z) (GitHub Deployments, server-app). Evidence: upload dialog https://drive.google.com/file/d/1mjj_eSG9IeN0WhVIYSOBb4gwIx0DnJb5/view, recording \"Có bản gỡ băng\" with times and speaker labels https://drive.google.com/file/d/1mci6HPTBCkkCEZHQhH-KbjYYNxg_u-YL/view.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Edit Transcript",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC02",
+          "description": "The Secretary corrects a sentence and names a speaker in the transcript.",
+          "procedure": [
+            "As Member B open the transcript of TC01, edit the text of one sentence and save.",
+            "On a speaker card assign Member A to that voice."
+          ],
+          "expected": [
+            "\"Đã lưu đoạn gỡ băng.\"; the sentence shows the edit mark with Member B's name.",
+            "\"Đã gán người nói.\"; every sentence of that voice shows Member A."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "aiNote": "BF-04 · UC-55a, UC-55b · MSG302, MSG316 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:16 ICT (10:16Z), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: edited sentences marked \"đã sửa\" https://drive.google.com/file/d/1UoAd--Ulhe9BlrqJLWLLhmI7LtsumlHf/view, tooltip \"Sửa bởi Trường Huy lúc 17:16 25/11/2026\" https://drive.google.com/file/d/1mmlP8CkTeuoCyyc7iQgoVga2F1hhdWwK/view; speaker of the 00:38 sentence changed to \"Trần Chủ Toạ\" with \"Đã đổi người nói của câu này.\" https://drive.google.com/file/d/1w0E_CgK8nIZZOAiVr2U2yiLPSLTQw_xJ/view (one sentence reassigned; assigning a whole voice from its speaker card is not on the screenshot).",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "AI Summary",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC03",
+          "description": "The Secretary asks for the AI summary of the transcript and reviews it.",
+          "procedure": [
+            "As Member B in tab \"Biên bản\" click \"Tạo dự thảo\" on the card \"Dự thảo nội dung\" and wait."
+          ],
+          "expected": [
+            "The card shows the request queued, then the summary of sections I–III to review and approve."
+          ],
+          "preconditions": [
+            "TC02 passed; the local language model is running."
+          ],
+          "aiNote": "BF-04 · UC-58, UC-59 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:17 ICT (10:17Z, clock on the screenshot), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: \"Dự thảo nội dung · Đã duyệt\", \"AI viết lúc 17:17 25/11/2026 (deepseek-v4.1-flash)\", toast \"Đã duyệt dự thảo.\" https://drive.google.com/file/d/1Fs1yBH_mwXvBruaVarFA2b1dMbN7D2L-/view.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "AI Draft Minutes",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC04",
+          "description": "The Secretary approves the AI draft and builds the minutes from it.",
+          "procedure": [
+            "As Member B open the AI draft on the card \"Dự thảo nội dung\", edit it and approve it.",
+            "Click \"Tạo bản nháp\" on the card \"Biên bản\"."
+          ],
+          "expected": [
+            "The draft is marked approved.",
+            "Toast \"Đã tạo bản nháp biên bản.\"; chip \"Bản nháp\"; the paper has the meeting title, Chủ toạ, Thư ký, the item conclusion of WF-03 and sections I–III from the approved draft."
+          ],
+          "preconditions": [
+            "TC03 passed."
+          ],
+          "aiNote": "BF-04 · UC-60, UC-61, UC-70 · Expected corrected per review PR 507: the \"Đã tạo bản nháp biên bản.\" toast and the paper contents belong here, where the minutes are built from the approved AI draft. · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 right after TC03 (after 17:17 ICT), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: minutes \"Bản nháp\" built from the approved draft, Thư ký Trường Huy, Chủ trì Trần Chủ Toạ https://drive.google.com/file/d/1XCsv2INQml5JpiPdH4_MAZlw-JD-heNV/view.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Submit Minutes",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC05",
+          "description": "The Secretary submits the draft minutes to the Chair; a plain member cannot see them yet.",
+          "procedure": [
+            "As Member B open tab \"Biên bản\" on the draft of TC04, click \"Gửi duyệt\" and confirm in \"Gửi biên bản cho Chủ toạ duyệt?\".",
+            "As Member C open the same tab."
+          ],
+          "expected": [
+            "Toast \"Đã gửi biên bản cho Chủ toạ duyệt.\"; chip \"Chờ duyệt\"; \"Sửa\", \"Tạo lại\", \"Gửi duyệt\" are gone; the line \"Vũ Thị Lan gửi duyệt lúc …\".",
+            "The Chair has a notification; Member C sees no minutes."
+          ],
+          "preconditions": [
+            "TC04 passed (draft minutes exist)."
+          ],
+          "aiNote": "BF-04 · UC-70, UC-72 · MSG395, MSG424 · 5.2: MIN_FT01, MIN_FT08 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Case corrected per review PR 507: it now submits the TC04 draft instead of building one without an AI draft, which contradicted TC03/TC04. The QA runner run was on a local build without the local language model, so it built the draft from the fixed template (\"Chưa có dự thảo AI nên mục I–III để trống.\" → \"Tạo bản nháp\", MSG395) and then submitted it; the submit step checked here is the same.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Return and Correct",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC06",
+          "description": "The Chair returns the minutes with a reason; the Secretary reads it, corrects the minutes and submits again.",
+          "procedure": [
+            "As Member A click \"Trả lại\", click \"Trả lại\" with the reason empty, then type \"Bổ sung danh sách vắng mặt và ý kiến của phòng Tài chính.\" and click \"Trả lại\".",
+            "As Member B open the tab, read the reason, click \"Sửa\", add a line after the closing paragraph, click \"Lưu\", then \"Gửi duyệt\"."
+          ],
+          "expected": [
+            "An empty reason shows \"Nhập lý do trả lại, tối đa 2.000 ký tự.\"; with a reason: toast \"Đã trả lại biên bản cho Thư ký.\", chip \"Bị trả lại\"; the Secretary is notified.",
+            "The Secretary sees \"Hoàng Minh Đức trả lại: …\" above the paper; \"Đã lưu biên bản.\"; after sending: \"Chờ duyệt\" and the reason box is gone."
+          ],
+          "preconditions": [
+            "TC05 passed."
+          ],
+          "aiNote": "BF-04 · UC-74, UC-72 · MSG430, MSG396, MSG424 · 5.2: MIN_FT35, MIN_FT29 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Not the TC04 minutes: the QA runner ran WF-04 TC05–TC08 on a local build without the local language model, on minutes built from the fixed template (see TC05); the steps checked here do not depend on the AI draft. A Round 2 re-run on the app server should use the TC04 minutes so WF-04 stays one chain.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Approve and Issue",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC07",
+          "description": "The Chair approves and issues the corrected minutes; they lock and the participants are told.",
+          "procedure": [
+            "As Member A open tab \"Biên bản\", click \"Duyệt và ban hành\" and confirm in \"Duyệt và ban hành biên bản?\"."
+          ],
+          "expected": [
+            "Toast \"Đã duyệt và ban hành biên bản.\"; chip \"Đã ban hành\"; only \"Tải xuống\" and \"Tạo bản đính chính\" remain; \"Hoàng Minh Đức duyệt, ban hành lúc …\".",
+            "Member B and Member C are notified; the system log has \"minutes.issued\"; editing the issued minutes is refused."
+          ],
+          "preconditions": [
+            "TC06 passed."
+          ],
+          "aiNote": "BF-04 · UC-73 · BR-137, BR-138, BR-010 · MSG427 · 5.2: MIN_FT31, MIN_FT32 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Not the TC04 minutes: the QA runner ran WF-04 TC05–TC08 on a local build without the local language model, on minutes built from the fixed template (see TC05); the steps checked here do not depend on the AI draft. A Round 2 re-run on the app server should use the TC04 minutes so WF-04 stays one chain.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Read Issued Minutes",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC08",
+          "description": "A member reads and downloads the issued minutes; a user outside the meeting cannot reach them.",
+          "procedure": [
+            "As Member C open tab \"Biên bản\", click \"Tải xuống\" › \"PDF\".",
+            "As Member D (not a participant) open the same URL."
+          ],
+          "expected": [
+            "Member C sees \"Đã ban hành\", the item conclusion and the correction, and only \"Tải xuống\"; the file is \"Biên bản - [SYS] Họp giao ban tuần 49.pdf\".",
+            "Member D sees \"Không tìm thấy trang\"; the minutes API answers 404."
+          ],
+          "preconditions": [
+            "TC07 passed."
+          ],
+          "aiNote": "BF-04 · UC-69 · 5.2: MIN_FT08, MIN_FT21 · Evidence: QA run SYS-WF04 20261123-065220-0c98bde8 · Run by the QA runner on a local build of app 6baba24f. · Not the TC04 minutes: the QA runner ran WF-04 TC05–TC08 on a local build without the local language model, on minutes built from the fixed template (see TC05); the steps checked here do not depend on the AI draft. A Round 2 re-run on the app server should use the TC04 minutes so WF-04 stays one chain.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Correct Issued Minutes",
+      "cases": [
+        {
+          "id": "SYS_WF04_TC09",
+          "description": "The issued minutes are corrected; members keep reading the issued version until the Chair issues the correction, and the original stays readable.",
+          "procedure": [
+            "As Member A open tab \"Biên bản\" of the issued minutes, click \"Tạo bản đính chính\" and click \"Tạo bản đính chính\" in the dialog.",
+            "As Member B click \"Sửa\", change one line, click \"Lưu\", then \"Gửi duyệt\" and confirm.",
+            "As Member C open the tab.",
+            "As Member A click \"Duyệt và ban hành\" and confirm; as Member C open the tab again and choose \"Bản gốc\" in \"Phiên bản biên bản\"."
+          ],
+          "expected": [
+            "Toast \"Đã tạo bản đính chính.\"; badge \"Đính chính · bản nháp\"; the paper holds the issued text; \"Phiên bản biên bản\" lists \"Đính chính 1\" and \"Bản gốc\".",
+            "\"Đã lưu biên bản.\"; after sending: \"Đính chính · chờ duyệt\".",
+            "Member C still reads the issued original without the change.",
+            "Toast \"Đã duyệt và ban hành biên bản.\"; Member C reads \"Đính chính 1\" with the change (\"Đã ban hành\") and is notified; \"Bản gốc\" shows \"Đã thay thế\" and its original text."
+          ],
+          "preconditions": [
+            "TC08 passed (minutes Đã ban hành)."
+          ],
+          "aiNote": "BF-04 · UC-75, UC-72, UC-73 · BR-137, BR-138 · MSG432, MSG424, MSG427 · 5.2: MIN_FT40, MIN_FT41, MIN_FT42 · QA runner on a local build (f44dc1d6; Mailpit as the mailbox, nothing mailed out), 2026-11-25 08:47Z (15:47 ICT), run id SYS-WF04 20261125-084736-f44dc1d6. Evidence: screenshots https://drive.google.com/drive/folders/1-tvjUc1JS_J3uOcsuMyr3Z68Irq_g-Ml; on a meeting of its own with minutes issued from the fixed template. Added per review PR 507 (UC-75 was missing from WF-04).",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    }
+  ]
+}

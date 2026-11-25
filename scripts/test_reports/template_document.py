@@ -13,6 +13,63 @@ N={'w':W,'r':R}
 # The course template's footer names its sample project; the footer is rewritten to TrustCabinet, so the
 # name has to be matched here. It never reaches a generated report.
 TEMPLATE_PROJECT='ACCE'
+# Drive targets of the workbook hyperlinks in Report 5.0 (same IDs as docs/08-reports/README.md and push_reports.py).
+SHEET='https://docs.google.com/spreadsheets/d/{}/edit'
+LINKS={'unit':SHEET.format('12TjU1izNI0KtQ9EfbgLCdYm-IrDnLP58'),'integration':SHEET.format('1a9L8H_WE1PvDpXkqj8zpM9hv7plsShqV'),
+       'api':SHEET.format('1YeXh-m2Rm56k6zfzVKBzycWCpOFodxD9'),'system':SHEET.format('1a8pRvfEquTioVXf6XRXf0iiBukVWEXzQ'),
+       'uat':SHEET.format('1cbHwanGSqSqumHlFE-UR_HLSWwSKf1cq')}
+DRIVE='https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7'
+
+
+def system_cases():
+    """Report 5.3 cases, read from cases/system/WF-xx.json (scripts/test_reports/system_cases.py owns them)."""
+    folder=Path(__file__).resolve().parents[2]/'docs/08-reports/test-reports/cases/system'
+    return [dict(level='SYS',status=c.get('round1') or 'Pending')
+            for f in sorted(folder.glob('WF-*.json'))
+            for g in json.loads(f.read_text(encoding='utf-8'))['groups'] for c in g['cases']]
+
+def nfr_cases():
+    """Report 5.4 cases, read from cases/nfr/<Sheet>.json (scripts/test_reports/nfr_cases.py owns them)."""
+    folder=Path(__file__).resolve().parents[2]/'docs/08-reports/test-reports/cases/nfr'
+    return [c for f in sorted(folder.glob('*.json')) if f.name!='plan.json'
+            for c in json.loads(f.read_text(encoding='utf-8')).get('cases',[])]
+
+CASES=Path(__file__).resolve().parents[2]/'docs/08-reports/test-reports/cases'
+
+def unit_cases():
+    """Report 5.1 cases, read from cases/FE-xx/unit/*.json (scripts/test_reports/unit_cases.py owns them)."""
+    return [dict(level='UNIT',status=c.get('round1') or 'Pending')
+            for f in sorted(CASES.glob('FE-*/unit/*.json'))
+            for m in json.loads(f.read_text(encoding='utf-8'))['methods'] for c in m['cases']]
+
+def integration_counts(kind):
+    """Report 5.2 (kind 'ui') or 5.2.2 (kind 'api') cases and their Round 1 results (integration_cases.py owns them)."""
+    cases=[c for f in sorted(CASES.glob(f'FE-*/{kind}.json'))
+           for g in json.loads(f.read_text(encoding='utf-8'))['groups'] for c in g['cases']]
+    return len(cases),Counter(c.get('round1') or 'Pending' for c in cases)
+
+def integration_summary():
+    ui,ui_counts=integration_counts('ui');api,api_counts=integration_counts('api')
+    show=lambda counts:', '.join(f'{k}={v}' for k,v in counts.items())
+    return f'. {ui} UI integration cases ({show(ui_counts)}) and {api} API cases in Report5.2.2 ({show(api_counts)}).'
+
+def level_cases(level,tests,manual):
+    return system_cases() if level=='SYS' else unit_cases() if level=='UNIT' else [c for c in tests+manual if c['level']==level]
+
+def intro(tests):
+    """The plan's opening: what the xUnit count is (methods CI runs on every PR, not imported here) and the Round 1 results."""
+    show=lambda counts:', '.join(f'{k}={v}' for k,v in counts.items())
+    unit=Counter(c['status'] for c in unit_cases());ui,ui_counts=integration_counts('ui');api,api_counts=integration_counts('api')
+    sys_counts=Counter(c['status'] for c in system_cases());nfr=nfr_cases();nfr_counts=Counter(c.get('status','Not Run') for c in nfr)
+    return ('This plan documents the current TrustCabinet implementation (SEP490-G116), its test designs and the Round 1 results. '
+            f'The source holds {len(tests)} xUnit test methods; CI runs the ones a pull request touches, and their run results are not '
+            f'imported into this document. Round 1 results recorded in the workbooks: unit {sum(unit.values())} ({show(unit)}), '
+            f'UI integration {ui} ({show(ui_counts)}), API {api} ({show(api_counts)}), system FRs {sum(sys_counts.values())} '
+            f'({show(sys_counts)}), system NFRs {len(nfr)} ({show(nfr_counts)}).')
+
+def nfr_summary():
+    cases=nfr_cases();counts=Counter(c.get('status','Not Run') for c in cases)
+    return f' Non-functional requirements (Report 3 §IV.2): Report5.4_System_Test_NFRs.xlsx, {len(cases)} cases: '+', '.join(f'{k}={v}' for k,v in counts.items())+'.'
 
 def serialize(root):return E.tostring(root,xml_declaration=True,encoding='UTF-8',standalone=True)
 def text_set(element,text):
@@ -84,7 +141,7 @@ def make_document(reference,destination,tests,manual,meta,build):
         65:'Google Sign-In for pre-provisioned active internal accounts',66:'JWT access tokens and HttpOnly refresh cookies',
         71:'Create, list and update users; activate or deactivate accounts',72:'Update account details through administration APIs',73:'Administrator-initiated password-reset email and single-use reset completion',
         76:'1.2.3 Role and Capability Management',77:'List roles and capability catalogue',78:'Create, rename and delete eligible custom roles',79:'Update role capabilities and persist assignments',80:'Protect system roles and the last active administrator',
-        81:'1.2.4 Draft Meeting Management',82:'Create and edit Draft meetings',83:'Validate meeting fields, times and sensitivity',84:'Filter, search and page the caller-visible meeting list',85:'Load details and status history under server-side access checks',86:'Maintain permitted organizer and approver relationships',87:'Reject invalid or unauthorized updates without partial changes',
+        81:'1.2.4 Draft Meeting Management',82:'Create and edit Draft meetings',83:'Validate meeting fields, times and sensitivity',84:'Filter, search and page the list of meetings the caller may see',85:'Load details and status history under server-side access checks',86:'Maintain permitted organizer and approver relationships',87:'Reject invalid or unauthorized updates without partial changes',
         88:'1.2.5 Meeting Approval Workflow',89:'Submit a ready Draft for approval',90:'Approve or reject as the assigned approver',91:'Record rejection reasons and append-only status history',92:'Revise and resubmit a Rejected meeting',
         93:'1.2.6 Publication and Rescheduling',94:'Publish an Approved meeting with required active meeting roles',95:'Validate Chair and Secretary readiness before publication',96:'Update permitted schedule and location fields after publication',97:'Notify intended recipients and queue calendar email updates',
         98:'1.2.7 Meeting Access and Recovery',99:'Filter meeting reads by caller relationship and state',100:'Return 404 for an inaccessible individual meeting',101:'Return 403 for a fixed API endpoint when capability is missing',102:'Re-authorize every state transition on the server',103:'Verify organizer-transfer and recovery behavior where backend endpoints exist',104:'Preserve evidence of earlier actions in meeting history',
@@ -98,10 +155,10 @@ def make_document(reference,destination,tests,manual,meta,build):
         138:'Measure standard API response time; the team must approve the target before a pass/fail decision',139:'AI timing and quality tests are deferred until an implemented AI integration is in scope',140:'Measure page-load time and record browser, network and build conditions',143:'Email-worker retry behavior and queue recovery under controlled SMTP failure',
         151:'File handling is deferred where the corresponding business endpoint is not implemented',
         170:'Input/Time: source-defined method and fixture; record actual duration from the test runner',175:'Token, password, validator and message-code behavior according to existing source tests',176:'No frontend component or hook test suite is inferred from backend xUnit tests',
-        179:'Code coverage: measurement pending',183:'Backend: Visual Studio Code (integrated terminal); Report5.1_Unit_Test.xlsx',
+        179:'Code coverage: not measured; Round 1 results are recorded per unit test case in Report5.1_Unit_Test.xlsx',183:'Backend: Visual Studio Code (integrated terminal); Report5.1_Unit_Test.xlsx',
         186:'Input/Time: API, repository, database, Redis and source-contract definitions; duration comes from actual execution',
         195:'API integration between frontend and backend, verified by the manual UI cases',
-        205:'Critical-path coverage: BA review pending',
+        205:'Critical-path coverage: the business flows BF-01 to BF-04 are covered end to end by the system test workflows in Report5.3_System_Test_FRs.xlsx',
         213:'Backend: Visual Studio Code (integrated terminal)',215:'API source cases are in Report5.2.2_Integration_Test_API_Test.xlsx; non-HTTP and UI cases are in Report5.2_Integration_Test.xlsx',
         218:'Input/Time: nine source-reviewed workflows; actual execution duration is recorded with evidence',
         228:'Approved performance targets are measured and met for the delivered scope',
@@ -116,28 +173,28 @@ def make_document(reference,destination,tests,manual,meta,build):
         288:'2.1.1 Component Test',289:'Table 2.1.1 Component Test',290:'2.1.2 API Test',291:'Table 2.1.2 API Test',292:'2.1.3 GUI Test',293:'Table 2.1.3 GUI Test',294:'2.1.4 Regression Test',295:'Table 2.1.4 Regression Test',
         314:'View Unit Test Case at: Report5.1_Unit_Test.xlsx',317:'View Integration Test Case at: Report5.2_Integration_Test.xlsx',
         318:'View API Test Case at: Report5.2.2_Integration_Test_API_Test.xlsx. Execution evidence: no verified TRX imported for this export.',
-        321:'View System Test Case at: Report5.3_System_Test.xlsx',322:'System execution evidence: pending manual execution; SYS-09 is Blocked by missing UI/workflow prerequisites.',
-        325:'View Acceptance Test Case at: Report5.4_Acceptance_Test.xlsx',326:'Representative-user demo recording: not collected.',327:'Customer feedback: not collected. Record actual responses in Customers Feedbacks after a UAT session.',
+        321:'View System Test Case at: Report5.3_System_Test_FRs.xlsx',322:'System test workflows follow the business flows BF-01 to BF-04; results are recorded per round in the workbook.',
+        325:'View Acceptance Test Case at: Report5.5_Acceptance_Test.xlsx',326:'Representative-user demo recording: not collected.',327:'Customer feedback: not collected. Record actual responses in Customers Feedbacks after a UAT session.',
         331:'Refer: Report5.1_Unit_Test.xlsx. '+str(meta['classification'].get('UNIT',0))+' definitions; results are NotRun without verified evidence. Code coverage has not been measured.',
         334:'Refer: Report5.2_Integration_Test.xlsx and Report5.2.2_Integration_Test_API_Test.xlsx. '+str(meta['classification'].get('INTEGRATION',0))+' non-HTTP definitions, '+str(meta['classification'].get('API',0))+' API definitions and 20 manual UI scenarios.',
-        337:'Refer: Report5.3_System_Test.xlsx. Nine designed workflows: eight NotRun and one Blocked; no completed execution is claimed.',
-        341:'Refer: Report5.4_Acceptance_Test.xlsx. Eight proposed acceptance criteria; zero customer responses; stakeholder sign-off is pending.',
+        337:'Refer: Report5.3_System_Test_FRs.xlsx.',
+        341:'Refer: Report5.5_Acceptance_Test.xlsx. Eight proposed acceptance criteria; zero customer responses; stakeholder sign-off is pending.',
     }
     for index,text in replacements.items():text_set(pp[index],text)
-    text_set(pp[29],f'This plan documents the current TrustCabinet implementation (SEP490-G116), test designs and evidence requirements. The inventory contains {len(tests)} xUnit definitions. Execution status: '+', '.join(f'{key}={value}' for key,value in meta['status'].items())+'. Verified evidence: '+('available.' if meta['evidenceVerified'] else 'not supplied.'))
-    for idx,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test.xlsx'),(341,'UAT','Report5.4_Acceptance_Test.xlsx')]:
-        cases=[t for t in tests+manual if t['level']==level];counts=Counter(t['status'] for t in cases)
+    text_set(pp[29],intro(tests))
+    for idx,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test_FRs.xlsx'),(341,'UAT','Report5.5_Acceptance_Test.xlsx')]:
+        cases=level_cases(level,tests,manual);counts=Counter(t['status'] for t in cases)
         text_set(pp[idx],'Refer: '+filename+'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else 'Code coverage is not measured by these counts.'))
     # Empty hyperlink labels are replaced by raw URLs when Word refreshes fields.
     # Retain the original linked-filename pattern instead of leaving empty labels.
-    for index,prefix,label in [(314,'View Unit Test Case at: ','Report5.1_Unit_Test.xlsx'),(317,'View Integration Test Case at: ','Report5.2_Integration_Test.xlsx'),(318,'View API Test Case at: ','Report5.2.2_Integration_Test_API_Test.xlsx'),(321,'View System Test Case at: ','Report5.3_System_Test.xlsx'),(325,'View Acceptance Test Case at: ','Report5.4_Acceptance_Test.xlsx')]:linked_text(pp[index],prefix,label)
-    linked_text(pp[322],'System test files: ','Drive folder','; manual execution evidence is pending. SYS-09 is Blocked by missing workflow prerequisites.')
+    for index,prefix,label in [(314,'View Unit Test Case at: ','Report5.1_Unit_Test.xlsx'),(317,'View Integration Test Case at: ','Report5.2_Integration_Test.xlsx'),(318,'View API Test Case at: ','Report5.2.2_Integration_Test_API_Test.xlsx'),(321,'View System Test Case at: ','Report5.3_System_Test_FRs.xlsx'),(325,'View Acceptance Test Case at: ','Report5.5_Acceptance_Test.xlsx')]:linked_text(pp[index],prefix,label)
+    linked_text(pp[322],'System test files: ','Drive folder','; one sheet per end-to-end workflow (BF-01 to BF-04 and the cross-feature flows), results recorded per round.'+nfr_summary())
     for index in (326,327):
         for link in pp[index].findall('.//w:hyperlink',N):link.getparent().remove(link)
-    for index,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test.xlsx'),(341,'UAT','Report5.4_Acceptance_Test.xlsx')]:
-        cases=[c for c in tests+manual if c['level']==level];counts=Counter(c['status'] for c in cases)
-        linked_text(pp[index],'Refer: ',filename,'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else ''))
-    linked_text(pp[334],'Refer: ','Report5.2_Integration_Test.xlsx',f" and Report5.2.2_Integration_Test_API_Test.xlsx. {meta['classification'].get('INTEGRATION',0)} non-HTTP definitions, {meta['classification'].get('API',0)} API definitions and 20 manual UI scenarios.")
+    for index,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test_FRs.xlsx'),(341,'UAT','Report5.5_Acceptance_Test.xlsx')]:
+        cases=level_cases(level,tests,manual);counts=Counter(c['status'] for c in cases)
+        linked_text(pp[index],'Refer: ',filename,'. '+str(len(cases))+(' scenarios: ' if level=='UAT' else ' test cases: ')+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else nfr_summary().strip() if level=='SYS' else 'Code coverage has not been measured.'))
+    linked_text(pp[334],'Refer: ','Report5.2_Integration_Test.xlsx',' and Report5.2.2_Integration_Test_API_Test.xlsx'+integration_summary())
     # Remove the other team's change history; retain all row and cell formatting.
     for row in tables[0].findall('w:tr',N)[1:]:
         for cell in row.findall('w:tc',N):text_set(cell,'')

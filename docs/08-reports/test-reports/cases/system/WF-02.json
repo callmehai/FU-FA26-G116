@@ -1,0 +1,218 @@
+{
+  "workflow": "WF-02",
+  "groups": [
+    {
+      "title": "Create Meeting",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC01",
+          "description": "Organizer creates a Draft meeting with a chair and a secretary; the meeting is the subject of every later case in this workflow.",
+          "procedure": [
+            "Sign in as the Organizer and go to /mgmt/meetings.",
+            "Click \"Tạo cuộc họp\"; fill \"Tên cuộc họp\" with \"[SYS] Họp giao ban tuần 49\", \"Ngày họp\" tomorrow, \"Bắt đầu\" 09:00, \"Kết thúc\" 10:00, form Offline, sensitivity Thường.",
+            "In \"Người dự họp\" add Member A with role \"Chủ toạ\" and Member B with role \"Thư ký\".",
+            "Click \"Tạo cuộc họp\" and reload the detail page."
+          ],
+          "expected": [
+            "Toast \"Tạo cuộc họp thành công.\"; the browser opens the new meeting's detail page.",
+            "Status \"Nháp\" with the bar \"Bản nháp — chưa gửi duyệt\"; Member A is Chủ toạ, Member B is Thư ký.",
+            "After reload the data is unchanged; history has one row \"Tạo cuộc họp\"; no participant has a notification yet."
+          ],
+          "preconditions": [
+            "Organizer, Member A, Member B, Member C and an Approver are active accounts (workflow precondition)."
+          ],
+          "aiNote": "BF-02 · UC-13 · BR-013 · MSG29 · 5.2: MEET_FT01 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Prepare Participants",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC02",
+          "description": "Secretary of the meeting adds a member and invites an external guest to the Draft meeting from TC01.",
+          "procedure": [
+            "Sign in as Member B (Thư ký) and open the TC01 meeting, tab \"Thành phần tham dự\".",
+            "Click \"Thêm người dự họp\", tick Member C, keep role \"Thành viên\" and confirm.",
+            "Click \"Mời khách ngoài hệ thống\", type \"Trần Khách\" and the guest email, click \"Mời\"."
+          ],
+          "expected": [
+            "Toast \"Thêm thành phần tham dự thành công.\"; Member C is listed with chip \"Thành viên\".",
+            "Toast \"Đã mời khách. Thư mời sẽ được gửi tới email của khách.\"; \"Trần Khách\" is listed with chip \"Khách\".",
+            "No email reaches the guest yet, because the meeting is not published."
+          ],
+          "preconditions": [
+            "TC01 passed: Draft meeting exists with Member B as Thư ký.",
+            "A guest mailbox the tester can read."
+          ],
+          "aiNote": "BF-02 · UC-30a · MSG96 · 5.2: PART_FT15, PART_FT25 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Prepare Agenda",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC03",
+          "description": "Secretary builds a two-item agenda and reorders it.",
+          "procedure": [
+            "As Member B open tab \"Nội dung cuộc họp\" of the TC01 meeting.",
+            "Click \"Thêm nội dung\", type \"Báo cáo tiến độ quý IV\", presenter Member A; save. Add a second item \"Dự toán ngân sách năm 2027\", presenter Member C.",
+            "Drag item 2 above item 1 and reload."
+          ],
+          "expected": [
+            "Both items are listed with their presenters.",
+            "After reload the order is \"Dự toán ngân sách năm 2027\", then \"Báo cáo tiến độ quý IV\"."
+          ],
+          "preconditions": [
+            "TC02 passed: Member C is on the roster."
+          ],
+          "aiNote": "BF-02 · UC-23a, UC-23d · 5.2: AGENDA_FT09, AGENDA_FT21 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Attach Documents",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC04",
+          "description": "Secretary uploads a PDF to the meeting; the Chair can open it before publication.",
+          "procedure": [
+            "As Member B open tab \"Tài liệu\" of the TC01 meeting, click \"Thêm tài liệu chung\" and upload \"bao-cao-quy-iv.pdf\" (under the size limit).",
+            "Sign in as Member A (Chủ toạ) in a second browser, open the same tab and click the file."
+          ],
+          "expected": [
+            "Member B sees the file with the PDF icon and \"3 trang\"; the upload tray says \"Đã tải lên 1 tệp\".",
+            "Member A sees the file and it opens in the viewer."
+          ],
+          "preconditions": [
+            "TC02 passed; file storage is configured on the test build."
+          ],
+          "aiNote": "BF-02 · FE-07 · 5.2: FE-07 upload cases · Case changed to match the app (2026-11-23): before publication only the Organizer, the Chủ toạ and the Thư ký can open the meeting (MeetingReadPolicy), so Member C cannot see the Draft meeting; the second reader is Member A. · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Submit for Approval",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC05",
+          "description": "Organizer submits the prepared meeting to the Approver.",
+          "procedure": [
+            "As the Organizer open the TC01 meeting and click \"Gửi duyệt\".",
+            "In \"Gửi duyệt cuộc họp\" choose the Approver in \"Chọn người duyệt\" and click \"Gửi duyệt\".",
+            "Look for \"Chỉnh sửa\" on the meeting.",
+            "In a second browser signed in as the Approver open the notification bell."
+          ],
+          "expected": [
+            "Toast \"Đã gửi cuộc họp để duyệt.\"; status \"Chờ duyệt\"; bar \"Đang chờ <Approver> duyệt\".",
+            "The meeting information cannot be edited while waiting.",
+            "The Approver has a real-time notification that opens this meeting; history gains \"Gửi duyệt\"."
+          ],
+          "preconditions": [
+            "TC01 to TC04 passed."
+          ],
+          "aiNote": "BF-02 · UC-17 · MSG78 · 5.2: MEET_FT41 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Reject and Resubmit",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC06",
+          "description": "Approver rejects with a reason; the Organizer sees it, edits the meeting and resubmits.",
+          "procedure": [
+            "As the Approver open the meeting from the notification and click \"Từ chối\".",
+            "Type \"Cần bổ sung báo cáo tài chính.\" in \"Lý do từ chối\" and click \"Từ chối\".",
+            "As the Organizer open the notification, read the reason, click \"Chỉnh sửa\", change \"Kết thúc\" to 10:30 and save.",
+            "Click \"Gửi duyệt\" again to the same Approver."
+          ],
+          "expected": [
+            "Toast \"Đã từ chối cuộc họp.\"; status \"Bị từ chối\".",
+            "The Organizer's notification and the bar \"Cuộc họp bị từ chối\" both show the reason.",
+            "The edit saves; after resubmitting the status is \"Chờ duyệt\" again and the Approver gets a new notification.",
+            "History lists Gửi duyệt, Từ chối (with reason), Gửi duyệt, in that order."
+          ],
+          "preconditions": [
+            "TC05 passed: meeting is Chờ duyệt, assigned to the Approver."
+          ],
+          "aiNote": "BF-02 · UC-18, UC-14, UC-17 · MSG44, MSG78 · 5.2: MEET_FT50 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Approve and Publish",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC07",
+          "description": "Approver approves the resubmitted meeting and the Organizer publishes it; participants and the guest are invited.",
+          "procedure": [
+            "As the Approver open the meeting, click \"Duyệt\" and confirm.",
+            "As the Organizer open the notification, click \"Công bố\" and confirm.",
+            "As Member C open /mgmt/meetings and the bell; open the guest mailbox; open /calendar."
+          ],
+          "expected": [
+            "Toast \"Đã duyệt cuộc họp.\"; status \"Đã duyệt\"; Organizer notified.",
+            "Toast \"Đã công bố cuộc họp.\"; status \"Đã công bố\"; meeting information is no longer editable (only rescheduling, WF-07).",
+            "Member A, B and C see the meeting in the list and have an invitation notification; the guest receives the invitation email with the meeting link.",
+            "The calendar shows the meeting tomorrow 09:00 to 10:30."
+          ],
+          "preconditions": [
+            "TC06 passed: meeting is Chờ duyệt after resubmission."
+          ],
+          "aiNote": "BF-02 · UC-18, UC-19 · MSG43, MSG45 · 5.2: MEET_FT49, MEET_FT55 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Respond to Invitation",
+      "cases": [
+        {
+          "id": "SYS_WF02_TC08",
+          "description": "Invited members answer the invitation and the organizer sees the response status.",
+          "procedure": [
+            "As Member C open the published meeting and click \"Tham dự\" in the bar \"Bạn có tham dự cuộc họp này?\"; reload.",
+            "As Member A (Chủ toạ) open the meeting.",
+            "As Member B (Thư ký) open the same meeting on a phone (390px) and answer \"Tham dự\".",
+            "As the Organizer open tab \"Thành phần tham dự\"."
+          ],
+          "expected": [
+            "Toast \"Đã ghi nhận phản hồi lời mời.\"; the bar disappears and stays gone after reload.",
+            "Member A is not asked: the Chủ toạ does not answer the invitation.",
+            "On the phone the bar and its buttons fit without horizontal scrolling.",
+            "The Organizer sees chip \"Đã xác nhận tham dự\" beside Member B and Member C; Member A has no answer chip."
+          ],
+          "preconditions": [
+            "TC07 passed: meeting is Đã công bố."
+          ],
+          "aiNote": "BF-02 · UC-31, UC-32 · BR-046 · MSG105 · 5.2: PART_FT55 · Case changed to match the app (2026-11-23): the Chủ toạ is never asked to answer (ParticipantRules.CanRespond excludes the Chair), so the phone answer is given by Member B. · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ def verify(directory,templates):
                         target=link.get('Target','');target=target.lstrip('/') if target.startswith('/') else posixpath.normpath(posixpath.join(base,target))
                         assert target in z.namelist(),f'Dangling relationship: {name}:{part}->{target}'
             if name.endswith('.xlsx'):
-                source='FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx' if '.2.2_' in name else name
+                source='FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx' if '.2.2_' in name else 'Report5.4_Acceptance_Test.xlsx' if name=='Report5.5_Acceptance_Test.xlsx' else name
                 with ZipFile(templates/source) as sourcezip:
                     for part in ['xl/styles.xml','xl/theme/theme1.xml']:assert z.read(part)==sourcezip.read(part),'Template styling changed: '+name
                 wb=E.fromstring(z.read('xl/workbook.xml'));sheets=wb.find('{'+S+'}sheets');seen=set()
@@ -67,7 +67,7 @@ def verify(directory,templates):
     # Report 5.2 / 5.2.2 are checked by scripts/test_reports/integration_cases.py check, not here.
     here={t['id'] for t in inventory if t.get('level') not in {'UNIT','INTEGRATION','API','UI'}}
     assert here<=covered,'Missing test IDs: '+str(here-covered)
-    assert reports['Report5.3_System_Test.xlsx']==manifest['manualCases']['SYS']
+    # Report 5.3 is checked by scripts/test_reports/system_cases.py check, not here.
     print(json.dumps(dict(verifiedFiles=len(manifest['files']),testMethods=len(tests),tracedIDs=len(covered),summaryCounts=reports,referenceTemplatesUnchanged=True,sourceStylesPreserved=True),indent=2))
 
 if __name__=='__main__':

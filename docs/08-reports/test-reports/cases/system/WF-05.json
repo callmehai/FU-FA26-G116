@@ -1,0 +1,129 @@
+{
+  "workflow": "WF-05",
+  "groups": [
+    {
+      "title": "Join Online Room",
+      "cases": [
+        {
+          "id": "SYS_WF05_TC01",
+          "description": "The Chair and a member join the online room of a running Online meeting and see each other.",
+          "procedure": [
+            "As Member A (Chủ toạ) open the meeting room; read the lobby \"Sẵn sàng tham gia?\" and click \"Vào phòng\".",
+            "As Member C in a second browser open the room and click \"Vào phòng\".",
+            "As Member A open \"Người dự\"."
+          ],
+          "expected": [
+            "The lobby shows the recording notice \"Cuộc họp được ghi âm để lập biên bản …\".",
+            "Both are in the room; the header says 2 people; \"Người dự\" lists Hoàng Minh Đức (Chủ toạ) and Đặng Quốc Bảo.",
+            "The meeting stays \"Đang diễn ra\"."
+          ],
+          "preconditions": [
+            "An Online meeting \"[SYS] Họp trực tuyến WF-05\" in progress with Chủ toạ Member A, Thư ký Member B, Members C and E and a guest; the media server is running; camera and microphone allowed."
+          ],
+          "aiNote": "BF-03 · UC-43 · 5.2: ROOM_FT01, ROOM_FT02, ROOM_FT49 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Guest Joins by Link",
+      "cases": [
+        {
+          "id": "SYS_WF05_TC02",
+          "description": "The guest opens the link in the invitation email, enters the one-time code, gives a name and joins the room.",
+          "procedure": [
+            "Open the guest link from the invitation email in a fresh browser.",
+            "Enter the 6-digit code from the second email and click \"Xác minh\".",
+            "Type \"Nguyễn Khách Mời\" in \"Tên hiển thị\", click \"Vào cuộc họp\", open the room and click \"Vào phòng\"."
+          ],
+          "expected": [
+            "The page shows the meeting title and \"Nhập mã 6 số đã gửi tới …\" with the masked email.",
+            "After the code and name the guest sees only this meeting; in the room the Chair's \"Người dự\" lists \"Nguyễn Khách Mời\" without an email."
+          ],
+          "preconditions": [
+            "TC01 passed; the invitation and the code reach a mailbox the tester can read."
+          ],
+          "aiNote": "BF-03 · UC-04, UC-43 · BR-049–BR-052 · 5.2: ROOM_FT17, ROOM_FT51 · QA runner on a local build (f44dc1d6; Mailpit as the mailbox, nothing mailed out), 2026-11-25 08:43Z (15:43 ICT), run id SYS-WF05 20261125-084327-f44dc1d6. Evidence: screenshots https://drive.google.com/drive/folders/1LuGCLAhpFAG0AguaBB9P5JYjEktOKvPz; code read from the mailbox, name declared, recording notice ticked, the Chair's \"Người dự\" lists the guest without an email.",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Register to Speak",
+      "cases": [
+        {
+          "id": "SYS_WF05_TC03",
+          "description": "A member raises a hand, the Chair invites them, and they start speaking.",
+          "procedure": [
+            "As Member E in the room click \"Giơ tay\".",
+            "As Member A click \"Phát biểu\", then \"Mời\" on Member E's row.",
+            "As Member E click \"Bật micro\" in the banner \"Đến lượt bạn phát biểu\", then \"Bắt đầu phát biểu\"."
+          ],
+          "expected": [
+            "Member E's button becomes \"Hạ tay\"; the Chair's \"Phát biểu\" shows 1 and the queue lists Ngô Thanh Sơn.",
+            "Member E sees \"Đến lượt bạn phát biểu\" with \"Bật micro\" and \"Bắt đầu phát biểu\"; raising a hand did not turn the microphone on.",
+            "After starting, the microphone is on and the request is \"Speaking\"."
+          ],
+          "preconditions": [
+            "TC01 passed; no open speaking request."
+          ],
+          "aiNote": "BF-03 · UC-50 · BR-104–BR-106 · 5.2: ROOM_FT73, ROOM_FT75, ROOM_FT76 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Record in Room",
+      "cases": [
+        {
+          "id": "SYS_WF05_TC04",
+          "description": "What a person says with the microphone on is recorded per microphone and reaches tab \"Bản ghi\".",
+          "procedure": [
+            "As Member C join the room with the microphone on and speak for about 20 seconds.",
+            "Leave the room and open tab \"Bản ghi\" as the Secretary."
+          ],
+          "expected": [
+            "The sentences Member C said are stored under their name and listed in \"Bản ghi\"."
+          ],
+          "preconditions": [
+            "TC01 passed; a person speaking into a real microphone."
+          ],
+          "aiNote": "BF-03 · UC-52a · ADR-0040 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 21:20–21:23 ICT (14:20–14:23Z, sentence times), server build 330468a4 (GitHub Deployments, server-app). Evidence: sentences stored under the speaker's name with their clips https://drive.google.com/file/d/1NFNvsADW0aIf7gQCN_8QGQ5wtI0G3Pl7/view.",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Leave and Room Closes",
+      "cases": [
+        {
+          "id": "SYS_WF05_TC05",
+          "description": "A member leaves and comes back; when the Chair ends the meeting the room closes for those inside.",
+          "procedure": [
+            "As Member C in the room click \"Rời phòng\", read the dialog and confirm \"Rời phòng\"; then open the room again and join.",
+            "As Member A on the meeting page click \"Kết thúc họp\" and confirm."
+          ],
+          "expected": [
+            "The dialog says \"Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.\"; Member C can join again.",
+            "Member C's room shows \"Cuộc họp đã kết thúc, phòng họp đã đóng.\" with no \"Vào lại\"; the meeting is Ended."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "aiNote": "BF-03 · UC-44, UC-21 · BR-025 · MSG331 · 5.2: ROOM_FT24, ROOM_FT26, ROOM_FT28 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    }
+  ]
+}

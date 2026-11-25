@@ -1,0 +1,245 @@
+{
+  "workflow": "WF-01",
+  "groups": [
+    {
+      "title": "Create Account and Assign Role",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC01",
+          "description": "Administrator creates an account with the default role Thành viên; the account is the subject of every later case in this workflow.",
+          "procedure": [
+            "Sign in as the Administrator and open /mgmt/admin/users.",
+            "Click \"Tạo tài khoản\"; fill \"Họ tên\" with \"[SYS] WF-01 Người dùng mới\" and a new email; click \"Tạo mật khẩu\" and note the generated password; keep \"Vai trò: Thành viên\".",
+            "Click \"Tạo tài khoản\"."
+          ],
+          "expected": [
+            "Toast \"Tạo tài khoản thành công.\"; the dialog closes.",
+            "The new row shows the name, the email, role \"Thành viên\" and status \"Hoạt động\".",
+            "The system log has one \"user.created\" entry for the account, without the password."
+          ],
+          "preconditions": [
+            "Administrator account; an email address that no account uses."
+          ],
+          "aiNote": "BF-01 · UC-06a · BR-006, BR-009 · MSG07 · 5.2: USER_FT10, USER_FT11 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "First Sign-in by Password",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC02",
+          "description": "The new user signs in with the password from TC01 and sees only what the Thành viên role grants.",
+          "procedure": [
+            "In a fresh browser open /login, type the TC01 email and password, click \"Đăng nhập bằng mật khẩu\".",
+            "Open \"Cuộc họp\"; then type /mgmt/admin/users in the address bar."
+          ],
+          "expected": [
+            "The user lands on \"Lịch làm việc\" (/calendar); the sidebar has no \"Quản trị\" group.",
+            "The meeting list offers \"Tạo cuộc họp\" (Thành viên holds Tạo cuộc họp).",
+            "/mgmt/admin/users shows \"Không tìm thấy trang\", the same as an unknown URL; the page does not scroll sideways."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "aiNote": "BF-01 · UC-01 · NFR · 5.2: AUTH_FT01, AUTH_FT05 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        },
+        {
+          "id": "SYS_WF01_TC03",
+          "description": "A wrong password for the new account is refused without saying whether the account exists.",
+          "procedure": [
+            "In a fresh browser open /login, type the TC01 email and a wrong password, click \"Đăng nhập bằng mật khẩu\"."
+          ],
+          "expected": [
+            "The form shows \"Email hoặc mật khẩu không đúng.\"; the browser stays on /login; no MSG code is shown."
+          ],
+          "preconditions": [
+            "TC01 passed."
+          ],
+          "aiNote": "BF-01 · UC-01 · BR-004 · MSG01 · 5.2: AUTH_FT03 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Sign-in with Google",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC04",
+          "description": "A user whose account email is a Google account signs in with \"Tiếp tục sử dụng dịch vụ bằng Google\".",
+          "procedure": [
+            "As the Administrator create an account whose email is a Gmail address the tester owns.",
+            "Open /login, click \"Tiếp tục sử dụng dịch vụ bằng Google\" and choose that Google account."
+          ],
+          "expected": [
+            "The user lands on \"Lịch làm việc\" signed in as that account; the account is linked to Google from now on."
+          ],
+          "preconditions": [
+            "A Google account the tester can sign in to; Google Sign-In client configured for the build."
+          ],
+          "aiNote": "BF-01 · UC-02 · 5.2: AUTH_FT08, AUTH_FT09 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:07 ICT (10:07Z, clock on the screenshot), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app). Evidence: Google account chooser from the app sign-in page https://drive.google.com/file/d/1CuOVVULy0AmC1_5ZFsEswFte3HTi_fJH/view; signed in as Trường Huy on \"Lịch làm việc\" at 17:07 https://drive.google.com/file/d/17m5oIH7JXuPwvIJzMOL3HX6-Q_ov95Di/view (the screenshot does not show which sign-in method was used).",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Change Role Capabilities",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC05",
+          "description": "Administrator creates a role with no capability and gives it to the user, who is signed in; the user's menu changes at once.",
+          "procedure": [
+            "The user from TC01 is signed in on a second browser on \"Lịch làm việc\".",
+            "As the Administrator open /mgmt/admin/roles, click \"Tạo vai trò\", type \"[SYS] WF-01 Kiểm soát viên\" and a description, tick no capability, click \"Tạo vai trò\".",
+            "Open /mgmt/admin/users, click \"Sửa tài khoản\" on the TC01 row, choose the new role in \"Vai trò\", click \"Lưu thay đổi\".",
+            "On the user's browser open \"Cuộc họp\"."
+          ],
+          "expected": [
+            "Toast \"Tạo vai trò thành công.\", then \"Cập nhật tài khoản thành công.\"; the row shows the new role.",
+            "The user's browser shows \"Quyền truy cập của bạn vừa được cập nhật.\" without reloading or signing in again.",
+            "The user's meeting list no longer offers \"Tạo cuộc họp\"."
+          ],
+          "preconditions": [
+            "TC02 passed."
+          ],
+          "aiNote": "BF-01 · UC-11a, UC-08 · BR-008 · MSG19, MSG10, MSG287 · 5.2: RBAC_FT15, USER_FT31 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        },
+        {
+          "id": "SYS_WF01_TC06",
+          "description": "Administrator grants \"Tạo cuộc họp\" to the role on the permission matrix, then takes it back; the user's screen and the server follow each change.",
+          "procedure": [
+            "The user is on \"Danh sách cuộc họp\" on the second browser.",
+            "As the Administrator open tab \"Ma trận phân quyền\", tick \"Tạo cuộc họp\" on the TC05 role and click \"Lưu\".",
+            "Untick it and click \"Lưu\" again.",
+            "As the user try to create a meeting (POST /api/meetings)."
+          ],
+          "expected": [
+            "Each save shows \"Cập nhật phân quyền thành công.\".",
+            "After the grant \"Tạo cuộc họp\" appears on the user's list without a reload; after the removal it disappears.",
+            "The server refuses the user's create request with 403 at once; the system log has two \"role.permissions.updated\" entries."
+          ],
+          "preconditions": [
+            "TC05 passed."
+          ],
+          "aiNote": "BF-01 · UC-10 · BR-007, BR-008 · MSG16, MSG287 · 5.2: RBAC_FT45 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Deactivate and Reactivate Account",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC07",
+          "description": "Administrator deactivates the account while the user is signed in; the session ends and sign-in is refused.",
+          "procedure": [
+            "The user is signed in on a second browser.",
+            "As the Administrator click \"Vô hiệu hoá tài khoản\" on the TC01 row, read the confirmation and click \"Vô hiệu hoá\".",
+            "On the user's browser open \"Cuộc họp\"; then sign in again with the same password."
+          ],
+          "expected": [
+            "The confirmation names the user; toast \"Đổi trạng thái tài khoản thành công.\"; the row shows \"Đã vô hiệu hoá\".",
+            "The user's browser is sent to /login.",
+            "Signing in shows \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\"."
+          ],
+          "preconditions": [
+            "TC06 passed."
+          ],
+          "aiNote": "BF-01 · UC-06c · BR-001 · MSG11, MSG02 · 5.2: USER_FT24, USER_FT25, AUTH_FT15 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        },
+        {
+          "id": "SYS_WF01_TC08",
+          "description": "Administrator reactivates the account; the user signs in again.",
+          "procedure": [
+            "As the Administrator click \"Kích hoạt lại tài khoản\" on the TC01 row and confirm with \"Kích hoạt lại\".",
+            "In a fresh browser sign in as the user with the TC01 password."
+          ],
+          "expected": [
+            "Toast \"Đổi trạng thái tài khoản thành công.\"; the row shows \"Hoạt động\".",
+            "The user lands on \"Lịch làm việc\".",
+            "The system log lists \"user.deactivated\" then \"user.reactivated\" for the account."
+          ],
+          "preconditions": [
+            "TC07 passed."
+          ],
+          "aiNote": "BF-01 · UC-06c · BR-001 · MSG11 · 5.2: USER_FT26 · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Sign-in Rate Limit",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC09",
+          "description": "Six sign-in attempts for one email within a minute: the sixth is blocked, even with the right password, until the window passes.",
+          "procedure": [
+            "On /login submit the TC01 email with a wrong password six times within a few seconds.",
+            "Within the same minute submit the correct password.",
+            "Wait for the time the server gives (Retry-After), then submit the correct password again."
+          ],
+          "expected": [
+            "Attempts 1 to 5 show \"Email hoặc mật khẩu không đúng.\".",
+            "Attempt 6 shows \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\"; the correct password inside the window is refused the same way (HTTP 429 with Retry-After).",
+            "After the window the correct password signs in."
+          ],
+          "preconditions": [
+            "TC08 passed; the build runs the shipped limits (5 attempts per email and 60 per IP per 60 s)."
+          ],
+          "aiNote": "BF-01 · SCRUM-132 · MSG414 · 5.2: AUTH_FT06 · Run on a second local instance of the same build started with the shipped limits, because Development raises them to 1000 (appsettings.Development.json). Retry-After was 60 s. · Evidence: QA run SYS-WF01 20261123-065830-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    },
+    {
+      "title": "Reset Password by Email",
+      "cases": [
+        {
+          "id": "SYS_WF01_TC10",
+          "description": "The Administrator sends the user a password reset link; the user sets a new password from the email, the old one stops working and the link works only once.",
+          "procedure": [
+            "As the Administrator open /mgmt/admin/users, click \"Đặt lại mật khẩu\" on the TC01 account and click \"Gửi liên kết\" in the dialog \"Đặt lại mật khẩu\".",
+            "As the user open the link in the reset email, type a new password in \"Mật khẩu mới\" and \"Nhập lại mật khẩu mới\" and click \"Đặt mật khẩu mới\".",
+            "On /login sign in with the old password, then with the new one.",
+            "Open the same link again and submit another new password."
+          ],
+          "expected": [
+            "The dialog says the link works once within 60 minutes; toast \"Đã gửi email đặt lại mật khẩu.\"; the email reaches the user's mailbox.",
+            "\"Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.\"",
+            "The old password shows \"Email hoặc mật khẩu không đúng.\"; the new one lands on \"Lịch làm việc\".",
+            "The used link is refused: \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\""
+          ],
+          "preconditions": [
+            "TC09 passed; the TC01 email is a mailbox the tester can read (app server sends real mail)."
+          ],
+          "aiNote": "BF-01 · UC-07 · MSG13, MSG92, MSG93 · 5.2: USER_FT37 · QA runner on a local build (backend f44dc1d6, runner at 2b01f26c; Mailpit as the mailbox, nothing mailed out), 2026-11-25 09:25Z (16:25 ICT), run id SYS-WF01 20261125-092549-2b01f26c. Evidence: screenshots https://drive.google.com/drive/folders/1V_Pp1TvDh3VfwG4i6DUFo7_iZ6wq69Lu; old password sign-in 401, new 200, reused link 400 MSG93. Added per review PR 507 (UC-07 was missing from WF-01).",
+          "round1": "Passed",
+          "date1": "2026-11-25",
+          "tester1": "Nguyễn Trường Huy"
+        }
+      ]
+    }
+  ]
+}

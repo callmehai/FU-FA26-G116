@@ -1,0 +1,64 @@
+{
+  "sheet": "Availability",
+  "cases": [
+    {
+      "id": "TC-AVA-001",
+      "requirement": "Service availability",
+      "scenario": "The test server is up at least 99% of working hours",
+      "role": "Operator",
+      "given": "An uptime monitor polling /api/health every minute",
+      "when": "Collect four working weeks (Mon–Fri 08:00–18:00 UTC+7)",
+      "then": "Uptime ≥ 99% excluding announced maintenance",
+      "priority": "Medium",
+      "aiNote": "Skip in Round 1: needs weeks of monitoring of the deployed server.",
+      "status": "Skip",
+      "reason": "Needs weeks of monitoring of the server.",
+      "date": "2026-11-23",
+      "tester": "Nguyễn Trường Huy"
+    },
+    {
+      "id": "TC-AVA-002",
+      "requirement": "Recovery time and data loss",
+      "scenario": "Restore the service from backup after a server loss",
+      "role": "Operator",
+      "given": "The latest backup of the database and file storage",
+      "when": "Restore onto a clean host following deploy/README.md",
+      "then": "Service back within 4 hours, losing at most 24 hours of data",
+      "priority": "High",
+      "aiNote": "Blocked: no restore drill has been done; backups are taken per deploy and kept on the same server, and the files and recordings volumes are not backed up (TC-SEC-009, SCRUM-215), so a lost server loses its backups and the RPO cannot be guaranteed. Stays Blocked until one restore drill is run.",
+      "status": "Blocked",
+      "reason": "No restore drill yet (SCRUM-215).",
+      "date": "2026-11-23",
+      "tester": "Nguyễn Trường Huy",
+      "defect": "SCRUM-215"
+    },
+    {
+      "id": "TC-AVA-003",
+      "requirement": "Graceful degradation",
+      "scenario": "With the media server stopped, no speech worker or AI, and mail undeliverable, the rest keeps working",
+      "role": "Member",
+      "given": "LiveKit stopped; the speech worker and the local language model absent; @trustcabinet.local never mailed",
+      "when": "Sign in with a password; open the meeting list, a meeting's documents and votes; try to join an online meeting's room",
+      "then": "Sign-in and the meeting, document and voting screens work; the room says it cannot connect instead of failing silently",
+      "priority": "High",
+      "aiNote": "Measured: sign-in 200; list, documents and votes open; the lobby shows \"Không kết nối được tới phòng họp. Vui lòng thử lại.\". Emails queue in the outbox (SYS_WF09_TC02); a failed transcription keeps the audio (TC-REL-003). · Evidence: QA run SYS-NFR 20261122-185048 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+      "status": "Pass",
+      "date": "2026-11-23",
+      "tester": "Nguyễn Trường Huy"
+    },
+    {
+      "id": "TC-AVA-004",
+      "requirement": "Health monitoring",
+      "scenario": "The health check reports status, version and database",
+      "role": "Operator",
+      "given": "The local build and the test server",
+      "when": "GET /api/health on both",
+      "then": "200 with status ok, the service name, version and database ok",
+      "priority": "Medium",
+      "aiNote": "Measured: local and test server both {\"status\":\"ok\",\"service\":\"TrustCabinet.Web\",\"version\":\"0.1.0\",\"database\":\"ok\"}. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+      "status": "Pass",
+      "date": "2026-11-23",
+      "tester": "Nguyễn Trường Huy"
+    }
+  ]
+}
