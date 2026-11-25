@@ -135,6 +135,22 @@ Ví dụ Rule Statement: **“Only an empty folder can be deleted.”** Phạm v
 
 Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực tế phải được cấp từ danh mục chung.
 
+### 2.8. Actor là người, việc hệ thống tự làm không phải UC (chốt 24/11/2026)
+
+Nguồn: [note 60 §3.1](../notes/ban-giao-ba-final-review/60-bo-uc-52b-54c-dua-vao-report4-phan-iv.md#31-quy-tắc-chốt-thêm-vào-docs01-requirementsreadmemd-2).
+
+1. **Actor phải là người tương tác với hệ thống và đạt một mục tiêu.** Việc hệ thống tự xử lý (hàng đợi, tự lưu,
+   tự xoá, thăm dò, thử lại, ngưỡng khớp giọng) và chi tiết kỹ thuật (tên dịch vụ, bảng, dòng dữ liệu, mã HTTP, tên
+   trường API, địa chỉ IP, token, cờ cấu hình) **không phải UC**. Xoá khỏi UC Specification, chuyển sang **Report 4**
+   (thiết kế do nhóm chọn): phần IV "Other Design Specifications", hoặc các mục I.1, I.2, I.3. Nếu người dùng nhìn
+   thấy hệ quả thì UC giữ một câu nói hệ quả đó.
+2. Trong UC chỉ giữ hành động của actor (nhập, chọn, xác nhận), phản hồi nhìn thấy được và điều kiện nghiệp vụ. Hành vi
+   giao diện nhỏ (nút nào, tooltip, tab, phím tắt, trạng thái mờ, cuộn) thuộc BR hoặc mô tả màn hình, không ghi trong
+   luồng.
+3. Mỗi bước một ý, ngắn. Không giải thích cách hệ thống làm.
+4. Ngoại lệ đã chốt: **UC-28 giữ nguyên** (tự lưu ghi chú khi ngừng gõ, giữ trên máy khi mất mạng, gắn ghi chú vào mục
+   biên bản) — đây là cam kết người dùng nhìn thấy, không rút.
+
 ---
 
 ## 3. Khung mẫu đặc tả Use Case (Template chuẩn)
