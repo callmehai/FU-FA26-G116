@@ -163,3 +163,12 @@ Các mã đã bỏ từ trước (UC-09, UC-32b, UC-34a, UC-62, UC-63, UC-69) kh
 | UC-86b | UC-57b |
 | UC-86c | UC-57c |
 | UC-86d | UC-57d |
+
+## Thay đổi sau đợt 1
+
+Bảng trên giữ nguyên. Các thay đổi sau ngày áp dụng ghi ở đây:
+
+- 25/11/2026 ([note 60](../notes/ban-giao-ba-final-review/60-bo-uc-52b-54c-dua-vao-report4-phan-iv.md) §3.2): **UC-52b**
+  (cũ UC-44b) Stop and Save Room Recording bỏ, luồng lưu lượt gộp vào UC-52a; **UC-54c** (cũ UC-45c) Transcribe Meeting
+  Recording bỏ, Thư ký chạy gỡ băng thành AF-2, AF-3 của UC-54a, phần hệ thống tự chạy sang Report 4 phần IV. Hai mã này
+  không cấp lại. **UC-52a** đổi tên thành Turn Room Microphone On/Off (trước là Start Room Recording), giữ số.
