@@ -117,6 +117,10 @@ TrustCabinet is an Internal Meeting and Document Management System that interact
 
 Through these interactions, TrustCabinet acts as the central point connecting meeting participants, meeting records, documents, voting results, and post-meeting minutes, while external services are used only for specific supporting functions outside the main system boundary.
 
+Figure 1: Context Diagram
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/11-contextdiagram/trustcabinet-context.drawio.png
+
 ### 2. Main Business Flow
 
 #### 2.1 System Access & Administration (BF-01)
@@ -125,11 +129,19 @@ Trigger: An internal staff member needs to be granted access to TrustCabinet, or
 
 End condition: The user has a valid account with the appropriate system role and permissions and can access the functions they are allowed to use.
 
+Figure 2: Business Flow BF-01 – System Access & Administration
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-01_System_Access_Administration.drawio.png
+
 #### 2.2 Meeting Preparation, Approval & Participant Coordination (BF-02)
 
 Trigger: A Member identifies the need to hold a new meeting.
 
 End condition: The meeting is Published, invitations have been issued, invitees can respond, and the meeting is ready to be conducted.
+
+Figure 3: Business Flow BF-02 – Meeting Preparation, Approval & Participant Coordination
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-02_Meeting_Preparation_Approval.drawio.png
 
 #### 2.3 Meeting Execution & Decision Making (BF-03)
 
@@ -137,17 +149,29 @@ Trigger: The Chair decides to start a meeting that is in Published status.
 
 End condition: The meeting is Ended; its agenda outcomes and meeting-level voting results and decisions have been recorded.
 
+Figure 4: Business Flow BF-03 – Meeting Execution & Decision Making
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-03_Meeting_Execution_Decision_Making.drawio.png
+
 #### 2.4 Post-Meeting Processing & Formal Records (BF-04)
 
 Trigger: A meeting has Ended and its post-meeting records need to be processed.
 
 End condition: The meeting has formal minutes that have been approved and issued, and the meeting records can be accessed according to permissions.
 
+Figure 5: Business Flow BF-04 – Post-Meeting Processing & Formal Records
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-04_Post_Meeting_Processing_Formal_Records.drawio.png
+
 ### 3. Conceptual Data Model
 
 #### 3.1 Entity Relationship Diagram
 
-The diagram is drawn from the database model in the code as of 04/11/2026 and shows 41 tables: the 34 entities described in 3.2, MinutesSignature (dropped from the database on 15/11/2026), the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation, and two technical tables, MeetingInvitationDispatch and GuestVerificationChallenge, which support invitation email delivery and Guest email verification and are not described in 3.2. Vote and Agenda Item each belong directly to Meeting.
+Figure 6 shows the data model of TrustCabinet as 42 tables: the 34 entities described in 3.2; two entities that 3.2 does not detail, AiProviderSetting (the AI drafting service chosen by the System Admin) and CalendarShare (calendar sharing between users, FE-16); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
+
+Figure 6: Entity Relationship Diagram
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/13-erd/muc-tieu/trustcabinet-erd-muc-tieu.drawio.png
 
 #### 3.2 Entity Descriptions
 
@@ -838,8 +862,8 @@ Feature priority. The features are prioritised with the Product Owner: FE-01 to 
 | FE-06 | Meeting Participant Management | Must-have |
 | FE-07 | Personal Document Library & Meeting Document Management | Must-have |
 | FE-08 | Online Meeting Room Management | Must-have |
-| FE-09 | Meeting Audio Upload & Media Library | Must-have |
-| FE-10 | Speaker-Attributed Transcription & Meeting Summary | Must-have |
+| FE-09 | Meeting Recording | Must-have |
+| FE-10 | Transcription, Speaker Identification & Meeting Summary | Must-have |
 | FE-11 | Voting Management | Must-have |
 | FE-12 | Meeting Minutes & Approval | Must-have |
 | FE-13 | Email & In-App Notification | Must-have |
@@ -848,33 +872,67 @@ Feature priority. The features are prioritised with the Product Owner: FE-01 to 
 
 #### 4.3 Use Case Diagrams
 
+Figure 7 shows the whole system: each actor is linked to the features (FE) whose use cases it takes part in. Chair and Secretary are kinds of Participant, and Approver is a kind of Member. The diagrams in 4.3.1 to 4.3.7 show the use cases of each actor.
+
+Figure 7: System Overview Use Case Diagram
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-system-overview.png
+
 ##### 4.3.1 UCs for System Admin
 
 The System Admin manages user accounts (create, update, deactivate/reactivate, reset password, assign system roles), configures roles and permissions, and reviews the audit log. The Admin can also view meetings and their records, reports and statistics, notifications and the personal document library.
+
+Figure 8: Use Case Diagram – System Admin
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-system-admin.png
 
 ##### 4.3.2 UCs for Member
 
 The Member creates and updates meetings, submits them for approval and publishes approved meetings, adds participants and Guests. The Member can also view meeting records, comment on documents, use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace. The Member shares calendars and finds common free slots (UC-80, UC-81).
 
+Figure 9: Use Case Diagram – Member
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-member.png
+
 ##### 4.3.3 UCs for Approver
 
 The Approver reviews assigned meeting approval requests and approves or rejects them. The Approver can view meeting details and related records (agenda, documents, media, votes and minutes), use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
+
+Figure 10: Use Case Diagram – Approver
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-approver.png
 
 ##### 4.3.4 UCs for Chair
 
 The Chair starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair does not respond to the invitation because the Chair runs the meeting. The Chair also adds and removes meeting documents, comments on meeting documents, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-65) while the Meeting is InProgress and the Vote is Open, under BR-090 and BR-092.
 
+Figure 11: Use Case Diagram – Chair
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-chair.png
+
 ##### 4.3.5 UCs for Secretary
 
 The Secretary prepares the meeting: agenda items, participants and meeting roles, invitation responses, attendance and meeting documents, and also responds to the invitation and takes part in the online room. After the meeting, the Secretary uploads audio, corrects the AI speaker-attributed transcript, generates, edits, approves and publishes the summary, and generates, edits and submits the minutes for approval. The current assigned Secretary may cast a vote (UC-65) while the Meeting is InProgress and the Vote is Open, under BR-090 and BR-092.
+
+Figure 12: Use Case Diagram – Secretary
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-secretary.png
 
 ##### 4.3.6 UCs for Participant
 
 The Participant responds to the meeting invitation, joins the online room, views meetings, agenda, documents and media, comments on documents and casts votes when eligible. The Participant can also view reports, notifications and the personal workspace.
 
+Figure 13: Use Case Diagram – Participant
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-participant.png
+
 ##### 4.3.7 UCs for Guest
 
 The Guest verifies the invited email by OTP, then supplies a self-declared display name and optional job title. In the invited Meeting, the Guest participates like a Member: room media/chat/list, all attached documents and comments, invitation response, voting and attendance inclusion, plus separately granted roster/response viewing. The Guest cannot be Chair/Secretary, receive delegated authority, moderate the room or use a personal library. (BR-055)
+
+Figure 14: Use Case Diagram – Guest
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-guest.png
 
 #### 4.4 Permission Matrix
 
@@ -988,6 +1046,10 @@ Notes:
 
 ##### a. Screen Flow
 
+Figure 15: Screen Flow
+
+Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/12-screenflow/TrustCabinet-screen-flow.png
+
 ##### b. Screen List
 
 | # | Screen Name | Feature | Description |
@@ -1030,15 +1092,15 @@ Notes:
 | 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
 | 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
 | 8.7 | In-Room Attendance Panel | FE-08 Online Meeting Room Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest from a separate Attendance panel without leaving the online room; choosing a value saves it. Other users see the same attendance read-only. No totals are shown. |
-| 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
-| 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
-| 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
-| 10.2 | Meeting Summary | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the current Chair and the current Secretary to read the AI draft of the Meeting content in three sections, ask for it again, correct it and approve it; other participants read it once it is approved. The minutes use only an approved draft. Publishing the summary is not implemented in this release. |
+| 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Recording | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
+| 9.2 | Upload Audio Dialog | FE-09 Meeting Recording | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
+| 10.1 | Speaker-Attributed Transcript | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
+| 10.2 | Meeting Summary | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the current Chair and the current Secretary to read the AI draft of the Meeting content in three sections, ask for it again, correct it and approve it; other participants read it once it is approved. The minutes use only an approved draft. The summary is not published outside the Meeting. |
 | 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit, delete and open Draft Votes, and close an open Vote; other involved users view read-only. |
 | 11.2 | Create & Open Vote Dialog | FE-11 Voting Management | Allows the Chair to define a Vote for the current Agenda Item of an InProgress Meeting – content, options, ballot type and eligible voter roles – and save it as a draft or open it immediately. |
 | 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary, Participant or verified Guest to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
 | 11.4 | Vote Result & Conclusion | FE-11 Voting Management | Allows the Chair to view the tallied result of a closed Vote, including public ballots, and record its conclusion – Passed, NotPassed or Deferred – with a note carried into the minutes. |
-| 12.1 | Minutes Editor | FE-12 Meeting Minutes & Approval | Allows the current Chair and the current Secretary to build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, correct the plain text with a live preview, save it, and download it as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. Signing the minutes is not implemented in this release. |
+| 12.1 | Minutes Editor | FE-12 Meeting Minutes & Approval | Allows the current Chair and the current Secretary to build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, correct the plain text with a live preview, save it, and download it as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. The minutes carry no digital signature. |
 | 12.2 | Finalized Meeting Minutes | FE-12 Meeting Minutes & Approval | Allows users involved in the Meeting to view the issued, read-only minutes and download the minutes as a PDF. |
 | 13.1 | Notification Panel | FE-13 Email & In-App Notification | Allows every signed-in internal user to view personal in-app notifications and the unread count, mark one or all as read, and open the meeting a notification refers to. |
 | 13.2 | Meeting Invitation Email | FE-13 Email & In-App Notification | Allows an invited internal participant or external Guest to read the meeting invitation – time, location, Chair and role – and open the response or meeting details from the email. |
@@ -1053,7 +1115,7 @@ Notes:
 | 3 | Resend Email (outbound email API; SMTP as an alternative) | Invitation email delivery and password-reset email → Resend Email | Sends meeting invitation emails (with .ics calendar attachment) from the invitation email queue, and password-reset link emails sent directly when an administrator resets a password. |
 | 4 | LiveKit server – RoomService API & client signalling | TrustCabinet backend (room join) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: backend issues LiveKit access tokens after permission checks and calls RoomService (list/mute/remove participants, delete room); media and signalling flow browser ↔ LiveKit. |
 | 5 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound callback from LiveKit on participant_joined/left, room_finished and track_published, used to record call sessions/attendance and enforce the one-screen-share rule. |
-| 6 | Google AI Provider (planned) | Planned background processing of an uploaded recording → transcript → meeting summary | Converts uploaded meeting audio into a speaker-attributed (diarized) transcript and a draft meeting summary for the Secretary to review; the model runs in-house, and the provider name and model are stored per result. |
+| 6 | AI drafting service | Planned background processing of an uploaded recording → transcript → meeting summary | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results, for the Chair and the Secretary to review (UC-58). It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin (ADR-0054, ADR-0056). Speech recognition and speaker identification run inside the system; the model used is stored with every draft. |
 | 7 | File Storage – SeaweedFS, S3-compatible object storage | Document upload, view and download → TrustCabinet backend → File Storage (SeaweedFS) | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files that were never linked to a document. |
 
 #### 5.3 Background Job Inventory
@@ -1857,7 +1919,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 
 | Primary Actors | Chair | Secondary Actors | None |
 | --- | --- | --- | --- |
-| Description | Allows the current Chair to mute another person's microphone in the room. Muting is one-way: the Chair cannot unmute that person, who may turn the microphone on again. Raising a hand and giving the floor to a speaker is UC-50; muting everyone and removing a person from the room are not part of the current version. |  |  |
+| Description | Allows the current Chair to mute another person's microphone in the room. Muting is one-way: the Chair cannot unmute that person, who may turn the microphone on again. Raising a hand and giving the floor to a speaker is UC-50; muting everyone and removing a person from the room are not provided. |  |  |
 | Preconditions | ● PRE-1: The actor is signed in and is the current Chair of the Meeting. (BR-102)<br>● PRE-2: The Meeting is In Progress and the actor is connected to its room. (UC-43)<br>● PRE-3: The target is a person currently connected to the room whose microphone is on. (BR-102) |  |  |
 | Postconditions | ● POST-1: The target's microphone is off and everyone in the room sees it as off. (BR-102)<br>● POST-2: The target stays in the room and may turn the microphone on again. (BR-102)<br>● POST-3: The target's camera, roles, attendance and the Meeting lifecycle are unchanged. |  |  |
 | Normal Flow | Mute a Participant<br>1. The Chair opens the list of people in the room and finds a person whose microphone is on. (UC-46)<br>2. The Chair chooses to mute that person.<br>3. The system checks that the actor is still the current Chair and that the target is still in the room with the microphone on. (BR-102)<br>4. The system mutes the target's microphone for everyone in the room. (BR-102)<br>5. The system displays MSG342 – “Muted the microphone of {name}.” to the Chair, and MSG339 – “The Chair has muted your microphone. You can turn it back on when you need to speak.” to the target. |  |  |
@@ -2592,6 +2654,8 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 
 #### 1.1 Sign In
 
+Figure 16: Sign In
+
 The Sign In screen is the entry point of the system for every internal user (System Admin, Member, Approver, Chair, Secretary and Participant). It is displayed when a signed-out user opens the application or a meeting link, or when the sign-in session has expired, and supports signing in with email and password or with a Google account; signing out is confirmed from the account menu (UC-01, UC-02, UC-03).
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant to:
@@ -2622,6 +2686,8 @@ Field Description
 
 #### 1.2 Reset Password
 
+Figure 17: Reset Password
+
 The Reset Password screen is opened by the account owner from the one-time link in the password-reset email that the System Admin sent from the Send Password Reset Link Dialog. The link is valid once, for 60 minutes, and lets the user set a new password without signing in; this is the completion part of Reset User Password (UC-07).
 
 This screen allows the account owner (System Admin, Member, Approver, Chair, Secretary or Participant) to:
@@ -2649,6 +2715,8 @@ Field Description
 #### 1.3 Guest Verification
 
 After OTP verification, Guest enters display name and job title. State that only the invited email is verified and display information is self-declared. This revision does not prescribe additional required fields, validation messages or profile-save gates.
+
+Figure 18: Guest Verification
 
 Guest opens the invitation and verifies the invited email by OTP, then enters self-declared display name and job title. The Guest can use Member participation functions only in the invited Meeting. Only email control is verified; display information is not a verified legal identity. (UC-04, BR-055)
 
@@ -2684,6 +2752,8 @@ Field Description
 ### 2. FE-02 – User & Profile Management
 
 #### 2.1 User List
+
+Figure 19: User List
 
 The User List screen is the System Admin’s account management page, reached from Administration › Users [Quản trị › Người dùng] in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link (UC-05, UC-06a–UC-06c, UC-07, UC-08).
 
@@ -2726,6 +2796,8 @@ Field Description
 
 #### 2.2 Create / Edit User Account Dialog
 
+Figure 20: Create / Edit User Account Dialog
+
 The Create / Edit User Account Dialog opens over the User List when the System Admin clicks “Create account” or the Edit action of an account. In create mode it collects full name, email, an initial password and the system role; in edit mode it changes full name, email and system role only (UC-06a, UC-06b, UC-08).
 
 This screen allows the System Admin to:
@@ -2755,6 +2827,8 @@ Field Description
 
 #### 2.3 Send Password Reset Link Dialog
 
+Figure 21: Send Password Reset Link Dialog
+
 The Send Password Reset Link Dialog opens when the System Admin clicks the reset-password action of an account in the User List. It confirms sending a one-time reset link to the user’s registered email; the user then completes the reset on the Reset Password screen (UC-07). The same dialog style is used to confirm deactivating an account (UC-06c).
 
 This screen allows the System Admin to:
@@ -2781,6 +2855,8 @@ Field Description
 ### 3. FE-03 – Role-Based Access Control
 
 #### 3.1 Role List
+
+Figure 22: Role List
 
 The Role List screen is reached from Administration › Roles [Quản trị › Vai trò] in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected (UC-09, UC-11a, UC-11b, UC-11c).
 
@@ -2816,6 +2892,8 @@ Field Description
 
 #### 3.2 Permission Matrix
 
+Figure 23: Permission Matrix
+
 The Permission Matrix screen is the second tab of the Roles page. It shows every role against every system permission as a matrix of toggles so that the System Admin can grant or revoke permissions, saving or undoing changes role by role (UC-09, UC-10).
 
 This screen allows the System Admin to:
@@ -2848,6 +2926,8 @@ Field Description
 #### 3.3 System Audit Log
 
 Note: the current screen does not export CSV, does not show the values before and after a change and has no “5 consecutive attempts” rule (SCRUM-16 D3, D5, D6); the screen specification below is waiting to be updated.
+
+Figure 24: System Audit Log
 
 The System Audit Log screen is reached from Administration › Audit Log [Quản trị › Nhật ký hệ thống] in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, open the before/after details of a change and export the result to CSV (UC-12).
 
@@ -2885,6 +2965,8 @@ Field Description
 
 #### 4.1 Meeting Calendar – Calendar View
 
+Figure 25: Meeting Calendar – Calendar View
+
 The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” [Lịch làm việc] in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked (UC-16, UC-15).
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
@@ -2920,6 +3002,8 @@ Field Description
 | Error state | If the Meetings cannot be loaded the grid shows MSG38 “Unable to load meetings. Please try again.” |
 
 #### 4.2 Meeting Calendar – List View
+
+Figure 26: Meeting Calendar – List View
 
 The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List [Danh sách] toggle of the calendar toolbar and uses the same data and access rules as the calendar (UC-16, UC-15). A Meeting the user has declined is not listed (BR-047, BR-048). On a card of a Published or In Progress Meeting the invitee may also answer the invitation once (UC-31).
 
@@ -2957,6 +3041,10 @@ Field Description
 | Error state | If the Meetings cannot be loaded the list shows MSG38 “Unable to load meetings. Please try again.” |
 
 #### 4.3 Meeting List
+
+Figure 27: Meeting List
+
+Figure 28: Meeting List – time filter open
 
 The Meeting List screen is reached from “Meetings” [Cuộc họp] in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication (BR-016, BR-017, BR-030), or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server (UC-16, UC-15).
 
@@ -2999,6 +3087,10 @@ Field Description
 
 #### 4.4 Create / Edit Meeting
 
+Figure 29: Create Meeting dialog
+
+Figure 30: Edit Meeting dialog
+
 The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” [Sửa thông tin] on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval (UC-13, UC-14). Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
 
 This screen allows the Member to:
@@ -3028,6 +3120,12 @@ Field Description
 | Create meeting [Tạo cuộc họp] / Save changes [Lưu thay đổi] | Primary button (“Tạo cuộc họp” when creating, “Lưu thay đổi” when editing). Validates the fields and the participant list (BR-013); invalid input shows MSG31 “Invalid meeting information.” and highlights the fields, an invalid participant list shows MSG277. Create: the Meeting is saved with status Draft, the creator is recorded as Member and the chosen participants are saved with it (BR-013), toast MSG29 “Meeting created successfully.”, and the Meeting detail opens; a Secretary can still be assigned later on the Participants tab; failure shows MSG35. Edit: allowed only in Draft or Rejected and does not change the status (BR-014); toast MSG30 “Meeting updated successfully.”; MSG33 “This meeting can no longer be edited.” if the status has changed; failure MSG36. |
 
 #### 4.5 Meeting Detail – General Information
+
+Figure 31: Meeting Detail – General Information of a Draft Meeting (Member view)
+
+Figure 32: Meeting Detail – General Information of a Published Meeting with the invitation response banner
+
+Figure 33: Meeting Detail – General Information after accepting the invitation
 
 The Meeting Detail – General Information tab is the default tab of the Meeting detail page, opened from the calendar, the Meeting List or a notification. Only users with an authorized relationship to the Meeting can open it. The header shows the Meeting name, status, confidentiality, the user’s own invitation response and schedule, a lifecycle bar and the action buttons allowed for the current status and the user’s role; from publication onward an invitee other than the Chair who has not answered also sees the attendance question under the lifecycle bar; the tab itself shows the Meeting information, a readiness checklist and the status history (UC-15, UC-31).
 
@@ -3073,6 +3171,8 @@ Field Description
 
 #### 4.6 Submit Meeting for Approval
 
+Figure 34: Submit Meeting for Approval
+
 The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” [Gửi duyệt] on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Organizer chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items under BR-059 (UC-17).
 
 This screen allows the Member to:
@@ -3102,6 +3202,8 @@ Field Description
 | Submit [Gửi duyệt] | Primary button. Re-checks that the Meeting is still Draft or Rejected and the approver is eligible, assigns the approver, changes the status to Pending Approval, records the submission in the history and notifies the approver (BR-018, BR-019, BR-022, BR-023); a success toast is shown. Errors: MSG41 “This meeting can no longer be submitted for approval.”, MSG42 “Unable to submit the meeting for approval. Please try again.”; an ineligible approver must be replaced by another eligible one. |
 
 #### 4.7 Approve / Reject Meeting
+
+Figure 35: Approve / Reject Meeting
 
 The Approve / Reject Meeting function appears on the Meeting detail of a Pending Approval Meeting for its assigned Approver, who usually reaches it from the “pending approval” notification. The approver reviews all tabs in read-only mode and either approves the Meeting or rejects it with a reason. Approval does not publish the Meeting; a rejected Meeting goes back to the Member for correction and resubmission (UC-18).
 
@@ -3133,6 +3235,8 @@ Field Description
 
 #### 4.8 Publish Meeting
 
+Figure 36: Publish Meeting
+
 The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” [Công bố] on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Organizer may change only planned time, location and link; the assigned Secretary may still manage Agenda Items under BR-059. Confirming moves the Meeting to Published and starts invitation delivery (UC-19).
 
 This screen allows the Member to:
@@ -3161,6 +3265,8 @@ Field Description
 | Publish and send invitations [Công bố và gửi lời mời] | Primary button; disabled while a check is Missing. Re-checks that the Meeting is still Approved with a valid planned schedule and the required Chair/Secretary (BR-021), changes the status to Published and records the action in the history (BR-022, BR-023). Invitations are sent asynchronously: in-app notification and email to internal participants, an email with a secure meeting-specific guest invitation to external Guests (BR-031, BR-032, BR-052); a delivery failure is retried and does not revert the Published status. Messages: MSG45 “Meeting published successfully.”, MSG46 “This meeting can no longer be published.”, MSG47 “Unable to publish the meeting. Please try again.” |
 
 #### 4.9 Reschedule Meeting
+
+Figure 37: Reschedule Meeting
 
 The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule” [Dời lịch]. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule (UC-14). The same header carries “Start meeting” for the Chair (UC-20).
 
@@ -3199,6 +3305,8 @@ Field Description
 
 #### 5.1 Meeting Detail – Meeting Content Tab
 
+Figure 38: Meeting Detail – Meeting Content tab
+
 The Meeting Detail – Meeting Content tab shows the agenda of the selected Meeting. Agenda items belong directly to the Meeting and are listed in order with presenter and the number of attached documents; an item has no duration or planned time. Every user related to the meeting can view the agenda; the Secretary builds it (add, edit, delete, drag-and-drop reorder) while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. When the Meeting is InProgress, the same tab switches to the Meeting Facilitation screen (5.3) for the Chair (UC-26, UC-23a, UC-23b, UC-23c, UC-23d). Title, Presenter, Description and document links can be edited, and Items can be reordered, whatever their execution status, Done Items included; only Pending Items can be deleted. The complete Agenda automatically reflects successfully saved changes for its authorized viewers.
 
 This screen allows users related to the meeting (Member, Approver, Chair, Secretary, Participant) to:
@@ -3235,11 +3343,13 @@ Field Description
 
 5.1b Meeting Content Tab – Meeting InProgress
 
-Figure 5.1b – Meeting Content tab while the Meeting is InProgress (Secretary view)
+Figure 39: Meeting Content tab while the Meeting is InProgress (Secretary view)
 
 Once the Meeting is InProgress the agenda list gains a Status [Trạng thái] column (Done [Đã xong], Concluded [Đã kết luận], In discussion [Đang bàn]) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete [Xoá] appears only on Pending rows (UC-23b, UC-23c, UC-23d, BR-063). The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
 
 #### 5.2 Add / Edit Agenda Item Drawer
+
+Figure 40: Add / Edit Agenda Item Drawer
 
 The Add / Edit Agenda Item Drawer slides in from the right of the Meeting Content tab, so the agenda stays visible behind it, when the Secretary clicks “Add content” or chooses Edit on an item. It collects the content to discuss (title), an optional presenter, a note and a checklist of the Meeting’s documents linked to the item, with Cancel and Save buttons. Items can be added or edited only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (UC-23a, UC-23b). All four fields stay editable whatever the Item’s status.
 
@@ -3265,11 +3375,13 @@ Field Description
 | Content to discuss [Nội dung cần bàn] * | Text input, required (*); the title of the agenda item. Empty shows the field error “Agenda item title is required.” (MSG66). |
 | Presenter [Người trình bày] | Dropdown, optional; the hint “Không bắt buộc, có thể chọn sau.” is shown under it. Lists the current internal participants and external Guests of the Meeting; a Guest is shown with “(guest)” [(khách)], e.g. “Ngô Thanh Vân (khách)”. Editable whatever the Item’s status. (BR-064, BR-065) |
 | Note [Ghi chú] | Textarea, optional; description of what will be presented or discussed. Editable whatever the Item’s status. |
-| Documents [Tài liệu] | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-36b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab, and “My documents” [Tài liệu của tôi] is not built yet. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. |
+| Documents [Tài liệu] | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-36b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. |
 | Cancel [Huỷ] | Text button; closes the drawer without saving. |
 | Save [Lưu] | Primary button. Validates the fields and saves. Create: a Pending item is added at the end of the Meeting agenda, toast MSG60; Edit: toast MSG61. MSG67 if the Meeting is no longer Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary (BR-058, BR-059); failure MSG68 / MSG69. Successful changes automatically refresh the complete Agenda for authorized viewers. |
 
 #### 5.3 Meeting Facilitation
+
+Figure 41: Meeting Facilitation
 
 The Meeting Facilitation screen is the Meeting Content tab of a Meeting that is InProgress, after the Chair or the Secretary has started the Meeting (UC-20). It shows the agenda with the execution status and actual times of each item, a card for the current agenda item and a preview of the online room. The Chair sets which item is being discussed, completes it and moves to the next one, may create a vote for the current item and finally ends the Meeting; the assigned Secretary may continue to create, update, delete and reorder Agenda Items, while agenda execution remains Chair-only; other authorized viewers follow the same progress read-only and in real time (UC-24, UC-25, UC-26, UC-21). The Chair must start the first Pending Item in the current order and may complete it regardless of Planned Duration; the next Item never starts automatically. Pending Items stay Pending when the Meeting ends.
 
@@ -3310,6 +3422,12 @@ Field Description
 ### 6. FE-06 – Meeting Participant Management
 
 #### 6.1 Meeting Detail – Participants Tab
+
+Figure 42: Meeting Detail – Participants tab (Secretary view)
+
+Figure 43: Change Role dialog – the Chair hands over the Chair role
+
+Figure 44: Change Role dialog – the Secretary changes a role
 
 The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster, roles and additional permissions; the Organizer may assign the missing Secretary. From Published onward, the Chair may view the roster and invitation responses by default, while a Member or verified Guest needs the relevant additional permission. A Member or verified Guest with View Invitation Responses can see invitee names and email in response rows without gaining roster browsing or search access. View-only access does not permit changes. (UC-29, UC-30a–UC-32, BR-039, BR-016, BR-017)
 
@@ -3369,6 +3487,8 @@ Change Role Dialog. The Change Role dialog opens from the “Đổi vai trò” 
 
 For a Guest invitation, enter name/email and optional additional Meeting permissions. Secret shows inline warning: “Khách được truy cập tài liệu và tham gia như Thành viên của cuộc họp này.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
 
+Figure 45: Add Participant Dialog
+
 The Add Participant Dialog opens from the Participants tab with “Add participants” (Internal users tab) or “Invite external guest” (External guests tab). The Secretary searches active internal users, ticks the people to add and chooses their meeting role, or invites an external Guest by name and email. When the Meeting has no Secretary yet, the Member uses the same dialog to add the missing Secretary (UC-30a).
 
 This screen allows the Secretary (or the Member when adding the missing Secretary) to:
@@ -3400,6 +3520,10 @@ Field Description
 
 #### 6.3 Attendance Check
 
+Figure 46: Attendance Check – the Secretary records attendance
+
+Figure 47: Attendance Check – participant view
+
 Attendance Check is the Attendance [Điểm danh] column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Chưa điểm danh”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7). (UC-33, BR-043, BR-056, BR-057)
 
 This screen allows the Secretary to:
@@ -3421,6 +3545,10 @@ Field Description
 | Attendance [Điểm danh] | For the Secretary a small dropdown: dot and text Present [Có mặt] (green dot) or Absent [Vắng] (grey dot); a dashed empty dropdown reading “Điểm danh” while the person has never been recorded. For everyone else a read-only dot and text, or “Chưa điểm danh” when never recorded. The tooltip reads “<name> điểm danh lúc <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version. Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-043, BR-056, BR-057) On a phone the attendance control and the role chip share one row. |
 
 #### 6.4 Invitation Response
+
+Figure 48: Invitation Response – before answering
+
+Figure 49: Invitation Response – after answering
 
 The Invitation Response screen is a mobile-friendly page opened from the invitation email; an external Guest reaches it after Guest Verification (1.3). Internal users normally answer on the card in the calendar list (4.2) or at the top of the Meeting detail (4.5); this page gives the same answer from a phone. The invitee sees the meeting title, status, confidentiality level, planned time, mode and location, his/her own meeting role and the Chair, and answers Accept or Decline once; after that the answer is shown and cannot be changed. The Chair does not answer. An invitee who never answers is treated as attending (UC-31, UC-04, BR-046, BR-047, BR-048).
 
@@ -3451,6 +3579,8 @@ Field Description
 
 #### 7.1 Document Library – Empty State
 
+Figure 50: Document Library – Empty State
+
 The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library [Kho tài liệu] from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library (UC-37, UC-39, UC-41a).
 
 This screen allows any signed-in internal user (Member, Approver, System Admin, Chair, Secretary, Participant) to:
@@ -3478,6 +3608,8 @@ Field Description
 | File hint | Read-only small text: “Accepts PDF and DOCX, up to 10 MB per file.” [Nhận PDF và DOCX, tối đa 10 MB mỗi tệp.] (BR-069) |
 
 #### 7.2 Personal Document Library
+
+Figure 51: Personal Document Library
 
 The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-37, UC-39, UC-40, UC-41).
 
@@ -3517,6 +3649,8 @@ Field Description
 
 #### 7.3 Meeting Detail – Documents Tab
 
+Figure 52: Meeting Detail – Documents Tab
+
 The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents of each Vote the user can see and the user's own read state; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once; a document linked to a Vote appears only in the Voting group, and a document linked only to a Draft Vote is not shown to a Member or Guest at all (BR-079, BR-080). The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; until the Meeting ends the Chair and the Secretary add documents from the computer or their personal library, attach them to an Agenda Item, unlink them from an item and remove them from the Meeting (UC-35a, UC-35b, UC-36a, UC-36b, UC-36c, UC-36d, BR-079, BR-080).
 
 This screen allows users who can view the meeting (Member, Approver, Chair, Secretary, Participant, and a verified Guest) to:
@@ -3552,6 +3686,8 @@ Field Description
 
 #### 7.4 Add Document to Meeting Dialog
 
+Figure 53: Add Document to Meeting Dialog
+
 The Add Document to Meeting Dialog opens from “Thêm tài liệu chung” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer [Tải từ máy] and From my library [Từ kho của tôi], and also In the meeting [Trong cuộc họp] when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added (UC-36a, UC-36b, UC-68a, BR-070, BR-071).
 
 This screen allows the Chair or the Secretary to:
@@ -3579,6 +3715,8 @@ Field Description
 | Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files, e.g. “Thêm 1 tài liệu” [Add 1 document], or “Gắn 1 tài liệu” [Attach 1 document] for In the meeting. Files from the computer go to the upload tray and are sent one at a time; a file that fails is reported in the tray, with “Thử lại” [Retry] when retrying can help, and does not stop the others. Documents from the library or the meeting are added together or not at all. |
 
 #### 7.5 Document Viewer – Preview & Comments
+
+Figure 54: Document Viewer – Preview & Comments
 
 The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, next to the comments panel. Users who can view the Meeting preview the document and download it unless the Meeting is Secret (UC-35b), and comment and reply until the Meeting ends (UC-38). Opened from a Vote the user has still to cast, it also offers read confirmation once the last page is reached (UC-42).
 
@@ -3616,6 +3754,10 @@ Field Description
 
 #### 8.1 Meeting Lobby
 
+Figure 55: Meeting Lobby
+
+Figure 56: Meeting Lobby – microphone list open
+
 The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button (UC-43, UC-45a, UC-45b, UC-45d, UC-04). The second image shows the open device tray (UC-45d) and, when recording applies to the Meeting, the notice that the meeting is recorded for the minutes and the recording is deleted automatically after 180 days.
 
 This screen allows the Chair, Secretary, Participant and a verified Guest to:
@@ -3647,6 +3789,10 @@ Field Description
 | Room unavailable message | When the Meeting has not started, the page waits with “The room opens only while the meeting is in progress.” [Phòng họp chỉ mở khi cuộc họp đang diễn ra.] and opens the lobby by itself when the Meeting starts. When the Meeting has ended or was cancelled, or is held in person only, the page shows only a message and “Back to the meeting page”; after a dropped connection it also offers “Rejoin” [Vào lại]. Device-permission messages show once in the lobby; {device} is “micro và camera” when both are blocked; the listen sentence is omitted when only the camera is blocked (MSG334–MSG337). |
 
 #### 8.2 Online Meeting Room – Video Grid
+
+Figure 57: Online Meeting Room – Video Grid
+
+Figure 58: Online Meeting Room – call in a floating window
 
 The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. The header back button opens the Meeting detail without leaving the call. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting (UC-43, UC-44, UC-45a, UC-45b, UC-46, UC-49, UC-50). The second image shows the call in the floating window (UC-49): the main window says that the meeting is in the floating window and offers to bring it back.
 
@@ -3689,6 +3835,10 @@ Field Description
 
 #### 8.3 In-Room Participants Panel
 
+Figure 59: In-Room Participants Panel
+
+Figure 60: In-Room Participants Panel – attendance
+
 The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user (UC-46, UC-47). A separate Attendance [Điểm danh] panel beside Participants and Chat lets the Secretary record attendance without leaving the room (UC-33).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
@@ -3712,10 +3862,12 @@ Field Description
 | Speaking indicator | Green dot while the user is speaking. |
 | Microphone state | Microphone icon; shown red and crossed out when the microphone is off. |
 | Tắt mic [Mute] | Outline button shown only to the Chair, on other users whose microphone is on. The user is told “The Chair has muted your microphone. You can turn it back on when you need to speak.” (UC-47). |
-| Not provided | Raising a hand, muting everyone and removing a user from the room are not part of the current version. |
+| Not provided | Muting everyone and removing a user from the room are not provided; raising a hand is UC-50. |
 | Attendance panel [Điểm danh] | Opened with its own icon at the bottom right, beside Participants and Chat. One row per current internal participant and Guest, ordered Chair, Secretary, Member, Guest and then by name: avatar, full name, meeting role and the Attendance cell. The Secretary sees the dashed dropdown “Điểm danh” (never recorded), “Có mặt” or “Vắng”; everyone else reads a dot and text, or “Chưa điểm danh”. Same data, same cell and same rules as the Attendance column of the Participants tab (III.6.3): no Save button, no Present/Absent totals, joining the room never marks anyone Present; MSG151, MSG150 and MSG289 as in III.6.3. “Bạn không còn xem được điểm danh của cuộc họp này.” when access is lost. |
 
 #### 8.4 Screen Sharing & Chat
+
+Figure 61: Screen Sharing & Chat
 
 The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting (UC-45c, UC-48).
 
@@ -3746,7 +3898,9 @@ Field Description
 
 #### 8.5 In-Room Voting Panel
 
-The In-Room Voting Panel is planned and not part of the current version. It adds a Voting icon next to Participants and Chat; the white 360 px panel reuses the components of the Voting tab of the meeting detail page. When the Chair opens a Vote, the panel opens for everyone in the room (UC-62b, UC-65).
+Figure 62: In-Room Voting Panel
+
+The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” [Bỏ phiếu] that opens the panel (UC-62b, UC-65).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
@@ -3767,7 +3921,9 @@ Field Description
 
 #### 8.6 In-Room Documents Panel
 
-The In-Room Documents Panel is built and opens from the Documents icon in the bottom bar of the online room. It reuses the Documents tab component in its room variant and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-35a, UC-35b). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
+Figure 63: In-Room Documents Panel
+
+The In-Room Documents Panel opens from the Documents icon in the bottom bar of the online room. It shows the Documents tab in a room layout and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-35a, UC-35b). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
 
 This screen allows users connected to the room (Chair, Secretary, Participant, and a verified Guest) to:
 
@@ -3788,9 +3944,11 @@ Field Description
 | General documents [Tài liệu chung] | Documents linked to no Agenda Item and to no Vote; a document of a Vote is listed in the Votes group only. |
 | Read-only rule | No add, link or remove actions in the room; documents added from the Documents tab appear in the panel without reloading. To show a page to everyone, the presenter shares the screen (8.4). |
 
-### 9. FE-09 – Meeting Audio Upload & Media Library
+### 9. FE-09 – Meeting Recording
 
 #### 9.1 Meeting Detail – Recordings Tab
+
+Figure 64: Meeting Detail – Recordings Tab
 
 The Meeting Detail – Recordings tab [Bản ghi] is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58).
 
@@ -3832,6 +3990,8 @@ Field Description
 
 #### 9.2 Upload Audio Dialog
 
+Figure 65: Upload Audio Dialog
+
 The Upload Audio Dialog [Tải audio lên] is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab (UC-52).
 
 This screen allows the Secretary to:
@@ -3856,9 +4016,11 @@ Field Description
 | Huỷ [Cancel] | Ghost button; closes the dialog and discards the selected file; an upload in progress is cancelled. |
 | Tải lên [Upload] | Primary button, enabled when a valid file is selected and the consent box is ticked. Uploads the file, adds it to the media library with uploader and upload time, and starts transcription automatically (status Processing on the Recordings tab). If the upload fails, an error is shown and the Secretary can try again. |
 
-### 10. FE-10 – Speaker-Attributed Transcription & Meeting Summary
+### 10. FE-10 – Transcription, Speaker Identification & Meeting Summary
 
 #### 10.1 Speaker-Attributed Transcript
+
+Figure 66: Speaker-Attributed Transcript
 
 The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55, UC-58).
 
@@ -3894,7 +4056,9 @@ Field Description
 
 #### 10.2 Meeting Summary
 
-The Meeting Summary card [Tóm tắt] on the Biên bản tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Mục tiêu và phạm vi cuộc họp, II. Nội dung thảo luận và đánh giá, III. Kết luận và phân công thực hiện — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step in this release (UC-58, UC-59, UC-60, UC-61).
+Figure 67: Meeting Summary
+
+The Meeting Summary card [Tóm tắt] on the Biên bản tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Mục tiêu và phạm vi cuộc họp, II. Nội dung thảo luận và đánh giá, III. Kết luận và phân công thực hiện — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
 
 This screen allows the current Chair and the current Secretary to:
 
@@ -3923,13 +4087,15 @@ Field Description
 | Nguồn từng phần [Sources] | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 câu”, to check against the Bản ghi tab. |
 | Cơ sở dự thảo [What the draft is based on] | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
 | Quyền xem [Visibility rule] | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
-| Không có bước công bố [No publish step] | No Publish button in this release: publishing the summary is not implemented. |
+| Không có bước công bố [No publish step] | No Publish button: the summary is not published outside the Meeting. |
 
 ### 11. FE-11 – Voting Management
 
 Scope: create/open/cast only while Meeting is InProgress. End Meeting is independent of Vote closure. Chair can close and tally existing Open Votes in InProgress or Ended, then record the conclusion. No post-meeting ballot casting, time-boxed voting or quorum. (BR-026, BR-090, BR-092, BR-093)
 
 #### 11.1 Meeting Detail – Voting Tab
+
+Figure 68: Meeting Detail – Voting Tab
 
 The Meeting Detail – Voting tab [Biểu quyết] lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum (UC-62a, UC-62b, UC-63, UC-64, UC-66).
 
@@ -3971,6 +4137,8 @@ Field Description
 
 #### 11.2 Create & Open Vote Dialog
 
+Figure 69: Create & Open Vote Dialog
+
 The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Tạo biểu quyết · Mục 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum (UC-63, UC-64).
 
 This screen allows the Chair to:
@@ -4003,6 +4171,8 @@ Field Description
 
 #### 11.3 Cast Vote
 
+Figure 70: Cast Vote
+
 The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot (UC-65).
 
 This screen allows the Chair, Secretary, Participant and verified Guest (eligible voters) to:
@@ -4024,6 +4194,8 @@ Field Description
 | Immutability note [Phiếu đã gửi không sửa được.] | Read-only hint: a submitted ballot cannot be changed or withdrawn. |
 
 #### 11.4 Vote Result & Conclusion
+
+Figure 71: Vote Result & Conclusion
 
 The Vote Result & Conclusion screen is shown on the Voting tab after the Chair closes a Vote. It presents the tally per option and, for a public Vote, each person’s choice. The Chair then records the conclusion Passed, NotPassed or Deferred; the tally and conclusion are carried into the Meeting Minutes (UC-62b, UC-67).
 
@@ -4052,6 +4224,8 @@ Field Description
 ### 12. FE-12 – Meeting Minutes & Approval
 
 #### 12.1 Minutes Editor
+
+Figure 72: Minutes Editor
 
 The Minutes Editor is the Biên bản tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — Biên bản cuộc họp theo Mẫu 1.4 Nghị định 30/2020/NĐ-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74).
 
@@ -4084,6 +4258,8 @@ Field Description
 
 #### 12.2 Finalized Meeting Minutes
 
+Figure 73: Finalized Meeting Minutes
+
 The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version (UC-69, UC-73).
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant (within their meeting scope) to:
@@ -4108,6 +4284,8 @@ Field Description
 ### 13. FE-13 – Email & In-App Notification
 
 #### 13.1 Notification Panel
+
+Figure 74: Notification Panel
 
 The Notification Panel opens from the bell at the bottom of the sidebar and is anchored next to it, over the current page. Every signed-in user uses it to read in-app notifications, mark them as read and open the related meeting (UC-76, UC-77a, UC-77b, UC-78).
 
@@ -4138,6 +4316,8 @@ Field Description
 
 #### 13.2 Meeting Invitation Email
 
+Figure 75: Meeting Invitation Email
+
 This email is sent asynchronously to internal participants and external Guests when a Meeting is published, or when a person is added to a Published or InProgress Meeting. Its buttons lead to the Invitation Response screen (6.4); a Guest first verifies the invited email with a one-time code on Guest Verification (1.3) (UC-31, UC-04).
 
 This email allows the invited Chair, Secretary, Participant or Guest to:
@@ -4166,6 +4346,8 @@ Field Description
 ### 15. FE-15 – Reporting & Statistics
 
 #### 15.1 Reports & Statistics
+
+Figure 76: Reports & Statistics
 
 The Reports & Statistics screen is reached from Reports [Báo cáo] in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
 
@@ -4259,16 +4441,16 @@ Runs inside the backend only when SMTP is enabled. It queues the invitation emai
 | Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by a periodic reconciliation. |
 | Status | Built. |
 
-#### 17.6 Google AI Provider – draft meeting summary (API-06) – planned
+#### 17.6 AI drafting service – draft of the Meeting content (API-06)
 
-| URL | An external generative-AI service called over HTTPS (Google's AI API); not connected yet. |
+| URL | The team's own AI server, reached over the team's private network, or an outside AI API over HTTPS with the address, model and key the System Admin sets on the AI configuration screen. |
 | --- | --- |
-| Purpose | Turns the transcript reviewed by the Secretary into a draft meeting summary (UC-58). Transcription and speaker identification are not part of this interface: they run inside the system. |
-| Caller | TrustCabinet backend background processing (planned) → Google AI Provider. |
-| Auth | API key kept in user-secrets/environment variables, never in the code base. |
-| Request / Response | Input: the transcript text of a Recording after the Secretary has reviewed it. Output: a MeetingSummary draft; the provider name and model are stored per result. |
-| Failure handling | Transcript has status Pending/Processing/Completed/Failed, ProgressPercent and ErrorMessage so a failure is shown and can be re-run; the AI never writes formal minutes and summaries stay marked unreviewed until the Secretary reviews them. |
-| Status | Planned (FE-10, UC-58). Only transcript text that the Secretary has reviewed is sent, never audio or voice data; the AI never writes formal minutes and the summary stays a draft until the Secretary approves it. |
+| Purpose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results (UC-58). Transcription and speaker identification are not part of this interface: they run inside the system. |
+| Caller | TrustCabinet backend background processing → AI drafting service. |
+| Auth | The outside API key is entered by the System Admin and stored encrypted; it is never returned to the browser or written to a log. The team's own server is reachable only inside the team's private network. |
+| Request / Response | Input: the transcript text, the agenda and the closed vote results of one Meeting, never audio or voice data. Output: the draft of the three sections; the model used is stored with the draft. |
+| Failure handling | A draft waits in a queue and is written one Meeting at a time (Queued, Running, Ready, Failed); a failed draft is shown and can be asked for again. When no AI server is ready the request is refused (MSG394). The draft never becomes the minutes by itself: the Chair or the Secretary reviews it first. |
+| Status | Only a Normal Meeting may be sent to the outside API; Internal, Secret and Top Secret Meetings always use the team's own server (BR-129, ADR-0056). |
 
 #### 17.7 File Storage – SeaweedFS (API-07)
 
@@ -4291,7 +4473,7 @@ TrustCabinet is a self-hosted web application installed for a single organisatio
 
 - Hardware interface: The system requires no special-purpose hardware. Clients: any PC, laptop, tablet or phone able to run a supported browser; joining the online meeting room additionally requires a microphone and speakers/headset, and optionally a camera, granted to the browser by the user. The system never activates a user's microphone or camera on its own and never records the meeting (Report 1, LI-01). Server: a single x86-64 host (physical or virtual) running Linux inside TrustSoft's network; recommended baseline 8 vCPU, 16 GB RAM and 500 GB of storage for documents and meeting audio, excluding speech/AI processing. If the speech-processing model is self-hosted, additional compute (possibly a GPU) is sized once the processing environment is decided (Report 2, risk R03).
 
-- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API; any standards-compliant SMTP server can be used instead) - outgoing invitation (with .ics calendar attachment), reminder, approval and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU, planned) - audio, video and screen-sharing for the online meeting room. (6) Speech-processing and summarisation provider - converts uploaded meeting audio into a speaker-attributed Vietnamese transcript and a draft summary. Whether this runs self-hosted or as an external API is not yet decided; the provider must be reachable through one internal interface so it can be replaced without changing the rest of the system, and the provider/model used is recorded with every result. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
+- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API; any standards-compliant SMTP server can be used instead) - outgoing invitation (with .ics calendar attachment), reminder, approval and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU) - audio, video and screen-sharing for the online meeting room. (6) AI drafting service - writes the draft of the Meeting content from the transcript, the agenda and the vote results. It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin; it receives text only, and the model used is recorded with every draft. Speech recognition and speaker identification run inside the system and send nothing outside. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
 
 - Communication interfaces: All browser-server traffic uses HTTPS (TLS 1.2 or later) on a single origin; plain HTTP is redirected to HTTPS or refused. Data is exchanged as JSON (UTF-8) over a REST-style API. Real-time in-app notifications, agenda and vote updates use a WebSocket channel secured with TLS (WSS) and fall back to automatic reconnection when the connection drops. Online meeting media is transmitted with WebRTC and is always encrypted in transit (DTLS-SRTP); a relay (TURN) path over TLS is available for clients behind restrictive firewalls. Outgoing email is sent over SMTP with TLS (implicit TLS or STARTTLS). Calls from the server to Google and to any external speech/AI provider use HTTPS only. A health-check endpoint is exposed for monitoring the running instance.
 
