@@ -93,3 +93,35 @@ for p in fe-01 fe-02 fe-03 fe-04 fe-05 fe-06 fe-09 fe-11 fe-12 fe-13 fe-14 fe-16
   luôn start từ `backend/TrustCabinet.Web`.
 - `docker start trustcabinet-postgres trustcabinet-redis trustcabinet-files e2e-mailpit trustcabinet-livekit`
   (volume `trustcabinet_*` giữ nguyên DB; đừng `compose up` tạo project mới làm lệch volume).
+
+## 6. Round 2 chiều 25/11 — AC18/23/30 xanh, nhóm AI chốt thiếu RAM (không chạy)
+
+- AC18 xanh (SCRUM-197/071949): enrolled B đúng giọng voice-2 thì matcher gợi ý B, score 0.9956,
+  tooltip "Khớp giọng nhất". Fix: enrol2 = p1.mp3 loop 6 lần qua đúng chain `low` của s2a
+  (cùng một giọng với voice-2 trong transcript); bản munchkin-said cũ VAD từ chối (422 too_short),
+  bản rubberband tuy qua gate (speech 12.9 s) nhưng matcher không nhận (suggestion rỗng) — bằng chứng
+  trong log. Lookup giọng trong plan bỏ hardcode "Tôi đề nghị…/Kính thưa…" (wording trôi theo worker),
+  lấy giọng khác giọng câu đầu; expect chữ "tên đã gán" thêm flag /i (dialog viết hoa Chữ).
+- AC23 xanh (SCRUM-197/071140): nguyên nhân là bytes 2 bản ghi meeting A mất từ trước round 1
+  (backend 500 FileNotFoundException trong App_Data, log backend-qa3 đã có) — player `err: 4`,
+  không phải bug player. Đã xoá 2 hàng hỏng qua API (MSG296), plan tự tải lại + gỡ băng lại.
+  Probe "no audio response" cũ trong plan là sai (audio nạp lúc mở dòng, seek không gọi mới) —
+  đã thay bằng đọc trạng thái element audio.
+- AC30 xanh 2/2 (SCRUM-195/071335): path fixture sai `tests/fixtures` → `tests/qa/fixtures`
+  (cùng lỗi SAID_WAV đợt 1); assertion nới thành "Thư ký xuất hiện chấm trong 60 s" vì mic giả
+  của người xem cũng chớp "đang nói" (desktop chớp đúng người xem trước, phone đúng Thư ký).
+- AC45: fix plan sót — scope nút "Tạo lại" vào `#summary-ask` (3 chỗ, strict-mode 2 nút).
+- Nhóm AI fe-10 trong lượt nhiễu (backend chết 07:21–07:27 vì hết RAM, ollama bị tắt 07:26 để cứu
+  backend): 10 pass (AC25, AC34, AC35, AC37 desktop+phone, AC38, AC39, AC43, AC44);
+  AC36/59/60 fail trong cửa outage → reviewer chạy lại (không kết luận bug).
+  Run out/SCRUM-197/20261125-072019-9289d8ae BỎ, không dùng.
+- fe-12 AI: 4 inconclusive đúng (AC24 cần macOS `say`, máy Windows không có).
+- Hạ tầng round 2: model qwen2.5:7b (4.7GB) + backend + browser không vừa RAM còn lại (~2.8GB,
+  app dev ăn hết); backend bị kill 2 lần (BACKEND5_EXIT=1, BACKEND6_EXIT=1, log chỉ có 3 dòng,
+  health check ECONNREFUSED). Ollama đã tắt để cứu backend; reviewer chạy nhóm AI phải dọn
+  6GB+ RAM trống trước (tắt Edge/VS Code/Discord/Zalo), start `ollama serve`, kiểm tra
+  `/api/tags` rồi mới chạy. Backend start từ `backend/TrustCabinet.Web`, kiểm tra `/api/health`.
+- Reviewer chạy (mỗi lệnh có `--base http://localhost:5225`):
+  `node run.mjs plans/fe-10.mjs --only AC36,AC45,AC59,AC60`,
+  `node run.mjs plans/fe-12.mjs --only AC21,AC22,AC24` (AC24 sẽ inconclusive trên Windows,
+  cần macOS mới xanh), rồi full regression §3C. Ghi kết quả vào bảng §4 (report.html mới nhất).

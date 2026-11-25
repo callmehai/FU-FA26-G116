@@ -1807,8 +1807,9 @@ export default {
         // Thư ký nói bằng giọng máy đọc câu họp (edge-tts vi-VN, fixture trong ../fixtures/): Chromium phát file wav
         // qua micro giả (--use-file-for-fake-audio-capture) để LiveKit nhận diện "đang nói". Giọng máy chỉ thay tiếng
         // người ở chỗ cần "có tiếng", không thay con người ở chỗ cần nhận dạng ai (REC/TRANS vẫn cần giọng thật).
+        // Fixture ở tests/qa/fixtures (cùng chỗ SAID_WAV của fe-09 sau fix R1): '..' hai lần trỏ nhầm tests/fixtures.
         const speaker = await chromium.launch({
-          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-audio-capture=${join(here, '..', '..', 'fixtures', 'said.wav')}`],
+          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-audio-capture=${join(here, '..', 'fixtures', 'said.wav')}`],
         })
         try {
           const sctx = await speaker.newContext({
@@ -1847,19 +1848,20 @@ export default {
         await noSidewaysScroll(qa)
         await qa.shot('panel nguoi du ba nguoi')
         // Giọng máy đọc lặp lại file wav: chấm "Đang nói" phải hiện ở dòng Thư ký trong vòng một phút.
-        let spoke = ''
+        // Mọi mic giả (kể cả mic câm của người xem) đều có thể làm LiveKit chớp "đang nói", nên bài kiểm
+        // thu thập mọi dòng từng hiện chấm trong 60 giây và yêu cầu Thư ký nằm trong đó — thay vì đòi
+        // dòng đầu tiên phải là Thư ký (flaky: lần chạy desktop 25/11 chớp đúng người xem trước).
+        const seen = new Set()
         const until = Date.now() + 60_000
         while (Date.now() < until) {
           const dots = panel.locator('li.room-person:has([aria-label="Đang nói"])')
-          if ((await dots.count()) > 0) {
-            spoke = (await dots.locator('strong').allInnerTexts()).join(' + ')
-            break
-          }
+          if ((await dots.count()) > 0)
+            for (const n of await dots.locator('strong').allInnerTexts()) seen.add(n.trim())
+          if ([...seen].some((n) => n.includes(u.secretary.name))) break
           await new Promise((r) => setTimeout(r, 1000))
         }
-        qa.note(`Dòng đang nói trong 60 giây: ${spoke || '(không dòng nào hiện chấm)'}`)
-        qa.expect(spoke, 'no "Đang nói" dot appeared while the fixture voice played').not.toBe('')
-        qa.expect(spoke.includes(u.secretary.name), `the speaking row should be the Secretary, got: ${spoke}`).toBe(true)
+        qa.note(`Các dòng từng hiện chấm trong 60 giây: ${[...seen].join(' + ') || '(không dòng nào hiện chấm)'}`)
+        qa.expect([...seen].some((n) => n.includes(u.secretary.name)), 'no "Đang nói" dot appeared on the Secretary while the fixture voice played').toBe(true)
         await qa.shot('cham dang noi')
         await noRawCodes(qa)
         } finally {

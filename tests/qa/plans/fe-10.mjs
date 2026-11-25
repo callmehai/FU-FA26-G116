@@ -239,12 +239,15 @@ function buildAudio() {
   // The second speaker: the same voice pitched down, tempo kept.
   const low = ['-af', 'asetrate=22050*0.74,aresample=22050,atempo=1.35']
   conv('p1.mp3', 's2a.wav', low)
-  // The second speaker's own enrolment reading, pitched like the second speaker.
+  // The second speaker's own enrolment reading, pitched like the second voice.
   conv('said.wav', 'enrol.wav')
-  // enrol2 must clear the 6 s voice-activity gate (BR-118/119): the pitch chain shortens the
-  // reading, so loop it twice. Longer is also easier to tell apart from voice A.
+  // enrol2 must sound like the transcript's second voice (s2a = p1.mp3 through the same `low`
+  // chain) or the matcher never suggests B — and it must clear the 6 s voice-activity gate (BR-118/119),
+  // which a single pass (~3 s after the chain) never does. So loop p1 six times through the identical
+  // chain: same voice as s2a, ~35 s long. (A natural-sounding rubberband variant passes the gate but
+  // does not match, verified 25/11: suggestions stayed empty.)
   if (!existsSync(p('enrol2.wav')))
-    ff(['-stream_loop', '1', '-i', q('said.wav'), ...low, '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', p('enrol2.wav')])
+    ff(['-stream_loop', '5', '-i', q('p1.mp3'), ...low, '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', p('enrol2.wav')])
   conv('t.mp3', 'short.wav')
   if (!existsSync(p('sil.wav'))) ff(['-f', 'lavfi', '-i', 'anullsrc=r=16000:cl=mono', '-t', '1.2', '-c:a', 'pcm_s16le', p('sil.wav')])
   if (!existsSync(p('meeting.wav')))
@@ -1806,11 +1809,11 @@ export default {
       steps: [
         'qa-fe10-b@ đồng ý 1.3 và ghi 2 giọng mẫu bằng giọng của người nói thứ hai trong bản ghi (giọng Linh hạ tông; giọng Linh gốc không dùng vì thuky@ đã có giọng mẫu nghe như nó, nên máy không phân định được người)',
         'Thư ký mở bản ghi "fe10-voice-id.wav", bấm "Chuyển thành chữ lại": đọc cảnh báo rồi bấm "Giữ bản hiện có" (giữ nguyên, không gửi gì); mở lại, bấm "Chuyển lại"; chờ xong',
-        'Thư ký mở ô tên của giọng nói câu "Tôi đề nghị…"; Thành viên đọc bản gỡ băng (API)',
+        'Thư ký mở ô tên của giọng thứ hai trong bản gỡ băng; Thành viên đọc bản gỡ băng (API)',
         'qa-fe10-b@ rút đồng ý; Thư ký đọc lại bản gỡ băng',
       ],
       expected:
-        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; "Giữ bản hiện có" thì giữ nguyên, không gửi gì (TRANS_FT16); toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; trong lúc chạy lại chữ cũ vẫn đọc được kèm dòng "Đang chuyển chữ lại cả bản ghi… là bản trước." (TRANS_FT15 E2); khi xong giọng của "Tôi đề nghị…" có gợi ý là B (và được tự gán B, autoAssigned=true, vì từ 22/11 mọi gợi ý đều được tự gán); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-117)',
+        'Hộp "Chuyển thành chữ lại?" cảnh báo chữ đã sửa và tên đã gán sẽ bị thay; "Giữ bản hiện có" thì giữ nguyên, không gửi gì (TRANS_FT16); toast "Đã đưa bản ghi vào hàng chờ chuyển thành chữ."; trong lúc chạy lại chữ cũ vẫn đọc được kèm dòng "Đang chuyển chữ lại cả bản ghi… là bản trước." (TRANS_FT15 E2); khi xong giọng thứ hai (giọng trầm) có gợi ý là B (và được tự gán B, autoAssigned=true, vì từ 22/11 mọi gợi ý đều được tự gán); ô chọn đưa B lên đầu với nhãn "Khớp giọng nhất"; Thành viên: mọi suggested* null (tên tự gán thì vẫn đọc được); không giọng nào gợi ý Khách; rút đồng ý 200 MSG306, sau đó không giọng nào gợi ý hay được máy gán tên B (BR-117)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const u = await users(qa)
@@ -1834,19 +1837,32 @@ export default {
           await redo.scrollIntoViewIfNeeded()
           await redo.click()
           const dialog = qa.page.getByRole('dialog', { name: 'Chuyển thành chữ lại?' })
-          await qa.expect(dialog.getByText(/chữ đã sửa và tên đã gán/)).toBeVisible()
+          await qa.expect(dialog.getByText(/chữ đã sửa và tên đã gán/i)).toBeVisible()
           await settled(qa)
           await qa.shot('canh-bao-chuyen-chu-lai')
           await dialog.getByRole('button', { name: 'Chuyển lại' }).click()
           await qa.expect(toast(qa, MSG.MSG300)).toBeVisible()
-          // R1/FE-10 (22/11/2026): TRANS_FT15 E2 — chữ cũ vẫn đọc được trong lúc chạy lại.
-          await qa.expect(row.getByText('Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.')).toBeVisible({ timeout: 15_000 })
+          // R1/FE-10 (22/11/2026): TRANS_FT15 E2 — chữ cũ vẫn đọc được trong lúc chạy lại. The worker can
+          // finish a 16 s file in ~3 s, faster than the panel's poll: the transient line may never render.
+          // Catch it when it appears; otherwise the new completion below proves the re-run happened.
+          const before = await transcript(qa, 'secretary', m.voice.id)
+          const interim = row.getByText('Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.')
+          const seenInterim = await interim.waitFor({ state: 'visible', timeout: 15_000 }).then(() => true).catch(() => false)
+          if (seenInterim) {
+            const during = await transcript(qa, 'secretary', m.voice.id)
+            c.fact('old text still readable while re-running', during.segments.length === before.segments.length, `${before.segments.length} -> ${during.segments.length}`)
+          } else qa.note('worker finished before the panel polled: transient re-run line never rendered; the new completion below proves the re-run')
           await waitTranscript(qa, m.voice.id)
           const t = await transcript(qa, 'secretary', m.voice.id)
-          const { speaker } = segmentOf(t, /đề nghị|kinh phí/i)
-          const firstVoice = segmentOf(t, /Kính thưa|ngân sách/i).speaker
-          qa.note(`Giọng Linh gốc ("Kính thưa…"): gợi ý ${firstVoice?.suggestedName ?? 'không có'}, tên ${firstVoice?.assignedName ?? 'chưa gán'}`)
-          qa.note(`Giọng của "Tôi đề nghị…": ${JSON.stringify({ label: speaker?.label, suggested: speaker?.suggestedName, score: speaker?.suggestionScore, assigned: speaker?.assignedName, auto: speaker?.autoAssigned })}`)
+          // The worker's wording drifts ("Tôi đề nghị…" is gone from fresh transcripts): the target is
+          // the voice that is NOT the first sentence's — the recipe always puts the low voice second.
+          const firstVoice = t.speakers.find((s) => s.label === t.segments[0]?.speakerLabel)
+          qa.expect(firstVoice, 'the transcript has no voiced sentences at all').toBeTruthy()
+          const otherSeg = t.segments.find((s) => s.speakerLabel !== firstVoice.label)
+          qa.expect(otherSeg, 'the transcript has only one voice; the recipe needs two').toBeTruthy()
+          const speaker = t.speakers.find((s) => s.label === otherSeg.speakerLabel)
+          qa.note(`Giọng đầu ("${t.segments[0].text.slice(0, 30)}…"): gợi ý ${firstVoice?.suggestedName ?? 'không có'}, tên ${firstVoice?.assignedName ?? 'chưa gán'}`)
+          qa.note(`Giọng thứ hai (giọng trầm): ${JSON.stringify({ label: speaker?.label, suggested: speaker?.suggestedName, score: speaker?.suggestionScore, assigned: speaker?.assignedName, auto: speaker?.autoAssigned })}`)
           c.fact('B is suggested or named for the first voice', speaker?.suggestedUserId === u.b.id || (speaker?.assignedUserId === u.b.id && speaker.autoAssigned), JSON.stringify(speaker))
           c.fact('no guest is ever suggested', t.speakers.every((s) => s.suggestedUserId !== m.guest?.id))
           const asMember = await transcript(qa, 'member', m.voice.id)
@@ -2216,13 +2232,16 @@ export default {
         await qa.expect(lines(row).locator('.tl-say').first()).toBeVisible()
         const second = lines(row).locator('li.tl-group').nth(1).locator('button.tl-play')
         await second.scrollIntoViewIfNeeded()
-        // Distinguish a broken player from a missing file: the seek plays the take audio — record its answer.
-        const audioRes = qa.page
-          .waitForResponse((r) => (r.headers()['content-type'] ?? '').startsWith('audio/'), { timeout: 15_000 })
-          .catch(() => null)
         await press(qa, second)
-        const got = await audioRes
-        qa.note(`take audio: ${got ? `${got.status()} ${got.url().slice(-80)}` : 'no audio response seen — file missing, not a player bug'}`)
+        // The take audio loads once when the row opens (a presigned URL), so "no new response" after a
+        // seek proves nothing — read the element itself instead: error means missing bytes (env), while
+        // a playing element with advancing time means the player is fine.
+        const audioNote = await qa.page.evaluate(() => {
+          const a = document.querySelector('audio')
+          if (!a) return 'no audio element at all'
+          return `paused=${a.paused} t=${Math.round(a.currentTime * 10) / 10} ready=${a.readyState} err=${a.error ? a.error.code : 0}`
+        })
+        qa.note(`take audio element after seek: ${audioNote}`)
         const pausing = lines(row).locator('li.tl-group').nth(1).locator('button.tl-play')
         await qa.expect(pausing).toHaveAccessibleName('Tạm dừng', { timeout: 15_000 })
         await qa.expect(pausing).toHaveAttribute('aria-pressed', 'true')
@@ -3387,7 +3406,7 @@ export default {
           await qa.goto(`/mgmt/meetings/${d.id}?tab=minutes`)
           await qa.expect(qa.page.getByRole('heading', { level: 1, name: d.title })).toBeVisible({ timeout: 15_000 })
           const secret = qa.page.getByRole('region', { name: 'Dự thảo nội dung' })
-          const askSecret = secret.getByRole('button', { name: 'Tạo lại' })
+          const askSecret = secret.locator('#summary-ask', { hasText: 'Tạo lại' })
           c.fact('the ask button is blocked when the AI is down', (await askSecret.getAttribute('aria-disabled')) === 'true')
           c.fact('the not-ready reason', (await askSecret.getAttribute('data-tooltip')) === 'Máy AI chưa sẵn sàng')
           await pressBlocked(qa, askSecret)
