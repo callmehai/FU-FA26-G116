@@ -65,6 +65,9 @@ Tên local → tên Drive đang dùng (`file_map`, `dir_map`):
 | `06-sequencediagram/notification-management/` | `Notification Management/` |
 | `06-sequencediagram/document-management/` | `Document Management/` |
 | `06-sequencediagram/voting-management/` | `Voting Management/` |
+| `06-sequencediagram/minutes-management/` | `Minutes Management/` |
+| `06-sequencediagram/calendar-sharing/` | `Calendar Sharing/` |
+| `06-sequencediagram/reporting/` | `Reporting/` |
 | `06-sequencediagram/drawio-png/` | `drawio/` |
 | `06-sequencediagram/TrustCabinet_Sequence_Diagrams.drawio` | `drawio/TrustCabinet_Sequence_Diagrams.drawio` |
 | `14-uc-diagram/uc-chair.png` | `trustcabinet-use-cases-Chair.drawio.png` |
@@ -136,7 +139,17 @@ python scripts/push_diagrams.py sequence --prune --confirm
 6. `--check` trả exit 1 khi còn `create`, `update` **hoặc** `rename` chưa thực hiện, nên dùng được
    trong CI hay trước khi họp.
 
-## Hiện trạng (25/10/2026)
+## Hiện trạng (25/11/2026)
+
+Đã chạy `all --confirm` từ nhánh `docs/diagram-audit-fixes`: 371 create, 93 update, 5 unchanged; lần chạy sau thấy
+469/469 file khớp. Ba thư mục sequence mới vào `dir_map`: `Minutes Management`, `Calendar Sharing`, `Reporting`.
+
+Còn **278 file remote-only** trong nhóm `sequence` (tên theo số UC cũ, trước đợt đánh số lại; 92 file trong `drawio/`).
+`--prune --confirm` dừng ở `403 insufficientFilePermissions`: cả 278 file thuộc tài khoản đã tạo chúng ở lần đồng bộ đầu,
+tài khoản khác chỉ có quyền sửa nên Drive không cho chuyển vào thùng rác. Chủ file cần tự chạy
+`python scripts/push_diagrams.py all --prune --confirm`, hoặc chuyển quyền sở hữu trước.
+
+## Lần đồng bộ đầu (25/10/2026)
 
 Đã chạy `all --confirm` bằng credential thật và `all --check` trả **UP TO DATE: 202 file, 0 create,
 0 update, 0 rename, không còn file remote-only**. Chi tiết lần đồng bộ đầu tiên:

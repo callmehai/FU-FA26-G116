@@ -9,7 +9,7 @@ public sealed class FileStorageOptions
 {
     public const string SectionName = "FileStorage";
 
-    /// <summary>R2: <c>https://&lt;account-id&gt;.r2.cloudflarestorage.com</c>; dev: <c>http://localhost:8333</c>.</summary>
+    /// <summary>Server: <c>http://files:8333</c> (SeaweedFS on the Docker network); dev: <c>http://localhost:8333</c>.</summary>
     public string ServiceUrl { get; set; } = string.Empty;
     public string BucketName { get; set; } = string.Empty;
     public string AccessKeyId { get; set; } = string.Empty;

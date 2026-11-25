@@ -123,6 +123,9 @@ GROUPS: tuple[Group, ...] = (
                     "meeting-recording": "Meeting Recording",
                     "transcription-voice-id": "Transcription & Voice ID",
                     "online-meeting-room": "Online Meeting Room",
+                    "minutes-management": "Minutes Management",
+                    "calendar-sharing": "Calendar Sharing",
+                    "reporting": "Reporting",
                     "drawio-png": "drawio",
                 },
                 file_map={
