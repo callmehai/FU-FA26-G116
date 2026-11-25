@@ -6,7 +6,7 @@ control ":Meeting Document Controller" as DocumentController
 control ":Meeting Document Service" as DocumentService
 participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Meeting Document Repository" as MeetingDocumentRepository
-participant ":Object Storage (R2)" as FileStorage
+participant ":File Storage" as FileStorage
 database ":Database" as Database
 
 Actor->DocumentsTab: Submit the selected files

@@ -64,7 +64,7 @@ kích thước khai báo trước khi đọc thân request (EX-8), đọc reques
 từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 10 MB — EX-3/EX-8; họp 19/11/2026, trước là 200 MB / 50 MB), ghi dòng tệp lưu trữ trước khi đẩy byte,
 đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Số trang PDF do server đếm (trước
 02/11/2026 là trình duyệt gửi kèm `pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
-`:File Storage` là kho đối tượng S3 tự host (SeaweedFS, [deploy/README.md §9](../../../deploy/README.md)); file `.txt`, tab draw.io và PNG của UC-36a, UC-36b, UC-39 còn ghi tên cũ `:Object Storage (R2)`, chờ vẽ lại;
+`:File Storage` là kho đối tượng S3 tự host (SeaweedFS, [deploy/README.md §9](../../../deploy/README.md)); ba UC tải lên UC-36a, UC-36b, UC-39 vẽ lại ngày 25/11/2026 với tên này thay cho `:Object Storage (R2)` cũ (ADR-0084);
 lỗi ở bước nào thì xoá các tệp đã đẩy để giữ "tất cả hoặc không" (UC-36a, UC-36b, UC-39). Job dọn tệp mồ côi (BR-077) là job nền nên không vẽ
 sequence, theo §10 của [README chung](../README.md).
 

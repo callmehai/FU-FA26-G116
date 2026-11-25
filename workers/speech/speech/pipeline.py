@@ -133,6 +133,12 @@ MIN_SPEAKER_S = 2.0
 # people → 18, and 26 for 12 → 10, DER 16.2% → 13.3% and 18.1% → 16.5% (README, "Hiệu chỉnh"). A short meeting is
 # untouched: 2% of three minutes is under MIN_SPEAKER_S. The price is that a person who says less than that share is
 # written under the nearest voice, as one who said a single word already was.
+# The fold runs after the second pass (MERGE_THRESHOLD), turn by turn: each turn of a small voice goes to the closest
+# voice judged on the whole turn (Engine._fold_small_voices). Folding 3-second windows before the second pass, as it
+# first did, moved 15% of the windows of that 24/11 meeting into the large clusters; the mixed clusters then missed
+# the 0.8 of the second pass, and one person 17 minutes long came out as three voices (11, 4 and 2 minutes). Turn by
+# turn after the merge it stays one voice of 17 minutes; on the synthetic meetings DER 16.5% → 16.0% (far-hard) and
+# 20.4% → 20.2% (far-test), the same elsewhere, with the same number of voices.
 MIN_SPEAKER_SHARE = 0.02
 # Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"; ADR-0074). 0.5
 # was tuned on synthetic clips (17 of 20 right) and on real rooms split 4 people into 41 voices (team
@@ -497,12 +503,6 @@ def nearest(vector: np.ndarray, by_label: dict[int, np.ndarray]) -> int:
     return max(by_label, key=lambda label: float(vector @ by_label[label]))
 
 
-def least_windows(count: int) -> int:
-    """Windows a cluster needs to be a speaker of its own, out of `count` windows of speech: MIN_SPEAKER_S, or
-    MIN_SPEAKER_SHARE of the recording's speech when that is more. Windows overlap by half, so each stands for HOP_S."""
-    return math.ceil(max(MIN_SPEAKER_S, MIN_SPEAKER_SHARE * count * HOP_S) / HOP_S - 1e-9)
-
-
 def fold_small_clusters(vectors: np.ndarray, labels: np.ndarray, min_count: int) -> np.ndarray:
     """Move the windows of every cluster smaller than `min_count` to the nearest large cluster."""
     counts = {int(label): int(count) for label, count in zip(*np.unique(labels, return_counts=True))}
@@ -782,6 +782,30 @@ class Engine:
             turns = [(start, end, keep if label == drop else label) for start, end, label in turns]
         return merge_turns(turns)
 
+    def _fold_small_voices(self, regions: list[tuple[int, np.ndarray]],
+                           turns: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+        """Give each turn of a voice under MIN_SPEAKER_SHARE of the speech to the closest of the other voices, judged on
+        the whole turn against each voice's own embedding, after _merge_same_voices has joined one person's parts."""
+        held: dict[int, int] = defaultdict(int)
+        for start, end, label in turns:
+            held[label] += end - start
+        least = MIN_SPEAKER_SHARE * sum(held.values())
+        large = {label for label, length in held.items() if length >= least}
+        if not large or len(large) == len(held):
+            return turns
+        parts: dict[int, list[np.ndarray]] = defaultdict(list)
+        for start, end, label in turns:
+            if label in large:
+                parts[label].append(self._slice(regions, start, end))
+        voices = {label: self._voice(audio) for label, audio in parts.items()}
+        folded = []
+        for start, end, label in turns:
+            if label not in large:
+                self._check()
+                label = nearest(self._embed(self._slice(regions, start, end)), voices)
+            folded.append((start, end, label))
+        return merge_turns(folded)
+
     def _diarize(self, regions: list[tuple[int, np.ndarray]], speakers: int | None) -> list[tuple[int, int, int]]:
         """(start sample, end sample, cluster) turns over the VAD's speech regions."""
         window, hop = int(WINDOW_S * SAMPLE_RATE), int(HOP_S * SAMPLE_RATE)
@@ -815,7 +839,7 @@ class Engine:
         )
         labels = np.asarray(clustering(vectors), dtype=np.int64)
         if not speakers:
-            labels = fold_small_clusters(vectors, labels, least_windows(len(spans)))
+            labels = fold_small_clusters(vectors, labels, math.ceil(MIN_SPEAKER_S / HOP_S))
         labels = smooth(labels, [span[0] for span in spans])
         turns = spans_to_turns(spans, labels)
 
@@ -825,7 +849,9 @@ class Engine:
                 turns.append((start, end, nearest(self._embed(self._slice(regions, start, end)), anchors)))
         turns = [turn for turn in sorted(turns) if turn[1] - turn[0] >= MIN_TURN_S * SAMPLE_RATE]
         self._track("diarize", DIARIZE_EMBED_SHARE)
-        return self._merge_same_voices(regions, turns) if turns and not speakers else turns
+        if not turns or speakers:
+            return turns
+        return self._fold_small_voices(regions, self._merge_same_voices(regions, turns))
 
     def _checked(self, function, *args):
         self._check()

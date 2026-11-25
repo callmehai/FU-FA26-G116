@@ -1040,6 +1040,11 @@ a.menu-item { text-decoration: none; }
    Full width beside the sidebar; the page's own header opens it. Page-level forms keep their
    own reading column (.form-page). */
 .content {
+  /* The containing block of every absolute box in a page that has no positioned ancestor of its own (.visually-hidden
+     labels, mostly), so it scrolls and clips with the page. Placed against the document instead, one far down a long
+     tab made the whole document scroll: a second scrollbar, the sidebar's top cut off and a blank strip under the
+     shell (Lộc 25/11, Bản ghi while a recording was being retranscribed). */
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;

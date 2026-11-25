@@ -62,7 +62,7 @@ public static class DependencyInjection
         // SCRUM-39: meeting call room on LiveKit (ADR-0010). Starts without LiveKit configured; the call endpoints
         // then answer 503.
         services.AddTrustCabinetCalls(configuration);
-        // SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store configured; uploads
+        // SCRUM-107: meeting documents, bytes in SeaweedFS over the S3 API (ADR-0024, ADR-0084). Starts without a store configured; uploads
         // then answer 503/MSG166.
         services.AddTrustCabinetDocuments(configuration);
         // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.

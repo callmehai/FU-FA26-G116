@@ -84,9 +84,9 @@ Bổ sung ngày 22/11/2026 (note 58, PR #466–#471, #473, #474, #476; ADR-0072�
 
 | Actor | Vai trò |
 |---|---|
-| **System Admin** | Quản trị tài khoản, vai trò, quyền và nhật ký kiểm toán |
+| **System Admin** | Quản trị tài khoản, vai trò, quyền và nhật ký kiểm toán; thu giọng mẫu hộ (UC-57). Vai trò Quản trị mặc định cũng giữ quyền tạo cuộc họp nên làm được việc của Member |
 | **Member** (Thành viên; trước 24/11/2026 gọi là Meeting Organizer) | Tạo, cập nhật, gửi duyệt, công bố và dời lịch cuộc họp mình tổ chức; gán Thư ký khi chưa có hoặc không còn trong giai đoạn chuẩn bị |
-| **Approver** (Phê duyệt viên; trước 24/11/2026 gọi là Meeting Approver) | Duyệt / từ chối yêu cầu duyệt được phân công cho mình |
+| **Approver** (Phê duyệt viên; trước 24/11/2026 gọi là Meeting Approver) | Duyệt / từ chối yêu cầu duyệt được phân công cho mình, trừ cuộc họp do chính mình tạo. Vai trò Phê duyệt viên mặc định cũng giữ quyền tạo cuộc họp nên làm được việc của Member |
 | **Chair** | Chủ toạ: bắt đầu / kết thúc họp, điều khiển agenda, tạo – mở – đóng biểu quyết, ghi kết luận, điều phối phòng họp |
 | **Secretary** | Thư ký: agenda, thành phần, điểm danh, tài liệu, upload audio, transcript, tóm tắt, biên bản |
 | **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, đọc và tải biên bản đã ban hành |
