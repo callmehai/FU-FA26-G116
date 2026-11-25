@@ -85,9 +85,9 @@
           "preconditions": [
             "A Google account the tester can sign in to; Google Sign-In client configured for the build."
           ],
-          "aiNote": "BF-01 · UC-02 · 5.2: AUTH_FT08, AUTH_FT09 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), time not shown on the screenshot, server build not established (time unknown) (GitHub Deployments, server-app). Evidence: Google account chooser opened from the app sign-in page https://drive.google.com/file/d/1CuOVVULy0AmC1_5ZFsEswFte3HTi_fJH/view.",
+          "aiNote": "BF-01 · UC-02 · 5.2: AUTH_FT08, AUTH_FT09 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:07 ICT (10:07Z, clock on the screenshot), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app). Evidence: Google account chooser from the app sign-in page https://drive.google.com/file/d/1CuOVVULy0AmC1_5ZFsEswFte3HTi_fJH/view; signed in as Trường Huy on \"Lịch làm việc\" at 17:07 https://drive.google.com/file/d/17m5oIH7JXuPwvIJzMOL3HX6-Q_ov95Di/view (the screenshot does not show which sign-in method was used).",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]

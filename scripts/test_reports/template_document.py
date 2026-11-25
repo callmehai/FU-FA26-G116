@@ -62,7 +62,7 @@ def intro(tests):
     unit=Counter(c['status'] for c in unit_cases());ui,ui_counts=integration_counts('ui');api,api_counts=integration_counts('api')
     sys_counts=Counter(c['status'] for c in system_cases());nfr=nfr_cases();nfr_counts=Counter(c.get('status','Not Run') for c in nfr)
     return ('This plan documents the current TrustCabinet implementation (SEP490-G116), its test designs and the Round 1 results. '
-            f'The source holds {len(tests)} xUnit test methods; CI runs them on every pull request, and their run results are not '
+            f'The source holds {len(tests)} xUnit test methods; CI runs the ones a pull request touches, and their run results are not '
             f'imported into this document. Round 1 results recorded in the workbooks: unit {sum(unit.values())} ({show(unit)}), '
             f'UI integration {ui} ({show(ui_counts)}), API {api} ({show(api_counts)}), system FRs {sum(sys_counts.values())} '
             f'({show(sys_counts)}), system NFRs {len(nfr)} ({show(nfr_counts)}).')

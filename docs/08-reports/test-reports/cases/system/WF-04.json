@@ -42,7 +42,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-04 · UC-55a, UC-55b · MSG302, MSG316 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 after 16:03 ICT, on the TC01 recording, server build 3b11d2c9 (GitHub Deployments, server-app). Evidence: edited sentence marked \"đã sửa\" https://drive.google.com/file/d/1UoAd--Ulhe9BlrqJLWLLhmI7LtsumlHf/view; the speaker assignment step has no screenshot yet.",
+          "aiNote": "BF-04 · UC-55a, UC-55b · MSG302, MSG316 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:16 ICT (10:16Z), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: edited sentences marked \"đã sửa\" https://drive.google.com/file/d/1UoAd--Ulhe9BlrqJLWLLhmI7LtsumlHf/view, tooltip \"Sửa bởi Trường Huy lúc 17:16 25/11/2026\" https://drive.google.com/file/d/1mmlP8CkTeuoCyyc7iQgoVga2F1hhdWwK/view; speaker of the 00:38 sentence changed to \"Trần Chủ Toạ\" with \"Đã đổi người nói của câu này.\" https://drive.google.com/file/d/1w0E_CgK8nIZZOAiVr2U2yiLPSLTQw_xJ/view (one sentence reassigned; assigning a whole voice from its speaker card is not on the screenshot).",
           "round1": "Passed",
           "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
@@ -64,9 +64,9 @@
           "preconditions": [
             "TC02 passed; the local language model is running."
           ],
-          "aiNote": "BF-04 · UC-58, UC-59 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 after the team meeting ended at 21:57 ICT (14:57Z); exact time not shown, server build 330468a4 from 13:30Z, 4c80747b from 16:12Z (GitHub Deployments, server-app). Evidence: AI draft \"Dự thảo nội dung · Đã duyệt\" https://drive.google.com/file/d/1Oc6wI2tkDqqySbOLb59BCvH48qHolDGd/view; on the team meeting of 24/11, not the WF-03 chain meeting.",
+          "aiNote": "BF-04 · UC-58, UC-59 · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 17:17 ICT (10:17Z, clock on the screenshot), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: \"Dự thảo nội dung · Đã duyệt\", \"AI viết lúc 17:17 25/11/2026 (deepseek-v4.1-flash)\", toast \"Đã duyệt dự thảo.\" https://drive.google.com/file/d/1Fs1yBH_mwXvBruaVarFA2b1dMbN7D2L-/view.",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -88,9 +88,9 @@
           "preconditions": [
             "TC03 passed."
           ],
-          "aiNote": "BF-04 · UC-60, UC-61, UC-70 · Expected corrected per review PR 507: the \"Đã tạo bản nháp biên bản.\" toast and the paper contents belong here, where the minutes are built from the approved AI draft. · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 after 21:57 ICT, right after TC03; exact time not shown, server build 330468a4 from 13:30Z, 4c80747b from 16:12Z (GitHub Deployments, server-app). Evidence: minutes built from the approved AI draft https://drive.google.com/file/d/1sUxZ0X1fv0NPv7oIOGHxyR9hpI5GxqpY/view; on the team meeting of 24/11.",
+          "aiNote": "BF-04 · UC-60, UC-61, UC-70 · Expected corrected per review PR 507: the \"Đã tạo bản nháp biên bản.\" toast and the paper contents belong here, where the minutes are built from the approved AI draft. · Run by hand by Nguyễn Trường Huy (operator) on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 right after TC03 (after 17:17 ICT), server build 0561c9f8 (deployed 09:42Z, GitHub Deployments server-app), on the In-person meeting \"ád\" of 25/11 (created 16:01, ended 17:16 ICT per its Lịch sử trạng thái), Nguyễn Trường Huy as Thư ký. Evidence: minutes \"Bản nháp\" built from the approved draft, Thư ký Trường Huy, Chủ trì Trần Chủ Toạ https://drive.google.com/file/d/1XCsv2INQml5JpiPdH4_MAZlw-JD-heNV/view.",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]

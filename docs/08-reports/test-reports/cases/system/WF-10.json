@@ -87,7 +87,7 @@
             "As the guest of WF-05, verified by the emailed code, open the invited meeting, then try another meeting's URL and the personal library."
           ],
           "expected": [
-            "The guest reads only the invited meeting and its documents; other URLs are not found; there is no personal library."
+            "The guest reads only the invited meeting and its documents; another meeting's URL opens the sign-in page and its API answers 403, the same as an unknown id, so nothing reveals that it exists; the personal library answers 403."
           ],
           "preconditions": [
             "A guest session (code read from a real mailbox)."
