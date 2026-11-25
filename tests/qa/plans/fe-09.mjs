@@ -1599,7 +1599,9 @@ export default {
           const slider = row.getByRole('slider', { name: 'Vị trí phát' })
           const max = Number(await slider.getAttribute('max'))
           const before = await qa.page.evaluate(() => document.querySelector('.recording-player audio').currentTime)
-          await slider.fill(String(Math.round(max * 0.8)))
+          // A range input only accepts a multiple of its step (100 ms here): another value is "Malformed".
+          const step = Number(await slider.getAttribute('step')) || 1
+          await slider.fill(String(Math.round((max * 0.8) / step) * step))
           await qa.page.waitForTimeout(500)
           const after = await qa.page.evaluate(() => document.querySelector('.recording-player audio').currentTime)
           qa.note(`Vị trí trước ${before.toFixed(2)} s, sau khi tua ${after.toFixed(2)} s`)
