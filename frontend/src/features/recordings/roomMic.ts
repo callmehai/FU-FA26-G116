@@ -8,6 +8,7 @@ import { Resampler } from '../speech/wav'
 // (script-src 'self') refuses to run as a worklet.
 import speechTapUrl from '../speech/speechTap.worklet.js?url&no-inline'
 import { TakeRoller } from './takeRoller'
+import { openChosenMic } from './micChoice'
 import {
   BYTES_PER_SECOND,
   RoomTape,
@@ -52,16 +53,11 @@ async function openMic(
   onEnded: () => void,
   deviceId?: string,
 ): Promise<MicSource> {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      // The mic picked in the call room; a choice that is gone falls back to the default rather than failing.
-      ...(deviceId ? { deviceId: { ideal: deviceId } } : {}),
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-      channelCount: 1,
-    },
-  })
+  // The mic picked in the call room or on the mic card; a choice that is gone falls back to the default.
+  const stream = await openChosenMic(
+    { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+    deviceId,
+  )
   const context = new AudioContext()
   try {
     await context.audioWorklet.addModule(speechTapUrl)

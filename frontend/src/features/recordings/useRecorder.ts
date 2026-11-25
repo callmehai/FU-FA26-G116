@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { levelDb } from '../speech/clipCutter'
+import { openChosenMic } from './micChoice'
 
 /**
  * Records the microphone in the browser (SCRUM-29: "ghi trực tiếp từ trình duyệt, có nút tạm dừng
@@ -45,11 +46,15 @@ function micErrorMessage(error: unknown) {
   return 'Không mở được micro. Kiểm tra quyền micro ở biểu tượng ổ khoá cạnh thanh địa chỉ, rồi thử lại.'
 }
 
-/** The microphone on its own: the meeting page, where everyone sits in one room around the Secretary's laptop. */
-async function openMic(): Promise<RecordingInput> {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
-  })
+/**
+ * The microphone on its own: the meeting page, where everyone sits in one room around the Secretary's laptop.
+ * `deviceId` is the mic chosen in `MicSelect`.
+ */
+export async function openMic(deviceId?: string): Promise<RecordingInput> {
+  const stream = await openChosenMic(
+    { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+    deviceId,
+  )
   return { stream, release: () => stream.getTracks().forEach((track) => track.stop()) }
 }
 
@@ -153,7 +158,7 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
 
   /** `open` picks the sound: the microphone unless told otherwise (the call room records the whole call). */
   const start = useCallback(
-    async (open: () => Promise<RecordingInput> | RecordingInput = openMic) => {
+    async (open: () => Promise<RecordingInput> | RecordingInput = () => openMic()) => {
       const mimeType = pickMimeType()
       if (mimeType === null) {
         setState({

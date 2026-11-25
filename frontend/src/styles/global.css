@@ -4642,6 +4642,7 @@ audio.recording-player { height: 40px; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
+.mic-select { max-width: 360px; margin-bottom: 14px; }
 .voice-passage { margin: 8px 0 0; padding: 14px 16px; border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
 .voice-review .field-hint { margin: 0; }
@@ -4907,6 +4908,10 @@ audio.recording-player { height: 40px; }
 .mic-status-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .mic-clock { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .mic-controls { display: flex; align-items: center; gap: 12px; }
+/* The mic picker beside the switch: a 34px button, 40px for a finger. */
+.mic-controls .select { flex: none; }
+.mic-controls .select-trigger.select-icon { width: 34px; height: 34px; }
+@media (hover: none) { .mic-controls .select-trigger.select-icon { width: 40px; height: 40px; } }
 .mic-toggle { display: grid; flex: none; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--brand); color: var(--surface); cursor: pointer; }
 .mic-toggle:hover { background: var(--brand-ink); }
 .mic-toggle.is-on { background: var(--live); }

@@ -6,6 +6,8 @@ import { errorMessage } from '../../lib/errors'
 import type { Recording, RecordingList } from '../../types/recording'
 import { ConsentDialog } from './ConsentDialog'
 import { formatDuration } from './format'
+import { MicSelect } from './MicSelect'
+import { useMicChoice } from './micChoice'
 import { saveTake } from './roomMic'
 import type { RoomRecorder } from './useRoomRecorder'
 import { TAKE_SPLIT_SECONDS } from './takeRoller'
@@ -86,6 +88,15 @@ export function RecorderCard({
   const on = phase === 'on'
   const now = useNow(on)
   const { level, behindSeconds } = useMeter(room.meter, on)
+  // The mic the room is recorded with, the same one the voice samples should be taken with; switched live while on.
+  const choice = useMicChoice(phase)
+  const mic = {
+    ...choice,
+    pick: (id: string) => {
+      choice.pick(id)
+      if (on) room.switchDevice(id)
+    },
+  }
 
   // The page scrolls past the card (it reads the height here), and a card that grew is pulled back inside the window.
   useEffect(() => {
@@ -163,7 +174,7 @@ export function RecorderCard({
   const toggle = () => {
     if (on) room.stop()
     else if (firstTake) setAsking(true)
-    else room.start(false)
+    else room.start(false, mic.deviceId)
   }
   const toggleLabel = on ? 'Tắt mic, lưu lượt ghi' : 'Bật mic phòng'
 
@@ -221,7 +232,7 @@ export function RecorderCard({
         </div>
         {kept ? (
           <div className="mic-choices">
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => room.resumeUnfinished()}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => room.resumeUnfinished(mic.deviceId)}>
               <Icon name="mic" size={16} />
               Ghi tiếp
             </button>
@@ -261,6 +272,7 @@ export function RecorderCard({
               <Icon name={on ? 'mic' : 'micOff'} size={22} />
             </button>
             <Meter level={level} live={on} />
+            <MicSelect choice={mic} compact disabled={phase === 'starting' || phase === 'saving'} />
           </div>
         )}
         {room.error ? (
@@ -316,7 +328,7 @@ export function RecorderCard({
           onClose={() => setAsking(false)}
           onConfirm={() => {
             setAsking(false)
-            room.start(true)
+            room.start(true, mic.deviceId)
           }}
         />
       )}
