@@ -16,15 +16,16 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v13
+## Bản hiện có — v14
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v13.html](TrustCabinet-wireframe-v13.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v13/](figma-v13/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v13. |
+| HTML | [TrustCabinet-wireframe-v14.html](TrustCabinet-wireframe-v14.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v14/](figma-v14/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v14. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
+Bản v13 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v13.html](TrustCabinet-wireframe-v13.html), [figma-v13/](figma-v13/).
 Bản v12 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html), [figma-v12/](figma-v12/).
 
 Bản đen trắng rút gọn (1 sơ đồ luồng, 20 màn chính) nằm ở [lofi/](lofi/README.md), có quy trình riêng
@@ -360,5 +361,6 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v11 | 01/11/2026 | Thống nhất giao diện: sidebar gồm Lịch làm việc, Cuộc họp, Kho tài liệu, Giọng nói của tôi, Quản trị; trang chi tiết 7 tab, thanh trạng thái theo từng bước, cột phải Lịch sử trạng thái; danh sách cuộc họp có ô đếm, cột STT, Thao tác; kho tài liệu mở thư mục trong bảng; nghị sự và biểu quyết dạng thẻ; bản ghi theo mic phòng và từng người; thống nhất tên Đang diễn ra. Thêm 1.4, 1.5, 2.4, 3.1b, 3.1c, 4.4c, 4.4d, 4.4e, 4.5d, 4.10, 4.11, 4.12, 6.2b, 7.2b, 7.2c, 8.8, 8.9, 9.1b, 9.3, 9.4, 9.4b, 9.4c. 02/11/2026: 10.1 vẽ lại theo `features/recordings` (gán tên ở ô chọn người nói, sửa chữ tại chỗ; bỏ khung gán riêng, ô tìm, nút Tạo tóm tắt). 02/11/2026, đối chiếu web sau khi merge main (ADR-0043): thông tin chung lưới hai cột, luôn có chip mức độ, danh sách có thanh lọc ngoài thẻ và cột sắp xếp, form tạo/sửa/dời lịch 2 cột, sidebar có nút thu gọn; 4.4c đổi thành tìm người dự; thêm 4.1e, 4.4f, 4.4g, 9.3b |
 | v12 | 13/11/2026 | Thêm nhóm FE-16 Lịch làm việc & tìm giờ họp (SCRUM-142, SCRUM-137, ADR-0058): Chia sẻ lịch vẽ theo web đang chạy (16.1, 16.1b, 16.2, 16.2b, 16.3, 16.4, 16.4b, 16.5, 16.6) và Tìm giờ họp theo contract BE, mục sidebar riêng hai tab, bố cục tham khảo AI-eCabinet: cột cài đặt, người dự chính có trạng thái chia sẻ, kết quả là ô giờ bắt đầu theo ngày, chọn ô mở chi tiết và Tạo nháp (16.7, 16.7b, 16.7c, 16.7d, 16.7e trước khi tìm, 16.8, 16.9, 16.10 điện thoại). Màn cũ giữ nguyên. Plugin: section FE-16 trước đây là dấu hiệu "file Figma còn số FE cũ" (v2/v3); từ v12 chỉ section FE-16 mang tên khác "FE-16 · Lịch làm việc & tìm giờ họp" mới tính là số cũ, nếu không chạy plugin lần hai sẽ dịch số màn |
 | v13 | 19/11/2026 | Đối chiếu với web đang chạy sau UI audit 16/11 (PR #396–#399, BR-420) và gộp tồn đọng note 1–53: MSG480 dưới nút Vào phòng (8.1), thiết bị micro và camera (8.1/8.1b), thanh trả lời chỉ ở Published (4.5b), thẻ Dự thảo 3 câu theo vai trò + nhãn đính chính (12.1, thêm 12.1b), nút Tải PDF + luồng duyệt thay luồng ký (12.2–12.4), email ellipsis + responsive (6.1), 4 thẻ summary + sort tăng dần (4.3), nhãn Cách họp khác / Làm tròn giờ (16.7), gom chia sẻ đã kết thúc sau nút (16.1/16.1b), trang Người dùng + phân trang client 20/50/100 (2.1/2.2), lỗi từng ô đăng nhập (1.1). Tồn đọng: câu cảnh báo + bộ lọc Nhật ký (3.3), tab Thư ký thu hộ (9.4, thêm 9.4d), nhãn Tổng hợp (9.1b), màn Khách (1.3/6.4), nút kẹp giấy (7.3), huỷ họp + kết luận (4.10/5.3), giơ tay trong phòng (8.3), empty-state báo cáo (15.1). Sửa 39 màn, thêm 9.4d, 12.1b |
+| v14 | 25/11/2026 | Hoàn thiện 100% theo D:/wireframe-v13-vs-code.md: shared + FE-01/02/03 + FE-04/05 + FE-06/07 + FE-08/09/10 + FE-11/12/13/15/16; xóa 10.2. Sửa 108 màn (header đổi + builder dùng chung), thêm 18 màn: 1.3b, 1.3c, 3.1d, 3.4, 4.1f, 4.1p, 4.5e, 4.5f, 4.5g, 4.11b, 5.4, 7.2d, 7.2e, 7.5c, 7.6, 8.1c, 13.2b, 16.6b |
 
 Ra bản mới thì thêm một dòng vào bảng này.
