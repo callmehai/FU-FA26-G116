@@ -98,6 +98,19 @@ Chi tiết UC/BR/MSG nào đổi đã có trong bản trích và `uc-map.html`, 
 - Alternative Flow có nội dung thì đặc tả các bước như mẫu; không có Alternative Flow thì ghi `N/A`.
   Exception Flow phải mô tả điều kiện phát sinh, kết quả dữ liệu/trạng thái, phản hồi hệ thống và
   cách kết thúc hoặc tiếp tục use case.
+- Chi tiết mẫu (chốt 24/11/2026, [note 61](../notes/ban-giao-ba-final-review/61-dong-bo-style-uc-spec-report3.md)):
+  - 8 nhãn theo thứ tự Primary Actors, Secondary Actors, Description, Preconditions, Postconditions,
+    Normal Flow, Alternative Flows, Exception Flows; nhãn in đậm.
+  - Mỗi ô nội dung là một đoạn, các dòng cách nhau bằng ngắt dòng; không italic.
+  - PRE/POST mở đầu `● PRE-n:` / `● POST-n:`. Normal Flow mở đầu bằng dòng tên luồng (chữ thường)
+    rồi các bước `1.`, `2.`…
+  - Mẫu là bảng UC-23a lúc viết quy tắc (commit `1e3db559`, 15/10/2026); UC-23a trong DOCX sau đó đã
+    bị đổi định dạng, không lấy làm mẫu.
+  - Tiêu đề `AF-n – Tên` / `EX-n – Tên` (gạch ngang dài, không dùng `:`, tên viết như câu) in đậm;
+    **các bước bên dưới chữ thường**.
+  - Bước cuối mỗi AF/EX là một trong hai câu: "The use case ends." hoặc "The flow resumes at Step N
+    of the Normal Flow." (hoặc "of AF-n"). Trích luồng chính bằng "Normal Flow", không "Main Flow".
+  - MSG lần đầu trong luồng ghi `MSGnn – "Nội dung."`, các lần sau ghi `MSGnn`.
 - Với report khác Report 3, giữ style sẵn có của report đó. Không áp style UC-23a hoặc Times New
   Roman sang tài liệu khác nếu chưa được yêu cầu.
 
