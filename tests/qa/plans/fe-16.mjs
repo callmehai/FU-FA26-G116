@@ -1261,8 +1261,13 @@ export default {
         qa.expect(s).toMatchObject({ status: 'Stopped', actions: [] })
         await qa.goto('/calendar/sharing')
         // A share that had already ended when the page opened is folded under "Chia sẻ đã kết thúc (N)".
+        // Opening one renames it "Ẩn chia sẻ đã kết thúc", so the list shrinks while we click: always take the first.
         const fold = qa.page.getByRole('button', { name: /^Chia sẻ đã kết thúc/ })
-        for (const b of await fold.all()) if ((await b.getAttribute('aria-expanded')) === 'false') await b.click()
+        for (let i = 0; i < 4 && (await fold.count()) > 0; i++) {
+          const before = await fold.count()
+          await fold.first().click()
+          await qa.expect(fold).toHaveCount(before - 1)
+        }
         const line = qa.page.locator(`#share-${shareId}`)
         await qa.expect(line.getByText('Đã dừng')).toBeVisible()
         await qa.expect(line.getByRole('button', { name: /Đồng ý|Từ chối|Thao tác khác/ })).toHaveCount(0)
@@ -1415,6 +1420,9 @@ export default {
         await qa.page.keyboard.press('Escape')
         // CAL_FT08: the empty state offers to show everything (labelled "Xem mọi cuộc họp", not "Bỏ lọc").
         await qa.page.getByRole('button', { name: 'Xem mọi cuộc họp' }).click()
+        // A phone shows one day, opening on the week's first meeting: another plan's meeting on Monday keeps it
+        // there, so pick Tuesday (the FE-16 meetings' day) in the strip.
+        if (qa.device === 'phone') await qa.page.getByRole('group', { name: 'Ngày trong tuần' }).getByRole('button').nth(1).tap()
         await qa.expect(qa.page.getByText(qa.name('FE-16 họp Thường')).first()).toBeVisible()
         await qa.expect(qa.page).toHaveURL(/status=all/)
         await qa.shot('xem-moi-cuoc-hop')
@@ -1622,7 +1630,9 @@ export default {
         qa.expect(await pairShare(qa, 'secretary', EMAIL.secretary, EMAIL.chair, { open: true })).toBeUndefined()
         await settled(qa)
         await qa.shot('chia-se-trong')
-        // CAL_FT53 E1: the shared week with nobody sharing shows no rows and offers "Xin xem lịch".
+        // CAL_FT53 E1: the shared week with nobody sharing shows no rows and offers "Xin xem lịch". A shared dev
+        // database can hold a share to thuky@ left open by an older run: close those first.
+        for (const owner of ['chair', 'member', 'admin']) for (let i = 0; i < 5 && (await closePair(qa, owner, 'secretary')); i++);
         await qa.goto(`/calendar/sharing?tab=week&week=${TUE}`)
         await qa.expect(qa.page.locator('.share-empty').first()).toBeVisible()
         await qa.expect(qa.page.getByText('Chưa ai chia sẻ lịch với bạn.')).toBeVisible()
