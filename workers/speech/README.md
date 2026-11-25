@@ -200,16 +200,17 @@ Các bước xử lý một bản ghi:
    nói nhỏ.
 4. **Tách người nói**: cắt mỗi quãng thành các khung 3 giây, chồng nhau 1.5 giây. Mỗi khung
    được tạo một vector giọng, rồi các khung được gom nhóm bằng FastClustering của sherpa-onnx.
-   - Nhóm nào có dưới 2 giây tiếng (ho, cười, tiếng ồn), hay dưới 2% tổng thời lượng lời của bản ghi nếu con số đó lớn
-     hơn (khoảng một phút với buổi họp một giờ), được nhập vào người gần nhất. Trên bản ghi phòng dài, các nhóm nhỏ đó
-     phần lớn là chỗ hai người nói chồng nhau, nên không phải một người
-     ([ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md), xem
-     [Hiệu chỉnh](#cuộc-họp-dài-mic-xa-25112026)).
+   - Nhóm nào có dưới 2 giây tiếng (ho, cười, tiếng ồn) được nhập vào nhóm gần nhất.
    - Một khung lẻ khác nhãn với cả hai khung bên cạnh thì lấy theo nhãn của chúng.
    - Các khung liền nhau cùng nhãn ghép thành một lượt nói.
    - **Gộp lần hai**: mỗi nhóm được tạo một vector giọng tổng thể (tối đa 30 giây âm thanh của
      nhóm). Hai nhóm có cosine từ 0.8 trở lên là cùng một người bị tách đôi, nên được gộp lại,
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
+   - Sau đó, giọng nào có dưới 2% tổng thời lượng lời của bản ghi (khoảng một phút với buổi họp một giờ) thì từng lượt
+     của nó về giọng gần nhất, so cả lượt với vector giọng tổng thể. Trên bản ghi phòng dài, các giọng nhỏ đó phần lớn là
+     chỗ hai người nói chồng nhau, nên không phải một người
+     ([ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md), xem
+     [Hiệu chỉnh](#cuộc-họp-dài-mic-xa-25112026)).
 5. **Bỏ chỗ gần như im lặng** (chỉ hồ sơ `room`): đoạn nào khi đến micro (trước bước tăng âm) vừa
    nhỏ hơn −45 dBFS vừa nhỏ hơn trung vị các đoạn của bản ghi từ 25 dB trở lên thì bị bỏ trước khi
    chuyển chữ. Chỗ ngắt hơi hay chỗ nối hai lượt ghi được bước 2 nâng lên tới 30 dB, VAD tưởng là
@@ -543,6 +544,21 @@ khung hai người nói chồng nhau, giọng nửa người này nửa người
 - Tốc độ cả lượt (dấu câu, viết số, từ khoá; M1, 4 luồng, process chạy nền): 50 phút RTF 0,133 → 0,137, 8 phút 0,139 →
   0,153; bộ nhớ đỉnh 1,49 → 1,63 GB. Bước chuyển chữ chậm hơn khoảng 45%, nhưng ít giọng hơn thì các bước theo giọng nhanh
   hơn.
+
+**Gộp sau gộp lần hai, theo lượt (25/11/2026).** Bản đầu gộp từng khung 3 giây trước gộp lần hai. Trên buổi họp 24/11 nó
+dời 15% số khung (khoảng 13 phút lời) vào các nhóm lớn; các nhóm bị lẫn đó không còn đạt 0,8 của gộp lần hai, nên một
+người nói 17 phút ra ba giọng (11, 4 và 2 phút) và Thư ký phải gán cả ba cho cùng một người. Gộp sau gộp lần hai, từng
+lượt theo cả lượt, người đó còn một giọng 17 phút, vẫn 8 giọng. Trên bộ tổng hợp (chỉ phần tách người nói, `--diar-only`):
+
+| Bộ | DER gộp theo khung → theo lượt | Giọng / người | Người nói rất ít giữ nhãn riêng |
+|---|--:|---|---|
+| far-long | 13,3% → 13,3% | 18 → 18 / 21 | 0/3 → 0/3 |
+| far-hard | 16,5% → **16,0%** | 10 → 10 / 12 | 1/4 → 1/4 |
+| far-test | 20,4% → **20,2%** | 18 → 18 / 18 | 0/3 → 1/3 |
+| vivos-room | 27,4% → 27,4% | 52 → 52 / 61 | — |
+
+Chưa xử lý: hai người nói đan nhau trong 2–3 giây (một câu chen, một tiếng "có") vẫn ra một lượt của một người, vì
+giọng được xét theo khung 3 giây; cần một model chia đoạn theo khung ngắn (pyannote segmentation) mới tách được.
 
 ## Hiệu năng
 
