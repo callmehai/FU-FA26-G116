@@ -301,10 +301,19 @@ async function press(qa, locator) {
   if (qa.device === 'phone') await locator.tap()
   else await locator.click()
 }
+/**
+ * Passwords to try for load41–load44: the QA one a tester may have set, then the one tests/load/setup.py gives every
+ * load account (LOAD_MEMBER_PASSWORD, default LoadTest@2026-members) on a database that never had it changed.
+ */
+const extraPasswords = (own) => [own, process.env.LOAD_MEMBER_PASSWORD ?? 'LoadTest@2026-members']
 /** Browser session as an account whose password is not the seed one (load41–load44), mirroring qa.signIn. */
 async function signInWith(qa, email, password) {
   await qa.context.clearCookies()
-  const res = await qa.context.request.post(`${qa.base}/api/auth/login`, { data: { email, password } })
+  let res
+  for (const candidate of extraPasswords(password)) {
+    res = await qa.context.request.post(`${qa.base}/api/auth/login`, { data: { email, password: candidate } })
+    if (res.ok()) break
+  }
   if (!res.ok()) throw new Error(`sign-in as ${email}: HTTP ${res.status()}`)
   await qa.context.addInitScript(() => localStorage.setItem('trustcabinet.signedIn', '1'))
 }
@@ -330,11 +339,15 @@ async function bellItem(qa, title, bodyPattern) {
 }
 /** Token for an account whose password is not the seed one (load41–load44 own QA passwords). */
 async function tokenFor(qa, email, password) {
-  const res = await fetch(`${qa.base}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  })
+  let res
+  for (const candidate of extraPasswords(password)) {
+    res = await fetch(`${qa.base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: candidate }),
+    })
+    if (res.ok) break
+  }
   if (!res.ok) throw new Error(`sign-in as ${email}: HTTP ${res.status}`)
   return (await res.json()).accessToken
 }
@@ -1567,15 +1580,21 @@ export default {
         'Họp Nháp thêm mọi tài khoản khả dụng qua API: trang 1/2, Số dòng 50, thứ tự theo API, hộp Thêm hết người',
       ],
       expected:
-        'Trang 1 đúng 20 dòng, trang 2 phần còn lại, Số dòng 50 gom một trang, nhãn đếm "thành phần"; hộp Thêm báo "Mọi người đều đã có trong danh sách."',
+        'Trang 1 đúng 20 dòng, Trang sau tới trang 2 (tối đa 20 dòng), Số dòng 50 hiện tối đa 50 dòng, nhãn đếm "thành phần"; hộp Thêm báo "Mọi người đều đã có trong danh sách."',
       async run(qa) {
         const u = await users(qa)
         const mega = await fresh(qa, 'đông thành phần', 'Draft')
         try {
           let rr = await roster(qa, 'secretary', mega.id)
           const have = new Set(rr.items.map((i) => i.userId).filter(Boolean))
-          const opts = (await as(qa, 'secretary').get('/api/meetings/participant-options?pageSize=100')).body
-          const missing = (opts.items ?? []).filter((o) => !have.has(o.id))
+          // Everyone, page by page: a shared dev database can hold more than 100 accounts (load-test users).
+          const all = []
+          for (let page = 1; page <= 20; page++) {
+            const opts = (await as(qa, 'secretary').get(`/api/meetings/participant-options?page=${page}&pageSize=100`)).body
+            all.push(...(opts.items ?? []))
+            if (!opts.items?.length || all.length >= (opts.total ?? opts.totalCount ?? 0)) break
+          }
+          const missing = all.filter((o) => !have.has(o.id))
           qa.expect(missing.length, 'còn người để thêm cho đủ hơn 20').toBeGreaterThan(16)
           for (let i = 0; i < missing.length; i += 5) {
             const batch = missing.slice(i, i + 5)
@@ -1597,12 +1616,14 @@ export default {
           const api1 = (await as(qa, 'secretary').get(`/api/meetings/${mega.id}/participants?page=1&pageSize=20`)).body
           for (const i of [0, 4, 9, 14, 19])
             await qa.expect(panel(qa).locator('tbody tr').nth(i)).toContainText(api1.items[i].displayName)
-          await press(qa, pager.getByRole('button', { name: 'Trang 2', exact: true }))
-          await qa.expect(panel(qa).locator('tbody tr')).toHaveCount(total - 20)
+          // "Trang sau", not "Trang 2": with more than three pages a phone shows only the first, current and last page.
+          await press(qa, pager.getByRole('button', { name: 'Trang sau' }))
+          await qa.expect(pager.getByRole('button', { name: 'Trang 2', exact: true })).toHaveAttribute('aria-current', 'page')
+          await qa.expect(panel(qa).locator('tbody tr')).toHaveCount(Math.min(20, total - 20))
           await qa.shot('trang-hai')
           await press(qa, pager.getByRole('button', { name: 'Số dòng mỗi trang: 20' }))
           await press(qa, qa.page.getByRole('option', { name: '50' }))
-          await qa.expect(panel(qa).locator('tbody tr')).toHaveCount(total)
+          await qa.expect(panel(qa).locator('tbody tr')).toHaveCount(Math.min(50, total))
           await qa.shot('nam-muoi-dong')
           // FT18 E2: không còn ai để thêm.
           await press(qa, panel(qa).getByRole('button', { name: 'Thêm người dự họp' }))
