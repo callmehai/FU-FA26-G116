@@ -85,7 +85,8 @@ Table of Contents
 | 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
 | 25/11/2026 | M, A, D | KhanhPG | [note 60, note 61] UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
 | 25/11/2026 | M | KhanhPG | [PR #507] §IV.2.3 External Guest access scope: the one-time code expires within 15 minutes, as in the code (GuestAccessOptions.CodeLifetimeMinutes). |
-| 25/11/2026 | M | LocHD | [PR #547] Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker; email through Resend only; Jira keys removed. |
+| 25/11/2026 | M | LocHD | [PR #547] Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker; Jira keys removed. |
+| 25/11/2026 | M | LocHD | [PR #548] Email through Resend only: SMTP removed from section 17.3 (API-03), the interfaces, the security and deployment requirements. |
 
 *A - Added M - Modified D - Deleted
 

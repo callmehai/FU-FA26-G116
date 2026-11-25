@@ -27,7 +27,7 @@ Table of Contents
 | 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
 | 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided (ADR-0056); in-meeting recording, Voice ID, notifications and reports as built; add FE-16 (ADR-0058); Architecture moves to Nguyen Quang Huy. |
-| 25/11/2026 | M | LocHD | [PR #547] Outbound email is sent through Resend only; SMTP is no longer an alternative. |
+| 25/11/2026 | M | LocHD | [PR #548] Outbound email is sent through Resend only; SMTP is no longer an alternative. |
 
 *A - Added M - Modified D - Deleted
 

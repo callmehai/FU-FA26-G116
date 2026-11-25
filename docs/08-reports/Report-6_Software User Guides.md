@@ -13,7 +13,7 @@ Report 6 – Software User Guides
 | Date | A*<br>M, D | In charge | Change Description |
 | --- | --- | --- | --- |
 | 21/11/2026 | A | HuyNQ | Initial release: deliverable package, installation guides (development machine and test server) and the user manual for the Administrator, Secretary, Chair, Member and Guest roles plus the features every user has, with screenshots from the test server. |
-| 25/11/2026 | M, D | LocHD | [PR #547] §2: email through Resend only; documents only on the self-hosted SeaweedFS, the Cloudflare R2 rows removed. |
+| 25/11/2026 | M, D | LocHD | [PR #548] §2: email through Resend only; documents only on the self-hosted SeaweedFS, the Cloudflare R2 rows removed. |
 
 *A - Added M - Modified D - Deleted
 
