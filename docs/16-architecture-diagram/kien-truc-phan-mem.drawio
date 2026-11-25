@@ -91,7 +91,7 @@
         <mxCell id="ad-files" value="&lt;b&gt;FileStorage (S3)&lt;/b&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="965" y="596" width="230" height="46" as="geometry" />
         </mxCell>
-        <mxCell id="ad-email" value="&lt;b&gt;Resend / SMTP sender&lt;/b&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="ad-email" value="&lt;b&gt;ResendEmailSender&lt;/b&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="965" y="658" width="230" height="46" as="geometry" />
         </mxCell>
         <mxCell id="ad-recordings" value="&lt;b&gt;RecordingStorage&lt;/b&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
@@ -115,7 +115,7 @@
         <mxCell id="e-r2" value="&lt;b&gt;SeaweedFS&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;S3 object storage · on the app server&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#f3eef7;strokeColor=#9673a6;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1380" y="593" width="340" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="e-email" value="&lt;b&gt;Resend email API&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;or an SMTP server&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#f3eef7;strokeColor=#9673a6;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="e-email" value="&lt;b&gt;Resend email API&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;transactional email · delivery webhook&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#f3eef7;strokeColor=#9673a6;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1380" y="655" width="340" height="52" as="geometry" />
         </mxCell>
         <mxCell id="ad-llm" value="&lt;b&gt;LanguageModelProvider&lt;/b&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">

@@ -13,6 +13,7 @@ Report 6 – Software User Guides
 | Date | A*<br>M, D | In charge | Change Description |
 | --- | --- | --- | --- |
 | 21/11/2026 | A | HuyNQ | Initial release: deliverable package, installation guides (development machine and test server) and the user manual for the Administrator, Secretary, Chair, Member and Guest roles plus the features every user has, with screenshots from the test server. |
+| 25/11/2026 | M, D | LocHD | [PR #547] §2: email through Resend only; documents only on the self-hosted SeaweedFS, the Cloudflare R2 rows removed. |
 
 *A - Added M - Modified D - Deleted
 
@@ -70,7 +71,7 @@ The containers that deploy/docker-compose.yml starts:
 | livekit | livekit/livekit-server:v1.13.7 | Media server (SFU) for the online meeting room |
 | caddy | caddy:2-alpine | Reverse proxy, automatic HTTPS certificates, Content-Security-Policy |
 | speech (optional) | trustcabinet-speech | Vietnamese speech-to-text, speaker attribution and Voice ID |
-| files (optional) | chrislusf/seaweedfs:3.97 | Self-hosted S3 storage for documents, instead of Cloudflare R2 |
+| files (optional) | chrislusf/seaweedfs:3.97 | Self-hosted S3 storage for the files of documents |
 
 #### 2.2 Development Machine
 
@@ -89,8 +90,8 @@ The containers that deploy/docker-compose.yml starts:
 | Service | Used for | Required? |
 | --- | --- | --- |
 | Google Cloud Console (OAuth client) | The "Tiếp tục sử dụng dịch vụ bằng Google" (Continue with Google) sign-in | Optional — email and password sign-in works without it |
-| Resend, or an SMTP server | Invitation, notification and password-reset emails | Optional — without it no email is sent |
-| Cloudflare R2, or the self-hosted SeaweedFS | Storing the bytes of uploaded documents and minutes | Needed for documents; without it uploads answer MSG166 |
+| Resend | Invitation, notification and password-reset emails | Optional — without it no email is sent |
+| The self-hosted SeaweedFS (service files) | Storing the bytes of uploaded documents and minutes | Needed for documents; without it uploads answer MSG166 |
 | Ollama (qwen2.5:7b-instruct) or an OpenAI-compatible API | Writing the AI draft of the minutes | Optional — the rest of the minutes work without it |
 | Tailscale | Reaching a speech or AI machine of the team from the server without opening ports | Optional |
 | GitHub Actions | Continuous integration and automatic deployment of the main and app branches | Optional |
@@ -199,8 +200,7 @@ Add the lines below to deploy/.env as needed, then run docker compose -f deploy/
 
 | Service | Lines in deploy/.env |
 | --- | --- |
-| Documents on Cloudflare R2 | R2_ENDPOINT, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (one bucket per server) |
-| Documents on the server itself | COMPOSE_PROFILES=files, R2_ENDPOINT=http://files:8333 and a bucket name |
+| Documents (SeaweedFS on the server) | COMPOSE_PROFILES=files, R2_ENDPOINT=http://files:8333, a bucket name in R2_BUCKET and the keys R2_ACCESS_KEY_ID=local, R2_SECRET_ACCESS_KEY=local (the variables keep their old R2_* names) |
 | Email through Resend | RESEND_API_KEY, RESEND_FROM, RESEND_WEBHOOK_SECRET, RESEND_ENABLED=true |
 | Speech-to-text and Voice ID | COMPOSE_PROFILES=speech, SPEECH_URL=http://speech:8090, and once VOICE_ID_KEY=$(openssl rand -base64 32) |
 | AI draft of the minutes | AI_URL=http://<AI machine>:11434/v1, AI_MODEL=qwen2.5:7b-instruct (optional AI_BACKUP_URL) |
