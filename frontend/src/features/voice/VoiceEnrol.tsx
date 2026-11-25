@@ -7,7 +7,9 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { VoiceProfile } from '../../types/voice'
 import { formatDuration } from '../recordings/format'
-import { type RecordedTake, useRecorder } from '../recordings/useRecorder'
+import { MicSelect } from '../recordings/MicSelect'
+import { useMicChoice } from '../recordings/micChoice'
+import { openMic, type RecordedTake, useRecorder } from '../recordings/useRecorder'
 
 /**
  * SCRUM-35 — agreeing to Voice ID and recording a sample, shared by "Giọng nói của tôi" and the call lobby's shortcut
@@ -129,6 +131,8 @@ export function RecordSampleDialog({
   askConsentOf?: string
 }) {
   const recorder = useRecorder()
+  // The mic the meetings are recorded with: a sample from another one matches their voices less well.
+  const mic = useMicChoice(recorder.state.kind)
   const [agreed, setAgreed] = useState(false)
   const mayRecord = askConsentOf === undefined || agreed
   const [take, setTake] = useState<{ file: RecordedTake; url: string } | null>(null)
@@ -159,7 +163,7 @@ export function RecordSampleDialog({
   const record = () => {
     show(null)
     setError(null)
-    void recorder.start()
+    void recorder.start(() => openMic(mic.deviceId))
   }
 
   const save = async () => {
@@ -245,6 +249,7 @@ export function RecordSampleDialog({
           </span>
         </label>
       )}
+      <MicSelect choice={mic} disabled={active || saving} />
       <p className="field-hint">{hint}</p>
       <blockquote className="voice-passage">{passage}</blockquote>
       {/* Kept in place before and after recording, so the dialog does not grow and jump when "Bắt đầu ghi" is pressed. */}

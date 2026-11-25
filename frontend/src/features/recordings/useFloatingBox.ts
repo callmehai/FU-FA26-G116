@@ -11,8 +11,11 @@ export type BoxRect = { right: number; bottom: number; width: number | null }
 export type Edge = 'w' | 'e'
 
 const MARGIN = 8
-/** Pressing a control does not move the box; a button marked `data-drag` (the bubble) does. */
-const CONTROL = 'button:not([data-drag]), a, label, input, textarea, [data-edge]'
+/**
+ * Pressing a control does not move the box; a button marked `data-drag` (the bubble) does. A dropdown's menu (the mic
+ * picker's) opens in the top layer but sits inside the box: grabbing it would swallow the pick.
+ */
+const CONTROL = 'button:not([data-drag]), a, label, input, textarea, [data-edge], [popover]'
 
 function load(key: string, fallback: BoxRect): BoxRect {
   try {
