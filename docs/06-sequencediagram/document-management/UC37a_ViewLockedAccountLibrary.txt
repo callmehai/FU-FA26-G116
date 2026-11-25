@@ -1,4 +1,4 @@
-title UC-37a - View a Locked Account's Personal Library
+title UC-37a - View a Deactivated Account’s Personal Library
 
 actor "System Admin" as Actor
 boundary "User Detail Screen" as UserScreen

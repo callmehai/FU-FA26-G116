@@ -79,7 +79,7 @@ else A transcript was claimed
         activate Protector
         Protector-->TranscriptionService: Voiceprints
         deactivate Protector
-        TranscriptionService->SpeakerMatcher: Match who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-120, BR-123, NFR, ADR-0045)
+        TranscriptionService->SpeakerMatcher: Match who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-120, BR-123, NFR)
         activate SpeakerMatcher
         SpeakerMatcher-->TranscriptionService: Best person per voice, with its score
         deactivate SpeakerMatcher

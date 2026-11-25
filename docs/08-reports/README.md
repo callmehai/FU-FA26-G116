@@ -334,6 +334,15 @@ xong mở Word Update Field mục lục, thêm dòng Change Log, dàn trang ngan
 Markdown snapshot (Report 4 chưa có snapshot) và không đẩy Drive. `npx pyright scripts/fill_report4.py`
 phải 0 lỗi (VS Code báo đỏ thường do đoạn này).
 
+**Report 4 mục II — `scripts/fill_report4_diagrams.py`:** thay phần mục II của `fill_report4.py` (script đó còn
+dùng cho mục I: kiến trúc, ERD, bảng thực thể; phần mục II của nó đã lỗi thời từ khi đánh lại mã UC). Chạy khô
+`python scripts/fill_report4_diagrams.py` để xem diagram nào trong `docs/06-sequencediagram` và `docs/07-classdiagram`
+chưa có trong Report 4; `--write` (đóng Word trước) thêm class diagram `N.1` còn thiếu (sequence chuyển sang `N.2`,
+số mục và số Figure đi theo), thêm heading UC + ảnh + caption `Figure N.k: Sequence Diagram of UC-xx – Tên` cho UC còn thiếu,
+đánh lại số trong mục, và điền alt text bằng chính caption cho ảnh chưa có. Ảnh đã có không bị đụng trừ khi đưa
+`--refresh UC-01,FE-16` (hoặc `all`): khi đó thay byte ảnh, giữ bề rộng, chiều cao theo tỉ lệ mới. Tên UC trong ảnh lấy
+từ dòng `title` của file `.txt`, nên heading Report 4 phải trùng dòng đó (đã đồng bộ theo Report 3). Mục lục vẫn cập nhật bằng Word.
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 

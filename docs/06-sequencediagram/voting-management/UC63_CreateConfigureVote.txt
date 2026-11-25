@@ -1,4 +1,4 @@
-title UC-63 - Create or Configure Vote
+title UC-63 - Create / Configure Vote
 
 actor "Chair or Secretary" as Actor
 boundary "Meeting Management Page" as MeetingPage
