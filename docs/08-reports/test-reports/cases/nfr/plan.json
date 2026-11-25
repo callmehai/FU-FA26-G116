@@ -1,0 +1,85 @@
+{
+  "file": "Report5.4_System_Test_NFRs.xlsx",
+  "source": "Report 3 §IV.2 Quality Attributes",
+  "environment": "Test server app.trustcabinet.workspace-hub.space (Staging) or a local build of the same app commit. Round 1 (23/11/2026): app commit 6baba24f; changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504), app server on 4 vCPU (ADR-0082)",
+  "sheets": [
+    {
+      "sheet": "Security",
+      "layout": "gwt",
+      "prefix": "SEC",
+      "attribute": "2.3 Security",
+      "requirements": [
+        "Authentication required",
+        "Password policy and protection",
+        "Sign-in rate limiting",
+        "Session and token expiry",
+        "Role-based access control and least privilege",
+        "Document security levels",
+        "External Guest access scope",
+        "Encryption of data in transit",
+        "Protection of stored data and backups",
+        "Audit logging",
+        "Personal data protection and audio consent",
+        "Integrity of issued minutes, vote conclusions and stored documents",
+        "Upload safety"
+      ]
+    },
+    {
+      "sheet": "Performance",
+      "layout": "metric",
+      "prefix": "PERF",
+      "attribute": "2.2 Performance",
+      "requirements": [
+        "Page load time",
+        "Server response time",
+        "Search and list views",
+        "Document upload and preview",
+        "Meeting audio upload and AI processing",
+        "Notification and real-time update latency",
+        "Concurrent users",
+        "Online meeting room capacity",
+        "Report generation and export"
+      ]
+    },
+    {
+      "sheet": "Usability",
+      "layout": "gwt",
+      "prefix": "USA",
+      "attribute": "2.1 Usability",
+      "requirements": [
+        "Learnability and training time",
+        "Vietnamese user interface",
+        "Consistency",
+        "Responsive, desktop-first layout",
+        "Browser support",
+        "Accessibility basics",
+        "Clear error messages with codes",
+        "Confirmation of destructive and irreversible actions",
+        "Feedback on long-running operations"
+      ]
+    },
+    {
+      "sheet": "Reliability",
+      "layout": "gwt",
+      "prefix": "REL",
+      "attribute": "2.4 Reliability",
+      "requirements": [
+        "No loss of committed data",
+        "Reliable asynchronous delivery",
+        "Recoverable AI processing"
+      ]
+    },
+    {
+      "sheet": "Availability",
+      "layout": "gwt",
+      "prefix": "AVA",
+      "attribute": "2.5 Availability",
+      "requirements": [
+        "Service availability",
+        "Recovery time and data loss",
+        "Graceful degradation",
+        "Health monitoring"
+      ]
+    }
+  ]
+}

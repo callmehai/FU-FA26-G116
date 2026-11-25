@@ -173,11 +173,12 @@ export async function openCriterion({ browser, base, outDir, criterion, device, 
       expect(res.status, `HTTP ${res.status}: ${JSON.stringify(res.body).slice(0, 300)}`).toBe(status)
     },
     /** Saves a screenshot as evidence: `NN-<role>-<AC>-<device>-<slug>.png`, numbered in the order taken. */
-    async shot(slug, { fullPage = false } = {}) {
+    async shot(slug, { fullPage = false, page: target = page, who = role } = {}) {
       counter.n += 1
-      const name = `${String(counter.n).padStart(2, '0')}-${slugify(role)}-${criterion.id}-${device}-${slugify(slug)}.png`
+      const name = `${String(counter.n).padStart(2, '0')}-${slugify(who)}-${criterion.id}-${device}-${slugify(slug)}.png`
       // Transitions are finished first: a shot taken mid-fade shows controls half-drawn.
-      await page.screenshot({ path: join(outDir, name), fullPage, animations: 'disabled', caret: 'hide' })
+      // `page` lets a criterion that drives a second browser (another user) keep that browser's evidence too.
+      await target.screenshot({ path: join(outDir, name), fullPage, animations: 'disabled', caret: 'hide' })
       shots.push(name)
       return name
     },
