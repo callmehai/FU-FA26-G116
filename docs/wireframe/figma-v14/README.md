@@ -1,6 +1,6 @@
 # Plugin Figma v14
 
-Plugin dựng lại các màn của [TrustCabinet-wireframe-v14.html](../TrustCabinet-wireframe-v14.html) (25/11/2026, hoàn thiện 100% theo D:/wireframe-v13-vs-code.md) trong Figma Desktop.
+Plugin dựng lại các màn của [TrustCabinet-wireframe-v14.html](../TrustCabinet-wireframe-v14.html) (25/11/2026, bám sát audit đối chiếu v13 với code app ngày 25/11/2026) trong Figma Desktop.
 
 - `manifest.json` — khai báo plugin, import qua **Plugins → Development → Import plugin from manifest…**
 - `code.js` — dữ liệu các màn (`LAYOUT`) và code dựng màn; sinh bằng `_tools/mk_plugin.js`, không sửa tay.
