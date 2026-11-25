@@ -1,5 +1,5 @@
-// FE-09 — Ghi âm cuộc họp (QA subtask SCRUM-196): UC-51a view, UC-51b play, UC-51c download, UC-52a start a room take,
-// UC-52b stop and save it, UC-52c upload an audio file, UC-52d delete a take, UC-52e erase a recording, UC-53 my recorded
+// FE-09 — Ghi âm cuộc họp (QA subtask SCRUM-196): UC-51a view, UC-51b play, UC-51c download, UC-52a turn the room
+// microphone on/off (start and save a take; AF-3 a take left open on another device), UC-52c upload an audio file, UC-52d delete a take, UC-52e erase a recording, UC-53 my recorded
 // speech, and the rules they cite (BR-107–BR-115, BR-122).
 //
 // Criteria come from docs/01-requirements/05-use-case-specifications.md, 06-business-rules.md,
@@ -523,7 +523,7 @@ export default {
   devices: ['desktop'],
   allowHosts: [],
   criteria: [
-    // ------------------------------------------------------------------------------------------- UC-52a / UC-52b
+    // ------------------------------------------------------------------------------------------- UC-52a Turn Room Microphone On/Off
     {
       id: 'AC1',
       role: 'secretary',
@@ -712,7 +712,7 @@ export default {
     {
       id: 'AC5',
       role: 'secretary',
-      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Dừng ghi ở máy kia" để lưu hộ (UC-52b AF-3)',
+      title: 'Lượt còn mở ở máy khác: thẻ báo "Đang ghi ở nơi khác", Thư ký bấm "Dừng ghi ở máy kia" để lưu hộ (UC-52a AF-3)',
       steps: ['Một lượt mic phòng được mở từ "máy khác" (API, thuky@) và đã có tiếng', 'thuky@ mở trang cuộc họp trên trình duyệt này', 'Bấm "Dừng ghi ở máy kia"'],
       expected: 'Thẻ hiện "Đang ghi ở nơi khác · <tên Thư ký>" và nút "Dừng ghi ở máy kia"; bấm thì toast "Đã lưu lượt ghi.", bản ghi thành Available',
       run: wrap(async (qa) => {

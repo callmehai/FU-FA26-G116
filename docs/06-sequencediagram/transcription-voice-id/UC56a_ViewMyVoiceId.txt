@@ -1,4 +1,4 @@
-﻿title UC-56a - View My Voice ID
+title UC-56a - View My Voice ID
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

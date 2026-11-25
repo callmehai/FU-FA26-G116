@@ -1,4 +1,4 @@
-﻿title UC-56d - Play Voice Sample
+title UC-56d - Play Voice Sample
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

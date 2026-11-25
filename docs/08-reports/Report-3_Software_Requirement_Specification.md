@@ -85,6 +85,7 @@ Table of Contents
 | 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
 | 25/11/2026 | M, A, D | KhanhPG | [note 60, note 61] UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
 | 25/11/2026 | M | KhanhPG | [PR #507] §IV.2.3 External Guest access scope: the one-time code expires within 15 minutes, as in the code (GuestAccessOptions.CodeLifetimeMinutes). |
+| 25/11/2026 | M | LocHD | [PR #547] Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker; Jira keys removed. |
 
 *A - Added M - Modified D - Deleted
 
@@ -1070,7 +1071,7 @@ View the full-size image on Google Drive
 | 2.3 | Send Password Reset Link Dialog | FE-02 User & Profile Management | Allows the System Admin to confirm sending a one-time, 60-minute password reset link to a user’s registered email; the same dialog style confirms deactivating an account. |
 | 3.1 | Role List | FE-03 Role-Based Access Control | Allows the System Admin to view roles with their account counts and to create, edit and delete custom roles (name, description, initial permissions), with Default roles protected from change. |
 | 3.2 | Permission Matrix | FE-03 Role-Based Access Control | Allows the System Admin to view and grant or revoke permissions for each role in a role-by-permission matrix and to save or undo the changes row by row. |
-| 3.3 | System Audit Log | FE-03 Role-Based Access Control | Allows the System Admin to view, filter, search and export to CSV the read-only log of business and security events, and open the before/after details of each change. |
+| 3.3 | System Audit Log | FE-03 Role-Based Access Control | Allows the System Admin to view, filter and search the read-only log of business and security events, and open the details recorded with each entry. |
 | 4.1 | Meeting Calendar – Calendar View | FE-04 Meeting Management | Allows any internal user related to a meeting to browse accessible Meetings on a weekly day/hour grid, placed by their planned start and end time and coloured by status, and open one. |
 | 4.2 | Meeting Calendar – List View | FE-04 Meeting Management | Allows any internal user related to a meeting to view the accessible Meetings of a week as cards grouped by day, with planned time, mode, location, status and confidentiality level, open one, and answer the attendance question of a Published or In Progress Meeting directly on its card. Meetings the user has declined are not listed. |
 | 4.3 | Meeting List | FE-04 Meeting Management | Allows any internal user related to a meeting to view, search, filter by status, confidentiality level and time (Today, This week, Not yet held, Already held), and page through the Meetings s/he organizes, is invited to or must approve, and open a Meeting. The list opens filtered to In Progress Meetings. |
@@ -1101,7 +1102,7 @@ View the full-size image on Google Drive
 | 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
 | 8.7 | In-Room Attendance Panel | FE-08 Online Meeting Room Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest from a separate Attendance panel without leaving the online room; choosing a value saves it. Other users see the same attendance read-only. No totals are shown. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Recording | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
-| 9.2 | Upload Audio Dialog | FE-09 Meeting Recording | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
+| 9.2 | Upload Audio Dialog | FE-09 Meeting Recording | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 300 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
 | 10.2 | Meeting Summary | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the current Chair and the current Secretary to read the AI draft of the Meeting content in three sections, ask for it again, correct it and approve it; other participants read it once it is approved. The minutes use only an approved draft. The summary is not published outside the Meeting. |
 | 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit, delete and open Draft Votes, and close an open Vote; other involved users view read-only. |
@@ -1152,7 +1153,7 @@ View the full-size image on Google Drive
 | Primary Actors | System Admin, Member, Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account. |  |  |
-| Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (SCRUM-63, BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
+| Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
 | Postconditions | ● POST-1: The user is authenticated.<br>● POST-2: The system identifies the corresponding internal user.<br>● POST-3: The user is signed in and lands on the calendar [Lịch làm việc]. A page opened from a link while signed out opens instead after sign-in, and a session ended by the system returns to the page the user was on; after a deliberate sign-out the next sign-in lands on the calendar. When the account cannot open the requested page, the user lands on the calendar too.<br>● POST-4: The sign-in, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
 | Normal Flow | Sign in with Email and Password<br>1. The user enters their email and password on the login page. An empty email, a malformed email or an empty password is pointed out beside its field before the sign-in is sent.<br>2. The user clicks “Sign In”.<br>3. The system validates the provided credentials.<br>4. The system records the successful sign-in, and the method used, in the audit log. (BR-009)<br>5. The system signs the user in and opens the landing page, the calendar [Lịch làm việc], unless the sign-in continued a page opened while signed out. |  |  |
 | Alternative Flows | N/A |  |  |
@@ -1163,7 +1164,7 @@ View the full-size image on Google Drive
 | Primary Actors | System Admin, Member, Approver, Chair, Secretary, Participant | Secondary Actors | OAuth Provider |
 | --- | --- | --- | --- |
 | Description | As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account. |  |  |
-| Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (SCRUM-63, BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
+| Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
 | Postconditions | ● POST-1: User is authenticated.<br>● POST-2: System identifies the corresponding internal user.<br>● POST-3: The user lands on the calendar [Lịch làm việc], on the same terms as UC-01 POST-3.<br>● POST-4: The sign-in with Google, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
 | Normal Flow | Sign in with Google<br>1. User selects “Continue with Google” on the login page.<br>2. User signs in using their Google account.<br>3. System verifies that the Google account is associated with an authorized internal user.<br>4. The system records the successful sign-in with Google in the audit log. (BR-009)<br>5. System signs the user in, grants access according to the user's assigned role and opens the calendar [Lịch làm việc], unless the sign-in continued a page opened while signed out. |  |  |
 | Alternative Flows | N/A |  |  |
@@ -2943,11 +2944,9 @@ Field Description
 
 #### 3.3 System Audit Log
 
-Note: the current screen does not export CSV, does not show the values before and after a change and has no “5 consecutive attempts” rule (SCRUM-16 D3, D5, D6); the screen specification below is waiting to be updated.
-
 Figure 24: System Audit Log
 
-The System Audit Log screen is reached from Administration › Audit Log [Quản trị › Nhật ký hệ thống] in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, open the before/after details of a change and export the result to CSV (UC-12).
+The System Audit Log screen is reached from Administration › Audit Log [Quản trị › Nhật ký hệ thống] in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry (UC-12).
 
 This screen allows the System Admin to:
 
@@ -2955,28 +2954,25 @@ This screen allows the System Admin to:
 
 - Filter Audit Log: filter by date range, actor and event type (UC-12).
 
-- Search by Object: enter a keyword to find events of a target object by its name or id, ignoring case and Vietnamese marks; the name of anything of a Secret meeting never matches (UC-12).
+- Search by Object: enter a keyword to find events of a target object by its name or id, or by the recorded details, ignoring case and Vietnamese marks; the name of anything of a Secret meeting never matches (UC-12).
 
-- View Event Details: click a row to open a right-side panel with the values before and after the change (UC-12).
-
-- Export CSV: download the events matching the current filters as a CSV file (UC-12).
+- View Event Details: click a row to open a right-side panel with the actor, event code, object, IP address and the details recorded with the entry (UC-12).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Page header | Breadcrumb “Administration” [Quản trị], title “Audit Log” [Nhật ký hệ thống] and note “Business and security events. Cannot be edited or deleted.” [Sự kiện nghiệp vụ và bảo mật. Không sửa, không xoá được.] |
-| Export CSV [Xuất CSV] | Secondary button; exports the events matching the current filters to a CSV file. |
 | Date range | Date range picker dd/mm/yyyy – dd/mm/yyyy (e.g. 01/10/2026 – 06/10/2026); limits events to the selected period. An invalid range is reported and not applied. |
 | Actor filter [Mọi người thực hiện] | Dropdown; default All actors; lists users. |
 | Event type filter [Mọi loại sự kiện] | Dropdown; default All event types (e.g. change role permissions, approve meeting, failed sign-in, download document, send password reset link). |
-| Search [Tìm theo đối tượng…] | Text input, optional; matches the target object name or id, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
+| Search [Tìm theo đối tượng…] | Text input, optional; matches the target object name or id, or the recorded details, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
 | Time [Thời điểm] | Column, format dd/mm hh:mm, newest first. |
 | Actor [Người thực hiện] | Column: avatar initials and full name of the user who performed the action. |
 | Event [Sự kiện] | Column chip with the event type, e.g. “Changed role permissions” [Đổi quyền vai trò], “Approved meeting” [Duyệt cuộc họp], “Downloaded document” [Tải tài liệu], “Sent password reset link” [Gửi liên kết đặt lại mật khẩu]. Security events such as “Failed sign-in” [Đăng nhập thất bại] use a red chip and the whole row is highlighted in red. |
 | Object [Đối tượng] | Column: the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Họp Mật” for anything of a Secret meeting. |
 | IP address [Địa chỉ IP] | Column: IP address of the request. |
-| Detail panel | Right-side drawer opened by clicking a row; shows the before/after values of the change. Read-only. |
+| Detail panel | Right-side drawer opened by clicking a row; shows the actor, event code, object with its id, IP address and the details recorded with the entry, field by field. Read-only. |
 | Pagination | “Showing 1–5 of 1,284” [Hiển thị 1–5 trong 1.284] with previous/next and page-number buttons. No matching entries shows an empty-result message so the filters can be revised. |
 
 ### 4. FE-04 – Meeting Management
@@ -4000,9 +3996,9 @@ Field Description
 | Transcript segment | One row per segment: start time (hh:mm:ss, e.g. 00:00:12), speaker dropdown and the transcribed text. Transcription runs on the uploaded file after upload; there is no real-time transcription and no translation. |
 | Speaker dropdown | Lists the meeting’s internal participants and Guests; changing it re-assigns that segment (UC-55). A voice not yet identified is shown as “Người nói 3” [Speaker 3] with an amber border. |
 | Transcript footer | Read-only: “Đoạn 1–5 trong 214” [Segments 1–5 of 214] and “Sửa lần cuối 15/10 10:20” [Last edited]. |
-| Upload drop zone | Dashed area “Kéo thả file audio vào đây” [Drag and drop an audio file here], hint “MP3, M4A, WAV · tối đa 500 MB”, button “Chọn file” [Choose file] that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
+| Upload drop zone | Dashed area “Kéo thả file audio vào đây” [Drag and drop an audio file here], hint “MP3, M4A, WAV · tối đa 300 MB”, button “Chọn file” [Choose file] that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
 | File đã tải lên [Uploaded files] | Media library list; each file shows the name (e.g. hop-sprint6.m4a) and “1 giờ 09 phút · 64 MB · Đỗ Hải Yến” [duration · size · uploaded by] (UC-51a). Audio files only – the system stores no video. |
-| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: định dạng không hỗ trợ. Chọn file MP3, M4A hoặc WAV.” [unsupported format. Choose an MP3, M4A or WAV file.]; files over 500 MB are rejected in the same way. The user can choose another file. |
+| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: định dạng không hỗ trợ. Chọn file MP3, M4A hoặc WAV.” [unsupported format. Choose an MP3, M4A or WAV file.]; files over 300 MB are rejected in the same way. The user can choose another file. |
 | Tạo tóm tắt từ transcript [Generate summary from transcript] | Primary button, enabled when at least one transcript is Processed. Sends the edited transcript to the AI provider to create a Draft summary and opens the Meeting Summary tab (UC-58). |
 | Visibility rule | Other authorized users of the meeting (Member, Approver, Chair, Participant, System Admin) see only the media library and can play the audio (UC-51a, UC-51b); the transcript, upload and summary actions are shown only to the assigned Secretary. |
 
@@ -4014,7 +4010,7 @@ The Upload Audio Dialog [Tải audio lên] is opened by the Secretary from the R
 
 This screen allows the Secretary to:
 
-- Select Audio File: drag a file into the drop area or click it to choose an MP3, M4A or WAV file of up to 500 MB (UC-52).
+- Select Audio File: drag a file into the drop area or click it to choose an MP3, M4A or WAV file of up to 300 MB (UC-52).
 
 - Confirm Recording Consent: tick the confirmation that attendees were informed and consented to the recording (UC-52).
 
@@ -4027,8 +4023,8 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Tải audio lên [Upload audio] | Dialog title. The dialog is available only to the assigned Secretary of the meeting and only when the meeting is Ended. |
-| Drop zone | Dashed area “Kéo tệp vào đây hoặc bấm để chọn” [Drag a file here or click to choose] with the hint “MP3, M4A, WAV · tối đa 500 MB”. Accepts one audio file at a time. |
-| File validation | A file with another format (e.g. .wma or any video file) or larger than 500 MB is rejected immediately with an inline error naming the file and the accepted formats; the user can choose another file. |
+| Drop zone | Dashed area “Kéo tệp vào đây hoặc bấm để chọn” [Drag a file here or click to choose] with the hint “MP3, M4A, WAV · tối đa 300 MB”. Accepts one audio file at a time. |
+| File validation | A file with another format (e.g. .wma or any video file) or larger than 300 MB is rejected immediately with an inline error naming the file and the accepted formats; the user can choose another file. |
 | Selected file row | File name and size (e.g. “hop-sprint6.m4a · 64 MB”) with a progress bar and percentage (e.g. 64%) while uploading. |
 | Recording consent [Xác nhận đồng ý ghi âm] | Checkbox, required, unticked by default: “Tôi xác nhận người tham dự đã được thông báo và đồng ý ghi âm theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP.” [I confirm that attendees were informed and consented to the recording under Law 91/2025/QH15 on Personal Data Protection and Decree 356/2025/ND-CP.] Required because the recording is personal data. |
 | Huỷ [Cancel] | Ghost button; closes the dialog and discards the selected file; an upload in progress is cancelled. |
@@ -4268,7 +4264,7 @@ Field Description
 | Trạng thái và lần sửa [Status and revision] | Read-only: revision number, status Bản nháp [Draft], who created the minutes and when, and when they were last saved. A correction that is not issued yet is labelled “Đính chính · bản nháp / chờ duyệt / bị trả lại” [Correction · draft / waiting for approval / returned]. |
 | Tạo biên bản / Tạo lại [Create minutes / Rebuild] | Button; fills the template from the Meeting's records and the approved AI draft. Building again replaces all corrections after confirmation, and is not offered once the minutes are submitted or issued. |
 | Soạn thảo HTML [HTML editor] | Word-processor area: toolbar with paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; switches to a plain-text view and back, and the preview follows the text. The server filters the HTML before saving. Template marks: “## ” section heading, “### ” sub-heading, “@@ left \| right” two-column line, “**bold**”, “- ” bullet, “^ ” centred and “~ ” small line. |
-| Xem trước [Preview] | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and signature block. |
+| Xem trước [Preview] | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and the Secretary and Chair name block with space to sign the printed copy by hand. |
 | Lưu [Save] | Saves the text with the time the draft was read. If someone else saved first, the page says so and the newer text is not overwritten. |
 | Tải Word [Download Word] | Downloads “Biên bản - <tên cuộc họp>.docx” built from the same text. Not available for a Secret Meeting, where the minutes are read on the screen only. |
 | Quyền xem [Visibility rule] | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
@@ -4543,7 +4539,7 @@ TrustCabinet is a self-hosted web application installed for a single organisatio
 
 - User interface: A single-page web application opened in a standard web browser; no client installation, plug-in or browser extension is required. All screens, labels, system messages (catalogued in Section V.2 with MSGnn codes), notifications and emails are in Vietnamese in v1. Dates are shown as dd/MM/yyyy and times in 24-hour format in Vietnam time (UTC+7). The interface is designed desktop-first (laptop and desktop screens of 1280 px width or more) and remains usable at 1024 px; the external-Guest invitation and email-verification screens, invitation response, voting, notifications and document viewing are also usable on mobile browsers (360 px width or more). Native mobile apps are out of scope (Report 1, LI-10).
 
-- Hardware interface: The system requires no special-purpose hardware. Clients: any PC, laptop, tablet or phone able to run a supported browser; joining the online meeting room additionally requires a microphone and speakers/headset, and optionally a camera, granted to the browser by the user. The system never activates a user's microphone or camera on its own and never records the meeting (Report 1, LI-01). Server: a single x86-64 host (physical or virtual) running Linux inside TrustSoft's network; recommended baseline 8 vCPU, 16 GB RAM and 500 GB of storage for documents and meeting audio, excluding speech/AI processing. If the speech-processing model is self-hosted, additional compute (possibly a GPU) is sized once the processing environment is decided (Report 2, risk R03).
+- Hardware interface: The system requires no special-purpose hardware. Clients: any PC, laptop, tablet or phone able to run a supported browser; joining the online meeting room additionally requires a microphone and speakers/headset, and optionally a camera, granted to the browser by the user. The system never activates a user's microphone or camera on its own and never records on its own: audio is captured only in the browser, under the user's control (Report 1, LI-01). Server: a single x86-64 host (physical or virtual) running Linux inside TrustSoft's network; recommended baseline 8 vCPU, 16 GB RAM and 500 GB of storage for documents and meeting audio, excluding speech/AI processing. Speech recognition runs in a separate CPU-only speech worker, on the same host or on another machine the server reaches; no GPU is needed (Report 2, risk R03).
 
 - Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API; any standards-compliant SMTP server can be used instead) - outgoing invitation (with .ics calendar attachment), reminder, approval and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU) - audio, video and screen-sharing for the online meeting room. (6) AI drafting service - writes the draft of the Meeting content from the transcript, the agenda and the vote results. It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin; it receives text only, and the model used is recorded with every draft. Speech recognition and speaker identification run inside the system and send nothing outside. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
 
@@ -4575,7 +4571,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Server response time | 95% of API requests (view, create, update, approve, respond, vote) complete within 1 s; no ordinary form submission takes longer than 3 s | Up to 100 users active simultaneously, excluding file transfer time and AI processing |
 | Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 documents and 1,000,000 audit-log entries |
 | Document upload and preview | Documents up to 10 MB per file are accepted; after the transfer completes the file is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
-| Meeting audio upload and AI processing | Audio files up to 500 MB and up to 4 hours long are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; targets apply whichever processing environment (self-hosted or external) is selected; queued jobs wait their turn without blocking other functions |
+| Meeting audio upload and AI processing | Audio files up to 300 MB are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; speech recognition always runs on the in-house speech worker, and the summary target applies to whichever language model is selected (in-house, or the outside API for a Normal meeting); queued jobs wait their turn without blocking other functions |
 | Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same session within 2 s; an email is handed to the email service within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a session starts | Normal operation, mail server reachable; email retries do not delay in-app delivery |
 | Concurrent users | The system remains fully functional with 200 signed-in users, of whom up to 100 perform operations at the same time, without errors or time-outs and within the response-time targets above | Single-server Docker deployment with the recommended baseline hardware |
 | Online meeting room capacity | Each meeting room supports up to 30 participants with audio and video plus one screen share, with a hard limit of 50 connected users; joining the room takes ≤ 5 s; mouth-to-ear audio delay ≤ 400 ms; at least 3 rooms can run at the same time. The 50-connection limit is enforced by the LiveKit room service, which refuses the next connection while the room is full. | Participants inside the company network or on a stable connection of ≥ 2 Mbps per participant; self-hosted media server on the deployment host |
@@ -4588,7 +4584,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | --- | --- |
 | Authentication required | Every page and API function requires a signed-in internal user, except the sign-in page, the password-reset page reached from a valid reset link, the external-Guest invitation and email-verification pages, and the health check. Sign-in with Google is accepted only after Google's identity assertion has been verified and only for an existing, linked internal account; it never creates an account (BR-003). Sign-in failure messages must not reveal whether an account or email exists (BR-004). |
 | Password policy and protection | Passwords must be at least 12 characters long; no mandatory character-class rules are imposed, and long passphrases must be accepted. Passwords are never stored or logged in a readable or reversible form and are never displayed, including to administrators. A password-reset link is valid for at most 60 minutes and can be used only once. |
-| Sign-in rate limiting | Sign-in attempts are limited per minute (MSG414, SCRUM-132): at most 5 password sign-in attempts per email address and 60 auth attempts per IP address in each 60-second window; exceeding the limit returns 429 with a Retry-After hint, and the message shown does not reveal the failure count. No account is locked for failed sign-in and there is no unlock action. Repeated failed attempts against guest-verification codes and password-reset requests are likewise throttled. |
+| Sign-in rate limiting | Sign-in attempts are limited per minute (MSG414): at most 5 password sign-in attempts per email address and 60 auth attempts per IP address in each 60-second window; exceeding the limit returns 429 with a Retry-After hint, and the message shown does not reveal the failure count. No account is locked for failed sign-in and there is no unlock action. Repeated failed attempts against guest-verification codes and password-reset requests are likewise throttled. |
 | Session and token expiry | Short-lived access credentials expire after at most 15 minutes and are renewed silently while the user remains signed in; after at most 7 days the user must sign in again. Signing out immediately ends the session. Deactivating an account terminates all its active sessions (BR-001), and changes to a user's roles or status take effect on the user's next request. Session credentials must not be readable by page scripts and must not be sent to other sites. Sign-out revokes only the refresh token, so an access token already issued stays usable until it expires. |
 | Role-based access control and least privilege | Every request is authorised on the server against the user's current system-role permissions and their relationship with the meeting (Organizer, Approver, Chair, Secretary, Member or Guest) (BR-016, BR-017, BR-030); anything not explicitly permitted is denied. Hiding a button in the user interface is never the only protection. A user who is not authorised for a meeting is told it is not found, so its existence is not disclosed. Only the System Admin can change role-permission configuration, and every change is audited (BR-009, BR-010, BR-011, BR-007). |
 | Document security levels | Every document carries one security level: Normal, Internal, Secret. Access to view, preview, download, comment on or attach a document is granted only when both the user's relationship with the document (owner or authorised meeting relationship) and the document's level permit it; documents a user may not access never appear in their search results, lists, notifications or emails. Viewing or downloading a Secret document is recorded in the audit log, and Secret content is never included in email bodies or attachments. |
@@ -4631,7 +4627,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis and media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose, without any paid or cloud-only service (Report 2, constraints 2 and 5). |
+| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis and media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose, without any paid or cloud-only service; outgoing email can use the organisation's own SMTP server instead of Resend, and the outside language-model API for Normal meetings is optional (Report 2, constraints 2 and 5). |
 | Single deployable application | The web front end and the API are delivered as one application served from the same origin; a new environment can be installed from the documented procedure within 1 working day by a person with basic Linux and Docker knowledge. |
 | Environment independence | All environment-specific values (URLs, credentials, SMTP and Google settings, speech/AI provider endpoint) are supplied by configuration, so the same build runs in development, test and production. |
 
@@ -5264,7 +5260,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 491 | MSG483 | Inline error | UC-57b / EX-4 | Confirm the person agreed to this recording. |
 | 477 | MSG478 | Dialog / Banner | UC-52c / EX-8 | Hybrid Meetings are recorded live with the room microphone to match the timing of remote speech; audio files cannot be uploaded. |
 | 478 | MSG479 | Dialog | UC-54a / EX-3 | The combined recording is for listening only. Its speech has already been transcribed from the room and per-microphone recordings. |
-| 479 | MSG414 | API error (429 + Retry-After) | UC-01 – Sign in with Email and Password / UC-02 – Sign in with Google – rate limiting (SCRUM-132) | Too many attempts. Please try again in a few minutes. |
+| 479 | MSG414 | API error (429 + Retry-After) | UC-01 – Sign in with Email and Password / UC-02 – Sign in with Google – rate limiting | Too many attempts. Please try again in a few minutes. |
 | 480 | MSG480 | Inline error (lobby) | UC-43 – Join Meeting Room / Exception Flows (EX-11) | Could not connect to the meeting room. Please try again. |
 | 481 | MSG415 | Success (200) | UC-28 Normal Flow | Note saved. |
 | 482 | MSG416 | Error (403) | UC-28 EX-1 | Only the Secretary may write meeting notes. |

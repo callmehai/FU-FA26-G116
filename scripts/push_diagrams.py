@@ -214,6 +214,24 @@ GROUPS: tuple[Group, ...] = (
         ),
     ),
     Group(
+        key="architecture",
+        title="Architecture diagram",
+        drive_folder="18E52RJTqrrd3j9D9ROJllVC2kAvtOHJx",  # Diagrams root; files go to its "Architecture diagram" subfolder
+        sources=(
+            Source(
+                local=ROOT / "docs" / "16-architecture-diagram",
+                patterns=("*.drawio", "*.png"),
+                drive_dir="Architecture diagram",
+            ),
+        ),
+    ),
+    Group(
+        key="package",
+        title="Package diagram",
+        drive_folder="1xPB5icagcceX-ZhXpqTNmo5ktQYDHehD",
+        sources=(Source(local=ROOT / "docs" / "15-package-diagram", patterns=("*.drawio", "*.png")),),
+    ),
+    Group(
         key="report-figures",
         title="Report figures",
         drive_folder="18E52RJTqrrd3j9D9ROJllVC2kAvtOHJx",  # Diagrams root; files go to its "Report figures" subfolder

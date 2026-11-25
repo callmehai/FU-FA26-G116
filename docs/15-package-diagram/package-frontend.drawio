@@ -1,74 +1,89 @@
 <mxfile host="Electron" agent="Claude Code" scale="1" border="0">
   <diagram id="pkg-frontend" name="Frontend">
-    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1560" pageHeight="810" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1620" pageHeight="810" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="p4-fe" parent="1" style="shape=folder;tabWidth=128;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="frontend/src" vertex="1">
-          <mxGeometry x="40" y="40" width="1090" height="730" as="geometry" />
+          <mxGeometry x="40" y="40" width="1150" height="730" as="geometry" />
         </mxCell>
         <mxCell id="p4-app" parent="p4-fe" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="app" vertex="1">
           <mxGeometry x="90" y="497" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-features" parent="p4-fe" style="shape=folder;tabWidth=93;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="features" vertex="1">
-          <mxGeometry x="300" y="60" width="470" height="424" as="geometry" />
+          <mxGeometry x="300" y="60" width="590" height="424" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-access" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="access" vertex="1">
           <mxGeometry x="20" y="44" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-agenda" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="agenda" vertex="1">
-          <mxGeometry x="170" y="44" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="44" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-ai" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="ai" vertex="1">
-          <mxGeometry x="320" y="44" width="130" height="40" as="geometry" />
+          <mxGeometry x="300" y="44" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-attendance" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="attendance" vertex="1">
-          <mxGeometry x="20" y="98" width="130" height="40" as="geometry" />
+          <mxGeometry x="440" y="44" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-f-audit" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="audit" vertex="1">
+          <mxGeometry x="20" y="106" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-auth" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="auth" vertex="1">
-          <mxGeometry x="170" y="98" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="106" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-calendar" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="calendar" vertex="1">
-          <mxGeometry x="320" y="98" width="130" height="40" as="geometry" />
+          <mxGeometry x="300" y="106" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-f-calendarSharing" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="calendarSharing" vertex="1">
+          <mxGeometry x="440" y="106" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-calls" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="calls" vertex="1">
-          <mxGeometry x="20" y="152" width="130" height="40" as="geometry" />
+          <mxGeometry x="20" y="168" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-documents" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="documents" vertex="1">
-          <mxGeometry x="170" y="152" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="168" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-f-findTime" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="findTime" vertex="1">
+          <mxGeometry x="300" y="168" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-guest" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="guest" vertex="1">
-          <mxGeometry x="320" y="152" width="130" height="40" as="geometry" />
+          <mxGeometry x="440" y="168" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-meetings" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="meetings" vertex="1">
-          <mxGeometry x="20" y="206" width="130" height="40" as="geometry" />
+          <mxGeometry x="20" y="230" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-minutes" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="minutes" vertex="1">
-          <mxGeometry x="170" y="206" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="230" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-notes" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="notes" vertex="1">
-          <mxGeometry x="320" y="206" width="130" height="40" as="geometry" />
+          <mxGeometry x="300" y="230" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-notifications" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="notifications" vertex="1">
-          <mxGeometry x="20" y="260" width="130" height="40" as="geometry" />
+          <mxGeometry x="440" y="230" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-participants" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="participants" vertex="1">
-          <mxGeometry x="170" y="260" width="130" height="40" as="geometry" />
+          <mxGeometry x="20" y="292" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-recordings" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="recordings" vertex="1">
-          <mxGeometry x="320" y="260" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="292" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-f-reports" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="reports" vertex="1">
+          <mxGeometry x="300" y="292" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-f-speaking" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="speaking" vertex="1">
+          <mxGeometry x="440" y="292" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-speech" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="speech" vertex="1">
-          <mxGeometry x="20" y="314" width="130" height="40" as="geometry" />
+          <mxGeometry x="20" y="354" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-uploads" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="uploads" vertex="1">
-          <mxGeometry x="170" y="314" width="130" height="40" as="geometry" />
+          <mxGeometry x="160" y="354" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-voice" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="voice" vertex="1">
-          <mxGeometry x="320" y="314" width="130" height="40" as="geometry" />
+          <mxGeometry x="300" y="354" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-f-votes" parent="p4-features" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="votes" vertex="1">
-          <mxGeometry x="20" y="368" width="130" height="40" as="geometry" />
+          <mxGeometry x="440" y="354" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="p4-components" parent="p4-fe" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="components" vertex="1">
           <mxGeometry x="300" y="580" width="150" height="70" as="geometry" />
@@ -77,13 +92,13 @@
           <mxGeometry x="700" y="497" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-api" parent="p4-fe" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="api" vertex="1">
-          <mxGeometry x="920" y="60" width="140" height="70" as="geometry" />
+          <mxGeometry x="980" y="60" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-types" parent="p4-fe" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="types" vertex="1">
-          <mxGeometry x="920" y="580" width="140" height="70" as="geometry" />
+          <mxGeometry x="980" y="580" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-web" parent="1" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="backend::TrustCabinet.Web" vertex="1">
-          <mxGeometry x="1300" y="100" width="220" height="70" as="geometry" />
+          <mxGeometry x="1360" y="100" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-e-app-features" parent="1" source="p4-app" target="p4-features" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.1714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.2594;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
           <mxGeometry relative="1" as="geometry">
@@ -108,7 +123,7 @@
             <Array as="points">
               <mxPoint x="65" y="150" />
               <mxPoint x="65" y="740" />
-              <mxPoint x="1030" y="740" />
+              <mxPoint x="1090" y="740" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -132,7 +147,7 @@
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="p4-e-features-lib" parent="1" source="p4-features" target="p4-lib" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.9362;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2857;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p4-e-features-lib" parent="1" source="p4-features" target="p4-lib" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7458;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2857;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="p4-e-components-lib" parent="1" source="p4-components" target="p4-lib" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.4;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.4286;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
@@ -149,7 +164,7 @@
         <mxCell id="p4-e-lib-api" parent="1" source="p4-lib" target="p4-api" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2143;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="990" y="572" />
+              <mxPoint x="1050" y="572" />
             </Array>
           </mxGeometry>
         </mxCell>

@@ -1,4 +1,4 @@
-﻿title UC-52c - Upload Meeting Audio File
+title UC-52c - Upload Meeting Audio File
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

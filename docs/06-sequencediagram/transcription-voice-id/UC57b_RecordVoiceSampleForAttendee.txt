@@ -1,4 +1,4 @@
-﻿title UC-57b - Record Voice Sample for Attendee
+title UC-57b - Record Voice Sample for Attendee
 
 actor "VoiceCollector" as Collector
 boundary "Users Page" as UsersPage

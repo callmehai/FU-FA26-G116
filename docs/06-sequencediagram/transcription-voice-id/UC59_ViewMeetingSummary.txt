@@ -1,4 +1,4 @@
-﻿title UC-59 - View Meeting Summary
+title UC-59 - View Meeting Summary
 
 actor "Chair / Secretary / Participant" as Actor
 boundary "Draft Card (Biên bản tab)" as DraftCard

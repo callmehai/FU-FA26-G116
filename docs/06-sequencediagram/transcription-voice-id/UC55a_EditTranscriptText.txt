@@ -1,4 +1,4 @@
-﻿title UC-55a - Edit Transcript Text
+title UC-55a - Edit Transcript Text
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

@@ -1,4 +1,4 @@
-﻿title UC-51c - Download Meeting Recording
+title UC-51c - Download Meeting Recording
 
 actor "Chair / Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

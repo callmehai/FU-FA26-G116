@@ -1,4 +1,4 @@
-﻿title UC-60 - Edit Meeting Summary
+title UC-60 - Edit Meeting Summary
 
 actor "Chair / Secretary" as Actor
 boundary "Draft Card (Biên bản tab)" as DraftCard
