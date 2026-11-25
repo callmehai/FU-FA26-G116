@@ -118,8 +118,10 @@ export function RecorderCard({
   // A take open that is not this laptop's: on another device, or this one's own that a closed tab left behind.
   const elsewhere = !on && phase === 'off' && !kept && open !== null ? open : null
   const firstTake = isFirstTake(list)
-  // A problem must be seen, whatever the Secretary chose.
-  const minimised = min && !room.error && !kept && !elsewhere
+  // A problem must be seen, whatever the Secretary chose. Another device recording is no problem: the card folds away
+  // like any other (Hải 25/11/2026, the minus did nothing while Khánh's laptop recorded).
+  const mayMinimise = !room.error && !kept
+  const minimised = min && mayMinimise
   useLayoutEffect(() => {
     if (!minimised) refit()
   }, [minimised, refit])
@@ -205,15 +207,17 @@ export function RecorderCard({
       ))}
       <header className="mic-card-head">
         <h2 id="recorder-card-title">{title}</h2>
-        <button
-          type="button"
-          className="mic-card-min"
-          onClick={() => remember(true)}
-          aria-label="Thu nhỏ ô ghi âm"
-          data-tooltip="Thu nhỏ ô ghi âm"
-        >
-          <Icon name="minus" size={16} />
-        </button>
+        {mayMinimise && (
+          <button
+            type="button"
+            className="mic-card-min"
+            onClick={() => remember(true)}
+            aria-label="Thu nhỏ ô ghi âm"
+            data-tooltip="Thu nhỏ ô ghi âm"
+          >
+            <Icon name="minus" size={16} />
+          </button>
+        )}
       </header>
       <div className="mic-card-body">
         <div className="mic-status" role="status">
