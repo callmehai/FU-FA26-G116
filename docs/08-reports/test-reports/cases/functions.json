@@ -1327,6 +1327,22 @@
         {
           "decides": null,
           "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+          "line": 136,
+          "method": "RoomTakeService.CompleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; storage recorder.",
+      "sheet": "RoomTake.Complete"
+    },
+    {
+      "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
           "line": 264,
           "method": "RoomTakeService.DeleteTakeAsync",
           "layer": "Application"
@@ -1495,6 +1511,22 @@
       "module": "REC",
       "precondition": "Meeting with clips; storage recorder.",
       "sheet": "CombinedRecording.BuildNext"
+    },
+    {
+      "description": "Transcription worker step: claim the next job, transcribe, store segments.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 374,
+          "method": "TranscriptionService.ProcessNextAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Transcription job queued; speech worker replaced.",
+      "sheet": "Transcription.ProcessNext"
     },
     {
       "description": "Editing a segment and assigning speakers.",
@@ -3020,13 +3052,13 @@
       "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
       "class": "RecordingRules",
       "method": "RecordingRules.IsRoomMic",
-      "reason": "Covered indirectly via ['RoomTake.Append']; predicate nguồn thu"
+      "reason": "Covered indirectly via ['RoomTake.Append', 'RoomTake.Complete']; predicate nguồn thu"
     },
     {
       "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
       "class": "RecordingRules",
       "method": "RecordingRules.PcmMs",
-      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; helper số học byte->ms"
+      "reason": "Covered indirectly via ['RoomTake.Complete', 'CombinedRecording.BuildNext']; helper số học byte->ms"
     },
     {
       "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
@@ -3074,7 +3106,7 @@
       "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
       "class": "RoomTakeService",
       "method": "RoomTakeService.CompleteIdleAsync",
-      "reason": "Not covered: RoomTake.Complete sheet dropped by note 60 §6.1 (25/11/2026); timeout sweeper phụ, không phải CRUD người dùng"
+      "reason": "Covered indirectly via ['RoomTake.Complete']; timeout sweeper phụ, không phải CRUD người dùng"
     },
     {
       "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
@@ -3188,13 +3220,13 @@
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
       "class": "TranscriptionService",
       "method": "TranscriptionService.RetryAsync",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Requeue/retry plumbing: đưa bản lỗi trở lại hàng chờ; không MSG riêng, đã bao phủ qua ProcessNext."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Requeue/retry plumbing: đưa bản lỗi trở lại hàng chờ; không MSG riêng, đã bao phủ qua ProcessNext."
     },
     {
       "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
       "class": "TranscriptionService",
       "method": "TranscriptionService.RequeueInterruptedAsync",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Requeue/retry plumbing: dọn bản dở dang khi worker gián đoạn; nhánh recovery của ProcessNext."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Requeue/retry plumbing: dọn bản dở dang khi worker gián đoạn; nhánh recovery của ProcessNext."
     },
     {
       "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdContracts.cs",
@@ -3728,13 +3760,13 @@
       "file": "backend/TrustCabinet.Domain/Summaries/RoomEcho.cs",
       "class": "RoomEcho",
       "method": "RoomEcho.IsEcho",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Domain (mặc định BỎ): bộ lọc câu vọng phòng (thuần text matching, không MSG); là bước lọc bên trong pipeline gỡ băng."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): bộ lọc câu vọng phòng (thuần text matching, không MSG); là bước lọc bên trong pipeline gỡ băng."
     },
     {
       "file": "backend/TrustCabinet.Domain/Summaries/RoomEcho.cs",
       "class": "RoomEcho",
       "method": "RoomEcho.Words",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Domain (mặc định BỎ): tách từ phục vụ IsEcho; helper của helper."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): tách từ phục vụ IsEcho; helper của helper."
     },
     {
       "file": "backend/TrustCabinet.Domain/Transcription/TranscriptText.cs",
@@ -3764,13 +3796,13 @@
       "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionRuleTypes.cs",
       "class": "TranscriptRules",
       "method": "TranscriptRules.Provider",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Domain (mặc định BỎ): chọn provider/stt engine; routing nội bộ của worker, không phải thao tác người dùng."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): chọn provider/stt engine; routing nội bộ của worker, không phải thao tác người dùng."
     },
     {
       "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionRuleTypes.cs",
       "class": "TranscriptRules",
       "method": "TranscriptRules.FitToTake",
-      "reason": "Not covered: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026); Domain (mặc định BỎ): kiểm tra bản gỡ băng có khớp take không; là điều kiện nhánh bên trong worker ProcessNext."
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): kiểm tra bản gỡ băng có khớp take không; là điều kiện nhánh bên trong worker ProcessNext."
     },
     {
       "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
@@ -4077,18 +4109,6 @@
       "class": "VoiceIdRules",
       "method": "VoiceIdRules.ProxyFull",
       "reason": "Added after the round-1 plan (pin 7286680a); no sheet yet, planned for the next round."
-    },
-    {
-      "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
-      "class": "RoomTakeService",
-      "method": "RoomTakeService.CompleteAsync",
-      "reason": "No sheet: RoomTake.Complete sheet dropped by note 60 §6.1 (25/11/2026). Saving a room take is the turn-off step of UC-52a; the save rules are described in Report 4 IV.4."
-    },
-    {
-      "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
-      "class": "TranscriptionService",
-      "method": "TranscriptionService.ProcessNextAsync",
-      "reason": "No sheet: Transcription.ProcessNext sheet dropped by note 60 §6.1 (25/11/2026). System-run transcription queue, no use case; described in Report 4 IV.1."
     }
   ],
   "source": {
