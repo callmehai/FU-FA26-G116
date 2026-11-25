@@ -1,4 +1,4 @@
-﻿title UC-54a - View Recording Transcript
+title UC-54a - View Recording Transcript
 
 actor "Participant" as Actor
 boundary "Transcript View" as TranscriptView
@@ -7,6 +7,7 @@ control ":Transcription Service" as TranscriptionService
 participant ":Recording Repository" as RecordingRepository
 participant ":Meeting Repository" as MeetingRepository
 participant ":Transcript Repository" as TranscriptRepository
+participant ":Audit Service" as AuditService
 database ":Database" as Database
 
 Actor->TranscriptView: Open the transcript of a room recording
@@ -48,15 +49,97 @@ else Actor may read the transcript
     deactivate TranscriptRepository
 
     opt Actor is the current Secretary
+        TranscriptionService->TranscriptionService: Add the suggested names of unnamed speakers (BR-120, BR-123)
     end
     TranscriptionService-->TranscriptController: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
     TranscriptController-->TranscriptView: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
-    alt No transcript yet, Pending or Processing - AF-1
-        TranscriptView-->Actor: Show the status, and Transcribe for the Secretary when there is none (UC-54c)
-    else Failed - AF-2
-        TranscriptView-->Actor: Show Failed with its reason, and Transcribe again for the Secretary (UC-54c)
+    alt Pending or Processing - AF-1
+        TranscriptView-->Actor: Show the status without text
+    else No transcript yet, or Failed
+        TranscriptView-->Actor: Show the status, the reason of a failure,\nand Transcribe for the Secretary (AF-2)
     else Completed
-        TranscriptView-->Actor: Show the segments with start time, Speaker N or the assigned name,\ntake dividers and edited text marked apart from machine text
+        TranscriptView-->Actor: Show the segments with start time, Speaker N or the assigned name,\ntake dividers and edited text marked apart from machine text;\nTranscribe again for the Secretary (AF-3)
+    end
+
+    opt Secretary runs the transcription - AF-2, or transcribes a completed transcript again - AF-3
+        Actor->TranscriptView: Confirm Transcribe, or Transcribe again
+        TranscriptView->TranscriptController: Queue the recording for transcription
+        TranscriptController->TranscriptionService: retry(recordingId, actorId)
+
+        TranscriptionService->RecordingRepository: Lock the recording
+        activate RecordingRepository
+        RecordingRepository->Database: Retrieve recording for update
+        activate Database
+        Database-->RecordingRepository: Recording / Not found
+        deactivate Database
+        RecordingRepository-->TranscriptionService: Recording / Not found
+        deactivate RecordingRepository
+        TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve Meeting and current roster
+        activate Database
+        Database-->MeetingRepository: Meeting and roster
+        deactivate Database
+        MeetingRepository-->TranscriptionService: Meeting and roster
+        deactivate MeetingRepository
+
+        alt Recording not Available or actor not on the roster
+            TranscriptionService-->TranscriptController: Recording not found
+            TranscriptController-->TranscriptView: Recording not found
+            TranscriptView-->Actor: Show the recording as no longer available
+        else Actor is not the current Secretary - EX-2
+            TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+            TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+            TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+        else Recording is the combined recording - EX-3
+            TranscriptionService-->TranscriptController: MSG479 - The combined recording is for listening only. Its speech has already\nbeen transcribed from the room and per-microphone recordings.
+            TranscriptController-->TranscriptView: MSG479 - The combined recording is for listening only. Its speech has already\nbeen transcribed from the room and per-microphone recordings.
+            TranscriptView-->Actor: MSG479 - The combined recording is for listening only. Its speech has already\nbeen transcribed from the room and per-microphone recordings.
+        else Secretary may queue the recording
+            TranscriptionService->TranscriptRepository: Get the transcript of the recording
+            activate TranscriptRepository
+            TranscriptRepository->Database: Retrieve transcript for update
+            activate Database
+            Database-->TranscriptRepository: Transcript / None
+            deactivate Database
+            TranscriptRepository-->TranscriptionService: Transcript / None
+            deactivate TranscriptRepository
+
+            alt Recording already waiting or being transcribed - EX-1
+                TranscriptionService-->TranscriptController: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+                TranscriptController-->TranscriptView: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+                TranscriptView-->Actor: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+            else Transcript can be queued
+                alt Recording has no transcript yet
+                    TranscriptionService->TranscriptRepository: Add a Pending transcript
+                    activate TranscriptRepository
+                    TranscriptRepository->Database: Insert transcript
+                    activate Database
+                    Database-->TranscriptRepository: Saved
+                    deactivate Database
+                    TranscriptRepository-->TranscriptionService: Saved
+                    deactivate TranscriptRepository
+                else Transcript is Failed - AF-2, or Completed - AF-3
+                    opt Transcript is Completed
+                        TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names\nwill be replaced, keeping what the Secretary set by hand (BR-125, BR-154)
+                        activate AuditService
+                        AuditService-->TranscriptionService: Entry saved
+                        deactivate AuditService
+                    end
+                    TranscriptionService->TranscriptRepository: Put the transcript back to Pending and clear the previous error
+                    activate TranscriptRepository
+                    TranscriptRepository->Database: Update transcript
+                    activate Database
+                    Database-->TranscriptRepository: Saved
+                    deactivate Database
+                    TranscriptRepository-->TranscriptionService: Saved
+                    deactivate TranscriptRepository
+                end
+                TranscriptionService-->TranscriptController: MSG300 - Recording queued for transcription.
+                TranscriptController-->TranscriptView: MSG300 - Recording queued for transcription.
+                TranscriptView-->Actor: MSG300 - Recording queued for transcription.
+            end
+        end
     end
 end
 

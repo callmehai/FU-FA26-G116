@@ -75,6 +75,10 @@ Theo Report 3 ngày 18/10/2026 (trao đổi PO 16/10/2026, góp ý hội đồng
 - Đã render và xem lại BF-03; PNG xuất bằng draw.io 31.7.0 có nhúng model (chunk `zTXt` `mxGraphModel`), đã giải mã và
   đối chiếu với source nhưng chưa mở lại bằng draw.io.
 
+Ngày 25/11/2026 (note 61 §4, góp ý của thầy về chữ trong hình): xuất lại bốn PNG ở tỉ lệ 2x, vẫn nhúng model
+(`drawio -x -e -f png -s 2 -o <file>.drawio.png <file>.drawio`), và thay hình BF-01 → BF-04 trong Report 3 §I.2 bằng bản này;
+mỗi hình có caption `Figure n:` và link ảnh gốc trên GitHub ngay dưới. Nội dung sơ đồ không đổi.
+
 **Quy tắc:** không thêm note, shape ghi chú hay chữ chú thích tự do vào swimlane — xem
 [DRAWIO_EDITING_RULES.md](../../DRAWIO_EDITING_RULES.md#no-notes-inside-diagrams).
 
