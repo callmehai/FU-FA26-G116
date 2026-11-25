@@ -1,4 +1,4 @@
-title SYS - Auto-End Forgotten Meeting (System, DRAFT awaiting approval - no UC number)
+title SYS - Auto-End Forgotten Meeting (System)
 
 actor "System" as System
 control ":Meeting Overdue Worker" as Worker

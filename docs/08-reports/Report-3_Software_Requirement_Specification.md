@@ -4384,6 +4384,38 @@ Runs inside the backend every 5 seconds. Each cycle creates the “meeting start
 
 Runs inside the backend only when SMTP is enabled. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email queue, and waits before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
 
+#### 16.3 Transcribe Recordings (JOB-03)
+
+Runs inside the backend every 3 seconds and takes one waiting transcript at a time, so a long recording never slows the screens down. It sends the audio to the in-house speech recognition, cleans the result, suggests or fills in speaker names from Voice ID, keeps the Secretary's manual corrections and marks the transcript Completed or Failed with a reason the Secretary sees (UC-54a). A run whose recording changed meanwhile is discarded, and a transcript left half done by a restart is queued again. Details: Report 4, IV.1–IV.3.
+
+#### 16.4 Draft Meeting Summaries (JOB-04)
+
+Runs inside the backend every 3 seconds and drafts one requested meeting summary at a time with the AI drafting service the System Admin configured (UC-58–UC-61). A failure is shown on the summary with the option to try again. Details: Report 4, IV.10.
+
+#### 16.5 Build Combined Recordings (JOB-05)
+
+Runs inside the backend every 30 seconds. For a hybrid or online Meeting that has ended and whose recordings have stopped changing, it builds one recording that holds the meeting room and every online participant on the real clock, with long silences shortened, and rebuilds it when a source changes within 8 days (UC-51a). It keeps the purpose and retention date of its sources and is not transcribed again. Details: Report 4, IV.5.
+
+#### 16.6 Erase Expired Recordings (JOB-06)
+
+Runs inside the backend every 15 minutes. It erases recordings and recorded speech whose retention period of 180 days has ended, together with their transcripts, keeping only the record that a recording existed (BR-110), and saves a room-microphone take that has received no sound for 12 hours. Details: Report 4, IV.4 and IV.6.
+
+#### 16.7 Cancel or End Overdue Meetings (JOB-07)
+
+Runs inside the backend every 15 minutes. It cancels a Meeting nobody started 24 hours after its planned start (BR-029) and ends a Meeting still in progress 24 hours after its planned end (BR-027), recording the system as the actor in the status history. Details: Report 4, IV.6.
+
+#### 16.8 Remove Expired Personal Data (JOB-08)
+
+Runs inside the backend every 60 minutes. It removes data that has outlived its purpose: audio no recording uses any more, Draft votes of Cancelled Meetings, read notifications after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. A run that removed something writes one audit entry per rule (BR-010). Details: Report 4, IV.6.
+
+#### 16.9 Purge Unused Document Files (JOB-09)
+
+Runs inside the backend every 60 minutes. It deletes stored document files that no personal library entry and no meeting document uses any more, after a grace period of 24 hours (BR-077). Details: Report 4, IV.6.
+
+#### 16.10 Reconcile Online Meeting Rooms (JOB-10)
+
+Runs inside the backend every 30 seconds. It compares the online meeting rooms with the Meetings, closes the room of a Meeting that is no longer in progress and removes people who may no longer be in it, such as a deactivated user or a participant who was removed (UC-43). Details: Report 4, IV.10.
+
 ### 17. External API Inventory
 
 #### 17.1 Google Identity Services – Sign in with Google (API-01)
