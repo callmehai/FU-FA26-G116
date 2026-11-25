@@ -38,6 +38,7 @@ Thư mục gốc: [Diagrams](https://drive.google.com/drive/folders/18E52RJTqrrd
 | `screen-flow` | `docs/12-screenflow/` | Screen flow | `1FI9ytaVh7zNZmW4oflbcO874rdHEwtgr` |
 | `uc` | `docs/14-uc-diagram/` | UC diagram | `1YPCo8mUbu8QCS_el_M_SbnSzHfsqWPKf` |
 | `architecture` | `docs/16-architecture-diagram/` | Diagrams › Architecture diagram (script tự tạo thư mục con) | `18E52RJTqrrd3j9D9ROJllVC2kAvtOHJx` |
+| `package` | `docs/15-package-diagram/` | Package diagram | `1xPB5icagcceX-ZhXpqTNmo5ktQYDHehD` |
 | `report-figures` | `docs/08-reports/source/figures/` | Diagrams › Report figures (script tự tạo thư mục con) | `18E52RJTqrrd3j9D9ROJllVC2kAvtOHJx` |
 
 `docs/10-statemachine/` chưa có thư mục tương ứng trên Drive nên chưa nằm trong phạm vi đồng bộ.

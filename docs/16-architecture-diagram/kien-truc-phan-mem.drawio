@@ -16,7 +16,7 @@
         <mxCell id="c-app" value="&lt;b&gt;app&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;route table&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="230" y="125" width="136" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="c-features" value="&lt;b&gt;features&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;19 business areas&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="c-features" value="&lt;b&gt;features&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;24 business areas&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="380" y="125" width="136" height="56" as="geometry" />
         </mxCell>
         <mxCell id="c-components" value="&lt;b&gt;components&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;shell · shared UI&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
@@ -61,16 +61,16 @@
         <mxCell id="a-publishers" value="&lt;b&gt;Change Publishers&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;one per business area → hubs&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="70" y="580" width="240" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="a-services" value="&lt;b&gt;Service Layer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;35 use case services in TrustCabinet.Application&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="a-services" value="&lt;b&gt;Service Layer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;36 use case services in TrustCabinet.Application&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="370" y="580" width="280" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="a-ports" value="&lt;b&gt;Ports&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;TrustCabinet.Application: 30 repository · 9 query · adapter interfaces · IUnitOfWork&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="a-ports" value="&lt;b&gt;Ports&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;TrustCabinet.Application: 31 repository · 10 query · adapter interfaces · IUnitOfWork&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="370" y="690" width="280" height="56" as="geometry" />
         </mxCell>
         <mxCell id="a-domain" value="&lt;b&gt;Domain Model&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;TrustCabinet.Domain: entities · enums · rules&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="70" y="690" width="240" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="a-repo" value="&lt;b&gt;Repository Layer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;TrustCabinet.Infrastructure: 38 repositories and queries · EF Core TrustCabinetDbContext · unit of work&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="a-repo" value="&lt;b&gt;Repository Layer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;TrustCabinet.Infrastructure: 41 repositories and queries · EF Core TrustCabinetDbContext · unit of work&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="370" y="790" width="280" height="66" as="geometry" />
         </mxCell>
         <mxCell id="a-workers" value="&lt;b&gt;Background Workers&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Notification · Transcription · Summary · CallRoomJanitor · RecordingRetention · MeetingOverdue · CombinedRecording · Email delivery · OrphanFilePurge&lt;/font&gt;" style="rounded=1;arcSize=8;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontColor=#000000;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">

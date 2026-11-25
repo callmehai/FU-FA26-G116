@@ -20,7 +20,7 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 | Backend | Package con của `TrustCabinet.Web`, `.Application`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web, Application và Infrastructure; phụ thuộc trong Web, trong Infrastructure, `«import»` giữa bốn project | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
 | Application | Phụ thuộc giữa các module trong `TrustCabinet.Application` | [drawio](package-application.drawio) · [PNG](package-application.png) |
 | Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [drawio](package-domain.drawio) · [PNG](package-domain.png) |
-| Frontend | `frontend/src` với 19 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
+| Frontend | `frontend/src` với 24 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
 
 ## Quy ước
 
@@ -181,5 +181,5 @@ thư mục `features/` thì cập nhật hình và mục "Phụ thuộc không v
 draw.io -x -f png -s 2 -o package-backend.png package-backend.drawio
 ```
 
-Bản trên Drive nằm ở thư mục `Package diagram`, được tải tay lên; `scripts/push_diagrams.py` chưa
-có nhóm cho thư mục này (xem [DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md)).
+Bản trên Drive nằm ở thư mục `Package diagram`; đẩy lên bằng `python scripts/push_diagrams.py package --confirm`
+(xem [DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md)).
