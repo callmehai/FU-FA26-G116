@@ -1,4 +1,4 @@
-title UC-37a - View a Locked Account's Personal Library
+title UC-37a - View a Deactivated Account’s Personal Library
 
 actor "System Admin" as Actor
 boundary "User Detail Screen" as UserScreen
@@ -9,16 +9,16 @@ participant ":Document Repository" as DocumentRepository
 participant ":Audit Log" as AuditLog
 database ":Database" as Database
 
-Actor->UserScreen: Choose View personal library for a locked account\n(optionally open a folder)
+Actor->UserScreen: Choose View personal library for a deactivated account\n(optionally open a folder)
 activate UserScreen
 
 UserScreen->DocumentController: Request the library contents of the account (and the selected folder)
 activate DocumentController
 
-DocumentController->DocumentService: viewLockedLibrary(adminId, accountId, folderId?)
+DocumentController->DocumentService: viewDeactivatedLibrary(adminId, accountId, folderId?)
 activate DocumentService
 
-DocumentService->UserRepository: Get the account and its locked state
+DocumentService->UserRepository: Get the account and its deactivated state
 activate UserRepository
 UserRepository->Database: Retrieve the account by id
 activate Database
@@ -27,12 +27,12 @@ deactivate Database
 UserRepository-->DocumentService: Account / Not found
 deactivate UserRepository
 
-alt Account is missing or is not locked - EX-1
+alt Account is missing or is not deactivated - EX-1
     DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
     DocumentController-->UserScreen: MSG175 - This personal-library item is not available.
     UserScreen-->Actor: MSG175 - This personal-library item is not available.
 
-else Account is locked
+else Account is deactivated
     DocumentService->AuditLog: Record the read: who read, whose library, which folder, when
     activate AuditLog
     AuditLog->Database: Insert the audit entry

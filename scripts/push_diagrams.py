@@ -213,6 +213,18 @@ GROUPS: tuple[Group, ...] = (
             ),
         ),
     ),
+    Group(
+        key="report-figures",
+        title="Report figures",
+        drive_folder="18E52RJTqrrd3j9D9ROJllVC2kAvtOHJx",  # Diagrams root; files go to its "Report figures" subfolder
+        sources=(
+            Source(
+                local=ROOT / "docs" / "08-reports" / "source" / "figures",
+                patterns=("*.drawio", "*.png"),
+                drive_dir="Report figures",
+            ),
+        ),
+    ),
 )
 
 GROUPS_BY_KEY = {group.key: group for group in GROUPS}

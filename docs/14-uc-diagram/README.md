@@ -17,6 +17,17 @@ Nguồn: [Master Use Case Inventory](../01-requirements/00-master-use-case-inven
 | Secretary | [uc-secretary.png](uc-secretary.png) |
 | Participant | [uc-participant.png](uc-participant.png) |
 | Guest | [uc-guest.png](uc-guest.png) |
+| Tổng thể (System Overview) | [uc-system-overview.png](uc-system-overview.png) |
+
+## Sơ đồ tổng thể (25/11/2026)
+
+Trang thứ tám, *System Overview* (id `system-overview`, đặt cuối file để số trang cũ giữ nguyên), là hình đầu Report 3
+§I.4.3, chú thích "Figure n: System Overview Use Case Diagram" (note 60 §6.1 mục 7, note 61 §4). Actor nối với **gói
+Feature** (FE-01 → FE-13, FE-15, FE-16; không có FE-14) chứ không nối từng UC. Một actor nối với một gói khi actor đó là
+Primary hoặc Secondary Actor của ít nhất một UC trong Feature theo đặc tả Report 3 §II. Chair và Secretary khái quát hoá
+lên Participant; Approver và System Admin lên Member vì cả hai giữ quyền tạo cuộc họp (`ReferenceData.cs`, Report 3 §I.4.1 và ma trận §I.4.4). Ba actor ngoài: OAuth Provider (FE-01), Resend
+Email (FE-01, FE-04, FE-06), AI Drafting Service (FE-10). Id ô: `ov-<actor>`, `ov-fe-xx`, cạnh `assoc-ov-<actor>-fe-xx`
+và `gen-ov-<con>-ov-<cha>`. Xuất lại: `drawio -x -f png -p 8 -s 2 -o uc-system-overview.png trustcabinet-use-cases.drawio`.
 
 **Quy ước:** nhãn UC trên hình là tên tiếng Anh của UC gom (ví dụ *Manage User Accounts*, *Manage Meeting Room
 Controls*), không ghi số; tra số ở inventory. Quan hệ `<<extend>>` / `<<include>>` theo inventory §1 và §4. Bản

@@ -1,7 +1,7 @@
 # Sequence Diagram — Ghi âm cuộc họp (FE-09)
 
 Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho các UC thuộc FE-09 Meeting Recording
-(UC-51a → UC-51c, UC-52a → UC-52e, UC-53), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
+(UC-51a → UC-51c, UC-52a, UC-52c → UC-52e, UC-53), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
 [plan 19 §12](../../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md#12-review-lượt-13-30102026--việc-phải-sửa).
 Luồng gửi từng câu khi bật mic của mình là một phần của UC-45a (AF-2, quyết định D9) nên nằm ở
 [`online-meeting-room/UC45a_RecordSpeechWhileMicrophoneOn.txt`](../online-meeting-room/UC45a_RecordSpeechWhileMicrophoneOn.txt).
@@ -11,13 +11,11 @@ Luồng gửi từng câu khi bật mic của mình là một phần của UC-45
 | UC-51a View Meeting Recordings | [UC51a_ViewMeetingRecordings.txt](UC51a_ViewMeetingRecordings.txt) |
 | UC-51b Play Meeting Recording | [UC51b_PlayMeetingRecording.txt](UC51b_PlayMeetingRecording.txt) |
 | UC-51c Download Meeting Recording | [UC51c_DownloadMeetingRecording.txt](UC51c_DownloadMeetingRecording.txt) |
-| UC-52a Start Room Recording | [UC52a_StartRoomRecording.txt](UC52a_StartRoomRecording.txt) |
-| UC-52b Stop and Save Room Recording | [UC52b_StopAndSaveRoomRecording.txt](UC52b_StopAndSaveRoomRecording.txt) |
+| UC-52a Turn Room Microphone On/Off | [UC52a_TurnRoomMicrophoneOnOff.txt](UC52a_TurnRoomMicrophoneOnOff.txt) |
 | UC-52c Upload Meeting Audio File | [UC52c_UploadMeetingAudioFile.txt](UC52c_UploadMeetingAudioFile.txt) |
 | UC-52d Delete Recording Take | [UC52d_DeleteRecordingTake.txt](UC52d_DeleteRecordingTake.txt) |
 | UC-52e Erase Meeting Recording | [UC52e_EraseMeetingRecording.txt](UC52e_EraseMeetingRecording.txt) |
 | UC-53 Manage My Recorded Speech | [UC53_ManageMyRecordedSpeech.txt](UC53_ManageMyRecordedSpeech.txt) |
-| SYS Build Combined Recording (bản nháp chờ duyệt, không gắn số UC — ngoại lệ theo note 45 §2.4) | [SYS_BuildCombinedRecording.txt](SYS_BuildCombinedRecording.txt) |
 
 Quy ước riêng của nhóm này:
 
@@ -35,11 +33,16 @@ Quy ước riêng của nhóm này:
   đặc tả ghi nhánh này ở UC-51a EX-3 và UC-51b EX-2; ở các UC khác sơ đồ vẽ nhánh này không có số EX.
 - **Guest** không ghi được theo micro và không mở được bản ghi (BR-111, BR-112, D6 — NEEDS REVIEW PO): mọi route chặn bằng
   tài khoản nội bộ đang hoạt động.
-- Việc hệ thống tự chạy không có request của actor nên **không vẽ thành sơ đồ riêng**: UC-52b AF-2 (lượt không nhận tiếng
-  12 giờ được tự lưu — `IRoomTakeService.completeIdle()` chạy đúng các bước lưu của UC-52b) và UC-52e AF-1 (hết 180 ngày —
-  `IRecordingService.eraseExpired()` chạy đúng các bước xoá của UC-52e, lý do `retention`, không có actor).
-- UC-52a AF-1 (mở lại tab đã đóng → *Ghi tiếp* tiếp tục vòng gửi phần, *Lưu phần đã ghi* là UC-52b) là lựa chọn thứ hai của
-  actor nên không vẽ; UC-52a AF-3 (gần giới hạn dung lượng lượt → tự lưu và mở lượt mới) vẽ bằng `ref UC-52b`.
+- **UC-52a có hai request của actor** (bật mic phòng, rồi tắt mic phòng), ngoại lệ của quy ước "một request Actor" như UC-04:
+  UC-52b "Stop and Save Room Recording" đã bỏ (note 60 §3.2, 25/11/2026), luồng lưu lượt của nó (MSG362, MSG363, MSG365,
+  MSG295, lượt rỗng, lượt đầu hoặc bản ghi phòng đầy) gộp vào cuối UC-52a, sau vòng lặp "While the room microphone is on".
+  Request thứ hai cũng là đường dừng lượt còn mở ở máy khác (AF-3).
+- Việc hệ thống tự chạy không có request của actor nên **không vẽ ở đây**: server tự lưu lượt không nhận tiếng 12 giờ
+  (`IRoomTakeService.completeIdle()`, chạy đúng các bước lưu cuối UC-52a), tự xoá bản ghi hết 180 ngày
+  (`IRecordingService.eraseExpired()`, các bước xoá của UC-52e, lý do `retention`) và dựng bản ghi gộp. Thiết kế của chúng ở
+  Report 4 phần IV; sơ đồ hệ thống ở [`system-processes/`](../system-processes/README.md).
+- UC-52a AF-2 (mở lại tab đã đóng → *Ghi tiếp* tiếp tục vòng gửi phần, *Lưu phần đã ghi* đi vào bước tắt mic) là lựa chọn
+  thứ hai của actor nên không vẽ riêng.
 - UC-53 bắt đầu ở thao tác xác nhận xoá câu của mình; xem danh sách câu là UC-51a (lọc theo người nói, kèm câu còn chờ
   gửi trên máy), nghe lại là UC-51b.
 - Nhánh `alt` **không có số EX** là hành vi code có nhưng đặc tả UC chưa ghi: người không còn trong thành phần (trả lời "không
@@ -53,8 +56,7 @@ Quy ước riêng của nhóm này:
 ## Xuất ảnh
 
 ```bash
-node scripts/export-diagrams.js docs/06-sequencediagram/meeting-recording
-python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/meeting-recording/UC*.txt
+python scripts/export_sequence.py UC52a   # từng file đã sửa: tab drawio, drawio-png/ và ảnh sequencediagram.org
 ```
 
 Giữ `.txt`, `.png`, tab trong `TrustCabinet_Sequence_Diagrams.drawio` và ảnh trong `drawio-png/` đồng bộ.

@@ -1,4 +1,4 @@
-title UC-36a - Upload Documents to Meeting (AF-1)
+title UC-36a - Add Document to Meeting (AF-1)
 
 actor "Chair or Secretary" as Actor
 boundary "Meeting Documents Tab" as DocumentsTab

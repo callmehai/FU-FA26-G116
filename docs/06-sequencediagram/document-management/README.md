@@ -14,7 +14,7 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
 | UC-36c Remove Document from Meeting | [UC36c_RemoveDocumentFromMeeting.txt](UC36c_RemoveDocumentFromMeeting.txt) | SCRUM-112 | as-built (`.txt` + `MSG349`; PNG/drawio chờ xuất lại) |
 | UC-36d Detach Document from Agenda Item | [UC36d_DetachDocumentFromAgendaItem.txt](UC36d_DetachDocumentFromAgendaItem.txt) | SCRUM-112 | as-built (`.txt` + `MSG349`; PNG/drawio chờ xuất lại) |
 | UC-37 View Personal Document Library | [UC37_ViewPersonalLibrary.txt](UC37_ViewPersonalLibrary.txt) | SCRUM-111 | PROPOSED |
-| UC-37a View a Locked Account's Personal Library | [UC37a_ViewLockedAccountLibrary.txt](UC37a_ViewLockedAccountLibrary.txt) | SCRUM-111 (PR #169) | as-built |
+| UC-37a View a Deactivated Account’s Personal Library | [UC37a_ViewLockedAccountLibrary.txt](UC37a_ViewLockedAccountLibrary.txt) | SCRUM-111 (PR #169) | as-built |
 | UC-38 Comment on Meeting Document | [UC38_CommentOnMeetingDocument.txt](UC38_CommentOnMeetingDocument.txt) | SCRUM-23 | as-built (`.txt` + `MSG348`/`MSG349`; PNG/drawio chờ xuất lại) |
 | UC-39 Upload Document to Personal Library | [UC39_UploadToPersonalLibrary.txt](UC39_UploadToPersonalLibrary.txt) | SCRUM-111 | PROPOSED |
 | UC-40a Delete Document from Personal Library | [UC40a_DeleteLibraryDocument.txt](UC40a_DeleteLibraryDocument.txt) | SCRUM-111 | PROPOSED |

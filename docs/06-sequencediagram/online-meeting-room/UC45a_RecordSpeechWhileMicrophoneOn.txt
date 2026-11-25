@@ -1,4 +1,4 @@
-title UC-45a - Record Speech While Microphone On (AF-2)
+title UC-45a - Manage Microphone (AF-2)
 
 actor "Participant" as Actor
 boundary "Online Meeting Room Page" as RoomPage

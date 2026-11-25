@@ -1,4 +1,4 @@
-title UC-01 - Sign in with Username and Password
+title UC-01 - Sign in with Email and Password
 
 actor "User" as User
 boundary "Login Page" as LoginPage

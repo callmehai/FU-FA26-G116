@@ -1,0 +1,64 @@
+<mxfile host="drawio">
+  <diagram id="iterative-model" name="Iterative Incremental Model">
+    <mxGraphModel dx="1000" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1020" pageHeight="460" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Phases of the Iterative Incremental Model" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="210" y="10" width="600" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="initial" value="Initial planning" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#FFFFFF;strokeColor=#1E4FA3;strokeWidth=2;dashed=1;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="20" y="225" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="planning" value="Planning" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#DCE8F8;strokeColor=#1E4FA3;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="230" y="225" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="requirements" value="Requirements" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#DCE8F8;strokeColor=#1E4FA3;strokeWidth=2;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="330" y="80" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="design" value="Analysis &amp;amp; design" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#DCE8F8;strokeColor=#1E4FA3;strokeWidth=2;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="530" y="80" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="implementation" value="Implementation" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#E3F1DF;strokeColor=#2E7D32;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="630" y="225" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="testing" value="Testing" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#FBE9DA;strokeColor=#B85C1E;strokeWidth=2;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="530" y="370" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation" value="Evaluation" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#FBE9DA;strokeColor=#B85C1E;strokeWidth=2;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="330" y="370" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="deployment" value="Deployment" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#FFFFFF;strokeColor=#2E7D32;strokeWidth=2;dashed=1;fontSize=15;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="850" y="225" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="iterate" value="Iterate" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#5F6B7A;strokeColor=#5F6B7A;fontColor=#FFFFFF;fontSize=14;fontStyle=1;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="465" y="210" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e-initial-planning" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1E4FA3;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="initial" target="planning">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-planning-requirements" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1E4FA3;strokeWidth=3;endArrow=block;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="planning" target="requirements">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-requirements-design" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1E4FA3;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="requirements" target="design">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-design-implementation" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1E4FA3;strokeWidth=3;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="design" target="implementation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-implementation-testing" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85C1E;strokeWidth=3;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="implementation" target="testing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-testing-evaluation" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85C1E;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="testing" target="evaluation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-evaluation-planning" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85C1E;strokeWidth=3;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="evaluation" target="planning">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-implementation-deployment" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2E7D32;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="implementation" target="deployment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

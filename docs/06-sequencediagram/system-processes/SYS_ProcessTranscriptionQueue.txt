@@ -1,4 +1,4 @@
-title UC-54c - Transcribe Meeting Recording: Process Transcription Queue (System)
+title SYS - Process Transcription Queue (System)
 
 actor "System" as System
 control ":Transcription Worker" as Worker
@@ -48,7 +48,8 @@ else A transcript was claimed
     deactivate RecordingRepository
 
     alt Recording was erased, or a take was appended while running
-    else Transcription failed - EX-2
+        TranscriptionService->TranscriptionService: Discard the result; a new take has put the transcript back in the queue
+    else Transcription failed
         TranscriptionService->TranscriptRepository: Mark the transcript Failed with the reason for the Secretary
         activate TranscriptRepository
         TranscriptRepository->Database: Update transcript
@@ -78,7 +79,7 @@ else A transcript was claimed
         activate Protector
         Protector-->TranscriptionService: Voiceprints
         deactivate Protector
-        TranscriptionService->SpeakerMatcher: Match who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-120, BR-123, NFR, ADR-0045)
+        TranscriptionService->SpeakerMatcher: Match who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-120, BR-123, NFR)
         activate SpeakerMatcher
         SpeakerMatcher-->TranscriptionService: Best person per voice, with its score
         deactivate SpeakerMatcher
