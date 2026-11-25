@@ -1,4 +1,4 @@
-﻿title UC-53 - Manage My Recorded Speech
+title UC-53 - Manage My Recorded Speech
 
 actor "Participant" as Actor
 boundary "My Recorded Speech Panel" as MySpeechPanel

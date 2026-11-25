@@ -1,4 +1,4 @@
-﻿title UC-55d - Delete a Sentence
+title UC-55d - Delete a Sentence
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

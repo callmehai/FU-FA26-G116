@@ -1,4 +1,4 @@
-﻿title UC-56e - Delete Voice Sample
+title UC-56e - Delete Voice Sample
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

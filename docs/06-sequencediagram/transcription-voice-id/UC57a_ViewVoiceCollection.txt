@@ -1,4 +1,4 @@
-﻿title UC-57a - View Voice Collection
+title UC-57a - View Voice Collection
 
 actor "VoiceCollector" as Collector
 boundary "Users Page" as UsersPage

@@ -1,4 +1,4 @@
-﻿title UC-56b - Give Voice ID Consent
+title UC-56b - Give Voice ID Consent
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

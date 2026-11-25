@@ -1,4 +1,4 @@
-﻿title UC-52e - Erase Meeting Recording
+title UC-52e - Erase Meeting Recording
 
 actor "Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

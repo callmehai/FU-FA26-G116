@@ -1,4 +1,4 @@
-﻿title UC-58 - Generate / Regenerate Meeting Summary
+title UC-58 - Generate / Regenerate Meeting Summary
 
 actor "Chair / Secretary" as Actor
 boundary "Draft Card (Biên bản tab)" as DraftCard

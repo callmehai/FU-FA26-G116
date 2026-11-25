@@ -1,4 +1,4 @@
-﻿title UC-51b - Play Meeting Recording
+title UC-51b - Play Meeting Recording
 
 actor "Participant" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

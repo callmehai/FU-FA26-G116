@@ -1,4 +1,4 @@
-﻿title UC-55b - Assign Speaker
+title UC-55b - Assign Speaker
 
 actor "Secretary" as Actor
 boundary "Transcript View" as TranscriptView

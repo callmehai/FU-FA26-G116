@@ -1,4 +1,4 @@
-﻿title UC-57c - Play Collected Voice Sample
+title UC-57c - Play Collected Voice Sample
 
 actor "VoiceCollector" as Collector
 boundary "Users Page" as UsersPage

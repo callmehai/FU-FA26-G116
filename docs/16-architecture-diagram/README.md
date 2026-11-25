@@ -53,3 +53,7 @@ PNG và thay ảnh ở mục I.1 của Report 4 (`docs/08-reports/source/`):
 ```bash
 draw.io -x -f png -s 2 -o kien-truc-phan-mem.png kien-truc-phan-mem.drawio
 ```
+
+Sau đó đẩy lên Drive bằng `python scripts/push_diagrams.py architecture --confirm` (thư mục Diagrams ›
+Architecture diagram, xem [DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md)). Dòng "View the full-size image on
+Google Drive" dưới Figure 1 của Report 4 trỏ vào file PNG đó trên Drive; cập nhật cùng file thì link giữ nguyên.

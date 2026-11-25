@@ -1,5 +1,5 @@
 // FE-10 — Gỡ băng, nhận diện người nói và tóm tắt (QA subtask SCRUM-197): UC-54a view a transcript, UC-54b export it,
-// UC-54c transcribe (automatic after an upload, rerun), UC-55a edit a sentence, UC-55b name a voice and change the
+// UC-54a AF-2/AF-3 transcribe (automatic after an upload, rerun), UC-55a edit a sentence, UC-55b name a voice and change the
 // speaker of one sentence ("chỉ câu này", MSG407), UC-55c exclude / restore a per-mic sentence (MSG351–354), UC-56a–f
 // the person's own Voice ID (consent, samples, withdrawal), UC-57a–d the Secretary collecting samples on someone's behalf
 // (ADR-0060, MSG473–477), and of UC-58–UC-60 only what FE-10 feeds: the draft card's count of unnamed voices (read-only —
@@ -780,7 +780,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-54c Transcribe
+    // ------------------------------------------------------------------------------------------- UC-54a AF-2/AF-3 Transcribe
     {
       id: 'AC2',
       role: 'secretary',
@@ -791,7 +791,7 @@ export default {
         'Chờ chuyển chữ xong',
       ],
       expected:
-        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-54c AF-1, UC-54a AF-1, UC-54b EX-3); tải lại trang vẫn hiện đủ (TRANS_FT13 E2)',
+        'Hộp xác nhận thông báo ghi âm trước khi lưu, nút "Tải lên" khoá tới khi đánh dấu; dòng mới có chip "Đang chuyển chữ" và dòng trạng thái "Đang chờ/Đang chuyển thành chữ…"; API: 409 MSG301 và 409 MSG357; khi xong chip "Có bản gỡ băng" và lời thoại hiện ra (UC-54a AF-2, UC-54a AF-1, UC-54b EX-3); tải lại trang vẫn hiện đủ (TRANS_FT13 E2)',
       async run(qa) {
         const m = await meeting(qa, 'A')
         const c = checker(qa)
@@ -1761,7 +1761,7 @@ export default {
       },
     },
 
-    // ------------------------------------------------------------------------------------------- UC-54c + Voice ID
+    // ------------------------------------------------------------------------------------------- UC-54a AF-2 + Voice ID
     {
       id: 'AC18',
       role: 'secretary',

@@ -1,4 +1,4 @@
-﻿title UC-61 - Approve Meeting Summary
+title UC-61 - Approve Meeting Summary
 
 actor "Chair / Secretary" as Actor
 boundary "Draft Card (Biên bản tab)" as DraftCard

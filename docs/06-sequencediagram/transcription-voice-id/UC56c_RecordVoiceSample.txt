@@ -1,4 +1,4 @@
-﻿title UC-56c - Record Voice Sample
+title UC-56c - Record Voice Sample
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

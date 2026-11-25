@@ -1,4 +1,4 @@
-﻿title UC-55c - Exclude or Restore a Sentence
+title UC-55c - Exclude or Restore a Sentence
 
 actor "Chair / Secretary" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab

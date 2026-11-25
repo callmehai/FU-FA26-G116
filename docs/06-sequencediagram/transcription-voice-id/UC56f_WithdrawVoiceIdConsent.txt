@@ -1,4 +1,4 @@
-﻿title UC-56f - Withdraw Voice ID Consent
+title UC-56f - Withdraw Voice ID Consent
 
 actor "Internal User" as Actor
 boundary "My Voice Page" as VoicePage

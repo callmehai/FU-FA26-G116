@@ -1,4 +1,4 @@
-﻿title UC-51a - View Meeting Recordings
+title UC-51a - View Meeting Recordings
 
 actor "Participant" as Actor
 boundary "Meeting Recordings Tab" as RecordingsTab
